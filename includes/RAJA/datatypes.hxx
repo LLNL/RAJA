@@ -178,12 +178,13 @@ public:
 #endif
 
    ///
-   ///  Pointer access operator.
+   ///  Implicit conversion operator to bare operator.
    ///
    operator Real_type*() { return dptr; }
 
    ///
-   ///  Pointer access operator, consistent with boost shared ptr.
+   ///  "Explicit conversion operator" to bare operator,
+   ///  consistent with boost shared ptr.
    ///
    Real_type* get() { return dptr; }
 
@@ -231,12 +232,13 @@ public:
    }
 
    ///
-   ///  Pointer access operator.
+   ///  Implicit conversion operator to bare operator.
    ///
    operator Complex_type*() { return dptr; }
 
    ///
-   ///  Pointer access operator, consistent with boost shared ptr.
+   ///  "Explicit conversion operator" to bare operator,
+   ///  consistent with boost shared ptr.
    ///
    Complex_type* get() { return dptr; }
 
