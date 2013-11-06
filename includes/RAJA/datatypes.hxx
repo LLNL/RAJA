@@ -125,6 +125,10 @@ public:
    RestrictAlignRealPtr(Real_type* d) : dptr(d) { ; }
 
    ///
+   /// NOTE: Using compiler-generated copy ctor and copy assignment operator.
+   ///
+
+   ///
    /// Compiler-specific bracket operator.
    ///
 
@@ -213,6 +217,10 @@ public:
    /// Copy ctor.
    ///
    RestrictComplexPtr(Complex_type* d) : dptr(d) { ; }
+
+   ///
+   /// NOTE: Using compiler-generated copy ctor and copy assignment operator.
+   ///
 
    ///
    /// Bracket operator.
