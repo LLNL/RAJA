@@ -70,10 +70,8 @@ const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
 
 const int DATA_ALIGN = 32;
 
-#endif
 
-
-#if defined(RAJA_PLATFORM_X86_AVX)
+#elif defined(RAJA_PLATFORM_X86_AVX)
 //
 // Configuration for Intel platforms with AVX vector instructions.
 //
@@ -83,10 +81,8 @@ const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
 
 const int DATA_ALIGN = 32;
 
-#endif
 
-
-#if defined(RAJA_PLATFORM_BGQ)
+#elif defined(RAJA_PLATFORM_BGQ)
 //
 // Configuration for IBM BG/Q systems (e.g., sequoia)
 //
@@ -96,6 +92,10 @@ const int RANGE_ALIGN = 4;
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
 
 const int DATA_ALIGN = 32;
+
+
+#else
+#error RAJA platform is undefined!
 
 #endif
 
@@ -125,15 +125,13 @@ const int DATA_ALIGN = 32;
 #if __ICC < 1300  // use alignment intrinsic
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
 #else
-#define RAJA_ALIGN_DATA(d)  // ???
+#define RAJA_ALIGN_DATA(d)  // TODO: Define this...
 #endif
 
 #define RAJA_SIMD  // TODO: Define this...
 
-#endif   // end  Intel compilers.....
 
-
-#if defined(RAJA_COMPILER_GNU) 
+#elif defined(RAJA_COMPILER_GNU) 
 //
 // Configuration options for GNU compilers
 //
@@ -144,10 +142,8 @@ const int DATA_ALIGN = 32;
 
 #define RAJA_SIMD  // TODO: Define this...
 
-#endif   // end  GNU compilers.....
 
-
-#if defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC12)
 //
 // Configuration options for xlc v12 compiler (i.e., bgq/sequoia).
 //
@@ -159,10 +155,8 @@ const int DATA_ALIGN = 32;
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
 #define RAJA_SIMD   // TODO: Define this... 
 
-#endif   // end  xlc v12 compiler on bgq
 
-
-#if defined(RAJA_COMPILER_CLANG)
+#elif defined(RAJA_COMPILER_CLANG)
 //
 // Configuration options for clang compilers
 //
@@ -173,7 +167,11 @@ const int DATA_ALIGN = 32;
 
 #define RAJA_SIMD  // TODO: Define this...
 
-#endif   // end  CLANG compilers.....
+
+#else
+#error RAJA compiler is undefined!
+
+#endif
 
 
 }  // closing brace for namespace statement

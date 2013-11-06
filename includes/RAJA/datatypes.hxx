@@ -44,11 +44,16 @@ typedef int     Index_type;
 #if defined(RAJA_USE_DOUBLE)
 ///
 typedef double  Real_type;
-#endif
 
-#if defined(RAJA_USE_FLOAT)
+
+#elif defined(RAJA_USE_FLOAT)
 ///
 typedef float  Real_type;
+
+
+#else
+#error RAJA Real_type is undefined!
+
 #endif
 
 ///
@@ -70,29 +75,31 @@ typedef std::complex<Real_type> Complex_type;
 #if __ICC >= 1300
 typedef Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) TDRAReal_ptr;
 #endif
-#endif   // end  Intel compilers.....
 
 
-#if defined(RAJA_COMPILER_GNU) 
+#elif defined(RAJA_COMPILER_GNU) 
 //
-// Nothing here for now...
+// Nothing here for now because alignment attribute is not working...
 //
-#endif   // end  GNU compilers.....
 
 
-#if defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC12)
 extern
 #ifdef __cplusplus
 "builtin"
 #endif
 void __alignx(int n, const void* addr);
-#endif   // end  xlc v12 compiler on bgq
 
 
-#if defined(RAJA_COMPILER_CLANG)
+#elif defined(RAJA_COMPILER_CLANG)
 typedef Real_type aligned_real_type __attribute__((aligned (RAJA::DATA_ALIGN)));
 typedef aligned_real_type* __restrict__ TDRAReal_ptr;
-#endif   // end  CLANG compilers.....
+
+
+#else
+#error RAJA compiler is undefined!
+
+#endif
 
 
 #if defined(RAJA_USE_PTR_CLASS)
@@ -132,9 +139,9 @@ public:
       return( (TDRAReal_ptr) dptr)[i];
 #endif
    }
-#endif
 
-#if defined(RAJA_COMPILER_GNU)
+
+#elif defined(RAJA_COMPILER_GNU)
    ///
    Real_type& operator [] (Index_type i)
    {
@@ -144,27 +151,36 @@ public:
       return( (Real_type* __restrict__) dptr)[i];
 #endif
    }
-#endif
 
-#if defined(RAJA_COMPILER_XLC12)
+
+#elif defined(RAJA_COMPILER_XLC12)
    Real_type& operator [] (Index_type i)
    {
       RAJA_ALIGN_DATA(dptr);
       return( (Real_type* __restrict__) dptr)[i];
    }
-#endif
 
-#if defined(RAJA_COMPILER_CLANG)
+
+#elif defined(RAJA_COMPILER_CLANG)
    Real_type& operator [] (Index_type i)
    {
       return( (TDRAReal_ptr) dptr)[i];
    }
+
+
+#else
+#error RAJA compiler macro is undefined!
+
 #endif
 
    ///
-   ///  NOTE: This operator was avoided to force operator[] to be defined.
+   ///  Pointer access operator.
    ///
-   /// operator Real_type*() { return dptr; }
+   operator Real_type*() { return dptr; }
+
+   ///
+   ///  Pointer access operator, consistent with boost shared ptr.
+   ///
    Real_type* get() { return dptr; }
 
    ///
@@ -207,9 +223,13 @@ public:
    }
 
    ///
-   ///  NOTE: This operator was avoided to force operator[] to be defined.
+   ///  Pointer access operator.
    ///
-   /// operator Complex_type*() { return dptr; }
+   operator Complex_type*() { return dptr; }
+
+   ///
+   ///  Pointer access operator, consistent with boost shared ptr.
+   ///
    Complex_type* get() { return dptr; }
 
    ///
@@ -233,21 +253,26 @@ private:
 #if defined(RAJA_USE_BARE_PTR)
 typedef Real_type* Real_ptr;
 typedef Complex_type* Complex_ptr;
-#endif
 
-#if defined(RAJA_USE_RESTRICT_PTR)
+
+#elif defined(RAJA_USE_RESTRICT_PTR)
 typedef Real_type* __restrict__ Real_ptr;
 typedef Complex_type* __restrict__ Complex_ptr;
-#endif
 
-#if defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
+
+#elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
 typedef TDRAReal_ptr Real_ptr;
 typedef Complex_type* __restrict__ Complex_ptr;
-#endif
 
-#if defined(RAJA_USE_PTR_CLASS)
+
+#elif defined(RAJA_USE_PTR_CLASS)
 typedef RestrictAlignRealPtr Real_ptr;
 typedef RestrictComplexPtr Complex_ptr;
+
+
+#else
+#error RAJA pointer type is undefined!
+
 #endif
 
 

@@ -46,23 +46,29 @@
 #include "forall_omp_icc.hxx"
 #include "forall_cilk_icc.hxx"
 
-#endif  // end RAJA_COMPILER_ICC
 
+#elif defined(RAJA_COMPILER_GNU)
 
-#if defined(RAJA_COMPILER_XLC12) 
-
-#include "forall_simd_xlc.hxx"
-#include "forall_omp_xlc.hxx"
-
-#endif  // end RAJA_COMPILER_XLC12
-
-
-#if defined(RAJA_COMPILER_GNU)
 
 #include "forall_simd_gnu.hxx"
 #include "forall_omp_gnu.hxx"
 
-#endif  // end RAJA_COMPILER_GNU
+
+#elif defined(RAJA_COMPILER_XLC12) 
+
+#include "forall_simd_xlc.hxx"
+#include "forall_omp_xlc.hxx"
+
+
+#elif defined(RAJA_COMPILER_CLANG)
+
+#include "forall_simd_clang.hxx"
+
+
+#else
+#error RAJA compiler macro is undefined!
+
+#endif
 
 
 //
