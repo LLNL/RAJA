@@ -1,0 +1,43 @@
+   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int idx) {
+  RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
+  RAJA::forall<node_exec_policy>(*domNodeList, [&] (int gnode) {
+   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int i2) {
+   RAJA::forall<node_exec_policy>(*domNodeList, [&] (int gnode) {
+   RAJA::forall<node_exec_policy>(*domNodeList, [&] (int gnode) {
+   RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int idx) {
+      RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int k) {
+  RAJA::forall<node_exec_policy>(*domain->domNodeList, [&] (int i) {
+   RAJA::forall<node_exec_policy>(*domNodeList, [&] (int i) {
+  RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+  RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
+      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
+      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
+   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int iz) {
+   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+      RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+      RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+    RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
+       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
+       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
+    RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
+      RAJA::forall<range_exec_policy>( int(0), int(length), [&] (int i) {
+   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min, &loc,
+   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min, &loc,

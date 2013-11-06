@@ -1,0 +1,39 @@
+//
+// Compile
+//
+
+rzmerl156{hornung1}32: make serial
+/usr/local/tools/ic-14.0.080/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o luleshRAJA-serial.o luleshRAJA-serial.cxx -I. -I../includes -DPLATFORM_X86_AVX -DCOMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-14.0.080/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../sources/RAJA_HybridIndexSet.o ../sources/RAJA_HybridIndexSet.cxx -I. -I../includes -DPLATFORM_X86_AVX -DCOMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-14.0.080/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../sources/RAJA_RangeIndexSet.o ../sources/RAJA_RangeIndexSet.cxx -I. -I../includes -DPLATFORM_X86_AVX -DCOMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-14.0.080/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../sources/RAJA_UnstructuredIndexSet.o ../sources/RAJA_UnstructuredIndexSet.cxx -I. -I../includes -DPLATFORM_X86_AVX -DCOMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-14.0.080/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel luleshRAJA-serial.o ../sources/RAJA_HybridIndexSet.o ../sources/RAJA_RangeIndexSet.o ../sources/RAJA_UnstructuredIndexSet.o   -o  lulesh-RAJA-serial.exe
+icpc: warning #10237: -lcilkrts linked in dynamically, static library not available
+
+//
+// SEQ_SIMD runs  (original version)
+//
+
+//
+// canonical ordering (single range -- 1): 98% of paper
+//
+rzmerl156{hornung1}42: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+96.41user 21.25system 1:58.00elapsed 99%CPU (0avgtext+0avgdata 248640maxresident)k
+3392inputs+0outputs (7major+12733354minor)pagefaults 0swaps
+
+//
+// tiled -> unstructured tiles -- 2: 99% of paper
+//
+rzmerl156{hornung1}57: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+104.92user 21.88system 2:07.14elapsed 99%CPU (0avgtext+0avgdata 251696maxresident)k
+3392inputs+0outputs (7major+12733545minor)pagefaults 0swaps
+
+//
+// tiled -> range tiles -- 3: 98% of paper
+//
+rzmerl156{hornung1}63: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+96.62user 21.30system 1:58.24elapsed 99%CPU (0avgtext+0avgdata 262896maxresident)k
+3400inputs+0outputs (7major+12734245minor)pagefaults 0swaps
+
+--------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------

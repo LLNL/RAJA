@@ -1,0 +1,230 @@
+
+LULESH RAJA parallel 12x12x12 mesh, 1e-7 dtfixed, 1e-3 stoptime,
+8 threads, 8 Z-axis slabs (i.e., index_order = Tiled_Range)
+
+Fine-grained threading: SEQ (outer), OMP (inner)
+------------------------------------------------
+icpc 14.0.080:
+
+1) 143.48user 26.99system 0:21.43elapsed 795%CPU (0avgtext+0avgdata 16432maxresident)k
+3808inputs+0outputs (10major+5752730minor)pagefaults 0swaps
+
+2) 143.22user 26.87system 0:21.44elapsed 793%CPU (0avgtext+0avgdata 16432maxresident)k
+3808inputs+0outputs (10major+5762982minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 150.47user 26.88system 0:22.46elapsed 789%CPU (0avgtext+0avgdata 16352maxresident)k
+3816inputs+0outputs (10major+5816755minor)pagefaults 0swaps
+
+2) 145.92user 26.55system 0:21.83elapsed 789%CPU (0avgtext+0avgdata 16352maxresident)k
+3816inputs+0outputs (10major+5782252minor)pagefaults 0swaps
+
+##################################################################
+
+Coarse-grained threading: OMP (outer), SIMD (inner)
+---------------------------------------------------
+icpc 14.0.080:
+
+1) 76.50user 12.13system 0:11.23elapsed 789%CPU (0avgtext+0avgdata 16624maxresident)k
+3872inputs+0outputs (10major+3114950minor)pagefaults 0swaps
+
+2) 76.14user 11.97system 0:11.22elapsed 784%CPU (0avgtext+0avgdata 16624maxresident)k
+3872inputs+0outputs (10major+3115236minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 73.93user 11.87system 0:10.84elapsed 791%CPU (0avgtext+0avgdata 16608maxresident)k
+3904inputs+0outputs (10major+3114930minor)pagefaults 0swaps
+
+2) 73.72user 12.11system 0:10.89elapsed 788%CPU (0avgtext+0avgdata 16576maxresident)k
+3904inputs+0outputs (10major+3114660minor)pagefaults 0swaps
+
+=============================================
+=============================================
+
+LULESH RAJA parallel 16x16x16 mesh, 1e-7 dtfixed, 1e-3 stoptime,
+8 threads, 8 Z-axis slabs (i.e., index_order = Tiled_Range)
+
+Fine-grained threading: SEQ (outer), OMP (inner)
+------------------------------------------------
+icpc 14.0.080:
+
+1) 182.92user 30.88system 0:26.84elapsed 796%CPU (0avgtext+0avgdata 25648maxresident)k
+3808inputs+0outputs (10major+6468701minor)pagefaults 0swaps
+
+2) 183.42user 32.75system 0:27.23elapsed 793%CPU (0avgtext+0avgdata 25648maxresident)k
+3808inputs+0outputs (10major+6477894minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 172.10user 31.83system 0:25.63elapsed 795%CPU (0avgtext+0avgdata 25552maxresident)k
+3816inputs+0outputs (10major+6489274minor)pagefaults 0swaps
+
+2) 176.84user 31.38system 0:26.34elapsed 790%CPU (0avgtext+0avgdata 25568maxresident)k
+3816inputs+0outputs (10major+6487322minor)pagefaults 0swaps
+
+##################################################################
+
+Coarse-grained threading: OMP (outer), SIMD (inner)
+---------------------------------------------------
+icpc 14.0.080:
+1) 124.45user 22.10system 0:18.43elapsed 794%CPU (0avgtext+0avgdata 25808maxresident)k
+3864inputs+0outputs (10major+6052047minor)pagefaults 0swaps
+
+2) 125.15user 22.39system 0:18.63elapsed 791%CPU (0avgtext+0avgdata 25808maxresident)k
+3864inputs+0outputs (10major+6052047minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 124.28user 21.74system 0:18.43elapsed 792%CPU (0avgtext+0avgdata 25856maxresident)k
+3896inputs+0outputs (10major+6052046minor)pagefaults 0swaps
+
+2) 124.85user 21.98system 0:18.43elapsed 796%CPU (0avgtext+0avgdata 25984maxresident)k
+3896inputs+0outputs (10major+6052046minor)pagefaults 0swaps
+
+
+=============================================
+=============================================
+
+LULESH RAJA parallel 24x24x24 mesh, 1e-7 dtfixed, 5e-4 stoptime,
+8 threads, 8 Z-axis slabs (i.e., index_order = Tiled_Range)
+
+Fine-grained threading: SEQ (outer), OMP (inner)
+------------------------------------------------
+icpc 14.0.080:
+
+1) 177.75user 33.66system 0:26.64elapsed 793%CPU (0avgtext+0avgdata 63136maxresident)k
+3808inputs+0outputs (10major+10947920minor)pagefaults 0swaps
+
+2) 177.83user 33.92system 0:26.64elapsed 794%CPU (0avgtext+0avgdata 63136maxresident)k
+3808inputs+0outputs (10major+10947931minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 169.67user 30.46system 0:25.28elapsed 791%CPU (0avgtext+0avgdata 63056maxresident)k
+3816inputs+0outputs (10major+10947917minor)pagefaults 0swaps
+
+2) 164.07user 33.39system 0:24.86elapsed 794%CPU (0avgtext+0avgdata 63056maxresident)k
+3816inputs+0outputs (10major+10947950minor)pagefaults 0swaps 
+
+##################################################################
+
+Coarse-grained threading: OMP (outer), SIMD (inner)
+---------------------------------------------------
+icpc 14.0.080:
+
+1) 160.03user 31.35system 0:24.03elapsed 796%CPU (0avgtext+0avgdata 63328maxresident)k
+3864inputs+0outputs (10major+10947666minor)pagefaults 0swaps
+
+2) 159.64user 32.06system 0:24.24elapsed 790%CPU (0avgtext+0avgdata 63328maxresident)k
+3864inputs+0outputs (10major+10947677minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 160.33user 31.31system 0:24.07elapsed 796%CPU (0avgtext+0avgdata 63280maxresident)k
+3896inputs+0outputs (10major+10947662minor)pagefaults 0swaps
+
+2) 158.70user 32.38system 0:24.06elapsed 794%CPU (0avgtext+0avgdata 63280maxresident)k
+3896inputs+0outputs (10major+10947651minor)pagefaults 0swaps
+
+
+=============================================
+=============================================
+
+LULESH RAJA parallel 32x32x32 mesh, 1e-7 dtfixed, 1e-4 stoptime,
+8 threads, 8 Z-axis slabs (i.e., index_order = Tiled_Range)
+
+Fine-grained threading: SEQ (outer), OMP (inner)
+------------------------------------------------
+icpc 14.0.080:
+
+1) 63.94user 13.16system 0:09.83elapsed 783%CPU (0avgtext+0avgdata 135712maxresident)k
+3808inputs+0outputs (10major+5288126minor)pagefaults 0swaps
+
+2) 63.94user 13.48system 0:09.84elapsed 786%CPU (0avgtext+0avgdata 135728maxresident)k
+3808inputs+0outputs (10major+5286809minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 62.06user 12.95system 0:09.63elapsed 778%CPU (0avgtext+0avgdata 135648maxresident)k
+3816inputs+0outputs (10major+5286267minor)pagefaults 0swaps 
+
+2) 63.80user 13.04system 0:09.83elapsed 781%CPU (0avgtext+0avgdata 135648maxresident)k
+3816inputs+0outputs (10major+5287898minor)pagefaults 0swaps
+
+##################################################################
+
+Coarse-grained threading: OMP (outer), SIMD (inner)
+---------------------------------------------------
+icpc 14.0.080:
+
+1) 71.68user 13.50system 0:10.89elapsed 781%CPU (0avgtext+0avgdata 135920maxresident)k
+3864inputs+0outputs (10major+5272373minor)pagefaults 0swaps
+
+2) 71.06user 13.41system 0:10.63elapsed 794%CPU (0avgtext+0avgdata 135920maxresident)k
+3864inputs+0outputs (10major+5272370minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 70.96user 13.39system 0:10.63elapsed 792%CPU (0avgtext+0avgdata 135888maxresident)k
+3896inputs+0outputs (10major+5272364minor)pagefaults 0swaps
+
+2) 71.31user 13.74system 0:10.89elapsed 781%CPU (0avgtext+0avgdata 135888maxresident)k
+3896inputs+0outputs (10major+5272379minor)pagefaults 0swaps
+
+
+=============================================
+=============================================
+
+LULESH RAJA parallel 45x45x45 mesh, 1e-7 dtfixed, 1e-4 stoptime, 
+8 threads, 8 Z-axis slabs (i.e., index_order = Tiled_Range)
+
+Fine-grained threading: SEQ (outer), OMP (inner)
+------------------------------------------------
+icpc 14.0.080:
+
+1) 147.31user 39.64system 0:23.70elapsed 788%CPU (0avgtext+0avgdata 357824maxresident)k
+3808inputs+0outputs (10major+14758614minor)pagefaults 0swaps
+
+2) 146.48user 38.88system 0:23.45elapsed 790%CPU (0avgtext+0avgdata 357840maxresident)k
+3808inputs+0outputs (10major+14758700minor)pagefaults 0swaps
+
+-------------
+icpc 14.0.097:
+
+1) 143.25user 38.80system 0:22.86elapsed 796%CPU (0avgtext+0avgdata 357760maxresident)k
+3816inputs+0outputs (10major+14758728minor)pagefaults 0swaps
+
+2) 144.81user 39.30system 0:23.26elapsed 791%CPU (0avgtext+0avgdata 357760maxresident)k
+3816inputs+0outputs (10major+14758749minor)pagefaults 0swaps
+
+##################################################################
+
+Coarse-grained threading: OMP (outer), SIMD (inner)
+---------------------------------------------------
+icpc 14.0.080:
+
+1) 197.30user 38.50system 0:29.70elapsed 793%CPU (0avgtext+0avgdata 357968maxresident)k
+3864inputs+0outputs (10major+14758240minor)pagefaults 0swaps
+
+2) 197.33user 38.40system 0:29.65elapsed 794%CPU (0avgtext+0avgdata 357968maxresident)k
+3864inputs+0outputs (10major+14758261minor)pagefaults 0swaps
+ 
+-------------
+icpc 14.0.097:
+
+1) 197.15user 38.86system 0:29.70elapsed 794%CPU (0avgtext+0avgdata 357920maxresident)k
+3896inputs+0outputs (10major+14758251minor)pagefaults 0swaps
+
+2) 195.99user 38.16system 0:29.46elapsed 794%CPU (0avgtext+0avgdata 357952maxresident)k
+3896inputs+0outputs (10major+14758249minor)pagefaults 0swaps
+
