@@ -27,6 +27,7 @@
 #include "config.hxx"
 
 #include<complex>
+#include<algorithm>
 
 namespace RAJA {
 
@@ -54,7 +55,7 @@ typedef float  Real_type;
 #else
 #error RAJA Real_type is undefined!
 
-#endif
+#endif  
 
 ///
 typedef std::complex<Real_type> Complex_type;
@@ -74,6 +75,8 @@ typedef std::complex<Real_type> Complex_type;
 //
 #if __ICC >= 1300
 typedef Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) TDRAReal_ptr;
+
+typedef const Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) TDRAReal_const_ptr;
 #endif
 
 
@@ -95,6 +98,7 @@ void __alignx(int n, const void* addr);
 typedef Real_type aligned_real_type __attribute__((aligned (RAJA::DATA_ALIGN)));
 typedef aligned_real_type* __restrict__ TDRAReal_ptr;
 
+typedef const aligned_real_type* __restrict__ TDRAReal_const_ptr;
 
 #else
 #error RAJA compiler is undefined!
@@ -106,7 +110,105 @@ typedef aligned_real_type* __restrict__ TDRAReal_ptr;
 /*!
  ******************************************************************************
  *
- * \brief Class representing a restricted aligned Real_type pointer.
+ * \brief Class representing a restricted aligned Real_type const pointer.
+ *
+ ******************************************************************************
+ */
+class RestrictAlignRealConstPtr
+{
+public:
+
+   ///
+   /// Ctors and assignment op.
+   ///
+
+   RestrictAlignRealConstPtr() : dptr(0) { ; }
+
+   RestrictAlignRealConstPtr(const Real_type* d) : dptr(d) { ; }
+
+   RestrictAlignRealConstPtr& operator=(const Real_type* d) { 
+      RestrictAlignRealConstPtr copy(d);
+      std::swap(dptr, copy.dptr);
+      return *this; 
+   }
+
+   ///
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
+   ///
+
+   ///
+   ///  Implicit conversion operator to bare const pointer.
+   ///
+   operator const Real_type*() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to bare const pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Real_type* get() const { return dptr; }
+
+   ///
+   /// Compiler-specific bracket operators.
+   ///
+
+#if defined(RAJA_COMPILER_ICC)
+   ///
+   const Real_type& operator [] (Index_type i) const
+   {
+#if __ICC < 1300 // use alignment intrinsic
+      RAJA_ALIGN_DATA(dptr);
+      return( (const Real_type* __restrict__) dptr)[i];
+#else // use alignment attribute
+      return( (TDRAReal_const_ptr) dptr)[i];
+#endif
+   }
+
+
+#elif defined(RAJA_COMPILER_GNU)
+   ///
+   const Real_type& operator [] (Index_type i) const
+   {
+#if 1 // NOTE: alignment instrinsic not available for older GNU compilers
+      return( (const Real_type* __restrict__) RAJA_ALIGN_DATA(dptr) )[i];
+#else
+      return( (const Real_type* __restrict__) dptr)[i];
+#endif
+   }
+
+
+#elif defined(RAJA_COMPILER_XLC12)
+   const Real_type& operator [] (Index_type i) const
+   {
+      RAJA_ALIGN_DATA(dptr);
+      return( (const Real_type* __restrict__) dptr)[i];
+   }
+
+
+#elif defined(RAJA_COMPILER_CLANG)
+   const Real_type& operator [] (Index_type i) const
+   {
+      return( (TDRAReal_const_ptr) dptr)[i];
+   }
+
+
+#else
+#error RAJA compiler macro is undefined!
+
+#endif
+
+   ///
+   /// + operator for pointer arithmetic.
+   ///
+   const Real_type* operator+ (Index_type i) const { return dptr+i; }
+
+private:
+   const Real_type* dptr;
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Class representing a restricted aligned Real_type (non-const) pointer.
  *
  ******************************************************************************
  */
@@ -115,21 +217,42 @@ class RestrictAlignRealPtr
 public:
 
    ///
-   /// Default ctor.
+   /// Ctors and assignment op.
    ///
+
    RestrictAlignRealPtr() : dptr(0) { ; }
 
-   ///
-   /// Copy ctor.
-   ///
    RestrictAlignRealPtr(Real_type* d) : dptr(d) { ; }
 
+   RestrictAlignRealPtr& operator=(Real_type* d) { RestrictAlignRealPtr copy(d);
+                                                   std::swap(dptr, copy.dptr);
+                                                   return *this; }
+
    ///
-   /// NOTE: Using compiler-generated copy ctor and copy assignment operator.
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
    ///
 
    ///
-   /// Compiler-specific bracket operator.
+   ///  Implicit conversion operator to bare pointer.
+   ///
+   operator Real_type*() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   Real_type* get() { return dptr; }
+
+   ///
+   ///  Operator that enables implicit conversion from RestrictAlignRealPtr to 
+   ///  RestrictAlignRealConstPtr.
+   /// 
+   operator RestrictAlignRealConstPtr () 
+      { return RestrictAlignRealConstPtr(dptr); }
+
+
+   ///
+   /// Compiler-specific bracket operators.
    ///
 
 #if defined(RAJA_COMPILER_ICC)
@@ -178,17 +301,6 @@ public:
 #endif
 
    ///
-   ///  Implicit conversion operator to bare operator.
-   ///
-   operator Real_type*() { return dptr; }
-
-   ///
-   ///  "Explicit conversion operator" to bare operator,
-   ///  consistent with boost shared ptr.
-   ///
-   Real_type* get() { return dptr; }
-
-   ///
    /// + operator for pointer arithmetic.
    ///
    Real_type* operator+ (Index_type i) { return dptr+i; }
@@ -201,7 +313,64 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief Class representing a restricted Complex_type pointer.
+ * \brief Class representing a restricted Complex_type const pointer.
+ *
+ ******************************************************************************
+ */
+class RestrictComplexConstPtr
+{
+public:
+
+   ///
+   /// Ctors and assignment op.
+   ///
+
+   RestrictComplexConstPtr() : dptr(0) { ; }
+
+   RestrictComplexConstPtr(const Complex_type* d) : dptr(d) { ; }
+
+   RestrictComplexConstPtr& operator=(const Complex_type* d) { 
+      RestrictComplexConstPtr copy(d);
+      std::swap(dptr, copy.dptr);
+      return *this; 
+   }
+
+   ///
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
+   ///
+
+   ///
+   ///  Implicit conversion operator to bare const pointer.
+   ///
+   operator const Complex_type*() const { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to bare const pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Complex_type* get() const { return dptr; }
+
+   ///
+   ///  Bracket operator.
+   ///
+   const Complex_type& operator [] (Index_type i) const
+   {
+      return( (const Complex_type* __restrict__) dptr)[i];
+   }
+
+   ///
+   /// + operator for pointer arithmetic.
+   ///
+   const Complex_type* operator+ (Index_type i) const { return dptr+i; }
+
+private:
+   const Complex_type* dptr;
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Class representing a restricted Complex_type (non-const) pointer.
  *
  ******************************************************************************
  */
@@ -210,37 +379,46 @@ class RestrictComplexPtr
 public:
 
    ///
-   /// Default ctor.
+   /// Ctors and assignment op.
    ///
+
    RestrictComplexPtr() : dptr(0) { ; }
 
-   ///
-   /// Copy ctor.
-   ///
    RestrictComplexPtr(Complex_type* d) : dptr(d) { ; }
 
+   RestrictComplexPtr& operator=(Complex_type* d) { RestrictComplexPtr copy(d);
+                                                    std::swap(dptr, copy.dptr);
+                                                    return *this; }
+
    ///
-   /// NOTE: Using compiler-generated copy ctor and copy assignment operator.
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
    ///
 
    ///
-   /// Bracket operator.
+   ///  Implicit conversion operator to bare pointer.
+   ///
+   operator Complex_type*() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   Complex_type* get() { return dptr; }
+
+   ///
+   ///  Operator that enables implicit conversion from RestrictComplexPtr to 
+   ///  RestrictComplexConstPtr.
+   /// 
+   operator RestrictComplexConstPtr () 
+      { return RestrictComplexConstPtr(dptr); }
+
+   ///
+   ///  Bracket operator.
    ///
    Complex_type& operator [] (Index_type i)
    {
       return( (Complex_type* __restrict__) dptr)[i];
    }
-
-   ///
-   ///  Implicit conversion operator to bare operator.
-   ///
-   operator Complex_type*() { return dptr; }
-
-   ///
-   ///  "Explicit conversion operator" to bare operator,
-   ///  consistent with boost shared ptr.
-   ///
-   Complex_type* get() { return dptr; }
 
    ///
    /// + operator for pointer arithmetic.
