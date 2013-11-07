@@ -162,6 +162,7 @@ typedef                            Segment_Exec  range_exec_policy;
 typedef RAJA::Index_type  Index_t ; /* array subscript and loop index */
 typedef RAJA::Real_type   Real_t ;  /* floating point representation */
 typedef RAJA::Real_ptr    Real_p;
+typedef RAJA::const_Real_ptr   const_Real_p;
 typedef RAJA::Index_type* Index_p;
 
 /****************************************************/
@@ -338,6 +339,14 @@ T *Allocate(size_t size)
    return retVal ;
 }
 
+void Release(Real_p ptr)
+{
+   if (ptr != NULL) {
+      free(ptr) ;
+      ptr = NULL ;
+   }
+}
+
 template <typename T>
 void Release(T **ptr)
 {
@@ -449,9 +458,9 @@ void InitStressTermsForElems(Real_p p, Real_p q,
 }
 
 RAJA_STORAGE
-void CalcElemShapeFunctionDerivatives( Real_p const x,
-                                       Real_p const y,
-                                       Real_p const z,
+void CalcElemShapeFunctionDerivatives( const_Real_p x,
+                                       const_Real_p y,
+                                       const_Real_p z,
                                        Real_t b[][8],
                                        Real_t* const volume
                                      )
@@ -579,9 +588,9 @@ void CalcElemNodeNormals(
                          Real_p pfx,
                          Real_p pfy,
                          Real_p pfz,
-                         const Real_p x,
-                         const Real_p y,
-                         const Real_p z
+                         const_Real_p x,
+                         const_Real_p y,
+                         const_Real_p z
                         )
 {
    for (Index_t i = 0 ; i < 8 ; ++i) {
@@ -815,9 +824,9 @@ void CalcElemVolumeDerivative(
                               Real_p dvdx,
                               Real_p dvdy,
                               Real_p dvdz,
-                              const Real_p x,
-                              const Real_p y,
-                              const Real_p z
+                              const_Real_p x,
+                              const_Real_p y,
+                              const_Real_p z
                              )
 {
    VoluDer(x[1], x[2], x[3], x[4], x[5], x[7],
@@ -1286,12 +1295,12 @@ void CalcHourglassControlForElems(Domain *domain,
                                     hgcoef, domain->domElemList) ;
    }
 
-   Release(&z8n) ;
-   Release(&y8n) ;
-   Release(&x8n) ;
-   Release(&dvdz) ;
-   Release(&dvdy) ;
-   Release(&dvdx) ;
+   Release(z8n) ;
+   Release(y8n) ;
+   Release(x8n) ;
+   Release(dvdz) ;
+   Release(dvdy) ;
+   Release(dvdx) ;
 
    return ;
 }
@@ -1328,10 +1337,10 @@ void CalcVolumeForceForElems(Domain *domain)
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
-      Release(&determ) ;
-      Release(&sigzz) ;
-      Release(&sigyy) ;
-      Release(&sigxx) ;
+      Release(determ) ;
+      Release(sigzz) ;
+      Release(sigyy) ;
+      Release(sigxx) ;
    }
 }
 
@@ -1537,7 +1546,7 @@ Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
 
 RAJA_STORAGE
 Real_t CalcElemVolume(
-                       const Real_p x, const Real_p y, const Real_p z
+                       const_Real_p x, const_Real_p y, const_Real_p z
                      )
 {
 return CalcElemVolume( x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
@@ -1787,9 +1796,9 @@ void CalcLagrangeElements(Domain *domain)
        }
       ) ;
 
-      Release(&domain->dzz) ;
-      Release(&domain->dyy) ;
-      Release(&domain->dxx) ;
+      Release(domain->dzz) ;
+      Release(domain->dyy) ;
+      Release(domain->dxx) ;
    }
 }
 
@@ -2164,13 +2173,13 @@ void CalcQForElems(Domain *domain)
 
       /* release domain length arrays */
 
-      Release(&domain->delx_zeta) ;
-      Release(&domain->delx_eta) ;
-      Release(&domain->delx_xi) ;
+      Release(domain->delx_zeta) ;
+      Release(domain->delx_eta) ;
+      Release(domain->delx_xi) ;
 
-      Release(&domain->delv_zeta) ;
-      Release(&domain->delv_eta) ;
-      Release(&domain->delv_xi) ;
+      Release(domain->delv_zeta) ;
+      Release(domain->delv_eta) ;
+      Release(domain->delv_xi) ;
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
@@ -2337,7 +2346,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
-   Release(&pHalfStep) ;
+   Release(pHalfStep) ;
 
    return ;
 }
@@ -2449,15 +2458,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
              vnewc, rho0, e_new, p_new,
              pbvc, bvc, ss4o3) ;
 
-   Release(&pbvc) ;
-   Release(&bvc) ;
-   Release(&q_new) ;
-   Release(&e_new) ;
-   Release(&p_new) ;
-   Release(&work) ;
-   Release(&compHalfStep) ;
-   Release(&compression) ;
-   Release(&p_old) ;
+   Release(pbvc) ;
+   Release(bvc) ;
+   Release(q_new) ;
+   Release(e_new) ;
+   Release(p_new) ;
+   Release(work) ;
+   Release(compHalfStep) ;
+   Release(compression) ;
+   Release(p_old) ;
 }
 
 RAJA_STORAGE
@@ -2517,7 +2526,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     EvalEOSForElems(domain, vnewc, numElem);
 
-    Release(&vnewc) ;
+    Release(vnewc) ;
 
   }
 }
@@ -2557,7 +2566,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
   UpdateVolumesForElems(domain->vnew, domain->v,
                         domain->v_cut, numElem) ;
 
-  Release(&domain->vnew) ;
+  Release(domain->vnew) ;
 }
 
 RAJA_STORAGE
