@@ -17,6 +17,7 @@
 ## Exactly one must be defined!!!
 ##
 RAJA_FP_TYPE	= -DRAJA_USE_DOUBLE
+#RAJA_FP_TYPE	= -DRAJA_USE_FLOAT
 
 ##
 ## Available options for RAJA floating point pointer types are:
@@ -28,14 +29,18 @@ RAJA_FP_TYPE	= -DRAJA_USE_DOUBLE
 ##
 ## Exactly one must be defined!!!
 ##
-RAJA_FPPTR_TYPE	= -DRAJA_USE_RESTRICT_ALIGNED_PTR
+#RAJA_FPPTR_TYPE	= -DRAJA_USE_BARE_PTR
+RAJA_FPPTR_TYPE	= -DRAJA_USE_RESTRICT_PTR
+#RAJA_FPPTR_TYPE	= -DRAJA_USE_RESTRICT_ALIGNED_PTR
+#RAJA_FPPTR_TYPE	= -DRAJA_USE_PTR_CLASS
 
 ##
 ## To turn on RAJA fault tolerance functionality, add the following:
 ##
 ## -DRAJA_USE_FT
 ##
-RAJA_FT_OPT	= 
+#RAJA_FT_OPT	= -DRAJA_USE_FT
+RAJA_FT_OPT	=
 
 
 RAJA_RULES	= $(RAJA_FP_TYPE) $(RAJA_FPPTR_TYPE) $(RAJA_FT_OPT)
