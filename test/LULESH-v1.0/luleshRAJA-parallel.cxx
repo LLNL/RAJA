@@ -84,12 +84,12 @@ const bool show_run_progress = true;
 // Set stop time and time increment for run.
 //
 // The absolute value of lulesh_time_step sets the first time step increment.
-//   - If < 0, the CFL condition will be used to determine subsequent time 
+//   - If < 0, the CFL condition will be used to determine subsequent time
 //     step sizes (with some upper bound on the amount the timestep can grow).
 //   - If > 0, the time step will be fixed for the entire run.
 //
-const double lulesh_stop_time = 1.0e-2; 
-const double lulesh_time_step = -1.0e-7; 
+const double lulesh_stop_time = 1.0e-2;
+const double lulesh_time_step = -1.0e-7;
 
 //
 // Set mesh size (physical domain size is fixed).
@@ -121,7 +121,6 @@ const int lulesh_xtile = 2;
 const int lulesh_ytile = 2;
 const int lulesh_ztile = 2;
 
-
 //
 //   RAJA ISet type used in loop traversals.
 //
@@ -151,8 +150,8 @@ typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 
 //typedef RAJA::seq_exec              Segment_Exec;
 //typedef RAJA::simd_exec             Segment_Exec;
-//typedef RAJA::omp_parallel_for_exec Segment_Exec;
-typedef RAJA::cilk_for_exec         Segment_Exec;
+typedef RAJA::omp_parallel_for_exec Segment_Exec;
+//typedef RAJA::cilk_for_exec         Segment_Exec;
 
 typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
 typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
@@ -167,6 +166,7 @@ typedef                            Segment_Exec  range_exec_policy;
 typedef RAJA::Index_type  Index_t ; /* array subscript and loop index */
 typedef RAJA::Real_type   Real_t ;  /* floating point representation */
 typedef RAJA::Real_ptr    Real_p;
+typedef RAJA::const_Real_ptr    const_Real_p;
 typedef RAJA::Index_type* Index_p;
 
 /****************************************************/
@@ -361,6 +361,14 @@ T *Allocate(size_t size)
    return retVal ;
 }
 
+void Release(Real_p ptr)
+{
+   if (ptr != NULL) {
+      free(ptr) ;
+      ptr = NULL ;
+   }
+}
+
 template <typename T>
 void Release(T **ptr)
 {
@@ -472,9 +480,9 @@ void InitStressTermsForElems(Real_p p, Real_p q,
 }
 
 RAJA_STORAGE
-void CalcElemShapeFunctionDerivatives( Real_p const x,
-                                       Real_p const y,
-                                       Real_p const z,
+void CalcElemShapeFunctionDerivatives( const_Real_p x,
+                                       const_Real_p y,
+                                       const_Real_p z,
                                        Real_t b[][8],
                                        Real_t* const volume
                                      )
@@ -602,9 +610,9 @@ void CalcElemNodeNormals(
                          Real_p pfx,
                          Real_p pfy,
                          Real_p pfz,
-                         const Real_p x,
-                         const Real_p y,
-                         const Real_p z
+                         const_Real_p x,
+                         const_Real_p y,
+                         const_Real_p z
                         )
 {
    for (Index_t i = 0 ; i < 8 ; ++i) {
@@ -769,9 +777,9 @@ void IntegrateStressForElems( Index_t numElem, Index_p nodelist,
    }
   ) ;
 
-  Release(&fz_elem) ;
-  Release(&fy_elem) ;
-  Release(&fx_elem) ;
+  Release(fz_elem) ;
+  Release(fy_elem) ;
+  Release(fx_elem) ;
 }
 
 RAJA_STORAGE
@@ -855,9 +863,9 @@ void CalcElemVolumeDerivative(
                               Real_p dvdx,
                               Real_p dvdy,
                               Real_p dvdz,
-                              const Real_p x,
-                              const Real_p y,
-                              const Real_p z
+                              const_Real_p x,
+                              const_Real_p y,
+                              const_Real_p z
                              )
 {
    VoluDer(x[1], x[2], x[3], x[4], x[5], x[7],
@@ -1273,13 +1281,13 @@ void CalcFBHourglassForceForElems( Index_t numElem, Index_t numNode,
     }
    ) ;
 
-   Release(&fz_tmp) ;
-   Release(&fy_tmp) ;
-   Release(&fx_tmp) ;
+   Release(fz_tmp) ;
+   Release(fy_tmp) ;
+   Release(fx_tmp) ;
 
-   Release(&fz_elem) ;
-   Release(&fy_elem) ;
-   Release(&fx_elem) ;
+   Release(fz_elem) ;
+   Release(fy_elem) ;
+   Release(fx_elem) ;
 }
 
 RAJA_STORAGE
@@ -1327,12 +1335,12 @@ void CalcHourglassControlForElems(Domain *domain,
                                     domain->domElemList, domain->domNodeList) ;
    }
 
-   Release(&z8n) ;
-   Release(&y8n) ;
-   Release(&x8n) ;
-   Release(&dvdz) ;
-   Release(&dvdy) ;
-   Release(&dvdx) ;
+   Release(z8n) ;
+   Release(y8n) ;
+   Release(x8n) ;
+   Release(dvdz) ;
+   Release(dvdy) ;
+   Release(dvdx) ;
 
    return ;
 }
@@ -1372,10 +1380,10 @@ void CalcVolumeForceForElems(Domain *domain)
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
-      Release(&determ) ;
-      Release(&sigzz) ;
-      Release(&sigyy) ;
-      Release(&sigxx) ;
+      Release(determ) ;
+      Release(sigzz) ;
+      Release(sigyy) ;
+      Release(sigxx) ;
    }
 }
 
@@ -1463,9 +1471,9 @@ void CalcVelocityForNodes(Index_t numNode, Real_p xd,  Real_p yd,  Real_p zd,
     }
    ) ;
 
-   Release(&zd_tmp) ;
-   Release(&yd_tmp) ;
-   Release(&xd_tmp) ;
+   Release(zd_tmp) ;
+   Release(yd_tmp) ;
+   Release(xd_tmp) ;
 }
 
 RAJA_STORAGE
@@ -1492,9 +1500,9 @@ void CalcPositionForNodes(Index_t numNode, Real_p x,  Real_p y,  Real_p z,
     }
    ) ;
 
-   Release(&z_tmp) ;
-   Release(&y_tmp) ;
-   Release(&x_tmp) ;
+   Release(z_tmp) ;
+   Release(y_tmp) ;
+   Release(x_tmp) ;
 }
 
 RAJA_STORAGE
@@ -1616,7 +1624,7 @@ Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
 
 RAJA_STORAGE
 Real_t CalcElemVolume(
-                       const Real_p x, const Real_p y, const Real_p z
+                       const_Real_p x, const_Real_p y, const_Real_p z
                      )
 {
 return CalcElemVolume( x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
@@ -1877,13 +1885,13 @@ void CalcLagrangeElements(Domain *domain)
        }
       ) ;
 
-      Release(&domain->dzz) ;
-      Release(&domain->dyy) ;
-      Release(&domain->dxx) ;
+      Release(domain->dzz) ;
+      Release(domain->dyy) ;
+      Release(domain->dxx) ;
 
-      Release(&dzz_tmp) ;
-      Release(&dyy_tmp) ;
-      Release(&dxx_tmp) ;
+      Release(dzz_tmp) ;
+      Release(dyy_tmp) ;
+      Release(dxx_tmp) ;
    }
 }
 
@@ -2258,13 +2266,13 @@ void CalcQForElems(Domain *domain)
 
       /* release domain length arrays */
 
-      Release(&domain->delx_zeta) ;
-      Release(&domain->delx_eta) ;
-      Release(&domain->delx_xi) ;
+      Release(domain->delx_zeta) ;
+      Release(domain->delx_eta) ;
+      Release(domain->delx_xi) ;
 
-      Release(&domain->delv_zeta) ;
-      Release(&domain->delv_eta) ;
-      Release(&domain->delv_xi) ;
+      Release(domain->delv_zeta) ;
+      Release(domain->delv_eta) ;
+      Release(domain->delv_xi) ;
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
@@ -2444,8 +2452,8 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
-   Release(&e_new_tmp) ;
-   Release(&pHalfStep) ;
+   Release(e_new_tmp) ;
+   Release(pHalfStep) ;
 
    return ;
 }
@@ -2557,15 +2565,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
              vnewc, rho0, e_new, p_new,
              pbvc, bvc, ss4o3) ;
 
-   Release(&pbvc) ;
-   Release(&bvc) ;
-   Release(&q_new) ;
-   Release(&e_new) ;
-   Release(&p_new) ;
-   Release(&work) ;
-   Release(&compHalfStep) ;
-   Release(&compression) ;
-   Release(&p_old) ;
+   Release(pbvc) ;
+   Release(bvc) ;
+   Release(q_new) ;
+   Release(e_new) ;
+   Release(p_new) ;
+   Release(work) ;
+   Release(compHalfStep) ;
+   Release(compression) ;
+   Release(p_old) ;
 }
 
 RAJA_STORAGE
@@ -2627,7 +2635,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     EvalEOSForElems(domain, vnewc, numElem);
 
-    Release(&vnewc) ;
+    Release(vnewc) ;
 
   }
 }
@@ -2667,7 +2675,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
   UpdateVolumesForElems(domain->vnew, domain->v,
                         domain->v_cut, numElem) ;
 
-  Release(&domain->vnew) ;
+  Release(domain->vnew) ;
 }
 
 RAJA_STORAGE
