@@ -76,7 +76,7 @@ typedef std::complex<Real_type> Complex_type;
 #if __ICC >= 1300
 typedef Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) TDRAReal_ptr;
 
-typedef const Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) TDRAReal_const_ptr;
+typedef const Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN))) const_TDRAReal_ptr;
 #endif
 
 
@@ -98,7 +98,7 @@ void __alignx(int n, const void* addr);
 typedef Real_type aligned_real_type __attribute__((aligned (RAJA::DATA_ALIGN)));
 typedef aligned_real_type* __restrict__ TDRAReal_ptr;
 
-typedef const aligned_real_type* __restrict__ TDRAReal_const_ptr;
+typedef const aligned_real_type* __restrict__ const_TDRAReal_ptr;
 
 #else
 #error RAJA compiler is undefined!
@@ -114,7 +114,7 @@ typedef const aligned_real_type* __restrict__ TDRAReal_const_ptr;
  *
  ******************************************************************************
  */
-class RestrictAlignRealConstPtr
+class ConstRestrictAlignRealPtr
 {
 public:
 
@@ -122,12 +122,12 @@ public:
    /// Ctors and assignment op.
    ///
 
-   RestrictAlignRealConstPtr() : dptr(0) { ; }
+   ConstRestrictAlignRealPtr() : dptr(0) { ; }
 
-   RestrictAlignRealConstPtr(const Real_type* d) : dptr(d) { ; }
+   ConstRestrictAlignRealPtr(const Real_type* d) : dptr(d) { ; }
 
-   RestrictAlignRealConstPtr& operator=(const Real_type* d) { 
-      RestrictAlignRealConstPtr copy(d);
+   ConstRestrictAlignRealPtr& operator=(const Real_type* d) { 
+      ConstRestrictAlignRealPtr copy(d);
       std::swap(dptr, copy.dptr);
       return *this; 
    }
@@ -159,7 +159,7 @@ public:
       RAJA_ALIGN_DATA(dptr);
       return( (const Real_type* __restrict__) dptr)[i];
 #else // use alignment attribute
-      return( (TDRAReal_const_ptr) dptr)[i];
+      return( (const_TDRAReal_ptr) dptr)[i];
 #endif
    }
 
@@ -187,7 +187,7 @@ public:
 #elif defined(RAJA_COMPILER_CLANG)
    const Real_type& operator [] (Index_type i) const
    {
-      return( (TDRAReal_const_ptr) dptr)[i];
+      return( (const_TDRAReal_ptr) dptr)[i];
    }
 
 
@@ -247,8 +247,8 @@ public:
    ///  Operator that enables implicit conversion from RestrictAlignRealPtr to 
    ///  RestrictAlignRealConstPtr.
    /// 
-   operator RestrictAlignRealConstPtr () 
-      { return RestrictAlignRealConstPtr(dptr); }
+   operator ConstRestrictAlignRealPtr () 
+      { return ConstRestrictAlignRealPtr(dptr); }
 
 
    ///
@@ -317,7 +317,7 @@ private:
  *
  ******************************************************************************
  */
-class RestrictComplexConstPtr
+class ConstRestrictComplexPtr
 {
 public:
 
@@ -325,12 +325,12 @@ public:
    /// Ctors and assignment op.
    ///
 
-   RestrictComplexConstPtr() : dptr(0) { ; }
+   ConstRestrictComplexPtr() : dptr(0) { ; }
 
-   RestrictComplexConstPtr(const Complex_type* d) : dptr(d) { ; }
+   ConstRestrictComplexPtr(const Complex_type* d) : dptr(d) { ; }
 
-   RestrictComplexConstPtr& operator=(const Complex_type* d) { 
-      RestrictComplexConstPtr copy(d);
+   ConstRestrictComplexPtr& operator=(const Complex_type* d) { 
+      ConstRestrictComplexPtr copy(d);
       std::swap(dptr, copy.dptr);
       return *this; 
    }
@@ -409,8 +409,8 @@ public:
    ///  Operator that enables implicit conversion from RestrictComplexPtr to 
    ///  RestrictComplexConstPtr.
    /// 
-   operator RestrictComplexConstPtr () 
-      { return RestrictComplexConstPtr(dptr); }
+   operator ConstRestrictComplexPtr () 
+      { return ConstRestrictComplexPtr(dptr); }
 
    ///
    ///  Bracket operator.
@@ -434,28 +434,36 @@ private:
 /*
  ******************************************************************************
  *
- * Finally, we define data pointer types based on definitions above.
+ * Finally, we define data pointer types based on definitions above and
+ * -D value given at compile time.
  *
  ******************************************************************************
  */
 #if defined(RAJA_USE_BARE_PTR)
 typedef Real_type* Real_ptr;
+typedef const Real_type* const_Real_ptr;
 typedef Complex_type* Complex_ptr;
+typedef const Complex_type* const_Complex_ptr;
 
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
 typedef Real_type* __restrict__ Real_ptr;
+typedef const Real_type* __restrict__ const_Real_ptr;
 typedef Complex_type* __restrict__ Complex_ptr;
+typedef const Complex_type* __restrict__ const_Complex_ptr;
 
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
 typedef TDRAReal_ptr Real_ptr;
-typedef Complex_type* __restrict__ Complex_ptr;
+typedef const_TDRAReal_ptr const_Real_ptr;
+typedef const Complex_type* __restrict__ const_Complex_ptr;
 
 
 #elif defined(RAJA_USE_PTR_CLASS)
 typedef RestrictAlignRealPtr Real_ptr;
+typedef ConstRestrictAlignRealPtr const_Real_ptr;
 typedef RestrictComplexPtr Complex_ptr;
+typedef ConstRestrictComplexPtr const_Complex_ptr;
 
 
 #else
