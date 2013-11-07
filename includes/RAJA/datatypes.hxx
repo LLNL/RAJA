@@ -233,15 +233,26 @@ public:
    ///
 
    ///
-   ///  Implicit conversion operator to bare pointer.
+   ///  Implicit conversion operator to (non-const) bare pointer.
    ///
    operator Real_type*() { return dptr; }
 
    ///
-   ///  "Explicit conversion operator" to bare pointer,
+   ///  Implicit conversion operator to const bare pointer.
+   ///
+   operator const Real_type*() const { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to (non-const) bare pointer,
    ///  consistent with boost shared ptr.
    ///
    Real_type* get() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to const bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Real_type* get() const { return dptr; }
 
    ///
    ///  Operator that enables implicit conversion from RestrictAlignRealPtr to 
@@ -267,6 +278,17 @@ public:
 #endif
    }
 
+   ///
+   const Real_type& operator [] (Index_type i) const
+   {
+#if __ICC < 1300 // use alignment intrinsic
+      RAJA_ALIGN_DATA(dptr);
+      return( (Real_type* __restrict__) dptr)[i];
+#else // use alignment attribute
+      return( (TDRAReal_ptr) dptr)[i];
+#endif
+   }
+
 
 #elif defined(RAJA_COMPILER_GNU)
    ///
@@ -279,9 +301,27 @@ public:
 #endif
    }
 
+   ///
+   const Real_type& operator [] (Index_type i) const
+   {
+#if 1 // NOTE: alignment instrinsic not available for older GNU compilers
+      return( (Real_type* __restrict__) RAJA_ALIGN_DATA(dptr) )[i];
+#else
+      return( (Real_type* __restrict__) dptr)[i];
+#endif
+   }
+
 
 #elif defined(RAJA_COMPILER_XLC12)
+   ///
    Real_type& operator [] (Index_type i)
+   {
+      RAJA_ALIGN_DATA(dptr);
+      return( (Real_type* __restrict__) dptr)[i];
+   }
+
+   ///
+   const Real_type& operator [] (Index_type i) const
    {
       RAJA_ALIGN_DATA(dptr);
       return( (Real_type* __restrict__) dptr)[i];
@@ -289,7 +329,14 @@ public:
 
 
 #elif defined(RAJA_COMPILER_CLANG)
+   ///
    Real_type& operator [] (Index_type i)
+   {
+      return( (TDRAReal_ptr) dptr)[i];
+   }
+
+   ///
+   const Real_type& operator [] (Index_type i) const
    {
       return( (TDRAReal_ptr) dptr)[i];
    }
@@ -301,9 +348,14 @@ public:
 #endif
 
    ///
-   /// + operator for pointer arithmetic.
+   /// + operator for (non-const) pointer arithmetic.
    ///
    Real_type* operator+ (Index_type i) { return dptr+i; }
+
+   ///
+   /// + operator for const pointer arithmetic.
+   ///
+   const Real_type* operator+ (Index_type i) const { return dptr+i; }
 
 private:
    Real_type* dptr;
@@ -395,15 +447,26 @@ public:
    ///
 
    ///
-   ///  Implicit conversion operator to bare pointer.
+   ///  Implicit conversion operator to (non-const) bare pointer.
    ///
    operator Complex_type*() { return dptr; }
 
    ///
-   ///  "Explicit conversion operator" to bare pointer,
+   ///  Implicit conversion operator to const bare pointer.
+   ///
+   operator const Complex_type*() const { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to (non-const) bare pointer,
    ///  consistent with boost shared ptr.
    ///
    Complex_type* get() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to const bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Complex_type* get() const { return dptr; }
 
    ///
    ///  Operator that enables implicit conversion from RestrictComplexPtr to 
@@ -413,7 +476,7 @@ public:
       { return ConstRestrictComplexPtr(dptr); }
 
    ///
-   ///  Bracket operator.
+   ///  (Non-const) bracket operator.
    ///
    Complex_type& operator [] (Index_type i)
    {
@@ -421,9 +484,22 @@ public:
    }
 
    ///
-   /// + operator for pointer arithmetic.
+   ///  Const bracket operator.
+   ///
+   const Complex_type& operator [] (Index_type i) const
+   {
+      return( (Complex_type* __restrict__) dptr)[i];
+   }
+
+   ///
+   /// + operator for (non-const) pointer arithmetic.
    ///
    Complex_type* operator+ (Index_type i) { return dptr+i; }
+
+   ///
+   /// + operator for const pointer arithmetic.
+   ///
+   const Complex_type* operator+ (Index_type i) const { return dptr+i; }
 
 private:
    Complex_type* dptr;
