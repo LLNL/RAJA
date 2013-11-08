@@ -27,8 +27,6 @@
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
-#include <cilk/reducer_min.h>
-#include <cilk/reducer_max.h>
 
 
 namespace RAJA {
@@ -96,21 +94,31 @@ void forall_minloc(cilk_for_exec,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  min_tmp = *min;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models 
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_min_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  min_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, &min_tmp, &loc_tmp );
-      reduction.calc_min( ii, min_tmp );
+   for ( int i = 0; i < nworkers; ++i ) {
+       min_tmp[i] = *min ;
+       loc_tmp[i] = *loc ;
    }
 
-   if ( reduction.get_value() < *min ) {
-      *min = reduction.get_value() ;
-      *loc = reduction.get_index() ;
-   } 
+   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, &min_tmp[__cilkrts_get_worker_number()], 
+                     &loc_tmp[__cilkrts_get_worker_number()] );
+   }
+
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
+   }
+
+   *min = min_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -149,21 +157,31 @@ void forall_maxloc(cilk_for_exec,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  max_tmp = *max;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_max_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  max_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       max_tmp[i] = *max ;
+       loc_tmp[i] = *loc ;
+   }
 
    cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, &max_tmp, &loc_tmp );
-      reduction.calc_max( ii, max_tmp );
+      loop_body( ii, &max_tmp[__cilkrts_get_worker_number()],
+                     &loc_tmp[__cilkrts_get_worker_number()] );
+   }  
+
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( max_tmp[i] > max_tmp[0] ) {
+         max_tmp[0] = max_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
 
-   if ( reduction.get_value() > *max ) {
-      *max = reduction.get_value() ;
-      *loc = reduction.get_index() ;
-   }
+   *max = max_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -202,20 +220,20 @@ void forall_sum(cilk_for_exec,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const int nthreads = __cilkrts_get_nworkers();
+   const int nworkers = __cilkrts_get_nworkers();
 
    /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   T  sum_tmp[nworkers];
 
-   for ( int i = 0; i < nthreads; ++i ) {
-      sum_tmp[i] = 0 ;
+   for ( int i = 0; i < nworkers; ++i ) {
+       sum_tmp[i] = 0 ;
    }
 
    cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, &sum_tmp[__cilkrts_get_worker_number()] );
    }
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       *sum += sum_tmp[i];
    }
 }
@@ -306,21 +324,31 @@ void forall_minloc(cilk_for_exec,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  min_tmp = *min;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models 
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_min_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  min_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       min_tmp[i] = *min ;
+       loc_tmp[i] = *loc ;
+   }
 
    cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, &min_tmp, &loc_tmp );
-      reduction.calc_min( ii, min_tmp );
+      loop_body( ii, &min_tmp[__cilkrts_get_worker_number()],
+                     &loc_tmp[__cilkrts_get_worker_number()] );
    }
 
-   if ( reduction.get_value() < *min ) {
-      *min = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *min = min_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -359,21 +387,31 @@ void forall_maxloc(cilk_for_exec,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  max_tmp = *max;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_max_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  max_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       max_tmp[i] = *max ;
+       loc_tmp[i] = *loc ;
+   }
 
    cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, &max_tmp, &loc_tmp );
-      reduction.calc_max( ii, max_tmp );
+      loop_body( ii, &max_tmp[__cilkrts_get_worker_number()],
+                     &loc_tmp[__cilkrts_get_worker_number()] );
    }
 
-   if ( reduction.get_value() > *max ) {
-      *max = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( max_tmp[i] > max_tmp[0] ) {
+         max_tmp[0] = max_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *max = max_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -516,21 +554,31 @@ void forall_minloc(cilk_for_exec,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  min_tmp = *min;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models 
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_min_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  min_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       min_tmp[i] = *min ;
+       loc_tmp[i] = *loc ;
+   }
 
    cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], &min_tmp, &loc_tmp );
-      reduction.calc_min( idx[k], min_tmp );
+      loop_body( idx[k], &min_tmp[__cilkrts_get_worker_number()],
+                         &loc_tmp[__cilkrts_get_worker_number()] );
    }
 
-   if ( reduction.get_value() < *min ) {
-      *min = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *min = min_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -569,21 +617,31 @@ void forall_maxloc(cilk_for_exec,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
-   T  max_tmp = *max;
-   Index_type loc_tmp = *loc;  // Not used; but here for consistency with
-                               // other models
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_max_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  max_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       max_tmp[i] = *max ;
+       loc_tmp[i] = *loc ;
+   }
 
    cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], &max_tmp, &loc_tmp );
-      reduction.calc_max( idx[k], max_tmp );
+      loop_body( idx[k], &max_tmp[__cilkrts_get_worker_number()],
+                         &loc_tmp[__cilkrts_get_worker_number()] );
    }
 
-   if ( reduction.get_value() > *max ) {
-      *max = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( max_tmp[i] > max_tmp[0] ) {
+         max_tmp[0] = max_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *max = max_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -747,10 +805,16 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
                     T* min, Index_type *loc,
                     LOOP_BODY loop_body )
 {
-   T  min_tmp = *min;
-   Index_type loc_tmp = *loc; 
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_min_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  min_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       min_tmp[i] = *min ;
+       loc_tmp[i] = *loc ;
+   }
 
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -763,8 +827,8 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_minloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeISet*>(seg.m_segment)),
-               &min_tmp,
-               &loc_tmp,
+               &min_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -775,8 +839,8 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_minloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeStrideISet*>(seg.m_segment)),
-               &min_tmp,
-               &loc_tmp,
+               &min_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -787,8 +851,8 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_minloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const UnstructuredISet*>(seg.m_segment)),
-               &min_tmp,
-               &loc_tmp,
+               &min_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -799,14 +863,18 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-      reduction.calc_min( loc_tmp, min_tmp );
-
    } // iterate over segments of hybrid index set
 
-   if ( reduction.get_value() < *min ) {
-      *min = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *min = min_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
@@ -826,10 +894,16 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
                     T* max, Index_type *loc,
                     LOOP_BODY loop_body )
 {
-   T  max_tmp = *max;
-   Index_type loc_tmp = *loc; 
+   const int nworkers = __cilkrts_get_nworkers();
 
-   cilk::reducer_max_index<Index_type, T> reduction;
+   /* Should we align these temps to coherence boundaries? */
+   T  max_tmp[nworkers];
+   Index_type loc_tmp[nworkers];
+
+   for ( int i = 0; i < nworkers; ++i ) {
+       max_tmp[i] = *max ;
+       loc_tmp[i] = *loc ;
+   }
 
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -842,8 +916,8 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeISet*>(seg.m_segment)),
-               &max_tmp,
-               &loc_tmp,
+               &max_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -854,8 +928,8 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeStrideISet*>(seg.m_segment)),
-               &max_tmp,
-               &loc_tmp,
+               &max_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -866,8 +940,8 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const UnstructuredISet*>(seg.m_segment)),
-               &max_tmp,
-               &loc_tmp,
+               &max_tmp[__cilkrts_get_worker_number()],
+               &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
             break;
@@ -878,14 +952,17 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-      reduction.calc_max( loc_tmp, max_tmp );
-
    } // iterate over segments of hybrid index set
 
-   if ( reduction.get_value() > *max ) {
-      *max = reduction.get_value() ;
-      *loc = reduction.get_index() ;
+   for ( int i = 1; i < nworkers; ++i ) {
+      if ( max_tmp[i] > max_tmp[0] ) {
+         max_tmp[0] = max_tmp[i];
+         loc_tmp[0] = loc_tmp[i];
+      }
    }
+
+   *max = max_tmp[0] ;
+   *loc = loc_tmp[0] ;
 }
 
 /*!
