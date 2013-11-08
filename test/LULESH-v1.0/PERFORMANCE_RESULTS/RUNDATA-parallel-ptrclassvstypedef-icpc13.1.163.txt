@@ -1,0 +1,123 @@
+Runs done on 11/14/2013 after machine came back up after maintenance
+
+Compilation:
+
+rzmerl156{hornung1}92: make parallel
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o luleshRAJA-parallel.o luleshRAJA-parallel.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//HybridISet.o ../../sources//HybridISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//RangeISet.o ../../sources//RangeISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//UnstructuredISet.o ../../sources//UnstructuredISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel luleshRAJA-parallel.o ../../sources//HybridISet.o ../../sources//RangeISet.o ../../sources//UnstructuredISet.o   -o  lulesh-RAJA-parallel.exe
+icpc: warning #10237: -lcilkrts linked in dynamically, static library not available
+
+
+Runs (canonical order - single range; SEQ OUTER / OMP INNER)
+------------------------------------------------------------
+
+
+rnung1}96: setenv OMP_NUM_THREADS 2
+rzmerl156{hornung1}97: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+135.93user 40.53system 1:28.53elapsed 199%CPU (0avgtext+0avgdata 342560maxresident)k
+3640inputs+0outputs (8major+22055925minor)pagefaults 0swaps
+
+rzmerl156{hornung1}98: setenv OMP_NUM_THREADS 4
+rzmerl156{hornung1}99: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+153.83user 44.31system 0:49.86elapsed 397%CPU (0avgtext+0avgdata 343008maxresident)k
+3640inputs+0outputs (8major+22057485minor)pagefaults 0swaps
+
+rzmerl156{hornung1}100: setenv OMP_NUM_THREADS 8
+rzmerl156{hornung1}101: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+190.99user 52.89system 0:30.65elapsed 795%CPU (0avgtext+0avgdata 343712maxresident)k
+3640inputs+0outputs (8major+22054604minor)pagefaults 0swaps
+
+rzmerl156{hornung1}102: setenv OMP_NUM_THREADS 16
+rzmerl156{hornung1}103: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+290.48user 103.64system 0:24.85elapsed 1586%CPU (0avgtext+0avgdata 345344maxresident)k
+3640inputs+0outputs (8major+22056365minor)pagefaults 0swaps
+
+
+------------------------------------------------
+
+Compilation:
+
+rzmerl156{hornung1}77: make
+echo "Please specify serial (make serial) or parallel (make parallel) version"
+Please specify serial (make serial) or parallel (make parallel) version
+rzmerl156{hornung1}78: make parallel
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o luleshRAJA-parallel.o luleshRAJA-parallel.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//HybridISet.o ../../sources//HybridISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//RangeISet.o ../../sources//RangeISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//UnstructuredISet.o ../../sources//UnstructuredISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel luleshRAJA-parallel.o ../../sources//HybridISet.o ../../sources//RangeISet.o ../../sources//UnstructuredISet.o   -o  lulesh-RAJA-parallel.exe
+icpc: warning #10237: -lcilkrts linked in dynamically, static library not available
+
+Runs (canonical order - single range; SEQ OUTER / OMP INNER)
+------------------------------------------------------------
+
+rzmerl156{hornung1}83: setenv OMP_NUM_THREADS 2
+rzmerl156{hornung1}84: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe 
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+136.38user 40.49system 1:28.72elapsed 199%CPU (0avgtext+0avgdata 342560maxresident)k
+3640inputs+0outputs (8major+22055927minor)pagefaults 0swaps
+
+rzmerl156{hornung1}85: setenv OMP_NUM_THREADS 4
+rzmerl156{hornung1}86: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+154.64user 44.86system 0:50.07elapsed 398%CPU (0avgtext+0avgdata 343008maxresident)k
+3640inputs+0outputs (8major+22057483minor)pagefaults 0swaps
+
+rzmerl156{hornung1}87: setenv OMP_NUM_THREADS 8
+rzmerl156{hornung1}88: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+190.24user 52.52system 0:30.65elapsed 791%CPU (0avgtext+0avgdata 343712maxresident)k
+3640inputs+0outputs (8major+22054604minor)pagefaults 0swaps
+
+rzmerl156{hornung1}89: setenv OMP_NUM_THREADS 16
+rzmerl156{hornung1}90: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-parallel.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+286.26user 98.65system 0:24.25elapsed 1587%CPU (0avgtext+0avgdata 345472maxresident)k
+3640inputs+0outputs (8major+22056362minor)pagefaults 0swaps

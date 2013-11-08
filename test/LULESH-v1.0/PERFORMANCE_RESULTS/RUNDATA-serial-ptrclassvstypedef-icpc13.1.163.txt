@@ -1,0 +1,105 @@
+Runs done on 11/14/2013 after machine came back up after maintenance
+
+Compilation:
+
+rzmerl156{hornung1}108: make serial
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o luleshRAJA-serial.o luleshRAJA-serial.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//HybridISet.o ../../sources//HybridISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//RangeISet.o ../../sources//RangeISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//UnstructuredISet.o ../../sources//UnstructuredISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_PTR_CLASS   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel luleshRAJA-serial.o ../../sources//HybridISet.o ../../sources//RangeISet.o ../../sources//UnstructuredISet.o   -o  lulesh-RAJA-serial.exe
+icpc: warning #10237: -lcilkrts linked in dynamically, static library not available
+
+Runs (SEQ OUTER / SIMD INNER)
+------------------------------------------------------------
+
+Canonical:
+----------
+rzmerl156{hornung1}110: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe 
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+109.54user 20.16system 2:10.05elapsed 99%CPU (0avgtext+0avgdata 249120maxresident)k
+3392inputs+0outputs (7major+12733383minor)pagefaults 0swaps
+
+Order-tiled:
+------------
+rzmerl156{hornung1}114: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Tiled_Order'
+	 Mesh tiling = 2 x 2 x 2
+110.02user 20.04system 2:10.39elapsed 99%CPU (0avgtext+0avgdata 263376maxresident)k
+3392inputs+0outputs (7major+12734274minor)pagefaults 0swaps
+
+Index-tiled:
+------------
+rzmerl156{hornung1}118: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Tiled_Index'
+	 Mesh tiling = 2 x 2 x 2
+118.00user 20.37system 2:18.76elapsed 99%CPU (0avgtext+0avgdata 252128maxresident)k
+3392inputs+0outputs (7major+12733571minor)pagefaults 0swaps
+
+
+------------------------------------------------
+
+Compilation:
+
+rzmerl156{hornung1}120: make serial
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o luleshRAJA-serial.o luleshRAJA-serial.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//HybridISet.o ../../sources//HybridISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//RangeISet.o ../../sources//RangeISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel -c -o ../../sources//UnstructuredISet.o ../../sources//UnstructuredISet.cxx -I. -I../../includes/ -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC -DRAJA_USE_DOUBLE -DRAJA_USE_RESTRICT_ALIGNED_PTR   
+/usr/local/tools/ic-13.1.163/bin/icpc -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel luleshRAJA-serial.o ../../sources//HybridISet.o ../../sources//RangeISet.o ../../sources//UnstructuredISet.o   -o  lulesh-RAJA-serial.exe
+icpc: warning #10237: -lcilkrts linked in dynamically, static library not available
+
+
+Runs (SEQ OUTER / SIMD INNER)
+------------------------------------------------------------
+
+Canonical:
+----------
+rzmerl156{hornung1}131: !sr
+srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Canonical'
+	 Mesh tiling = 2 x 2 x 2
+103.64user 19.97system 2:03.97elapsed 99%CPU (0avgtext+0avgdata 249104maxresident)k
+3384inputs+0outputs (7major+12733382minor)pagefaults 0swaps
+
+Order-tiled:
+------------
+rzmerl156{hornung1}127: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Tiled_Order'
+	 Mesh tiling = 2 x 2 x 2
+106.23user 20.30system 2:06.84elapsed 99%CPU (0avgtext+0avgdata 263328maxresident)k
+3384inputs+0outputs (7major+12734271minor)pagefaults 0swaps
+
+Index-tiled:
+------------
+rzmerl156{hornung1}121: srun -N 1 -p pdebug --exclusive time ./lulesh-RAJA-serial.exe
+LULESH parallel run parameters:
+	 stop time = 1.000000e-02
+	 CFL-controlled: initial time step = 1.000000e-07
+	 Mesh size = 45 x 45 x 45
+	 Tiling mode is 'Tiled_Index'
+	 Mesh tiling = 2 x 2 x 2
+110.31user 20.40system 2:11.08elapsed 99%CPU (0avgtext+0avgdata 252096maxresident)k
+3384inputs+0outputs (7major+12733569minor)pagefaults 0swaps
+
