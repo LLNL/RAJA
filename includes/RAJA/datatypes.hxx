@@ -532,6 +532,7 @@ typedef const Complex_type* __restrict__ const_Complex_ptr;
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
 typedef TDRAReal_ptr Real_ptr;
 typedef const_TDRAReal_ptr const_Real_ptr;
+typedef Complex_type* __restrict__ Complex_ptr;
 typedef const Complex_type* __restrict__ const_Complex_ptr;
 
 
