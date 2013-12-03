@@ -110,11 +110,11 @@ typedef const aligned_real_type* __restrict__ const_TDRAReal_ptr;
 /*!
  ******************************************************************************
  *
- * \brief Class representing a restricted aligned Real_type const pointer.
+ * \brief Class representing a restricted Real_type const pointer.
  *
  ******************************************************************************
  */
-class ConstRestrictAlignRealPtr
+class ConstRestrictRealPtr
 {
 public:
 
@@ -122,12 +122,152 @@ public:
    /// Ctors and assignment op.
    ///
 
-   ConstRestrictAlignRealPtr() : dptr(0) { ; }
+   ConstRestrictRealPtr() : dptr(0) { ; }
 
-   ConstRestrictAlignRealPtr(const Real_type* d) : dptr(d) { ; }
+   ConstRestrictRealPtr(const Real_type* d) : dptr(d) { ; }
 
-   ConstRestrictAlignRealPtr& operator=(const Real_type* d) { 
-      ConstRestrictAlignRealPtr copy(d);
+   ConstRestrictRealPtr& operator=(const Real_type* d) {
+      ConstRestrictRealPtr copy(d);
+      std::swap(dptr, copy.dptr);
+      return *this;
+   }
+
+   ///
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
+   ///
+
+   ///
+   ///  Implicit conversion operator to bare const pointer.
+   ///
+   operator const Real_type*() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to bare const pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Real_type* get() const { return dptr; }
+
+   ///
+   /// Bracket operator.
+   ///
+   const Real_type& operator [] (Index_type i) const
+   {
+      return( (const Real_type* __restrict__) dptr)[i];
+   }
+
+   ///
+   /// + operator for pointer arithmetic.
+   ///
+   const Real_type* operator+ (Index_type i) const { return dptr+i; }
+
+private:
+   const Real_type* dptr;
+};
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Class representing a restricted Real_type (non-const) pointer.
+ *
+ ******************************************************************************
+ */
+class RestrictRealPtr
+{
+public:
+
+   ///
+   /// Ctors and assignment op.
+   ///
+
+   RestrictRealPtr() : dptr(0) { ; }
+
+   RestrictRealPtr(Real_type* d) : dptr(d) { ; }
+
+   RestrictRealPtr& operator=(Real_type* d) {
+      RestrictRealPtr copy(d);
+      std::swap(dptr, copy.dptr);
+      return *this;
+   }
+
+   ///
+   /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
+   ///
+
+   ///
+   ///  Implicit conversion operator to (non-const) bare pointer.
+   ///
+   operator Real_type*() { return dptr; }
+
+   ///
+   ///  Implicit conversion operator to const bare pointer.
+   ///
+   operator const Real_type*() const { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to (non-const) bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   Real_type* get() { return dptr; }
+
+   ///
+   ///  "Explicit conversion operator" to const bare pointer,
+   ///  consistent with boost shared ptr.
+   ///
+   const Real_type* get() const { return dptr; }
+
+   ///
+   ///  Operator that enables implicit conversion from RestrictRealPtr to
+   ///  RestrictRealConstPtr.
+   ///
+   operator ConstRestrictRealPtr ()
+      { return ConstRestrictRealPtr(dptr); }
+
+
+   ///
+   /// Bracket operator.
+   ///
+   Real_type& operator [] (Index_type i)
+   {
+      return( (Real_type* __restrict__) dptr)[i];
+   }
+
+   ///
+   /// + operator for (non-const) pointer arithmetic.
+   ///
+   Real_type* operator+ (Index_type i) { return dptr+i; }
+
+   ///
+   /// + operator for const pointer arithmetic.
+   ///
+   const Real_type* operator+ (Index_type i) const { return dptr+i; }
+
+private:
+   Real_type* dptr;
+};
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Class representing a restricted aligned Real_type const pointer.
+ *
+ ******************************************************************************
+ */
+class ConstRestrictAlignedRealPtr
+{
+public:
+
+   ///
+   /// Ctors and assignment op.
+   ///
+
+   ConstRestrictAlignedRealPtr() : dptr(0) { ; }
+
+   ConstRestrictAlignedRealPtr(const Real_type* d) : dptr(d) { ; }
+
+   ConstRestrictAlignedRealPtr& operator=(const Real_type* d) { 
+      ConstRestrictAlignedRealPtr copy(d);
       std::swap(dptr, copy.dptr);
       return *this; 
    }
@@ -205,6 +345,7 @@ private:
    const Real_type* dptr;
 };
 
+
 /*!
  ******************************************************************************
  *
@@ -212,7 +353,7 @@ private:
  *
  ******************************************************************************
  */
-class RestrictAlignRealPtr
+class RestrictAlignedRealPtr
 {
 public:
 
@@ -220,13 +361,15 @@ public:
    /// Ctors and assignment op.
    ///
 
-   RestrictAlignRealPtr() : dptr(0) { ; }
+   RestrictAlignedRealPtr() : dptr(0) { ; }
 
-   RestrictAlignRealPtr(Real_type* d) : dptr(d) { ; }
+   RestrictAlignedRealPtr(Real_type* d) : dptr(d) { ; }
 
-   RestrictAlignRealPtr& operator=(Real_type* d) { RestrictAlignRealPtr copy(d);
-                                                   std::swap(dptr, copy.dptr);
-                                                   return *this; }
+   RestrictAlignedRealPtr& operator=(Real_type* d) { 
+      RestrictAlignedRealPtr copy(d);
+      std::swap(dptr, copy.dptr);
+      return *this; 
+   }
 
    ///
    /// NOTE: Using compiler-generated copy ctor, dtor, and copy assignment op.
@@ -255,11 +398,11 @@ public:
    const Real_type* get() const { return dptr; }
 
    ///
-   ///  Operator that enables implicit conversion from RestrictAlignRealPtr to 
-   ///  RestrictAlignRealConstPtr.
+   ///  Operator that enables implicit conversion from 
+   ///  RestrictAlignedRealPtr to RestrictAlignedRealConstPtr.
    /// 
-   operator ConstRestrictAlignRealPtr () 
-      { return ConstRestrictAlignRealPtr(dptr); }
+   operator ConstRestrictAlignedRealPtr () 
+      { return ConstRestrictAlignedRealPtr(dptr); }
 
 
    ///
@@ -419,6 +562,7 @@ private:
    const Complex_type* dptr;
 };
 
+
 /*!
  ******************************************************************************
  *
@@ -521,12 +665,18 @@ typedef const Real_type* const_Real_ptr;
 typedef Complex_type* Complex_ptr;
 typedef const Complex_type* const_Complex_ptr;
 
+typedef Real_type* UnalignedReal_ptr;
+typedef const Real_type* const_UnalignedReal_ptr;
+
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
 typedef Real_type* __restrict__ Real_ptr;
 typedef const Real_type* __restrict__ const_Real_ptr;
 typedef Complex_type* __restrict__ Complex_ptr;
 typedef const Complex_type* __restrict__ const_Complex_ptr;
+
+typedef Real_type* __restrict__ UnalignedReal_ptr;
+typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
 
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
@@ -535,12 +685,18 @@ typedef const_TDRAReal_ptr const_Real_ptr;
 typedef Complex_type* __restrict__ Complex_ptr;
 typedef const Complex_type* __restrict__ const_Complex_ptr;
 
+typedef Real_type* __restrict__ UnalignedReal_ptr;
+typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
+
 
 #elif defined(RAJA_USE_PTR_CLASS)
-typedef RestrictAlignRealPtr Real_ptr;
-typedef ConstRestrictAlignRealPtr const_Real_ptr;
+typedef RestrictAlignedRealPtr Real_ptr;
+typedef ConstRestrictAlignedRealPtr const_Real_ptr;
 typedef RestrictComplexPtr Complex_ptr;
 typedef ConstRestrictComplexPtr const_Complex_ptr;
+
+typedef RestrictRealPtr UnalignedReal_ptr;
+typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
 
 
 #else
