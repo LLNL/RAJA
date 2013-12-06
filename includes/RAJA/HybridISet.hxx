@@ -181,7 +181,12 @@ HybridISet* buildHybridISet(const Index_type* const indices_in,
 RAJA_INLINE
 HybridISet* buildHybridISet(const std::vector<Index_type>& indices)
 {
-   return( buildHybridISet(&indices[0], indices.size()) );
+   if ( indices.size() > 0 ) {
+      return( buildHybridISet(&indices[0], indices.size()) );
+   } else {
+      HybridISet* hindex = new HybridISet();
+      return( hindex );
+   }
 }
 
 

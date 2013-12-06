@@ -299,9 +299,14 @@ void HybridISet::copy(const HybridISet& other)
 */
 
 HybridISet* buildHybridISet(const Index_type* const indices_in, 
-                                    Index_type length)
+                            Index_type length)
 {
    HybridISet* hindex = new HybridISet();
+
+   /*
+    * If index array information is suspect, return empty index set. 
+    */
+   if ( !indices_in || length == 0 ) return( hindex );
 
    /* only transform relatively large */
    if (length > RANGE_MIN_LENGTH) {

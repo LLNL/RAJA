@@ -33,13 +33,17 @@ namespace RAJA {
 UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len)
 : UnstructuredISet(len)
 {
-   std::copy(indx, indx + len, m_indx); 
+   if ( m_indx && m_len > 0 ) {
+      std::copy(indx, indx + m_len, m_indx); 
+   }
 }
 
 UnstructuredISet::UnstructuredISet(const std::vector<Index_type>& indx)
 : UnstructuredISet(static_cast<Index_type>(indx.size()))
 {
-   std::copy(&indx[0], &indx[0] + m_len, m_indx); 
+   if ( indx.size() > 0 ) {
+      std::copy(&indx[0], &indx[0] + m_len, m_indx); 
+   }
 }
 
 UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
@@ -49,16 +53,18 @@ UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
 }
 #else
 UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len)
-: m_indx(0), m_len(len)
+: m_indx(0), m_len(0)
 {
-   allocateIndexData(m_len);
-   std::copy(indx, indx + len, m_indx);
+   if ( indx && len > 0 ) {
+      allocateIndexData(len);
+      std::copy(indx, indx + m_len, m_indx);
+   }
 }
 
 UnstructuredISet::UnstructuredISet(const std::vector<Index_type>& indx)
-: m_indx(0), m_len(indx.size())
+: m_indx(0), m_len(0)
 {
-   allocateIndexData(m_len);
+   allocateIndexData(static_cast<Index_type>(indx.size()));
    std::copy(indx.begin(), indx.end(), m_indx);    
 }
 
@@ -108,17 +114,16 @@ void UnstructuredISet::print(std::ostream& os) const
 *************************************************************************
 */
 UnstructuredISet::UnstructuredISet(Index_type len) 
-: m_len(len), m_indx(0)
+: m_len(0), m_indx(0)
 {
-   if ( len > 0 ) {
-      posix_memalign((void **)&m_indx, DATA_ALIGN, m_len*sizeof(Index_type)) ;
-   } 
+   allocateIndexData(len);
 }
 
 void UnstructuredISet::allocateIndexData(Index_type len)
 {
    if ( len > 0 ) {
-      posix_memalign((void **)&m_indx, DATA_ALIGN, len*sizeof(Index_type)) ;
+      m_indx = new Index_type[len];
+      m_len = len;
    } 
 }
 

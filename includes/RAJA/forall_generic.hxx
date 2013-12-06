@@ -397,7 +397,7 @@ void forall_sum(const RangeStrideISet& iset,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const Index_type* __restrict__ idx, const Index_type len,
+void forall(const Index_type* idx, const Index_type len,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
@@ -434,7 +434,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(const Index_type* __restrict__ idx, const Index_type len,
+void forall_minloc(const Index_type* idx, const Index_type len,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -476,7 +476,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(const Index_type* __restrict__ idx, const Index_type len,
+void forall_maxloc(const Index_type* idx, const Index_type len,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -518,7 +518,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(const Index_type* __restrict__ idx, const Index_type len,
+void forall_sum(const Index_type* idx, const Index_type len,
                 T* sum,
                 LOOP_BODY loop_body)
 {
