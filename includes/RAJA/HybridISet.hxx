@@ -127,13 +127,16 @@ public:
 
    ///
    /// Return boolean indicating whether segment 'i' index set owns the data 
-   /// representing the index set.
+   /// representing its indices.
    /// 
    /// Note: No error-checking on segment index.
    ///
-   bool getSegmentOwnsIndex(int i) const 
+   bool segmentOwnsIndex(int i) const 
       { return m_segments[i].m_owns_index; } 
 
+   ///
+   /// Print hybrid index set data, including segments, to given output stream.
+   ///
    void print(std::ostream& os) const;
 
 private:

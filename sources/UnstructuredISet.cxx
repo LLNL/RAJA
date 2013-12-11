@@ -29,52 +29,16 @@ namespace RAJA {
 *************************************************************************
 */
 
-#if defined(RAJA_USE_CTOR_DELEGATION)
-UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len)
-: UnstructuredISet(len)
+UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len,
+                                   bool owns_index)
 {
-   if ( m_indx && m_len > 0 ) {
-      std::copy(indx, indx + m_len, m_indx); 
-   }
-}
-
-UnstructuredISet::UnstructuredISet(const std::vector<Index_type>& indx)
-: UnstructuredISet(static_cast<Index_type>(indx.size()))
-{
-   if ( indx.size() > 0 ) {
-      std::copy(&indx[0], &indx[0] + m_len, m_indx); 
-   }
+   initIndexData(indx, len, owns_index);
 }
 
 UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
-: UnstructuredISet(other.m_len)
 {
-   std::copy(other.m_indx, other.m_indx + other.m_len, m_indx);
+   initIndexData(other.m_indx, other.m_len, other.m_owns_index);
 }
-#else
-UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len)
-: m_indx(0), m_len(0)
-{
-   if ( indx && len > 0 ) {
-      allocateIndexData(len);
-      std::copy(indx, indx + m_len, m_indx);
-   }
-}
-
-UnstructuredISet::UnstructuredISet(const std::vector<Index_type>& indx)
-: m_indx(0), m_len(0)
-{
-   allocateIndexData(static_cast<Index_type>(indx.size()));
-   std::copy(indx.begin(), indx.end(), m_indx);    
-}
-
-UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
-: m_indx(0), m_len(other.m_len)
-{
-   allocateIndexData(m_len);
-   std::copy(other.m_indx, other.m_indx + other.m_len, m_indx);
-}
-#endif
 
 UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
 {
@@ -87,7 +51,9 @@ UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
 
 UnstructuredISet::~UnstructuredISet()
 {
-   if (m_indx) free( m_indx );
+   if (m_owns_index && m_indx) {
+      delete[] m_indx ;
+   }
 }
 
 void UnstructuredISet::swap(UnstructuredISet& other)
@@ -95,12 +61,13 @@ void UnstructuredISet::swap(UnstructuredISet& other)
    using std::swap;
    swap(m_len, other.m_len);
    swap(m_indx, other.m_indx);
+   swap(m_owns_index, other.m_owns_index);
 }
 
 void UnstructuredISet::print(std::ostream& os) const
 {
-   os << "\nUnstructuredISet : length = "
-      << m_len << std::endl;
+   os << "\nUnstructuredISet : length, owns index = "
+      << m_len << " , " << m_owns_index << std::endl;
    for (Index_type i = 0; i < m_len; ++i) {
       os << "\t" << m_indx[i] << std::endl;
    }
@@ -109,21 +76,33 @@ void UnstructuredISet::print(std::ostream& os) const
 /*
 *************************************************************************
 *
-* Private UnstructuredISet class methods.
+* Private initialization method.
 *
 *************************************************************************
 */
-UnstructuredISet::UnstructuredISet(Index_type len) 
-: m_len(0), m_indx(0)
+void UnstructuredISet::initIndexData(const Index_type* indx, 
+                                     Index_type len,
+                                     bool owns_index)
 {
-   allocateIndexData(len);
-}
+   if ( len <= 0 ) {
 
-void UnstructuredISet::allocateIndexData(Index_type len)
-{
-   if ( len > 0 ) {
-      m_indx = new Index_type[len];
+      m_indx = 0;
+      m_len = 0;
+      m_owns_index = false;
+
+   } else { 
+
       m_len = len;
+      m_owns_index = owns_index;
+
+      if ( m_owns_index ) {
+         m_indx = new Index_type[len];
+         std::copy(indx, indx + m_len, m_indx);
+      } else {
+         // Uh-oh. Using evil const_cast.... 
+         m_indx = const_cast<Index_type*>(indx);
+      }
+
    } 
 }
 

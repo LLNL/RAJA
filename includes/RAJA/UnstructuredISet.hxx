@@ -20,11 +20,7 @@
 
 #include "execpolicy.hxx"
 
-#include <vector> 
 #include <iostream> 
-
-//#define RAJA_USE_CTOR_DELEGATION
-#undef RAJA_USE_CTOR_DELEGATION
 
 
 namespace RAJA {
@@ -53,18 +49,24 @@ public:
    typedef RAJA::seq_exec seq_policy;
 
    ///
-   /// Construct unstructured index set from array of indices with given length.
+   /// Construct unstructured index set from given array with specified 
+   /// length.
    ///
-   /// This operation performs deep copy of index array.
+   /// By default the ctor performs deep copy of array elements.
+   /// If false is passed as last argument, the constructed object
+   /// does not own the index data and will hold a pointer to given data.
    ///
-   UnstructuredISet(const Index_type* indx, Index_type len);
+   UnstructuredISet(const Index_type* indx, Index_type len,
+                    bool owns_index = true);
 
    ///
-   /// Construct unstructured index set from std::vector of indices.
+   /// Construct unstructured index set from arbitrary object holding 
+   /// indices using a deep copy of given data.
    ///
-   /// This operation performs deep copy of vector data.
+   /// The object must have the following methods: size(), begin(), end().
    ///
-   UnstructuredISet(const std::vector<Index_type>& indx);
+   template< typename T>
+   UnstructuredISet(const T& indx);
 
    ///
    /// Copy-constructor for unstructured index set
@@ -97,24 +99,44 @@ public:
    const Index_type* getIndex() const { return m_indx; }
 
    ///
+   /// Return boolean indicating whether index set owns the data
+   /// representing its indices.
+   ///
+   bool ownsIndex() const { return m_owns_index; }
+    
+   ///
+   /// Print index set data, including segments, to given output stream.
+   ///
    void print(std::ostream& os) const;
 
 private:
    //
-   // Private default ctor used to simplify implementation of other
-   // ctors and assignment operator. Class implementation relies on
-   // C++11 ctor delegation. 
-   //
-   UnstructuredISet(Index_type len = 0);
-
-   //
-   // Allocate aligned index array.
+   // Initialize index data properly based on whether index set object
+   // owns the index data.
    //  
-   void allocateIndexData(Index_type len);
+   void initIndexData(const Index_type* indx, Index_type len,
+                      bool owns_index);
 
    Index_type* __restrict__ m_indx;
    Index_type  m_len;
+   bool m_owns_index;
 };
+
+
+/*!
+ *  Implementation of generic constructor template.
+ */ 
+template< typename T> 
+UnstructuredISet::UnstructuredISet(const T& indx)
+: m_indx(0), m_len(0), m_owns_index(false)
+{
+   if ( indx.size() > 0 ) {
+      m_len = indx.size();
+      m_owns_index = true;
+      m_indx = new Index_type[m_len];
+      std::copy(indx.begin(), indx.end(), m_indx);
+   } 
+}
 
 
 }  // closing brace for namespace statement
