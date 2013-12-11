@@ -49,29 +49,6 @@ public:
    typedef std::pair<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
    ///
-   /// Enum describing types of segments in hybrid index set.
-   ///
-   enum SegmentType { _Range_, _RangeStride_, _Unstructured_, _Unknown_ };
-
-   ///
-   /// Class holding a segment and its segment type.
-   ///
-   class Segment
-   {
-   public:
-
-      Segment() 
-         : m_type(_Unknown_), m_segment(0) { ; } 
-
-      Segment(SegmentType type,  const void* segment) 
-         : m_type(type), m_segment(segment) { ; }
-
-      SegmentType m_type;
-      const void* m_segment;
-       
-   };
-
-   ///
    /// Construct empty hybrid index set
    ///
    HybridISet();
@@ -122,7 +99,7 @@ public:
 
    ///
    /// Return total length of hybrid index set; i.e., sum of lengths
-   /// over all segments.
+   /// of all segments.
    ///
    Index_type getLength() const { return m_len; }
 
@@ -132,14 +109,30 @@ public:
    int getNumSegments() const { return m_segments.size(); } 
 
    ///
-   /// Return const reference to segment 'i' in hybrid index set.
+   /// Return enum value defining type of segment 'i'.
+   /// 
+   /// Note: No error-checking on segment index.
    ///
-   const Segment& getSegment(int i) const { return m_segments[i]; } 
+   SegmentType getSegmentType(int i) const { return m_segments[i].m_type; } 
 
    ///
-   /// Return const pointer to array of segments in hybrid index set.
+   /// Return const void pointer to index set for segment 'i'.
+   /// 
+   /// Notes: Pointer must be explicitly cast to proper type before use
+   ///        (see getSegmentType() method).
    ///
-   const Segment* getSegments() const { return &m_segments[0]; }
+   ///        No error-checking on segment index.
+   ///
+   const void* getSegmentISet(int i) const { return m_segments[i].m_iset; } 
+
+   ///
+   /// Return boolean indicating whether segment 'i' index set owns the data 
+   /// representing the index set.
+   /// 
+   /// Note: No error-checking on segment index.
+   ///
+   bool getSegmentOwnsIndex(int i) const 
+      { return m_segments[i].m_owns_index; } 
 
    void print(std::ostream& os) const;
 
@@ -148,6 +141,29 @@ private:
    // Copy function for copy-and-swap idiom (deep copy).
    //
    void copy(const HybridISet& other);
+
+   ///
+   /// Nested class representing an index segment of a hybrid index set.
+   ///
+   /// A segment is defined by its type and its index set object.
+   ///
+   class Segment
+   {
+   public:
+      Segment() 
+         : m_type(_Unknown_), m_iset(0), m_owns_index(false) { ; } 
+
+      Segment(SegmentType type,  const void* iset, bool owns_index = true) 
+         : m_type(type), m_iset(iset), m_owns_index(owns_index) { ; }
+
+      ///
+      /// Using compiler-provided dtor, copy ctor, copy-assignment.
+      ///
+
+      SegmentType m_type;
+      const void* m_iset;
+      bool m_owns_index;
+   };
 
    Index_type  m_len;
    std::vector<Segment> m_segments;
@@ -188,6 +204,7 @@ HybridISet* buildHybridISet(const std::vector<Index_type>& indices)
       return( hindex );
    }
 }
+
 
 
 }  // closing brace for namespace statement

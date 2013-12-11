@@ -51,53 +51,53 @@ HybridISet& HybridISet::operator=(
 
 HybridISet::~HybridISet()
 {
-   const int num_segs = m_segments.size();
+   const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      Segment& seg = m_segments[isi];
+      SegmentType segtype = getSegmentType(isi);
+      const void* iset = getSegmentISet(isi);
 
-      switch ( seg.m_type ) {
+      if ( iset ) {
 
-         case _Range_ : {
-            if ( seg.m_segment ) {
+         switch ( segtype ) {
+
+            case _Range_ : {
                RangeISet* is =
                   const_cast<RangeISet*>(
-                     static_cast<const RangeISet*>(seg.m_segment)
+                     static_cast<const RangeISet*>(iset)
                   );
                delete is;
+               break;
             }
-            break;
-         }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
-            if ( seg.m_segment ) {
+            case _RangeStride_ : {
                RangeStrideISet* is =
                   const_cast<RangeStrideISet*>(
-                     static_cast<const RangeStrideISet*>(seg.m_segment)
+                     static_cast<const RangeStrideISet*>(iset)
                   );
                delete is;
+               break;
             }
-            break;
-         }
 #endif
 
-         case _Unstructured_ : {
-            if ( seg.m_segment ) {
+            case _Unstructured_ : {
                UnstructuredISet* is =
                   const_cast<UnstructuredISet*>(
-                     static_cast<const UnstructuredISet*>(seg.m_segment)
+                     static_cast<const UnstructuredISet*>(iset)
                   );
                delete is;
+               break;
             }
-            break;
-         }
 
-         default : {
-            std::cout << "\t HybridISet dtor: case not implemented!!\n";
-         }
+            default : {
+               std::cout << "\t HybridISet dtor: case not implemented!!\n";
+            }
 
-      } // iterate over segments of hybrid index set
-   }
+         }  // switch ( segtype )
+
+      }  // if ( iset ) 
+
+   }  // for isi...
 }
 
 void HybridISet::swap(HybridISet& other)
@@ -197,16 +197,19 @@ void HybridISet::print(std::ostream& os) const
       << getLength() << " length..." << std::endl
       << getNumSegments() << " segments..." << std::endl;
 
-   const int num_segs = m_segments.size();
+   const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      const Segment& seg = m_segments[isi];
+      SegmentType segtype = getSegmentType(isi);
+      const void* iset = getSegmentISet(isi);
 
-      switch ( seg.m_type ) {
+      os << "\tSegment " << isi << " : " << std::endl;
+
+      switch ( segtype ) {
 
          case _Range_ : {
-            if ( seg.m_segment ) {
+            if ( iset ) {
                const RangeISet* is =
-                  static_cast<const RangeISet*>(seg.m_segment);
+                  static_cast<const RangeISet*>(iset);
                is->print(os);
             } else {
                os << "_Range_ is null" << std::endl;
@@ -216,9 +219,9 @@ void HybridISet::print(std::ostream& os) const
 
 #if 0  // RDH RETHINK
          case _RangeStride_ : {
-            if ( seg.m_segment ) {
+            if ( iset ) {
                const RangeStrideISet* is =
-                  static_cast<const RangeStrideISet*>(seg.m_segment);
+                  static_cast<const RangeStrideISet*>(iset);
                is->print(os);
             } else {
                os << "_RangeStride_ is null" << std::endl;
@@ -228,9 +231,9 @@ void HybridISet::print(std::ostream& os) const
 #endif
 
          case _Unstructured_ : {
-            if ( seg.m_segment ) {
+            if ( iset ) {
                const UnstructuredISet* is =
-                  static_cast<const UnstructuredISet*>(seg.m_segment);
+                  static_cast<const UnstructuredISet*>(iset);
                is->print(os);
             } else {
                os << "_Unstructured_ is null" << std::endl;
@@ -242,9 +245,9 @@ void HybridISet::print(std::ostream& os) const
             os << "HybridISet print: case not implemented!!\n";
          }
 
-      }  // switch ( is_pair.first )
+      }  // switch ( segtype )
 
-   } // iterate over segments of hybrid index set
+   }  // for isi...
 }
 
 
@@ -257,35 +260,41 @@ void HybridISet::print(std::ostream& os) const
 */
 void HybridISet::copy(const HybridISet& other)
 {
-   const int num_segs = other.m_segments.size();
+   const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      const Segment& seg = other.m_segments[isi];
+      SegmentType segtype = getSegmentType(isi);
+      const void* iset = getSegmentISet(isi);
 
-      switch ( seg.m_type ) {
+      if ( iset ) {
 
-         case _Range_ : {
-            addISet(*static_cast<const RangeISet*>(seg.m_segment));
-            break;
-         }
+         switch ( segtype ) {
+
+            case _Range_ : {
+               addISet(*static_cast<const RangeISet*>(iset));
+               break;
+            }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
-            addISet(*static_cast<const RangeStrideISet*>(seg.m_segment));
-            break;
-         }
+            case _RangeStride_ : {
+               addISet(*static_cast<const RangeStrideISet*>(iset));
+               break;
+            }
 #endif
 
-         case _Unstructured_ : {
-            addISet(*static_cast<const UnstructuredISet*>(seg.m_segment));
-            break;
-         }
+            case _Unstructured_ : {
+               addISet(*static_cast<const UnstructuredISet*>(iset));
+               break;
+            }
 
-         default : {
-            std::cout << "\t HybridISet copySegments: case not implemented!!\n";
-         }
+            default : {
+               std::cout << "\t HybridISet::copy: case not implemented!!\n";
+            }
 
-      } // iterate over segments of hybrid index set
-   }
+         }  // switch ( segtype )
+
+      }  // if ( iset ) 
+
+   }  // for isi...
 }
 
 

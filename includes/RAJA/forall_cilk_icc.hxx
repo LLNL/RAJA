@@ -746,35 +746,35 @@ void forall( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 {
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
 
-      const HybridISet::Segment& seg = is.getSegment(isi);
+      switch ( segtype ) {
 
-      switch ( seg.m_type ) {
-
-         case HybridISet::_Range_ : {
+         case _Range_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(seg.m_segment)),
+               *(static_cast<const RangeISet*>(iset)),
                loop_body
             );
             break;
          }
 
 #if 0  // RDH RETHINK
-         case HybridISet::_RangeStride_ : {
+         case _RangeStride_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(seg.m_segment)),
+               *(static_cast<const RangeStrideISet*>(iset)),
                loop_body
             );
             break;
          }
 #endif
 
-         case HybridISet::_Unstructured_ : {
+         case _Unstructured_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(seg.m_segment)),
+               *(static_cast<const UnstructuredISet*>(iset)),
                loop_body
             );
             break;
@@ -818,15 +818,15 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
 
-      const HybridISet::Segment& seg = is.getSegment(isi);
+      switch ( segtype ) {
 
-      switch ( seg.m_type ) {
-
-         case HybridISet::_Range_ : {
+         case _Range_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(seg.m_segment)),
+               *(static_cast<const RangeISet*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -835,10 +835,10 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case HybridISet::_RangeStride_ : {
+         case _RangeStride_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(seg.m_segment)),
+               *(static_cast<const RangeStrideISet*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -847,10 +847,10 @@ void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case HybridISet::_Unstructured_ : {
+         case _Unstructured_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(seg.m_segment)),
+               *(static_cast<const UnstructuredISet*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -907,15 +907,15 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
 
-      const HybridISet::Segment& seg = is.getSegment(isi);
+      switch ( segtype ) {
 
-      switch ( seg.m_type ) {
-
-         case HybridISet::_Range_ : {
+         case _Range_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(seg.m_segment)),
+               *(static_cast<const RangeISet*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -924,10 +924,10 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case HybridISet::_RangeStride_ : {
+         case _RangeStride_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(seg.m_segment)),
+               *(static_cast<const RangeStrideISet*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -936,10 +936,10 @@ void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case HybridISet::_Unstructured_ : {
+         case _Unstructured_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(seg.m_segment)),
+               *(static_cast<const UnstructuredISet*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -993,15 +993,15 @@ void forall_sum( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
 
-      const HybridISet::Segment& seg = is.getSegment(isi);
+      switch ( segtype ) {
 
-      switch ( seg.m_type ) {
-
-         case HybridISet::_Range_ : {
+         case _Range_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(seg.m_segment)),
+               *(static_cast<const RangeISet*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
@@ -1009,10 +1009,10 @@ void forall_sum( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case HybridISet::_RangeStride_ : {
+         case _RangeStride_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(seg.m_segment)),
+               *(static_cast<const RangeStrideISet*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
@@ -1020,10 +1020,10 @@ void forall_sum( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case HybridISet::_Unstructured_ : {
+         case _Unstructured_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(seg.m_segment)),
+               *(static_cast<const UnstructuredISet*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );

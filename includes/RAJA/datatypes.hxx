@@ -31,6 +31,11 @@
 
 namespace RAJA {
 
+///
+/// Enum describing index set types.
+///
+enum SegmentType { _Range_, _RangeStride_, _Unstructured_, _Unknown_ };
+
 
 /*!
  ******************************************************************************

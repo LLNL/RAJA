@@ -21,7 +21,6 @@
 
 #include "RangeISet.hxx"
 #include "UnstructuredISet.hxx"
-
 #include "HybridISet.hxx"
 
 #include "forall_seq_any.hxx"
