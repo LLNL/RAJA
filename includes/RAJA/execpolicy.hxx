@@ -103,7 +103,7 @@ struct seq_segit {};
 #endif   // end  CLANG compilers.....
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace
 
 
 #endif  // closing endif for header file include guard

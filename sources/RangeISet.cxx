@@ -49,4 +49,4 @@ void RangeStrideISet::print(std::ostream& os) const
 }
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace

@@ -145,6 +145,22 @@ UnstructuredISet::UnstructuredISet(const T& indx)
 }
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace 
+
+
+/*!
+ *  Specialization of std swap method.
+ */ 
+namespace std {
+
+template< > 
+RAJA_INLINE
+void swap(RAJA::UnstructuredISet& a, RAJA::UnstructuredISet& b)
+{
+   a.swap(b);
+}
+
+}
+
 
 #endif  // closing endif for header file include guard

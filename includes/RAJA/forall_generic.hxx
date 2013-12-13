@@ -645,7 +645,7 @@ void forall_sum(const INDEXSET_T& iset,
 }
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace
 
 
 #endif  // closing endif for header file include guard

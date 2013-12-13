@@ -1043,7 +1043,7 @@ void forall_sum( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
 }
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
 

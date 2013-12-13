@@ -465,4 +465,4 @@ HybridISet* buildHybridISet(const Index_type* const indices_in,
    return( hindex );
 }
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace

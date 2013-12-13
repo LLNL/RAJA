@@ -723,7 +723,7 @@ typedef ConstRestrictRealPtr const_UnalignedReal_ptr;
 #endif
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace
 
 
 #endif  // closing endif for header file include guard

@@ -107,4 +107,4 @@ void UnstructuredISet::initIndexData(const Index_type* indx,
 }
 
 
-}  // closing brace for namespace statement
+}  // closing brace for RAJA namespace

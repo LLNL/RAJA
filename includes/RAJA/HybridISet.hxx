@@ -235,7 +235,21 @@ HybridISet* buildHybridISet(const std::vector<Index_type>& indices)
 }
 
 
+}  // closing brace for RAJA namespace
 
-}  // closing brace for namespace statement
+
+/*!
+ *  Specialization of std swap method.
+ */
+namespace std {
+
+template< > 
+RAJA_INLINE
+void swap(RAJA::HybridISet& a, RAJA::HybridISet& b)
+{
+   a.swap(b);
+}
+
+}
 
 #endif  // closing endif for header file include guard
