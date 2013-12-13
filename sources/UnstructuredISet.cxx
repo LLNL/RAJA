@@ -30,14 +30,14 @@ namespace RAJA {
 */
 
 UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len,
-                                   bool owns_index)
+                                   IndexOwnership indx_own)
 {
-   initIndexData(indx, len, owns_index);
+   initIndexData(indx, len, indx_own);
 }
 
 UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
 {
-   initIndexData(other.m_indx, other.m_len, other.m_owns_index);
+   initIndexData(other.m_indx, other.m_len, other.m_indx_own);
 }
 
 UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
@@ -51,7 +51,7 @@ UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
 
 UnstructuredISet::~UnstructuredISet()
 {
-   if (m_owns_index && m_indx) {
+   if (m_indx_own && m_indx) {
       delete[] m_indx ;
    }
 }
@@ -59,15 +59,15 @@ UnstructuredISet::~UnstructuredISet()
 void UnstructuredISet::swap(UnstructuredISet& other)
 {
    using std::swap;
-   swap(m_len, other.m_len);
    swap(m_indx, other.m_indx);
-   swap(m_owns_index, other.m_owns_index);
+   swap(m_len, other.m_len);
+   swap(m_indx_own, other.m_indx_own);
 }
 
 void UnstructuredISet::print(std::ostream& os) const
 {
    os << "\nUnstructuredISet : length, owns index = "
-      << m_len << " , " << m_owns_index << std::endl;
+      << m_len << " , " << m_indx_own << std::endl;
    for (Index_type i = 0; i < m_len; ++i) {
       os << "\t" << m_indx[i] << std::endl;
    }
@@ -82,20 +82,20 @@ void UnstructuredISet::print(std::ostream& os) const
 */
 void UnstructuredISet::initIndexData(const Index_type* indx, 
                                      Index_type len,
-                                     bool owns_index)
+                                     IndexOwnership indx_own)
 {
    if ( len <= 0 ) {
 
       m_indx = 0;
       m_len = 0;
-      m_owns_index = false;
+      m_indx_own = Unowned;
 
    } else { 
 
       m_len = len;
-      m_owns_index = owns_index;
+      m_indx_own = indx_own;
 
-      if ( m_owns_index ) {
+      if ( m_indx_own ) {
          m_indx = new Index_type[len];
          std::copy(indx, indx + m_len, m_indx);
       } else {

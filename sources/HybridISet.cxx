@@ -111,45 +111,7 @@ void HybridISet::swap(HybridISet& other)
 /*
 *************************************************************************
 *
-* Methods to add copies of index set objects to hybrid index set.
-*
-*************************************************************************
-*/
-
-template <>
-void HybridISet::addISet(const RangeISet& index_set)
-{
-   RangeISet* new_is = new RangeISet(index_set);
-   m_segments.push_back( Segment( _Range_, new_is ) );
-
-   m_len += new_is->getLength();
-}
-
-#if 0  // RDH RETHINK
-template <>
-void HybridISet::addISet(const RangeStrideISet& index_set)
-{
-   RangeStrideISet* new_is = new RangeStrideISet(index_set);
-   m_segments.push_back( Segment( _RangeStride_, new_is ) );
-
-   m_len += new_is->getLength();
-}
-#endif
-
-template <>
-void HybridISet::addISet(const UnstructuredISet& index_set)
-{
-   UnstructuredISet* new_is = new UnstructuredISet(index_set);
-   m_segments.push_back( Segment( _Unstructured_, new_is ) );
-
-   m_len += new_is->getLength();
-}
-
-
-/*
-*************************************************************************
-*
-* Methods to add index set objects to hybrid index set.
+* Methods to add segments to hybrid index set.
 *
 *************************************************************************
 */
@@ -157,8 +119,14 @@ void HybridISet::addISet(const UnstructuredISet& index_set)
 void HybridISet::addRangeIndices(Index_type begin, Index_type end)
 {
    RangeISet* new_is = new RangeISet(begin, end);
-   m_segments.push_back( Segment( _Range_, new_is ) );
+   m_segments.push_back(Segment( _Range_, new_is ));
+   m_len += new_is->getLength();
+}
 
+void HybridISet::addISet(const RangeISet& iset)
+{
+   RangeISet* new_is = new RangeISet(iset);
+   m_segments.push_back(Segment( _Range_, new_is ));
    m_len += new_is->getLength();
 }
 
@@ -167,18 +135,34 @@ void HybridISet::addRangeStrideIndices(Index_type begin, Index_type end,
                                        Index_type stride)
 {
    RangeStrideISet* new_is = new RangeStrideISet(begin, end, stride);
-   m_segments.push_back( Segment( _RangeStride_, new_is ) );
+   m_segments.push_back( Segment( _RangeStride_, new_is ));
+   m_len += new_is->getLength();
+}
 
-   m_len += new_is->getLength() / new_is->getStride();
+void HybridISet::addISet(const RangeStrideISet& iset)
+{
+   RangeStrideISet* new_is = new RangeStrideISet(iset);
+   m_segments.push_back(Segment( _RangeStride_, new_is, ));
+   m_len += new_is->getLength();
 }
 #endif
 
 void HybridISet::addUnstructuredIndices(const Index_type* indx, 
-                                        Index_type len)
+                                        Index_type len,
+                                        IndexOwnership indx_own)
 {
-   UnstructuredISet* new_is = new UnstructuredISet(indx, len);
-   m_segments.push_back( Segment( _Unstructured_, new_is ) );
+   UnstructuredISet* new_is = new UnstructuredISet(indx, len, indx_own);
+   m_segments.push_back(Segment( _Unstructured_, new_is ));
+   m_len += new_is->getLength();
+}
 
+void HybridISet::addISet(const UnstructuredISet& iset, 
+                         IndexOwnership indx_own)
+{
+   UnstructuredISet* new_is = new UnstructuredISet(iset.getIndex(),
+                                                   iset.getLength(),
+                                                   indx_own);
+   m_segments.push_back(Segment( _Unstructured_, new_is ));
    m_len += new_is->getLength();
 }
 

@@ -53,11 +53,12 @@ public:
    /// length.
    ///
    /// By default the ctor performs deep copy of array elements.
-   /// If false is passed as last argument, the constructed object
+   /// If 'Unowned' is passed as last argument, the constructed object
    /// does not own the index data and will hold a pointer to given data.
+   /// In this case, caller must manage object lifetimes properly.
    ///
    UnstructuredISet(const Index_type* indx, Index_type len,
-                    bool owns_index = true);
+                    IndexOwnership indx_own = Owned);
 
    ///
    /// Construct unstructured index set from arbitrary object holding 
@@ -99,27 +100,32 @@ public:
    const Index_type* getIndex() const { return m_indx; }
 
    ///
-   /// Return boolean indicating whether index set owns the data
+   /// Return enum value indicating whether index set object owns the data
    /// representing its indices.
    ///
-   bool ownsIndex() const { return m_owns_index; }
+   IndexOwnership indexOwnership() const { return m_indx_own; }
     
    ///
-   /// Print index set data, including segments, to given output stream.
+   /// Print index set data to given output stream.
    ///
    void print(std::ostream& os) const;
 
 private:
    //
+   // The default ctor is not implemented.
+   //
+   UnstructuredISet();
+
+   //
    // Initialize index data properly based on whether index set object
    // owns the index data.
    //  
    void initIndexData(const Index_type* indx, Index_type len,
-                      bool owns_index);
+                      IndexOwnership indx_own);
 
    Index_type* __restrict__ m_indx;
    Index_type  m_len;
-   bool m_owns_index;
+   IndexOwnership m_indx_own;
 };
 
 
@@ -128,13 +134,13 @@ private:
  */ 
 template< typename T> 
 UnstructuredISet::UnstructuredISet(const T& indx)
-: m_indx(0), m_len(0), m_owns_index(false)
+: m_indx(0), m_len(0), m_indx_own(Unowned)
 {
    if ( indx.size() > 0 ) {
       m_len = indx.size();
-      m_owns_index = true;
       m_indx = new Index_type[m_len];
       std::copy(indx.begin(), indx.end(), m_indx);
+      m_indx_own = Owned;
    } 
 }
 

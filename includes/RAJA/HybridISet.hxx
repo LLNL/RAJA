@@ -59,7 +59,7 @@ public:
    HybridISet(const HybridISet& other);
 
    ///
-   /// Copy-assignment for hybrid index set
+   /// Copy-assignment operator for hybrid index set
    ///
    HybridISet& operator=(const HybridISet& rhs);
 
@@ -74,28 +74,53 @@ public:
    void swap(HybridISet& other);
 
    ///
-   /// Create copy of given index set object and add to hybrid index set.
-   ///
-   template< typename INDEXSET_T >
-   void addISet(const INDEXSET_T& index_set);
-
-   ///
-   /// Add contiguous range of indices to hybrid index set as a RangeISet.
+   /// Add contiguous index range segment to hybrid index set 
+   /// (adds RangeISet object).
    /// 
    void addRangeIndices(Index_type begin, Index_type end);
 
+   ///
+   /// Add RangeISet segment to hybrid index set.
+   ///
+   void addISet(const RangeISet& iset);
+
 #if 0  // RDH RETHINK
    ///
-   /// Add contiguous range of indices with stride to hybrid index set 
-   /// as a RangeStrideISet.
+   /// Add contiguous range of indices with stride segment to hybrid index set 
+   /// (addds RangeStrideISet object).
    /// 
-   void addRangeStrideIndices(Index_type begin, Index_type end, Index_type stride);
+   void addRangeStrideIndices(Index_type begin, Index_type end, 
+                              Index_type stride);
+
+   ///
+   /// Add RangeStrideISet segment to hybrid index set.
+   ///
+   void addISet(const RangeStrideISet& iset);
 #endif
 
    ///
-   /// Add array of indices to hybrid index set as an UnstructuredISet. 
+   /// Add segment containing array of indices to hybrid index set 
+   /// (adds UnstructuredISet object).
    /// 
-   void addUnstructuredIndices(const Index_type* indx, Index_type len);
+   /// By default, the method makes a deep copy of given array and index
+   /// set object will own the data representing its indices.  If 'Unowned' 
+   /// is passed to method, the new segment object does not own its indices 
+   /// (i.e., it holds a handle to given array).  In this case, caller is
+   /// responsible for managing object lifetimes properly.
+   /// 
+   void addUnstructuredIndices(const Index_type* indx, Index_type len,
+                               IndexOwnership indx_own = Owned);
+
+   ///
+   /// Add UnstructuredISet segment to hybrid index set.
+   /// By default, the method makes a deep copy of given array and index
+   /// set object will own the data representing its indices.  If 'Unowned'  
+   /// is passed to method, the new segment object does not own its indices
+   /// (i.e., it holds a handle to given array).  In this case, caller is
+   /// responsible for managing object lifetimes properly.
+   ///
+   void addISet(const UnstructuredISet& iset, 
+                IndexOwnership indx_own = Owned);
 
    ///
    /// Return total length of hybrid index set; i.e., sum of lengths
@@ -126,13 +151,13 @@ public:
    const void* getSegmentISet(int i) const { return m_segments[i].m_iset; } 
 
    ///
-   /// Return boolean indicating whether segment 'i' index set owns the data 
-   /// representing its indices.
+   /// Return enum value indicating whether segment 'i' index set owns the 
+   /// data representing its indices.
    /// 
    /// Note: No error-checking on segment index.
    ///
-   bool segmentOwnsIndex(int i) const 
-      { return m_segments[i].m_owns_index; } 
+   IndexOwnership segmentIndexOwnership(int i) const 
+      { return m_segments[i].m_indx_own; } 
 
    ///
    /// Print hybrid index set data, including segments, to given output stream.
@@ -154,10 +179,11 @@ private:
    {
    public:
       Segment() 
-         : m_type(_Unknown_), m_iset(0), m_owns_index(false) { ; } 
+         : m_type(_Unknown_), m_iset(0), m_indx_own(Unowned) { ; } 
 
-      Segment(SegmentType type,  const void* iset, bool owns_index = true) 
-         : m_type(type), m_iset(iset), m_owns_index(owns_index) { ; }
+      template <typename ISET>
+      Segment(SegmentType type,  const ISET* iset)
+         : m_type(type), m_iset(iset), m_indx_own(iset->indexOwnership()) { ; }
 
       ///
       /// Using compiler-provided dtor, copy ctor, copy-assignment.
@@ -165,7 +191,7 @@ private:
 
       SegmentType m_type;
       const void* m_iset;
-      bool m_owns_index;
+      IndexOwnership m_indx_own;
    };
 
    Index_type  m_len;

@@ -71,6 +71,14 @@ public:
    Index_type getLength() const { return (m_end-m_begin); }
 
    ///
+   /// Return 'Owned' indicating that index set object owns the data
+   /// representing its indices.
+   ///
+   IndexOwnership indexOwnership() const { return Owned; }
+
+   ///
+   /// Print index set data to given output stream.
+   ///
    void print(std::ostream& os) const;
 
 private:
@@ -132,6 +140,14 @@ public:
    ///
    Index_type getLength() const { return (m_end-m_begin)/m_stride + 1; }
 
+   ///
+   /// Return 'Owned' indicating that index set object owns the data
+   /// representing its indices.
+   ///
+   IndexOwnership indexOwnership() const { return Owned; }
+
+   ///
+   /// Print index set data to given output stream.
    ///
    void print(std::ostream& os) const;
 

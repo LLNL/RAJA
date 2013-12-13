@@ -34,7 +34,20 @@ namespace RAJA {
 ///
 /// Enum describing index set types.
 ///
-enum SegmentType { _Range_, _RangeStride_, _Unstructured_, _Unknown_ };
+enum SegmentType { _Range_, 
+                   _RangeStride_, 
+                   _Unstructured_, 
+                   _Unknown_    // Keep last; used for default in case stmts
+                 };
+
+///
+/// Enumeration used to indicate whether IndexSet objects own data
+/// representing their indices.
+///
+enum IndexOwnership {
+   Owned,
+   Unowned
+};
 
 
 /*!
