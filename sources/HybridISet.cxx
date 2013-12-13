@@ -33,6 +33,12 @@ HybridISet::HybridISet()
 {
 }
 
+HybridISet::HybridISet(const Index_type* const indices_in, Index_type length)
+: m_len(0)
+{
+   buildHybridISet(*this, indices_in, length);
+}
+
 HybridISet::HybridISet(const HybridISet& other)
 : m_len(0)
 {
@@ -291,15 +297,15 @@ void HybridISet::copy(const HybridISet& other)
 *************************************************************************
 */
 
-HybridISet* buildHybridISet(const Index_type* const indices_in, 
-                            Index_type length)
+void buildHybridISet(HybridISet& hiset,
+                     const Index_type* const indices_in, 
+                     Index_type length)
 {
-   HybridISet* hindex = new HybridISet();
-
    /*
-    * If index array information is suspect, return empty index set. 
+    * If index array information is suspect, return without modifying 
+    * index set. 
     */
-   if ( !indices_in || length == 0 ) return( hindex );
+   if ( hiset.getLength() > 0 || !indices_in || length == 0 ) return;
 
    /* only transform relatively large */
    if (length > RANGE_MIN_LENGTH) {
@@ -409,7 +415,8 @@ HybridISet* buildHybridISet(const Index_type* const indices_in,
                if ( (inrange == 0) && 
                     ((scanVal % RANGE_ALIGN) == 0) ) {
                   if (sliceCount != 0) {
-                     hindex->addUnstructuredIndices(&indices_in[dobegin], sliceCount);
+                     hiset.addUnstructuredIndices(&indices_in[dobegin], 
+                                                  sliceCount);
                   }
                   inrange = 1 ;
                   dobegin = scanVal ;
@@ -427,7 +434,7 @@ HybridISet* buildHybridISet(const Index_type* const indices_in,
                /* we need to emit a random array instead of */
                /* a range array */
                   ++sliceCount ;
-                  hindex->addRangeIndices(dobegin, dobegin+sliceCount);
+                  hiset.addRangeIndices(dobegin, dobegin+sliceCount);
                   inrange = 0 ;
                   sliceCount = 0 ;
                   dobegin = ii ;
@@ -443,26 +450,24 @@ HybridISet* buildHybridISet(const Index_type* const indices_in,
          if (inrange != -1) {
             if (inrange) {
                ++sliceCount ;
-               hindex->addRangeIndices(dobegin, dobegin+sliceCount);
+               hiset.addRangeIndices(dobegin, dobegin+sliceCount);
             }
             else {
                ++sliceCount ;
-               hindex->addUnstructuredIndices(&indices_in[dobegin], sliceCount);
+               hiset.addUnstructuredIndices(&indices_in[dobegin], sliceCount);
             }
          }
          else if (scanVal != -1) {
-            hindex->addUnstructuredIndices(&scanVal, 1);
+            hiset.addUnstructuredIndices(&scanVal, 1);
          }
       }
       else {  // !(docount < (length*RANGE_ALIGN-1))/RANGE_ALIGN)
-         hindex->addUnstructuredIndices(indices_in, length);
+         hiset.addUnstructuredIndices(indices_in, length);
       }
    }
    else {  // else !(length > RANGE_MIN_LENGTH)
-      hindex->addUnstructuredIndices(indices_in, length);
+      hiset.addUnstructuredIndices(indices_in, length);
    }
-
-   return( hindex );
 }
 
 }  // closing brace for RAJA namespace

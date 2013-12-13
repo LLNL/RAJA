@@ -6,13 +6,17 @@
 #include "RAJA/RAJA.hxx"
 
 //
-//  Create hybrid index set by constructing parts and adding to hybrid
+// Enum for different hybrid initialization procedures.
 //
-RAJA::HybridISet* buildHybrid_addSegments(bool use_vector);
+enum HybridBuildMethod {
+   AddSegments = 0,
+   AddSegmentsAsVectors,
+   AddSegmentsAsIndices,
 
+   NumBuildMethods
+};
 
 //
-//  Create hybrid index set by adding indices for parts
+//  Initialize hybrid index set by adding segments as indicated by enum value.
 //
-RAJA::HybridISet* buildHybrid_addIndices();
-
+void buildHybrid(RAJA::HybridISet& hindex, HybridBuildMethod use_vector);

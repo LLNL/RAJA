@@ -49,6 +49,10 @@ public:
    ///
    typedef RAJA::seq_exec seq_policy;
 
+   /*
+    * Using compiler-generated dtor, copy ctor, copy assignment.
+    */
+
    ///
    /// Construct range index set [begin, end).
    ///
@@ -113,6 +117,10 @@ public:
    /// Sequential execution policy for range index set with stride.
    ///
    typedef RAJA::seq_exec seq_policy;
+
+   /*
+    * Using compiler-generated dtor, copy ctor, copy assignment.
+    */
 
    ///
    /// Construct range index set [begin, end) with stride.

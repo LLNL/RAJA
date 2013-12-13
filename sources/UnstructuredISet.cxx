@@ -51,7 +51,7 @@ UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
 
 UnstructuredISet::~UnstructuredISet()
 {
-   if (m_indx_own && m_indx) {
+   if ( m_indx && m_indx_own == Owned ) {
       delete[] m_indx ;
    }
 }
@@ -95,7 +95,7 @@ void UnstructuredISet::initIndexData(const Index_type* indx,
       m_len = len;
       m_indx_own = indx_own;
 
-      if ( m_indx_own ) {
+      if ( m_indx_own == Owned ) {
          m_indx = new Index_type[len];
          std::copy(indx, indx + m_len, m_indx);
       } else {

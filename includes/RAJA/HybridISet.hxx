@@ -30,6 +30,7 @@
 
 namespace RAJA {
 
+
 /*!
  ******************************************************************************
  *
@@ -52,6 +53,20 @@ public:
    /// Construct empty hybrid index set
    ///
    HybridISet();
+
+   ///
+   /// Construct hybrid index set from given index array using parameterized
+   /// method buildHybridISet().
+   ///
+   HybridISet(const Index_type* const indices_in, Index_type length);
+
+   ///
+   /// Construct hybrid index set from arbitrary object containing indices
+   /// using parametrized method buildHybridISet().
+   ///
+   /// The object must provide the methods: size(), begin(), end().
+   ///
+   template< typename T> explicit HybridISet(const T& indx);
 
    ///
    /// Copy-constructor for hybrid index set
@@ -203,35 +218,32 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief Return pointer to hybrid index set created from array of indices 
- *        with given length.
+ * \brief Initialize hybrid index set from array of indices with given length.
+ *
+ *        Note given hybrid index set object is assumed to be empty.  
  *
  *        Routine does no error-checking on argements and assumes Index_type
- *        array contains valid (non-negative) indices.
- *
- *        Caller assumes ownership of returned index set.
+ *        array contains valid indices.
  *
  ******************************************************************************
  */
-HybridISet* buildHybridISet(const Index_type* const indices_in,
-                            Index_type length);
+void buildHybridISet(HybridISet& hiset,
+                     const Index_type* const indices_in,
+                     Index_type length);
 
 /*!
  ******************************************************************************
  *
- * \brief Same as above, but takes std::vector of indices.
+ * \brief Implementation of generic constructor template.
  *
  ******************************************************************************
  */
-RAJA_INLINE
-HybridISet* buildHybridISet(const std::vector<Index_type>& indices)
+template <typename T>
+HybridISet::HybridISet(const T& indx)
+: m_len(0)
 {
-   if ( indices.size() > 0 ) {
-      return( buildHybridISet(&indices[0], indices.size()) );
-   } else {
-      HybridISet* hindex = new HybridISet();
-      return( hindex );
-   }
+   std::vector<Index_type> vec(indx.begin(), indx.end());
+   buildHybridISet(*this, &vec[0], vec.size());
 }
 
 
@@ -239,7 +251,11 @@ HybridISet* buildHybridISet(const std::vector<Index_type>& indices)
 
 
 /*!
- *  Specialization of std swap method.
+ ******************************************************************************
+ *
+ *  \brief Specialization of std swap method.
+ *
+ ******************************************************************************
  */
 namespace std {
 

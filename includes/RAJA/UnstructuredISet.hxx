@@ -64,10 +64,9 @@ public:
    /// Construct unstructured index set from arbitrary object holding 
    /// indices using a deep copy of given data.
    ///
-   /// The object must have the following methods: size(), begin(), end().
+   /// The object must provide methods: empty(), begin(), end().
    ///
-   template< typename T>
-   UnstructuredISet(const T& indx);
+   template< typename T> explicit UnstructuredISet(const T& indx);
 
    ///
    /// Copy-constructor for unstructured index set
@@ -130,13 +129,17 @@ private:
 
 
 /*!
- *  Implementation of generic constructor template.
+ ******************************************************************************
+ *
+ *  \brief Implementation of generic constructor template.
+ *
+ ******************************************************************************
  */ 
 template< typename T> 
 UnstructuredISet::UnstructuredISet(const T& indx)
 : m_indx(0), m_len(0), m_indx_own(Unowned)
 {
-   if ( indx.size() > 0 ) {
+   if ( !indx.empty() ) {
       m_len = indx.size();
       m_indx = new Index_type[m_len];
       std::copy(indx.begin(), indx.end(), m_indx);

@@ -19,6 +19,16 @@ using namespace RAJA;
 
 #include "buildHybrid.hxx"
 
+
+//
+// Global variables for counting tests executed/passed.
+//
+unsigned ntests_run_total = 0;
+unsigned ntests_passed_total = 0;
+
+unsigned ntests_run = 0;
+unsigned ntests_passed = 0;
+
 //
 // For tested platforms, only xlc compiler fails to support C++ lambda fcns.
 //
@@ -112,13 +122,20 @@ void forall_CheckResult(const std::string& name,
                         Real_ptr to_check,  
                         Index_type iset_len)
 {
+   ntests_run_total++;
+   ntests_run++;
+  
    bool is_correct = true;
    for (Index_type i = 0 ; i < iset_len && is_correct; ++i) {
       is_correct &= ref_result[i] == to_check[i];
    }
-   
-   std::cout << name << " is " 
-             << (is_correct ? "CORRECT" : "WRONG") << std::endl; 
+
+   if ( is_correct ) {
+      ntests_passed_total++;
+      ntests_passed++;
+   } else {
+      std::cout << name << " is WRONG" << std::endl; 
+   }
 }
 
 //
@@ -130,18 +147,17 @@ void forall_reduceloc_CheckResult(const std::string& name,
                                   Real_type check_val,
                                   Index_type check_idx)
 {
-   bool is_correct = (ref_val == check_val) && (ref_idx == check_idx);
+   ntests_run_total++;
+   ntests_run++;
   
-   std::cout << name << " is ";
+   bool is_correct = (ref_val == check_val) && (ref_idx == check_idx);
+
    if ( is_correct ) {
-      std::cout << "CORRECT" << std::endl;
-   } else { 
-      std::cout << "WRONG" << std::endl;
-      std::cout << "\tref_val = " << ref_val << std::endl; 
-      std::cout << "\tref_idx = " << ref_idx << std::endl; 
-      std::cout << "\tcheck_val = " << check_val << std::endl; 
-      std::cout << "\tcheck_idx = " << check_idx << std::endl; 
-   }
+      ntests_passed_total++;
+      ntests_passed++;
+   } else {
+      std::cout << name << " is WRONG" << std::endl;                               
+   } 
 }
 
 //
@@ -151,147 +167,82 @@ void forall_reduce_CheckResult(const std::string& name,
                                const Real_type ref_val,
                                Real_type check_val)
 {
+   ntests_run_total++;
+   ntests_run++;
+  
    bool is_correct = (ref_val == check_val);
- 
-   std::cout << name << " is ";
+
    if ( is_correct ) {
-      std::cout << "CORRECT" << std::endl;
-   } else { 
-      std::cout << "WRONG" << std::endl;
-      std::cout << "\tref_val = " << ref_val << std::endl; 
-      std::cout << "\tcheck_val = " << check_val << std::endl; 
-   }
+      ntests_passed_total++;
+      ntests_passed++;
+   } else {
+      std::cout << name << " is WRONG" << std::endl;
+   } 
 }
 
 
-
-int main(int argc, char *argv[])
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall tests with available RAJA execution policies....
+//
+///////////////////////////////////////////////////////////////////////////
+void runForAllTests( unsigned ibuild, 
+                     const HybridISet& hindex, 
+                     Real_ptr parent, 
+                     Real_ptr child, 
+                     Real_ptr child_ref )
 {
-
-// 
-//  Testing different methods to construct hybrid segments.
-//  They should generate equivalent results.
-//
-#if 0
-   HybridISet* hindex_build = buildHybrid_addIndices();
-   HybridISet& hindex = *hindex_build;
-#else
-   bool use_vector = true;
-   HybridISet* hindex_build = buildHybrid_addSegments(use_vector);
-   HybridISet& hindex = *hindex_build;
-#endif
-
-#if 0
-   std::cout << std::endl << std::endl;
-   hindex.print(std::cout);
-   std::cout << std::endl << std::endl;
-#endif
-
-   //
-   // Compute max index in hybrid index set.
-   //
-   Index_type max_hindex = 0;
-   forall< std::pair<seq_segit, seq_exec> >(hindex, [&] (Index_type idx) {
-      max_hindex = std::max( max_hindex, idx );
-   } );
-   
-
-   //
-   // Allocate and initialize arrays for tests...
-   //
-   const Index_type array_length = 2000;
-
-   Real_ptr parent;
-   Real_ptr child;
-   Real_ptr child_ref;
-   posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
-   posix_memalign((void **)&child, DATA_ALIGN, array_length*sizeof(Real_type)) ;
-   posix_memalign((void **)&child_ref, DATA_ALIGN, array_length*sizeof(Real_type)) ;
-
-   for (Index_type i=0 ; i<array_length; ++i) {
-      parent[i] = static_cast<Real_type>( rand() % 65536 );
-      child[i] = 0.0;
-      child_ref[i] = 0.0;
-   }
-
-
-///////////////////////////////////////////////////////////////////////////
-// Set up indexing information for tests...
-///////////////////////////////////////////////////////////////////////////
-   std::vector<Index_type> is_indices = getIndices(hindex);
-
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Check correctness of RAJA forall iteration templates with 
-// available RAJA execution policies....
-//
-///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Generate reference result to check correctness
-   //
-   for (Index_type i = 0; i < is_indices.size(); ++i) {
-      child_ref[ is_indices[i] ] = 
-         parent[ is_indices[i] ] * parent[ is_indices[i] ];
-   }
-
-//
-// Loop body for forall tests.
-//   
 #if defined(USE_LAMBDA)
    auto forall_op = [&] (Index_type idx) {
                        child[idx] = parent[idx] * parent[idx]; };
 #else
    auto forall_op = forall_TestOp(child, parent);
 #endif
-   
-// Run various traversals and check results against reference...
-   std::cout << "\n\n BEGIN forall tests...\n" << std::endl;
+
+   std::cout << "\n\n BEGIN RAJA::forall tests: ibuild = " 
+             << ibuild << std::endl;
 
    forall< std::pair<seq_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<seq_segit, seq_exec>", 
+   forall_CheckResult("pair<seq_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<seq_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<seq_segit, simd_exec>", 
+   forall_CheckResult("pair<seq_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<seq_segit, omp_parallel_for_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<seq_segit, omp_parallel_for_exec>", 
+   forall_CheckResult("pair<seq_segit, omp_parallel_for_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<omp_parallel_for_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<omp_parallel_for_segit, seq_exec>", 
+   forall_CheckResult("pair<omp_parallel_for_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<omp_parallel_for_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<omp_parallel_for_segit, simd_exec>", 
+   forall_CheckResult("pair<omp_parallel_for_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
 #if defined(RAJA_COMPILER_ICC)
    forall< std::pair<seq_segit, cilk_for_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<seq_segit, cilk_for_exec>", 
+   forall_CheckResult("pair<seq_segit, cilk_for_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<cilk_for_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<cilk_for_segit, seq_exec>", 
+   forall_CheckResult("pair<cilk_for_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<cilk_for_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<cilk_for_segit, simd_exec>", 
+   forall_CheckResult("pair<cilk_for_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<cilk_for_segit, omp_parallel_for_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<cilk_for_segit, omp_parallel_for_exec>", 
+   forall_CheckResult("pair<cilk_for_segit, omp_parallel_for_exec>",
                       child_ref, child, hindex.getLength());
 
    forall< std::pair<omp_parallel_for_segit, cilk_for_exec> >(hindex, forall_op);
-   forall_CheckResult("pair<omp_parallel_for_segit, cilk_for_exec>", 
+   forall_CheckResult("pair<omp_parallel_for_segit, cilk_for_exec>",
                       child_ref, child, hindex.getLength());
 #endif
-
-   std::cout << "\n END forall tests...\n\n" << std::endl;
 
 #if 0 // print output for manual checking...
    std::cout << "\n CHILD ARRAY OUTPUT... " << std::endl;
@@ -301,42 +252,25 @@ int main(int argc, char *argv[])
    }
 #endif
 
+   std::cout << "\n END RAJA::forall tests: ibuild = " 
+             << ibuild << std::endl;
+}
 
+ 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Check correctness of RAJA minloc reduction templates with 
-// available RAJA execution policies....
+// Run RAJA::forall_minloc tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Make all array values positive...
-   //
-   for (Index_type ic = 0; ic < array_length; ++ic) {
-      parent[ic] = std::abs( parent[ic] );
-   }
-
-   //
-   // Generate reference result to check correctness
-   //
-   const Index_type ref_min_indx = 
-   static_cast<Index_type>(is_indices[is_indices.size()/2]);
-   const Real_type  ref_min_val  = -100.0; 
-
-   parent[ref_min_indx] = ref_min_val; 
-
-#if 0
-   std::cout << "ref_min_indx = " << ref_min_indx << std::endl;
-   std::cout << "ref_min_val = " << ref_min_val << std::endl;
-   std::cout << "parent[ref_min_indx] = " << parent[ref_min_indx] << std::endl;
-#endif
-
-//
-// Loop body for minloc reductions. 
-//   
+void runForAllMinTests( unsigned ibuild, 
+                        const HybridISet& hindex, 
+                        Real_ptr parent, 
+                        Real_type ref_min_val,
+                        Real_type ref_min_indx )
+{
 #if defined(USE_LAMBDA)
-   auto forall_minloc_op = [&] (Index_type idx, double* myMin, int* myLoc) 
-                               { 
+   auto forall_minloc_op = [&] (Index_type idx, double* myMin, int* myLoc)
+                               {
                                   if ( *myMin > parent[idx] ) {
                                      *myMin = parent[idx];
                                      *myLoc = idx;
@@ -346,11 +280,11 @@ int main(int argc, char *argv[])
    auto forall_minloc_op = forall_minloc_TestOp(parent);
 #endif
 
-// Run various minloc traversals and check results against reference...
    Real_type tmin = 1.0e+20 ;
    Index_type tloc = -1 ;
 
-   std::cout << "\n\n BEGIN forall_minloc tests...\n" << std::endl;
+   std::cout << "\n\n BEGIN RAJA::forall_minloc tests: ibuild = " 
+             << ibuild << std::endl;
 
    forall_minloc< std::pair<seq_segit, seq_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
@@ -422,43 +356,24 @@ int main(int argc, char *argv[])
                                 ref_min_val, ref_min_indx, tmin, tloc);
 #endif
 
-   std::cout << "\n END forall_minloc tests...\n\n" << std::endl;
+   std::cout << "\n END RAJA::forall_minloc tests: ibuild = " 
+             << ibuild << std::endl;
+}
 
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Check correctness of RAJA maxloc reduction templates with
-// available RAJA execution policies....
+// Run RAJA::forall_max tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Make all array values negative...
-   //
-   for (Index_type ic = 0; ic < array_length; ++ic) {
-      parent[ic] = -std::abs( parent[ic] );
-   }
-
-   //
-   // Generate reference result to check correctness
-   //
-   const Index_type ref_max_indx =
-   static_cast<Index_type>(is_indices[is_indices.size()/2]);
-   const Real_type  ref_max_val  = 100.0;
-
-   parent[ref_max_indx] = ref_max_val;
-
-#if 0
-   std::cout << "ref_max_indx = " << ref_max_indx << std::endl;
-   std::cout << "ref_max_val = " << ref_max_val << std::endl;
-   std::cout << "parent[ref_max_indx] = " << parent[ref_max_indx] << std::endl;
-#endif
-
-//
-// Loop body for maxloc reductions. 
-//   
+void runForAllMaxTests( unsigned ibuild, 
+                        const HybridISet& hindex, 
+                        Real_ptr parent, 
+                        Real_type ref_max_val,
+                        Real_type ref_max_indx )
+{
 #if defined(USE_LAMBDA)
-   auto forall_maxloc_op = [&] (Index_type idx, double* myMax, int* myLoc) 
+   auto forall_maxloc_op = [&] (Index_type idx, double* myMax, int* myLoc)
                                {
                                   if ( *myMax < parent[idx] ) {
                                      *myMax = parent[idx];
@@ -471,9 +386,10 @@ int main(int argc, char *argv[])
 
 // Run various maxloc traversals and check results against reference...
    Real_type tmax = -1.0e+20 ;
-   tloc = -1 ;
+   Index_type tloc = -1 ;
 
-   std::cout << "\n\n BEGIN forall_maxloc tests...\n" << std::endl;
+   std::cout << "\n\n BEGIN RAJA::forall_maxloc tests: ibuild = " 
+             << ibuild << std::endl;
 
    forall_maxloc< std::pair<seq_segit, seq_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
@@ -508,7 +424,7 @@ int main(int argc, char *argv[])
    forall_reduceloc_CheckResult("pair<omp_parallel_for_segit, simd_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
-#if defined(RAJA_COMPILER_ICC) 
+#if defined(RAJA_COMPILER_ICC)
    tmax = -1.0e+20 ;
    tloc = -1 ;
    forall_maxloc< std::pair<seq_segit, cilk_for_exec> >(
@@ -545,32 +461,25 @@ int main(int argc, char *argv[])
                                 ref_max_val, ref_max_indx, tmax, tloc);
 #endif
 
-   std::cout << "\n END forall_maxloc tests...\n\n" << std::endl;
+   std::cout << "\n END RAJA::forall_maxloc tests: ibuild = " 
+             << ibuild << std::endl;
+}
+
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Check correctness of RAJA sum reduction templates with
-// available RAJA execution policies....
+// Run RAJA::forall_sum tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Generate reference result to check correctness
-   //
-   Real_type  ref_sum  = 0.0;
-
-   for (Index_type i = 0; i < is_indices.size(); ++i) {
-      ref_sum += parent[ is_indices[i] ];
-   }
-
-#if 0
-   std::cout << "ref_sum = " << ref_sum << std::endl;
-#endif
-
+void runForAllSumTests( unsigned ibuild, 
+                        const HybridISet& hindex, 
+                        Real_ptr parent, 
+                        Real_type ref_sum )
+{
 #if defined(USE_LAMBDA)
-   auto forall_sum_op = [&] (Index_type idx, double* mySum) 
-                            { 
-                               *mySum += parent[idx]; 
+   auto forall_sum_op = [&] (Index_type idx, double* mySum)
+                            {
+                               *mySum += parent[idx];
                             };
 #else
    auto forall_sum_op = forall_sum_TestOp(parent);
@@ -580,7 +489,8 @@ int main(int argc, char *argv[])
 
    Real_type tsum = 0.0;
 
-   std::cout << "\n\n BEGIN forall_sum tests...\n" << std::endl;
+   std::cout << "\n\n BEGIN RAJA::forall_sum tests: ibuild = " 
+             << ibuild << std::endl;
 
    forall_sum< std::pair<seq_segit, seq_exec> >(
                                    hindex, &tsum, forall_sum_op);
@@ -643,8 +553,206 @@ int main(int argc, char *argv[])
                              ref_sum, tsum);
 #endif
 
+   std::cout << "\n END RAJA::forall_sum tests: ibuild = " 
+             << ibuild << std::endl;
+}
 
-   std::cout << "\n END forall_sum tests...\n\n" << std::endl;
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Main Program.
+//
+///////////////////////////////////////////////////////////////////////////
+int main(int argc, char *argv[])
+{
+
+// 
+//  Test different methods to construct hybrid segments.
+//  They should generate equivalent results.
+//
+   HybridISet hindex[NumBuildMethods];
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      buildHybrid( hindex[ibuild], static_cast<HybridBuildMethod>(ibuild) );
+   } 
+
+#if 0 
+RDH TODO -- add IndexSet "==", etc.  comparison operators...
+            check for equality here....
+#endif
+
+#if 0
+   std::cout << std::endl << std::endl;
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      std::cout << "hindex with build method " << ibuild << std::endl;
+      hindex[ibuild].print(std::cout);
+   } 
+   std::cout << std::endl << std::endl;
+#endif
+
+
+   //
+   // Allocate and initialize arrays for tests...
+   //
+   const Index_type array_length = 2000;
+
+   Real_ptr parent;
+   Real_ptr child;
+   Real_ptr child_ref;
+   posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
+   posix_memalign((void **)&child, DATA_ALIGN, array_length*sizeof(Real_type)) ;
+   posix_memalign((void **)&child_ref, DATA_ALIGN, array_length*sizeof(Real_type)) ;
+
+   for (Index_type i=0 ; i<array_length; ++i) {
+      parent[i] = static_cast<Real_type>( rand() % 65536 );
+      child[i] = 0.0;
+      child_ref[i] = 0.0;
+   }
+
+
+///////////////////////////////////////////////////////////////////////////
+// Set up indexing information for tests...
+///////////////////////////////////////////////////////////////////////////
+   std::vector<Index_type> is_indices = getIndices(hindex[0]);
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall loop iteration tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   //
+   // Generate reference result to check correctness
+   //
+   for (Index_type i = 0; i < is_indices.size(); ++i) {
+      child_ref[ is_indices[i] ] = 
+         parent[ is_indices[i] ] * parent[ is_indices[i] ];
+   }
+
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      ntests_run = 0; 
+      ntests_passed = 0; 
+
+      runForAllTests( ibuild, hindex[ibuild], parent, child, child_ref );
+
+      std::cout << "\n forall(ibuild = " << ibuild << ") : "
+                << ntests_passed << " / " << ntests_run << std::endl; 
+   }
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall_minloc loop reduction tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   //
+   // Make all array values positive...
+   //
+   for (Index_type ic = 0; ic < array_length; ++ic) {
+      parent[ic] = std::abs( parent[ic] );
+   }
+
+   //
+   // Generate reference result to check correctness
+   //
+   const Index_type ref_min_indx =
+   static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_min_val  = -100.0;
+
+   parent[ref_min_indx] = ref_min_val;
+
+#if 0
+   std::cout << "ref_min_indx = " << ref_min_indx << std::endl;
+   std::cout << "ref_min_val = " << ref_min_val << std::endl;
+   std::cout << "parent[ref_min_indx] = " << parent[ref_min_indx] << std::endl;
+#endif
+
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      ntests_run = 0; 
+      ntests_passed = 0; 
+
+      runForAllMinTests( ibuild, hindex[ibuild], parent, 
+                         ref_min_val, ref_min_indx );
+
+      std::cout << "\n forall_minloc(ibuild = " << ibuild << ") : "
+                << ntests_passed << " / " << ntests_run << std::endl; 
+   }
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall_maxloc loop reduction tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   //
+   // Make all array values negative...
+   //
+   for (Index_type ic = 0; ic < array_length; ++ic) {
+      parent[ic] = -std::abs( parent[ic] );
+   }
+
+   //
+   // Generate reference result to check correctness
+   //
+   const Index_type ref_max_indx =
+   static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_max_val  = 100.0;
+
+   parent[ref_max_indx] = ref_max_val;
+
+#if 0
+   std::cout << "ref_max_indx = " << ref_max_indx << std::endl;
+   std::cout << "ref_max_val = " << ref_max_val << std::endl;
+   std::cout << "parent[ref_max_indx] = " << parent[ref_max_indx] << std::endl;
+#endif
+
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      ntests_run = 0; 
+      ntests_passed = 0; 
+
+      runForAllMaxTests( ibuild, hindex[ibuild], parent,
+                         ref_max_val, ref_max_indx );
+
+      std::cout << "\n forall_maxloc(ibuild = " << ibuild << ") : "
+                << ntests_passed << " / " << ntests_run << std::endl; 
+   }
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall_sum loop reduction tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   //
+   // Generate reference result to check correctness
+   //
+   Real_type  ref_sum  = 0.0;
+
+   for (Index_type i = 0; i < is_indices.size(); ++i) {
+      ref_sum += parent[ is_indices[i] ];
+   }
+
+#if 0
+   std::cout << "ref_sum = " << ref_sum << std::endl;
+#endif
+
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      ntests_run = 0; 
+      ntests_passed = 0; 
+
+      runForAllSumTests( ibuild, hindex[ibuild], parent,
+                         ref_sum );
+
+      std::cout << "\n\n forall_sum(ibuild = " << ibuild << ") : "
+                << ntests_passed << " / " << ntests_run << std::endl; 
+   }
+
+
+   std::cout << "\n All Tests : " 
+             << ntests_passed_total << " / " << ntests_run_total << std::endl;
 
 
 #if 1 
@@ -657,24 +765,20 @@ int main(int argc, char *argv[])
 #if !defined(RAJA_COMPILER_XLC12)
 
    std::vector<Index_type> even_indices = 
-      getIndicesConditional( hindex, [](Index_type idx) { return !(idx%2);} );
+      getIndicesConditional(hindex[0], [](Index_type idx) { return !(idx%2);} );
 
-   HybridISet* test_hiset = buildHybridISet(even_indices);
+   HybridISet hiset_even(even_indices);
 
    std::cout << "\n\n INDEX SET WITH EVEN INDICES ONLY..." << std::endl;
-   test_hiset->print(std::cout);
-
-   delete test_hiset;
+   hiset_even.print(std::cout);
 
    std::vector<Index_type> less_than_300_indices = 
-      getIndicesConditional( hindex, [](Index_type idx) { return (idx<300);} );
+      getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
 
-   test_hiset = buildHybridISet(less_than_300_indices);
+   HybridISet hiset_less_than_300(less_than_300_indices);
 
    std::cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << std::endl;
-   test_hiset->print(std::cout);
-
-   delete test_hiset;
+   hiset_less_than_300.print(std::cout);
 
 #endif
 
@@ -687,8 +791,6 @@ int main(int argc, char *argv[])
    free(parent);
    free(child);
    free(child_ref);
-
-   delete hindex_build;
 
    std::cout << "\n DONE!!! " << std::endl;
 
