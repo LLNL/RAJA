@@ -250,10 +250,10 @@ void HybridISet::print(std::ostream& os) const
 */
 void HybridISet::copy(const HybridISet& other)
 {
-   const int num_segs = getNumSegments();
+   const int num_segs = other.getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      SegmentType segtype = getSegmentType(isi);
-      const void* iset = getSegmentISet(isi);
+      SegmentType segtype = other.getSegmentType(isi);
+      const void* iset = other.getSegmentISet(isi);
 
       if ( iset ) {
 

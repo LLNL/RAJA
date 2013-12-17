@@ -66,8 +66,8 @@ void UnstructuredISet::swap(UnstructuredISet& other)
 
 void UnstructuredISet::print(std::ostream& os) const
 {
-   os << "\nUnstructuredISet : length, owns index = "
-      << m_len << " , " << m_indx_own << std::endl;
+   os << "\nUnstructuredISet : length, owns index = " << m_len << " , " 
+      << (m_indx_own == Owned ? "Owned" : "Unowned") << std::endl;
    for (Index_type i = 0; i < m_len; ++i) {
       os << "\t" << m_indx[i] << std::endl;
    }
