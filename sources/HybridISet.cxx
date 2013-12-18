@@ -301,11 +301,7 @@ void buildHybridISet(HybridISet& hiset,
                      const Index_type* const indices_in, 
                      Index_type length)
 {
-   /*
-    * If index array information is suspect, return without modifying 
-    * index set. 
-    */
-   if ( hiset.getLength() > 0 || !indices_in || length == 0 ) return;
+   if ( length == 0 ) return;
 
    /* only transform relatively large */
    if (length > RANGE_MIN_LENGTH) {
