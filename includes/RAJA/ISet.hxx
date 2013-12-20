@@ -47,7 +47,6 @@ std::vector<Index_type> getIndices(const INDEXSET_T& iset)
    forall< INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
       ivec.push_back(idx);
    } );
-   std::vector<Index_type>(ivec).swap(ivec);
    return ivec;
 }
 
@@ -70,7 +69,6 @@ std::vector<Index_type> getIndicesConditional(const INDEXSET_T& iset,
    forall< INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
       if ( conditional( idx ) ) ivec.push_back(idx);
    } );
-   std::vector<Index_type>(ivec).swap(ivec);
    return ivec;
 }
 
