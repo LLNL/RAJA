@@ -20,8 +20,6 @@
 
 #include "execpolicy.hxx"
 
-#include "RangeISet.hxx"
-#include "UnstructuredISet.hxx"
 
 #include <vector>
 #include <utility>
@@ -29,6 +27,9 @@
 
 
 namespace RAJA {
+
+class RangeISet;
+class UnstructuredISet;
 
 
 /*!

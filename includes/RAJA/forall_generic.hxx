@@ -32,8 +32,6 @@
 
 #include "datatypes.hxx"
 
-#include "ISet.hxx"
-
 
 namespace RAJA {
 

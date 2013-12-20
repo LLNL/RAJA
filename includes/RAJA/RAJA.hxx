@@ -29,7 +29,11 @@
 
 #include "execpolicy.hxx"
 
-#include "ISet.hxx"
+#include "RangeISet.hxx"
+#include "UnstructuredISet.hxx"
+#include "HybridISet.hxx"
+
+#include "ISet_utils.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////

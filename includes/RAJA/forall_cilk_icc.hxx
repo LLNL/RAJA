@@ -23,8 +23,6 @@
 
 #include "execpolicy.hxx"
 
-#include "ISet.hxx"
-
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 

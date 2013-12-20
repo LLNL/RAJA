@@ -13,8 +13,8 @@
 
 #include "RAJA/HybridISet.hxx"
 
-#include <cstdlib>
-#include <iostream>
+#include "RAJA/RangeISet.hxx"
+#include "RAJA/UnstructuredISet.hxx"
 
 
 namespace RAJA {

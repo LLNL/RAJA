@@ -23,8 +23,6 @@
 
 #include "execpolicy.hxx"
 
-#include "ISet.hxx"
-
 
 namespace RAJA {
 

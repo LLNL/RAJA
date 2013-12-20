@@ -3,8 +3,8 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set header file inclusions
- *          and generic index set utility methods.
+ * \brief   Header file containing generic RAJA index set utility method 
+ *          templates.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -12,16 +12,16 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_ISet_HXX
-#define RAJA_ISet_HXX
+#ifndef RAJA_ISet_utils_HXX
+#define RAJA_ISet_utils_HXX
 
 #include "config.hxx"
 
 #include "datatypes.hxx"
 
-#include "RangeISet.hxx"
-#include "UnstructuredISet.hxx"
-#include "HybridISet.hxx"
+//#include "RangeISet.hxx"
+//#include "UnstructuredISet.hxx"
+//#include "HybridISet.hxx"
 
 #include "forall_seq_any.hxx"
 

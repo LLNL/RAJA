@@ -13,10 +13,6 @@
 
 #include "RAJA/UnstructuredISet.hxx"
 
-#include <cstdlib>
-#include <iostream>
-#include <algorithm>
-
 
 namespace RAJA {
 

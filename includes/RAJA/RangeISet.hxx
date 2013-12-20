@@ -20,9 +20,8 @@
 
 #include "execpolicy.hxx"
 
-
-#include <vector>
 #include <iostream>
+
 
 namespace RAJA {
 
