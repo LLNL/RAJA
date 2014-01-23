@@ -19,11 +19,11 @@ OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
 #rzalastor
-#RAJA_ARCH = x86_sse_icc
+RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
-RAJA_ARCH = x86_avx_icc
+#RAJA_ARCH = x86_avx_icc
 #RAJA_ARCH = x86_avx_gnu
 
 #rzuseq
@@ -271,18 +271,20 @@ endif
 #  GNU compiler for BG/Q
 #
 ifeq ($(RAJA_ARCH),bgq_gnu)
-CXX             = /bgsys/drivers/ppcfloor/gnu-linux/powerpc64-bgq-linux/bin/g++
+#CXX             = /bgsys/drivers/ppcfloor/gnu-linux/powerpc64-bgq-linux/bin/g++
+CXX             = /usr/local/tools/compilers/ibm/mpicxx-4.7.2
 
 #Previous versions
 
 ifeq ($(OPT_DEBUG),opt)
-CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
 
-LDFLAGS =
+##LDFLAGS = -lmass
+LDFLAGS = 
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
 LDFLAGS =
 endif
 

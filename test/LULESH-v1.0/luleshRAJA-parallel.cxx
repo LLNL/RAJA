@@ -68,6 +68,24 @@ Additional BSD Notice
 
 #include "RAJA/RAJA.hxx"
 
+//
+// For timing code sections...
+//
+#include <time.h>
+struct MyTimer
+{
+   clock_t tstart;
+   clock_t tstop;
+
+   MyTimer() : tstart(0), tstop(0) { ; }
+
+   void start() { tstart = clock(); }
+   void stop()  { tstop = clock(); }
+
+   double elapsed() 
+   { return static_cast<double>(tstop - tstart) / CLOCKS_PER_SEC; }
+};
+
 
 /*
  ***********************************************
@@ -78,7 +96,7 @@ Additional BSD Notice
 //
 // Display simulation time and timestep during run.
 //
-const bool show_run_progress = true;
+const bool show_run_progress = false;
 
 //
 // Set stop time and time increment for run.
@@ -2777,6 +2795,13 @@ void LagrangeLeapFrog(Domain *domain)
 
 int main(int argc, char *argv[])
 {
+
+   MyTimer timer_main;
+   MyTimer timer_cycle;
+
+   timer_main.start();
+ 
+
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
    struct Domain domain ;
@@ -3353,6 +3378,7 @@ int main(int argc, char *argv[])
    /* Fault Tolerance begins here */
 
    /* timestep to solution */
+   timer_cycle.start();
    while(domain.time < domain.stoptime) {
       TimeIncrement(&domain) ;
       LagrangeLeapFrog(&domain) ;
@@ -3362,6 +3388,12 @@ int main(int argc, char *argv[])
                 double(domain.time), double(domain.deltatime) ) ;
       }
    }
+   timer_cycle.stop();
+
+   timer_main.stop();
+
+   printf("Total Cycle Time (sec) = %g\n", timer_cycle.elapsed() );
+   printf("Total main Time (sec) = %g\n", timer_main.elapsed() );
 
    return 0 ;
 }

@@ -144,10 +144,11 @@ ifeq ($(RAJA_ARCH),x86_avx_icc)
 #CXX 		= /usr/local/tools/ic-13.1.163/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.080/bin/icpc
 CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
+#CXX 		= /usr/local/tools/ic-14.0.106/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -271,18 +272,21 @@ endif
 #  GNU compiler for BG/Q
 #
 ifeq ($(RAJA_ARCH),bgq_gnu)
-CXX             = /bgsys/drivers/ppcfloor/gnu-linux/powerpc64-bgq-linux/bin/g++
+#CXX             = /bgsys/drivers/ppcfloor/gnu-linux/powerpc64-bgq-linux/bin/g++
+CXX             = /usr/local/tools/compilers/ibm/mpicxx-4.7.2
 
 #Previous versions
 
 ifeq ($(OPT_DEBUG),opt)
-CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -openmp
+#CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
+CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
 
+##LDFLAGS = -lmass
 LDFLAGS =
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
 LDFLAGS =
 endif
 
