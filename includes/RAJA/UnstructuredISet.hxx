@@ -16,11 +16,12 @@
 
 #include "config.hxx"
 
-#include "datatypes.hxx"
+#include "int_datatypes.hxx"
 
 #include "execpolicy.hxx"
 
-#include <iostream> 
+#include <iosfwd> 
+#include <utility> 
 
 
 namespace RAJA {

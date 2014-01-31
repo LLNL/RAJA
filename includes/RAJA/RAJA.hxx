@@ -25,7 +25,8 @@
 
 #include "config.hxx"
 
-#include "datatypes.hxx"
+#include "int_datatypes.hxx"
+#include "real_datatypes.hxx"
 
 #include "execpolicy.hxx"
 

@@ -17,11 +17,7 @@
 
 #include "config.hxx"
 
-#include "datatypes.hxx"
-
-//#include "RangeISet.hxx"
-//#include "UnstructuredISet.hxx"
-//#include "HybridISet.hxx"
+#include "int_datatypes.hxx"
 
 #include "forall_seq_any.hxx"
 
@@ -44,7 +40,7 @@ std::vector<Index_type> getIndices(const INDEXSET_T& iset)
 {
    std::vector<Index_type> ivec;
    ivec.reserve(iset.getLength());
-   forall< INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
       ivec.push_back(idx);
    } );
    return ivec;
@@ -66,7 +62,7 @@ std::vector<Index_type> getIndicesConditional(const INDEXSET_T& iset,
 {
    std::vector<Index_type> ivec;
    ivec.reserve(iset.getLength());
-   forall< INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
       if ( conditional( idx ) ) ivec.push_back(idx);
    } );
    return ivec;

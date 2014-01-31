@@ -13,6 +13,7 @@
 
 #include "RAJA/RangeISet.hxx"
 
+#include <iostream>
 
 namespace RAJA {
 

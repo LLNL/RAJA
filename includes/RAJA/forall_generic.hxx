@@ -30,7 +30,7 @@
 
 #include "config.hxx"
 
-#include "datatypes.hxx"
+#include "int_datatypes.hxx"
 
 
 namespace RAJA {

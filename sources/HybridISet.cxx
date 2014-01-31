@@ -16,6 +16,7 @@
 #include "RAJA/RangeISet.hxx"
 #include "RAJA/UnstructuredISet.hxx"
 
+#include <iostream>
 
 namespace RAJA {
 

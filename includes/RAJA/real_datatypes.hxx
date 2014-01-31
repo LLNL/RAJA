@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file for RAJA scalar and pointer type definitions.
+ * \brief   Header file for RAJA floating point scalar and pointer types.
  * 
  *          This file contains compiler-specific type definitions for scalars
  *          and data pointers used in RAJA code.  
@@ -31,24 +31,6 @@
 
 namespace RAJA {
 
-///
-/// Enum describing index set types.
-///
-enum SegmentType { _Range_, 
-                   _RangeStride_, 
-                   _Unstructured_, 
-                   _Unknown_    // Keep last; used for default in case stmts
-                 };
-
-///
-/// Enumeration used to indicate whether IndexSet objects own data
-/// representing their indices.
-///
-enum IndexOwnership {
-   Owned,
-   Unowned
-};
-
 
 /*!
  ******************************************************************************
@@ -57,8 +39,6 @@ enum IndexOwnership {
  *
  ******************************************************************************
  */
-///
-typedef int     Index_type;
 
 #if defined(RAJA_USE_DOUBLE)
 ///
