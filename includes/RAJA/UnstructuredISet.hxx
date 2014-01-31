@@ -20,6 +20,7 @@
 
 #include "execpolicy.hxx"
 
+#include <algorithm>
 #include <iosfwd> 
 #include <utility> 
 
