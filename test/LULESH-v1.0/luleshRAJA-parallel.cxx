@@ -2714,18 +2714,6 @@ int main(int argc, char *argv[])
    Index_t edgeElems = lulesh_edge_elems ;
    Index_t edgeNodes = edgeElems+1 ;
 
-#ifdef LULESH_FT
-   /* mock up fault tolerance */
-   sigalrmact.sa_handler = simulate_fault ;
-   sigalrmact.sa_flags = 0 ;
-   sigemptyset(&sigalrmact.sa_mask) ;
-
-   if (sigaction(SIGUSR1, &sigalrmact, NULL) < 0) {
-      perror("sigaction") ;
-      exit(2) ;
-   }
-#endif
-
    /****************************/
    /*  Print run parameters    */
    /****************************/
@@ -3279,8 +3267,6 @@ int main(int argc, char *argv[])
 #endif
 
    Release(&nodeElemCount) ;
-
-   /* Fault Tolerance begins here */
 
    /* timestep to solution */
    timer_cycle.start();
