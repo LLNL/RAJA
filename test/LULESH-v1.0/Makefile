@@ -299,7 +299,7 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 #TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
 
-OBJFILES_PAR = luleshRAJA-parallel.o $(RAJAOBJS)
+OBJFILES_PAR = luleshRAJA-parallel-FT.o $(RAJAOBJS)
 OBJFILES_SER = luleshRAJA-serial.o $(RAJAOBJS)
 
 default:

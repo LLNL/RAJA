@@ -220,6 +220,22 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
+
+#ifdef LULESH_FT
+#include <unistd.h>
+#include <signal.h>
+
+/* fault_type:   == 0 no fault, < 0 unrecoverable, > 0 recoverable */
+volatile int fault_type = 0 ;
+static struct sigaction sigalrmact ;
+
+static void simulate_fault(int sig)
+{
+   /* 10% chance of unrecoverable fault */
+   fault_type = (rand() % 100) - 10 ;
+}
+#endif
+
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -1253,6 +1269,18 @@ void CalcFBHourglassForceForElems( Index_t numElem, Index_t numNode,
     }
    ) ; 
 
+   /* added tmp arrays for fault tolerance */
+   Real_p fx_tmp  = Allocate<Real_t>(numNode) ;
+   Real_p fy_tmp  = Allocate<Real_t>(numNode) ;
+   Real_p fz_tmp  = Allocate<Real_t>(numNode) ;
+
+   RAJA::forall<node_exec_policy>(*domNodeList, [&] (int gnode) {
+      fx_tmp[gnode] = fx[gnode] ;
+      fy_tmp[gnode] = fy[gnode] ;
+      fz_tmp[gnode] = fz[gnode] ;
+    }
+   ) ;
+
    RAJA::forall<node_exec_policy>(*domNodeList, [&] (int gnode) {
       Index_t count = nodeElemStart[gnode+1] - nodeElemStart[gnode] ;
       Index_t *cornerList = &nodeElemCornerList[nodeElemStart[gnode]] ;
@@ -1265,11 +1293,15 @@ void CalcFBHourglassForceForElems( Index_t numElem, Index_t numNode,
          fy_sum += fy_elem[elem] ;
          fz_sum += fz_elem[elem] ;
       }
-      fx[gnode] += fx_sum ;
-      fy[gnode] += fy_sum ;
-      fz[gnode] += fz_sum ;
+      fx[gnode] = fx_tmp[gnode] + fx_sum ;
+      fy[gnode] = fy_tmp[gnode] + fy_sum ;
+      fz[gnode] = fz_tmp[gnode] + fz_sum ;
     }
    ) ;
+
+   Release(fz_tmp) ;
+   Release(fy_tmp) ;
+   Release(fx_tmp) ;
 
    Release(fz_elem) ;
    Release(fy_elem) ;
@@ -1412,6 +1444,8 @@ void ApplyAccelerationBoundaryConditionsForNodes(Real_p xdd, Real_p ydd,
 {
   Index_t numNodeBC = (size+1)*(size+1) ;
 
+  /*  !!! Interesting FT discussion here -- not converted !!! */
+  /* What if the array index is corrupted? Out of bounds? */
   RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
      xdd[symmX[i]] = Real_t(0.0) ;
      ydd[symmY[i]] = Real_t(0.0) ;
@@ -1426,22 +1460,38 @@ void CalcVelocityForNodes(Index_t numNode, Real_p xd,  Real_p yd,  Real_p zd,
                           const Real_t dt, const Real_t u_cut,
                           LULESH_INDEXSET *domNodeList)
 {
+   Real_p xd_tmp = Allocate<Real_t>(numNode) ;
+   Real_p yd_tmp = Allocate<Real_t>(numNode) ;
+   Real_p zd_tmp = Allocate<Real_t>(numNode) ;
+
+   /* for FT */
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+      xd_tmp[i] = xd[i] ;
+      yd_tmp[i] = yd[i] ;
+      zd_tmp[i] = zd[i] ;
+    }
+   ) ;
+
    RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
      Real_t xdtmp, ydtmp, zdtmp ;
 
-     xdtmp = xd[i] + xdd[i] * dt ;
+     xdtmp = xd_tmp[i] + xdd[i] * dt ;
      if( FABS(xdtmp) < u_cut ) xdtmp = Real_t(0.0);
      xd[i] = xdtmp ;
 
-     ydtmp = yd[i] + ydd[i] * dt ;
+     ydtmp = yd_tmp[i] + ydd[i] * dt ;
      if( FABS(ydtmp) < u_cut ) ydtmp = Real_t(0.0);
      yd[i] = ydtmp ;
 
-     zdtmp = zd[i] + zdd[i] * dt ;
+     zdtmp = zd_tmp[i] + zdd[i] * dt ;
      if( FABS(zdtmp) < u_cut ) zdtmp = Real_t(0.0);
      zd[i] = zdtmp ;
     }
    ) ;
+
+   Release(zd_tmp) ;
+   Release(yd_tmp) ;
+   Release(xd_tmp) ;
 }
 
 RAJA_STORAGE
@@ -1449,12 +1499,28 @@ void CalcPositionForNodes(Index_t numNode, Real_p x,  Real_p y,  Real_p z,
                           Real_p xd, Real_p yd, Real_p zd,
                           const Real_t dt, LULESH_INDEXSET *domNodeList)
 {
+   Real_p x_tmp = Allocate<Real_t>(numNode) ;
+   Real_p y_tmp = Allocate<Real_t>(numNode) ;
+   Real_p z_tmp = Allocate<Real_t>(numNode) ;
+
+   /* for FT */
    RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
-     x[i] += xd[i] * dt ;
-     y[i] += yd[i] * dt ;
-     z[i] += zd[i] * dt ;
+      x_tmp[i] = x[i] ;
+      y_tmp[i] = y[i] ;
+      z_tmp[i] = z[i] ;
     }
    ) ;
+
+   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+     x[i] = x_tmp[i] + xd[i] * dt ;
+     y[i] = y_tmp[i] + yd[i] * dt ;
+     z[i] = z_tmp[i] + zd[i] * dt ;
+    }
+   ) ;
+
+   Release(z_tmp) ;
+   Release(y_tmp) ;
+   Release(x_tmp) ;
 }
 
 RAJA_STORAGE
@@ -1793,6 +1859,9 @@ void CalcLagrangeElements(Domain *domain)
    Index_t numElem = domain->numElem ;
    if (numElem > 0) {
       const Real_t deltatime = domain->deltatime ;
+      Real_p dxx_tmp = Allocate<Real_t>(numElem) ;
+      Real_p dyy_tmp = Allocate<Real_t>(numElem) ;
+      Real_p dzz_tmp = Allocate<Real_t>(numElem) ;
 
       domain->dxx  = Allocate<Real_t>(numElem) ; /* principal strains */
       domain->dyy  = Allocate<Real_t>(numElem) ;
@@ -1806,17 +1875,25 @@ void CalcLagrangeElements(Domain *domain)
                              domain->vnew, domain->delv, domain->arealg,
                              deltatime, domain->domElemList) ;
 
+      /* For FT... since domain dxx, dyy, dzz are not used, not really needed */
+      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
+         dxx_tmp[k] =  domain->dxx[k] ;
+         dyy_tmp[k] =  domain->dyy[k] ;
+         dzz_tmp[k] =  domain->dzz[k] ;
+       }
+      ) ;
+
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
         // calc strain rate and apply as constraint (only done in FB element)
-        Real_t vdov = domain->dxx[k] + domain->dyy[k] + domain->dzz[k] ;
+        Real_t vdov = dxx_tmp[k] + dyy_tmp[k] + dzz_tmp[k] ;
         Real_t vdovthird = vdov/Real_t(3.0) ;
         
         // make the rate of deformation tensor deviatoric
         domain->vdov[k] = vdov ;
-        domain->dxx[k] -= vdovthird ;
-        domain->dyy[k] -= vdovthird ;
-        domain->dzz[k] -= vdovthird ;
+        domain->dxx[k] = dxx_tmp[k] - vdovthird ;
+        domain->dyy[k] = dyy_tmp[k] - vdovthird ;
+        domain->dzz[k] = dzz_tmp[k] - vdovthird ;
 
         // See if any volumes are negative, and take appropriate action.
         if (domain->vnew[k] <= Real_t(0.0))
@@ -1829,6 +1906,10 @@ void CalcLagrangeElements(Domain *domain)
       Release(domain->dzz) ;
       Release(domain->dyy) ;
       Release(domain->dxx) ;
+
+      Release(dzz_tmp) ;
+      Release(dyy_tmp) ;
+      Release(dxx_tmp) ;
    }
 }
 
@@ -2273,6 +2354,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
 {
    const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
    Real_p pHalfStep = Allocate<Real_t>(length) ;
+   Real_p e_new_tmp = Allocate<Real_t>(length) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
       e_new[i] = e_old[i] - Real_t(0.5) * delvc[i] * (p_old[i] + q_old[i])
@@ -2286,6 +2368,12 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
 
    CalcPressureForElems(pHalfStep, bvc, pbvc, e_new, compHalfStep, vnewc,
                    pmin, p_cut, eosvmax, matElemList);
+
+   /* for FT */
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+      e_new_tmp[i] = e_new[i] ;
+    }
+   ) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
       Real_t vhalf = Real_t(1.) / (Real_t(1.) + compHalfStep[i]) ;
@@ -2306,7 +2394,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
          q_new[i] = (ssc*ql_old[i] + qq_old[i]) ;
       }
 
-      e_new[i] = e_new[i] + Real_t(0.5) * (delvc[i]
+      e_new[i] = e_new_tmp[i] + Real_t(0.5) * (delvc[i]
            * (  Real_t(3.0)*(p_old[i]     + q_old[i])
               - Real_t(4.0)*(pHalfStep[i] + q_new[i])) + work[i] ) ;
 
@@ -2321,6 +2409,12 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
 
    CalcPressureForElems(p_new, bvc, pbvc, e_new, compression, vnewc,
                    pmin, p_cut, eosvmax, matElemList);
+
+   /* for FT */
+   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+      e_new_tmp[i] = e_new[i] ;
+    }
+   ) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
       Real_t q_tilde ;
@@ -2341,7 +2435,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
          q_tilde = (ssc*ql_old[i] + qq_old[i]) ;
       }
 
-      e_new[i] = e_new[i] - (  Real_t(7.0)*(p_old[i]     + q_old[i])
+      e_new[i] = e_new_tmp[i] - (  Real_t(7.0)*(p_old[i]     + q_old[i])
                    - Real_t(8.0)*(pHalfStep[i] + q_new[i])
                    + (p_new[i] + q_tilde)) * delvc[i]*sixth ;
 
@@ -2376,6 +2470,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
+   Release(e_new_tmp) ;
    Release(pHalfStep) ;
 
    return ;
