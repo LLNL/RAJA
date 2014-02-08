@@ -2716,8 +2716,10 @@ int main(int argc, char *argv[])
       }
    }
 
-   printf("\t Mesh tiling = %i x %i x %i\n",
-          lulesh_xtile, lulesh_ytile, lulesh_ztile) ;
+   if (lulesh_tiling_mode != Canonical) {
+      printf("\t Mesh tiling = %i x %i x %i\n",
+             lulesh_xtile, lulesh_ytile, lulesh_ztile) ;
+   }
 
    /****************************/
    /*   Initialize Sedov Mesh  */
