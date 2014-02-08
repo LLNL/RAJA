@@ -221,18 +221,21 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 enum { VolumeError = -1, QStopError = -2 } ;
 
 
-#ifdef LULESH_FT
+#ifdef RAJA_USE_FT
 #include <unistd.h>
 #include <signal.h>
 
 /* fault_type:   == 0 no fault, < 0 unrecoverable, > 0 recoverable */
+namespace RAJA {
 volatile int fault_type = 0 ;
+}
+
 static struct sigaction sigalrmact ;
 
 static void simulate_fault(int sig)
 {
    /* 10% chance of unrecoverable fault */
-   fault_type = (rand() % 100) - 10 ;
+   RAJA::fault_type = (rand() % 100) - 10 ;
 }
 #endif
 
@@ -2809,7 +2812,7 @@ int main(int argc, char *argv[])
    Index_t edgeElems = lulesh_edge_elems ;
    Index_t edgeNodes = edgeElems+1 ;
 
-#ifdef LULESH_FT
+#ifdef RAJA_USE_FT
    /* mock up fault tolerance */
    sigalrmact.sa_handler = simulate_fault ;
    sigalrmact.sa_flags = 0 ;

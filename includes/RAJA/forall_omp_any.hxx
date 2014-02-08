@@ -53,14 +53,14 @@ void forall(omp_parallel_for_exec,
             LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma omp parallel for
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -79,14 +79,14 @@ void forall(omp_parallel_for_exec,
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma omp parallel for
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -110,7 +110,7 @@ void forall_minloc(omp_parallel_for_exec,
    T  min_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN
+   RAJA_FT_BEGIN
 
    for ( int i = 0; i < nthreads; ++i ) {
        min_tmp[i] = *min ;
@@ -130,7 +130,7 @@ void forall_minloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -178,7 +178,7 @@ void forall_maxloc(omp_parallel_for_exec,
    T  max_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
        max_tmp[i] = *max ;
@@ -198,7 +198,7 @@ void forall_maxloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -245,7 +245,7 @@ void forall_sum(omp_parallel_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       sum_tmp[i] = 0 ;
@@ -256,7 +256,7 @@ void forall_sum(omp_parallel_for_exec,
       loop_body( ii, &sum_tmp[omp_get_thread_num()] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       *sum += sum_tmp[i];
@@ -328,14 +328,14 @@ void forall(omp_parallel_for_exec,
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma omp parallel for
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -359,7 +359,7 @@ void forall_minloc(omp_parallel_for_exec,
    T  min_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
        min_tmp[i] = *min ;
@@ -379,7 +379,7 @@ void forall_minloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -428,7 +428,7 @@ void forall_maxloc(omp_parallel_for_exec,
    T  max_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
        max_tmp[i] = *max ;
@@ -448,7 +448,7 @@ void forall_maxloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -496,7 +496,7 @@ void forall_sum(omp_parallel_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( Index_type i = 0; i < nthreads; ++i ) {
       sum_tmp[i] = 0 ;
@@ -507,7 +507,7 @@ void forall_sum(omp_parallel_for_exec,
       loop_body( ii, &sum_tmp[omp_get_thread_num()] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       *sum += sum_tmp[i];
@@ -560,7 +560,7 @@ void forall(omp_parallel_for_exec,
             LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
 #pragma omp parallel for
@@ -568,7 +568,7 @@ void forall(omp_parallel_for_exec,
       loop_body( idx[k] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -587,7 +587,7 @@ void forall(omp_parallel_for_exec,
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
 #pragma omp parallel for
@@ -595,7 +595,7 @@ void forall(omp_parallel_for_exec,
       loop_body( idx[k] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 
@@ -620,7 +620,7 @@ void forall_minloc(omp_parallel_for_exec,
    T  min_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
        min_tmp[i] = *min ;
@@ -641,7 +641,7 @@ void forall_minloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -689,7 +689,7 @@ void forall_maxloc(omp_parallel_for_exec,
    T  max_tmp[nthreads];
    Index_type loc_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nthreads; ++i ) {
        max_tmp[i] = *max ;
@@ -710,7 +710,7 @@ void forall_maxloc(omp_parallel_for_exec,
       }
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -757,7 +757,7 @@ void forall_sum(omp_parallel_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nthreads];
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
    for ( int i = 0; i < nthreads; ++i ) {
       sum_tmp[i] = 0 ;
    }
@@ -768,7 +768,7 @@ void forall_sum(omp_parallel_for_exec,
       loop_body( idx[k], &sum_tmp[omp_get_thread_num()] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       *sum += sum_tmp[i];

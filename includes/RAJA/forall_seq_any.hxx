@@ -50,14 +50,14 @@ void forall(seq_exec,
             LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -76,14 +76,14 @@ void forall(seq_exec,
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -101,14 +101,14 @@ void forall_minloc(seq_exec,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -129,14 +129,14 @@ void forall_minloc(seq_exec,
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -155,14 +155,14 @@ void forall_maxloc(seq_exec,
                    LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -183,14 +183,14 @@ void forall_maxloc(seq_exec,
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -209,14 +209,14 @@ void forall_sum(seq_exec,
                 LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -237,14 +237,14 @@ void forall_sum(seq_exec,
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 
@@ -271,14 +271,14 @@ void forall(seq_exec,
             LOOP_BODY loop_body)
 {  
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -298,14 +298,14 @@ void forall(seq_exec,
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -323,14 +323,14 @@ void forall_minloc(seq_exec,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -352,14 +352,14 @@ void forall_minloc(seq_exec,
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -377,14 +377,14 @@ void forall_maxloc(seq_exec,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -406,14 +406,14 @@ void forall_maxloc(seq_exec,
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -431,14 +431,14 @@ void forall_sum(seq_exec,
                 T* sum, 
                 LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -460,14 +460,14 @@ void forall_sum(seq_exec,
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 
@@ -493,14 +493,14 @@ void forall(seq_exec,
             LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -519,13 +519,13 @@ void forall(seq_exec,
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -544,14 +544,14 @@ void forall_minloc(seq_exec,
                    LOOP_BODY loop_body)
 {
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -572,14 +572,14 @@ void forall_minloc(seq_exec,
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], min, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -597,14 +597,14 @@ void forall_maxloc(seq_exec,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -625,14 +625,14 @@ void forall_maxloc(seq_exec,
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], max, loc );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -650,14 +650,14 @@ void forall_sum(seq_exec,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 /*!
@@ -678,14 +678,14 @@ void forall_sum(seq_exec,
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
 
-   FT_BEGIN ;
+   RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], sum );
    }
 
-   FT_END ;
+   RAJA_FT_END ;
 }
 
 

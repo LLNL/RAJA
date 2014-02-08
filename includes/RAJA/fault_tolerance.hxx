@@ -66,7 +66,7 @@
 #else
 #define RAJA_FT_BEGIN \
    extern volatile int fault_type ; \
-   iool repeat ; \
+   bool repeat ; \
    if ( fault_type == 0) { \
       do { \
          repeat = false ;
