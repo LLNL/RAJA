@@ -19,11 +19,11 @@ OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
 #rzalastor
-RAJA_ARCH = x86_sse_icc
+#RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
-#RAJA_ARCH = x86_avx_icc
+RAJA_ARCH = x86_avx_icc
 #RAJA_ARCH = x86_avx_gnu
 
 #rzuseq
@@ -147,7 +147,7 @@ CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -299,11 +299,15 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 #TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
 
-OBJFILES_PAR = luleshRAJA-parallel-FT.o $(RAJAOBJS)
-OBJFILES_SER = luleshRAJA-serial.o $(RAJAOBJS)
+OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(RAJAOBJS)
+OBJFILES_PAR    = luleshRAJA-parallel.o $(RAJAOBJS)
+OBJFILES_SER    = luleshRAJA-serial.o $(RAJAOBJS)
 
 default:
 	echo "Please specify serial (make serial) or parallel (make parallel) version"
+
+parallel-ft: $(OBJFILES_PAR_FT)
+	$(CXX_COMPILE) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-parallel-ft.exe
 
 parallel: $(OBJFILES_PAR)
 	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-parallel.exe
