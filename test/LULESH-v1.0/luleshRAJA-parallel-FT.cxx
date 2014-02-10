@@ -2818,7 +2818,8 @@ int main(int argc, char *argv[])
    sigalrmact.sa_flags = 0 ;
    sigemptyset(&sigalrmact.sa_mask) ;
 
-   if (sigaction(SIGUSR1, &sigalrmact, NULL) < 0) {
+   printf("signal handler installed\n") ;
+   if (sigaction(SIGUSR2, &sigalrmact, NULL) < 0) {
       perror("sigaction") ;
       exit(2) ;
    }

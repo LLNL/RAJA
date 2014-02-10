@@ -28,7 +28,7 @@
 
 #ifdef RAJA_REPORT_FT
 #include "cycle.h"
-#include <stdio>
+#include <stdio.h>
 
 #define RAJA_FT_BEGIN \
    extern volatile int fault_type ; \
@@ -48,7 +48,7 @@
 #define RAJA_FT_END \
       if (do_time) { \
          stop = getticks() ; \
-         printf("recoverable fault time = %16f\n", elapsed(stop, start)/2.601e+9) ; \
+         printf("recoverable fault clock cycles = %16f\n", elapsed(stop, start)) ; \
          do_time = false ; \
          fault_type = 0 ; \
       } \
