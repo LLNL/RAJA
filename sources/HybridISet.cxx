@@ -109,9 +109,14 @@ HybridISet::~HybridISet()
 
 void HybridISet::swap(HybridISet& other)
 {
+#if defined(RAJA_USE_STL)
    using std::swap;
    swap(m_len, other.m_len);
    swap(m_segments, other.m_segments);
+#else
+   m_len = other.m_len;
+   m_segments = other.m_segments;
+#endif
 }
 
 
@@ -126,15 +131,13 @@ void HybridISet::swap(HybridISet& other)
 void HybridISet::addRangeIndices(Index_type begin, Index_type end)
 {
    RangeISet* new_is = new RangeISet(begin, end);
-   m_segments.push_back(Segment( _Range_, new_is ));
-   m_len += new_is->getLength();
+   addSegment( _Range_, new_is );
 }
 
 void HybridISet::addISet(const RangeISet& iset)
 {
    RangeISet* new_is = new RangeISet(iset);
-   m_segments.push_back(Segment( _Range_, new_is ));
-   m_len += new_is->getLength();
+   addSegment( _Range_, new_is );
 }
 
 #if 0  // RDH RETHINK
@@ -142,15 +145,13 @@ void HybridISet::addRangeStrideIndices(Index_type begin, Index_type end,
                                        Index_type stride)
 {
    RangeStrideISet* new_is = new RangeStrideISet(begin, end, stride);
-   m_segments.push_back( Segment( _RangeStride_, new_is ));
-   m_len += new_is->getLength();
+   addSegment( _RangeStride_, new_is );
 }
 
 void HybridISet::addISet(const RangeStrideISet& iset)
 {
    RangeStrideISet* new_is = new RangeStrideISet(iset);
-   m_segments.push_back(Segment( _RangeStride_, new_is, ));
-   m_len += new_is->getLength();
+   addSegment( _RangeStride_, new_is );
 }
 #endif
 
@@ -159,8 +160,7 @@ void HybridISet::addUnstructuredIndices(const Index_type* indx,
                                         IndexOwnership indx_own)
 {
    UnstructuredISet* new_is = new UnstructuredISet(indx, len, indx_own);
-   m_segments.push_back(Segment( _Unstructured_, new_is ));
-   m_len += new_is->getLength();
+   addSegment( _Unstructured_, new_is );
 }
 
 void HybridISet::addISet(const UnstructuredISet& iset, 
@@ -169,8 +169,7 @@ void HybridISet::addISet(const UnstructuredISet& iset,
    UnstructuredISet* new_is = new UnstructuredISet(iset.getIndex(),
                                                    iset.getLength(),
                                                    indx_own);
-   m_segments.push_back(Segment( _Unstructured_, new_is ));
-   m_len += new_is->getLength();
+   addSegment( _Unstructured_, new_is );
 }
 
 

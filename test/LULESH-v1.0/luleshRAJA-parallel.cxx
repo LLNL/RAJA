@@ -153,7 +153,8 @@ const int lulesh_ztile = 2;
 //
 // NOTE: If this changes to non-hybrid index set (i.e., basic segment
 //       type such as RAJA::RangeISet or RAJA::UnstructuredISet),
-//       then execution policy types need to change.
+//       then execution policy types need to change. Also, methods
+//       where index sets are created need to change.
 //
 typedef RAJA::HybridISet LULESH_INDEXSET;
 
@@ -171,10 +172,10 @@ typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec Segment_Exec;
 //typedef RAJA::cilk_for_exec         Segment_Exec;
 
-typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef std::pair<Hybrid_Seg_Iter, Segment_Exec> minloc_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> minloc_exec_policy;
 typedef                            Segment_Exec  range_exec_policy;
 
 
@@ -3044,11 +3045,11 @@ int main(int argc, char *argv[])
    /* Create domain ISets */
 
    /* always leave the nodes in a canonical ordering */
-   domain.domNodeList = new RAJA::HybridISet() ;
+   domain.domNodeList = new LULESH_INDEXSET() ;
    domain.domNodeList->addRangeIndices(0, domNodes) ;
 
-   domain.domElemList = new RAJA::HybridISet() ;
-   domain.matElemList = new RAJA::HybridISet() ;
+   domain.domElemList = new LULESH_INDEXSET() ;
+   domain.matElemList = new LULESH_INDEXSET() ;
 
    const Index_t xtile = lulesh_xtile ;
    const Index_t ytile = lulesh_ytile ;

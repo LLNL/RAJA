@@ -15,6 +15,11 @@
 
 #include <iostream>
 
+#if !defined(RAJA_USE_STL)
+#include <cstdio>
+#include <cstring>
+#endif
+
 namespace RAJA {
 
 
@@ -55,10 +60,16 @@ UnstructuredISet::~UnstructuredISet()
 
 void UnstructuredISet::swap(UnstructuredISet& other)
 {
+#if defined(RAJA_USE_STL)
    using std::swap;
    swap(m_indx, other.m_indx);
    swap(m_len, other.m_len);
    swap(m_indx_own, other.m_indx_own);
+#else
+   m_indx = other.m_indx;
+   m_len = other.m_len;
+   m_indx_own = m_indx_own;
+#endif
 }
 
 void UnstructuredISet::print(std::ostream& os) const
@@ -94,7 +105,11 @@ void UnstructuredISet::initIndexData(const Index_type* indx,
 
       if ( m_indx_own == Owned ) {
          m_indx = new Index_type[len];
+#if defined(RAJA_USE_STL)
          std::copy(indx, indx + m_len, m_indx);
+#else
+         memcpy(m_indx, indx, m_len*sizeof(Index_type));
+#endif
       } else {
          // Uh-oh. Using evil const_cast.... 
          m_indx = const_cast<Index_type*>(indx);

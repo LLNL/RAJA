@@ -34,6 +34,7 @@ namespace RAJA {
  *
  ******************************************************************************
  */
+#if defined(RAJA_USE_STL)
 template <typename INDEXSET_T>
 RAJA_INLINE
 std::vector<Index_type> getIndices(const INDEXSET_T& iset)
@@ -45,6 +46,22 @@ std::vector<Index_type> getIndices(const INDEXSET_T& iset)
    } );
    return ivec;
 }
+#else
+
+///
+/// No-stl version
+///
+template <typename INDEXSET_T>
+RAJA_INLINE
+RAJAVec<Index_type> getIndices(const INDEXSET_T& iset)
+{
+   RAJAVec<Index_type> ivec(iset.getLength());
+   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+      ivec.push_back(idx);
+   } );
+   return ivec;
+}
+#endif
 
 /*!
  ******************************************************************************
@@ -54,6 +71,7 @@ std::vector<Index_type> getIndices(const INDEXSET_T& iset)
  *
  ******************************************************************************
  */
+#if defined(RAJA_USE_STL)
 template <typename INDEXSET_T,
           typename CONDITIONAL>
 RAJA_INLINE
@@ -67,6 +85,24 @@ std::vector<Index_type> getIndicesConditional(const INDEXSET_T& iset,
    } );
    return ivec;
 }
+#else
+
+///
+/// No-stl version
+///
+template <typename INDEXSET_T,
+          typename CONDITIONAL>
+RAJA_INLINE
+RAJAVec<Index_type> getIndicesConditional(const INDEXSET_T& iset,
+                                          CONDITIONAL conditional)
+{
+   RAJAVec<Index_type> ivec(iset.getLength());
+   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+      if ( conditional( idx ) ) ivec.push_back(idx);
+   } );
+   return ivec;
+}
+#endif
 
 
 }  // closing brace for RAJA namespace

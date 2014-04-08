@@ -10,7 +10,9 @@
 //
 enum HybridBuildMethod {
    AddSegments = 0,
+#if defined(RAJA_USE_STL)
    AddSegmentsAsVectors,
+#endif
    AddSegmentsAsIndices,
 
    NumBuildMethods

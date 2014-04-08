@@ -304,7 +304,7 @@ OBJFILES_PAR    = luleshRAJA-parallel.o $(RAJAOBJS)
 OBJFILES_SER    = luleshRAJA-serial.o $(RAJAOBJS)
 
 default:
-	echo "Please specify serial (make serial) or parallel (make parallel) version"
+	echo "Please specify version to build make serial, make parallel, or make parallel-ft"
 
 parallel-ft: $(OBJFILES_PAR_FT)
 	$(CXX_COMPILE) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-parallel-ft.exe

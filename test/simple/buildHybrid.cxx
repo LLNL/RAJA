@@ -62,6 +62,7 @@ void buildHybrid(HybridISet& hindex, HybridBuildMethod build_method)
          break;
       }
 
+#if defined(RAJA_USE_STL)
       case AddSegmentsAsVectors : {
 
          hindex.addISet(index0);
@@ -88,6 +89,7 @@ void buildHybrid(HybridISet& hindex, HybridBuildMethod build_method)
 
          break;
       }
+#endif
 
       case AddSegmentsAsIndices : {
 

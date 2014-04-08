@@ -818,7 +818,7 @@ void forall_sum(omp_parallel_for_exec,
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall( std::pair<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+void forall( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
              const HybridISet& is, LOOP_BODY loop_body )
 {
    const int num_seg = is.getNumSegments();
@@ -880,7 +880,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc( std::pair<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+void forall_minloc( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
                     const HybridISet& is, 
                     T* min, Index_type *loc,
                     LOOP_BODY loop_body )
@@ -971,7 +971,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc( std::pair<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+void forall_maxloc( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
                     const HybridISet& is, 
                     T* max, Index_type *loc,
                     LOOP_BODY loop_body )
@@ -1062,7 +1062,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum( std::pair<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+void forall_sum( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
                  const HybridISet& is,
                  T* sum,
                  LOOP_BODY loop_body )

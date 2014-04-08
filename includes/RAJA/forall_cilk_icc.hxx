@@ -739,7 +739,7 @@ void forall_sum(cilk_for_exec,
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
+void forall( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
              const HybridISet& is, LOOP_BODY loop_body )
 {
    const int num_seg = is.getNumSegments();
@@ -798,7 +798,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
+void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
                     const HybridISet& is,
                     T* min, Index_type *loc,
                     LOOP_BODY loop_body )
@@ -887,7 +887,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
+void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
                     const HybridISet& is,
                     T* max, Index_type *loc,
                     LOOP_BODY loop_body )
@@ -975,7 +975,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum( std::pair<cilk_for_segit, SEG_EXEC_POLICY_T>,
+void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
                  const HybridISet& is,
                  T* sum,
                  LOOP_BODY loop_body )

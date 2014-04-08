@@ -27,7 +27,6 @@
 #include "config.hxx"
 
 #include<complex>
-#include<algorithm>
 
 namespace RAJA {
 

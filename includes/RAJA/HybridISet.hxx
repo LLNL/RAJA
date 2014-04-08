@@ -20,9 +20,12 @@
 
 #include "execpolicy.hxx"
 
+#include "RAJAVec.hxx"
 
-#include <vector>
+#if defined(RAJA_USE_STL)
 #include <utility>
+#endif
+
 #include <iosfwd>
 
 
@@ -46,9 +49,19 @@ class HybridISet
 public:
 
    ///
+   /// Nested class representing hybrid index set execution policy. 
+   ///
+   /// The first template parameter describes the policy for iterating
+   /// over segments.  The second describes the execution policy for 
+   /// each segment.
+   ///
+   template< typename SEG_ITER_POLICY_T,
+             typename SEG_EXEC_POLICY_T > struct ExecPolicy{ };
+
+   ///
    /// Sequential execution policy for hybrid index set.
    ///
-   typedef std::pair<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
+   typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
    ///
    /// Construct empty hybrid index set
@@ -61,6 +74,7 @@ public:
    ///
    HybridISet(const Index_type* const indices_in, Index_type length);
 
+#if defined(RAJA_USE_STL)
    ///
    /// Construct hybrid index set from arbitrary object containing indices
    /// using parametrized method buildHybridISet().
@@ -68,6 +82,7 @@ public:
    /// The object must provide the methods: size(), begin(), end().
    ///
    template< typename T> explicit HybridISet(const T& indx);
+#endif
 
    ///
    /// Copy-constructor for hybrid index set
@@ -147,14 +162,18 @@ public:
    ///
    /// Return total number of segments in hybrid index set.
    ///
-   int getNumSegments() const { return m_segments.size(); } 
+   int getNumSegments() const { 
+      return m_segments.size(); 
+   } 
 
    ///
    /// Return enum value defining type of segment 'i'.
    /// 
    /// Note: No error-checking on segment index.
    ///
-   SegmentType getSegmentType(int i) const { return m_segments[i].m_type; } 
+   SegmentType getSegmentType(int i) const { 
+      return m_segments[i].m_type; 
+   }
 
    ///
    /// Return const void pointer to index set for segment 'i'.
@@ -164,7 +183,9 @@ public:
    ///
    ///        No error-checking on segment index.
    ///
-   const void* getSegmentISet(int i) const { return m_segments[i].m_iset; } 
+   const void* getSegmentISet(int i) const { 
+      return m_segments[i].m_iset; 
+   } 
 
    ///
    /// Return enum value indicating whether segment 'i' index set owns the 
@@ -172,8 +193,9 @@ public:
    /// 
    /// Note: No error-checking on segment index.
    ///
-   IndexOwnership segmentIndexOwnership(int i) const 
-      { return m_segments[i].m_indx_own; } 
+   IndexOwnership segmentIndexOwnership(int i) const {
+      return m_segments[i].m_indx_own; 
+   } 
 
    ///
    /// Print hybrid index set data, including segments, to given output stream.
@@ -187,7 +209,7 @@ private:
    void copy(const HybridISet& other);
 
    ///
-   /// Nested class representing an index segment of a hybrid index set.
+   /// Private nested class to hold an index segment of a hybrid index set.
    ///
    /// A segment is defined by its type and its index set object.
    ///
@@ -210,8 +232,19 @@ private:
       IndexOwnership m_indx_own;
    };
 
+   //
+   // Helper function to add segment.
+   //
+   template< typename SEG_T> 
+   void addSegment(SegmentType seg_type, const SEG_T* seg)
+   {
+      m_segments.push_back(Segment( seg_type, seg ));
+      m_len += seg->getLength();
+   } 
+
+   ///
    Index_type  m_len;
-   std::vector<Segment> m_segments;
+   RAJAVec<Segment> m_segments;
 
 }; 
 
@@ -232,6 +265,7 @@ void buildHybridISet(HybridISet& hiset,
                      const Index_type* const indices_in,
                      Index_type length);
 
+#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -246,11 +280,13 @@ HybridISet::HybridISet(const T& indx)
    std::vector<Index_type> vec(indx.begin(), indx.end());
    buildHybridISet(*this, &vec[0], vec.size());
 }
+#endif
 
 
 }  // closing brace for RAJA namespace
 
 
+#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -268,5 +304,6 @@ void swap(RAJA::HybridISet& a, RAJA::HybridISet& b)
 }
 
 }
+#endif
 
 #endif  // closing endif for header file include guard

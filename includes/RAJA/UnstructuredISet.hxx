@@ -20,9 +20,11 @@
 
 #include "execpolicy.hxx"
 
-#include <algorithm>
-#include <iosfwd> 
+#if defined(RAJA_USE_STL)
 #include <utility> 
+#endif
+
+#include <iosfwd> 
 
 
 namespace RAJA {
@@ -62,6 +64,7 @@ public:
    UnstructuredISet(const Index_type* indx, Index_type len,
                     IndexOwnership indx_own = Owned);
 
+#if defined(RAJA_USE_STL)
    ///
    /// Construct unstructured index set from arbitrary object holding 
    /// indices using a deep copy of given data.
@@ -69,6 +72,7 @@ public:
    /// The object must provide methods: empty(), begin(), end().
    ///
    template< typename T> explicit UnstructuredISet(const T& indx);
+#endif
 
    ///
    /// Copy-constructor for unstructured index set
@@ -130,6 +134,7 @@ private:
 };
 
 
+#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -148,11 +153,13 @@ UnstructuredISet::UnstructuredISet(const T& indx)
       m_indx_own = Owned;
    } 
 }
+#endif
 
 
 }  // closing brace for RAJA namespace 
 
 
+#if defined(RAJA_USE_STL)
 /*!
  *  Specialization of std swap method.
  */ 
@@ -166,6 +173,7 @@ void swap(RAJA::UnstructuredISet& a, RAJA::UnstructuredISet& b)
 }
 
 }
+#endif
 
 
 #endif  // closing endif for header file include guard
