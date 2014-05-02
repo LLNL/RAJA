@@ -56,7 +56,11 @@ public:
    /// each segment.
    ///
    template< typename SEG_ITER_POLICY_T,
-             typename SEG_EXEC_POLICY_T > struct ExecPolicy{ };
+             typename SEG_EXEC_POLICY_T > struct ExecPolicy
+   {
+      typedef SEG_ITER_POLICY_T seg_it;
+      typedef SEG_EXEC_POLICY_T seg_exec;
+   };
 
    ///
    /// Sequential execution policy for hybrid index set.
