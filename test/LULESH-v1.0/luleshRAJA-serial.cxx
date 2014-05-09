@@ -68,6 +68,24 @@ Additional BSD Notice
 
 #include "RAJA/RAJA.hxx"
 
+//
+// Simple timer class to time code sections.
+//
+#include <time.h>
+struct MyTimer
+{
+   clock_t tstart;
+   clock_t tstop;
+
+   MyTimer() : tstart(0), tstop(0) { ; }
+
+   void start() { tstart = clock(); }
+   void stop()  { tstop = clock(); }
+
+   double elapsed() 
+   { return static_cast<double>(tstop - tstart) / CLOCKS_PER_SEC; }
+};
+
 
 /*
  ***********************************************
@@ -78,7 +96,7 @@ Additional BSD Notice
 //
 // Display simulation time and timestep during run.
 //
-const bool show_run_progress = true;
+const bool show_run_progress = false;
 
 //
 // Set stop time and time increment for run.
@@ -138,7 +156,7 @@ const int lulesh_ztile = 2;
 //       then execution policy types need to change. Also, methods
 //       where index sets are created need to change.
 //
-typedef RAJA::HybridISet LULESH_INDEXSET;
+typedef RAJA::HybridISet LULESH_ISET;
 
 //
 //   Policies for hybrid segment iteration and segment execution.
@@ -150,10 +168,10 @@ typedef RAJA::seq_segit Hybrid_Seg_Iter;
 //typedef RAJA::seq_exec Segment_Exec;
 typedef RAJA::simd_exec Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> minloc_exec_policy;
+typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> minloc_exec_policy;
 typedef                            Segment_Exec  range_exec_policy;
 
 
@@ -210,8 +228,8 @@ enum { VolumeError = -1, QStopError = -2 } ;
 struct Domain {
    /* Elem-centered */
 
-   LULESH_INDEXSET *domElemList ;   /* elem indexset */
-   LULESH_INDEXSET *matElemList ;   /* material indexset */
+   LULESH_ISET *domElemList ;   /* elem indexset */
+   LULESH_ISET *matElemList ;   /* material indexset */
    Index_p nodelist ;     /* elemToNode connectivity */
 
    Index_p lxim ;         /* elem connectivity through face */
@@ -261,7 +279,7 @@ struct Domain {
 
    /* Node-centered */
 
-   LULESH_INDEXSET *domNodeList ;   /* node indexset */
+   LULESH_ISET *domNodeList ;   /* node indexset */
 
    Real_p x ;             /* coordinates */
    Real_p y ;
@@ -446,7 +464,7 @@ void TimeIncrement(Domain *domain)
 RAJA_STORAGE
 void InitStressTermsForElems(Real_p p, Real_p q,
                              Real_p sigxx, Real_p sigyy, Real_p sigzz,
-                             LULESH_INDEXSET *domElemList)
+                             LULESH_ISET *domElemList)
 {
    //
    // pull in the stresses appropriate to the hydro integration
@@ -699,7 +717,7 @@ void IntegrateStressForElems( Index_p nodelist,
                               Real_p x,  Real_p y,  Real_p z,
                               Real_p fx, Real_p fy, Real_p fz,
                               Real_p sigxx, Real_p sigyy, Real_p sigzz,
-                              Real_p determ, LULESH_INDEXSET *domElemList)
+                              Real_p determ, LULESH_ISET *domElemList)
 {
   // loop over all elements
   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
@@ -1076,7 +1094,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
                                    Real_p  determ,
                                    Real_p  x8n, Real_p  y8n, Real_p  z8n,
                                    Real_p  dvdx, Real_p  dvdy, Real_p  dvdz,
-                                   Real_t hourg, LULESH_INDEXSET *domElemList)
+                                   Real_t hourg, LULESH_ISET *domElemList)
 {
    /*************************************************
     *
@@ -1366,7 +1384,7 @@ void CalcForceForNodes(Domain *domain)
 RAJA_STORAGE
 void CalcAccelerationForNodes(Real_p xdd, Real_p ydd, Real_p zdd,
                               Real_p fx, Real_p fy, Real_p fz,
-                              Real_p nodalMass, LULESH_INDEXSET *domNodeList)
+                              Real_p nodalMass, LULESH_ISET *domNodeList)
 {
    RAJA::forall<node_exec_policy>(*domNodeList, [&] (int i) {
       xdd[i] = fx[i] / nodalMass[i];
@@ -1396,7 +1414,7 @@ RAJA_STORAGE
 void CalcVelocityForNodes(Real_p xd,  Real_p yd,  Real_p zd,
                           Real_p xdd, Real_p ydd, Real_p zdd,
                           const Real_t dt, const Real_t u_cut,
-                          LULESH_INDEXSET *domNodeList)
+                          LULESH_ISET *domNodeList)
 {
    RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
      Real_t xdtmp, ydtmp, zdtmp ;
@@ -1420,7 +1438,7 @@ void CalcVelocityForNodes(Real_p xd,  Real_p yd,  Real_p zd,
 RAJA_STORAGE
 void CalcPositionForNodes(Real_p x,  Real_p y,  Real_p z,
                           Real_p xd, Real_p yd, Real_p zd,
-                          const Real_t dt, LULESH_INDEXSET *domNodeList)
+                          const Real_t dt, LULESH_ISET *domNodeList)
 {
    RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
      x[i] += xd[i] * dt ;
@@ -1690,7 +1708,7 @@ void CalcKinematicsForElems( Index_p nodelist,
                              Real_p dxx, Real_p dyy, Real_p dzz,
                              Real_p v, Real_p volo,
                              Real_p vnew, Real_p delv, Real_p arealg,
-                             Real_t deltaTime, LULESH_INDEXSET *domElemList )
+                             Real_t deltaTime, LULESH_ISET *domElemList )
 {
   // loop over all elements
   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
@@ -1814,7 +1832,7 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
                                      Real_p delx_eta,
                                      Real_p delx_zeta,
                                      Index_p nodelist,
-                                     LULESH_INDEXSET *domElemList)
+                                     LULESH_ISET *domElemList)
 {
 #define SUM4(a,b,c,d) (a + b + c + d)
 
@@ -1963,7 +1981,7 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
 
 RAJA_STORAGE
 void CalcMonotonicQRegionForElems(
-                           LULESH_INDEXSET *matElemList, Index_p elemBC,
+                           LULESH_ISET *matElemList, Index_p elemBC,
                            Index_p lxim,   Index_p lxip,
                            Index_p letam,  Index_p letap,
                            Index_p lzetam, Index_p lzetap,
@@ -2205,7 +2223,7 @@ void CalcPressureForElems(Real_p p_new, Real_p bvc,
                           Real_p compression, Real_p vnewc,
                           Real_t pmin,
                           Real_t p_cut, Real_t eosvmax,
-                          LULESH_INDEXSET *matElemList)
+                          LULESH_ISET *matElemList)
 {
    const Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
    RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
@@ -2239,7 +2257,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
                         Real_p qq_old, Real_p ql_old,
                         Real_t rho0,
                         Real_t eosvmax,
-                        LULESH_INDEXSET *matElemList,
+                        LULESH_ISET *matElemList,
                         Index_t length)
 {
    const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
@@ -2353,7 +2371,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
 }
 
 RAJA_STORAGE
-void CalcSoundSpeedForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcSoundSpeedForElems(LULESH_ISET *matElemList, Real_p ss,
                             Real_p vnewc, Real_t rho0, Real_p enewc,
                             Real_p pnewc, Real_p pbvc,
                             Real_p bvc, Real_t ss4o3)
@@ -2571,7 +2589,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
 }
 
 RAJA_STORAGE
-void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcCourantConstraintForElems(LULESH_ISET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
@@ -2614,7 +2632,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
 }
 
 RAJA_STORAGE
-void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
+void CalcHydroConstraintForElems(LULESH_ISET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
    Real_t min_val = Real_t(1.0e+20) ;
@@ -2669,6 +2687,13 @@ void LagrangeLeapFrog(Domain *domain)
 
 int main(int argc, char *argv[])
 {
+
+   MyTimer timer_main;
+   MyTimer timer_cycle;
+
+   timer_main.start();
+
+
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
    struct Domain domain ;
@@ -3005,11 +3030,11 @@ int main(int argc, char *argv[])
    /* Create domain ISets */
 
    /* always leave the nodes in a canonical ordering */
-   domain.domNodeList = new LULESH_INDEXSET() ;
+   domain.domNodeList = new LULESH_ISET() ;
    domain.domNodeList->addRangeIndices(0, domNodes) ;
 
-   domain.domElemList = new LULESH_INDEXSET() ;
-   domain.matElemList = new LULESH_INDEXSET() ;
+   domain.domElemList = new LULESH_ISET() ;
+   domain.matElemList = new LULESH_ISET() ;
 
    const Index_t xtile = lulesh_xtile ;
    const Index_t ytile = lulesh_ytile ;
@@ -3176,6 +3201,7 @@ int main(int argc, char *argv[])
    }
 
    /* timestep to solution */
+   timer_cycle.start();
    while(domain.time < domain.stoptime) {
       TimeIncrement(&domain) ;
       LagrangeLeapFrog(&domain) ;
@@ -3185,6 +3211,12 @@ int main(int argc, char *argv[])
                 double(domain.time), double(domain.deltatime) ) ;
       }
    }
+   timer_cycle.stop();
+
+   timer_main.stop();
+
+   printf("Total Cycle Time (sec) = %g\n", timer_cycle.elapsed() );
+   printf("Total main Time (sec) = %g\n", timer_main.elapsed() );
 
    return 0 ;
 }
