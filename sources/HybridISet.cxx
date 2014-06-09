@@ -191,6 +191,7 @@ void HybridISet::print(std::ostream& os) const
    for ( int isi = 0; isi < num_segs; ++isi ) {
       SegmentType segtype = getSegmentType(isi);
       const void* iset = getSegmentISet(isi);
+      Index_type ioffset = getSegmentOffset(isi);
 
       os << "\tSegment " << isi << " : " << std::endl;
 
@@ -201,6 +202,7 @@ void HybridISet::print(std::ostream& os) const
                const RangeISet* is =
                   static_cast<const RangeISet*>(iset);
                is->print(os);
+               os << "Ioffset = " << ioffset << std::endl; 
             } else {
                os << "_Range_ is null" << std::endl;
             }
@@ -213,6 +215,7 @@ void HybridISet::print(std::ostream& os) const
                const RangeStrideISet* is =
                   static_cast<const RangeStrideISet*>(iset);
                is->print(os);
+               os << "Ioffset = " << ioffset << std::endl; 
             } else {
                os << "_RangeStride_ is null" << std::endl;
             }
@@ -225,6 +228,7 @@ void HybridISet::print(std::ostream& os) const
                const UnstructuredISet* is =
                   static_cast<const UnstructuredISet*>(iset);
                is->print(os);
+               os << "Ioffset = " << ioffset << std::endl; 
             } else {
                os << "_Unstructured_ is null" << std::endl;
             }
