@@ -192,16 +192,6 @@ public:
    } 
 
    ///
-   /// Return enum value indicating whether segment 'i' index set owns the 
-   /// data representing its indices.
-   /// 
-   /// Note: No error-checking on segment index.
-   ///
-   IndexOwnership getSegmentIndexOwnership(int i) const {
-      return m_segments[i].m_indx_own; 
-   } 
-
-   ///
    /// Return Index_type value indicating hybrid index count associated with
    /// start of segment 'i'.
    ///
@@ -240,12 +230,11 @@ private:
    {
    public:
       Segment() 
-         : m_type(_Unknown_), m_iset(0), m_indx_own(Unowned), m_offset(0) { ; } 
+         : m_type(_Unknown_), m_iset(0), m_offset(0) { ; } 
 
       template <typename ISET>
       Segment(SegmentType type,  const ISET* iset, Index_type offset)
-         : m_type(type), m_iset(iset), m_indx_own(iset->indexOwnership()),
-           m_offset(offset) { ; }
+         : m_type(type), m_iset(iset), m_offset(offset) { ; }
 
       ///
       /// Using compiler-provided dtor, copy ctor, copy-assignment.
@@ -253,7 +242,6 @@ private:
 
       SegmentType m_type;
       const void* m_iset;
-      IndexOwnership m_indx_own;
 
       Index_type m_offset;
    };
