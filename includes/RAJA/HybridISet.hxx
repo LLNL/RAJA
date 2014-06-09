@@ -197,9 +197,19 @@ public:
    /// 
    /// Note: No error-checking on segment index.
    ///
-   IndexOwnership segmentIndexOwnership(int i) const {
+   IndexOwnership getSegmentIndexOwnership(int i) const {
       return m_segments[i].m_indx_own; 
    } 
+
+   ///
+   /// Return Index_type value indicating hybrid index count associated with
+   /// start of segment 'i'.
+   ///
+   /// Note: No error-checking on segment index.
+   ///
+   Index_type getSegmentOffset(int i) const {
+      return m_segments[i].m_offset;
+   }
 
    ///
    /// Print hybrid index set data, including segments, to given output stream.
@@ -217,15 +227,25 @@ private:
    ///
    /// A segment is defined by its type and its index set object.
    ///
+   /// The offset value can be provided as a second argument to 
+   /// forall_Ioff( ) iteration methods to map between "global" and "local"
+   /// indices. Here, global refers to the actual index values in the 
+   /// hybrid segments and local refers to an iteration count through a
+   /// segment when some offset is applied.  For example, the offset could 
+   /// be the total length over all segments in a hybrid preceding a given 
+   /// segment. Then, the offset value applied to the segment iteration 
+   /// count would be the overall iteration count in the hybrid traversal. 
+   ///
    class Segment
    {
    public:
       Segment() 
-         : m_type(_Unknown_), m_iset(0), m_indx_own(Unowned) { ; } 
+         : m_type(_Unknown_), m_iset(0), m_indx_own(Unowned), m_offset(0) { ; } 
 
       template <typename ISET>
-      Segment(SegmentType type,  const ISET* iset)
-         : m_type(type), m_iset(iset), m_indx_own(iset->indexOwnership()) { ; }
+      Segment(SegmentType type,  const ISET* iset, Index_type offset)
+         : m_type(type), m_iset(iset), m_indx_own(iset->indexOwnership()),
+           m_offset(offset) { ; }
 
       ///
       /// Using compiler-provided dtor, copy ctor, copy-assignment.
@@ -234,6 +254,8 @@ private:
       SegmentType m_type;
       const void* m_iset;
       IndexOwnership m_indx_own;
+
+      Index_type m_offset;
    };
 
    //
@@ -242,7 +264,7 @@ private:
    template< typename SEG_T> 
    void addSegment(SegmentType seg_type, const SEG_T* seg)
    {
-      m_segments.push_back(Segment( seg_type, seg ));
+      m_segments.push_back(Segment( seg_type, seg, m_len ));
       m_len += seg->getLength();
    } 
 

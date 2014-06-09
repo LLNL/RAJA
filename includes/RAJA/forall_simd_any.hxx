@@ -46,7 +46,7 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            Index_type begin, Index_type end, 
+            const Index_type begin, const Index_type end, 
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -54,6 +54,34 @@ void forall(simd_exec,
 RAJA_SIMD
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  SIMD iteration over index range, including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = end - begin + 1;
+
+   RAJA_FT_BEGIN ;
+
+RAJA_SIMD
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -88,6 +116,35 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
+ * \brief  SIMD iteration over index range set object, including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const RangeISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin = is.getBegin();
+   const Index_type loop_end = is.getEnd() - is.getBegin() + 1;
+
+   RAJA_FT_BEGIN ;
+
+RAJA_SIMD
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, ii+begin );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  SIMD minloc reduction over index range.
  *         No assumption made on data alignment.
  *
@@ -97,7 +154,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   Index_type begin, Index_type end,
+                   const Index_type begin, const Index_type end,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -151,7 +208,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   Index_type begin, Index_type end,
+                   const Index_type begin, const Index_type end,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -205,7 +262,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                Index_type begin, Index_type end,
+                const Index_type begin, const Index_type end,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -267,7 +324,8 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            Index_type begin, Index_type end, Index_type stride,
+            const Index_type begin, const Index_type end, 
+            const Index_type stride,
             LOOP_BODY loop_body)
 {  
    RAJA_FT_BEGIN ;
@@ -275,6 +333,35 @@ void forall(simd_exec,
 RAJA_SIMD
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  SIMD iteration over index range with stride, including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type stride,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = (end-begin)/stride + 1;
+
+   RAJA_FT_BEGIN ;
+
+RAJA_SIMD
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -310,6 +397,37 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
+ * \brief  SIMD iteration over range index set with stride object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const RangeStrideISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin    = is.getBegin();
+   const Index_type stride   = is.getStride();
+   const Index_type loop_end = is.getLength();
+
+   RAJA_FT_BEGIN ;
+
+RAJA_SIMD
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, begin + ii*stride );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  SIMD minloc reduction over index range with stride.
  *         No assumption made on data alignment.
  *
@@ -319,7 +437,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -374,7 +493,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -429,7 +549,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                Index_type begin, Index_type end, Index_type stride,
+                const Index_type begin, const Index_type end,
+                const Index_type stride,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -510,6 +631,34 @@ void forall(simd_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  "Fake" SIMD iteration over indices in indirection array,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const Index_type* __restrict__ idx, const Index_type len,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+offset, idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+
+/*!
+ ******************************************************************************
+ *
  * \brief  "Fake" SIMD iteration over unstructured index set object.
  *
  ******************************************************************************
@@ -528,6 +677,36 @@ void forall(simd_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  "Fake" SIMD iteration over unstructured index set object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(simd_exec,
+                 const UnstructuredISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = is.getIndex();
+   const Index_type len = is.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+offset, idx[k] );
    }
 
    RAJA_FT_END ;

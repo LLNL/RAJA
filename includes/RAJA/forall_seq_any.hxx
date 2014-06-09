@@ -46,7 +46,7 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            Index_type begin, Index_type end, 
+            const Index_type begin, const Index_type end, 
             LOOP_BODY loop_body)
 {
 
@@ -55,6 +55,34 @@ void forall(seq_exec,
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over index range, including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = end - begin + 1;
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+ioffset, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -89,6 +117,36 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  Sequential iteration over index range set object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const RangeISet& is,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin = is.getBegin();
+   const Index_type loop_end = is.getEnd() - is.getBegin() + 1;
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+ioffset, ii+begin );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Sequential minloc reduction over index range.
  *
  ******************************************************************************
@@ -97,7 +155,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(seq_exec,
-                   Index_type begin, Index_type end, 
+                   const Index_type begin, const Index_type end, 
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -150,7 +208,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(seq_exec,
-                   Index_type begin, Index_type end,
+                   const Index_type begin, const Index_type end,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -204,7 +262,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
-                Index_type begin, Index_type end,
+                const Index_type begin, const Index_type end,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -267,7 +325,8 @@ void forall_sum(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            Index_type begin, Index_type end, Index_type stride,
+            const Index_type begin, const Index_type end,
+            const Index_type stride,
             LOOP_BODY loop_body)
 {  
 
@@ -276,6 +335,36 @@ void forall(seq_exec,
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over index range with stride,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type stride,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = (end-begin)/stride + 1;
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+ioffset, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -311,6 +400,37 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  Sequential iteration over range index set with stride object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const RangeStrideISet& is,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin    = is.getBegin();
+   const Index_type stride   = is.getStride();
+   const Index_type loop_end = is.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+ioffset, begin + ii*stride );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Sequential minloc reduction over index range with stride.
  *
  ******************************************************************************
@@ -319,7 +439,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(seq_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -373,7 +494,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(seq_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -427,7 +549,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
-                Index_type begin, Index_type end, Index_type stride,
+                const Index_type begin, const Index_type end,
+                const Index_type stride,
                 T* sum, 
                 LOOP_BODY loop_body)
 {
@@ -492,7 +615,6 @@ void forall(seq_exec,
             const Index_type* __restrict__ idx, const Index_type len,
             LOOP_BODY loop_body)
 {
-
    RAJA_FT_BEGIN ;
 
 #pragma novector
@@ -502,6 +624,34 @@ void forall(seq_exec,
 
    RAJA_FT_END ;
 }
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over indices in indirection array,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const Index_type* __restrict__ idx, const Index_type len,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+ioffset, idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
 
 /*!
  ******************************************************************************
@@ -520,9 +670,40 @@ void forall(seq_exec,
    const Index_type len = is.getLength();
 
    RAJA_FT_BEGIN ;
+
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over unstructured index set object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(seq_exec,
+                 const UnstructuredISet& is,
+                 const Index_type ioffset, 
+                 LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = is.getIndex();
+   const Index_type len = is.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+ioffset, idx[k] );
    }
 
    RAJA_FT_END ;
@@ -543,7 +724,6 @@ void forall_minloc(seq_exec,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-
    RAJA_FT_BEGIN ;
 
 #pragma novector
@@ -757,6 +937,74 @@ void forall( HybridISet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
    } // iterate over segments of hybrid index set
 }
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over segments of hybrid index set and
+ *         use execution policy template parameter to execute segments.
+ *
+ *         This method passes index offset to segment iteration.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff( HybridISet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                  const HybridISet& is, 
+                  LOOP_BODY loop_body )
+{
+   const int num_seg = is.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
+      Index_type ioffset = is.getSegmentOffset(isi);
+
+      switch ( segtype ) {
+
+         case _Range_ : {
+            forall_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const RangeISet*>(iset)),
+               ioffset,
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStride_ : {
+            forall_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const RangeStrideISet*>(iset)),
+               ioffset,
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _Unstructured_ : {
+            forall_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const UnstructuredISet*>(iset)),
+               ioffset,
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of hybrid index set
+}
+
 
 /*!
  ******************************************************************************

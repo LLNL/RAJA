@@ -47,13 +47,43 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            Index_type begin, Index_type end, 
+            const Index_type begin, const Index_type end, 
             LOOP_BODY loop_body)
 {
-#pragma ivdep
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over index range, including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = end - begin + 1;
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, ii+begin );
+   }
+
+   RAJA_FT_END ;
 }
 
 /*!
@@ -71,10 +101,43 @@ void forall(cilk_for_exec,
 {
    const Index_type begin = is.getBegin();
    const Index_type end   = is.getEnd();
-#pragma ivdep
+
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over index range set object, 
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const RangeISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin = is.getBegin();
+   const Index_type loop_end = is.getEnd() - begin + 1;
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, ii+begin );
+   }
+
+   RAJA_FT_END ;
 }
 
 /*!
@@ -88,7 +151,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cilk_for_exec,
-                   Index_type begin, Index_type end,
+                   const Index_type begin, const Index_type end,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -97,6 +160,8 @@ void forall_minloc(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  min_tmp[nworkers];
    Index_type loc_tmp[nworkers];
+
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nworkers; ++i ) {
        min_tmp[i] = *min ;
@@ -114,6 +179,8 @@ void forall_minloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -151,7 +218,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(cilk_for_exec,
-                   Index_type begin, Index_type end,
+                   const Index_type begin, const Index_type end,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -160,6 +227,8 @@ void forall_maxloc(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  max_tmp[nworkers];
    Index_type loc_tmp[nworkers];
+
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nworkers; ++i ) {
        max_tmp[i] = *max ;
@@ -177,6 +246,8 @@ void forall_maxloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -214,7 +285,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(cilk_for_exec,
-                Index_type begin, Index_type end,
+                const Index_type begin, const Index_type end,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -223,6 +294,8 @@ void forall_sum(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nworkers];
 
+   RAJA_FT_BEGIN ;
+
    for ( int i = 0; i < nworkers; ++i ) {
        sum_tmp[i] = 0 ;
    }
@@ -230,6 +303,8 @@ void forall_sum(cilk_for_exec,
    cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, &sum_tmp[__cilkrts_get_worker_number()] );
    }
+
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nworkers; ++i ) {
       *sum += sum_tmp[i];
@@ -276,13 +351,46 @@ void forall_sum(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            Index_type begin, Index_type end, Index_type stride,
+            const Index_type begin, const Index_type end, 
+            const Index_type stride,
             LOOP_BODY loop_body)
 {                    
-#pragma ivdep
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over index range with stride,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const Index_type begin, const Index_type end,
+                 const Index_type stride,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type loop_end = (end-begin)/stride + 1;
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, begin + ii*stride );
+   }
+
+   RAJA_FT_END ;
 }
 
 /*!
@@ -301,11 +409,46 @@ void forall(cilk_for_exec,
    const Index_type begin  = is.getBegin();
    const Index_type end    = is.getEnd();
    const Index_type stride = is.getStride();
-#pragma ivdep
+
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
+
+   RAJA_FT_END ;
 }
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over range index set with stride object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const RangeStrideISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type begin    = is.getBegin();
+   const Index_type stride   = is.getStride();
+   const Index_type loop_end = (is.getEnd()-begin)/stride + 1;
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+offset, begin + ii*stride );
+   }
+
+   RAJA_FT_END ;
+}
+
 
 /*!
  ******************************************************************************
@@ -318,7 +461,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cilk_for_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end, 
+                   const Index_type stride,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -327,6 +471,8 @@ void forall_minloc(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  min_tmp[nworkers];
    Index_type loc_tmp[nworkers];
+
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nworkers; ++i ) {
        min_tmp[i] = *min ;
@@ -344,6 +490,8 @@ void forall_minloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -381,7 +529,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(cilk_for_exec,
-                   Index_type begin, Index_type end, Index_type stride,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -390,6 +539,8 @@ void forall_maxloc(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  max_tmp[nworkers];
    Index_type loc_tmp[nworkers];
+
+   RAJA_FT_BEGIN ;
 
    for ( int i = 0; i < nworkers; ++i ) {
        max_tmp[i] = *max ;
@@ -407,6 +558,8 @@ void forall_maxloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -444,7 +597,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(cilk_for_exec,
-                Index_type begin, Index_type end, Index_type stride,
+                const Index_type begin, const Index_type end,
+                const Index_type stride,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -453,6 +607,8 @@ void forall_sum(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nthreads];
 
+   RAJA_FT_BEGIN ;
+
    for ( int i = 0; i < nthreads; ++i ) {
       sum_tmp[i] = 0 ;
    }
@@ -460,6 +616,8 @@ void forall_sum(cilk_for_exec,
    cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii, &sum_tmp[__cilkrts_get_worker_number()] );
    }
+
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       *sum += sum_tmp[i];
@@ -510,10 +668,39 @@ void forall(cilk_for_exec,
             const Index_type* __restrict__ idx, const Index_type len,
             LOOP_BODY loop_body)
 {
-#pragma ivdep
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over indirection array,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const Index_type* __restrict__ idx, const Index_type len,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+offset, idx[k] );
+   }
+
+   RAJA_FT_END ;
 }
 
 /*!
@@ -531,10 +718,43 @@ void forall(cilk_for_exec,
 {
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
-#pragma ivdep
+
+   RAJA_FT_BEGIN ;
+
    cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over unstructured index set object,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(cilk_for_exec,
+                 const UnstructuredISet& is,
+                 const Index_type offset,
+                 LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = is.getIndex();
+   const Index_type len = is.getLength();
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( k+offset, idx[k] );
+   }
+
+   RAJA_FT_END ;
 }
 
 /*!
@@ -558,6 +778,8 @@ void forall_minloc(cilk_for_exec,
    T  min_tmp[nworkers];
    Index_type loc_tmp[nworkers];
 
+   RAJA_FT_BEGIN ;
+
    for ( int i = 0; i < nworkers; ++i ) {
        min_tmp[i] = *min ;
        loc_tmp[i] = *loc ;
@@ -574,6 +796,8 @@ void forall_minloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -621,6 +845,8 @@ void forall_maxloc(cilk_for_exec,
    T  max_tmp[nworkers];
    Index_type loc_tmp[nworkers];
 
+   RAJA_FT_BEGIN ;
+
    for ( int i = 0; i < nworkers; ++i ) {
        max_tmp[i] = *max ;
        loc_tmp[i] = *loc ;
@@ -637,6 +863,8 @@ void forall_maxloc(cilk_for_exec,
          loc_tmp[0] = loc_tmp[i];
       }
    }
+
+   RAJA_FT_END ;
 
    *max = max_tmp[0] ;
    *loc = loc_tmp[0] ;
@@ -683,6 +911,8 @@ void forall_sum(cilk_for_exec,
    /* Should we align these temps to coherence boundaries? */
    T  sum_tmp[nthreads];
 
+   RAJA_FT_BEGIN ;
+
    for ( int i = 0; i < nthreads; ++i ) {
       sum_tmp[i] = 0 ;
    }
@@ -690,6 +920,8 @@ void forall_sum(cilk_for_exec,
    cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], &sum_tmp[__cilkrts_get_worker_number()] );
    }
+
+   RAJA_FT_END ;
 
    for ( int i = 0; i < nthreads; ++i ) {
       *sum += sum_tmp[i];
@@ -773,6 +1005,72 @@ void forall( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
             forall(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const UnstructuredISet*>(iset)),
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over parts of hybrid index set
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over segments of hybrid index set and
+ *         use execution policy template parameter to execute segments.
+ *
+ *         This method passes offset segment iteration.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+             const HybridISet& is, LOOP_BODY loop_body )
+{
+   const int num_seg = is.getNumSegments();
+   cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+      SegmentType segtype = is.getSegmentType(isi);
+      const void* iset = is.getSegmentISet(isi);
+      Index_type offset = is.getSegmentOffset(isi);
+
+      switch ( segtype ) {
+
+         case _Range_ : {
+            foral_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const RangeISet*>(iset)),
+               offset,
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStride_ : {
+            foral_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const RangeStrideISet*>(iset)),
+               offset,
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _Unstructured_ : {
+            foral_Ioff(
+               SEG_EXEC_POLICY_T(),
+               *(static_cast<const UnstructuredISet*>(iset)),
+               offset,
                loop_body
             );
             break;

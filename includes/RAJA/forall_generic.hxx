@@ -53,12 +53,34 @@ namespace RAJA {
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(Index_type begin, Index_type end, 
+void forall(const Index_type begin, const Index_type end, 
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
            begin, end, 
            loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic iteration over index range, including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const Index_type begin, const Index_type end,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff( EXEC_POLICY_T(),
+                begin, end, 
+                ioffset,
+                loop_body );
 }
 
 /*!
@@ -82,6 +104,29 @@ void forall(const RangeISet& iset,
 /*!
  ******************************************************************************
  *
+ * \brief Generic iterations over range index set object,
+ *        including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const RangeISet& iset,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff( EXEC_POLICY_T(),
+                iset.getBegin(), iset.getEnd(),
+                ioffset,
+                loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Generic minloc reduction over index range.
  *
  ******************************************************************************
@@ -90,7 +135,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(Index_type begin, Index_type end,
+void forall_minloc(const Index_type begin, const Index_type end,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -132,7 +177,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(Index_type begin, Index_type end,
+void forall_maxloc(const Index_type begin, const Index_type end,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -174,7 +219,7 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(Index_type begin, Index_type end,
+void forall_sum(const Index_type begin, const Index_type end,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -224,12 +269,37 @@ void forall_sum(const RangeISet& iset,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(Index_type begin, Index_type end, Index_type stride,
+void forall(const Index_type begin, const Index_type end, 
+            const Index_type stride,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
            begin, end, stride, 
            loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic iteration over index range with stride,
+ *        including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const Index_type begin, const Index_type end,
+                 const Index_type stride,
+                 const Index_type ioffset, 
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff( EXEC_POLICY_T(),
+                begin, end, stride,
+                ioffset,
+                loop_body );
 }
 
 /*!
@@ -253,6 +323,29 @@ void forall(const RangeStrideISet& iset,
 /*!
  ******************************************************************************
  *
+ * \brief Generic iterations over range index set with stride object,
+ *        including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const RangeStrideISet& iset,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff( EXEC_POLICY_T(),
+                iset.getBegin(), iset.getEnd(), iset.getStride(),
+                ioffset,
+                loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Generic minloc reduction over index range with stride.
  *
  ******************************************************************************
@@ -261,7 +354,8 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(Index_type begin, Index_type end, Index_type stride,
+void forall_minloc(const Index_type begin, const Index_type end, 
+                   const Index_type stride,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -303,7 +397,8 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(Index_type begin, Index_type end, Index_type stride,
+void forall_maxloc(const Index_type begin, const Index_type end, 
+                   const Index_type stride,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -345,7 +440,8 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(Index_type begin, Index_type end, Index_type stride,
+void forall_sum(const Index_type begin, const Index_type end, 
+                const Index_type stride,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -406,6 +502,29 @@ void forall(const Index_type* idx, const Index_type len,
 /*!
  ******************************************************************************
  *
+ * \brief  Generic iteration over indirection array,
+ *         including index offset.
+ *
+ *         NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const Index_type* idx, const Index_type len,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff( EXEC_POLICY_T(),
+                idx, len,
+                ioffset,
+                loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief Generic iteration over unstructured index set object.
  *
  ******************************************************************************
@@ -418,6 +537,29 @@ void forall(const UnstructuredISet& iset,
 {
    forall( EXEC_POLICY_T(),
            iset.getIndex(), iset.getLength(), 
+           loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic iteration over unstructured index set object,
+ *        including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const UnstructuredISet& iset,
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall( EXEC_POLICY_T(),
+           iset.getIndex(), iset.getLength(),
+           ioffset, 
            loop_body );
 }
 
@@ -547,6 +689,32 @@ void forall_sum(const UnstructuredISet& iset,
                loop_body );
 }
 
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over hybrid index sets.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic iteration over hybrid index set, including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const HybridISet& iset, LOOP_BODY loop_body)
+{
+   forall_Ioff(EXEC_POLICY_T(),
+              iset, loop_body);
+}
+
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -559,7 +727,7 @@ void forall_sum(const UnstructuredISet& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over arbitrary index set and execution policy.
+ * \brief Generic iteration over arbitrary index set.
  *
  ******************************************************************************
  */
@@ -576,8 +744,31 @@ void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
 /*!
  ******************************************************************************
  *
- * \brief Generic minloc reduction iteration over arbitrary index set 
- *        and execution policy.
+ * \brief Generic iteration over arbitrary index set,
+ *        including index offset.
+ *
+ *        NOTE: lambda loop body requires two args (ioffset, index).
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename INDEXSET_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Ioff(const INDEXSET_T& iset, 
+                 const Index_type ioffset,
+                 LOOP_BODY loop_body)
+{
+   forall_Ioff(EXEC_POLICY_T(),
+               iset, 
+               ioffset,
+               loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic minloc reduction iteration over arbitrary index set.
  *
  ******************************************************************************
  */
@@ -599,8 +790,7 @@ void forall_minloc(const INDEXSET_T& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic maxloc reduction iteration over arbitrary index set
- *        and execution policy.
+ * \brief Generic maxloc reduction iteration over arbitrary index set.
  *
  ******************************************************************************
  */
@@ -622,8 +812,7 @@ void forall_maxloc(const INDEXSET_T& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic sum reduction iteration over arbitrary index set
- *        and execution policy.
+ * \brief Generic sum reduction iteration over arbitrary index set.
  *
  ******************************************************************************
  */
