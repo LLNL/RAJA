@@ -64,23 +64,23 @@ void forall(const Index_type begin, const Index_type end,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over index range, including index offset.
+ * \brief Generic iteration over index range, including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *        NOTE: lambda loop body requires two args (icount, index). 
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const Index_type begin, const Index_type end,
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const Index_type begin, const Index_type end,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff( EXEC_POLICY_T(),
-                begin, end, 
-                ioffset,
-                loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  begin, end, 
+                  icount,
+                  loop_body );
 }
 
 /*!
@@ -105,23 +105,23 @@ void forall(const RangeISet& iset,
  ******************************************************************************
  *
  * \brief Generic iterations over range index set object,
- *        including index offset.
+ *        including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index).
+ *        NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const RangeISet& iset,
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const RangeISet& iset,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff( EXEC_POLICY_T(),
-                iset.getBegin(), iset.getEnd(),
-                ioffset,
-                loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  iset.getBegin(), iset.getEnd(),
+                  icount,
+                  loop_body );
 }
 
 /*!
@@ -282,24 +282,24 @@ void forall(const Index_type begin, const Index_type end,
  ******************************************************************************
  *
  * \brief Generic iteration over index range with stride,
- *        including index offset.
+ *        including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index).
+ *        NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const Index_type begin, const Index_type end,
-                 const Index_type stride,
-                 const Index_type ioffset, 
-                 LOOP_BODY loop_body)
+void forall_Icount(const Index_type begin, const Index_type end,
+                   const Index_type stride,
+                   const Index_type icount, 
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff( EXEC_POLICY_T(),
-                begin, end, stride,
-                ioffset,
-                loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  begin, end, stride,
+                  icount,
+                  loop_body );
 }
 
 /*!
@@ -324,23 +324,23 @@ void forall(const RangeStrideISet& iset,
  ******************************************************************************
  *
  * \brief Generic iterations over range index set with stride object,
- *        including index offset.
+ *        including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index).
+ *        NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const RangeStrideISet& iset,
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const RangeStrideISet& iset,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff( EXEC_POLICY_T(),
-                iset.getBegin(), iset.getEnd(), iset.getStride(),
-                ioffset,
-                loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  iset.getBegin(), iset.getEnd(), iset.getStride(),
+                  icount,
+                  loop_body );
 }
 
 /*!
@@ -503,23 +503,23 @@ void forall(const Index_type* idx, const Index_type len,
  ******************************************************************************
  *
  * \brief  Generic iteration over indirection array,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const Index_type* idx, const Index_type len,
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const Index_type* idx, const Index_type len,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff( EXEC_POLICY_T(),
-                idx, len,
-                ioffset,
-                loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  idx, len,
+                  icount,
+                  loop_body );
 }
 
 /*!
@@ -544,23 +544,23 @@ void forall(const UnstructuredISet& iset,
  ******************************************************************************
  *
  * \brief Generic iteration over unstructured index set object,
- *        including index offset.
+ *        including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *        NOTE: lambda loop body requires two args (icount, index). 
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const UnstructuredISet& iset,
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const UnstructuredISet& iset,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall( EXEC_POLICY_T(),
-           iset.getIndex(), iset.getLength(),
-           ioffset, 
-           loop_body );
+   forall_Icount( EXEC_POLICY_T(),
+                  iset.getIndex(), iset.getLength(),
+                  icount, 
+                  loop_body );
 }
 
 /*!
@@ -700,19 +700,19 @@ void forall_sum(const UnstructuredISet& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over hybrid index set, including index offset.
+ * \brief Generic iteration over hybrid index set, including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index). 
+ *        NOTE: lambda loop body requires two args (icount, index). 
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const HybridISet& iset, LOOP_BODY loop_body)
+void forall_Icount(const HybridISet& iset, LOOP_BODY loop_body)
 {
-   forall_Ioff(EXEC_POLICY_T(),
-              iset, loop_body);
+   forall_Icount(EXEC_POLICY_T(),
+                 iset, loop_body);
 }
 
 
@@ -745,9 +745,9 @@ void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
  ******************************************************************************
  *
  * \brief Generic iteration over arbitrary index set,
- *        including index offset.
+ *        including index count.
  *
- *        NOTE: lambda loop body requires two args (ioffset, index).
+ *        NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
@@ -755,14 +755,14 @@ template <typename EXEC_POLICY_T,
           typename INDEXSET_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(const INDEXSET_T& iset, 
-                 const Index_type ioffset,
-                 LOOP_BODY loop_body)
+void forall_Icount(const INDEXSET_T& iset, 
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
-   forall_Ioff(EXEC_POLICY_T(),
-               iset, 
-               ioffset,
-               loop_body);
+   forall_Icount(EXEC_POLICY_T(),
+                 iset, 
+                 icount,
+                 loop_body);
 }
 
 /*!

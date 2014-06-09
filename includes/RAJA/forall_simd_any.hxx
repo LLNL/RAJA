@@ -62,18 +62,18 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range, including index offset.
+ * \brief  SIMD iteration over index range, including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const Index_type begin, const Index_type end,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const Index_type begin, const Index_type end,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type loop_end = end - begin + 1;
 
@@ -81,7 +81,7 @@ void forall_Ioff(simd_exec,
 
 RAJA_SIMD
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, ii+begin );
+      loop_body( ii+icount, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -116,18 +116,18 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range set object, including index offset.
+ * \brief  SIMD iteration over index range set object, including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const RangeISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const RangeISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type begin = is.getBegin();
    const Index_type loop_end = is.getEnd() - is.getBegin() + 1;
@@ -136,7 +136,7 @@ void forall_Ioff(simd_exec,
 
 RAJA_SIMD
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, ii+begin );
+      loop_body( ii+icount, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -341,19 +341,19 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range with stride, including index offset.
+ * \brief  SIMD iteration over index range with stride, including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const Index_type begin, const Index_type end,
-                 const Index_type stride,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type loop_end = (end-begin)/stride + 1;
 
@@ -361,7 +361,7 @@ void forall_Ioff(simd_exec,
 
 RAJA_SIMD
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, begin + ii*stride );
+      loop_body( ii+icount, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -398,18 +398,18 @@ RAJA_SIMD
  ******************************************************************************
  *
  * \brief  SIMD iteration over range index set with stride object,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const RangeStrideISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const RangeStrideISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type begin    = is.getBegin();
    const Index_type stride   = is.getStride();
@@ -419,7 +419,7 @@ void forall_Ioff(simd_exec,
 
 RAJA_SIMD
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, begin + ii*stride );
+      loop_body( ii+icount, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -632,24 +632,24 @@ void forall(simd_exec,
  ******************************************************************************
  *
  * \brief  "Fake" SIMD iteration over indices in indirection array,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const Index_type* __restrict__ idx, const Index_type len,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const Index_type* __restrict__ idx, const Index_type len,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+offset, idx[k] );
+      loop_body( k+icount, idx[k] );
    }
 
    RAJA_FT_END ;
@@ -686,18 +686,18 @@ void forall(simd_exec,
  ******************************************************************************
  *
  * \brief  "Fake" SIMD iteration over unstructured index set object,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(simd_exec,
-                 const UnstructuredISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(simd_exec,
+                   const UnstructuredISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
@@ -706,7 +706,7 @@ void forall_Ioff(simd_exec,
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+offset, idx[k] );
+      loop_body( k+icount, idx[k] );
    }
 
    RAJA_FT_END ;

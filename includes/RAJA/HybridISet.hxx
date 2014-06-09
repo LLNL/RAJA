@@ -197,8 +197,8 @@ public:
    ///
    /// Note: No error-checking on segment index.
    ///
-   Index_type getSegmentOffset(int i) const {
-      return m_segments[i].m_offset;
+   Index_type getSegmentIcount(int i) const {
+      return m_segments[i].m_icount;
    }
 
    ///
@@ -217,24 +217,21 @@ private:
    ///
    /// A segment is defined by its type and its index set object.
    ///
-   /// The offset value can be provided as a second argument to 
-   /// forall_Ioff( ) iteration methods to map between "global" and "local"
-   /// indices. Here, global refers to the actual index values in the 
-   /// hybrid segments and local refers to an iteration count through a
-   /// segment when some offset is applied.  For example, the offset could 
-   /// be the total length over all segments in a hybrid preceding a given 
-   /// segment. Then, the offset value applied to the segment iteration 
-   /// count would be the overall iteration count in the hybrid traversal. 
+   /// The index count value can be provided as a second argument to 
+   /// forall_Ioff( ) iteration methods to map between actual indices
+   /// indices and the running iteration count. That is, the count 
+   /// for a segment starts with the total length over all segments in a 
+   /// hybrid preceding that segment.
    ///
    class Segment
    {
    public:
       Segment() 
-         : m_type(_Unknown_), m_iset(0), m_offset(0) { ; } 
+         : m_type(_Unknown_), m_iset(0), m_icount(0) { ; } 
 
       template <typename ISET>
-      Segment(SegmentType type,  const ISET* iset, Index_type offset)
-         : m_type(type), m_iset(iset), m_offset(offset) { ; }
+      Segment(SegmentType type,  const ISET* iset, Index_type icount)
+         : m_type(type), m_iset(iset), m_icount(icount) { ; }
 
       ///
       /// Using compiler-provided dtor, copy ctor, copy-assignment.
@@ -243,7 +240,7 @@ private:
       SegmentType m_type;
       const void* m_iset;
 
-      Index_type m_offset;
+      Index_type m_icount;
    };
 
    //

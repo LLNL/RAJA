@@ -65,18 +65,18 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range, including index offset.
+ * \brief  omp parallel for iteration over index range, including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const Index_type begin, const Index_type end,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const Index_type begin, const Index_type end,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type loop_end = end - begin + 1;
 
@@ -84,7 +84,7 @@ void forall_Ioff(omp_parallel_for_exec,
 
 #pragma omp parallel for
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, ii+begin );
+      loop_body( ii+icount, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -120,18 +120,18 @@ void forall(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  omp parallel for iteration over index range set object,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const RangeISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const RangeISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {           
    const Index_type begin = is.getBegin();
    const Index_type loop_end = is.getEnd() - begin + 1;
@@ -140,7 +140,7 @@ void forall_Ioff(omp_parallel_for_exec,
 
 #pragma omp parallel for
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, ii+begin );
+      loop_body( ii+icount, ii+begin );
    }
 
    RAJA_FT_END ;
@@ -377,19 +377,19 @@ void forall(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  omp parallel for iteration over index range with stride,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const Index_type begin, const Index_type end,
-                 const Index_type stride,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const Index_type begin, const Index_type end,
+                   const Index_type stride,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type loop_end = (end-begin)/stride + 1;
 
@@ -397,7 +397,7 @@ void forall_Ioff(omp_parallel_for_exec,
 
 #pragma omp parallel for
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, begin + ii*stride );
+      loop_body( ii+icount, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -434,18 +434,18 @@ void forall(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  omp parallel for iteration over range index set with stride object,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const RangeStrideISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const RangeStrideISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type begin    = is.getBegin();
    const Index_type stride   = is.getStride();
@@ -455,7 +455,7 @@ void forall_Ioff(omp_parallel_for_exec,
 
 #pragma omp parallel for
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+offset, begin + ii*stride );
+      loop_body( ii+icount, begin + ii*stride );
    }
 
    RAJA_FT_END ;
@@ -700,25 +700,25 @@ void forall(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  omp parallel for iteration over indirection array,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const Index_type* __restrict__ idx, const Index_type len,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const Index_type* __restrict__ idx, const Index_type len,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
 #pragma novector
 #pragma omp parallel for
    for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+offset, idx[k] );
+      loop_body( k+icount, idx[k] );
    }
 
    RAJA_FT_END ;
@@ -755,18 +755,18 @@ void forall(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  omp parallel for iteration over unstructured index set object,
- *         including index offset.
+ *         including index count.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff(omp_parallel_for_exec,
-                 const UnstructuredISet& is,
-                 const Index_type offset,
-                 LOOP_BODY loop_body)
+void forall_Icount(omp_parallel_for_exec,
+                   const UnstructuredISet& is,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = is.getIndex();
    const Index_type len = is.getLength();
@@ -776,7 +776,7 @@ void forall_Ioff(omp_parallel_for_exec,
 #pragma novector
 #pragma omp parallel for
    for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+offset, idx[k] );
+      loop_body( k+icount, idx[k] );
    }
 
    RAJA_FT_END ;
@@ -1057,17 +1057,17 @@ void forall( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
  *         execution policy and use execution policy template parameter
  *         for segments.
  *
- *         This method passes offset segment iteration.
+ *         This method passes index count to segment iteration.
  *
- *         NOTE: lambda loop body requires two args (ioffset, index).
+ *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Ioff( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
-             const HybridISet& is, LOOP_BODY loop_body )
+void forall_Icount( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+                    const HybridISet& is, LOOP_BODY loop_body )
 {
    const int num_seg = is.getNumSegments();
 
@@ -1075,15 +1075,15 @@ void forall_Ioff( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
       const void* iset = is.getSegmentISet(isi);
-      Index_type offset = is.getSegmentOffset(isi);
+      Index_type icount = is.getSegmentIcount(isi);
 
       switch ( segtype ) {
 
          case _Range_ : {
-            forall_Ioff(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeISet*>(iset)),
-               offset,
+               icount,
                loop_body
             );
             break;
@@ -1091,10 +1091,10 @@ void forall_Ioff( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 
 #if 0  // RDH RETHINK
          case _RangeStride_ : {
-            forall_Ioff(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const RangeStrideISet*>(iset)),
-               offset,
+               icount,
                loop_body
             );
             break;
@@ -1102,10 +1102,10 @@ void forall_Ioff( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #endif
 
          case _Unstructured_ : {
-            forall_Ioff(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                *(static_cast<const UnstructuredISet*>(iset)),
-               offset,
+               icount,
                loop_body
             );
             break;
