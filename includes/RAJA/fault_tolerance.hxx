@@ -13,7 +13,7 @@
  *
  *          These macros are designed to cooperate with an external
  *          signal handler that sets a global variable, fault_type,
- *          when a fault occurs. fult_type must be initialized to zero.
+ *          when a fault occurs. fault_type must be initialized to zero.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
