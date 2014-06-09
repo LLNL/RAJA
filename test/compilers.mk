@@ -52,12 +52,13 @@ ifeq ($(RAJA_ARCH),x86_sse_icc)
 #CXX 		= /usr/local/tools/ic-14.0.080/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.106/bin/icpc
-CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-#CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+#CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
+CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+#CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -O1 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 ##CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -119,12 +120,12 @@ ifeq ($(RAJA_ARCH),x86_avx_icc)
 #CXX 		= /usr/local/tools/ic-14.0.080/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.106/bin/icpc
-CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-#CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+#CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
+CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
