@@ -257,14 +257,6 @@ class Domain {
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
 
-   // Nodes on symmertry planes
-   Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
-   Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
-   Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return m_symmX.empty(); }
-   bool symmYempty()          { return m_symmY.empty(); }
-   bool symmZempty()          { return m_symmZ.empty(); }
-
    //
    // Element-centered
    //
@@ -432,8 +424,8 @@ class Domain {
    void SetupThreadSupportStructures();
    void CreateMeshIndexSets();
    void CreateRegionIndexSets(Int_t nreg, Int_t balance);
+   void CreateSymmetryIndexSets(Int_t edgeNodes);
    void SetupCommBuffers(Int_t edgeNodes);
-   void SetupSymmetryPlanes(Int_t edgeNodes);
    void SetupElementConnectivities(Int_t edgeElems);
    void SetupBoundaryConditions(Int_t edgeElems);
 
@@ -467,10 +459,6 @@ class Domain {
    std::vector<Tuple3> m_force ;  /* forces */
 
    std::vector<Real_t> m_nodalMass ;  /* mass */
-
-   std::vector<Index_t> m_symmX ;  /* symmetry plane nodesets */
-   std::vector<Index_t> m_symmY ;
-   std::vector<Index_t> m_symmZ ;
 
    // Element-centered
 
