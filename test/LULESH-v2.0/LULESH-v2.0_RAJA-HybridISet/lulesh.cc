@@ -1190,9 +1190,6 @@ void CalcAccelerationForNodes(Domain &domain)
 RAJA_STORAGE
 void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 {
-   Index_t size = domain.sizeX();
-   Index_t numNodeBC = (size+1)*(size+1) ;
-
    RAJA::forall<symnode_exec_policy>(domain.getXSymNodeISet(), [&] (int i) {
       domain.xdd(i) = Real_t(0.0) ;
    } );
