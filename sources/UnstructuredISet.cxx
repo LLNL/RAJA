@@ -66,9 +66,17 @@ void UnstructuredISet::swap(UnstructuredISet& other)
    swap(m_len, other.m_len);
    swap(m_indx_own, other.m_indx_own);
 #else
+   Index_type* tindx = m_indx;
+   Index_type  tlen = m_len;
+   IndexOwnership tindx_own = m_indx_own;
+
    m_indx = other.m_indx;
    m_len = other.m_len;
-   m_indx_own = m_indx_own;
+   m_indx_own = other.m_indx_own;
+
+   other.m_indx = tindx;
+   other.m_len = tlen;
+   other.m_indx_own = tindx_own;
 #endif
 }
 
