@@ -22,6 +22,7 @@
 
 #if defined(RAJA_USE_STL)
 #include <utility> 
+#include <algorithm> 
 #endif
 
 #include <iosfwd> 
