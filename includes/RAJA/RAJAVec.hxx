@@ -147,6 +147,7 @@ private:
    }
 
 
+#if !defined(RAJA_USE_STL)
    //
    // The following private members and methods provide a quick and dirty 
    // memory allocation scheme to mimick std::vector behavior without 
@@ -200,6 +201,7 @@ private:
       m_data[m_size] = item;
       m_size++;
    }
+#endif  // if !defined(RAJA_USE_STL)
    
 
 #if defined(RAJA_USE_STL)

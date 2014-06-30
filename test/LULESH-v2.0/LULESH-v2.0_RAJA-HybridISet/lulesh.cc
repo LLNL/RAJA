@@ -185,6 +185,7 @@ typedef RAJA::omp_parallel_for_exec SegExec;
 typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, SegExec> node_exec_policy;
 typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, SegExec> elem_exec_policy;
 typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, SegExec> mat_exec_policy;
+//typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, RAJA::seq_exec> mat_exec_policy;
 typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, SegExec> minloc_exec_policy;
 typedef LULESH_ISET::ExecPolicy<Hybrid_SegIt, SegExec> symnode_exec_policy;
 

@@ -53,12 +53,14 @@ ifeq ($(RAJA_ARCH),x86_sse_icc)
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.106/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
+#CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
 CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -O1 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+#CXX_COMPILE = $(CXX) -O2 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+#CXX_COMPILE = $(CXX) -O1 -g -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 ##CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -81,12 +83,13 @@ ifeq ($(RAJA_ARCH),x86_sse_gnu)
 #CXX 		= /usr/local/bin/g++-4.4.6
 #CXX 		= /usr/local/bin/g++-4.6.1
 #CXX 		= /usr/apps/gnu/4.7.1/bin/g++
-CXX 		= /usr/apps/gnu/4.8.0/bin/g++
+#CXX 		= /usr/apps/gnu/4.8.0/bin/g++
+CXX 		= /usr/apps/gnu/4.9.0/bin/g++
 
 ifeq ($(OPT_DEBUG),opt)
 #
 # Use this with GNU 4.7X and later
-CXX_COMPILE = $(CXX) -Ofast -msse4.1 -finline-functions -finline-limit=20000 -std=c++11 -openmp
+CXX_COMPILE = $(CXX) -Ofast -msse4.1 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
 #CXX_COMPILE = $(CXX) -O3 -msse4.1 -finline-functions -finline-limit=20000 -std=c++0x -openmp
 ##CXX_COMPILE = $(CXX) -O3 -msse4.1  -ansi-alias -std=c++0x
 ## inline flags...
@@ -121,11 +124,12 @@ ifeq ($(RAJA_ARCH),x86_avx_icc)
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.106/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
+#CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
+#CXX_COMPILE = $(CXX) -g -O2 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -148,12 +152,13 @@ endif
 ifeq ($(RAJA_ARCH),x86_avx_gnu)
 #CXX 		= /usr/local/bin/g++-4.6.1
 #CXX 		= /usr/apps/gnu/4.7.1/bin/g++
-CXX 		= /usr/apps/gnu/4.8.0/bin/g++
+#CXX 		= /usr/apps/gnu/4.8.0/bin/g++
+CXX 		= /usr/apps/gnu/4.9.0/bin/g++
 
 ifeq ($(OPT_DEBUG),opt)
 #
 # Use this with GNU 4.7X and later
-CXX_COMPILE = $(CXX) -Ofast -mavx -finline-functions -finline-limit=20000 -std=c++11 -openmp
+CXX_COMPILE = $(CXX) -Ofast -mavx -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
 #
 # These should work with older compiler versions...
 #CXX_COMPILE = $(CXX) -O3 -mavx -ansi-alias -std=c++0x -openmp
