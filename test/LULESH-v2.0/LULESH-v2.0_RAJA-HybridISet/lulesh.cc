@@ -1191,26 +1191,17 @@ void CalcAccelerationForNodes(Domain &domain)
 RAJA_STORAGE
 void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 {
-   Index_t size = domain.sizeX();
-   Index_t numNodeBC = (size+1)*(size+1) ;
+   RAJA::forall<symnode_exec_policy>(domain.getXSymNodeISet(), [&] (int i) {
+      domain.xdd(i) = Real_t(0.0) ;
+   } );
 
-   if (!domain.symmXempty() != 0) {
-      RAJA::forall<symnode_exec_policy>(domain.getXSymNodeISet(), [&] (int i) {
-         domain.xdd(domain.symmX(i)) = Real_t(0.0) ;
-      } );
-   }
+   RAJA::forall<symnode_exec_policy>(domain.getYSymNodeISet(), [&] (int i) {
+      domain.ydd(i) = Real_t(0.0) ;
+   } );
 
-   if (!domain.symmYempty() != 0) {
-      RAJA::forall<symnode_exec_policy>(domain.getYSymNodeISet(), [&] (int i) {
-         domain.ydd(domain.symmY(i)) = Real_t(0.0) ;
-      } );
-   }
-
-   if (!domain.symmZempty() != 0) {
-      RAJA::forall<symnode_exec_policy>(domain.getZSymNodeISet(), [&] (int i) {
-         domain.zdd(domain.symmZ(i)) = Real_t(0.0) ;
-      } );
-   }
+   RAJA::forall<symnode_exec_policy>(domain.getZSymNodeISet(), [&] (int i) {
+      domain.zdd(i) = Real_t(0.0) ;
+   } );
 }
 
 /******************************************/
