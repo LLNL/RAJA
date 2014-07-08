@@ -21,6 +21,8 @@
 
 #include "int_datatypes.hxx"
 
+#include "RAJAVec.hxx"
+
 #include "execpolicy.hxx"
 
 #include <cilk/cilk.h>
@@ -157,9 +159,8 @@ void forall_minloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> min_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -224,9 +225,8 @@ void forall_maxloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> max_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -291,8 +291,7 @@ void forall_sum(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nworkers];
+   RAJAVec<T> sum_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -468,9 +467,8 @@ void forall_minloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> min_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -536,9 +534,8 @@ void forall_maxloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> max_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -602,14 +599,13 @@ void forall_sum(cilk_for_exec,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const int nthreads = __cilkrts_get_nworkers();
+   const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       sum_tmp[i] = 0 ;
    }
 
@@ -619,7 +615,7 @@ void forall_sum(cilk_for_exec,
 
    RAJA_FT_END ;
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       *sum += sum_tmp[i];
    }
 }
@@ -774,9 +770,8 @@ void forall_minloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> min_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -841,9 +836,8 @@ void forall_maxloc(cilk_for_exec,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> max_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
@@ -906,14 +900,13 @@ void forall_sum(cilk_for_exec,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const int nthreads = __cilkrts_get_nworkers();
+   const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nworkers);
 
    RAJA_FT_BEGIN ;
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       sum_tmp[i] = 0 ;
    }
 
@@ -923,7 +916,7 @@ void forall_sum(cilk_for_exec,
 
    RAJA_FT_END ;
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       *sum += sum_tmp[i];
    }
 }
@@ -1103,9 +1096,8 @@ void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> min_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    for ( int i = 0; i < nworkers; ++i ) {
        min_tmp[i] = *min ;
@@ -1192,9 +1184,8 @@ void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 {
    const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nworkers];
-   Index_type loc_tmp[nworkers];
+   RAJAVec<T> max_tmp(nworkers);
+   RAJAVec<Index_type> loc_tmp(nworkers);
 
    for ( int i = 0; i < nworkers; ++i ) {
        max_tmp[i] = *max ;
@@ -1278,12 +1269,11 @@ void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
                  T* sum,
                  LOOP_BODY loop_body )
 {
-   const int nthreads = __cilkrts_get_nworkers();
+   const int nworkers = __cilkrts_get_nworkers();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nworkers);
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       sum_tmp[i] = 0 ;
    }
 
@@ -1333,7 +1323,7 @@ void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
    } // iterate over segments of hybrid index set
 
-   for ( int i = 0; i < nthreads; ++i ) {
+   for ( int i = 0; i < nworkers; ++i ) {
       *sum += sum_tmp[i];
    }
 }

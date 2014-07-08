@@ -126,6 +126,11 @@ public:
       return m_data[i];
    }
 
+   T& operator [] (unsigned i)
+   {
+      return m_data[i];
+   }
+
    void push_back(const T& item) 
    {
 #if defined(RAJA_USE_STL)

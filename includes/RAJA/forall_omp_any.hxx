@@ -21,6 +21,8 @@
 
 #include "int_datatypes.hxx"
 
+#include "RAJAVec.hxx"
+
 #include "execpolicy.hxx"
 
 #include "fault_tolerance.hxx"
@@ -163,9 +165,8 @@ void forall_minloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> min_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -231,9 +232,8 @@ void forall_maxloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> max_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -299,8 +299,7 @@ void forall_sum(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -479,9 +478,8 @@ void forall_minloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> min_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -549,9 +547,8 @@ void forall_maxloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> max_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -619,8 +616,7 @@ void forall_sum(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -799,9 +795,8 @@ void forall_minloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> min_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -868,9 +863,8 @@ void forall_maxloc(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> max_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
 
@@ -937,8 +931,7 @@ void forall_sum(omp_parallel_for_exec,
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nthreads);
 
    RAJA_FT_BEGIN ;
    for ( int i = 0; i < nthreads; ++i ) {
@@ -1139,9 +1132,8 @@ void forall_minloc( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLI
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  min_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> min_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    for ( int i = 0; i < nthreads; ++i ) {
        min_tmp[i] = *min ;
@@ -1230,9 +1222,8 @@ void forall_maxloc( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLI
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  max_tmp[nthreads];
-   Index_type loc_tmp[nthreads];
+   RAJAVec<T> max_tmp(nthreads);
+   RAJAVec<Index_type> loc_tmp(nthreads);
 
    for ( int i = 0; i < nthreads; ++i ) {
        max_tmp[i] = *max ;
@@ -1321,8 +1312,7 @@ void forall_sum( HybridISet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_
 {
    const int nthreads = omp_get_max_threads();
 
-   /* Should we align these temps to coherence boundaries? */
-   T  sum_tmp[nthreads];
+   RAJAVec<T> sum_tmp(nthreads);
 
    for ( int i = 0; i < nthreads; ++i ) {
        sum_tmp[i] = 0 ;

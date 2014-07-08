@@ -128,8 +128,8 @@ CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
 #CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
-CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -g -O2 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+#CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
 LDFLAGS	=
 endif
@@ -261,10 +261,10 @@ CXX             = /usr/local/tools/compilers/ibm/mpicxx-4.7.2
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
-CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
+CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
 
 ##LDFLAGS = -lmass
-LDFLAGS =
+LDFLAGS = -std=c++11  -O3 -fopenmp 
 endif
 
 ifeq ($(OPT_DEBUG),debug)
