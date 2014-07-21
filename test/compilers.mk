@@ -53,12 +53,12 @@ ifeq ($(RAJA_ARCH),x86_sse_icc)
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.106/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
-#CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+#CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
+CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -H -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 #CXX_COMPILE = $(CXX) -O2 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 #CXX_COMPILE = $(CXX) -O1 -g -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 ##CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
@@ -262,9 +262,11 @@ CXX             = /usr/local/tools/compilers/ibm/mpicxx-4.7.2
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
 CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
+#CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11
 
 ##LDFLAGS = -lmass
 LDFLAGS = -std=c++11  -O3 -fopenmp 
+#LDFLAGS = -std=c++11  -O3 
 endif
 
 ifeq ($(OPT_DEBUG),debug)
