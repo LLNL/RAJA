@@ -75,15 +75,15 @@ Additional BSD Notice
 struct MyTimer
 {
    clock_t tstart;
-   clock_t tstop;
+   clock_t telapsed;
 
-   MyTimer() : tstart(0), tstop(0) { ; }
+   MyTimer() : tstart(0), telapsed(0) { ; }
 
    void start() { tstart = clock(); }
-   void stop()  { tstop = clock(); }
+   void stop()  { telapsed += (clock() - tstart); }
 
    double elapsed() 
-   { return static_cast<double>(tstop - tstart) / CLOCKS_PER_SEC; }
+   { return static_cast<double>(telapsed) / CLOCKS_PER_SEC; }
 };
 
 

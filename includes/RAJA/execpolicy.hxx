@@ -32,7 +32,7 @@ struct seq_exec {};
 struct simd_exec {};
 
 struct omp_parallel_for_exec {};
-struct omp_for_nowait_exec {};
+//struct omp_for_nowait_exec {};
 
 struct cilk_for_exec {};
 
@@ -57,7 +57,7 @@ struct cilk_for_segit {};
 struct seq_exec {};
 struct simd_exec {};
 struct omp_parallel_for_exec {};
-struct omp_for_nowait_exec {};
+//struct omp_for_nowait_exec {};
 
 //
 // Hybrid segment iteration policies
@@ -76,7 +76,7 @@ struct omp_parallel_for_segit {};
 struct seq_exec {};
 struct simd_exec {};
 struct omp_parallel_for_exec {};
-struct omp_for_nowait_exec {};
+//struct omp_for_nowait_exec {};
 
 //
 // Hybrid segment iteration policies
