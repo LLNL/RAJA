@@ -24,6 +24,12 @@
 #include <math.h>
 #include <vector>
 
+//#define TRY_NO_WAIT
+#undef TRY_NO_WAIT
+
+#if defined(TRY_NO_WAIT)
+#include "RAJAspecial.hxx"
+#endif
 #include "RAJA/RAJA.hxx"
 
 //**************************************************

@@ -162,6 +162,27 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+//
+// For timing code sections...
+//
+#include <time.h>
+struct MyTimer
+{
+   clock_t tstart;
+   clock_t telapsed;
+
+   MyTimer() : tstart(0), telapsed(0) { ; }
+
+   void start() { tstart = clock(); }
+   void stop()  { telapsed += (clock() - tstart); }
+
+   double elapsed()
+   { return static_cast<double>(telapsed) / CLOCKS_PER_SEC; }
+};
+
+MyTimer EOStime;
+
+
 #define RAJA_STORAGE static inline
 
 //typedef RAJA::seq_exec              Segment_Exec;
@@ -173,7 +194,13 @@ typedef Segment_Exec node_exec_policy;
 typedef Segment_Exec elem_exec_policy;
 typedef Segment_Exec minloc_exec_policy;
 typedef Segment_Exec mat_exec_policy;
-typedef Segment_Exec  range_exec_policy;
+typedef Segment_Exec range_exec_policy;
+
+#if defined(TRY_NO_WAIT)
+typedef RAJA::omp_for_nowait_exec elem_nowait_exec;
+typedef RAJA::omp_for_nowait_exec mat_nowait_exec;
+typedef RAJA::omp_for_nowait_exec range_nowait_exec;
+#endif
 
 
 /*********************************/
@@ -1185,23 +1212,45 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
    Index_t size = domain.sizeX();
    Index_t numNodeBC = (size+1)*(size+1) ;
 
+#if defined(TRY_NO_WAIT)
+   #pragma omp parallel
+   {
+#endif
+
    if (!domain.symmXempty() != 0) {
+#if defined(TRY_NO_WAIT)
+      RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [&] (int i) {
+#else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
+#endif
          domain.xdd(domain.symmX(i)) = Real_t(0.0) ;
       } );
    }
 
    if (!domain.symmYempty() != 0) {
+#if defined(TRY_NO_WAIT)
+      RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [&] (int i) {
+#else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
+#endif
          domain.ydd(domain.symmY(i)) = Real_t(0.0) ;
       } );
    }
 
    if (!domain.symmZempty() != 0) {
+#if defined(TRY_NO_WAIT)
+      RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [&] (int i) {
+#else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
+#endif
          domain.zdd(domain.symmZ(i)) = Real_t(0.0) ;
       } );
    }
+
+#if defined(TRY_NO_WAIT)
+   }
+#endif
+
 }
 
 /******************************************/
@@ -2008,12 +2057,12 @@ void CalcQForElems(Domain& domain)
 
       /* Don't allow excessive artificial viscosity */
       Index_t idx = -1; 
-      RAJA::forall<RAJA::seq_exec>(0, numElem, [&] (int i) {
+      for (Index_t i=0; i<numElem; ++i) {
          if ( domain.q(i) > domain.qstop() ) {
             idx = i ;
             break ;
          }
-      } );
+      }
 
       if(idx >= 0) {
 #if USE_MPI         
@@ -2247,7 +2296,16 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
    //loop to add load imbalance based on region number 
    for(Int_t j = 0; j < rep; j++) {
       /* compress data, minimal set */
+#if defined(TRY_NO_WAIT)
+   #pragma omp parallel
+   {
+#endif
+      /* compress data, minimal set */
+#if defined(TRY_NO_WAIT)
+      RAJA::forall<mat_nowait_exec>(0, numElemReg, [&] (int i) {
+#else
       RAJA::forall<mat_exec_policy>(0, numElemReg, [&] (int i) {
+#endif
          Index_t ielem = regElemList[i];
          e_old[i] = domain.e(ielem) ;
          delvc[i] = domain.delv(ielem) ;
@@ -2268,7 +2326,11 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
 
       /* Check for v > eosvmax or v < eosvmin */
       if ( eosvmin != Real_t(0.) ) {
+#if defined(TRY_NO_WAIT)
+         RAJA::forall<mat_nowait_exec>(0, numElemReg, [&] (int i) {
+#else
          RAJA::forall<mat_exec_policy>(0, numElemReg, [&] (int i) {
+#endif
             Index_t ielem = regElemList[i];
             if (vnewc[ielem] <= eosvmin) { /* impossible due to calling func? */
                compHalfStep[i] = compression[i] ;
@@ -2277,7 +2339,11 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
       }
 
       if ( eosvmax != Real_t(0.) ) {
+#if defined(TRY_NO_WAIT)
+         RAJA::forall<mat_nowait_exec>(0, numElemReg, [&] (int i) {
+#else
          RAJA::forall<mat_exec_policy>(0, numElemReg, [&] (int i) {
+#endif
             Index_t ielem = regElemList[i];
             if (vnewc[ielem] >= eosvmax) { /* impossible due to calling func? */
                p_old[i]        = Real_t(0.) ;
@@ -2286,6 +2352,9 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
             }
          } );
       }
+#if defined(TRY_NO_WAIT)
+   }
+#endif
 
       CalcEnergyForElems(p_new, e_new, q_new, bvc, pbvc,
                          p_old, e_old,  q_old, compression, compHalfStep,
@@ -2336,20 +2405,37 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
     Real_t eosvmax = domain.eosvmax() ;
     Real_t *vnewc = Allocate<Real_t>(numElem) ;
 
+#if defined(TRY_NO_WAIT)
+   #pragma omp parallel
+   {
+#endif
+
+#if defined(TRY_NO_WAIT)
+    RAJA::forall<elem_nowait_exec>(0, numElem, [&] (int i) {
+#else
     RAJA::forall<elem_exec_policy>(0, numElem, [&] (int i) {
+#endif
        vnewc[i] = domain.vnew(i) ;
     } );
 
     // Bound the updated relative volumes with eosvmin/max
     if (eosvmin != Real_t(0.)) {
+#if defined(TRY_NO_WAIT)
+       RAJA::forall<elem_nowait_exec>(0, numElem, [&] (int i) {
+#else
        RAJA::forall<elem_exec_policy>(0, numElem, [&] (int i) {
+#endif
           if (vnewc[i] < eosvmin)
              vnewc[i] = eosvmin ;
        } );
     }
 
     if (eosvmax != Real_t(0.)) {
+#if defined(TRY_NO_WAIT)
+       RAJA::forall<elem_nowait_exec>(0, numElem, [&] (int i) {
+#else
        RAJA::forall<elem_exec_policy>(0, numElem, [&] (int i) {
+#endif
           if (vnewc[i] > eosvmax)
              vnewc[i] = eosvmax ;
        } );
@@ -2358,7 +2444,11 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
     // This check may not make perfect sense in LULESH, but
     // it's representative of something in the full code -
     // just leave it in, please
+#if defined(TRY_NO_WAIT)
+    RAJA::forall<elem_nowait_exec>(0, numElem, [&] (int i) {
+#else
     RAJA::forall<elem_exec_policy>(0, numElem, [&] (int i) {
+#endif
        Real_t vc = domain.v(i) ;
        if (eosvmin != Real_t(0.)) {
           if (vc < eosvmin)
@@ -2376,6 +2466,10 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
 #endif
        }
     } );
+
+#if defined(TRY_NO_WAIT)
+   }
+#endif
 
     for (Int_t r=0 ; r<domain.numReg() ; r++) {
        Index_t numElemReg = domain.regElemSize(r);
