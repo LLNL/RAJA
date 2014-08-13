@@ -204,6 +204,8 @@ CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended
 #CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=20000  -qlist -qsource -qlistopt -qreport
 #CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qinline=100 -qlistfmt=html=inlines
 LDFLAGS	= 
+## The following is needed for lompbeta1
+#LDFLAGS = -O3 -qsmp=omp -qdebug=lompinterface
 endif
 
 ifeq ($(OPT_DEBUG),debug)

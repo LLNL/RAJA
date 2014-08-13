@@ -19,7 +19,7 @@ OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
 #rzalastor
-#RAJA_ARCH = x86_sse_icc
+RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
@@ -27,7 +27,7 @@ OPT_DEBUG = opt
 #RAJA_ARCH = x86_avx_gnu
 
 #rzuseq
-RAJA_ARCH = bgq_xlc12
+#RAJA_ARCH = bgq_xlc12
 #RAJA_ARCH = bgq_clang
 #RAJA_ARCH = bgq_gnu
 
