@@ -187,10 +187,12 @@ endif
 ifeq ($(RAJA_ARCH),bgq_xlc12)
 #CXX 		= /usr/local/tools/compilers/ibm/bgxlc++-12.1.0.2a
 #CXX 		= /usr/local/tools/compilers/ibm/bgxlc++-12.1.0.3
-CXX 		= mpixlcxx_r
 #CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx-12.1.0.1d
 #CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx-12.1.0.2
 #CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx-12.1.0.3
+#CXX 		= mpixlcxx_r
+CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx_r-lompbeta2-fastmpi
+#CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx_r-lompbeta1-fastmpi
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qstrict -qinline=20000 -qsmp=omp
