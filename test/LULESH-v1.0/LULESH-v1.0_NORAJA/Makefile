@@ -45,13 +45,17 @@ include ../../compilers.mk
 CXXFLAGS_BUILD = -I. $(CXXFLAGS) $(LULESH_OPTS)
 
 OBJFILES_PAR = luleshOMP.o 
+OBJFILES_PAR_NG = luleshOMP_NG.o 
 OBJFILES_SER = lulesh.o 
 
 default:
-	echo "Please specify version to build make serial or make parallel"
+	echo "Please specify version to build make serial, make parallel, or make parallel-ng"
 
 parallel: $(OBJFILES_PAR)
 	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDPATH) -o  lulesh-OMP.exe
+
+parallel-ng: $(OBJFILES_PAR_NG)
+	$(CXX_COMPILE) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDPATH) -o  lulesh-OMP_NG.exe
 
 serial: $(OBJFILES_SER)
 	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDPATH) -o  lulesh-serial.exe
