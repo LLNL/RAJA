@@ -33,7 +33,7 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
-RAJA_TOPDIR    = ../..
+RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
@@ -49,7 +49,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 ##
 ## Include file containing compiler version and options.
 ##
-include ../compilers.mk
+include ../../compilers.mk
 
 
 CXXFLAGS_BUILD = -I. -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
