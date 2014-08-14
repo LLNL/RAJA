@@ -17,6 +17,17 @@
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
+##
+## Set option to report basic runtime information.
+##
+##LULESH_TIMER_OPTS = -DRAJA_USE_CYCLE
+#LULESH_TIMER_OPTS = -DRAJA_USE_CLOCK
+LULESH_TIMER_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
+
 #rzalastor
 RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
@@ -49,7 +60,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 ##
 ## Options to turn on/off MPI and OpenMP
 ##
-LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1
+LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 
 
 ##
@@ -58,7 +69,7 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
@@ -67,7 +78,7 @@ LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
 default: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  lulesh2.0_RAJA-ISet.exe
+	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh2.0_RAJA-ISet.exe
 
 ## Uncomment these lines to generate an executable to run...
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 

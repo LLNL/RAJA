@@ -162,26 +162,8 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+#include "Timer.hxx"
 
-//
-// For timing code sections...
-//
-#include <time.h>
-struct MyTimer
-{
-   clock_t tstart;
-   clock_t telapsed;
-
-   MyTimer() : tstart(0), telapsed(0) { ; }
-
-   void start() { tstart = clock(); }
-   void stop()  { telapsed += (clock() - tstart); }
-
-   double elapsed()
-   { return static_cast<double>(telapsed) / CLOCKS_PER_SEC; }
-};
-
-MyTimer EOStime;
 
 
 /*********************************/
@@ -2254,8 +2236,6 @@ static inline
 void EvalEOSForElems(Domain& domain, Real_t *vnewc,
                      Int_t numElemReg, Index_t *regElemList, Int_t rep)
 {
-//EOStime.start();
-
    Real_t  e_cut = domain.e_cut() ;
    Real_t  p_cut = domain.p_cut() ;
    Real_t  ss4o3 = domain.ss4o3() ;
@@ -2372,8 +2352,6 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
    Release(&p_old) ;
    Release(&delvc) ;
    Release(&e_old) ;
-
-//EOStime.stop();
 }
 
 /******************************************/
@@ -2848,8 +2826,6 @@ int main(int argc, char *argv[])
    }
 
    delete locDom; 
-
-//printf("Total EvalEOS... Time (sec) = %g\n", EOStime.elapsed() );
 
 #if USE_MPI
    MPI_Finalize() ;

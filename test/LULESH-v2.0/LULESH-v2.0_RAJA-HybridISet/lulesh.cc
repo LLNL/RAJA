@@ -162,6 +162,8 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
+#include "Timer.hxx"
+
 #define RAJA_STORAGE static inline
 //#define RAJA_STORAGE 
 

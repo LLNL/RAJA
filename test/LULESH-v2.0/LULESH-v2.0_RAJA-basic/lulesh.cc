@@ -162,25 +162,8 @@ Additional BSD Notice
 
 #include "lulesh.h"
 
-//
-// For timing code sections...
-//
-#include <time.h>
-struct MyTimer
-{
-   clock_t tstart;
-   clock_t telapsed;
+#include "Timer.hxx"
 
-   MyTimer() : tstart(0), telapsed(0) { ; }
-
-   void start() { tstart = clock(); }
-   void stop()  { telapsed += (clock() - tstart); }
-
-   double elapsed()
-   { return static_cast<double>(telapsed) / CLOCKS_PER_SEC; }
-};
-
-MyTimer EOStime;
 
 
 #define RAJA_STORAGE static inline
@@ -2684,7 +2667,7 @@ void LagrangeLeapFrog(Domain& domain)
 
 int main(int argc, char *argv[])
 {
-  Domain *locDom ;
+   Domain *locDom ;
    Int_t numRanks ;
    Int_t myRank ;
    struct cmdLineOpts opts;

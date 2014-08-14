@@ -18,6 +18,17 @@
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
+##
+## Set option to report basic runtime information.
+##
+##LULESH_TIMER_OPTS = -DRAJA_USE_CYCLE
+#LULESH_TIMER_OPTS = -DRAJA_USE_CLOCK
+LULESH_TIMER_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
+
 #rzalastor
 RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
@@ -48,18 +59,24 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1
 
 
 ##
+## Options to turn on/off MPI and OpenMP
+##
+LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
+
+
+##
 ## Include file containing compiler version and options.
 ##
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. $(CXXFLAGS) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes $(CXXFLAGS) $(LULESH_OPTS)
 
 OBJFILES := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
 
 default: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  lulesh-v2.0.exe
+	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-v2.0.exe
 	
 ## Uncomment this line to generate an executable to run...
 %.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
