@@ -67,6 +67,8 @@ Additional BSD Notice
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Timer.hxx"
+
 #define LULESH_SHOW_PROGRESS 0
 
 enum { VolumeError = -1, QStopError = -2 } ;
@@ -2663,6 +2665,12 @@ void LagrangeLeapFrog()
 
 int main(int argc, char *argv[])
 {
+   RAJA::Timer timer_main;
+   RAJA::Timer timer_cycle;
+
+   timer_main.start();
+
+
    Index_t edgeElems = 45 ;
    Index_t edgeNodes = edgeElems+1 ;
    // Real_t ds = Real_t(1.125)/Real_t(edgeElems) ; /* may accumulate roundoff */
@@ -2898,6 +2906,7 @@ int main(int argc, char *argv[])
    }
 
    /* timestep to solution */
+   timer_cycle.start();
    int its=0;
    while(mesh.time() < mesh.stoptime() ) {
       TimeIncrement() ;
@@ -2909,7 +2918,14 @@ int main(int argc, char *argv[])
              double(mesh.time()), double(mesh.deltatime()) ) ;
 #endif
    }
+   timer_cycle.stop();
+
+   timer_main.stop();
+
    printf("iterations: %d\n",its);
+   printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
+   printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );
+
    //   FILE *fp = fopen("x.asc","wb");
    //for (Index_t i=0; i<mesh.numElem(); i++)
    //    fprintf(fp,"%.6f\n",mesh.x(i));

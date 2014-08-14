@@ -18,6 +18,17 @@
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
 
+##
+## Set option to report basic runtime information.
+##
+##LULESH_OPTS = -DRAJA_USE_CYCLE
+#LULESH_OPTS = -DRAJA_USE_CLOCK
+LULESH_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
+
 #rzalastor
 RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
@@ -42,7 +53,7 @@ RAJA_ARCH = x86_sse_icc
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. $(CXXFLAGS) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes $(CXXFLAGS) $(LULESH_OPTS)
 
 OBJFILES_PAR = luleshOMP.o 
 OBJFILES_PAR_NG = luleshOMP_NG.o 
@@ -52,13 +63,13 @@ default:
 	echo "Please specify version to build make serial, make parallel, or make parallel-ng"
 
 parallel: $(OBJFILES_PAR)
-	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDPATH) -o  lulesh-OMP.exe
+	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP.exe
 
 parallel-ng: $(OBJFILES_PAR_NG)
-	$(CXX_COMPILE) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDPATH) -o  lulesh-OMP_NG.exe
+	$(CXX_COMPILE) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP_NG.exe
 
 serial: $(OBJFILES_SER)
-	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDPATH) -o  lulesh-serial.exe
+	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-serial.exe
 
 
 ## Uncomment this line to generate an executable to run...
