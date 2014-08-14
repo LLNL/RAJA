@@ -11,11 +11,22 @@
 #  variable line for the platform you want. 
 #
 # IMPORTANT:  The specific compiler version and options are set in
-#             the file ../compilers.mk.
+#             the file ../../compilers.mk.
 #
 
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
+
+##
+## Set option to report basic runtime information.
+##
+##LULESH_OPTS = -DRAJA_USE_CYCLE
+#LULESH_OPTS = -DRAJA_USE_CLOCK
+LULESH_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
 
 #rzalastor
 RAJA_ARCH = x86_sse_icc
@@ -52,7 +63,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
@@ -67,13 +78,13 @@ default:
 
 parallel-ft: CXXFLAGS_BUILD += -DRAJA_USE_FT
 parallel-ft: $(OBJFILES_PAR_FT)
-	$(CXX_COMPILE) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-parallel-ft.exe
+	$(CXX_COMPILE) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel-ft.exe
 
 parallel: $(OBJFILES_PAR)
-	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-parallel.exe
+	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel.exe
 
 serial: $(OBJFILES_SER)
-	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDPATH) -o  lulesh-RAJA-serial.exe
+	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-serial.exe
 
 ## Uncomment this line to generate an executable to run...
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 

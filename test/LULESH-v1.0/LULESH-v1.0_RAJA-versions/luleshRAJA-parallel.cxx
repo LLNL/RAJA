@@ -68,23 +68,7 @@ Additional BSD Notice
 
 #include "RAJA/RAJA.hxx"
 
-//
-// For timing code sections...
-//
-#include <time.h>
-struct MyTimer
-{
-   clock_t tstart;
-   clock_t telapsed;
-
-   MyTimer() : tstart(0), telapsed(0) { ; }
-
-   void start() { tstart = clock(); }
-   void stop()  { telapsed += (clock() - tstart); }
-
-   double elapsed() 
-   { return static_cast<double>(telapsed) / CLOCKS_PER_SEC; }
-};
+#include "Timer.hxx"
 
 
 /*
@@ -2702,8 +2686,8 @@ void LagrangeLeapFrog(Domain *domain)
 int main(int argc, char *argv[])
 {
 
-   MyTimer timer_main;
-   MyTimer timer_cycle;
+   RAJA::Timer timer_main;
+   RAJA::Timer timer_cycle;
 
    timer_main.start();
  
@@ -3286,8 +3270,8 @@ int main(int argc, char *argv[])
 
    timer_main.stop();
 
-   printf("Total Cycle Time (sec) = %g\n", timer_cycle.elapsed() );
-   printf("Total main Time (sec) = %g\n", timer_main.elapsed() );
+   printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
+   printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );
 
    return 0 ;
 }
