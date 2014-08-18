@@ -58,11 +58,11 @@ CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 #CXX_COMPILE = $(CXX) -O2 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 #CXX_COMPILE = $(CXX) -O1 -g -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 ##CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
-CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+###CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 LDFLAGS	=
 endif
 
@@ -130,9 +130,9 @@ CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
 ##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
-CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+###CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
 LDFLAGS	=
 endif
 
