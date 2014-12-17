@@ -1,3 +1,6 @@
+// This work was performed under the auspices of the U.S. Department of Energy by
+// Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.?
+
 /*!
  ******************************************************************************
  *
@@ -98,17 +101,9 @@ public:
       using std::swap;
       swap(m_data, other.m_data);
 #else
-      unsigned tcapacity = m_capacity;
-      unsigned tsize = m_size;
-      T* tdata = m_data;
-
       m_capacity = other.m_capacity;
       m_size = other.m_size;
       m_data = other.m_data;
-
-      other.m_capacity = tcapacity;
-      other.m_size = tsize;
-      other.m_data = tdata;
 #endif
    }
 
@@ -160,14 +155,15 @@ private:
    }
 
 
-#if !defined(RAJA_USE_STL)
+#if defined(RAJA_USE_STL)
+#else
    //
    // The following private members and methods provide a quick and dirty 
    // memory allocation scheme to mimick std::vector behavior without 
-   // relying on STL directly.
+   // relying on STL directly.  These are initialized in RAJAVec.cxx.
    //
-   const unsigned s_init_cap = 4;
-   const double   s_grow_fac = 1.5;
+   static const unsigned s_init_cap;
+   static const double   s_grow_fac;
 
    unsigned nextCap(unsigned current_cap) 
    {
@@ -201,7 +197,7 @@ private:
       m_data[m_size] = item;
       m_size++;
    }
-#endif  // if !defined(RAJA_USE_STL)
+#endif
    
 
 #if defined(RAJA_USE_STL)
@@ -213,7 +209,19 @@ private:
 #endif
 };
 
-
+/*
+*************************************************************************
+*
+* Initialize static members
+*
+*************************************************************************
+*/
+#if !defined(RAJA_USE_STL)
+template< typename T>
+const unsigned RAJAVec<T>::s_init_cap = 4;
+template< typename T>
+const double   RAJAVec<T>::s_grow_fac = 1.5;
+#endif
 
 }  // closing brace for RAJA namespace
 
