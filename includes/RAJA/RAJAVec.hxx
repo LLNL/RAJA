@@ -88,7 +88,7 @@ public:
    ~RAJAVec()
    {
 #if !defined(RAJA_USE_STL)
-      if (m_capacity > 0) delete m_data;  
+      if (m_capacity > 0) delete [] m_data;  
 #endif
    }
 
@@ -101,9 +101,17 @@ public:
       using std::swap;
       swap(m_data, other.m_data);
 #else
+      unsigned tcapacity = m_capacity;
+      unsigned tsize = m_size;
+      T* tdata = m_data;
+      
       m_capacity = other.m_capacity;
       m_size = other.m_size;
       m_data = other.m_data;
+
+      other.m_capacity = tcapacity;
+      other.m_size = tsize;
+      other.m_data = tdata;
 #endif
    }
 
