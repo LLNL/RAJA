@@ -98,7 +98,7 @@ void forall_Icount(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            const RangeISet& is,
+            const RangeSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type begin = is.getBegin();
@@ -126,7 +126,7 @@ void forall(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(cilk_for_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -198,7 +198,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cilk_for_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -264,7 +264,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(cilk_for_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -321,7 +321,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(cilk_for_exec,
-                const RangeISet& is,
+                const RangeSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -402,7 +402,7 @@ void forall_Icount(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            const RangeStrideISet& is,
+            const RangeStrideSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type begin  = is.getBegin();
@@ -431,7 +431,7 @@ void forall(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(cilk_for_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -506,7 +506,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cilk_for_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -573,7 +573,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(cilk_for_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -631,7 +631,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(cilk_for_exec,
-                const RangeStrideISet& is,
+                const RangeStrideSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -709,7 +709,7 @@ void forall_Icount(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            const UnstructuredISet& is,
+            const ListSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = is.getIndex();
@@ -737,7 +737,7 @@ void forall(cilk_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(cilk_for_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -809,7 +809,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cilk_for_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -875,7 +875,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(cilk_for_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -932,7 +932,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(cilk_for_exec,
-                const UnstructuredISet& is,
+                const ListSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -964,8 +964,8 @@ void forall_sum(cilk_for_exec,
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-             const HybridISet& is, LOOP_BODY loop_body )
+void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+             const IndexSet& is, LOOP_BODY loop_body )
 {
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -974,30 +974,30 @@ void forall( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(iset)),
+               *(static_cast<const RangeSegment*>(iset)),
                loop_body
             );
             break;
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iset)),
                loop_body
             );
             break;
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(iset)),
+               *(static_cast<const ListSegment*>(iset)),
                loop_body
             );
             break;
@@ -1026,8 +1026,8 @@ void forall( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-                    const HybridISet& is, LOOP_BODY loop_body )
+void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+                    const IndexSet& is, LOOP_BODY loop_body )
 {
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -1037,10 +1037,10 @@ void forall_Icount( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             foral_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(iset)),
+               *(static_cast<const RangeSegment*>(iset)),
                icount,
                loop_body
             );
@@ -1048,10 +1048,10 @@ void forall_Icount( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             foral_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iset)),
                icount,
                loop_body
             );
@@ -1059,10 +1059,10 @@ void forall_Icount( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             foral_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(iset)),
+               *(static_cast<const ListSegment*>(iset)),
                icount,
                loop_body
             );
@@ -1089,8 +1089,8 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-                    const HybridISet& is,
+void forall_minloc( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+                    const IndexSet& is,
                     T* min, Index_type *loc,
                     LOOP_BODY loop_body )
 {
@@ -1111,10 +1111,10 @@ void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(iset)),
+               *(static_cast<const RangeSegment*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1123,10 +1123,10 @@ void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1135,10 +1135,10 @@ void forall_minloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(iset)),
+               *(static_cast<const ListSegment*>(iset)),
                &min_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1177,8 +1177,8 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-                    const HybridISet& is,
+void forall_maxloc( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+                    const IndexSet& is,
                     T* max, Index_type *loc,
                     LOOP_BODY loop_body )
 {
@@ -1199,10 +1199,10 @@ void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(iset)),
+               *(static_cast<const RangeSegment*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1211,10 +1211,10 @@ void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1223,10 +1223,10 @@ void forall_maxloc( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(iset)),
+               *(static_cast<const ListSegment*>(iset)),
                &max_tmp[__cilkrts_get_worker_number()],
                &loc_tmp[__cilkrts_get_worker_number()],
                loop_body
@@ -1264,8 +1264,8 @@ template <typename SEG_EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-                 const HybridISet& is,
+void forall_sum( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& is,
                  T* sum,
                  LOOP_BODY loop_body )
 {
@@ -1284,10 +1284,10 @@ void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeISet*>(iset)),
+               *(static_cast<const RangeSegment*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
@@ -1295,10 +1295,10 @@ void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideISet*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );
@@ -1306,10 +1306,10 @@ void forall_sum( HybridISet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const UnstructuredISet*>(iset)),
+               *(static_cast<const ListSegment*>(iset)),
                &sum_tmp[__cilkrts_get_worker_number()],
                loop_body
             );

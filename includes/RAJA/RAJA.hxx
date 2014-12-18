@@ -30,11 +30,11 @@
 
 #include "execpolicy.hxx"
 
-#include "RangeISet.hxx"
-#include "UnstructuredISet.hxx"
-#include "HybridISet.hxx"
+#include "RangeSegment.hxx"
+#include "ListSegment.hxx"
+#include "IndexSet.hxx"
 
-#include "ISet_utils.hxx"
+#include "IndexSetUtils.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////

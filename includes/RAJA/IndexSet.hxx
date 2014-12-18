@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining hybrid index set classes.
+ * \brief   RAJA header file defining index set classes.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_HybridISet_HXX
-#define RAJA_HybridISet_HXX
+#ifndef RAJA_IndexSet_HXX
+#define RAJA_IndexSet_HXX
 
 #include "config.hxx"
 
@@ -31,25 +31,24 @@
 
 namespace RAJA {
 
-class RangeISet;
-class UnstructuredISet;
+class RangeSegment;
+class ListSegment;
 
 
 /*!
  ******************************************************************************
  *
- * \brief  Class representing an hybrid index set which is a collection
- *         of index set objects defined above.  Within a hybrid, the
- *         individual index sets are referred to as segments.
+ * \brief  Class representing an index set which is a collection
+ *         of segment objects. 
  *
  ******************************************************************************
  */
-class HybridISet
+class IndexSet
 {
 public:
 
    ///
-   /// Nested class representing hybrid index set execution policy. 
+   /// Nested class representing index set execution policy. 
    ///
    /// The first template parameter describes the policy for iterating
    /// over segments.  The second describes the execution policy for 
@@ -63,79 +62,79 @@ public:
    };
 
    ///
-   /// Sequential execution policy for hybrid index set.
+   /// Sequential execution policy for index set.
    ///
    typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
    ///
-   /// Construct empty hybrid index set
+   /// Construct empty index set
    ///
-   HybridISet();
+   IndexSet();
 
    ///
-   /// Construct hybrid index set from given index array using parameterized
-   /// method buildHybridISet().
+   /// Construct index set from given index array using parameterized
+   /// method buildIndexSet().
    ///
-   HybridISet(const Index_type* const indices_in, Index_type length);
+   IndexSet(const Index_type* const indices_in, Index_type length);
 
 #if defined(RAJA_USE_STL)
    ///
-   /// Construct hybrid index set from arbitrary object containing indices
-   /// using parametrized method buildHybridISet().
+   /// Construct index set from arbitrary object containing indices
+   /// using parametrized method buildIndexSet().
    ///
    /// The object must provide the methods: size(), begin(), end().
    ///
-   template< typename T> explicit HybridISet(const T& indx);
+   template< typename T> explicit IndexSet(const T& indx);
 #endif
 
    ///
-   /// Copy-constructor for hybrid index set
+   /// Copy-constructor for index set
    ///
-   HybridISet(const HybridISet& other);
+   IndexSet(const IndexSet& other);
 
    ///
-   /// Copy-assignment operator for hybrid index set
+   /// Copy-assignment operator for index set
    ///
-   HybridISet& operator=(const HybridISet& rhs);
+   IndexSet& operator=(const IndexSet& rhs);
 
    ///
    /// Destroy index set including all index set segments.
    ///
-   ~HybridISet();
+   ~IndexSet();
 
    ///
    /// Swap function for copy-and-swap idiom.
    ///
-   void swap(HybridISet& other);
+   void swap(IndexSet& other);
 
    ///
-   /// Add contiguous index range segment to hybrid index set 
-   /// (adds RangeISet object).
+   /// Add contiguous index range segment to index set 
+   /// (adds RangeSegment object).
    /// 
    void addRangeIndices(Index_type begin, Index_type end);
 
    ///
-   /// Add RangeISet segment to hybrid index set.
+   /// Add RangeSegment segment to index set.
    ///
-   void addISet(const RangeISet& iset);
+   void addISet(const RangeSegment& iset);
 
 #if 0  // RDH RETHINK
    ///
-   /// Add contiguous range of indices with stride segment to hybrid index set 
-   /// (addds RangeStrideISet object).
+   /// Add contiguous range of indices with stride segment to index set 
+   /// (addds RangeStrideSegment object).
    /// 
    void addRangeStrideIndices(Index_type begin, Index_type end, 
                               Index_type stride);
 
    ///
-   /// Add RangeStrideISet segment to hybrid index set.
+   /// Add RangeStrideSegment segment to index set.
    ///
-   void addISet(const RangeStrideISet& iset);
+   void addISet(const RangeStrideSegment& iset);
 #endif
 
    ///
-   /// Add segment containing array of indices to hybrid index set 
-   /// (adds UnstructuredISet object).
+   /// Add segment containing array of indices to index set 
+   /// (adds ListSegment object).
    /// 
    /// By default, the method makes a deep copy of given array and index
    /// set object will own the data representing its indices.  If 'Unowned' 
@@ -147,24 +146,24 @@ public:
                                IndexOwnership indx_own = Owned);
 
    ///
-   /// Add UnstructuredISet segment to hybrid index set.
+   /// Add ListSegment segment to index set.
    /// By default, the method makes a deep copy of given array and index
    /// set object will own the data representing its indices.  If 'Unowned'  
    /// is passed to method, the new segment object does not own its indices
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void addISet(const UnstructuredISet& iset, 
+   void addISet(const ListSegment& iset, 
                 IndexOwnership indx_own = Owned);
 
    ///
-   /// Return total length of hybrid index set; i.e., sum of lengths
+   /// Return total length of index set; i.e., sum of lengths
    /// of all segments.
    ///
    Index_type getLength() const { return m_len; }
 
    ///
-   /// Return total number of segments in hybrid index set.
+   /// Return total number of segments in index set.
    ///
    int getNumSegments() const { 
       return m_segments.size(); 
@@ -192,7 +191,7 @@ public:
    } 
 
    ///
-   /// Return Index_type value indicating hybrid index count associated with
+   /// Return Index_type value indicating index count associated with
    /// start of segment 'i'.
    ///
    /// Note: No error-checking on segment index.
@@ -202,7 +201,7 @@ public:
    }
 
    ///
-   /// Print hybrid index set data, including segments, to given output stream.
+   /// Print index set data, including segments, to given output stream.
    ///
    void print(std::ostream& os) const;
 
@@ -210,24 +209,24 @@ private:
    //
    // Copy function for copy-and-swap idiom (deep copy).
    //
-   void copy(const HybridISet& other);
+   void copy(const IndexSet& other);
 
    ///
-   /// Private nested class to hold an index segment of a hybrid index set.
+   /// Private nested class to hold a segment of a index set.
    ///
    /// A segment is defined by its type and its index set object.
    ///
    /// The index count value can be provided as a second argument to 
    /// forall_Ioff( ) iteration methods to map between actual indices
    /// indices and the running iteration count. That is, the count 
-   /// for a segment starts with the total length over all segments in a 
-   /// hybrid preceding that segment.
+   /// for a segment starts with the total length of all segments
+   /// preceding that segment.
    ///
    class Segment
    {
    public:
       Segment() 
-         : m_type(_Unknown_), m_iset(0), m_icount(0) { ; } 
+         : m_type(_UnknownSeg_), m_iset(0), m_icount(0) { ; } 
 
       template <typename ISET>
       Segment(SegmentType type,  const ISET* iset, Index_type icount)
@@ -263,17 +262,17 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief Initialize hybrid index set from array of indices with given length.
+ * \brief Initialize index set from array of indices with given length.
  *
- *        Note given hybrid index set object is assumed to be empty.  
+ *        Note given index set object is assumed to be empty.  
  *
  *        Routine does no error-checking on argements and assumes Index_type
  *        array contains valid indices.
  *
  ******************************************************************************
  */
-void buildHybridISet(HybridISet& hiset,
-                     const Index_type* const indices_in,
+void buildIndexSet(IndexSet& hiset,
+                   const Index_type* const indices_in,
                      Index_type length);
 
 #if defined(RAJA_USE_STL)
@@ -285,11 +284,11 @@ void buildHybridISet(HybridISet& hiset,
  ******************************************************************************
  */
 template <typename T>
-HybridISet::HybridISet(const T& indx)
+IndexSet::IndexSet(const T& indx)
 : m_len(0)
 {
    std::vector<Index_type> vec(indx.begin(), indx.end());
-   buildHybridISet(*this, &vec[0], vec.size());
+   buildIndexSet(*this, &vec[0], vec.size());
 }
 #endif
 
@@ -309,7 +308,7 @@ namespace std {
 
 template< > 
 RAJA_INLINE
-void swap(RAJA::HybridISet& a, RAJA::HybridISet& b)
+void swap(RAJA::IndexSet& a, RAJA::IndexSet& b)
 {
    a.swap(b);
 }

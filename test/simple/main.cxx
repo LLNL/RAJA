@@ -17,7 +17,7 @@
 
 using namespace RAJA;
 
-#include "buildHybrid.hxx"
+#include "buildIndexSet.hxx"
 
 
 //
@@ -187,7 +187,7 @@ void forall_reduce_CheckResult(const std::string& name,
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllTests( unsigned ibuild, 
-                     const HybridISet& hindex, 
+                     const IndexSet& hindex, 
                      Real_ptr parent, 
                      Real_ptr child, 
                      Real_ptr child_ref )
@@ -202,45 +202,45 @@ void runForAllTests( unsigned ibuild,
    std::cout << "\n\n BEGIN RAJA::forall tests: ibuild = " 
              << ibuild << std::endl;
 
-   forall< HybridISet::ExecPolicy<seq_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<seq_segit, seq_exec>",
+   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<seq_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<seq_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<seq_segit, simd_exec>",
+   forall< IndexSet::ExecPolicy<seq_segit, simd_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
+   forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
+   forall< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
+   forall< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
 #if defined(RAJA_COMPILER_ICC)
-   forall< HybridISet::ExecPolicy<seq_segit, cilk_for_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<seq_segit, cilk_for_exec>",
+   forall< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<cilk_for_segit, seq_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, seq_exec>",
+   forall< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<cilk_for_segit, simd_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, simd_exec>",
+   forall< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
+   forall< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
                       child_ref, child, hindex.getLength());
 
-   forall< HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(hindex, forall_op);
-   forall_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
+   forall< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(hindex, forall_op);
+   forall_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
                       child_ref, child, hindex.getLength());
 #endif
 
@@ -263,7 +263,7 @@ void runForAllTests( unsigned ibuild,
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllMinTests( unsigned ibuild, 
-                        const HybridISet& hindex, 
+                        const IndexSet& hindex, 
                         Real_ptr parent, 
                         Real_type ref_min_val,
                         Real_type ref_min_indx )
@@ -286,73 +286,73 @@ void runForAllMinTests( unsigned ibuild,
    std::cout << "\n\n BEGIN RAJA::forall_minloc tests: ibuild = " 
              << ibuild << std::endl;
 
-   forall_minloc< HybridISet::ExecPolicy<seq_segit, seq_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<seq_segit, seq_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, seq_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<seq_segit, simd_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<seq_segit, simd_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
 #if defined(RAJA_COMPILER_ICC)
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<seq_segit, cilk_for_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, cilk_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<cilk_for_segit, seq_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<cilk_for_segit, simd_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 
    tmin = 1.0e+20 ;
    tloc = -1 ;
-   forall_minloc< HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
+   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
                                       hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
                                 ref_min_val, ref_min_indx, tmin, tloc);
 #endif
 
@@ -367,7 +367,7 @@ void runForAllMinTests( unsigned ibuild,
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllMaxTests( unsigned ibuild, 
-                        const HybridISet& hindex, 
+                        const IndexSet& hindex, 
                         Real_ptr parent, 
                         Real_type ref_max_val,
                         Real_type ref_max_indx )
@@ -391,73 +391,73 @@ void runForAllMaxTests( unsigned ibuild,
    std::cout << "\n\n BEGIN RAJA::forall_maxloc tests: ibuild = " 
              << ibuild << std::endl;
 
-   forall_maxloc< HybridISet::ExecPolicy<seq_segit, seq_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<seq_segit, seq_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, seq_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<seq_segit, simd_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<seq_segit, simd_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
 #if defined(RAJA_COMPILER_ICC)
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<seq_segit, cilk_for_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<seq_segit, cilk_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<cilk_for_segit, seq_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, seq_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<cilk_for_segit, simd_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, simd_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 
    tmax = -1.0e+20 ;
    tloc = -1 ;
-   forall_maxloc< HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
+   forall_maxloc< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
                                       hindex, &tmax, &tloc, forall_maxloc_op);
-   forall_reduceloc_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
+   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
                                 ref_max_val, ref_max_indx, tmax, tloc);
 #endif
 
@@ -472,7 +472,7 @@ void runForAllMaxTests( unsigned ibuild,
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllSumTests( unsigned ibuild, 
-                        const HybridISet& hindex, 
+                        const IndexSet& hindex, 
                         Real_ptr parent, 
                         Real_type ref_sum )
 {
@@ -492,64 +492,64 @@ void runForAllSumTests( unsigned ibuild,
    std::cout << "\n\n BEGIN RAJA::forall_sum tests: ibuild = " 
              << ibuild << std::endl;
 
-   forall_sum< HybridISet::ExecPolicy<seq_segit, seq_exec> >(
+   forall_sum< IndexSet::ExecPolicy<seq_segit, seq_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<seq_segit, seq_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, seq_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<seq_segit, simd_exec> >(
+   forall_sum< IndexSet::ExecPolicy<seq_segit, simd_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<seq_segit, simd_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
+   forall_sum< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
+   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
+   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
                              ref_sum, tsum);
 
 #if defined(RAJA_COMPILER_ICC)
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<seq_segit, cilk_for_exec> >(
+   forall_sum< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<seq_segit, cilk_for_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<cilk_for_segit, seq_exec> >(
+   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, seq_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<cilk_for_segit, simd_exec> >(
+   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, simd_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
+   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
                              ref_sum, tsum);
 
    tsum = 0.0;
-   forall_sum< HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
+   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
                                    hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("HybridISet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
+   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
                              ref_sum, tsum);
 #endif
 
@@ -570,9 +570,9 @@ int main(int argc, char *argv[])
 //  Test different methods to construct hybrid segments.
 //  They should generate equivalent results.
 //
-   HybridISet hindex[NumBuildMethods];
+   IndexSet hindex[NumBuildMethods];
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      buildHybrid( hindex[ibuild], static_cast<HybridBuildMethod>(ibuild) );
+      buildIndexSet( hindex[ibuild], static_cast<IndexSetBuildMethod>(ibuild) );
    } 
 
 #if 0 
@@ -763,7 +763,7 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
 #if 1 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Check some basic conditional HybridISet construction operations....
+// Check some basic conditional IndexSet construction operations....
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -773,13 +773,13 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
    std::vector<Index_type> even_indices = 
       getIndicesConditional(hindex[0], [](Index_type idx) { return !(idx%2);} );
 
-   HybridISet hiset_even(even_indices);
+   IndexSet hiset_even(even_indices);
 
 #else
    RAJAVec<Index_type> even_indices =
       getIndicesConditional(hindex[0], [](Index_type idx) { return !(idx%2);} );
 
-   HybridISet hiset_even(&even_indices[0], even_indices.size());
+   IndexSet hiset_even(&even_indices[0], even_indices.size());
 
 #endif
 
@@ -790,13 +790,13 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
    std::vector<Index_type> lt_300_indices = 
       getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
 
-   HybridISet hiset_lt_300(lt_300_indices);
+   IndexSet hiset_lt_300(lt_300_indices);
 
 #else
    RAJAVec<Index_type> lt_300_indices =
       getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
 
-   HybridISet hiset_lt_300(&lt_300_indices[0], lt_300_indices.size());
+   IndexSet hiset_lt_300(&lt_300_indices[0], lt_300_indices.size());
 
 #endif
 

@@ -123,43 +123,43 @@ const int lulesh_ytile = 2;
 const int lulesh_ztile = 2;
 
 //
-//   RAJA ISet type used in loop traversals.
+//   RAJA IndexSet type used in loop traversals.
 //
-//   Need to verify if this can be set to RangeISet or UnstructuredISet
-//   types. It may be useful to compare HybridISet performance to
+//   Need to verify if this can be set to RangeSegment or ListSegment
+//   types. It may be useful to compare IndexSet performance to
 //   basic segment types; e.g.,
 //
-//     - Canonical ordering should be able to use HybridISet or
-//                                                RangeISet.
-//     - Tiled_Index ordering should be able to use HybridISet or
-//                                                  UnstrcuturedISet.
+//     - Canonical ordering should be able to use IndexSet or
+//                                                RangeSegment.
+//     - Tiled_Index ordering should be able to use IndexSet or
+//                                                  UnstrcuturedSegment.
 //
-// NOTE: If this changes to non-hybrid index set (i.e., basic segment
-//       type such as RAJA::RangeISet or RAJA::UnstructuredISet),
+// NOTE: If this changes to non-index set (i.e., basic segment
+//       type such as RAJA::RangeSegment or RAJA::ListSegment),
 //       then execution policy types need to change. Also, methods
 //       where index sets are created need to change.
 //
-typedef RAJA::HybridISet LULESH_ISET;
+typedef RAJA::IndexSet LULESH_ISET;
 
 //
-//   Policies for hybrid segment iteration and segment execution.
+//   Policies for index set segment iteration and segment execution.
 //
 //   NOTE: Currently, we apply single policy across all loop patterns.
 //
-typedef RAJA::seq_segit              Hybrid_Seg_Iter;
-//typedef RAJA::omp_parallel_for_segit Hybrid_Seg_Iter;
-//typedef RAJA::cilk_for_segit         Hybrid_Seg_Iter;
+typedef RAJA::seq_segit              IndexSet_Seg_Iter;
+//typedef RAJA::omp_parallel_for_segit IndexSet_Seg_Iter;
+//typedef RAJA::cilk_for_segit         IndexSet_Seg_Iter;
 
 //typedef RAJA::seq_exec              Segment_Exec;
 //typedef RAJA::simd_exec             Segment_Exec;
 typedef RAJA::omp_parallel_for_exec Segment_Exec;
 //typedef RAJA::cilk_for_exec         Segment_Exec;
 
-typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_ISET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> minloc_exec_policy;
-typedef                            Segment_Exec  range_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> minloc_exec_policy;
+typedef                                            Segment_Exec  range_exec_policy;
 
 
 //
@@ -3135,7 +3135,7 @@ int main(int argc, char *argv[])
       }
    }
 
-   /* Create domain ISets */
+   /* Create domain IndexSets */
 
    /* always leave the nodes in a canonical ordering */
    domain.domNodeList = new LULESH_ISET() ;
@@ -3159,7 +3159,7 @@ int main(int argc, char *argv[])
       {
          domain.domElemList->addRangeIndices(0, domElems) ;
 
-         /* Create a material ISet (entire domain same material for now) */
+         /* Create a material IndexSet (entire domain same material for now) */
          domain.matElemList->addRangeIndices(0, domElems) ;
       }
       break ;

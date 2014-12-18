@@ -28,9 +28,9 @@
 #include "RAJA/RAJA.hxx"
 
 //
-//   RAJA ISet type used in loop traversals.
+//   RAJA IndexSet type used in loop traversals.
 //
-typedef RAJA::HybridISet LULESH_ISET;
+typedef RAJA::IndexSet LULESH_ISET;
 
 
 //**************************************************

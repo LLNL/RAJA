@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for hybrid index set classes
+ * \brief   Implementation file for index set classes
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -11,10 +11,10 @@
  ******************************************************************************
  */
 
-#include "RAJA/HybridISet.hxx"
+#include "RAJA/IndexSet.hxx"
 
-#include "RAJA/RangeISet.hxx"
-#include "RAJA/UnstructuredISet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
 #include <iostream>
 
@@ -24,39 +24,39 @@ namespace RAJA {
 /*
 *************************************************************************
 *
-* Public HybridISet methods.
+* Public IndexSet methods.
 *
 *************************************************************************
 */
 
-HybridISet::HybridISet()
+IndexSet::IndexSet()
 : m_len(0)
 {
 }
 
-HybridISet::HybridISet(const Index_type* const indices_in, Index_type length)
+IndexSet::IndexSet(const Index_type* const indices_in, Index_type length)
 : m_len(0)
 {
-   buildHybridISet(*this, indices_in, length);
+   buildIndexSet(*this, indices_in, length);
 }
 
-HybridISet::HybridISet(const HybridISet& other)
+IndexSet::IndexSet(const IndexSet& other)
 : m_len(0)
 {
    copy(other); 
 }
 
-HybridISet& HybridISet::operator=(
-   const HybridISet& rhs)
+IndexSet& IndexSet::operator=(
+   const IndexSet& rhs)
 {
    if ( &rhs != this ) {
-      HybridISet copy(rhs);
+      IndexSet copy(rhs);
       this->swap(copy);
    }
    return *this;
 }
 
-HybridISet::~HybridISet()
+IndexSet::~IndexSet()
 {
    const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
@@ -67,37 +67,37 @@ HybridISet::~HybridISet()
 
          switch ( segtype ) {
 
-            case _Range_ : {
-               RangeISet* is =
-                  const_cast<RangeISet*>(
-                     static_cast<const RangeISet*>(iset)
+            case _RangeSeg_ : {
+               RangeSegment* is =
+                  const_cast<RangeSegment*>(
+                     static_cast<const RangeSegment*>(iset)
                   );
                delete is;
                break;
             }
 
 #if 0  // RDH RETHINK
-            case _RangeStride_ : {
-               RangeStrideISet* is =
-                  const_cast<RangeStrideISet*>(
-                     static_cast<const RangeStrideISet*>(iset)
+            case _RangeStrideSeg_ : {
+               RangeStrideSegment* is =
+                  const_cast<RangeStrideSegment*>(
+                     static_cast<const RangeStrideSegment*>(iset)
                   );
                delete is;
                break;
             }
 #endif
 
-            case _Unstructured_ : {
-               UnstructuredISet* is =
-                  const_cast<UnstructuredISet*>(
-                     static_cast<const UnstructuredISet*>(iset)
+            case _ListSeg_ : {
+               ListSegment* is =
+                  const_cast<ListSegment*>(
+                     static_cast<const ListSegment*>(iset)
                   );
                delete is;
                break;
             }
 
             default : {
-               std::cout << "\t HybridISet dtor: case not implemented!!\n";
+               std::cout << "\t IndexSet dtor: case not implemented!!\n";
             }
 
          }  // switch ( segtype )
@@ -107,7 +107,7 @@ HybridISet::~HybridISet()
    }  // for isi...
 }
 
-void HybridISet::swap(HybridISet& other)
+void IndexSet::swap(IndexSet& other)
 {
 #if defined(RAJA_USE_STL)
    using std::swap;
@@ -123,67 +123,67 @@ void HybridISet::swap(HybridISet& other)
 /*
 *************************************************************************
 *
-* Methods to add segments to hybrid index set.
+* Methods to add segments to index set.
 *
 *************************************************************************
 */
 
-void HybridISet::addRangeIndices(Index_type begin, Index_type end)
+void IndexSet::addRangeIndices(Index_type begin, Index_type end)
 {
-   RangeISet* new_is = new RangeISet(begin, end);
-   addSegment( _Range_, new_is );
+   RangeSegment* new_is = new RangeSegment(begin, end);
+   addSegment( _RangeSeg_, new_is );
 }
 
-void HybridISet::addISet(const RangeISet& iset)
+void IndexSet::addISet(const RangeSegment& iset)
 {
-   RangeISet* new_is = new RangeISet(iset);
-   addSegment( _Range_, new_is );
+   RangeSegment* new_is = new RangeSegment(iset);
+   addSegment( _RangeSeg_, new_is );
 }
 
 #if 0  // RDH RETHINK
-void HybridISet::addRangeStrideIndices(Index_type begin, Index_type end,
-                                       Index_type stride)
+void IndexSet::addRangeStrideIndices(Index_type begin, Index_type end,
+                                     Index_type stride)
 {
-   RangeStrideISet* new_is = new RangeStrideISet(begin, end, stride);
-   addSegment( _RangeStride_, new_is );
+   RangeStrideSegment* new_is = new RangeStrideSegment(begin, end, stride);
+   addSegment( _RangeSeg_, new_is );
 }
 
-void HybridISet::addISet(const RangeStrideISet& iset)
+void IndexSet::addISet(const RangeStrideSegment& iset)
 {
-   RangeStrideISet* new_is = new RangeStrideISet(iset);
-   addSegment( _RangeStride_, new_is );
+   RangeStrideSegment* new_is = new RangeStrideSegment(iset);
+   addSegment( _RangeSeg_, new_is );
 }
 #endif
 
-void HybridISet::addUnstructuredIndices(const Index_type* indx, 
-                                        Index_type len,
-                                        IndexOwnership indx_own)
+void IndexSet::addUnstructuredIndices(const Index_type* indx, 
+                                      Index_type len,
+                                      IndexOwnership indx_own)
 {
-   UnstructuredISet* new_is = new UnstructuredISet(indx, len, indx_own);
-   addSegment( _Unstructured_, new_is );
+   ListSegment* new_is = new ListSegment(indx, len, indx_own);
+   addSegment( _ListSeg_, new_is );
 }
 
-void HybridISet::addISet(const UnstructuredISet& iset, 
+void IndexSet::addISet(const ListSegment& iset, 
                          IndexOwnership indx_own)
 {
-   UnstructuredISet* new_is = new UnstructuredISet(iset.getIndex(),
-                                                   iset.getLength(),
-                                                   indx_own);
-   addSegment( _Unstructured_, new_is );
+   ListSegment* new_is = new ListSegment(iset.getIndex(),
+                                         iset.getLength(),
+                                         indx_own);
+   addSegment( _ListSeg_, new_is );
 }
 
 
 /*
 *************************************************************************
 *
-* Print contents of hybrid index set to given output stream.
+* Print contents of index set to given output stream.
 *
 *************************************************************************
 */
 
-void HybridISet::print(std::ostream& os) const
+void IndexSet::print(std::ostream& os) const
 {
-   os << "HYBRID INDEX SET : " 
+   os << "INDEX SET : " 
       << getLength() << " length..." << std::endl
       << getNumSegments() << " segments..." << std::endl;
 
@@ -193,50 +193,50 @@ void HybridISet::print(std::ostream& os) const
       const void* iset = getSegmentISet(isi);
       Index_type icount = getSegmentIcount(isi);
 
-      os << "\tSegment " << isi << " : " << std::endl;
+      os << "\nSegment " << isi << " : " << std::endl;
 
       switch ( segtype ) {
 
-         case _Range_ : {
+         case _RangeSeg_ : {
             if ( iset ) {
-               const RangeISet* is =
-                  static_cast<const RangeISet*>(iset);
-               is->print(os);
                os << "Icount = " << icount << std::endl; 
+               const RangeSegment* is =
+                  static_cast<const RangeSegment*>(iset);
+               is->print(os);
             } else {
-               os << "_Range_ is null" << std::endl;
+               os << "_RangeSeg_ is null" << std::endl;
             }
             break;
          }
 
 #if 0  // RDH RETHINK
-         case _RangeStride_ : {
+         case _RangeStrideSeg_ : {
             if ( iset ) {
-               const RangeStrideISet* is =
-                  static_cast<const RangeStrideISet*>(iset);
-               is->print(os);
                os << "Icount = " << icount << std::endl; 
+               const RangeStrideSegment* is =
+                  static_cast<const RangeStrideSegment*>(iset);
+               is->print(os);
             } else {
-               os << "_RangeStride_ is null" << std::endl;
+               os << "_RangeStrideSeg_ is null" << std::endl;
             }
             break;
          }
 #endif
 
-         case _Unstructured_ : {
+         case _ListSeg_ : {
             if ( iset ) {
-               const UnstructuredISet* is =
-                  static_cast<const UnstructuredISet*>(iset);
-               is->print(os);
                os << "Icount = " << icount << std::endl; 
+               const ListSegment* is =
+                  static_cast<const ListSegment*>(iset);
+               is->print(os);
             } else {
-               os << "_Unstructured_ is null" << std::endl;
+               os << "_ListSeg_ is null" << std::endl;
             }
             break;
          }
 
          default : {
-            os << "HybridISet print: case not implemented!!\n";
+            os << "IndexSet print: case not implemented!!\n";
          }
 
       }  // switch ( segtype )
@@ -248,11 +248,11 @@ void HybridISet::print(std::ostream& os) const
 /*
 *************************************************************************
 *
-* Private helper function to copy hybrid index set segments.
+* Private helper function to copy index set segments.
 *
 *************************************************************************
 */
-void HybridISet::copy(const HybridISet& other)
+void IndexSet::copy(const IndexSet& other)
 {
    const int num_segs = other.getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
@@ -263,25 +263,25 @@ void HybridISet::copy(const HybridISet& other)
 
          switch ( segtype ) {
 
-            case _Range_ : {
-               addISet(*static_cast<const RangeISet*>(iset));
+            case _RangeSeg_ : {
+               addISet(*static_cast<const RangeSegment*>(iset));
                break;
             }
 
 #if 0  // RDH RETHINK
-            case _RangeStride_ : {
-               addISet(*static_cast<const RangeStrideISet*>(iset));
+            case _RangeStrideSeg_ : {
+               addISet(*static_cast<const RangeStrideSegment*>(iset));
                break;
             }
 #endif
 
-            case _Unstructured_ : {
-               addISet(*static_cast<const UnstructuredISet*>(iset));
+            case _ListSeg_ : {
+               addISet(*static_cast<const ListSegment*>(iset));
                break;
             }
 
             default : {
-               std::cout << "\t HybridISet::copy: case not implemented!!\n";
+               std::cout << "\t IndexSet::copy: case not implemented!!\n";
             }
 
          }  // switch ( segtype )
@@ -296,14 +296,14 @@ void HybridISet::copy(const HybridISet& other)
 /*
 *************************************************************************
 *
-* HybridISet builder methods.
+* IndexSet builder methods.
 *
 *************************************************************************
 */
 
-void buildHybridISet(HybridISet& hiset,
-                     const Index_type* const indices_in, 
-                     Index_type length)
+void buildIndexSet(IndexSet& hiset,
+                   const Index_type* const indices_in, 
+                   Index_type length)
 {
    if ( length == 0 ) return;
 

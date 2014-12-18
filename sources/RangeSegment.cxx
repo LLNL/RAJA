@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for range index set classes
+ * \brief   Implementation file for range segment classes
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -11,7 +11,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/RangeISet.hxx"
+#include "RAJA/RangeSegment.hxx"
 
 #include <iostream>
 
@@ -21,14 +21,15 @@ namespace RAJA {
 /*
 *************************************************************************
 *
-* RangeISet class methods
+* RangeSegment class methods
 *
 *************************************************************************
 */
 
-void RangeISet::print(std::ostream& os) const
+void RangeSegment::print(std::ostream& os) const
 {
-   os << "\nRangeISet::print : begin, end = "
+   os << "RangeSegment : length = " << getLength() 
+      << " : begin, end = "
       << m_begin << ", " << m_end << std::endl;
 }
 
@@ -36,14 +37,15 @@ void RangeISet::print(std::ostream& os) const
 /*
 *************************************************************************
 *
-* RangeStrideISet class methods
+* RangeStrideSegment class methods
 *
 *************************************************************************
 */
 
-void RangeStrideISet::print(std::ostream& os) const
+void RangeStrideSegment::print(std::ostream& os) const
 {
-   os << "\nRangeStrideISet::print : begin, end, stride = "
+   os << "RangeStrideSegment : length = " << getLength() 
+      << " : begin, end, stride = "
       << m_begin << ", " << m_end << ", " << m_stride << std::endl;
 }
 

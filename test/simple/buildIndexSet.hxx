@@ -8,7 +8,7 @@
 //
 // Enum for different hybrid initialization procedures.
 //
-enum HybridBuildMethod {
+enum IndexSetBuildMethod {
    AddSegments = 0,
 #if defined(RAJA_USE_STL)
    AddSegmentsAsVectors,
@@ -21,4 +21,4 @@ enum HybridBuildMethod {
 //
 //  Initialize hybrid index set by adding segments as indicated by enum value.
 //
-void buildHybrid(RAJA::HybridISet& hindex, HybridBuildMethod use_vector);
+void buildIndexSet(RAJA::IndexSet& hindex, IndexSetBuildMethod use_vector);

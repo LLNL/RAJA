@@ -3,8 +3,8 @@
  *
  * \file
  *
- * \brief   Header file containing generic RAJA index set utility method 
- *          templates.
+ * \brief   Header file containing generic RAJA index set and segment utility 
+ *          method templates.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -12,8 +12,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_ISet_utils_HXX
-#define RAJA_ISet_utils_HXX
+#ifndef RAJA_IndexSetUtils_HXX
+#define RAJA_IndexSetUtils_HXX
 
 #include "config.hxx"
 
@@ -21,7 +21,7 @@
 
 #include "forall_seq_any.hxx"
 
-#include <vector>
+#include "RAJAVec.hxx"
 
 
 namespace RAJA {
@@ -30,7 +30,7 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Returns all indices in given index set as std::vector.
+ * \brief  Returns all indices in given index set or segment as std::vector.
  *
  ******************************************************************************
  */
@@ -66,8 +66,8 @@ RAJAVec<Index_type> getIndices(const INDEXSET_T& iset)
 /*!
  ******************************************************************************
  *
- * \brief  Returns all indices in given index set that satisfy conditional
- *         as std::vector.
+ * \brief  Returns all indices in given index set or segment that satisfy 
+ *         conditional as std::vector.
  *
  ******************************************************************************
  */

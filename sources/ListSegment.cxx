@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for unstructured index set classes
+ * \brief   Implementation file for list segment classes
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -11,7 +11,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/UnstructuredISet.hxx"
+#include "RAJA/ListSegment.hxx"
 
 #include <iostream>
 
@@ -26,39 +26,39 @@ namespace RAJA {
 /*
 *************************************************************************
 *
-* Public UnstructuredISet class methods.
+* Public ListSegment class methods.
 *
 *************************************************************************
 */
 
-UnstructuredISet::UnstructuredISet(const Index_type* indx, Index_type len,
+ListSegment::ListSegment(const Index_type* indx, Index_type len,
                                    IndexOwnership indx_own)
 {
    initIndexData(indx, len, indx_own);
 }
 
-UnstructuredISet::UnstructuredISet(const UnstructuredISet& other)
+ListSegment::ListSegment(const ListSegment& other)
 {
    initIndexData(other.m_indx, other.m_len, other.m_indx_own);
 }
 
-UnstructuredISet& UnstructuredISet::operator=(const UnstructuredISet& rhs)
+ListSegment& ListSegment::operator=(const ListSegment& rhs)
 {
    if ( &rhs != this ) {
-      UnstructuredISet copy(rhs);
+      ListSegment copy(rhs);
       this->swap(copy);
    }
    return *this;
 }
 
-UnstructuredISet::~UnstructuredISet()
+ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
       delete[] m_indx ;
    }
 }
 
-void UnstructuredISet::swap(UnstructuredISet& other)
+void ListSegment::swap(ListSegment& other)
 {
 #if defined(RAJA_USE_STL)
    using std::swap;
@@ -80,9 +80,9 @@ void UnstructuredISet::swap(UnstructuredISet& other)
 #endif
 }
 
-void UnstructuredISet::print(std::ostream& os) const
+void ListSegment::print(std::ostream& os) const
 {
-   os << "\nUnstructuredISet : length = " << m_len << " , owns index = "
+   os << "ListSegment : length = " << m_len << " , owns index = "
       << (m_indx_own == Owned ? "Owned" : "Unowned") << std::endl;
    for (Index_type i = 0; i < m_len; ++i) {
       os << "\t" << m_indx[i] << std::endl;
@@ -96,9 +96,9 @@ void UnstructuredISet::print(std::ostream& os) const
 *
 *************************************************************************
 */
-void UnstructuredISet::initIndexData(const Index_type* indx, 
-                                     Index_type len,
-                                     IndexOwnership indx_own)
+void ListSegment::initIndexData(const Index_type* indx, 
+                                Index_type len,
+                                IndexOwnership indx_own)
 {
    if ( len <= 0 ) {
 

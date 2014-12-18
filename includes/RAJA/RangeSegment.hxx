@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining range index set classes.
+ * \brief   RAJA header file defining range segment classes.
  *     
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_RangeISet_HXX
-#define RAJA_RangeISet_HXX
+#ifndef RAJA_RangeSegment_HXX
+#define RAJA_RangeSegment_HXX
 
 #include "config.hxx"
 
@@ -29,7 +29,7 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Class representing a contiguous range of indices.
+ * \brief  Segment class representing a contiguous range of indices.
  *
  *         Range is specified by begin and end values.
  *         Traversal executes as:  
@@ -39,12 +39,12 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class RangeISet
+class RangeSegment
 {
 public:
 
    ///
-   /// Sequential execution policy for range index set.
+   /// Sequential execution policy for range segment.
    ///
    typedef RAJA::seq_exec seq_policy;
 
@@ -53,34 +53,34 @@ public:
     */
 
    ///
-   /// Construct range index set [begin, end).
+   /// Construct range segment [begin, end).
    ///
-   RangeISet(Index_type begin, Index_type end) 
+   RangeSegment(Index_type begin, Index_type end) 
      : m_begin(begin), m_end(end) { ; }
 
    ///
-   /// Return starting index for index set. 
+   /// Return starting index for range. 
    ///
    Index_type getBegin() const { return m_begin; }
 
    ///
-   /// Return one past last index for index set. 
+   /// Return one past last index for range. 
    ///
    Index_type getEnd() const { return m_end; }
 
    ///
-   /// Return number of indices represented by index set.
+   /// Return number of indices represented by range.
    ///
    Index_type getLength() const { return (m_end-m_begin); }
 
    ///
-   /// Return 'Owned' indicating that index set object owns the data
+   /// Return 'Owned' indicating that segment object owns the data
    /// representing its indices.
    ///
-   IndexOwnership indexOwnership() const { return Owned; }
+   IndexOwnership getIndexOwnership() const { return Owned; }
 
    ///
-   /// Print index set data to given output stream.
+   /// Print segment data to given output stream.
    ///
    void print(std::ostream& os) const;
 
@@ -88,7 +88,7 @@ private:
    //
    // The default ctor is not implemented.
    //
-   RangeISet();
+   RangeSegment();
 
    Index_type m_begin;
    Index_type m_end;
@@ -98,7 +98,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Class representing a contiguous range of indices with stride.
+ * \brief  Segment class representing a contiguous range of indices with stride.
  *
  *         Range is specified by begin and end values.
  *         Traversal executes as:
@@ -108,12 +108,12 @@ private:
  *
  ******************************************************************************
  */
-class RangeStrideISet
+class RangeStrideSegment
 {
 public:
 
    ///
-   /// Sequential execution policy for range index set with stride.
+   /// Sequential execution policy for range segment with stride.
    ///
    typedef RAJA::seq_exec seq_policy;
 
@@ -122,39 +122,39 @@ public:
     */
 
    ///
-   /// Construct range index set [begin, end) with stride.
+   /// Construct range segment [begin, end) with stride.
    ///
-   RangeStrideISet(Index_type begin, Index_type end, Index_type stride)
+   RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
      : m_begin(begin), m_end(end), m_stride(stride) { ; }
 
    ///
-   /// Return starting index for index set. 
+   /// Return starting index for segment. 
    ///
    Index_type getBegin() const { return m_begin; }
 
    ///
-   /// Return one past last index for index set. 
+   /// Return one past last index for segment. 
    ///
    Index_type getEnd() const { return m_end; }
 
    /// 
-   /// Return stride for index set. 
+   /// Return stride for segment. 
    ///
    Index_type getStride() const { return m_stride; }
 
    ///
-   /// Return number of indices represented by index set.
+   /// Return number of indices represented by segment.
    ///
    Index_type getLength() const { return (m_end-m_begin)/m_stride + 1; }
 
    ///
-   /// Return 'Owned' indicating that index set object owns the data
+   /// Return 'Owned' indicating that segment object owns the data
    /// representing its indices.
    ///
-   IndexOwnership indexOwnership() const { return Owned; }
+   IndexOwnership getIndexOwnership() const { return Owned; }
 
    ///
-   /// Print index set data to given output stream.
+   /// Print segment data to given output stream.
    ///
    void print(std::ostream& os) const;
 
@@ -162,7 +162,7 @@ private:
    //
    // The default ctor is not implemented.
    //
-   RangeStrideISet();
+   RangeStrideSegment();
 
    Index_type m_begin;
    Index_type m_end;
@@ -170,7 +170,7 @@ private:
 };
 
 //
-// TODO: Add multi-dim'l ranges, and ability to repeat index sets using 
+// TODO: Add multi-dim'l ranges, and ability to repeat segments using 
 //       an offset without having to resort to a hybrid, others? 
 //
 

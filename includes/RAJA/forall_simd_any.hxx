@@ -97,7 +97,7 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const RangeISet& is,
+            const RangeSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type begin = is.getBegin();
@@ -125,7 +125,7 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -179,7 +179,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -233,7 +233,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const RangeISet& is,
+                   const RangeSegment& is,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -287,7 +287,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const RangeISet& is,
+                const RangeSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -377,7 +377,7 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const RangeStrideISet& is,
+            const RangeStrideSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type begin  = is.getBegin();
@@ -407,7 +407,7 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -463,7 +463,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -519,7 +519,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const RangeStrideISet& is,
+                   const RangeStrideSegment& is,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -575,7 +575,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const RangeStrideISet& is,
+                const RangeStrideSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -666,7 +666,7 @@ void forall_Icount(simd_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const UnstructuredISet& is,
+            const ListSegment& is,
             LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = is.getIndex();
@@ -695,7 +695,7 @@ void forall(simd_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
@@ -748,7 +748,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -801,7 +801,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const UnstructuredISet& is,
+                   const ListSegment& is,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
@@ -854,7 +854,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const UnstructuredISet& is,
+                const ListSegment& is,
                 T* sum,
                 LOOP_BODY loop_body)
 {
