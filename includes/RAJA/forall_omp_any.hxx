@@ -1002,7 +1002,7 @@ void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
 #pragma omp parallel for schedule(dynamic, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1067,7 +1067,7 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #pragma omp parallel for schedule(dynamic, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
       Index_type icount = is.getSegmentIcount(isi);
 
       switch ( segtype ) {
@@ -1145,7 +1145,7 @@ void forall_minloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #pragma omp parallel for 
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1235,7 +1235,7 @@ void forall_maxloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #pragma omp parallel for
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1323,7 +1323,7 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 #pragma omp parallel for
    for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 

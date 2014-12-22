@@ -7,7 +7,7 @@
  * \file
  *
  * \brief   RAJA header file for simple vector template class that enables 
- *          RAJA to be used with or without STL vectors.
+ *          RAJA to be used with or without the C++ STL.
  *     
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -33,7 +33,9 @@ namespace RAJA {
  *         sufficient to insulate RAJA entities from the STL.
  *
  *         Note: This class has limited functionality sufficient to 
- *               support its usage for RAJA HybridISet operations.
+ *               support its usage for RAJA IndexSet operations. However,
+ *               it does provide a push_front method that is not found
+ *               in the STL vector container.
  *  
  *               Template type should support standard semantics for
  *               copy, swap, etc. 
@@ -55,7 +57,7 @@ public:
 #if defined(RAJA_USE_STL)
       m_data.reserve(init_cap);
 #else
-      resize(init_cap);
+      grow_cap(init_cap);
 #endif
    }
 
@@ -116,6 +118,9 @@ public:
    }
 
 
+   //
+   // Return current size of vector.
+   //
    unsigned size() const { 
 #if defined(RAJA_USE_STL)
       return m_data.size();
@@ -124,23 +129,40 @@ public:
 #endif
    }
 
+   //
+   // Const bracket operator.
+   //
    const T& operator [] (unsigned i) const
    {
       return m_data[i];
    }
 
+   //
+   // Non-const bracket operator.
+   //
    T& operator [] (unsigned i)
    {
       return m_data[i];
    }
 
+   //
+   // Add item to back end of vector.
+   //
    void push_back(const T& item) 
    {
 #if defined(RAJA_USE_STL)
       m_data.push_back(item); 
 #else
-      appendItem(item);
+      push_back_private(item);
 #endif
+   }
+
+   //
+   // Add item to front end of vector.
+   //
+   void push_front(const T& item)
+   {
+      push_front_private(item);
    }
 
 
@@ -153,7 +175,7 @@ private:
 #if defined(RAJA_USE_STL)
       m_data = other.m_data;
 #else
-      resize(other.m_capacity);
+      grow_cap(other.m_capacity);
       for (unsigned i = 0; i < other.m_size; ++i) {
          m_data[i] = other[i];
       }
@@ -179,7 +201,7 @@ private:
       return static_cast<unsigned>( current_cap * s_grow_fac ); 
    }
 
-   void resize(unsigned target_size)
+   void grow_cap(unsigned target_size)
    {
       unsigned target_cap = m_capacity;
       while ( target_cap < target_size ) { target_cap = nextCap(target_cap); } 
@@ -199,10 +221,36 @@ private:
       }
    }
 
-   void appendItem(const T& item)
+   void push_back_private(const T& item)
    {
-      resize(m_size+1);
+      grow_cap(m_size+1);
       m_data[m_size] = item;
+      m_size++;
+   }
+#endif
+
+
+#if defined(RAJA_USE_STL)
+   void push_front_private(const T& item)
+   {
+      size_t old_size = m_data.size();
+      m_data.resize( old_size+1 );
+
+      for (unsigned i = old_size; i > 0; --i) {
+         m_data[i] = m_data[i-1];
+      }
+      m_data[0] = item;
+   }
+#else
+   void push_front_private(const T& item)
+   {
+      size_t old_size = m_size;
+      grow_cap( old_size+1 );
+
+      for (unsigned i = old_size; i > 0; --i) {
+         m_data[i] = m_data[i-1];
+      }
+      m_data[0] = item;
       m_size++;
    }
 #endif

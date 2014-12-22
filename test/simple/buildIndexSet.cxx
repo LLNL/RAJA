@@ -40,24 +40,48 @@ void buildIndexSet(IndexSet& hindex, IndexSetBuildMethod build_method)
 
       case AddSegments : {
 
-         hindex.addISet(index0);
+         hindex.push_back_Segment(index0);
 
          ListSegment index1(unst_indx1, 7);
-         hindex.addISet(index1);
+         hindex.push_back_Segment(index1);
 
-         hindex.addISet(index2);
+         hindex.push_back_Segment(index2);
 
          ListSegment index3(unst_indx3, 3);
-         hindex.addISet(index3);
+         hindex.push_back_Segment(index3);
 
-         hindex.addISet(index4);
+         hindex.push_back_Segment(index4);
 
          ListSegment index5(unst_indx5, 8);
-         hindex.addISet(index5);
+         hindex.push_back_Segment(index5);
    
-         hindex.addISet(index6);
+         hindex.push_back_Segment(index6);
 
-         hindex.addISet(index7);
+         hindex.push_back_Segment(index7);
+
+         break;
+      }
+
+      case AddSegmentsReverse : {
+
+         hindex.push_front_Segment(index7);
+
+         hindex.push_front_Segment(index6);
+
+         ListSegment index5(unst_indx5, 8);
+         hindex.push_front_Segment(index5);
+  
+         hindex.push_front_Segment(index4);
+  
+         ListSegment index3(unst_indx3, 3);
+         hindex.push_front_Segment(index3);
+
+         hindex.push_front_Segment(index2);
+
+         ListSegment index1(unst_indx1, 7);
+         hindex.push_front_Segment(index1);
+
+         hindex.push_front_Segment(index0);
 
          break;
       }
@@ -65,27 +89,54 @@ void buildIndexSet(IndexSet& hindex, IndexSetBuildMethod build_method)
 #if defined(RAJA_USE_STL)
       case AddSegmentsAsVectors : {
 
-         hindex.addISet(index0);
+         hindex.push_back_Segment(index0);
 
          std::vector<Index_type> vec1(unst_indx1, unst_indx1+7);
          ListSegment index1(vec1);
-         hindex.addISet(index1);
+         hindex.push_back_Segment(index1);
 
-         hindex.addISet(index2);
+         hindex.push_back_Segment(index2);
 
          std::vector<Index_type> vec3(unst_indx3, unst_indx3+3);
          ListSegment index3(vec3);
-         hindex.addISet(index3);
+         hindex.push_back_Segment(index3);
 
-         hindex.addISet(index4);
+         hindex.push_back_Segment(index4);
 
          std::vector<Index_type> vec5(unst_indx5, unst_indx5+8);
          ListSegment index5(vec5);
-         hindex.addISet(index5);
+         hindex.push_back_Segment(index5);
    
-         hindex.addISet(index6);
+         hindex.push_back_Segment(index6);
 
-         hindex.addISet(index7);
+         hindex.push_back_Segment(index7);
+
+         break;
+      }
+
+      case AddSegmentsAsVectorsReverse : {
+
+         hindex.push_front_Segment(index7);
+
+         hindex.push_front_Segment(index6);
+
+         std::vector<Index_type> vec5(unst_indx5, unst_indx5+8);
+         ListSegment index5(vec5);
+         hindex.push_front_Segment(index5);
+
+         hindex.push_front_Segment(index4);
+
+         std::vector<Index_type> vec3(unst_indx3, unst_indx3+3);
+         ListSegment index3(vec3);
+         hindex.push_front_Segment(index3);
+
+         hindex.push_front_Segment(index2);
+
+         std::vector<Index_type> vec1(unst_indx1, unst_indx1+7);
+         ListSegment index1(vec1);
+         hindex.push_front_Segment(index1);
+
+         hindex.push_front_Segment(index0);
 
          break;
       }
@@ -93,21 +144,21 @@ void buildIndexSet(IndexSet& hindex, IndexSetBuildMethod build_method)
 
       case AddSegmentsAsIndices : {
 
-         hindex.addRangeIndices(index0.getBegin(), index0.getEnd());
+         hindex.push_back_RangeSegment(index0.getBegin(), index0.getEnd());
 
-         hindex.addUnstructuredIndices(unst_indx1, 7);
+         hindex.push_back_ListSegment(unst_indx1, 7);
 
-         hindex.addRangeIndices(index2.getBegin(), index2.getEnd());
+         hindex.push_back_RangeSegment(index2.getBegin(), index2.getEnd());
 
-         hindex.addUnstructuredIndices(unst_indx3, 3);
+         hindex.push_back_ListSegment(unst_indx3, 3);
 
-         hindex.addRangeIndices(index4.getBegin(), index4.getEnd());
+         hindex.push_back_RangeSegment(index4.getBegin(), index4.getEnd());
 
-         hindex.addUnstructuredIndices(unst_indx5, 8);
+         hindex.push_back_ListSegment(unst_indx5, 8);
 
-         hindex.addRangeIndices(index6.getBegin(), index6.getEnd());
+         hindex.push_back_RangeSegment(index6.getBegin(), index6.getEnd());
 
-         hindex.addRangeIndices(index7.getBegin(), index7.getEnd());
+         hindex.push_back_RangeSegment(index7.getBegin(), index7.getEnd());
 
          break;
       } 

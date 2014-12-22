@@ -397,8 +397,8 @@ void
 Domain::CreateMeshIndexSets()
 {
    // leave nodes and elems in canonical ordering for now...
-   m_domNodeISet.addRangeIndices(0, numNode()) ;   
-   m_domElemISet.addRangeIndices(0, numElem()) ;
+   m_domNodeISet.push_back_RangeSegment(0, numNode()) ;   
+   m_domElemISet.push_back_RangeSegment(0, numElem()) ;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -515,7 +515,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
    // Create HybridISets for regions
    m_domRegISet.resize(numReg());
    for (int r = 0; r < numReg(); ++r) {
-      m_domRegISet[r].addUnstructuredIndices(regElemlist(r), regElemSize(r));
+      m_domRegISet[r].push_back_ListSegment(regElemlist(r), regElemSize(r));
    }
 
 #if 0 // Check correctness of index sets
@@ -541,7 +541,7 @@ void
 Domain::CreateSymmetryIndexSets(Int_t edgeNodes)
 {
   if (m_planeLoc == 0) {
-    m_domZSymNodeISet.addRangeIndices(0, edgeNodes*edgeNodes) ;
+    m_domZSymNodeISet.push_back_RangeSegment(0, edgeNodes*edgeNodes) ;
   }
   if (m_rowLoc == 0) {
     Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
@@ -552,7 +552,7 @@ Domain::CreateSymmetryIndexSets(Int_t edgeNodes)
         nset[nidx++] = planeInc + j ;
       }
     }
-    m_domYSymNodeISet.addUnstructuredIndices(nset, edgeNodes*edgeNodes) ;
+    m_domYSymNodeISet.push_back_ListSegment(nset, edgeNodes*edgeNodes) ;
     delete [] nset ;
   }
   if (m_colLoc == 0) {
@@ -564,7 +564,7 @@ Domain::CreateSymmetryIndexSets(Int_t edgeNodes)
         nset[nidx++] = planeInc + j*edgeNodes ;
       }
     }
-    m_domXSymNodeISet.addUnstructuredIndices(nset, edgeNodes*edgeNodes) ;
+    m_domXSymNodeISet.push_back_ListSegment(nset, edgeNodes*edgeNodes) ;
     delete [] nset ;
   }
 }

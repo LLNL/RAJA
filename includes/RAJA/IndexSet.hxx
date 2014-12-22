@@ -108,32 +108,55 @@ public:
    void swap(IndexSet& other);
 
    ///
-   /// Add contiguous index range segment to index set 
+   /// Append contiguous index range segment to back end of index set 
    /// (adds RangeSegment object).
    /// 
-   void addRangeIndices(Index_type begin, Index_type end);
+   void push_back_RangeSegment(Index_type begin, Index_type end);
 
    ///
-   /// Add RangeSegment segment to index set.
+   /// Add RangeSegment to back end of index set.
    ///
-   void addISet(const RangeSegment& iset);
+   void push_back_Segment(const RangeSegment& iset);
+
+   ///
+   /// Append contiguous index range segment to front end of index set
+   /// (adds RangeSegment object).
+   ///
+   void push_front_RangeSegment(Index_type begin, Index_type end);
+
+   ///
+   /// Add RangeSegment to front end of index set.
+   ///
+   void push_front_Segment(const RangeSegment& iset);
 
 #if 0  // RDH RETHINK
    ///
-   /// Add contiguous range of indices with stride segment to index set 
-   /// (addds RangeStrideSegment object).
+   /// Add contiguous range of indices with stride segment to back end 
+   /// of index set (addds RangeStrideSegment object).
    /// 
-   void addRangeStrideIndices(Index_type begin, Index_type end, 
-                              Index_type stride);
+   void push_back_RangeStrideSegment(Index_type begin, Index_type end, 
+                                     Index_type stride);
 
    ///
-   /// Add RangeStrideSegment segment to index set.
+   /// Add RangeStrideSegment to back end of index set.
    ///
-   void addISet(const RangeStrideSegment& iset);
+   void push_back_Segment(const RangeStrideSegment& iset);
+
+   ///
+   /// Add contiguous range of indices with stride segment to front end 
+   /// of index set (addds RangeStrideSegment object).
+   /// 
+   void push_front_RangeStrideSegment(Index_type begin, Index_type end, 
+                                      Index_type stride);
+
+   ///
+   /// Add RangeStrideSegment to front end of index set.
+   ///
+   void push_front_Segment(const RangeStrideSegment& iset);
 #endif
 
    ///
-   /// Add segment containing array of indices to index set 
+   /// Add segment containing array of indices to back end of index set 
    /// (adds ListSegment object).
    /// 
    /// By default, the method makes a deep copy of given array and index
@@ -142,19 +165,45 @@ public:
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    /// 
-   void addUnstructuredIndices(const Index_type* indx, Index_type len,
-                               IndexOwnership indx_own = Owned);
+   void push_back_ListSegment(const Index_type* indx, Index_type len,
+                              IndexOwnership indx_own = Owned);
 
    ///
-   /// Add ListSegment segment to index set.
+   /// Add ListSegment to back end of index set.
+   ///
    /// By default, the method makes a deep copy of given array and index
    /// set object will own the data representing its indices.  If 'Unowned'  
    /// is passed to method, the new segment object does not own its indices
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void addISet(const ListSegment& iset, 
-                IndexOwnership indx_own = Owned);
+   void push_back_Segment(const ListSegment& iset, 
+                          IndexOwnership indx_own = Owned);
+
+   ///
+   /// Add segment containing array of indices to front end of index set
+   /// (adds ListSegment object).
+   ///
+   /// By default, the method makes a deep copy of given array and index
+   /// set object will own the data representing its indices.  If 'Unowned'
+   /// is passed to method, the new segment object does not own its indices
+   /// (i.e., it holds a handle to given array).  In this case, caller is
+   /// responsible for managing object lifetimes properly.
+   ///
+   void push_front_ListSegment(const Index_type* indx, Index_type len,
+                               IndexOwnership indx_own = Owned);
+
+   ///
+   /// Add ListSegment to front end of index set.
+   ///
+   /// By default, the method makes a deep copy of given array and index
+   /// set object will own the data representing its indices.  If 'Unowned'
+   /// is passed to method, the new segment object does not own its indices
+   /// (i.e., it holds a handle to given array).  In this case, caller is
+   /// responsible for managing object lifetimes properly.
+   ///
+   void push_front_Segment(const ListSegment& iset,
+                          IndexOwnership indx_own = Owned);
 
    ///
    /// Return total length of index set; i.e., sum of lengths
@@ -186,8 +235,8 @@ public:
    ///
    ///        No error-checking on segment index.
    ///
-   const void* getSegmentISet(int i) const { 
-      return m_segments[i].m_iset; 
+   const void* getSegment(int i) const { 
+      return m_segments[i].m_segment; 
    } 
 
    ///
@@ -226,31 +275,85 @@ private:
    {
    public:
       Segment() 
-         : m_type(_UnknownSeg_), m_iset(0), m_icount(0) { ; } 
+         : m_type(_UnknownSeg_), m_segment(0), m_icount(0) { ; } 
 
-      template <typename ISET>
-      Segment(SegmentType type,  const ISET* iset, Index_type icount)
-         : m_type(type), m_iset(iset), m_icount(icount) { ; }
+      template <typename SEG_T>
+      Segment(SegmentType type,  const SEG_T* segment, Index_type icount)
+         : m_type(type), m_segment(segment), m_icount(icount) { ; }
 
       ///
       /// Using compiler-provided dtor, copy ctor, copy-assignment.
       ///
 
       SegmentType m_type;
-      const void* m_iset;
+      const void* m_segment;
 
       Index_type m_icount;
    };
 
-   //
-   // Helper function to add segment.
-   //
+   ///
+   /// Helper function to add segment to back end of index set.
+   ///
    template< typename SEG_T> 
-   void addSegment(SegmentType seg_type, const SEG_T* seg)
+   void push_back_Segment_private(SegmentType seg_type, const SEG_T* seg)
    {
       m_segments.push_back(Segment( seg_type, seg, m_len ));
       m_len += seg->getLength();
    } 
+
+   ///
+   /// Helper function to add segment to front end of index set.
+   ///
+   template< typename SEG_T>
+   void push_front_Segment_private(SegmentType seg_type, const SEG_T* seg)
+   {
+      m_segments.push_front(Segment( seg_type, seg, 0 ));
+      m_len += seg->getLength();
+
+      Index_type icount = seg->getLength(); 
+      for (unsigned i = 1; i < m_segments.size(); ++i ) {
+         m_segments[i].m_icount = icount;
+        
+         SegmentType segtype = getSegmentType(i);
+         const void* iset = getSegment(i); 
+         
+         switch ( segtype ) {
+
+            case _RangeSeg_ : {
+               RangeSegment* is =
+                  const_cast<RangeSegment*>(
+                     static_cast<const RangeSegment*>(iset)
+                  );
+               icount += is->getLength();
+               break;
+            }
+
+#if 0  // RDH RETHINK
+            case _RangeStrideSeg_ : {
+               RangeStrideSegment* is =
+                  const_cast<RangeStrideSegment*>(
+                     static_cast<const RangeStrideSegment*>(iset)
+                  );
+               icount += is->getLength();
+               break;
+            }
+#endif
+
+            case _ListSeg_ : {
+               ListSegment* is =
+                  const_cast<ListSegment*>(
+                     static_cast<const ListSegment*>(iset)
+                  );
+               icount += is->getLength();
+               break;
+            }
+
+            default : {
+            }
+
+         }  // switch ( segtype )
+      }
+   }
 
    ///
    Index_type  m_len;
@@ -273,7 +376,7 @@ private:
  */
 void buildIndexSet(IndexSet& hiset,
                    const Index_type* const indices_in,
-                     Index_type length);
+                   Index_type length);
 
 #if defined(RAJA_USE_STL)
 /*!

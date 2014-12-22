@@ -10,8 +10,10 @@
 //
 enum IndexSetBuildMethod {
    AddSegments = 0,
+   AddSegmentsReverse,
 #if defined(RAJA_USE_STL)
    AddSegmentsAsVectors,
+   AddSegmentsAsVectorsReverse,
 #endif
    AddSegmentsAsIndices,
 

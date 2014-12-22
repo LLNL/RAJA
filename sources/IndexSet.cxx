@@ -61,7 +61,7 @@ IndexSet::~IndexSet()
    const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
       SegmentType segtype = getSegmentType(isi);
-      const void* iset = getSegmentISet(isi);
+      const void* iset = getSegment(isi);
 
       if ( iset ) {
 
@@ -128,48 +128,91 @@ void IndexSet::swap(IndexSet& other)
 *************************************************************************
 */
 
-void IndexSet::addRangeIndices(Index_type begin, Index_type end)
+void IndexSet::push_back_RangeSegment(Index_type begin, Index_type end)
 {
    RangeSegment* new_is = new RangeSegment(begin, end);
-   addSegment( _RangeSeg_, new_is );
+   push_back_Segment_private( _RangeSeg_, new_is );
 }
 
-void IndexSet::addISet(const RangeSegment& iset)
+void IndexSet::push_back_Segment(const RangeSegment& iset)
 {
    RangeSegment* new_is = new RangeSegment(iset);
-   addSegment( _RangeSeg_, new_is );
+   push_back_Segment_private( _RangeSeg_, new_is );
 }
+
+void IndexSet::push_front_RangeSegment(Index_type begin, Index_type end)
+{
+   RangeSegment* new_is = new RangeSegment(begin, end);
+   push_front_Segment_private( _RangeSeg_, new_is );
+}
+
+void IndexSet::push_front_Segment(const RangeSegment& iset)
+{
+   RangeSegment* new_is = new RangeSegment(iset);
+   push_front_Segment_private( _RangeSeg_, new_is );
+}
+
 
 #if 0  // RDH RETHINK
-void IndexSet::addRangeStrideIndices(Index_type begin, Index_type end,
-                                     Index_type stride)
+void IndexSet::push_back_RangeStrideSegment(Index_type begin, Index_type end,
+                                            Index_type stride)
 {
    RangeStrideSegment* new_is = new RangeStrideSegment(begin, end, stride);
-   addSegment( _RangeSeg_, new_is );
+   push_back_Segment_private( _RangeSeg_, new_is );
 }
 
-void IndexSet::addISet(const RangeStrideSegment& iset)
+void IndexSet::push_back_Segment(const RangeStrideSegment& iset)
 {
    RangeStrideSegment* new_is = new RangeStrideSegment(iset);
-   addSegment( _RangeSeg_, new_is );
+   push_back_Segment_private( _RangeSeg_, new_is );
+}
+
+void IndexSet::push_front_RangeStrideSegment(Index_type begin, Index_type end,
+                                             Index_type stride)
+{
+   RangeStrideSegment* new_is = new RangeStrideSegment(begin, end, stride);
+   push_front_Segment_private( _RangeSeg_, new_is );
+}
+
+void IndexSet::push_front_Segment(const RangeStrideSegment& iset)
+{
+   RangeStrideSegment* new_is = new RangeStrideSegment(iset);
+   push_front_Segment_private( _RangeSeg_, new_is );
 }
 #endif
 
-void IndexSet::addUnstructuredIndices(const Index_type* indx, 
-                                      Index_type len,
-                                      IndexOwnership indx_own)
+void IndexSet::push_back_ListSegment(const Index_type* indx, 
+                                     Index_type len,
+                                     IndexOwnership indx_own)
 {
    ListSegment* new_is = new ListSegment(indx, len, indx_own);
-   addSegment( _ListSeg_, new_is );
+   push_back_Segment_private( _ListSeg_, new_is );
 }
 
-void IndexSet::addISet(const ListSegment& iset, 
-                         IndexOwnership indx_own)
+void IndexSet::push_back_Segment(const ListSegment& iset, 
+                                 IndexOwnership indx_own)
 {
    ListSegment* new_is = new ListSegment(iset.getIndex(),
                                          iset.getLength(),
                                          indx_own);
-   addSegment( _ListSeg_, new_is );
+   push_back_Segment_private( _ListSeg_, new_is );
+}
+
+void IndexSet::push_front_ListSegment(const Index_type* indx,
+                                      Index_type len,
+                                      IndexOwnership indx_own)
+{
+   ListSegment* new_is = new ListSegment(indx, len, indx_own);
+   push_front_Segment_private( _ListSeg_, new_is );
+}
+
+void IndexSet::push_front_Segment(const ListSegment& iset,
+                                  IndexOwnership indx_own)
+{
+   ListSegment* new_is = new ListSegment(iset.getIndex(),
+                                         iset.getLength(),
+                                         indx_own);
+   push_front_Segment_private( _ListSeg_, new_is );
 }
 
 
@@ -190,7 +233,7 @@ void IndexSet::print(std::ostream& os) const
    const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
       SegmentType segtype = getSegmentType(isi);
-      const void* iset = getSegmentISet(isi);
+      const void* iset = getSegment(isi);
       Index_type icount = getSegmentIcount(isi);
 
       os << "\nSegment " << isi << " : " << std::endl;
@@ -257,26 +300,26 @@ void IndexSet::copy(const IndexSet& other)
    const int num_segs = other.getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
       SegmentType segtype = other.getSegmentType(isi);
-      const void* iset = other.getSegmentISet(isi);
+      const void* iset = other.getSegment(isi);
 
       if ( iset ) {
 
          switch ( segtype ) {
 
             case _RangeSeg_ : {
-               addISet(*static_cast<const RangeSegment*>(iset));
+               push_back_Segment(*static_cast<const RangeSegment*>(iset));
                break;
             }
 
 #if 0  // RDH RETHINK
             case _RangeStrideSeg_ : {
-               addISet(*static_cast<const RangeStrideSegment*>(iset));
+               push_back_Segment(*static_cast<const RangeStrideSegment*>(iset));
                break;
             }
 #endif
 
             case _ListSeg_ : {
-               addISet(*static_cast<const ListSegment*>(iset));
+               push_back_Segment(*static_cast<const ListSegment*>(iset));
                break;
             }
 
@@ -290,7 +333,6 @@ void IndexSet::copy(const IndexSet& other)
 
    }  // for isi...
 }
-
 
 
 /*
@@ -415,8 +457,7 @@ void buildIndexSet(IndexSet& hiset,
                if ( (inrange == 0) && 
                     ((scanVal % RANGE_ALIGN) == 0) ) {
                   if (sliceCount != 0) {
-                     hiset.addUnstructuredIndices(&indices_in[dobegin], 
-                                                  sliceCount);
+                     hiset.push_back_ListSegment(&indices_in[dobegin], sliceCount);
                   }
                   inrange = 1 ;
                   dobegin = scanVal ;
@@ -434,7 +475,7 @@ void buildIndexSet(IndexSet& hiset,
                /* we need to emit a random array instead of */
                /* a range array */
                   ++sliceCount ;
-                  hiset.addRangeIndices(dobegin, dobegin+sliceCount);
+                  hiset.push_back_RangeSegment(dobegin, dobegin+sliceCount);
                   inrange = 0 ;
                   sliceCount = 0 ;
                   dobegin = ii ;
@@ -450,23 +491,23 @@ void buildIndexSet(IndexSet& hiset,
          if (inrange != -1) {
             if (inrange) {
                ++sliceCount ;
-               hiset.addRangeIndices(dobegin, dobegin+sliceCount);
+               hiset.push_back_RangeSegment(dobegin, dobegin+sliceCount);
             }
             else {
                ++sliceCount ;
-               hiset.addUnstructuredIndices(&indices_in[dobegin], sliceCount);
+               hiset.push_back_ListSegment(&indices_in[dobegin], sliceCount);
             }
          }
          else if (scanVal != -1) {
-            hiset.addUnstructuredIndices(&scanVal, 1);
+            hiset.push_back_ListSegment(&scanVal, 1);
          }
       }
       else {  // !(docount < (length*RANGE_ALIGN-1))/RANGE_ALIGN)
-         hiset.addUnstructuredIndices(indices_in, length);
+         hiset.push_back_ListSegment(indices_in, length);
       }
    }
    else {  // else !(length > RANGE_MIN_LENGTH)
-      hiset.addUnstructuredIndices(indices_in, length);
+      hiset.push_back_ListSegment(indices_in, length);
    }
 }
 

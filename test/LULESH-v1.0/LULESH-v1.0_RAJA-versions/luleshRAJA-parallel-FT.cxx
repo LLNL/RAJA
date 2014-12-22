@@ -132,7 +132,7 @@ const int lulesh_ztile = 2;
 //     - Canonical ordering should be able to use IndexSet or
 //                                                RangeSegment.
 //     - Tiled_Index ordering should be able to use IndexSet or
-//                                                  UnstrcuturedSegment.
+//                                                  ListSegment.
 //
 // NOTE: If this changes to non-index set (i.e., basic segment
 //       type such as RAJA::RangeSegment or RAJA::ListSegment),
@@ -3139,7 +3139,7 @@ int main(int argc, char *argv[])
 
    /* always leave the nodes in a canonical ordering */
    domain.domNodeList = new LULESH_ISET() ;
-   domain.domNodeList->addRangeIndices(0, domNodes) ;
+   domain.domNodeList->push_back_RangeSegment(0, domNodes) ;
 
    domain.domElemList = new LULESH_ISET() ;
    domain.matElemList = new LULESH_ISET() ;
@@ -3157,10 +3157,10 @@ int main(int argc, char *argv[])
 
       case Canonical:
       {
-         domain.domElemList->addRangeIndices(0, domElems) ;
+         domain.domElemList->push_back_RangeSegment(0, domElems) ;
 
          /* Create a material IndexSet (entire domain same material for now) */
-         domain.matElemList->addRangeIndices(0, domElems) ;
+         domain.matElemList->push_back_RangeSegment(0, domElems) ;
       }
       break ;
 
@@ -3188,8 +3188,8 @@ int main(int argc, char *argv[])
                         }
                      }
                   }
-                  domain.domElemList->addUnstructuredIndices(tileIdx, tileSize);
-                  domain.matElemList->addUnstructuredIndices(tileIdx, tileSize);
+                  domain.domElemList->push_back_ListSegment(tileIdx, tileSize);
+                  domain.matElemList->push_back_ListSegment(tileIdx, tileSize);
                }
             }
          }
@@ -3225,8 +3225,8 @@ int main(int argc, char *argv[])
                      }
                   }
                   Index_t tileEnd = tileBegin + tileSize ;
-                  domain.domElemList->addRangeIndices(tileBegin, tileEnd);
-                  domain.matElemList->addRangeIndices(tileBegin, tileEnd);
+                  domain.domElemList->push_back_RangeSegment(tileBegin, tileEnd);
+                  domain.matElemList->push_back_RangeSegment(tileBegin, tileEnd);
                   tileBegin = tileEnd ;
                }
             }

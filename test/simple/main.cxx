@@ -580,13 +580,14 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
             check for equality here....
 #endif
 
-#if 0
+#if 1
    std::cout << std::endl << std::endl;
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
       std::cout << "hindex with build method " << ibuild << std::endl;
       hindex[ibuild].print(std::cout);
+      std::cout << std::endl;
    } 
-   std::cout << std::endl << std::endl;
+   std::cout << std::endl;
 #endif
 
 

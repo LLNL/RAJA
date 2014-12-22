@@ -970,7 +970,7 @@ void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1032,7 +1032,7 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
       Index_type icount = is.getSegmentIcount(isi);
 
       switch ( segtype ) {
@@ -1107,7 +1107,7 @@ void forall_minloc( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1195,7 +1195,7 @@ void forall_maxloc( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
@@ -1280,7 +1280,7 @@ void forall_sum( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = is.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
       SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegmentISet(isi);
+      const void* iset = is.getSegment(isi);
 
       switch ( segtype ) {
 
