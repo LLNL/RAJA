@@ -14,9 +14,9 @@
 #ifndef RAJA_IndexSet_HXX
 #define RAJA_IndexSet_HXX
 
-#include "config.hxx"
 
-#include "int_datatypes.hxx"
+#include "RangeSegment.hxx"
+#include "ListSegment.hxx"
 
 #include "execpolicy.hxx"
 
@@ -30,9 +30,6 @@
 
 
 namespace RAJA {
-
-class RangeSegment;
-class ListSegment;
 
 
 /*!
@@ -116,7 +113,7 @@ public:
    ///
    /// Add RangeSegment to back end of index set.
    ///
-   void push_back_Segment(const RangeSegment& iset);
+   void push_back_Segment(const RangeSegment& segment);
 
    ///
    /// Append contiguous index range segment to front end of index set
@@ -127,7 +124,7 @@ public:
    ///
    /// Add RangeSegment to front end of index set.
    ///
-   void push_front_Segment(const RangeSegment& iset);
+   void push_front_Segment(const RangeSegment& segment);
 
 #if 0  // RDH RETHINK
    ///
@@ -140,7 +137,7 @@ public:
    ///
    /// Add RangeStrideSegment to back end of index set.
    ///
-   void push_back_Segment(const RangeStrideSegment& iset);
+   void push_back_Segment(const RangeStrideSegment& segment);
 
    ///
    /// Add contiguous range of indices with stride segment to front end 
@@ -152,7 +149,7 @@ public:
    ///
    /// Add RangeStrideSegment to front end of index set.
    ///
-   void push_front_Segment(const RangeStrideSegment& iset);
+   void push_front_Segment(const RangeStrideSegment& segment);
 #endif
 
    ///
@@ -177,7 +174,7 @@ public:
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void push_back_Segment(const ListSegment& iset, 
+   void push_back_Segment(const ListSegment& segment, 
                           IndexOwnership indx_own = Owned);
 
    ///
@@ -202,8 +199,8 @@ public:
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void push_front_Segment(const ListSegment& iset,
-                          IndexOwnership indx_own = Owned);
+   void push_front_Segment(const ListSegment& segment,
+                           IndexOwnership indx_own = Owned);
 
    ///
    /// Return total length of index set; i.e., sum of lengths
@@ -219,34 +216,29 @@ public:
    } 
 
    ///
-   /// Return enum value defining type of segment 'i'.
+   /// Return const pointer to BaseSegment object for segment 'i'.
    /// 
-   /// Note: No error-checking on segment index.
+   /// Notes: No error-checking on segment index.
    ///
-   SegmentType getSegmentType(int i) const { 
-      return m_segments[i].m_type; 
+   ///        Object must be explicitly cast to proper type to
+   ///        access actual segment index information 
+   ///        (see BaseSegment::getType() method).
+   ///
+   const BaseSegment* getSegment(int i) const { 
+      return m_segments[i]; 
    }
 
    ///
-   /// Return const void pointer to index set for segment 'i'.
-   /// 
-   /// Notes: Pointer must be explicitly cast to proper type before use
-   ///        (see getSegmentType() method).
+   /// Return non-const pointer to BaseSegment object for segment 'i'.
    ///
-   ///        No error-checking on segment index.
+   /// Notes: No error-checking on segment index.
    ///
-   const void* getSegment(int i) const { 
-      return m_segments[i].m_segment; 
-   } 
-
+   ///        Object must be explicitly cast to proper type to
+   ///        access actual segment index information 
+   ///        (see BaseSegment::getType() method).
    ///
-   /// Return Index_type value indicating index count associated with
-   /// start of segment 'i'.
-   ///
-   /// Note: No error-checking on segment index.
-   ///
-   Index_type getSegmentIcount(int i) const {
-      return m_segments[i].m_icount;
+   BaseSegment* getSegment(int i) {
+      return m_segments[i];       
    }
 
    ///
@@ -261,43 +253,14 @@ private:
    void copy(const IndexSet& other);
 
    ///
-   /// Private nested class to hold a segment of a index set.
-   ///
-   /// A segment is defined by its type and its index set object.
-   ///
-   /// The index count value can be provided as a second argument to 
-   /// forall_Ioff( ) iteration methods to map between actual indices
-   /// indices and the running iteration count. That is, the count 
-   /// for a segment starts with the total length of all segments
-   /// preceding that segment.
-   ///
-   class Segment
-   {
-   public:
-      Segment() 
-         : m_type(_UnknownSeg_), m_segment(0), m_icount(0) { ; } 
-
-      template <typename SEG_T>
-      Segment(SegmentType type,  const SEG_T* segment, Index_type icount)
-         : m_type(type), m_segment(segment), m_icount(icount) { ; }
-
-      ///
-      /// Using compiler-provided dtor, copy ctor, copy-assignment.
-      ///
-
-      SegmentType m_type;
-      const void* m_segment;
-
-      Index_type m_icount;
-   };
-
-   ///
    /// Helper function to add segment to back end of index set.
    ///
    template< typename SEG_T> 
-   void push_back_Segment_private(SegmentType seg_type, const SEG_T* seg)
+   void push_back_Segment_private(SEG_T* seg)
    {
-      m_segments.push_back(Segment( seg_type, seg, m_len ));
+      seg->setIcount( m_len );
+      m_segments.push_back( seg );
+
       m_len += seg->getLength();
    } 
 
@@ -305,46 +268,36 @@ private:
    /// Helper function to add segment to front end of index set.
    ///
    template< typename SEG_T>
-   void push_front_Segment_private(SegmentType seg_type, const SEG_T* seg)
+   void push_front_Segment_private(SEG_T* seg)
    {
-      m_segments.push_front(Segment( seg_type, seg, 0 ));
+      seg->setIcount( 0 );
+      m_segments.push_front( seg );
       m_len += seg->getLength();
 
       Index_type icount = seg->getLength(); 
       for (unsigned i = 1; i < m_segments.size(); ++i ) {
-         m_segments[i].m_icount = icount;
-        
-         SegmentType segtype = getSegmentType(i);
-         const void* iset = getSegment(i); 
+
+         BaseSegment* iseg = getSegment(i);
+         iseg->setIcount(icount); 
+       
+         SegmentType segtype = iseg->getType();
          
          switch ( segtype ) {
 
             case _RangeSeg_ : {
-               RangeSegment* is =
-                  const_cast<RangeSegment*>(
-                     static_cast<const RangeSegment*>(iset)
-                  );
-               icount += is->getLength();
+               icount += static_cast<RangeSegment*>(iseg)->getLength();
                break;
             }
 
 #if 0  // RDH RETHINK
             case _RangeStrideSeg_ : {
-               RangeStrideSegment* is =
-                  const_cast<RangeStrideSegment*>(
-                     static_cast<const RangeStrideSegment*>(iset)
-                  );
-               icount += is->getLength();
+               icount += static_cast<RangeStrideSegment*>(iseg)->getLength();
                break;
             }
 #endif
 
             case _ListSeg_ : {
-               ListSegment* is =
-                  const_cast<ListSegment*>(
-                     static_cast<const ListSegment*>(iset)
-                  );
-               icount += is->getLength();
+               icount += static_cast<ListSegment*>(iseg)->getLength();
                break;
             }
 
@@ -353,11 +306,12 @@ private:
 
          }  // switch ( segtype )
       }
+
    }
 
    ///
    Index_type  m_len;
-   RAJAVec<Segment> m_segments;
+   RAJAVec<BaseSegment*> m_segments;
 
 }; 
 

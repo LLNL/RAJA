@@ -93,11 +93,11 @@ void forall_Icount(const Index_type begin, const Index_type end,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const RangeSegment& iset,
+void forall(const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
-           iset.getBegin(), iset.getEnd(),
+           iseg.getBegin(), iseg.getEnd(),
            loop_body );
 }
 
@@ -114,12 +114,12 @@ void forall(const RangeSegment& iset,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const RangeSegment& iset,
+void forall_Icount(const RangeSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(),
+                  iseg.getBegin(), iseg.getEnd(),
                   icount,
                   loop_body );
 }
@@ -156,12 +156,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(const RangeSegment& iset,
+void forall_minloc(const RangeSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_minloc( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(),
+                  iseg.getBegin(), iseg.getEnd(),
                   min, loc,
                   loop_body );
 }
@@ -198,12 +198,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(const RangeSegment& iset,
+void forall_maxloc(const RangeSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_maxloc( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(),
+                  iseg.getBegin(), iseg.getEnd(),
                   max, loc,
                   loop_body );
 }
@@ -240,12 +240,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(const RangeSegment& iset,
+void forall_sum(const RangeSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
-               iset.getBegin(), iset.getEnd(),
+               iseg.getBegin(), iseg.getEnd(),
                sum,
                loop_body );
 }
@@ -312,11 +312,11 @@ void forall_Icount(const Index_type begin, const Index_type end,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const RangeStrideSegment& iset,
+void forall(const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
-           iset.getBegin(), iset.getEnd(), iset.getStride(),
+           iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
            loop_body );
 }
 
@@ -333,12 +333,12 @@ void forall(const RangeStrideSegment& iset,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const RangeStrideSegment& iset,
+void forall_Icount(const RangeStrideSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(), iset.getStride(),
+                  iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
                   icount,
                   loop_body );
 }
@@ -376,12 +376,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(const RangeStrideSegment& iset,
+void forall_minloc(const RangeStrideSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_minloc( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(), iset.getStride(), 
+                  iseg.getBegin(), iseg.getEnd(), iseg.getStride(), 
                   min, loc,
                   loop_body );
 }
@@ -419,12 +419,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(const RangeStrideSegment& iset,
+void forall_maxloc(const RangeStrideSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_maxloc( EXEC_POLICY_T(),
-                  iset.getBegin(), iset.getEnd(), iset.getStride(),
+                  iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
                   max, loc,
                   loop_body );
 }
@@ -462,12 +462,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(const RangeStrideSegment& iset,
+void forall_sum(const RangeStrideSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
-               iset.getBegin(), iset.getEnd(), iset.getStride(),
+               iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
                sum,
                loop_body );
 }
@@ -476,7 +476,7 @@ void forall_sum(const RangeStrideSegment& iset,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over unstructured index sets.
+// Function templates that iterate over list segments.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -525,26 +525,25 @@ void forall_Icount(const Index_type* idx, const Index_type len,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over unstructured index set object.
+ * \brief Generic iteration over list segments.
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, 
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const ListSegment& iset, 
+void forall(const ListSegment& iseg, 
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
-           iset.getIndex(), iset.getLength(), 
+           iseg.getIndex(), iseg.getLength(), 
            loop_body );
 }
 
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over unstructured index set object,
- *        including index count.
+ * \brief Generic iteration over list segment object, including index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index). 
  *
@@ -553,12 +552,12 @@ void forall(const ListSegment& iset,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const ListSegment& iset,
+void forall_Icount(const ListSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
-                  iset.getIndex(), iset.getLength(),
+                  iseg.getIndex(), iseg.getLength(),
                   icount, 
                   loop_body );
 }
@@ -587,7 +586,7 @@ void forall_minloc(const Index_type* idx, const Index_type len,
 /*!
  ******************************************************************************
  *
- * \brief  Generic minloc reduction over unstructured index set object.
+ * \brief  Generic minloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -595,12 +594,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(const ListSegment& iset,
+void forall_minloc(const ListSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_minloc( EXEC_POLICY_T(),
-                  iset.getIndex(), iset.getLength(), 
+                  iseg.getIndex(), iseg.getLength(), 
                   min, loc,
                   loop_body );
 }
@@ -629,7 +628,7 @@ void forall_maxloc(const Index_type* idx, const Index_type len,
 /*!
  ******************************************************************************
  *
- * \brief  Generic maxloc reduction over unstructured index set object.
+ * \brief  Generic maxloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -637,12 +636,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(const ListSegment& iset,
+void forall_maxloc(const ListSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
    forall_maxloc( EXEC_POLICY_T(),
-                  iset.getIndex(), iset.getLength(),
+                  iseg.getIndex(), iseg.getLength(),
                   max, loc,
                   loop_body );
 }
@@ -671,7 +670,7 @@ void forall_sum(const Index_type* idx, const Index_type len,
 /*!
  ******************************************************************************
  *
- * \brief  Generic sum reduction over unstructured index set object.
+ * \brief  Generic sum reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -679,12 +678,12 @@ template <typename EXEC_POLICY_T,
           typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_sum(const ListSegment& iset,
+void forall_sum(const ListSegment& iseg,
                 T* sum, 
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
-               iset.getIndex(), iset.getLength(),
+               iseg.getIndex(), iseg.getLength(),
                sum,
                loop_body );
 }
@@ -692,7 +691,7 @@ void forall_sum(const ListSegment& iset,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over hybrid index sets.
+// Function templates that iterate over index sets.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -700,7 +699,7 @@ void forall_sum(const ListSegment& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over hybrid index set, including index count.
+ * \brief Generic iteration over index set, including index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index). 
  *
@@ -719,7 +718,7 @@ void forall_Icount(const IndexSet& iset, LOOP_BODY loop_body)
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Methods that iterate over arbitrary index set types.
+// Methods that iterate over arbitrary index set or segment types.
 //
 //////////////////////////////////////////////////////////////////////
 //

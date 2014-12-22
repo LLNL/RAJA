@@ -14,9 +14,7 @@
 #ifndef RAJA_ListSegment_HXX
 #define RAJA_ListSegment_HXX
 
-#include "config.hxx"
-
-#include "int_datatypes.hxx"
+#include "BaseSegment.hxx"
 
 #include "execpolicy.hxx"
 
@@ -26,6 +24,7 @@
 #endif
 
 #include <iosfwd> 
+
 
 
 namespace RAJA {
@@ -44,7 +43,7 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class ListSegment
+class ListSegment : public BaseSegment
 {
 public:
 
@@ -144,7 +143,8 @@ private:
  */ 
 template< typename T> 
 ListSegment::ListSegment(const T& indx)
-: m_indx(0), m_len(0), m_indx_own(Unowned)
+: BaseSegment( _ListSeg_ ),
+  m_indx(0), m_len(0), m_indx_own(Unowned)
 {
    if ( !indx.empty() ) {
       m_len = indx.size();

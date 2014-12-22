@@ -14,9 +14,7 @@
 #ifndef RAJA_RangeSegment_HXX
 #define RAJA_RangeSegment_HXX
 
-#include "config.hxx"
-
-#include "int_datatypes.hxx"
+#include "BaseSegment.hxx"
 
 #include "execpolicy.hxx"
 
@@ -39,7 +37,7 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class RangeSegment
+class RangeSegment : public BaseSegment
 {
 public:
 
@@ -56,7 +54,8 @@ public:
    /// Construct range segment [begin, end).
    ///
    RangeSegment(Index_type begin, Index_type end) 
-     : m_begin(begin), m_end(end) { ; }
+   : BaseSegment( _RangeSeg_ ), 
+     m_begin(begin), m_end(end) { ; }
 
    ///
    /// Return starting index for range. 
@@ -108,7 +107,7 @@ private:
  *
  ******************************************************************************
  */
-class RangeStrideSegment
+class RangeStrideSegment : public BaseSegment
 {
 public:
 
@@ -125,7 +124,8 @@ public:
    /// Construct range segment [begin, end) with stride.
    ///
    RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
-     : m_begin(begin), m_end(end), m_stride(stride) { ; }
+   : BaseSegment( _RangeStrideSeg_ ), 
+     m_begin(begin), m_end(end), m_stride(stride) { ; }
 
    ///
    /// Return starting index for segment. 

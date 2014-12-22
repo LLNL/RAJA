@@ -60,49 +60,11 @@ IndexSet::~IndexSet()
 {
    const int num_segs = getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      SegmentType segtype = getSegmentType(isi);
-      const void* iset = getSegment(isi);
+      const BaseSegment* seg = getSegment(isi);
 
-      if ( iset ) {
-
-         switch ( segtype ) {
-
-            case _RangeSeg_ : {
-               RangeSegment* is =
-                  const_cast<RangeSegment*>(
-                     static_cast<const RangeSegment*>(iset)
-                  );
-               delete is;
-               break;
-            }
-
-#if 0  // RDH RETHINK
-            case _RangeStrideSeg_ : {
-               RangeStrideSegment* is =
-                  const_cast<RangeStrideSegment*>(
-                     static_cast<const RangeStrideSegment*>(iset)
-                  );
-               delete is;
-               break;
-            }
-#endif
-
-            case _ListSeg_ : {
-               ListSegment* is =
-                  const_cast<ListSegment*>(
-                     static_cast<const ListSegment*>(iset)
-                  );
-               delete is;
-               break;
-            }
-
-            default : {
-               std::cout << "\t IndexSet dtor: case not implemented!!\n";
-            }
-
-         }  // switch ( segtype )
-
-      }  // if ( iset ) 
+      if ( seg ) {
+         delete seg;
+      } 
 
    }  // for isi...
 }
@@ -130,26 +92,26 @@ void IndexSet::swap(IndexSet& other)
 
 void IndexSet::push_back_RangeSegment(Index_type begin, Index_type end)
 {
-   RangeSegment* new_is = new RangeSegment(begin, end);
-   push_back_Segment_private( _RangeSeg_, new_is );
+   RangeSegment* new_seg = new RangeSegment(begin, end);
+   push_back_Segment_private( new_seg );
 }
 
-void IndexSet::push_back_Segment(const RangeSegment& iset)
+void IndexSet::push_back_Segment(const RangeSegment& segment)
 {
-   RangeSegment* new_is = new RangeSegment(iset);
-   push_back_Segment_private( _RangeSeg_, new_is );
+   RangeSegment* new_seg = new RangeSegment(segment);
+   push_back_Segment_private( new_seg );
 }
 
 void IndexSet::push_front_RangeSegment(Index_type begin, Index_type end)
 {
-   RangeSegment* new_is = new RangeSegment(begin, end);
-   push_front_Segment_private( _RangeSeg_, new_is );
+   RangeSegment* new_seg = new RangeSegment(begin, end);
+   push_front_Segment_private( new_seg );
 }
 
-void IndexSet::push_front_Segment(const RangeSegment& iset)
+void IndexSet::push_front_Segment(const RangeSegment& segment)
 {
-   RangeSegment* new_is = new RangeSegment(iset);
-   push_front_Segment_private( _RangeSeg_, new_is );
+   RangeSegment* new_seg = new RangeSegment(segment);
+   push_front_Segment_private( new_seg );
 }
 
 
@@ -157,27 +119,27 @@ void IndexSet::push_front_Segment(const RangeSegment& iset)
 void IndexSet::push_back_RangeStrideSegment(Index_type begin, Index_type end,
                                             Index_type stride)
 {
-   RangeStrideSegment* new_is = new RangeStrideSegment(begin, end, stride);
-   push_back_Segment_private( _RangeSeg_, new_is );
+   RangeStrideSegment* new_seg = new RangeSegment(begin, end, stride);
+   push_back_Segment_private( new_seg );
 }
 
-void IndexSet::push_back_Segment(const RangeStrideSegment& iset)
+void IndexSet::push_back_Segment(const RangeStrideSegment& segment)
 {
-   RangeStrideSegment* new_is = new RangeStrideSegment(iset);
-   push_back_Segment_private( _RangeSeg_, new_is );
+   RangeStrideSegment* new_seg = new RangeSegment(segment);
+   push_back_Segment_private( new_seg );
 }
 
 void IndexSet::push_front_RangeStrideSegment(Index_type begin, Index_type end,
                                              Index_type stride)
 {
-   RangeStrideSegment* new_is = new RangeStrideSegment(begin, end, stride);
-   push_front_Segment_private( _RangeSeg_, new_is );
+   RangeStrideSegment* new_seg = new RangeSegment(begin, end, stride);
+   push_front_Segment_private( new_seg );
 }
 
-void IndexSet::push_front_Segment(const RangeStrideSegment& iset)
+void IndexSet::push_front_Segment(const RangeStrideSegment& segment)
 {
-   RangeStrideSegment* new_is = new RangeStrideSegment(iset);
-   push_front_Segment_private( _RangeSeg_, new_is );
+   RangeStrideSegment* new_seg = new RangeSegment(segment);
+   push_front_Segment_private( new_seg );
 }
 #endif
 
@@ -185,34 +147,34 @@ void IndexSet::push_back_ListSegment(const Index_type* indx,
                                      Index_type len,
                                      IndexOwnership indx_own)
 {
-   ListSegment* new_is = new ListSegment(indx, len, indx_own);
-   push_back_Segment_private( _ListSeg_, new_is );
+   ListSegment* new_seg = new ListSegment(indx, len, indx_own);
+   push_back_Segment_private( new_seg );
 }
 
 void IndexSet::push_back_Segment(const ListSegment& iset, 
                                  IndexOwnership indx_own)
 {
-   ListSegment* new_is = new ListSegment(iset.getIndex(),
-                                         iset.getLength(),
-                                         indx_own);
-   push_back_Segment_private( _ListSeg_, new_is );
+   ListSegment* new_seg = new ListSegment(iset.getIndex(),
+                                          iset.getLength(),
+                                          indx_own);
+   push_back_Segment_private( new_seg );
 }
 
 void IndexSet::push_front_ListSegment(const Index_type* indx,
                                       Index_type len,
                                       IndexOwnership indx_own)
 {
-   ListSegment* new_is = new ListSegment(indx, len, indx_own);
-   push_front_Segment_private( _ListSeg_, new_is );
+   ListSegment* new_seg = new ListSegment(indx, len, indx_own);
+   push_front_Segment_private( new_seg );
 }
 
 void IndexSet::push_front_Segment(const ListSegment& iset,
                                   IndexOwnership indx_own)
 {
-   ListSegment* new_is = new ListSegment(iset.getIndex(),
-                                         iset.getLength(),
-                                         indx_own);
-   push_front_Segment_private( _ListSeg_, new_is );
+   ListSegment* new_seg = new ListSegment(iset.getIndex(),
+                                          iset.getLength(),
+                                          indx_own);
+   push_front_Segment_private( new_seg );
 }
 
 
@@ -230,22 +192,18 @@ void IndexSet::print(std::ostream& os) const
       << getLength() << " length..." << std::endl
       << getNumSegments() << " segments..." << std::endl;
 
-   const int num_segs = getNumSegments();
-   for ( int isi = 0; isi < num_segs; ++isi ) {
-      SegmentType segtype = getSegmentType(isi);
-      const void* iset = getSegment(isi);
-      Index_type icount = getSegmentIcount(isi);
+   for ( int isi = 0; isi < m_segments.size(); ++isi ) {
+
+      const BaseSegment* iseg = getSegment(isi);
+      SegmentType segtype = iseg->getType();
 
       os << "\nSegment " << isi << " : " << std::endl;
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
-            if ( iset ) {
-               os << "Icount = " << icount << std::endl; 
-               const RangeSegment* is =
-                  static_cast<const RangeSegment*>(iset);
-               is->print(os);
+            if ( iseg ) {
+               static_cast<const RangeSegment*>(iseg)->print(os);
             } else {
                os << "_RangeSeg_ is null" << std::endl;
             }
@@ -254,11 +212,8 @@ void IndexSet::print(std::ostream& os) const
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
-            if ( iset ) {
-               os << "Icount = " << icount << std::endl; 
-               const RangeStrideSegment* is =
-                  static_cast<const RangeStrideSegment*>(iset);
-               is->print(os);
+            if ( iseg ) {
+               static_cast<const RangeStrideSegment*>(iseg)->print(os);
             } else {
                os << "_RangeStrideSeg_ is null" << std::endl;
             }
@@ -267,11 +222,8 @@ void IndexSet::print(std::ostream& os) const
 #endif
 
          case _ListSeg_ : {
-            if ( iset ) {
-               os << "Icount = " << icount << std::endl; 
-               const ListSegment* is =
-                  static_cast<const ListSegment*>(iset);
-               is->print(os);
+            if ( iseg ) {
+               static_cast<const ListSegment*>(iseg)->print(os);
             } else {
                os << "_ListSeg_ is null" << std::endl;
             }
@@ -293,33 +245,36 @@ void IndexSet::print(std::ostream& os) const
 *
 * Private helper function to copy index set segments.
 *
+* Note: Assumes this index set is empty.
+*
 *************************************************************************
 */
 void IndexSet::copy(const IndexSet& other)
 {
    const int num_segs = other.getNumSegments();
    for ( int isi = 0; isi < num_segs; ++isi ) {
-      SegmentType segtype = other.getSegmentType(isi);
-      const void* iset = other.getSegment(isi);
 
-      if ( iset ) {
+      const BaseSegment* iseg = other.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      if ( iseg ) {
 
          switch ( segtype ) {
 
             case _RangeSeg_ : {
-               push_back_Segment(*static_cast<const RangeSegment*>(iset));
+               push_back_Segment(*static_cast<const RangeSegment*>(iseg));
                break;
             }
 
 #if 0  // RDH RETHINK
             case _RangeStrideSeg_ : {
-               push_back_Segment(*static_cast<const RangeStrideSegment*>(iset));
+               push_back_Segment(*static_cast<const RangeStrideSegment*>(iseg));
                break;
             }
 #endif
 
             case _ListSeg_ : {
-               push_back_Segment(*static_cast<const ListSegment*>(iset));
+               push_back_Segment(*static_cast<const ListSegment*>(iseg));
                break;
             }
 

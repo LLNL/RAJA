@@ -32,12 +32,14 @@ namespace RAJA {
 */
 
 ListSegment::ListSegment(const Index_type* indx, Index_type len,
-                                   IndexOwnership indx_own)
+                         IndexOwnership indx_own)
+: BaseSegment( _ListSeg_ )
 {
    initIndexData(indx, len, indx_own);
 }
 
 ListSegment::ListSegment(const ListSegment& other)
+: BaseSegment( _ListSeg_ )
 {
    initIndexData(other.m_indx, other.m_len, other.m_indx_own);
 }
@@ -82,7 +84,8 @@ void ListSegment::swap(ListSegment& other)
 
 void ListSegment::print(std::ostream& os) const
 {
-   os << "ListSegment : length = " << m_len << " , owns index = "
+   os << "ListSegment : icount, length, owns index = " 
+      << getIcount() << ", " << getLength() 
       << (m_indx_own == Owned ? "Owned" : "Unowned") << std::endl;
    for (Index_type i = 0; i < m_len; ++i) {
       os << "\t" << m_indx[i] << std::endl;

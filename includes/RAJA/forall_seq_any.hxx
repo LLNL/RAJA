@@ -98,11 +98,11 @@ void forall_Icount(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const RangeSegment& is,
+            const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -127,12 +127,12 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type loop_end = is.getEnd() - is.getBegin() + 1;
+   const Index_type begin = iseg.getBegin();
+   const Index_type loop_end = iseg.getEnd() - iseg.getBegin() + 1;
 
    RAJA_FT_BEGIN ;
 
@@ -180,12 +180,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(seq_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -234,12 +234,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(seq_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -288,12 +288,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
-                const RangeSegment& is,
+                const RangeSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -380,12 +380,12 @@ void forall_Icount(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const RangeStrideSegment& is,
+            const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -410,13 +410,13 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin    = is.getBegin();
-   const Index_type stride   = is.getStride();
-   const Index_type loop_end = is.getLength();
+   const Index_type begin    = iseg.getBegin();
+   const Index_type stride   = iseg.getStride();
+   const Index_type loop_end = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -465,13 +465,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(seq_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -520,13 +520,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(seq_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -575,13 +575,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
-                const RangeStrideSegment& is,
+                const RangeStrideSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -597,7 +597,7 @@ void forall_sum(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over unstructured index sets.
+// Function templates that iterate over list segments.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -656,18 +656,18 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over unstructured index set object.
+ * \brief  Sequential iteration over list segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const ListSegment& is,
+            const ListSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -682,7 +682,7 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over unstructured index set object,
+ * \brief  Sequential iteration over list segment object,
  *         including index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -692,12 +692,12 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    const Index_type icount, 
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -737,7 +737,7 @@ void forall_minloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential minloc reduction over unstructured index set object.
+ * \brief  Sequential minloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -745,12 +745,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(seq_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -790,7 +790,7 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over unstructured index set object.
+ * \brief  Sequential maxloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -798,12 +798,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(seq_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -843,7 +843,7 @@ void forall_sum(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential sum reduction over unstructured index set object.
+ * \brief  Sequential sum reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -851,12 +851,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
-                const ListSegment& is,
+                const ListSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -872,7 +872,7 @@ void forall_sum(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// The following function templates iterate over hybrid index set
+// The following function templates iterate over index set
 // segments sequentially.  Segment execution is defined by segment
 // execution policy template parameter.
 //
@@ -882,7 +882,7 @@ void forall_sum(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over segments of hybrid index set and
+ * \brief  Sequential iteration over segments of index set and
  *         use execution policy template parameter to execute segments.
  *
  ******************************************************************************
@@ -891,20 +891,21 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& is, 
+             const IndexSet& iset, 
              LOOP_BODY loop_body )
 {
-   const int num_seg = is.getNumSegments();
+   const int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
-      SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegment(isi);
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iset)),
+               *(static_cast<const RangeSegment*>(iseg)),
                loop_body
             );
             break;
@@ -914,7 +915,7 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iseg)),
                loop_body
             );
             break;
@@ -924,7 +925,7 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iset)),
+               *(static_cast<const ListSegment*>(iseg)),
                loop_body
             );
             break;
@@ -935,13 +936,13 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-   } // iterate over segments of hybrid index set
+   } // iterate over segments of index set
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over segments of hybrid index set and
+ * \brief  Sequential iteration over segments of index set and
  *         use execution policy template parameter to execute segments.
  *
  *         This method passes index count to segment iteration.
@@ -954,21 +955,22 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& is, 
+                    const IndexSet& iset, 
                     LOOP_BODY loop_body )
 {
-   const int num_seg = is.getNumSegments();
+   const int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
-      SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegment(isi);
-      Index_type icount = is.getSegmentIcount(isi);
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+      Index_type icount = iseg->getIcount();
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iset)),
+               *(static_cast<const RangeSegment*>(iseg)),
                icount,
                loop_body
             );
@@ -979,7 +981,7 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iseg)),
                icount,
                loop_body
             );
@@ -990,7 +992,7 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iset)),
+               *(static_cast<const ListSegment*>(iseg)),
                icount,
                loop_body
             );
@@ -1002,14 +1004,14 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-   } // iterate over segments of hybrid index set
+   } // iterate over segments of index set
 }
 
 
 /*!
  ******************************************************************************
  *
- * \brief  Minloc operation that iterates over hybrid index set segments
+ * \brief  Minloc operation that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
@@ -1020,21 +1022,22 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& is,
+                    const IndexSet& iset,
                     T* min, Index_type *loc,
                     LOOP_BODY loop_body)
 {
-   const int num_seg = is.getNumSegments();
+   const int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
-      SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegment(isi);
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iset)),
+               *(static_cast<const RangeSegment*>(iseg)),
                min, loc,
                loop_body
             );
@@ -1045,7 +1048,7 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iseg)),
                min, loc,
                loop_body
             );
@@ -1056,7 +1059,7 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iset)),
+               *(static_cast<const ListSegment*>(iseg)),
                min, loc,
                loop_body
             );
@@ -1068,14 +1071,14 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-   } // iterate over segments of hybrid index set
+   } // iterate over segments of index set
 
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  Maxloc operation that iterates over hybrid index set segments
+ * \brief  Maxloc operation that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
@@ -1086,21 +1089,22 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& is,
+                    const IndexSet& iset,
                     T* max, Index_type *loc,
                     LOOP_BODY loop_body)
 {
-   const int num_seg = is.getNumSegments();
+   const int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
-      SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegment(isi);
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iset)),
+               *(static_cast<const RangeSegment*>(iseg)),
                max, loc,
                loop_body
             );
@@ -1111,7 +1115,7 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iseg)),
                max, loc,
                loop_body
             );
@@ -1122,7 +1126,7 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iset)),
+               *(static_cast<const ListSegment*>(iseg)),
                max, loc,
                loop_body
             );
@@ -1134,14 +1138,14 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-   } // iterate over segments of hybrid index set
+   } // iterate over segments of index set
 
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  Sum operation that iterates over hybrid index set segments
+ * \brief  Sum operation that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
@@ -1152,21 +1156,22 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                 const IndexSet& is,
+                 const IndexSet& iset,
                  T* sum,
                  LOOP_BODY loop_body)
 {
-   const int num_seg = is.getNumSegments();
+   const int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
-      SegmentType segtype = is.getSegmentType(isi);
-      const void* iset = is.getSegment(isi);
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
 
       switch ( segtype ) {
 
          case _RangeSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iset)),
+               *(static_cast<const RangeSegment*>(iseg)),
                sum,
                loop_body
             );
@@ -1177,7 +1182,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iset)),
+               *(static_cast<const RangeStrideSegment*>(iseg)),
                sum,
                loop_body
             );
@@ -1188,7 +1193,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iset)),
+               *(static_cast<const ListSegment*>(iseg)),
                sum,
                loop_body
             );
@@ -1200,7 +1205,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
       }  // switch on segment type
 
-   } // iterate over segments of hybrid index set
+   } // iterate over segments of index set
 
 }
 

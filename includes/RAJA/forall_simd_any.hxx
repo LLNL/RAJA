@@ -97,11 +97,11 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const RangeSegment& is,
+            const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -125,12 +125,12 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type loop_end = is.getEnd() - is.getBegin() + 1;
+   const Index_type begin = iseg.getBegin();
+   const Index_type loop_end = iseg.getEnd() - iseg.getBegin() + 1;
 
    RAJA_FT_BEGIN ;
 
@@ -179,12 +179,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -233,12 +233,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const RangeSegment& is,
+                   const RangeSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -287,12 +287,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const RangeSegment& is,
+                const RangeSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type begin = is.getBegin();
-   const Index_type end   = is.getEnd();
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -377,12 +377,12 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const RangeStrideSegment& is,
+            const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -407,13 +407,13 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin    = is.getBegin();
-   const Index_type stride   = is.getStride();
-   const Index_type loop_end = is.getLength();
+   const Index_type begin    = iseg.getBegin();
+   const Index_type stride   = iseg.getStride();
+   const Index_type loop_end = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -463,13 +463,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -519,13 +519,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const RangeStrideSegment& is,
+                   const RangeStrideSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -575,13 +575,13 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const RangeStrideSegment& is,
+                const RangeStrideSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type begin  = is.getBegin();
-   const Index_type end    = is.getEnd();
-   const Index_type stride = is.getStride();
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -597,7 +597,7 @@ RAJA_SIMD
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over unstructured index sets.
+// Function templates that iterate over list segments.
 //
 // NOTE: These operations will not vectorize, so we force sequential
 //       execution.  Hence, they are "fake" SIMD operations.
@@ -659,18 +659,18 @@ void forall_Icount(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over unstructured index set object.
+ * \brief  "Fake" SIMD iteration over list segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const ListSegment& is,
+            const ListSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -685,7 +685,7 @@ void forall(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over unstructured index set object,
+ * \brief  "Fake" SIMD iteration over list segment object,
  *         including index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -695,12 +695,12 @@ void forall(simd_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -740,7 +740,7 @@ void forall_minloc(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD minloc reduction over unstructured index set object.
+ * \brief  "Fake" SIMD minloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -748,12 +748,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(simd_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -793,7 +793,7 @@ void forall_maxloc(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD maxloc reduction over unstructured index set object.
+ * \brief  "Fake" SIMD maxloc reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -801,12 +801,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(simd_exec,
-                   const ListSegment& is,
+                   const ListSegment& iseg,
                    T* max, Index_type* loc,
                    LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -846,7 +846,7 @@ void forall_sum(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD sum reduction over unstructured index set object.
+ * \brief  "Fake" SIMD sum reduction over list segment object.
  *
  ******************************************************************************
  */
@@ -854,12 +854,12 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(simd_exec,
-                const ListSegment& is,
+                const ListSegment& iseg,
                 T* sum,
                 LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = is.getIndex();
-   const Index_type len = is.getLength();
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -875,8 +875,8 @@ void forall_sum(simd_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// SIMD execution policy does not apply to iteration over hybrid index 
-// set segments iteration, only to execution of individual segments.
+// SIMD execution policy does not apply to iteration over index 
+// set segments, only to execution of individual segments.
 //
 //////////////////////////////////////////////////////////////////////
 //
