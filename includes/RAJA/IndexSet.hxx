@@ -69,22 +69,6 @@ public:
    IndexSet();
 
    ///
-   /// Construct index set from given index array using parameterized
-   /// method buildIndexSet().
-   ///
-   IndexSet(const Index_type* const indices_in, Index_type length);
-
-#if defined(RAJA_USE_STL)
-   ///
-   /// Construct index set from arbitrary object containing indices
-   /// using parametrized method buildIndexSet().
-   ///
-   /// The object must provide the methods: size(), begin(), end().
-   ///
-   template< typename T> explicit IndexSet(const T& indx);
-#endif
-
-   ///
    /// Copy-constructor for index set
    ///
    IndexSet(const IndexSet& other);
@@ -105,65 +89,26 @@ public:
    void swap(IndexSet& other);
 
    ///
-   /// Append contiguous index range segment to back end of index set 
-   /// (adds RangeSegment object).
-   /// 
-   void push_back_RangeSegment(Index_type begin, Index_type end);
-
-   ///
    /// Add RangeSegment to back end of index set.
    ///
-   void push_back_Segment(const RangeSegment& segment);
-
-   ///
-   /// Append contiguous index range segment to front end of index set
-   /// (adds RangeSegment object).
-   ///
-   void push_front_RangeSegment(Index_type begin, Index_type end);
+   void push_back(const RangeSegment& segment);
 
    ///
    /// Add RangeSegment to front end of index set.
    ///
-   void push_front_Segment(const RangeSegment& segment);
+   void push_front(const RangeSegment& segment);
 
 #if 0  // RDH RETHINK
    ///
-   /// Add contiguous range of indices with stride segment to back end 
-   /// of index set (addds RangeStrideSegment object).
-   /// 
-   void push_back_RangeStrideSegment(Index_type begin, Index_type end, 
-                                     Index_type stride);
-
-   ///
    /// Add RangeStrideSegment to back end of index set.
    ///
-   void push_back_Segment(const RangeStrideSegment& segment);
-
-   ///
-   /// Add contiguous range of indices with stride segment to front end 
-   /// of index set (addds RangeStrideSegment object).
-   /// 
-   void push_front_RangeStrideSegment(Index_type begin, Index_type end, 
-                                      Index_type stride);
+   void push_back(const RangeStrideSegment& segment);
 
    ///
    /// Add RangeStrideSegment to front end of index set.
    ///
-   void push_front_Segment(const RangeStrideSegment& segment);
+   void push_front(const RangeStrideSegment& segment);
 #endif
-
-   ///
-   /// Add segment containing array of indices to back end of index set 
-   /// (adds ListSegment object).
-   /// 
-   /// By default, the method makes a deep copy of given array and index
-   /// set object will own the data representing its indices.  If 'Unowned' 
-   /// is passed to method, the new segment object does not own its indices 
-   /// (i.e., it holds a handle to given array).  In this case, caller is
-   /// responsible for managing object lifetimes properly.
-   /// 
-   void push_back_ListSegment(const Index_type* indx, Index_type len,
-                              IndexOwnership indx_own = Owned);
 
    ///
    /// Add ListSegment to back end of index set.
@@ -174,21 +119,8 @@ public:
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void push_back_Segment(const ListSegment& segment, 
-                          IndexOwnership indx_own = Owned);
-
-   ///
-   /// Add segment containing array of indices to front end of index set
-   /// (adds ListSegment object).
-   ///
-   /// By default, the method makes a deep copy of given array and index
-   /// set object will own the data representing its indices.  If 'Unowned'
-   /// is passed to method, the new segment object does not own its indices
-   /// (i.e., it holds a handle to given array).  In this case, caller is
-   /// responsible for managing object lifetimes properly.
-   ///
-   void push_front_ListSegment(const Index_type* indx, Index_type len,
-                               IndexOwnership indx_own = Owned);
+   void push_back(const ListSegment& segment, 
+                  IndexOwnership indx_own = Owned);
 
    ///
    /// Add ListSegment to front end of index set.
@@ -199,8 +131,8 @@ public:
    /// (i.e., it holds a handle to given array).  In this case, caller is
    /// responsible for managing object lifetimes properly.
    ///
-   void push_front_Segment(const ListSegment& segment,
-                           IndexOwnership indx_own = Owned);
+   void push_front(const ListSegment& segment,
+                   IndexOwnership indx_own = Owned);
 
    ///
    /// Return total length of index set; i.e., sum of lengths
@@ -256,7 +188,7 @@ private:
    /// Helper function to add segment to back end of index set.
    ///
    template< typename SEG_T> 
-   void push_back_Segment_private(SEG_T* seg)
+   void push_back_private(SEG_T* seg)
    {
       seg->setIcount( m_len );
       m_segments.push_back( seg );
@@ -268,7 +200,7 @@ private:
    /// Helper function to add segment to front end of index set.
    ///
    template< typename SEG_T>
-   void push_front_Segment_private(SEG_T* seg)
+   void push_front_private(SEG_T* seg)
    {
       seg->setIcount( 0 );
       m_segments.push_front( seg );
@@ -314,40 +246,6 @@ private:
    RAJAVec<BaseSegment*> m_segments;
 
 }; 
-
-
-/*!
- ******************************************************************************
- *
- * \brief Initialize index set from array of indices with given length.
- *
- *        Note given index set object is assumed to be empty.  
- *
- *        Routine does no error-checking on argements and assumes Index_type
- *        array contains valid indices.
- *
- ******************************************************************************
- */
-void buildIndexSet(IndexSet& hiset,
-                   const Index_type* const indices_in,
-                   Index_type length);
-
-#if defined(RAJA_USE_STL)
-/*!
- ******************************************************************************
- *
- * \brief Implementation of generic constructor template.
- *
- ******************************************************************************
- */
-template <typename T>
-IndexSet::IndexSet(const T& indx)
-: m_len(0)
-{
-   std::vector<Index_type> vec(indx.begin(), indx.end());
-   buildIndexSet(*this, &vec[0], vec.size());
-}
-#endif
 
 
 }  // closing brace for RAJA namespace

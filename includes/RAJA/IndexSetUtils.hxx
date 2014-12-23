@@ -30,7 +30,8 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Returns all indices in given index set or segment as std::vector.
+ * \brief  Returns all indices in given index set or segment 
+ *         as std::vector or RAJAVec.
  *
  ******************************************************************************
  */
@@ -67,7 +68,7 @@ RAJAVec<Index_type> getIndices(const INDEXSET_T& iset)
  ******************************************************************************
  *
  * \brief  Returns all indices in given index set or segment that satisfy 
- *         conditional as std::vector.
+ *         conditional as std::vector or RAJAVec.
  *
  ******************************************************************************
  */

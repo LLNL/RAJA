@@ -771,42 +771,35 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
 #if !defined(RAJA_COMPILER_XLC12)
 
 #if defined(RAJA_USE_STL)
-   std::vector<Index_type> even_indices = 
-      getIndicesConditional(hindex[0], [](Index_type idx) { return !(idx%2);} );
-
-   IndexSet hiset_even(even_indices);
-
+   std::vector<Index_type> even_indices;
+   std::vector<Index_type> lt_300_indices;
 #else
-   RAJAVec<Index_type> even_indices =
+   RAJAVec<Index_type> even_indices; 
+   RAJAVec<Index_type> lt_300_indices; 
+#endif
+
+   even_indices = 
       getIndicesConditional(hindex[0], [](Index_type idx) { return !(idx%2);} );
 
-   IndexSet hiset_even(&even_indices[0], even_indices.size());
+   lt_300_indices = 
+      getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
 
-#endif
+   IndexSet hiset_even;
+   hiset_even.push_back( ListSegment(&even_indices[0], even_indices.size()) );
 
    std::cout << "\n\n INDEX SET WITH EVEN INDICES ONLY..." << std::endl;
    hiset_even.print(std::cout);
 
-#if defined(RAJA_USE_STL)
-   std::vector<Index_type> lt_300_indices = 
-      getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
 
-   IndexSet hiset_lt_300(lt_300_indices);
-
-#else
-   RAJAVec<Index_type> lt_300_indices =
-      getIndicesConditional(hindex[0], [](Index_type idx) { return (idx<300);} );
-
-   IndexSet hiset_lt_300(&lt_300_indices[0], lt_300_indices.size());
-
-#endif
+   IndexSet hiset_lt_300;
+   hiset_even.push_back( ListSegment(&lt_300_indices[0], lt_300_indices.size()) );
 
    std::cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << std::endl;
    hiset_lt_300.print(std::cout);
 
-#endif
+#endif  //  !defined(RAJA_COMPILER_XLC12)
 
-#endif
+#endif  //  do basic conditional checks...
 
 
 //

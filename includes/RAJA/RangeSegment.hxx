@@ -54,7 +54,7 @@ public:
    /// Construct range segment [begin, end).
    ///
    RangeSegment(Index_type begin, Index_type end) 
-   : BaseSegment( _RangeSeg_ ), 
+   : BaseSegment( _RangeSeg_ , (end-begin) ), 
      m_begin(begin), m_end(end) { ; }
 
    ///
@@ -66,11 +66,6 @@ public:
    /// Return one past last index for range. 
    ///
    Index_type getEnd() const { return m_end; }
-
-   ///
-   /// Return number of indices represented by range.
-   ///
-   Index_type getLength() const { return (m_end-m_begin); }
 
    ///
    /// Return 'Owned' indicating that segment object owns the data
@@ -124,7 +119,7 @@ public:
    /// Construct range segment [begin, end) with stride.
    ///
    RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
-   : BaseSegment( _RangeStrideSeg_ ), 
+   : BaseSegment( _RangeStrideSeg_ , ((end-begin)/stride + 1) ), 
      m_begin(begin), m_end(end), m_stride(stride) { ; }
 
    ///
@@ -141,11 +136,6 @@ public:
    /// Return stride for segment. 
    ///
    Index_type getStride() const { return m_stride; }
-
-   ///
-   /// Return number of indices represented by segment.
-   ///
-   Index_type getLength() const { return (m_end-m_begin)/m_stride + 1; }
 
    ///
    /// Return 'Owned' indicating that segment object owns the data

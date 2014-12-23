@@ -72,28 +72,6 @@ public:
       copy(other); 
    }
 
-   //
-   // Copy-assignment operator for vector.
-   //
-   RAJAVec<T>& operator=(const RAJAVec<T>& rhs) 
-   {
-      if ( &rhs != this ) {
-         RAJAVec<T> copy(rhs);
-         this->swap(copy);
-      }
-      return *this;
-   }
-
-   //
-   // Destroy vector and its data.
-   //
-   ~RAJAVec()
-   {
-#if !defined(RAJA_USE_STL)
-      if (m_capacity > 0) delete [] m_data;  
-#endif
-   }
-
    ///
    /// Swap function for copy-and-swap idiom.
    /// 
@@ -117,6 +95,38 @@ public:
 #endif
    }
 
+   //
+   // Copy-assignment operator for vector.
+   //
+   RAJAVec<T>& operator=(const RAJAVec<T>& rhs) 
+   {
+      if ( &rhs != this ) {
+         RAJAVec<T> copy(rhs);
+         this->swap(copy);
+      }
+      return *this;
+   }
+
+   //
+   // Destroy vector and its data.
+   //
+   ~RAJAVec()
+   {
+#if !defined(RAJA_USE_STL)
+      if (m_capacity > 0) delete [] m_data;  
+#endif
+   }
+
+   //
+   // Return true if vector has size zero; false otherwise.
+   //
+   unsigned empty() const {
+#if defined(RAJA_USE_STL)
+      return m_data.empty() ;
+#else
+      return (m_size == 0) ;
+#endif
+   }
 
    //
    // Return current size of vector.

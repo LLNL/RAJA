@@ -37,7 +37,7 @@ namespace RAJA {
  *
  *         Length indicates number of indices in index array.
  *         Traversal executes as:  
- *            for (i = 0; i < m_len; ++i) {
+ *            for (i = 0; i < getLength(); ++i) {
  *               expression using m_indx[i] as array index.
  *            }
  *
@@ -63,15 +63,13 @@ public:
    ListSegment(const Index_type* indx, Index_type len,
                IndexOwnership indx_own = Owned);
 
-#if defined(RAJA_USE_STL)
    ///
    /// Construct list segment from arbitrary object holding 
    /// indices using a deep copy of given data.
    ///
-   /// The object must provide methods: empty(), begin(), end().
+   /// The object must provide methods: begin(), end(), size().
    ///
    template< typename T> explicit ListSegment(const T& indx);
-#endif
 
    ///
    /// Copy-constructor for list segment.
@@ -92,11 +90,6 @@ public:
    /// Swap function for copy-and-swap idiom.
    ///
    void swap(ListSegment& other);
-
-   ///
-   ///  Return number of indices in segment.
-   ///
-   Index_type getLength() const { return m_len; }
 
    ///
    ///  Return const pointer to array of indices in segment.
@@ -128,12 +121,10 @@ private:
                       IndexOwnership indx_own);
 
    Index_type* __restrict__ m_indx;
-   Index_type  m_len;
    IndexOwnership m_indx_own;
 };
 
 
-#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -143,17 +134,15 @@ private:
  */ 
 template< typename T> 
 ListSegment::ListSegment(const T& indx)
-: BaseSegment( _ListSeg_ ),
-  m_indx(0), m_len(0), m_indx_own(Unowned)
+: BaseSegment( _ListSeg_ , indx.size() ),
+  m_indx(0), m_indx_own(Unowned)
 {
    if ( !indx.empty() ) {
-      m_len = indx.size();
-      m_indx = new Index_type[m_len];
+      m_indx = new Index_type[indx.size()];
       std::copy(indx.begin(), indx.end(), m_indx);
       m_indx_own = Owned;
    } 
 }
-#endif
 
 
 }  // closing brace for RAJA namespace 

@@ -33,15 +33,15 @@ namespace RAJA {
 
 ListSegment::ListSegment(const Index_type* indx, Index_type len,
                          IndexOwnership indx_own)
-: BaseSegment( _ListSeg_ )
+: BaseSegment( _ListSeg_ , (len < 0 ? 0 : len) )
 {
    initIndexData(indx, len, indx_own);
 }
 
 ListSegment::ListSegment(const ListSegment& other)
-: BaseSegment( _ListSeg_ )
+: BaseSegment( _ListSeg_ , other.getLength() )
 {
-   initIndexData(other.m_indx, other.m_len, other.m_indx_own);
+   initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
 }
 
 ListSegment& ListSegment::operator=(const ListSegment& rhs)
@@ -65,19 +65,15 @@ void ListSegment::swap(ListSegment& other)
 #if defined(RAJA_USE_STL)
    using std::swap;
    swap(m_indx, other.m_indx);
-   swap(m_len, other.m_len);
    swap(m_indx_own, other.m_indx_own);
 #else
    Index_type* tindx = m_indx;
-   Index_type  tlen = m_len;
    IndexOwnership tindx_own = m_indx_own;
 
    m_indx = other.m_indx;
-   m_len = other.m_len;
    m_indx_own = other.m_indx_own;
 
    other.m_indx = tindx;
-   other.m_len = tlen;
    other.m_indx_own = tindx_own;
 #endif
 }
@@ -87,7 +83,7 @@ void ListSegment::print(std::ostream& os) const
    os << "ListSegment : icount, length, owns index = " 
       << getIcount() << ", " << getLength() 
       << (m_indx_own == Owned ? "Owned" : "Unowned") << std::endl;
-   for (Index_type i = 0; i < m_len; ++i) {
+   for (Index_type i = 0; i < getLength(); ++i) {
       os << "\t" << m_indx[i] << std::endl;
    }
 }
@@ -106,20 +102,18 @@ void ListSegment::initIndexData(const Index_type* indx,
    if ( len <= 0 ) {
 
       m_indx = 0;
-      m_len = 0;
       m_indx_own = Unowned;
 
    } else { 
 
-      m_len = len;
       m_indx_own = indx_own;
 
       if ( m_indx_own == Owned ) {
          m_indx = new Index_type[len];
 #if defined(RAJA_USE_STL)
-         std::copy(indx, indx + m_len, m_indx);
+         std::copy(indx, indx + getLength(), m_indx);
 #else
-         memcpy(m_indx, indx, m_len*sizeof(Index_type));
+         memcpy(m_indx, indx, getLength()*sizeof(Index_type));
 #endif
       } else {
          // Uh-oh. Using evil const_cast.... 
