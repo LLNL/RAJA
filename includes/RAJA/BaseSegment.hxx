@@ -32,10 +32,10 @@ class BaseSegment
 public:
 
    ///
-   /// Default ctor for base segment type.
+   /// Ctor for base segment type.
    ///
-   BaseSegment(SegmentType type, Index_type len)
-      : m_type(type), m_len(len), m_icount(0) { ; }
+   explicit BaseSegment(SegmentType type)
+      : m_type(type), m_private(0) { ; }
 
    /*
     * Using compiler-generated copy ctor, copy assignment.
@@ -52,25 +52,26 @@ public:
    SegmentType getType() const { return m_type; }
 
    ///
-   /// Get segment length (i.e., number of indices in segment).
+   /// Retrieve pointer to private data. Must be cast to proper type by user.
    ///
-   Index_type getLength() const { return m_len; }
+   void* getPrivate() const { return m_private ; }
 
    ///
-   /// Set index count associated with start of segment.
-   /// This is typically used when segment is part of an index set.
+   /// Set pointer to private data. Can be used to associate any data 
+   /// to segment. 
    ///
-   void setIcount(Index_type icount) { m_icount = icount; }
+   /// NOTE: Caller retains ownership of data object.
+   ///
+   void setPrivate(void *ptr) { m_private = ptr ; }
 
-   ///
-   /// Get index count associated with start of segment.
-   ///
-   Index_type getIcount() const { return m_icount; }
-
-   
    //
    // Pure virtual methods that must be provided by concrete segment classes.
    //
+
+   ///
+   /// Get segment length (i.e., number of indices in segment).
+   ///
+   virtual Index_type getLength() const = 0;
 
    ///
    /// Return enum value indicating whether segment owns the data rapresenting
@@ -78,17 +79,21 @@ public:
    ///
    virtual IndexOwnership getIndexOwnership() const = 0;
 
-
 private:
-   //
-   // The default ctor is not implemented.
-   //
+   ///
+   /// The default ctor is not implemented.
+   ///
    BaseSegment();
 
+   ///
+   /// Enum value indicating segment type.
+   /// 
    SegmentType m_type;
 
-   Index_type m_len;
-   Index_type m_icount;
+   ///
+   /// Pointer that can be used to hold arbitrary data associated with segment. 
+   /// 
+   void*       m_private;
 }; 
 
 

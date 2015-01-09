@@ -971,7 +971,7 @@ void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const BaseSegment* iseg = iset.getSegment(isi);
-      SegmentType segtype = iseg->getType(); 
+      SegmentType segtype = iseg->getType();
 
       switch ( segtype ) {
 
@@ -1033,9 +1033,12 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
    const int num_seg = iset.getNumSegments();
    cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
 
-      const BaseSegment* iseg = iset.getSegment(isi);
+      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
+
+      const BaseSegment* iseg = seg_info->getSegment();
       SegmentType segtype = iseg->getType();
-      Index_type icount = iseg->getIcount();
+
+      Index_type icount = seg_info->getIcount();
 
       switch ( segtype ) {
 
@@ -1111,7 +1114,6 @@ void forall_minloc( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 
       const BaseSegment* iseg = iset.getSegment(isi);
       SegmentType segtype = iseg->getType();
-      Index_type icount = iseg->getIcount();
 
       switch ( segtype ) {
 

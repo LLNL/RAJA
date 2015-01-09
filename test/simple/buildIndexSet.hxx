@@ -15,7 +15,13 @@ enum IndexSetBuildMethod {
    AddSegmentsAsVectors,
    AddSegmentsAsVectorsReverse,
 #endif
-   AddSegmentsAsIndices,
+   AddSegmentsNoCopy,
+   AddSegmentsNoCopyReverse,
+   MakeViewRange,
+   MakeViewArray,
+#if defined(RAJA_USE_STL)
+   MakeViewVector,
+#endif
 
    NumBuildMethods
 };
@@ -23,4 +29,4 @@ enum IndexSetBuildMethod {
 //
 //  Initialize hybrid index set by adding segments as indicated by enum value.
 //
-void buildIndexSet(RAJA::IndexSet& hindex, IndexSetBuildMethod use_vector);
+void buildIndexSet(RAJA::IndexSet* hindex, IndexSetBuildMethod use_vector);

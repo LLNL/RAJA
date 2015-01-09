@@ -28,8 +28,7 @@ namespace RAJA {
 
 void RangeSegment::print(std::ostream& os) const
 {
-   os << "RangeSegment : icount, length = " 
-      << getIcount() << ", " << getLength() 
+   os << "RangeSegment : length = " << getLength() 
       << " : begin, end = "
       << m_begin << ", " << m_end << std::endl;
 }
@@ -45,8 +44,7 @@ void RangeSegment::print(std::ostream& os) const
 
 void RangeStrideSegment::print(std::ostream& os) const
 {
-   os << "RangeStrideSegment : icount, length = " 
-      << getLength() << ", " << getLength() 
+   os << "RangeStrideSegment : length = " << getLength() 
       << " : begin, end, stride = "
       << m_begin << ", " << m_end << ", " << m_stride << std::endl;
 }

@@ -18,6 +18,8 @@
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
 
+#include "IndexSetSegInfo.hxx"
+
 #include "execpolicy.hxx"
 
 #include "RAJAVec.hxx"
@@ -44,6 +46,12 @@ class IndexSet
 {
 public:
 
+//
+// RDH TO DO: Add "==" operator and others?
+//
+// RDH TO DO: Add COMPILE TIME segment type selection.
+//
+
    ///
    /// Nested class representing index set execution policy. 
    ///
@@ -62,6 +70,7 @@ public:
    /// Sequential execution policy for index set.
    ///
    typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
+
 
    ///
    /// Construct empty index set
@@ -88,51 +97,47 @@ public:
    ///
    void swap(IndexSet& other);
 
-   ///
-   /// Add RangeSegment to back end of index set.
-   ///
-   void push_back(const RangeSegment& segment);
 
    ///
-   /// Add RangeSegment to front end of index set.
+   /// Return true if given segment type identifier is valid for this
+   /// IndexSet class; otherwise, return false.
    ///
-   void push_front(const RangeSegment& segment);
+   bool isValidSegmentType(const BaseSegment* segment) const;
 
-#if 0  // RDH RETHINK
-   ///
-   /// Add RangeStrideSegment to back end of index set.
-   ///
-   void push_back(const RangeStrideSegment& segment);
-
-   ///
-   /// Add RangeStrideSegment to front end of index set.
-   ///
-   void push_front(const RangeStrideSegment& segment);
-#endif
-
-   ///
-   /// Add ListSegment to back end of index set.
-   ///
-   /// By default, the method makes a deep copy of given array and index
-   /// set object will own the data representing its indices.  If 'Unowned'  
-   /// is passed to method, the new segment object does not own its indices
-   /// (i.e., it holds a handle to given array).  In this case, caller is
-   /// responsible for managing object lifetimes properly.
-   ///
-   void push_back(const ListSegment& segment, 
-                  IndexOwnership indx_own = Owned);
+   /*
+    * IMPORTANT: Some methods to add a segment to an index set
+    *            make a copy of the segment object passed in. Others do not.
+    *
+    *            The no-copy method names indicate the choice.
+    *            The copy/no-copy methods are further distinguished 
+    *            by taking a const reference (copy) or non-const 
+    *            pointer (no-copy).
+    */
 
    ///
-   /// Add ListSegment to front end of index set.
+   /// Add segment to back end of index set without making a copy.
    ///
-   /// By default, the method makes a deep copy of given array and index
-   /// set object will own the data representing its indices.  If 'Unowned'
-   /// is passed to method, the new segment object does not own its indices
-   /// (i.e., it holds a handle to given array).  In this case, caller is
-   /// responsible for managing object lifetimes properly.
+   void push_back_nocopy(BaseSegment* segment) 
+   { (void) push_back_private(segment, false 
+                                      /* index set does not own segment */); } 
+
    ///
-   void push_front(const ListSegment& segment,
-                   IndexOwnership indx_own = Owned);
+   /// Add segment to front end of index set without making a copy.
+   ///
+   void push_front_nocopy(BaseSegment* segment)
+   { (void) push_front_private(segment, false 
+                                       /* index set does not own segment */); } 
+
+   ///
+   /// Add copy of segment to back end of index set.
+   ///
+   void push_back(const BaseSegment& segment);
+
+   ///
+   /// Add copy of segment to front end of index set.
+   ///
+   void push_front(const BaseSegment& segment);
+
 
    ///
    /// Return total length of index set; i.e., sum of lengths
@@ -143,35 +148,97 @@ public:
    ///
    /// Return total number of segments in index set.
    ///
-   int getNumSegments() const { 
+   unsigned getNumSegments() const { 
       return m_segments.size(); 
+   }
+
+   ///
+   /// Return const pointer to BaseSegment 'i'.
+   ///
+   /// Notes: No error-checking on segment index.
+   ///
+   ///        Object must be explicitly cast to concrete type to
+   ///        access actual segment index information
+   ///        (see BaseSegment::getType() method).
+   ///
+   const BaseSegment* getSegment(unsigned i) const {
+      return m_segments[i].getSegment();
+   }
+
+   ///
+   /// Return non-const pointer to BaseSegment 'i'.
+   ///
+   /// Notes: No error-checking on segment index.
+   ///
+   ///        Object must be explicitly cast to concrete type to
+   ///        access actual segment index information
+   ///        (see BaseSegment::getType() method).
+   ///
+   BaseSegment* getSegment(unsigned i) {
+      return m_segments[i].getSegment();
    } 
 
    ///
-   /// Return const pointer to BaseSegment object for segment 'i'.
+   /// Return const pointer to IndexSetSegInfo object for segment 'i'.
    /// 
-   /// Notes: No error-checking on segment index.
+   /// Note: No error-checking on segment index.
    ///
-   ///        Object must be explicitly cast to proper type to
-   ///        access actual segment index information 
-   ///        (see BaseSegment::getType() method).
-   ///
-   const BaseSegment* getSegment(int i) const { 
-      return m_segments[i]; 
+   const IndexSetSegInfo* getSegmentInfo(unsigned i) const { 
+      return &(m_segments[i]); 
    }
 
    ///
    /// Return non-const pointer to BaseSegment object for segment 'i'.
    ///
-   /// Notes: No error-checking on segment index.
+   /// Note: No error-checking on segment index.
    ///
-   ///        Object must be explicitly cast to proper type to
-   ///        access actual segment index information 
-   ///        (see BaseSegment::getType() method).
-   ///
-   BaseSegment* getSegment(int i) {
-      return m_segments[i];       
+   IndexSetSegInfo* getSegmentInfo(unsigned i) {
+      return &(m_segments[i]);
    }
+
+   ///
+   /// Return a new IndexSet object that contains the subset of
+   /// segments in this IndexSet with ids in the interval [begin, end).
+   ///
+   /// This IndexSet will not change and the created "view" into it 
+   /// will not own any of its segments.
+   ///
+   IndexSet* createView(int begin, int end) const;
+
+   ///
+   /// Return a new IndexSet object that contains the subset of
+   /// segments in this IndexSet with ids in the given int array.
+   ///
+   /// This IndexSet will not change and the created "view" into it 
+   /// will not own any of its segments.
+   ///
+   IndexSet* createView(const int* segIds, int len) const;
+
+   ///
+   /// Return a new IndexSet object that contains the subset of
+   /// segments in this IndexSet with ids in the argument object.
+   ///
+   /// This IndexSet will not change and the created "view" into it 
+   /// will not own any of its segments.
+   ///
+   /// The object must provide methods begin(), end(), and its
+   /// iterator type must de-reference to an  integral value.
+   ///
+   template< typename T> 
+   IndexSet* createView(const T& segIds) const;
+
+   ///
+   /// Retrieve pointer to private data. Must be cast to proper type by user.
+   ///
+   void* getPrivate() const { return m_private ; }
+
+   ///
+   /// Set pointer to private data. Can be used to associate any data
+   /// to segment.
+   ///
+   /// NOTE: Caller retains ownership of data object.
+   ///
+   void setPrivate(void *ptr) { m_private = ptr ; }
 
    ///
    /// Print index set data, including segments, to given output stream.
@@ -179,73 +246,74 @@ public:
    void print(std::ostream& os) const;
 
 private:
-   //
-   // Copy function for copy-and-swap idiom (deep copy).
-   //
+   ///
+   /// Copy function for copy-and-swap idiom (deep copy).
+   ///
    void copy(const IndexSet& other);
 
    ///
    /// Helper function to add segment to back end of index set.
    ///
-   template< typename SEG_T> 
-   void push_back_private(SEG_T* seg)
-   {
-      seg->setIcount( m_len );
-      m_segments.push_back( seg );
-
-      m_len += seg->getLength();
-   } 
+   bool push_back_private(BaseSegment* seg, bool owns_segment);
 
    ///
    /// Helper function to add segment to front end of index set.
    ///
-   template< typename SEG_T>
-   void push_front_private(SEG_T* seg)
-   {
-      seg->setIcount( 0 );
-      m_segments.push_front( seg );
-      m_len += seg->getLength();
-
-      Index_type icount = seg->getLength(); 
-      for (unsigned i = 1; i < m_segments.size(); ++i ) {
-
-         BaseSegment* iseg = getSegment(i);
-         iseg->setIcount(icount); 
-       
-         SegmentType segtype = iseg->getType();
-         
-         switch ( segtype ) {
-
-            case _RangeSeg_ : {
-               icount += static_cast<RangeSegment*>(iseg)->getLength();
-               break;
-            }
-
-#if 0  // RDH RETHINK
-            case _RangeStrideSeg_ : {
-               icount += static_cast<RangeStrideSegment*>(iseg)->getLength();
-               break;
-            }
-#endif
-
-            case _ListSeg_ : {
-               icount += static_cast<ListSegment*>(iseg)->getLength();
-               break;
-            }
-
-            default : {
-            }
-
-         }  // switch ( segtype )
-      }
-
-   }
+   bool push_front_private(BaseSegment* seg, bool owns_segment);
 
    ///
+   /// Helper function to determine if segment type is valid for this 
+   /// IndexSet class and give an error message if not.
+   ///
+   bool isValidSegmentType_private(const BaseSegment* seg) const;
+
+   ///
+   /// Helper function to create a copy of a given segment given a 
+   /// pointer to the BaseSegment.
+   ///
+   BaseSegment* createSegmentCopy(const BaseSegment& segment) const;
+
+
+
+   ///
+   /// Total length of all IndexSet segments.
+   ///
    Index_type  m_len;
-   RAJAVec<BaseSegment*> m_segments;
+
+   ///
+   /// Collection of IndexSet segments.
+   ///
+   RAJAVec<IndexSetSegInfo> m_segments;
+
+   ///
+   /// Pointer for holding arbitrary data associated with index set.
+   ///
+   void*       m_private;
 
 }; 
+
+/*!
+ ******************************************************************************
+ *
+ *  \brief Implementation of generic IndexSet "view" template.
+ *
+ ******************************************************************************
+ */
+template< typename T>
+IndexSet* IndexSet::createView(const T& segIds) const
+{
+   IndexSet *retVal = new IndexSet() ;
+
+   int numSeg = m_segments.size() ;
+   for (auto it = segIds.begin(); it != segIds.end(); ++it) {
+      if (*it >= 0 && *it < numSeg) {
+         retVal->push_back_nocopy( 
+            const_cast<BaseSegment*>( m_segments[ *it ].getSegment() ) ) ;
+      }
+   }
+
+   return retVal ;
+}
 
 
 }  // closing brace for RAJA namespace

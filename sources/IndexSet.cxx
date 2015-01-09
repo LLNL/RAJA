@@ -24,7 +24,7 @@ namespace RAJA {
 /*
 *************************************************************************
 *
-* Public IndexSet methods.
+* Public IndexSet methods for basic object mechanics.
 *
 *************************************************************************
 */
@@ -52,15 +52,13 @@ IndexSet& IndexSet::operator=(
 
 IndexSet::~IndexSet()
 {
-   const int num_segs = getNumSegments();
-   for ( int isi = 0; isi < num_segs; ++isi ) {
-      const BaseSegment* seg = getSegment(isi);
+    for (int i = 0; i < m_segments.size(); ++i ) {
+       IndexSetSegInfo& seg_info = m_segments[ i ];
 
-      if ( seg ) {
-         delete seg;
-      } 
-
-   }  // for isi...
+       if ( seg_info.ownsSegment() ) {
+          delete seg_info.getSegment();
+       } 
+   }
 }
 
 void IndexSet::swap(IndexSet& other)
@@ -79,55 +77,94 @@ void IndexSet::swap(IndexSet& other)
 /*
 *************************************************************************
 *
+* Method to check whether given segment is a valid type for this 
+* IndexSet class.
+*
+*************************************************************************
+*/
+bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
+{
+   bool ret_val = false;
+   
+   SegmentType seg_type = segment->getType(); 
+   
+   if ( seg_type == _RangeSeg_ ||
+#if 0 // RDH RETHINK
+        seg_type == _RangeStrideSeg_ ||
+#endif
+        seg_type == _ListSeg_ ) 
+   {
+      ret_val = true;
+   }
+
+   return ret_val;
+}
+
+/*
+*************************************************************************
+*
 * Methods to add segments to index set.
 *
 *************************************************************************
 */
 
-void IndexSet::push_back(const RangeSegment& segment)
+void IndexSet::push_back(const BaseSegment& segment)
 {
-   RangeSegment* new_seg = new RangeSegment(segment);
-   push_back_private( new_seg );
+   BaseSegment* new_seg =  createSegmentCopy(segment);
+
+   if ( !push_back_private( new_seg, true /* index owns segment */ ) ) {
+      delete new_seg;
+   }
 }
 
-void IndexSet::push_front(const RangeSegment& segment)
+void IndexSet::push_front(const BaseSegment& segment)
 {
-   RangeSegment* new_seg = new RangeSegment(segment);
-   push_front_private( new_seg );
+   BaseSegment* new_seg =  createSegmentCopy(segment);
+
+   if ( !push_front_private( new_seg, true /* index owns segment */ ) ) {
+      delete new_seg; 
+   }
 }
 
 
-#if 0  // RDH RETHINK
-void IndexSet::push_back(const RangeStrideSegment& segment)
+/*
+*************************************************************************
+*
+* Methods to create IndexSet "views".
+*
+*************************************************************************
+*/
+
+IndexSet* IndexSet::createView(int begin, int end) const
 {
-   RangeStrideSegment* new_seg = new RangeSegment(segment);
-   push_back_private( new_seg );
+   IndexSet *retVal = new IndexSet() ;
+
+   int numSeg = m_segments.size() ;
+   int minSeg = ((begin >= 0) ? begin : 0) ;
+   int maxSeg = ((end < numSeg) ? end : numSeg) ;
+   for (int i = minSeg; i < maxSeg; ++i) {
+      retVal->push_back_nocopy( 
+         const_cast<BaseSegment*>( m_segments[i].getSegment() ) ) ;
+   }
+
+   return retVal ;
 }
 
-void IndexSet::push_front(const RangeStrideSegment& segment)
+IndexSet* IndexSet::createView(const int* segIds, int len) const
 {
-   RangeStrideSegment* new_seg = new RangeSegment(segment);
-   push_front_private( new_seg );
-}
-#endif
+   IndexSet *retVal = new IndexSet() ;
 
-void IndexSet::push_back(const ListSegment& iset, 
-                                 IndexOwnership indx_own)
-{
-   ListSegment* new_seg = new ListSegment(iset.getIndex(),
-                                          iset.getLength(),
-                                          indx_own);
-   push_back_private( new_seg );
+   int numSeg = m_segments.size() ;
+   for (int i = 0; i < len; ++i) {
+      if (segIds[i] >= 0 && segIds[i] < numSeg) {
+         retVal->push_back_nocopy( 
+            const_cast<BaseSegment*>( m_segments[ segIds[i] ].getSegment() ) ) ;
+      }
+   }
+
+   return retVal ;
 }
 
-void IndexSet::push_front(const ListSegment& iset,
-                                  IndexOwnership indx_own)
-{
-   ListSegment* new_seg = new ListSegment(iset.getIndex(),
-                                          iset.getLength(),
-                                          indx_own);
-   push_front_private( new_seg );
-}
 
 
 /*
@@ -146,7 +183,9 @@ void IndexSet::print(std::ostream& os) const
 
    for ( int isi = 0; isi < m_segments.size(); ++isi ) {
 
-      const BaseSegment* iseg = getSegment(isi);
+      const IndexSetSegInfo* seg_info = getSegmentInfo(isi);
+
+      const BaseSegment* iseg = seg_info->getSegment();
       SegmentType segtype = iseg->getType();
 
       os << "\nSegment " << isi << " : " << std::endl;
@@ -155,6 +194,7 @@ void IndexSet::print(std::ostream& os) const
 
          case _RangeSeg_ : {
             if ( iseg ) {
+               os << "\t icount = " << seg_info->getIcount() << std::endl;
                static_cast<const RangeSegment*>(iseg)->print(os);
             } else {
                os << "_RangeSeg_ is null" << std::endl;
@@ -165,6 +205,7 @@ void IndexSet::print(std::ostream& os) const
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
             if ( iseg ) {
+               os << "\t icount = " << seg_info->getIcount() << std::endl;
                static_cast<const RangeStrideSegment*>(iseg)->print(os);
             } else {
                os << "_RangeStrideSeg_ is null" << std::endl;
@@ -175,6 +216,7 @@ void IndexSet::print(std::ostream& os) const
 
          case _ListSeg_ : {
             if ( iseg ) {
+               os << "\t icount = " << seg_info->getIcount() << std::endl;
                static_cast<const ListSegment*>(iseg)->print(os);
             } else {
                os << "_ListSeg_ is null" << std::endl;
@@ -239,6 +281,96 @@ void IndexSet::copy(const IndexSet& other)
       }  // if ( iset ) 
 
    }  // for isi...
+}
+
+
+/*
+*************************************************************************
+*
+* Private helper methods to add segments to index set.
+*
+*************************************************************************
+*/
+
+bool IndexSet::push_back_private(BaseSegment* seg, bool owns_segment)
+{
+   if ( isValidSegmentType_private(seg) ) {
+
+      m_segments.push_back( IndexSetSegInfo(seg, owns_segment) );
+      m_segments[ m_segments.size() - 1 ].setIcount(m_len);
+
+      m_len += seg->getLength();
+
+      return true;
+
+   } else {
+      return false;
+   }
+}
+
+bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment)
+{
+   if ( isValidSegmentType_private(seg) ) {
+
+      m_segments.push_front( IndexSetSegInfo(seg, owns_segment) );
+      m_segments[ 0 ].setIcount(0);
+      m_len += seg->getLength();
+
+      Index_type icount = seg->getLength();
+      for (unsigned i = 1; i < m_segments.size(); ++i ) {
+         IndexSetSegInfo& seg_info = m_segments[ i ];
+
+         seg_info.setIcount(icount);
+
+         icount += seg_info.getSegment()->getLength();
+      }
+
+      return true;
+   
+   } else {
+      return false;
+   }
+}
+
+bool IndexSet::isValidSegmentType_private(const BaseSegment* seg) const
+{
+   if ( seg != 0 && isValidSegmentType(seg) ) {
+      return true;
+   } else {
+      std::cout << "\t Given segment is null or has invalid type for IndexSet class!!! \n";
+      return false;
+   }
+}
+
+BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
+{
+   BaseSegment* new_seg = 0;
+
+   switch ( segment.getType() ) {
+
+      case _RangeSeg_ : {
+         const RangeSegment& seg = static_cast<const RangeSegment&>(segment);
+         new_seg = new RangeSegment(seg);
+         break;
+      }
+
+#if 0  // RDH RETHINK
+      case _RangeStrideSeg_ : {
+         const RangeStrideSegment& seg = static_cast<const RangeStrideSegment&>(segment);
+         new_seg = new RangeStrideSegment(seg); 
+      }
+#endif
+
+      case _ListSeg_ : {
+         const ListSegment& seg = static_cast<const ListSegment&>(segment);
+         new_seg = new ListSegment(seg); 
+      }
+
+      default : { }
+
+   }  // switch ( segtype )
+
+   return new_seg;
 }
 
 

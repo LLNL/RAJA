@@ -46,16 +46,27 @@ public:
    ///
    typedef RAJA::seq_exec seq_policy;
 
+   ///
+   /// Default range segment ctor.
+   ///
+   /// Segment undefined until begin/end values set.
+   ///
+   RangeSegment()
+   : BaseSegment( _RangeSeg_ ), 
+     m_begin(UndefinedValue), 
+     m_end(UndefinedValue) { ; }
+
+   ///
+   /// Construct range segment with [begin, end) specified.
+   ///
+   RangeSegment(Index_type begin, Index_type end) 
+   : BaseSegment( _RangeSeg_ ), 
+     m_begin(begin), 
+     m_end(end) { ; }
+
    /*
     * Using compiler-generated dtor, copy ctor, copy assignment.
     */
-
-   ///
-   /// Construct range segment [begin, end).
-   ///
-   RangeSegment(Index_type begin, Index_type end) 
-   : BaseSegment( _RangeSeg_ , (end-begin) ), 
-     m_begin(begin), m_end(end) { ; }
 
    ///
    /// Return starting index for range. 
@@ -63,9 +74,24 @@ public:
    Index_type getBegin() const { return m_begin; }
 
    ///
+   /// Set starting index for range. 
+   ///
+   void setBegin(Index_type begin) { m_begin = begin; }
+
+   ///
    /// Return one past last index for range. 
    ///
    Index_type getEnd() const { return m_end; }
+
+   ///
+   /// Set one past last index for range.
+   ///
+   void setEnd(Index_type end) { m_end = end; }
+
+   ///
+   /// Return number of indices represented by range.
+   ///
+   Index_type getLength() const { return (m_end-m_begin); }
 
    ///
    /// Return 'Owned' indicating that segment object owns the data
@@ -79,11 +105,6 @@ public:
    void print(std::ostream& os) const;
 
 private:
-   //
-   // The default ctor is not implemented.
-   //
-   RangeSegment();
-
    Index_type m_begin;
    Index_type m_end;
 };
@@ -111,31 +132,65 @@ public:
    ///
    typedef RAJA::seq_exec seq_policy;
 
+   ///
+   /// Default range segment with stride ctor.
+   ///
+   /// Segment undefined until begin/end/stride values set.
+   ///
+   RangeStrideSegment()
+   : BaseSegment( _RangeStrideSeg_ ),
+     m_begin(UndefinedValue), 
+     m_end(UndefinedValue), 
+     m_stride(UndefinedValue) { ; }
+
+   ///
+   /// Construct range segment [begin, end) and stride specified.
+   ///
+   RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+   : BaseSegment( _RangeStrideSeg_ ), 
+     m_begin(begin), 
+     m_end(end), 
+     m_stride(stride) { ; }
+
    /*
     * Using compiler-generated dtor, copy ctor, copy assignment.
     */
 
    ///
-   /// Construct range segment [begin, end) with stride.
-   ///
-   RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
-   : BaseSegment( _RangeStrideSeg_ , ((end-begin)/stride + 1) ), 
-     m_begin(begin), m_end(end), m_stride(stride) { ; }
-
-   ///
-   /// Return starting index for segment. 
+   /// Return starting index for range. 
    ///
    Index_type getBegin() const { return m_begin; }
 
    ///
-   /// Return one past last index for segment. 
+   /// Set starting index for range.
+   ///
+   void setBegin(Index_type begin) { m_begin = begin; }
+
+   ///
+   /// Return one past last index for range. 
    ///
    Index_type getEnd() const { return m_end; }
 
+   ///
+   /// Set one past last index for range.
+   ///
+   void setEnd(Index_type end) { m_end = end; }
+
    /// 
-   /// Return stride for segment. 
+   /// Return stride for range. 
    ///
    Index_type getStride() const { return m_stride; }
+
+   ///
+   /// Set stride for range.
+   ///
+   void setStride(Index_type stride) { m_stride = stride; }
+
+   ///
+   /// Return number of indices represented by range.
+   ///
+   Index_type getLength() const { return (m_end-m_begin) >= m_stride ?
+                                         (m_end-m_begin)/m_stride + 1 : 0; }
 
    ///
    /// Return 'Owned' indicating that segment object owns the data
@@ -149,11 +204,6 @@ public:
    void print(std::ostream& os) const;
 
 private:
-   //
-   // The default ctor is not implemented.
-   //
-   RangeStrideSegment();
-
    Index_type m_begin;
    Index_type m_end;
    Index_type m_stride;

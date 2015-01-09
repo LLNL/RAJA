@@ -105,7 +105,7 @@ LDFLAGS	=
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
 LDFLAGS	=
 endif
 
@@ -174,7 +174,7 @@ LDFLAGS	=
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
 LDFLAGS	=
 endif
 

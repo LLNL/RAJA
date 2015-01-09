@@ -97,6 +97,11 @@ public:
    const Index_type* getIndex() const { return m_indx; }
 
    ///
+   ///  Return length of list segment (# indices).
+   ///
+   Index_type getLength() const { return m_len; }
+
+   ///
    /// Return enum value indicating whether segment object owns the data
    /// representing its indices.
    ///
@@ -121,7 +126,8 @@ private:
                       IndexOwnership indx_own);
 
    Index_type* __restrict__ m_indx;
-   IndexOwnership m_indx_own;
+   Index_type               m_len;
+   IndexOwnership           m_indx_own;
 };
 
 
@@ -134,8 +140,8 @@ private:
  */ 
 template< typename T> 
 ListSegment::ListSegment(const T& indx)
-: BaseSegment( _ListSeg_ , indx.size() ),
-  m_indx(0), m_indx_own(Unowned)
+: BaseSegment( _ListSeg_ ),
+  m_indx(0), m_indx_own(Unowned), m_len( indx.size() )
 {
    if ( !indx.empty() ) {
       m_indx = new Index_type[indx.size()];

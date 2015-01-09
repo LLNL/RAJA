@@ -567,20 +567,19 @@ int main(int argc, char *argv[])
 {
 
 // 
-//  Test different methods to construct hybrid segments.
-//  They should generate equivalent results.
+//  All methods to construct index sets should generate equivalent results.
 //
    IndexSet hindex[NumBuildMethods];
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      buildIndexSet( hindex[ibuild], static_cast<IndexSetBuildMethod>(ibuild) );
-   } 
+      buildIndexSet( hindex, static_cast<IndexSetBuildMethod>(ibuild) );
+   }  
 
 #if 0 
-RDH TODO -- add IndexSet "==", etc.  comparison operators...
-            check for equality here....
+RDH TODO -- checks for equality here....when proper methods are added 
+            to IndexSet class 
 #endif
 
-#if 1
+#if 0
    std::cout << std::endl << std::endl;
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
       std::cout << "hindex with build method " << ibuild << std::endl;
@@ -588,6 +587,17 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
       std::cout << std::endl;
    } 
    std::cout << std::endl;
+#endif
+
+#if 1  // Test attempt to add invalid segment type.
+   RangeStrideSegment rs_segment(0, 4, 2);
+   if ( hindex[0].isValidSegmentType(&rs_segment) ) {
+      std::cout << "RangeStrideSegment VALID for hindex[0]" << std::endl;
+   } else {
+      std::cout << "RangeStrideSegment INVALID for hindex[0]" << std::endl;
+   }
+   hindex[0].push_back(rs_segment);
+   hindex[0].push_back_nocopy(&rs_segment);
 #endif
 
 
@@ -757,11 +767,7 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
    }
 
 
-   std::cout << "\n All Tests : " 
-             << ntests_passed_total << " / " << ntests_run_total << std::endl;
-
-
-#if 1 
+#if 0 
 ///////////////////////////////////////////////////////////////////////////
 //
 // Check some basic conditional IndexSet construction operations....
@@ -801,6 +807,11 @@ RDH TODO -- add IndexSet "==", etc.  comparison operators...
 
 #endif  //  do basic conditional checks...
 
+   ///
+   /// Print number of tests passed/run.
+   ///
+   std::cout << "\n All Tests : " 
+             << ntests_passed_total << " / " << ntests_run_total << std::endl;
 
 //
 // Clean up....

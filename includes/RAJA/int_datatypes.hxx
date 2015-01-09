@@ -34,14 +34,19 @@ enum SegmentType { _RangeSeg_,
 /// representing their indices.
 ///
 enum IndexOwnership {
-   Owned,
-   Unowned
+   Unowned,
+   Owned
 };
 
 ///
 /// Type use for all loop indexing in RAJA constructs.
 ///
 typedef int     Index_type;
+
+///
+/// Integer value for undefined indices, etc. to avoid magic numbers in code.
+///
+const int UndefinedValue = -9999999;
 
 }  // closing brace for RAJA namespace
 
