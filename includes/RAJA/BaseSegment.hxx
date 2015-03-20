@@ -18,6 +18,9 @@
 
 #include "int_datatypes.hxx"
 
+#include <iosfwd>
+
+
 namespace RAJA {
 
 /*!

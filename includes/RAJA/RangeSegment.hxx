@@ -210,8 +210,8 @@ private:
 };
 
 //
-// TODO: Add multi-dim'l ranges, and ability to repeat segments using 
-//       an offset without having to resort to a hybrid, others? 
+// TODO: Add multi-dim'l ranges, and ability to easily repeat segments using 
+//       an offset in an index set, others? 
 //
 
 

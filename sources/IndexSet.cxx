@@ -166,6 +166,21 @@ IndexSet* IndexSet::createView(const int* segIds, int len) const
 }
 
 
+/*
+*************************************************************************
+*
+* Create dependency graph node objects (with default state) for segments.
+*
+*************************************************************************
+*/
+void IndexSet::initDependencyGraph() 
+{
+   for (int i = 0; i < m_segments.size(); ++i ) {
+      IndexSetSegInfo& seg_info = m_segments[ i ];
+      seg_info.initDepGraphNode();
+   }
+}
+
 
 /*
 *************************************************************************
@@ -177,18 +192,18 @@ IndexSet* IndexSet::createView(const int* segIds, int len) const
 
 void IndexSet::print(std::ostream& os) const
 {
-   os << "INDEX SET : " 
-      << getLength() << " length..." << std::endl
-      << getNumSegments() << " segments..." << std::endl;
+   os << "\nINDEX SET : " 
+      << " length = " << getLength() << std::endl
+      << "          num segments = " << getNumSegments() << std::endl;
 
    for ( int isi = 0; isi < m_segments.size(); ++isi ) {
 
+      os << "\nSegment # " << isi << " : " << std::endl;
+     
       const IndexSetSegInfo* seg_info = getSegmentInfo(isi);
 
       const BaseSegment* iseg = seg_info->getSegment();
       SegmentType segtype = iseg->getType();
-
-      os << "\nSegment " << isi << " : " << std::endl;
 
       switch ( segtype ) {
 
@@ -230,7 +245,12 @@ void IndexSet::print(std::ostream& os) const
 
       }  // switch ( segtype )
 
-   }  // for isi...
+      const DepGraphNode* task  = seg_info->getDepGraphNode();
+      if ( task ) {
+         task->print(os);
+      }
+  
+   }  // iterate over segments...
 }
 
 

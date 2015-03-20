@@ -68,10 +68,11 @@ CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 #TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
+TESTOBJS = 
 
-OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(RAJAOBJS)
-OBJFILES_PAR    = luleshRAJA-parallel.o $(RAJAOBJS)
-OBJFILES_SER    = luleshRAJA-serial.o $(RAJAOBJS)
+OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(TESTOBJS) $(RAJAOBJS)
+OBJFILES_PAR    = luleshRAJA-parallel.o $(TESTOBJS) $(RAJAOBJS)
+OBJFILES_SER    = luleshRAJA-serial.o $(TESTOBJS) $(RAJAOBJS)
 
 default:
 	echo "Please specify version to build make serial, make parallel, or make parallel-FT"

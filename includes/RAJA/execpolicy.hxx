@@ -37,11 +37,12 @@ struct omp_parallel_for_exec {};
 struct cilk_for_exec {};
 
 //
-// Hybrid segment iteration policies
+// Index set segment iteration policies
 // 
 struct seq_segit {};
 
 struct omp_parallel_for_segit {};
+struct omp_taskgraph_segit {};
 
 struct cilk_for_segit {};
 
@@ -60,10 +61,11 @@ struct omp_parallel_for_exec {};
 //struct omp_for_nowait_exec {};
 
 //
-// Hybrid segment iteration policies
+// Index set segment iteration policies
 //
 struct seq_segit {};
 struct omp_parallel_for_segit {};
+struct omp_taskgraph_segit {};
 
 #endif   // end  GNU compilers.....
 
@@ -79,10 +81,11 @@ struct omp_parallel_for_exec {};
 //struct omp_for_nowait_exec {};
 
 //
-// Hybrid segment iteration policies
+// Index set segment iteration policies
 //
 struct seq_segit {};
 struct omp_parallel_for_segit {};
+struct omp_taskgraph_segit {};
 
 #endif   // end  xlc v12 compiler on bgq
 
@@ -92,13 +95,16 @@ struct omp_parallel_for_segit {};
 //
 // Segment exec policies
 //
-struct seq_execution {};
+struct seq_exec {};
 struct simd_exec {};
+struct omp_parallel_for_exec {};
 
 //
-// Hybrid segment iteration policies
+// Index set segment iteration policies
 // 
 struct seq_segit {};
+struct omp_parallel_for_segit {};
+struct omp_taskgraph_segit {};
 
 #endif   // end  CLANG compilers.....
 

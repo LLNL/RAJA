@@ -99,8 +99,8 @@ public:
 
 
    ///
-   /// Return true if given segment type identifier is valid for this
-   /// IndexSet class; otherwise, return false.
+   /// Return true if given segment is valid for this IndexSet class; 
+   /// otherwise, return false.
    ///
    bool isValidSegmentType(const BaseSegment* segment) const;
 
@@ -239,6 +239,14 @@ public:
    /// NOTE: Caller retains ownership of data object.
    ///
    void setPrivate(void *ptr) { m_private = ptr ; }
+
+   ///
+   /// Create dependency graph node object and initialize to default state
+   /// for each segment.
+   ///
+   /// Note that this method assumes these such objects don't already exist.
+   ///
+   void initDependencyGraph();
 
    ///
    /// Print index set data, including segments, to given output stream.

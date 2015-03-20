@@ -44,7 +44,8 @@ enum IndexOwnership {
 typedef int     Index_type;
 
 ///
-/// Integer value for undefined indices, etc. to avoid magic numbers in code.
+/// Integer value for undefined indices and other integer values. 
+/// Although this is a magic value, it avoids sprinkling them throughout code.
 ///
 const int UndefinedValue = -9999999;
 

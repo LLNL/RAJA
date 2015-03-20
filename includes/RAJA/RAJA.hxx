@@ -80,7 +80,7 @@
 // All platforms must support sequential execution.  
 //
 // NOTE: This file includes sequential segment iteration over segments in
-//       a hybrid index set which may require definitions in the above 
+//       an index set which may require definitions in the above 
 //       headers for segment execution.
 //
 #include "forall_seq_any.hxx"

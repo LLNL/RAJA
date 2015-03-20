@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for index set builder methods.
+ * \brief   Implementation file for aligned-range index set builder methods.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL

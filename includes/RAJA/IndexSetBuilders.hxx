@@ -33,16 +33,63 @@ class IndexSet;
  *        multiples of RANGE_ALIGN. These constants are defined in the 
  *        RAJA config.hxx header file.
  *
- *        Note: given index set object is assumed to be empty.
- *
  *        Routine does no error-checking on argements and assumes Index_type
  *        array contains valid indices.
+ *
+ * Note: Method assumes IndexSet reference refers to an empty index set.
  *
  ******************************************************************************
  */
 void buildIndexSetAligned(IndexSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length);
+
+
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+//
+// The following methods build "lock-free" index sets.  
+// 
+// Lock-free indexsets are designed to be used with coarse-grained OpenMP 
+// iteration policies.  The "lock-free" part here assumes interactions among 
+// the cell-complex associated with the space being partitioned are "tightly 
+// bound".
+//
+////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////
+
+/*
+ ******************************************************************************
+ *
+ * Initialize lock-free "block" index set (planar division).
+ * 
+ * The method chunks a fastDim x midDim x slowDim mesh into blocks that can
+ * be dependency-scheduled, removing need for lock constructs.
+ *
+ * Note: Method assumes IndexSet reference refers to an empty index set.
+ *
+ ******************************************************************************
+ */
+void buildLockFreeBlockIndexset(IndexSet& iset,
+                                int fastDim, int midDim, int slowDim);
+
+/*
+ ******************************************************************************
+ *
+ * Build Lock-free "color" index set. The domain-set is colored based on
+ * connectivity to the range-set. All elements in each segment are
+ * independent, and no two segments can be executed in parallel.
+ *
+ * Note: Method assumes IndexSet reference refers to an empty index set.
+ *
+ ******************************************************************************
+ */
+void buildLockFreeColorIndexset(IndexSet& iset,
+                                int *domainToRange, int numEntity,
+                                int numRangePerDomain, int numEntityRange,
+                                int *elemPermutation = 0l,
+                                int *ielemPermutation = 0l);
+
 
 
 }  // closing brace for RAJA namespace
