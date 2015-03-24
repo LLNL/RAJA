@@ -23,7 +23,6 @@
 
 #include "RAJAVec.hxx"
 
-#if 0 // RDH
 
 namespace RAJA {
 
@@ -108,8 +107,6 @@ RAJAVec<Index_type> getIndicesConditional(const INDEXSET_T& iset,
 
 
 }  // closing brace for RAJA namespace
-
-#endif
 
 
 #endif  // closing endif for header file include guard
