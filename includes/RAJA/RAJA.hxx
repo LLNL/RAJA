@@ -68,6 +68,7 @@
 #elif defined(RAJA_COMPILER_CLANG)
 
 #include "forall_simd_clang.hxx"
+#include "forall_omp_clang.hxx"
 
 
 #else

@@ -128,8 +128,10 @@ ifeq ($(RAJA_ARCH),x86_avx_icc)
 #CXX 		= /usr/local/tools/ic-14.0.097/bin/icpc
 #CXX 		= /usr/local/tools/ic-14.0.106/bin/icpc
 #CXX            = /usr/local/tools/ic-14.0.144/bin/icpc
-CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
+#CXX            = /usr/local/tools/ic-14.0.174/bin/icpc
 #CXX             = /usr/local/tools/ic-15.0.024-beta/bin/icpc
+#CXX             = /usr/local/tools/ic-15.0.090/bin/icpc
+CXX             = /usr/local/tools/ic-15.0.133/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
 #CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
@@ -182,6 +184,30 @@ CXXFLAGS 	= -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_GNU
 LDPATH		=
 
 endif
+
+
+#
+#  Clang compiler on x86 
+#
+ifeq ($(RAJA_ARCH),x86_clang)
+CXX             = /usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/clang++
+
+ifeq ($(OPT_DEBUG),opt)
+#
+CXX_COMPILE = $(CXX) -O3 -std=c++11 -fopenmp
+LDFLAGS =
+endif
+
+ifeq ($(OPT_DEBUG),debug)
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
+LDFLAGS = -std=c++11 -g -O0 -Wl,--export-dynamic
+endif
+
+CXXFLAGS        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
+LDPATH          =
+
+endif
+
 
 
 #
