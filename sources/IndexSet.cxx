@@ -386,12 +386,14 @@ BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
       case _RangeStrideSeg_ : {
          const RangeStrideSegment& seg = static_cast<const RangeStrideSegment&>(segment);
          new_seg = new RangeStrideSegment(seg); 
+         break;
       }
 #endif
 
       case _ListSeg_ : {
          const ListSegment& seg = static_cast<const ListSegment&>(segment);
          new_seg = new ListSegment(seg); 
+         break;
       }
 
       default : { }
