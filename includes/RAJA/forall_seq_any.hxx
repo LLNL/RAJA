@@ -1216,9 +1216,9 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  Special task-graph segment iteration using sequential segment 
- *         iteration loop (no dependency graph needed). Individual segment 
- *         execution is defined in loop body.
+ * \brief  Special segment iteration using sequential segment iteration loop 
+ *         (no dependency graph used or needed). Individual segment execution 
+ *         is defined in loop body.
  *
  *         NOTE: IndexSet must contain only RangeSegments.
  *
@@ -1226,7 +1226,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_segments(seq_taskgraph_segit,
+void forall_segments(seq_segit,
                      const IndexSet& iset,
                      LOOP_BODY loop_body)
 {

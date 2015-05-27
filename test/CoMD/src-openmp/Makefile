@@ -145,7 +145,7 @@ ${CoMD_EXE}: ${BIN_DIR} CoMD_info.h ${COMD_OBJECTS} ${RAJAOBJS}
 	${CXX_COMPILE} ${CFLAGS} -o ${CoMD_EXE} ${COMD_OBJECTS} ${RAJAOBJS} ${LDFLAGS}
 
 CoMD_info.h: Makefile
-	./generate_info_header ${CoMD_VARIANT} "$(CC)" "$(CFLAGS)" "$(LDFLAGS)"
+	./generate_info_header ${CoMD_VARIANT} "$(CXX)" "$(CXX_COMPILE)" "$(LDFLAGS)"
 
 ${BIN_DIR}:
 	@if [ ! -d ${BIN_DIR} ]; then mkdir -p ${BIN_DIR} ; fi

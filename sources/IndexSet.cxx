@@ -30,12 +30,18 @@ namespace RAJA {
 */
 
 IndexSet::IndexSet()
-: m_len(0)
+: m_len(0),
+  m_segments(),
+  m_private(0),
+  m_dep_graph_set(false)
 {
 }
 
 IndexSet::IndexSet(const IndexSet& other)
-: m_len(0)
+: m_len(0),
+  m_segments(),
+  m_private(0),
+  m_dep_graph_set(false)
 {
    copy(other); 
 }
@@ -68,16 +74,20 @@ void IndexSet::swap(IndexSet& other)
    swap(m_len, other.m_len);
    swap(m_segments, other.m_segments);
    swap(m_private, other.m_private);
+   swap(m_dep_graph_set, other.m_dep_graph_set);
 #else
    Index_type  tlen = m_len;
    void* tprivate   = m_private;
+   bool tdep_graph_set = m_dep_graph_set;
 
    m_len     = other.m_len;
    m_private = other.m_private;
+   m_dep_graph_set = other.m_dep_graph_set;
 
    other.m_len     = tlen;
    m_segments.swap(other.m_segments);
    other.m_private = tprivate;
+   other.m_dep_graph_set = tdep_graph_set;
 #endif
 }
 
@@ -202,7 +212,8 @@ void IndexSet::print(std::ostream& os) const
 {
    os << "\nINDEX SET : " 
       << " length = " << getLength() << std::endl
-      << "          num segments = " << getNumSegments() << std::endl;
+      << "      num segments = " << getNumSegments() << std::endl
+      << "      dependency graph set = " << dependencyGraphSet() << std::endl;
 
    for ( int isi = 0; isi < m_segments.size(); ++isi ) {
 

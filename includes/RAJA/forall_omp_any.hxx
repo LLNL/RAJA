@@ -1047,11 +1047,11 @@ void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  Iterate over index set segments using an omp parallel region and 
- *         an explicitly constructed segment dependency graph. Individual
- *         segment execution will use execution policy template parameter.
+ * \brief  Iterate over index set segments using an omp parallel loop and 
+ *         segment dependency graph. Individual segment execution will use 
+ *         execution policy template parameter.
  *
- *         This method assumes that a DepGraphNode data structure has been
+ *         This method assumes that a task dependency graph has been
  *         properly set up for each segment in the index set.
  *
  ******************************************************************************
@@ -1488,11 +1488,63 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 /*!
  ******************************************************************************
  *
- * \brief  Special task-graph segment iteration using OpenMP parallel region
- *         around segment iteration loop and explicitly constructed dependency
- *         graph. Individual segment execution is defined in loop body.
+ * \brief  Special segment iteration using OpenMP parallel region around 
+ *         segment iteration loop. Individual segment execution is defined 
+ *         in loop body.
  *
- *         This method assumes that a DepGraphNode data structure has been
+ *         This method does not use an task dependency graph for
+ *         the index set segments. 
+ *
+ *         NOTE: IndexSet must contain only RangeSegments.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(omp_parallel_segit,
+                     const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+   const int num_seg = ncis.getNumSegments();
+
+#pragma omp parallel
+   {
+      int numThreads = omp_get_max_threads() ;
+      int tid = omp_get_thread_num() ;
+
+      /* Create a temporary IndexSet with one Segment */
+      IndexSet is_tmp;
+      is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+
+      RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+
+      for ( int isi = tid; isi < num_seg; isi += numThreads ) {
+
+         RangeSegment* isetSeg = 
+            static_cast<RangeSegment*>(ncis.getSegment(isi));
+
+         segTmp->setBegin(isetSeg->getBegin()) ;
+         segTmp->setEnd(isetSeg->getEnd()) ;
+         segTmp->setPrivate(isetSeg->getPrivate()) ;
+
+         loop_body(&is_tmp) ;
+
+      } // loop over index set segments
+
+   } // end omp parallel region
+
+}
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Special task-graph segment iteration using OpenMP parallel region
+ *         around segment iteration loop and explicit task dependency graph. 
+ *         Individual segment execution is defined in loop body.
+ *
+ *         This method assumes that a task dependency graph has been
  *         properly set up for each segment in the index set.
  *
  *         NOTE: IndexSet must contain only RangeSegments.
@@ -1521,7 +1573,6 @@ void forall_segments(omp_taskgraph_segit,
 
       for ( int isi = tid; isi < num_seg; isi += numThreads ) {
 
-#if 0 // RDH  TO FIX
         IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
         DepGraphNode* task  = seg_info->getDepGraphNode();
 
@@ -1544,7 +1595,6 @@ void forall_segments(omp_taskgraph_segit,
             // }
             sched_yield() ;
          }
-#endif
 
          RangeSegment* isetSeg = 
             static_cast<RangeSegment*>(ncis.getSegment(isi));
@@ -1555,7 +1605,6 @@ void forall_segments(omp_taskgraph_segit,
 
          loop_body(&is_tmp) ;
 
-#if 0 // RDH  TO FIX
          if (task->semaphoreReloadValue() != 0) {
             task->semaphoreValue() = task->semaphoreReloadValue() ;
          }
@@ -1571,7 +1620,6 @@ void forall_segments(omp_taskgraph_segit,
                __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
             }
          }
-#endif
 
       } // loop over index set segments
 
