@@ -241,12 +241,33 @@ public:
    void setPrivate(void *ptr) { m_private = ptr ; }
 
    ///
-   /// Create dependency graph node object and initialize to default state
-   /// for each segment.
+   /// Return true if dependencyGraphFinalize() method has been called 
+   /// on index set object. 
    ///
-   /// Note that this method assumes these such objects don't already exist.
+   bool dependencyGraphSet() const { return m_dep_graph_set; }
+
+   ///
+   /// Create dependency graph node objects (one for each segment in index 
+   /// set and initialize each to default state.
+   ///
+   /// Note that dependency graph data for segments needs to be set for
+   /// each dependency graph node for dependency-graph scheduling to work
+   /// properly. See DepGraphNode class.  After setting all dependency
+   /// graph data, the dependencyGraphFinalize() method should be called
+   /// to indicate that dependency graph is complete.
+   ///
+   /// Note that this method assumes dependency graph node objects don't 
+   /// already exist for index set.
    ///
    void initDependencyGraph();
+
+   ///
+   /// Calling this method indicates that dependency graph data for all
+   /// segments in index set has been set.
+   ///
+   /// This method should be called after all such data has been set.
+   ///
+   void dependencyGraphFinalize() { m_dep_graph_set = true; }
 
    ///
    /// Print index set data, including segments, to given output stream.
@@ -289,7 +310,7 @@ private:
    Index_type  m_len;
 
    ///
-   /// Collection of IndexSet segments.
+   /// Collection of IndexSet segment info objects.
    ///
    RAJAVec<IndexSetSegInfo> m_segments;
 
@@ -297,6 +318,12 @@ private:
    /// Pointer for holding arbitrary data associated with index set.
    ///
    void*       m_private;
+
+   ///
+   ///  True if dependencyGraphFinalize() method has been called; 
+   ///  else false (default).
+   ///
+   bool m_dep_graph_set;
 
 }; 
 
