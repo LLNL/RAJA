@@ -40,6 +40,7 @@ struct cilk_for_exec {};
 // Index set segment iteration policies
 // 
 struct seq_segit {};
+struct seq_taskgraph_segit {};
 
 struct omp_parallel_for_segit {};
 struct omp_taskgraph_segit {};
@@ -64,6 +65,8 @@ struct omp_parallel_for_exec {};
 // Index set segment iteration policies
 //
 struct seq_segit {};
+struct seq_taskgraph_segit {};
+
 struct omp_parallel_for_segit {};
 struct omp_taskgraph_segit {};
 
@@ -84,6 +87,8 @@ struct omp_parallel_for_exec {};
 // Index set segment iteration policies
 //
 struct seq_segit {};
+struct seq_taskgraph_segit {};
+
 struct omp_parallel_for_segit {};
 struct omp_taskgraph_segit {};
 
@@ -103,6 +108,8 @@ struct omp_parallel_for_exec {};
 // Index set segment iteration policies
 // 
 struct seq_segit {};
+struct seq_taskgraph_segit {};
+
 struct omp_parallel_for_segit {};
 struct omp_taskgraph_segit {};
 

@@ -86,8 +86,14 @@ typedef struct SimFlatSt
    
 } SimFlat;
 
+
+//
+// RAJA execution policies
+//
 typedef RAJA::omp_parallel_for_segit linkCellTraversal ;
 typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> linkCellWork;
 typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> atomWork;
+typedef RAJA::omp_taskgraph_segit task_graph_policy;
+//typedef RAJA::seq_taskgraph_segit task_graph_policy;
 
 #endif

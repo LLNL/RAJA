@@ -243,7 +243,8 @@ int eamForce(SimFlat* s)
    } ) ;
 
    // loop over local boxes
-   RAJA::forallSegments(*s->isLocal, [&] (RAJA::IndexSet *iBox) {
+   RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
+   [&] (RAJA::IndexSet *iBox) {
       real_t etotLocal = 0.;
 
       RAJA::IndexSet *iBoxNeighbors =
@@ -337,7 +338,8 @@ int eamForce(SimFlat* s)
 
    // third pass
    // loop over local boxes
-   RAJA::forallSegments(*s->isLocal, [=] (RAJA::IndexSet *iBox) {
+   RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
+   [=] (RAJA::IndexSet *iBox) {
 
       RAJA::IndexSet *iBoxNeighbors =
            static_cast<RAJA::IndexSet *>(iBox->getSegment(0)->getPrivate()) ;

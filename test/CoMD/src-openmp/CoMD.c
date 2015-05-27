@@ -199,7 +199,6 @@ SimFlat* initSimulation(Command cmd)
    createFccLattice(cmd.nx, cmd.ny, cmd.nz, latticeConstant, sim);
 
    /* Create Total IndexSets */
-#if 1
    RAJA::RangeSegment *rangeArray = new RAJA::RangeSegment[sim->boxes->nTotalBoxes] ;
 
    sim->isTotal = new RAJA::IndexSet() ;
@@ -208,32 +207,15 @@ SimFlat* initSimulation(Command cmd)
       rangeArray[i].setEnd(i*MAXATOMS + sim->boxes->nAtoms[i]) ;
       sim->isTotal->push_back( rangeArray[i] ) ;
    }
-#else
-   sim->isTotal = new RAJA::IndexSet() ;
-   for (int i=0; i<sim->boxes->nTotalBoxes; ++i) {
-      sim->isTotal->push_back(
-        new RAJA::RangeSegment(i*MAXATOMS, i*MAXATOMS + sim->boxes->nAtoms[i])
-      ) ;
-   }
-#endif
 
    /* Create Local IndexSet View */
-#if 0 // RDH 
-   sim->isLocal = sim->isTotal->shareSegmentSubset(0, sim->boxes->nLocalBoxes);
-#else
    sim->isLocal = sim->isTotal->createView(0, sim->boxes->nLocalBoxes);
-#endif
 
 
    /* Create Neighbor IndexSet Views */
    for (int i=0; i<sim->boxes->nLocalBoxes; ++i) {
-#if 0 // RDH
-      RAJA::IndexSet *neighbors = 
-         sim->isTotal->shareSegmentSubset(sim->boxes->nbrBoxes[i], 27) ;
-#else
       RAJA::IndexSet *neighbors = 
          sim->isTotal->createView(sim->boxes->nbrBoxes[i], 27) ;
-#endif
 
       sim->isLocal->getSegment(i)->setPrivate(
          reinterpret_cast<void *>(neighbors)

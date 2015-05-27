@@ -170,7 +170,8 @@ int ljForce(SimFlat* s)
 // RAJA::ReduceSum epotR(&ePot) ;
    // loop over local boxes
    // lock-free schedule and programming model are embedded in the IndexSets
-   RAJA::forallSegments(*s->isLocal, [&] (RAJA::IndexSet *iBox) {
+   RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
+   [&] (RAJA::IndexSet *iBox) {
       real_t ePotLocal = 0.0;
 //    int localPairs = 0 ;
 

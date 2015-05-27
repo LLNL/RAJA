@@ -831,6 +831,25 @@ void forall_sum(const INDEXSET_T& iset,
 }
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic task-graph segment iteration over index set segments.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   forall_segments(EXEC_POLICY_T(),
+                   iset,
+                   loop_body);
+}
+
+
 }  // closing brace for RAJA namespace
 
 
