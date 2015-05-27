@@ -1066,29 +1066,6 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
 
    const int num_seg = ncis.getNumSegments();
 
-#if 0 // RDH 
-   int numSeg = ncis.getNumSegments();
-   for(int ii=0; ii<numSeg; ++ii) {
-      RAJA::IndexSetSegInfo* seginfo = ncis.getSegmentInfo(ii);
-      const RAJA::RangeSegment* ris =
-         static_cast<const RAJA::RangeSegment*>(seginfo->getSegment());
-      RAJA::DepGraphNode* task  = seginfo->getDepGraphNode();
-      printf("%d (%7d,%7d) init=%d, reload=%d",
-             ii, ris->getBegin(), ris->getEnd(),
-             task->semaphoreValue(),
-             task->semaphoreReloadValue()) ;
-      int numDepTasks = task->numDepTasks() ;
-      if (numDepTasks != 0) {
-         printf(", dep=") ;
-         for (int jj=0; jj<numDepTasks; ++jj) {
-            printf("%d ", task->depTaskNum(jj)) ;
-         }  
-      }  
-      printf("\n") ;
-      fflush(stdout);
-   }
-#endif
-
 #pragma omp parallel for schedule(static, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
@@ -1105,18 +1082,14 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
       volatile int* semVal = &(task->semaphoreValue());
 
       while(*semVal != 0) {
-        /* spin or (better) sleep here */ ;
-        // printf("%d ", *semVal) ;
-        // sleep(1) ;
-        // for (volatile int spin = 0; spin<1000; ++spin) {
-        //    spin = spin ;
-        // }
-        sched_yield() ;
+         /* spin or (better) sleep here */ ;
+         // printf("%d ", *semVal) ;
+         // sleep(1) ;
+         // for (volatile int spin = 0; spin<1000; ++spin) {
+         //    spin = spin ;
+         // }
+         sched_yield() ;
       }
-#if 0 // RDH
-      printf("\n\tAFTER SPIN!!!!") ;
-      fflush(stdout);
-#endif
 
       const BaseSegment* iseg = seg_info->getSegment();
       SegmentType segtype = iseg->getType();
@@ -1163,13 +1136,14 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
 
       if (task->numDepTasks() != 0) {
          for (int ii = 0; ii < task->numDepTasks(); ++ii) {
-           /* alternateively, we could get the return value of this call */
-           /* and actively launch the task if we are the last depedent task. */
-           /* in that case, we would not need the semaphore spin loop above */
-           int seg = task->depTaskNum(ii) ;
-           DepGraphNode* dep  = ncis.getSegmentInfo(seg)->getDepGraphNode();
-           __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
-         }
+            // Alternateively, we could get the return value of this call
+            // and actively launch the task if we are the last depedent 
+            // task. In that case, we would not need the semaphore spin 
+            // loop above.
+            int seg = task->depTaskNum(ii) ;
+            DepGraphNode* dep  = ncis.getSegmentInfo(seg)->getDepGraphNode();
+            __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+          }
       }
 
    } // iterate over segments of index set
@@ -1511,11 +1485,104 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 }
 
 
-////////////////////////////////////////////////////////////////////////////
-/// Special task-graph segment iteration method is defined in here. 
-////////////////////////////////////////////////////////////////////////////
-#include "forall_segments.hxx"
+/*!
+ ******************************************************************************
+ *
+ * \brief  Special task-graph segment iteration using OpenMP parallel region
+ *         around segment iteration loop and explicitly constructed dependency
+ *         graph. Individual segment execution is defined in loop body.
+ *
+ *         This method assumes that a DepGraphNode data structure has been
+ *         properly set up for each segment in the index set.
+ *
+ *         NOTE: IndexSet must contain only RangeSegments.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(omp_taskgraph_segit,
+                     const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+   const int num_seg = ncis.getNumSegments();
 
+#pragma omp parallel
+   {
+      int numThreads = omp_get_max_threads() ;
+      int tid = omp_get_thread_num() ;
+
+      /* Create a temporary IndexSet with one Segment */
+      IndexSet is_tmp;
+      is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+
+      RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+
+      for ( int isi = tid; isi < num_seg; isi += numThreads ) {
+
+#if 0 // RDH  TO FIX
+        IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
+        DepGraphNode* task  = seg_info->getDepGraphNode();
+
+         //
+         // This is declared volatile to prevent compiler from
+         // optimizing the while loop (into an if-statement, for example).
+         // It may not be able to see that the value accessed through
+         // the method call will be changed at the end of the for-loop
+         // from another executing thread.
+         //
+         volatile int* semVal = &(task->semaphoreValue());
+
+         while (*semMem != 0) {
+            /* spin or (better) sleep here */ ;
+            // printf("%d ", *semMem) ;
+            // sleep(1) ;
+            // volatile int spin ;
+            // for (spin = 0; spin<1000; ++spin) {
+            //    spin = spin ;
+            // }
+            sched_yield() ;
+         }
+#endif
+
+         RangeSegment* isetSeg = 
+            static_cast<RangeSegment*>(ncis.getSegment(isi));
+
+         segTmp->setBegin(isetSeg->getBegin()) ;
+         segTmp->setEnd(isetSeg->getEnd()) ;
+         segTmp->setPrivate(isetSeg->getPrivate()) ;
+
+         loop_body(&is_tmp) ;
+
+#if 0 // RDH  TO FIX
+         if (task->semaphoreReloadValue() != 0) {
+            task->semaphoreValue() = task->semaphoreReloadValue() ;
+         }
+
+         if (task->numDepTasks() != 0) {
+            for (int ii = 0; ii < task->numDepTasks(); ++ii) {
+               // Alternateively, we could get the return value of this call
+               // and actively launch the task if we are the last depedent 
+               // task. In that case, we would not need the semaphore spin 
+               // loop above.
+               int seg = task->depTaskNum(ii) ;
+               DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
+               __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+            }
+         }
+#endif
+
+      } // loop over index set segments
+
+   } // end omp parallel region
+
+}
+
+
+////////////////////////////////////////////////////////////////////////////
+/// Jeff's "reducer" project...
+////////////////////////////////////////////////////////////////////////////
 template <typename T>
 RAJA_INLINE
 void atomicAdd(T &accum, T value) {
@@ -1523,9 +1590,6 @@ void atomicAdd(T &accum, T value) {
    accum += value ;
 }
 
-////////////////////////////////////////////////////////////////////////////
-/// Jeff's "reducer" project...
-////////////////////////////////////////////////////////////////////////////
 class ReduceSum {
 public:
    ReduceSum(double *var) : m_var(var)

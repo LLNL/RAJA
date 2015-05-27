@@ -1213,6 +1213,47 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 }
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Special task-graph segment iteration using sequential segment 
+ *         iteration loop (no dependency graph needed). Individual segment 
+ *         execution is defined in loop body.
+ *
+ *         NOTE: IndexSet must contain only RangeSegments.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(seq_taskgraph_segit,
+                     const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+   const int num_seg = ncis.getNumSegments();
+
+   /* Create a temporary IndexSet with one Segment */
+   IndexSet is_tmp;
+   is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+
+   RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      RangeSegment* isetSeg = 
+         static_cast<RangeSegment*>(ncis.getSegment(isi));
+
+      segTmp->setBegin(isetSeg->getBegin()) ;
+      segTmp->setEnd(isetSeg->getEnd()) ;
+      segTmp->setPrivate(isetSeg->getPrivate()) ;
+
+      loop_body(&is_tmp) ;
+
+   } // loop over index set segments
+}
+
+
 }  // closing brace for RAJA namespace
 
 
