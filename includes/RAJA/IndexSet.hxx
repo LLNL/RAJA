@@ -56,7 +56,7 @@ public:
    /// Nested class representing index set execution policy. 
    ///
    /// The first template parameter describes the policy for iterating
-   /// over segments.  The second describes the execution policy for 
+   /// over segments.  The second describes the policy for executing
    /// each segment.
    ///
    template< typename SEG_ITER_POLICY_T,
@@ -71,6 +71,9 @@ public:
    ///
    typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
+
+//@{
+//!  @name Constructor and destructor methods
 
    ///
    /// Construct empty index set
@@ -97,6 +100,11 @@ public:
    ///
    void swap(IndexSet& other);
 
+//@}
+
+
+//@{
+//!  @name Segment insertion and accessor methods
 
    ///
    /// Return true if given segment is valid for this IndexSet class; 
@@ -196,6 +204,12 @@ public:
       return &(m_segments[i]);
    }
 
+//@}
+
+
+//@{
+//!  @name IndexSet segment subsetting methods (views ranges)
+
    ///
    /// Return a new IndexSet object that contains the subset of
    /// segments in this IndexSet with ids in the interval [begin, end).
@@ -222,10 +236,41 @@ public:
    /// will not own any of its segments.
    ///
    /// The object must provide methods begin(), end(), and its
-   /// iterator type must de-reference to an  integral value.
+   /// iterator type must de-reference to an integral value.
    ///
    template< typename T> 
    IndexSet* createView(const T& segIds) const;
+
+   
+   ///
+   /// Set [begin, end) interval of segment ids identified by
+   /// given interval id.
+   ///
+   /// For example, this method can be used to assign an interval of 
+   /// segments to be processed by a given thread.
+   ///
+   void setSegmentInterval(int interval_id, int begin, int end);
+
+   ///
+   /// Get lower bound or upper bound of [begin, end) interval of segment 
+   /// ids identified by given interval id.
+   ///
+   /// Notes: No error-checking on interval id.
+   ///
+   int getSegmentIntervalBegin(int interval_id) const {
+      return m_seg_interval_begin[interval_id];
+   }
+   ///
+   int getSegmentIntervalEnd(int interval_id) const {
+      return m_seg_interval_end[interval_id];
+   }
+   
+
+//@}
+
+
+//@{
+//!  @name Private data set/get methods
 
    ///
    /// Retrieve pointer to private data. Must be cast to proper type by user.
@@ -239,6 +284,12 @@ public:
    /// NOTE: Caller retains ownership of data object.
    ///
    void setPrivate(void *ptr) { m_private = ptr ; }
+
+//@}
+
+
+//@{
+//!  @name Segment dependency methods
 
    ///
    /// Return true if dependencyGraphFinalize() method has been called 
@@ -268,6 +319,9 @@ public:
    /// This method should be called after all such data has been set.
    ///
    void dependencyGraphFinalize() { m_dep_graph_set = true; }
+
+//@}
+
 
    ///
    /// Print index set data, including segments, to given output stream.
@@ -313,6 +367,12 @@ private:
    /// Collection of IndexSet segment info objects.
    ///
    RAJAVec<IndexSetSegInfo> m_segments;
+
+   ///
+   /// Vectors holding user defined segment intervals; each is [begin, end).
+   ///
+   RAJAVec<int> m_seg_interval_begin;
+   RAJAVec<int> m_seg_interval_end;
 
    ///
    /// Pointer for holding arbitrary data associated with index set.
