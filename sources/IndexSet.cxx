@@ -187,6 +187,24 @@ IndexSet* IndexSet::createView(const int* segIds, int len) const
 /*
 *************************************************************************
 *
+* Set [begin, end) interval of segment ids.
+*
+*************************************************************************
+*/
+void IndexSet::setSegmentInterval(int interval_id, int begin, int end)
+{
+   while ( m_seg_interval_begin.size() < interval_id+1 ) {
+      m_seg_interval_begin.push_back(UndefinedValue);
+      m_seg_interval_end.push_back(UndefinedValue);
+   }
+   m_seg_interval_begin[interval_id] = begin; 
+   m_seg_interval_end[interval_id]   = end; 
+}
+
+
+/*
+*************************************************************************
+*
 * Create dependency graph node objects (with default state) for segments.
 *
 *************************************************************************
