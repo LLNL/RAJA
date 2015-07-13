@@ -44,6 +44,7 @@ struct seq_segit {};
 struct omp_parallel_for_segit {};
 struct omp_parallel_segit {};
 struct omp_taskgraph_segit {};
+struct omp_taskgraph_interval_segit {};
 
 struct cilk_for_segit {};
 
@@ -69,6 +70,7 @@ struct seq_segit {};
 struct omp_parallel_for_segit {};
 struct omp_parallel_segit {};
 struct omp_taskgraph_segit {};
+struct omp_taskgraph_interval_segit {};
 
 #endif   // end  GNU compilers.....
 
@@ -91,6 +93,7 @@ struct seq_segit {};
 struct omp_parallel_for_segit {};
 struct omp_parallel_segit {};
 struct omp_taskgraph_segit {};
+struct omp_taskgraph_interval_segit {};
 
 #endif   // end  xlc v12 compiler on bgq
 
@@ -112,6 +115,7 @@ struct seq_segit {};
 struct omp_parallel_for_segit {};
 struct omp_parallel_segit {};
 struct omp_taskgraph_segit {};
+struct omp_taskgraph_interval_segit {};
 
 #endif   // end  CLANG compilers.....
 
