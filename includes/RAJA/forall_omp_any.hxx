@@ -1628,6 +1628,103 @@ void forall_segments(omp_taskgraph_segit,
 }
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Special task-graph segment iteration using OpenMP parallel region
+ *         around segment iteration loop and explicit task dependency graph. 
+ *         Individual segment execution is defined in loop body.
+ *
+ *         This method differs from the preceding one in that this one 
+ *         has each OpenMP thread working on a set of segments defined by a
+ *         contiguous interval of segment ids in the index set.
+ *
+ *         This method assumes that a task dependency graph has been
+ *         properly set up for each segment in the index set. It also 
+ *         assumes that the segment interval for each thread has been defined.
+ *
+ *         NOTE: IndexSet must contain only RangeSegments.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(omp_taskgraph_interval_segit,
+                     const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+   const int num_seg = ncis.getNumSegments();
+
+#pragma omp parallel
+   {
+      int tid = omp_get_thread_num() ;
+
+      /* Create a temporary IndexSet with one Segment */
+      IndexSet is_tmp;
+      is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+
+      RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+
+      const int tbegin = ncis.getSegmentIntervalBegin(tid);
+      const int tend   = ncis.getSegmentIntervalEnd(tid);
+
+      for ( int isi = tbegin; isi < tend; ++isi ) {
+
+        IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
+        DepGraphNode* task  = seg_info->getDepGraphNode();
+
+         //
+         // This is declared volatile to prevent compiler from
+         // optimizing the while loop (into an if-statement, for example).
+         // It may not be able to see that the value accessed through
+         // the method call will be changed at the end of the for-loop
+         // from another executing thread.
+         //
+         volatile int* semVal = &(task->semaphoreValue());
+
+         while (*semMem != 0) {
+            /* spin or (better) sleep here */ ;
+            // printf("%d ", *semMem) ;
+            // sleep(1) ;
+            // volatile int spin ;
+            // for (spin = 0; spin<1000; ++spin) {
+            //    spin = spin ;
+            // }
+            sched_yield() ;
+         }
+
+         RangeSegment* isetSeg = 
+            static_cast<RangeSegment*>(ncis.getSegment(isi));
+
+         segTmp->setBegin(isetSeg->getBegin()) ;
+         segTmp->setEnd(isetSeg->getEnd()) ;
+         segTmp->setPrivate(isetSeg->getPrivate()) ;
+
+         loop_body(&is_tmp) ;
+
+         if (task->semaphoreReloadValue() != 0) {
+            task->semaphoreValue() = task->semaphoreReloadValue() ;
+         }
+
+         if (task->numDepTasks() != 0) {
+            for (int ii = 0; ii < task->numDepTasks(); ++ii) {
+               // Alternateively, we could get the return value of this call
+               // and actively launch the task if we are the last depedent 
+               // task. In that case, we would not need the semaphore spin 
+               // loop above.
+               int seg = task->depTaskNum(ii) ;
+               DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
+               __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+            }
+         }
+
+      } // loop over interval segments
+
+   } // end omp parallel region
+}
+
+
 ////////////////////////////////////////////////////////////////////////////
 /// Jeff's "reducer" project...
 ////////////////////////////////////////////////////////////////////////////
