@@ -1277,7 +1277,7 @@ void CalcPositionForNodes(Domain &domain, const Real_t dt, Index_t numNode)
 RAJA_STORAGE
 void LagrangeNodal(Domain& domain)
 {
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
    Domain_member fieldData[6] ;
 #endif
 
@@ -1289,7 +1289,7 @@ void LagrangeNodal(Domain& domain)
   CalcForceForNodes(domain);
 
 #if USE_MPI  
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
@@ -1304,7 +1304,7 @@ void LagrangeNodal(Domain& domain)
 
    CalcPositionForNodes( domain, delt, domain.numNode() );
 #if USE_MPI
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
   fieldData[0] = &Domain::x ;
   fieldData[1] = &Domain::y ;
   fieldData[2] = &Domain::z ;
@@ -2618,7 +2618,7 @@ void CalcTimeConstraintsForElems(Domain& domain) {
 RAJA_STORAGE
 void LagrangeLeapFrog(Domain& domain)
 {
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    Domain_member fieldData[6] ;
 #endif
 
@@ -2627,7 +2627,7 @@ void LagrangeLeapFrog(Domain& domain)
    LagrangeNodal(domain);
 
 
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
 #endif
 
    /* calculate element quantities (i.e. velocity gradient & q), and update
@@ -2635,7 +2635,7 @@ void LagrangeLeapFrog(Domain& domain)
    LagrangeElements(domain, domain.numElem());
 
 #if USE_MPI   
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
@@ -2656,7 +2656,7 @@ void LagrangeLeapFrog(Domain& domain)
    CalcTimeConstraintsForElems(domain);
 
 #if USE_MPI   
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    CommSyncPosVel(domain) ;
 #endif
 #endif   
