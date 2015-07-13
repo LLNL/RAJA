@@ -151,72 +151,72 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
-      m_x.resize(numNode);  // coordinates
-      m_y.resize(numNode);
-      m_z.resize(numNode);
+      m_x.reserve(numNode);  // coordinates
+      m_y.reserve(numNode);
+      m_z.reserve(numNode);
 
-      m_xd.resize(numNode); // velocities
-      m_yd.resize(numNode);
-      m_zd.resize(numNode);
+      m_xd.reserve(numNode); // velocities
+      m_yd.reserve(numNode);
+      m_zd.reserve(numNode);
 
-      m_xdd.resize(numNode); // accelerations
-      m_ydd.resize(numNode);
-      m_zdd.resize(numNode);
+      m_xdd.reserve(numNode); // accelerations
+      m_ydd.reserve(numNode);
+      m_zdd.reserve(numNode);
 
-      m_fx.resize(numNode);  // forces
-      m_fy.resize(numNode);
-      m_fz.resize(numNode);
+      m_fx.reserve(numNode);  // forces
+      m_fy.reserve(numNode);
+      m_fz.reserve(numNode);
 
-      m_nodalMass.resize(numNode);  // mass
+      m_nodalMass.reserve(numNode);  // mass
    }
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
-      m_nodelist.resize(8*numElem);
+      m_nodelist.reserve(8*numElem);
 
       // elem connectivities through face
-      m_lxim.resize(numElem);
-      m_lxip.resize(numElem);
-      m_letam.resize(numElem);
-      m_letap.resize(numElem);
-      m_lzetam.resize(numElem);
-      m_lzetap.resize(numElem);
+      m_lxim.reserve(numElem);
+      m_lxip.reserve(numElem);
+      m_letam.reserve(numElem);
+      m_letap.reserve(numElem);
+      m_lzetam.reserve(numElem);
+      m_lzetap.reserve(numElem);
 
-      m_elemBC.resize(numElem);
+      m_elemBC.reserve(numElem);
 
-      m_e.resize(numElem);
-      m_p.resize(numElem);
+      m_e.reserve(numElem);
+      m_p.reserve(numElem);
 
-      m_q.resize(numElem);
-      m_ql.resize(numElem);
-      m_qq.resize(numElem);
+      m_q.reserve(numElem);
+      m_ql.reserve(numElem);
+      m_qq.reserve(numElem);
 
-      m_v.resize(numElem);
+      m_v.reserve(numElem);
 
-      m_volo.resize(numElem);
-      m_delv.resize(numElem);
-      m_vdov.resize(numElem);
+      m_volo.reserve(numElem);
+      m_delv.reserve(numElem);
+      m_vdov.reserve(numElem);
 
-      m_arealg.resize(numElem);
+      m_arealg.reserve(numElem);
 
-      m_ss.resize(numElem);
+      m_ss.reserve(numElem);
 
-      m_elemMass.resize(numElem);
+      m_elemMass.reserve(numElem);
 
-      m_vnew.resize(numElem) ;
+      m_vnew.reserve(numElem) ;
    }
 
    void AllocateGradients(Int_t numElem, Int_t allElem)
    {
       // Position gradients
-      m_delx_xi.resize(numElem) ;
-      m_delx_eta.resize(numElem) ;
-      m_delx_zeta.resize(numElem) ;
+      m_delx_xi.reserve(numElem) ;
+      m_delx_eta.reserve(numElem) ;
+      m_delx_zeta.reserve(numElem) ;
 
       // Velocity gradients
-      m_delv_xi.resize(allElem) ;
-      m_delv_eta.resize(allElem);
-      m_delv_zeta.resize(allElem) ;
+      m_delv_xi.reserve(allElem) ;
+      m_delv_eta.reserve(allElem);
+      m_delv_zeta.reserve(allElem) ;
    }
 
    void DeallocateGradients()
@@ -232,9 +232,9 @@ class Domain {
 
    void AllocateStrains(Int_t numElem)
    {
-      m_dxx.resize(numElem) ;
-      m_dyy.resize(numElem) ;
-      m_dzz.resize(numElem) ;
+      m_dxx.reserve(numElem) ;
+      m_dyy.reserve(numElem) ;
+      m_dzz.reserve(numElem) ;
    }
 
    void DeallocateStrains()
