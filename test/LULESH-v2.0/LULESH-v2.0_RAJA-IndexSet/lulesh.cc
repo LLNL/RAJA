@@ -2653,8 +2653,11 @@ int main(int argc, char *argv[])
    gettimeofday(&start, NULL) ;
 #endif
 //debug to see region sizes
-//   for(Int_t i = 0; i < locDom->numReg(); i++)
-//      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
+// for(Int_t i = 0; i < locDom->numReg(); i++) {
+//    std::cout << "region " << i + 1<< " size = " << locDom->regElemSize(i) << std::endl;
+//    RAJA::forall<mat_exec_policy>(locDom->getRegionISet(i), [=] (int idx) { printf("%d ", idx) ; }) ;
+//    printf("\n\n") ;
+// }
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
       TimeIncrement(*locDom) ;
