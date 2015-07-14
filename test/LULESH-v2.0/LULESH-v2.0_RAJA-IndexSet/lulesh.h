@@ -437,10 +437,11 @@ class Domain {
 
   private:
 
-   void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
+   void BuildMeshTopology(Int_t edgeNodes, Int_t edgeElems);
+   void BuildMeshCoordinates(Int_t nx, Int_t edgeNodes);
    void SetupThreadSupportStructures();
    void CreateMeshIndexSets();
-   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
+   void CreateRegionIndexSets(Int_t nreg, Int_t balance, Index_t **perm);
    void CreateSymmetryIndexSets(Int_t edgeNodes);
    void SetupCommBuffers(Int_t edgeNodes);
    void SetupElementConnectivities(Int_t edgeElems);

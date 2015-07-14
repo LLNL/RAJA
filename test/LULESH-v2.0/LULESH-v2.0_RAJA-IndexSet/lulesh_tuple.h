@@ -420,14 +420,15 @@ class Domain {
 
   private:
 
-   void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
+   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
+   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
    void SetupThreadSupportStructures();
    void CreateMeshIndexSets();
-   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void CreateSymmetryIndexSets(Int_t edgeNodes);
-   void SetupCommBuffers(Int_t edgeNodes);
-   void SetupElementConnectivities(Int_t edgeElems);
-   void SetupBoundaryConditions(Int_t edgeElems);
+   void CreateRegionIndexSets(Int_t nreg, Int_t balance, Index_t **perm);
+   void CreateSymmetryIndexSets(Index_t edgeNodes);
+   void SetupCommBuffers(Index_t edgeNodes);
+   void SetupElementConnectivities(Index_t edgeElems);
+   void SetupBoundaryConditions(Index_t edgeElems);
 
    //
    // IMPLEMENTATION

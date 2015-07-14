@@ -56,6 +56,9 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 ##
 include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
+SILO_INCDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/include
+SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
+
 
 ##
 ## Options to turn on/off MPI and OpenMP
@@ -69,7 +72,7 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -DLULESH_LIST_INDEXSET=1 -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
@@ -78,11 +81,11 @@ LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
 default: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh2.0_RAJA-ISet.exe
+	$(CXX_COMPILE) -I${SILO_INCDIR} -DVIZ_MESH $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so -o lulesh2.0_RAJA-ISet.exe
 
 ## Uncomment these lines to generate an executable to run...
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
-%.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cxx ; $(CXX_COMPILE) -I${SILO_INCDIR} -DVIZ_MESH -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cc ; $(CXX_COMPILE) -I${SILO_INCDIR} -DVIZ_MESH -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
