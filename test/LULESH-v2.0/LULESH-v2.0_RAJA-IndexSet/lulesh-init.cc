@@ -266,8 +266,10 @@ Domain::~Domain()
    delete [] m_nodeElemStart;
    delete [] m_nodeElemCornerList;
    delete [] m_regElemSize;
-   for (Index_t i=0 ; i<numReg() ; ++i) {
-     delete [] m_regElemlist[i];
+   if (numReg() != 1) {
+      for (Index_t i=0 ; i<numReg() ; ++i) {
+        delete [] m_regElemlist[i];
+      }
    }
    delete [] m_regElemlist;
    
