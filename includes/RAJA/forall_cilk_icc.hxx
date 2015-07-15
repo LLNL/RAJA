@@ -77,7 +77,7 @@ void forall_Icount(cilk_for_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = end - begin + 1;
+   const Index_type loop_end = end - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -131,7 +131,7 @@ void forall_Icount(cilk_for_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
-   const Index_type loop_end = iseg.getEnd() - begin + 1;
+   const Index_type loop_end = iseg.getEnd() - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -381,7 +381,7 @@ void forall_Icount(cilk_for_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = (end-begin)/stride + 1;
+   const Index_type loop_end = (end-begin)/stride;
 
    RAJA_FT_BEGIN ;
 
@@ -437,7 +437,7 @@ void forall_Icount(cilk_for_exec,
 {
    const Index_type begin    = iseg.getBegin();
    const Index_type stride   = iseg.getStride();
-   const Index_type loop_end = (iseg.getEnd()-begin)/stride + 1;
+   const Index_type loop_end = (iseg.getEnd()-begin)/stride;
 
    RAJA_FT_BEGIN ;
 
