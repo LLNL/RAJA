@@ -76,7 +76,7 @@ void forall_Icount(seq_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = end - begin + 1;
+   const Index_type loop_end = end - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -132,7 +132,7 @@ void forall_Icount(seq_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
-   const Index_type loop_end = iseg.getEnd() - iseg.getBegin() + 1;
+   const Index_type loop_end = iseg.getEnd() - iseg.getBegin();
 
    RAJA_FT_BEGIN ;
 
@@ -358,7 +358,7 @@ void forall_Icount(seq_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = (end-begin)/stride + 1;
+   const Index_type loop_end = (end-begin)/stride;
 
    RAJA_FT_BEGIN ;
 
