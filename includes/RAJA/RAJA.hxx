@@ -77,6 +77,13 @@
 #endif
 
 
+#if defined(RAJA_USE_CUDA)
+
+#include "forall_cuda.hxx"
+
+#endif
+
+
 //
 // All platforms must support sequential execution.  
 //
