@@ -26,7 +26,7 @@
 
 namespace RAJA {
 
-#if 1 // RDH 
+#if 0 // RDH 
 /*!
  ******************************************************************************
  *
@@ -62,7 +62,6 @@ private:
    Index_type m_begin;
    Index_type m_end;
 };
-#endif
 
 /*!
  ******************************************************************************
@@ -202,6 +201,7 @@ private:
    std::vector<PartPair> m_indexsets;
 
 }; 
+#endif
 
 
 /*!
@@ -212,6 +212,7 @@ private:
  *
  ******************************************************************************
  */
+#if 0 // RDH
 template <typename TRAVERSE_T, typename LOOP_BODY>
 void IndexSet_forall(TRAVERSE_T traversal,
             const HybridIndexSet& is, LOOP_BODY loop_body)
@@ -248,7 +249,64 @@ void IndexSet_forall(TRAVERSE_T traversal,
 
    } // iterate over parts of hybrid index set
 }
+#else
+template <typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void IndexSet_forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+             const IndexSet& iset,
+             LOOP_BODY loop_body )
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
 
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall(SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall(SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall(SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+}
+#endif
+
+#if 0 // RDH
 template <typename TRAVERSE_T, typename LOOP_BODY>
 void IndexSet_forall_minloc(TRAVERSE_T traversal,
                    const HybridIndexSet& is,
@@ -287,6 +345,68 @@ void IndexSet_forall_minloc(TRAVERSE_T traversal,
       }  // switch ( is_pair.first ) 
    } // iterate over parts of hybrid index set
 }
+#else
+template <typename SEG_EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void IndexSet_forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                    const IndexSet& iset,
+                    T* min, Index_type *loc,
+                    LOOP_BODY loop_body)
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_minloc(SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               min, loc,
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_minloc(SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               min, loc,
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_minloc(SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               min, loc,
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+}
+#endif
 
 /*!
  ******************************************************************************

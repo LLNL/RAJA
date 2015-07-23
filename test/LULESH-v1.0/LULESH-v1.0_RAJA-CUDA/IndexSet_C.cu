@@ -17,6 +17,8 @@
 
 namespace RAJA {
 
+#if 0 // RDH
+
 /*
 *************************************************************************
 *
@@ -261,5 +263,7 @@ void HybridIndexSet::addUnstructuredIndices(const Index_type* indx, Index_type l
 
    m_len += new_is->getLength();
 }
+
+#endif
 
 }  // closing brace for RAJA namespace

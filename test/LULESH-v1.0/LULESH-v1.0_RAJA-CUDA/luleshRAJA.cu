@@ -138,11 +138,24 @@ real10 FABS(real10 arg) { return fabsl(arg) ; }
 #define IS_ORDERING 1
 #endif
 
+#if 0 // RDH
+#define LULESH_INDEXSET RAJA::HybridIndexSet
+#else
+#define LULESH_INDEXSET RAJA::IndexSet
+#endif
+
 #if defined(RAJA_USE_CUDA)
 
+#if 0  // RDH
 #define node_policy RAJA::cuda_exec
 #define elem_policy RAJA::cuda_exec
 #define  mat_policy RAJA::cuda_exec
+#else
+typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> node_policy;
+typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> elem_policy;
+typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> mat_policy;
+typedef RAJA::cuda_exec range_policy;
+#endif
 
 #elif defined(WITHOUT_OMP)
 
@@ -159,16 +172,13 @@ real10 FABS(real10 arg) { return fabsl(arg) ; }
 #endif // WITHOUT_OMP
 
 
-#define LULESH_INDEXSET RAJA::HybridIndexSet
-
 #ifdef LULESH_FT
 #include <unistd.h>
 #include <signal.h>
 
 /* fault_type:   == 0 no fault, < 0 unrecoverable, > 0 recoverable */
 volatile int fault_type = 0 ;
-static struct sigaction sigalrmact ;
-
+hh: Command not found.
 static void simulate_fault(int sig)
 {
    /* 10% chance of unrecoverable fault */
@@ -1445,7 +1455,7 @@ void ApplyAccelerationBoundaryConditionsForNodes(Real_p xdd, Real_p ydd,
   /*  !!! Interesting FT discussion here -- not converted !!! */
   /* What if the array index is corrupted? Out of bounds? */
 
-  RAJA::forall<node_policy>(int(0), int(numNodeBC), [=] CUDA_DEVICE (int i) {
+  RAJA::forall<range_policy>(int(0), int(numNodeBC), [=] CUDA_DEVICE (int i) {
      xdd[symmX[i]] = Real_t(0.0) ;
      ydd[symmY[i]] = Real_t(0.0) ;
      zdd[symmZ[i]] = Real_t(0.0) ;
@@ -2553,7 +2563,7 @@ void UpdateVolumesForElems(Real_p vnew, Real_p v,
                            Real_t v_cut, Index_t length)
 {
    if (length != 0) {
-      RAJA::forall<elem_policy>( int(0), int(length), [=] CUDA_DEVICE (int i) {
+      RAJA::forall<range_policy>( int(0), int(length), [=] CUDA_DEVICE (int i) {
          Real_t tmpV = vnew[i] ;
 
          if ( FABS(tmpV - Real_t(1.0)) < v_cut )
@@ -3075,8 +3085,13 @@ int main(int argc, char *argv[])
    /* Create domain IndexSets */
 
    /* always leave the nodes in a canonical ordering */
+#if 0 // RDH
    domain.domNodeList = new RAJA::HybridIndexSet() ;
    domain.domNodeList->addRangeIndices(0, domNodes) ;
+#else
+   domain.domNodeList = new RAJA::IndexSet() ;
+   domain.domNodeList->push_back( RAJA::RangeSegment(0, domNodes) ) ;
+#endif
 
    /* Indexset ordering mode for elements:
       1 = canonical ordering
@@ -3085,8 +3100,13 @@ int main(int argc, char *argv[])
       4 = lock-free tiled ordering
    */
 
+#if 0 // RDH
    domain.domElemList = new RAJA::HybridIndexSet() ;
    domain.matElemList = new RAJA::HybridIndexSet() ;
+#else
+   domain.domElemList = new RAJA::IndexSet() ;
+   domain.matElemList = new RAJA::IndexSet() ;
+#endif
 
    const Index_t xtile = 4 ;
    const Index_t ytile = 4 ;
@@ -3096,10 +3116,10 @@ int main(int argc, char *argv[])
       default:
       case 1:
       {
-         domain.domElemList->addRangeIndices(0, domElems) ;
+         domain.domElemList->push_back( RAJA::RangeSegment(0, domElems) );
 
          /* Create a material IndexSet (entire domain same material for now) */
-         domain.matElemList->addRangeIndices(0, domElems) ;
+         domain.matElemList->push_back( RAJA::RangeSegment(0, domElems) );
       }
       break ;
 
@@ -3127,8 +3147,13 @@ int main(int argc, char *argv[])
                         }
                      }
                   }
+#if 0 // RDH
                   domain.domElemList->addUnstructuredIndices(tileIdx, tileSize);
                   domain.matElemList->addUnstructuredIndices(tileIdx, tileSize);
+#else
+                  domain.domElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
+                  domain.matElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
+#endif
                }
             }
          }
@@ -3164,8 +3189,13 @@ int main(int argc, char *argv[])
                      }
                   }
                   Index_t tileEnd = tileBegin + tileSize ;
+#if 0 // RDH 
                   domain.domElemList->addRangeIndices(tileBegin, tileEnd);
                   domain.matElemList->addRangeIndices(tileBegin, tileEnd);
+#else
+                  domain.domElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
+                  domain.matElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
+#endif
                   tileBegin = tileEnd ;
                }
             }
