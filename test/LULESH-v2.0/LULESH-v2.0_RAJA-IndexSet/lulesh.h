@@ -628,7 +628,8 @@ void ParseCommandLineOptions(int argc, char *argv[],
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Domain& locDom,
                                Int_t nx,
-                               Int_t numRanks);
+                               Int_t numRanks,
+                               Index_t *perm);
 
 // lulesh-viz
 void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
