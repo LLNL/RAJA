@@ -1585,9 +1585,9 @@ void forall_segments(omp_taskgraph_segit,
          //
          volatile int* semVal = &(task->semaphoreValue());
 
-         while (*semMem != 0) {
+         while (*semVal != 0) {
             /* spin or (better) sleep here */ ;
-            // printf("%d ", *semMem) ;
+            // printf("%d ", *semVal) ;
             // sleep(1) ;
             // volatile int spin ;
             // for (spin = 0; spin<1000; ++spin) {
@@ -1683,9 +1683,9 @@ void forall_segments(omp_taskgraph_interval_segit,
          //
          volatile int* semVal = &(task->semaphoreValue());
 
-         while (*semMem != 0) {
+         while (*semVal != 0) {
             /* spin or (better) sleep here */ ;
-            // printf("%d ", *semMem) ;
+            // printf("%d ", *semVal) ;
             // sleep(1) ;
             // volatile int spin ;
             // for (spin = 0; spin<1000; ++spin) {
