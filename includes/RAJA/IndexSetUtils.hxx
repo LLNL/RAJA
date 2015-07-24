@@ -19,7 +19,7 @@
 
 #include "int_datatypes.hxx"
 
-#include "forall_seq_any.hxx"
+#include "forall_seq.hxx"
 
 #include "RAJAVec.hxx"
 
