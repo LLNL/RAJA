@@ -44,6 +44,9 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
+#
+# This is needed, or else the code dies with a bus error. Why???
+#
 LULESH_OPTS += -DRAJA_SYNC
 
 
@@ -57,7 +60,7 @@ CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
-TESTOBJS = IndexSet_C.o luleshRAJA.o $(RAJAOBJS)
+TESTOBJS = luleshRAJA.o $(RAJAOBJS)
 
 lulesh: $(TESTOBJS) 
 	$(CXX_COMPILE) $(TESTOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-CUDA.exe
