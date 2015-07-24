@@ -120,6 +120,14 @@ struct omp_taskgraph_interval_segit {};
 #endif   // end  CLANG compilers.....
 
 
+#if defined(RAJA_USE_CUDA)
+//
+// Segment exec policies
+//
+struct cuda_exec {};
+#endif
+
+
 }  // closing brace for RAJA namespace
 
 
