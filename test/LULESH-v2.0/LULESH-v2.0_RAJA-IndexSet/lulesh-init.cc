@@ -54,6 +54,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
+   Index_t *perm = 0 ;
    this->cost() = cost;
 
    m_tp       = tp ;
@@ -86,6 +87,86 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    SetupCommBuffers(edgeNodes);
 
+   BuildMeshTopology(edgeNodes, edgeElems);
+
+   BuildMeshCoordinates(nx, edgeNodes);
+
+   // Setup index sets for nodes and elems 
+   CreateMeshIndexSets();
+
+   // Setup symmetry nodesets
+   CreateSymmetryIndexSets(edgeNodes);
+
+   // Setup element connectivities
+   SetupElementConnectivities(edgeElems);
+
+   // Setup symmetry planes and free surface boundary arrays
+   SetupBoundaryConditions(edgeElems);
+
+   // Setup region index sets. For now, these are constant sized
+   // throughout the run, but could be changed every cycle to 
+   // simulate effects of ALE on the lagrange solver
+   CreateRegionIndexSets(nr, balance, &perm);
+
+   /* find element zero index */
+   Index_t initEnergyElemIdx = 0 ;
+
+   /* assign each material to a contiguous range of elements */
+   if (perm != 0) {
+      /* permute nodelist connectivity */
+      {
+         Index_t tmp[8*numElem()] ;
+         for (Index_t i=0; i<numElem(); ++i) {
+            Index_t *localNode = nodelist(perm[i]) ;
+            for (Index_t j=0; j<8; ++j) {
+               tmp[i*8+j] = localNode[j] ;
+            }
+         }
+         memcpy(nodelist(0), tmp, 8*sizeof(Index_t)*numElem()) ;
+      }
+
+      /* permute lxim, lxip, letam, letap, lzetam, lzetap */
+      {
+         Index_t tmp[6*numElem()] ;
+         Index_t iperm[numElem()] ; /* inverse permutation */
+
+         for (Index_t i=0; i<numElem(); ++i) {
+            iperm[perm[i]] = i ;
+         }
+         for (Index_t i=0; i<numElem(); ++i) {
+            tmp[i*6+0] = iperm[lxim(perm[i])] ;
+            tmp[i*6+1] = iperm[lxip(perm[i])] ;
+            tmp[i*6+2] = iperm[letam(perm[i])] ;
+            tmp[i*6+3] = iperm[letap(perm[i])] ;
+            tmp[i*6+4] = iperm[lzetam(perm[i])] ;
+            tmp[i*6+5] = iperm[lzetap(perm[i])] ;
+         }
+         for (Index_t i=0; i<numElem(); ++i) {
+            lxim(i) = tmp[i*6+0] ;
+            lxip(i) = tmp[i*6+1] ;
+            letam(i) = tmp[i*6+2] ;
+            letap(i) = tmp[i*6+3] ;
+            lzetam(i) = tmp[i*6+4] ;
+            lzetap(i) = tmp[i*6+5] ;
+         }
+
+         initEnergyElemIdx = iperm[0] ;
+      }
+      /* permute elemBC */
+      {
+         Int_t tmp[numElem()] ;
+         for (Index_t i=0; i<numElem(); ++i) {
+            tmp[i] = elemBC(perm[i]) ;
+         }
+         for (Index_t i=0; i<numElem(); ++i) {
+            elemBC(i) = tmp[i] ;
+         }
+      }
+
+      delete [] perm ;
+      perm = 0 ;
+   }
+
    // Basic Field Initialization 
    for (Index_t i=0; i<numElem(); ++i) {
       e(i) =  Real_t(0.0) ;
@@ -115,28 +196,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       nodalMass(i) = Real_t(0.0) ;
    }
 
-   BuildMesh(nx, edgeNodes, edgeElems);
-
 #if USE_OMP
    SetupThreadSupportStructures();
 #endif
-
-   // Setup index sets for nodes and elems 
-   CreateMeshIndexSets();
-
-   // Setup region index sets. For now, these are constant sized
-   // throughout the run, but could be changed every cycle to 
-   // simulate effects of ALE on the lagrange solver
-   CreateRegionIndexSets(nr, balance);
-
-   // Setup symmetry nodesets
-   CreateSymmetryIndexSets(edgeNodes);
-
-   // Setup element connectivities
-   SetupElementConnectivities(edgeElems);
-
-   // Setup symmetry planes and free surface boundary arrays
-   SetupBoundaryConditions(edgeElems);
 
 
    // Setup defaults
@@ -189,7 +251,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    if (m_rowLoc + m_colLoc + m_planeLoc == 0) {
       // Dump into the first zone (which we know is in the corner)
       // of the domain that sits at the origin
-      e(0) = einit;
+      e(initEnergyElemIdx) = einit;
    }
    //set initial deltatime base on analytic CFL calculation
    deltatime() = (Real_t(.5)*cbrt(volo(0)))/sqrt(Real_t(2.0)*einit);
@@ -204,8 +266,10 @@ Domain::~Domain()
    delete [] m_nodeElemStart;
    delete [] m_nodeElemCornerList;
    delete [] m_regElemSize;
-   for (Index_t i=0 ; i<numReg() ; ++i) {
-     delete [] m_regElemlist[i];
+   if (numReg() != 1) {
+      for (Index_t i=0 ; i<numReg() ; ++i) {
+        delete [] m_regElemlist[i];
+      }
    }
    delete [] m_regElemlist;
    
@@ -218,7 +282,34 @@ Domain::~Domain()
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
+Domain::BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems)
+{
+  // embed hexehedral elements in nodal point lattice 
+  Index_t zidx = 0 ;
+  Index_t nidx = 0 ;
+  for (Index_t plane=0; plane<edgeElems; ++plane) {
+    for (Index_t row=0; row<edgeElems; ++row) {
+      for (Index_t col=0; col<edgeElems; ++col) {
+        Index_t *localNode = nodelist(zidx) ;
+        localNode[0] = nidx                                       ;
+        localNode[1] = nidx                                   + 1 ;
+        localNode[2] = nidx                       + edgeNodes + 1 ;
+        localNode[3] = nidx                       + edgeNodes     ;
+        localNode[4] = nidx + edgeNodes*edgeNodes                 ;
+        localNode[5] = nidx + edgeNodes*edgeNodes             + 1 ;
+        localNode[6] = nidx + edgeNodes*edgeNodes + edgeNodes + 1 ;
+        localNode[7] = nidx + edgeNodes*edgeNodes + edgeNodes     ;
+        ++zidx ;
+        ++nidx ;
+      }
+      ++nidx ;
+    }
+    nidx += edgeNodes ;
+  }
+}
+////////////////////////////////////////////////////////////////////////////////
+void
+Domain::BuildMeshCoordinates(Index_t nx, Index_t edgeNodes)
 {
   Index_t meshEdgeElems = m_tp*nx ;
 
@@ -244,29 +335,6 @@ Domain::BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems)
     tz = Real_t(1.125)*Real_t(m_planeLoc*nx+plane+1)/Real_t(meshEdgeElems) ;
   }
 
-
-  // embed hexehedral elements in nodal point lattice 
-  Index_t zidx = 0 ;
-  nidx = 0 ;
-  for (Index_t plane=0; plane<edgeElems; ++plane) {
-    for (Index_t row=0; row<edgeElems; ++row) {
-      for (Index_t col=0; col<edgeElems; ++col) {
-        Index_t *localNode = nodelist(zidx) ;
-        localNode[0] = nidx                                       ;
-        localNode[1] = nidx                                   + 1 ;
-        localNode[2] = nidx                       + edgeNodes + 1 ;
-        localNode[3] = nidx                       + edgeNodes     ;
-        localNode[4] = nidx + edgeNodes*edgeNodes                 ;
-        localNode[5] = nidx + edgeNodes*edgeNodes             + 1 ;
-        localNode[6] = nidx + edgeNodes*edgeNodes + edgeNodes + 1 ;
-        localNode[7] = nidx + edgeNodes*edgeNodes + edgeNodes     ;
-        ++zidx ;
-        ++nidx ;
-      }
-      ++nidx ;
-    }
-    nidx += edgeNodes ;
-  }
 }
 
 
@@ -342,7 +410,7 @@ Domain::SetupThreadSupportStructures()
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-Domain::SetupCommBuffers(Int_t edgeNodes)
+Domain::SetupCommBuffers(Index_t edgeNodes)
 {
   // allocate a buffer large enough for nodal ghost data 
   Index_t maxEdgeSize = MAX(this->sizeX(), MAX(this->sizeY(), this->sizeZ()))+1 ;
@@ -403,7 +471,7 @@ Domain::CreateMeshIndexSets()
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
+Domain::CreateRegionIndexSets(Int_t nr, Int_t balance, Index_t **perm)
 {
 #if USE_MPI   
    Index_t myRank;
@@ -425,7 +493,9 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
          this->regNumList(nextIndex) = 1;
          nextIndex++;
       }
-      regElemSize(0) = 0;
+      regElemSize(0) = numElem();
+      m_domRegISet.resize(numReg());
+      m_domRegISet[0].push_back( RAJA::RangeSegment(0, regElemSize(0)) ) ;
    }
    //If we have more than one region distribute the elements.
    else {
@@ -493,52 +563,65 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       } 
 
       delete [] regBinEnd;
-   }
-   // Convert regNumList to region index sets
-   // First, count size of each region 
-   for (Index_t i=0 ; i<numElem() ; ++i) {
-      int r = this->regNumList(i)-1; // region index == regnum-1
-      regElemSize(r)++;
-   }
-   // Second, allocate each region index set
-   for (Index_t i=0 ; i<numReg() ; ++i) {
-      m_regElemlist[i] = new Index_t[regElemSize(i)];
-      regElemSize(i) = 0;
-   }
-   // Third, fill index sets
-   for (Index_t i=0 ; i<numElem() ; ++i) {
-      Index_t r = regNumList(i)-1;       // region index == regnum-1
-      Index_t regndx = regElemSize(r)++; // Note increment
-      regElemlist(r,regndx) = i;
-   }
 
-   // Create HybridISets for regions
-   m_domRegISet.resize(numReg());
-   for (int r = 0; r < numReg(); ++r) {
-      m_domRegISet[r].push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) );
-   }
+#if !defined(LULESH_LIST_INDEXSET)
+      *perm = new Index_t[numElem()] ;
+#endif
+
+      // Convert regNumList to region index sets
+      // First, count size of each region 
+      for (Index_t i=0 ; i<numElem() ; ++i) {
+         int r = this->regNumList(i)-1; // region index == regnum-1
+         regElemSize(r)++;
+      }
+      // Second, allocate each region index set
+      for (Index_t i=0 ; i<numReg() ; ++i) {
+         m_regElemlist[i] = new Index_t[regElemSize(i)];
+         regElemSize(i) = 0;
+      }
+      // Third, fill index sets
+      for (Index_t i=0 ; i<numElem() ; ++i) {
+         Index_t r = regNumList(i)-1;       // region index == regnum-1
+         Index_t regndx = regElemSize(r)++; // Note increment
+         regElemlist(r,regndx) = i;
+      }
+
+      // Create HybridISets for regions
+      m_domRegISet.resize(numReg());
+      int elemCount = 0 ;
+      for (int r = 0; r < numReg(); ++r) {
+         if (*perm != 0) {
+            memcpy( &(*perm)[elemCount], regElemlist(r), sizeof(Index_t)*regElemSize(r) ) ;
+            m_domRegISet[r].push_back( RAJA::RangeSegment(elemCount, elemCount+regElemSize(r)) );
+            elemCount += regElemSize(r) ;
+         }
+         else {
+            m_domRegISet[r].push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) );
+         }
+      }
 
 #if 0 // Check correctness of index sets
-   for (int r = 0; r < numReg(); ++r) {
-      bool good = true;
-      if ( regElemSize(r) != m_domRegISet[r].getLength() ) good = false;
-      if (good) {
-         Index_t* regList = regElemlist(r);
-         int i = 0; 
-         RAJA::forall< LULESH_ISET::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> >(m_domRegISet[r], [&] (int idx) { 
-            good &= (idx == regList[i]);
-            i++;
-         } );
+      for (int r = 0; r < numReg(); ++r) {
+         bool good = true;
+         if ( regElemSize(r) != m_domRegISet[r].getLength() ) good = false;
+         if (good) {
+            Index_t* regList = regElemlist(r);
+            int i = 0; 
+            RAJA::forall< LULESH_ISET::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> >(m_domRegISet[r], [&] (int idx) { 
+               good &= (idx == regList[i]);
+               i++;
+            } );
+         }
+         printf("\nRegion %d index set is %s\n", r, (good ? "GOOD" : "BAD")); 
       }
-      printf("\nRegion %d index set is %s\n", r, (good ? "GOOD" : "BAD")); 
-   }
 #endif
+   }
    
 }
 
 /////////////////////////////////////////////////////////////
 void 
-Domain::CreateSymmetryIndexSets(Int_t edgeNodes)
+Domain::CreateSymmetryIndexSets(Index_t edgeNodes)
 {
   if (m_planeLoc == 0) {
     m_domZSymNodeISet.push_back( RAJA::RangeSegment(0, edgeNodes*edgeNodes) );
@@ -573,7 +656,7 @@ Domain::CreateSymmetryIndexSets(Int_t edgeNodes)
 
 /////////////////////////////////////////////////////////////
 void
-Domain::SetupElementConnectivities(Int_t edgeElems)
+Domain::SetupElementConnectivities(Index_t edgeElems)
 {
    lxim(0) = 0 ;
    for (Index_t i=1; i<numElem(); ++i) {
@@ -603,7 +686,7 @@ Domain::SetupElementConnectivities(Int_t edgeElems)
 
 /////////////////////////////////////////////////////////////
 void
-Domain::SetupBoundaryConditions(Int_t edgeElems) 
+Domain::SetupBoundaryConditions(Index_t edgeElems) 
 {
   Index_t ghostIdx[6] ;  // offsets to ghost locations
 

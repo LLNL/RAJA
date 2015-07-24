@@ -1246,7 +1246,7 @@ void CalcPositionForNodes(Domain &domain, const Real_t dt)
 RAJA_STORAGE
 void LagrangeNodal(Domain& domain)
 {
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
    Domain_member fieldData[6] ;
 #endif
 
@@ -1258,7 +1258,7 @@ void LagrangeNodal(Domain& domain)
   CalcForceForNodes(domain);
 
 #if USE_MPI  
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
@@ -1273,7 +1273,7 @@ void LagrangeNodal(Domain& domain)
 
    CalcPositionForNodes( domain, delt );
 #if USE_MPI
-#ifdef SEDOV_SYNC_POS_VEL_EARLY
+#if defined(SEDOV_SYNC_POS_VEL_EARLY)
   fieldData[0] = &Domain::x ;
   fieldData[1] = &Domain::y ;
   fieldData[2] = &Domain::z ;
@@ -2526,7 +2526,7 @@ void CalcTimeConstraintsForElems(Domain& domain) {
 RAJA_STORAGE
 void LagrangeLeapFrog(Domain& domain)
 {
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    Domain_member fieldData[6] ;
 #endif
 
@@ -2535,7 +2535,7 @@ void LagrangeLeapFrog(Domain& domain)
    LagrangeNodal(domain);
 
 
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
 #endif
 
    /* calculate element quantities (i.e. velocity gradient & q), and update
@@ -2543,7 +2543,7 @@ void LagrangeLeapFrog(Domain& domain)
    LagrangeElements(domain, domain.numElem());
 
 #if USE_MPI   
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    CommRecv(domain, MSG_SYNC_POS_VEL, 6,
             domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
             false, false) ;
@@ -2564,7 +2564,7 @@ void LagrangeLeapFrog(Domain& domain)
    CalcTimeConstraintsForElems(domain);
 
 #if USE_MPI   
-#ifdef SEDOV_SYNC_POS_VEL_LATE
+#if defined(SEDOV_SYNC_POS_VEL_LATE)
    CommSyncPosVel(domain) ;
 #endif
 #endif   
@@ -2653,8 +2653,11 @@ int main(int argc, char *argv[])
    gettimeofday(&start, NULL) ;
 #endif
 //debug to see region sizes
-//   for(Int_t i = 0; i < locDom->numReg(); i++)
-//      std::cout << "region" << i + 1<< "size" << locDom->regElemSize(i) <<std::endl;
+// for(Int_t i = 0; i < locDom->numReg(); i++) {
+//    std::cout << "region " << i + 1<< " size = " << locDom->regElemSize(i) << std::endl;
+//    RAJA::forall<mat_exec_policy>(locDom->getRegionISet(i), [=] (int idx) { printf("%d ", idx) ; }) ;
+//    printf("\n\n") ;
+// }
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
       TimeIncrement(*locDom) ;
@@ -2689,7 +2692,16 @@ int main(int argc, char *argv[])
    }
    
    if ((myRank == 0) && (opts.quiet == 0)) {
-      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
+      Index_t *perm = new Index_t[locDom->getElemISet().getLength()] ;
+
+      /* the creation of this vector takes time, even though its parallel */
+      RAJA::forall_Icount<elem_exec_policy>(locDom->getElemISet(), [=] (int i, int elem) {
+         perm[elem] = i ;
+      } ) ;
+
+      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks, perm);
+
+      delete [] perm ;
    }
 
    delete locDom;

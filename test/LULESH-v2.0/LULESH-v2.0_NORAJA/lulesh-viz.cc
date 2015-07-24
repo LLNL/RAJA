@@ -4,7 +4,7 @@
 #include <math.h>
 #include "lulesh.h"
 
-#ifdef VIZ_MESH
+#if defined(VIZ_MESH)
 
 #ifdef __cplusplus
   extern "C" {
