@@ -139,7 +139,7 @@ void forall_minloc(cuda_exec,
 /*!
  ******************************************************************************
  *
- * \brief  General CUDA kernal forall method template over indirection array.
+ * \brief  General CUDA kernal forall method template for indirection array.
  *
  ******************************************************************************
  */
@@ -157,7 +157,7 @@ __global__ void forall_kernel(LOOP_BODY loop_body,
 /*!
  ******************************************************************************
  *
- * \brief  Forall execution over indirection array via CUDA kernal launch.
+ * \brief  Forall execution for indirection array via CUDA kernal launch.
  *
  ******************************************************************************
  */
@@ -207,8 +207,7 @@ __global__ void forall_minloc_kernel(LOOP_BODY loop_body,
 /*!
  ******************************************************************************
  *
- * \brief  Forall min-loc reduction over indirection array via 
- *         CUDA kernal launch.
+ * \brief  Forall min-loc reduction for indirection array via CUDA kernal launch.
  *
  ******************************************************************************
  */

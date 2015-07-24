@@ -1008,9 +1008,11 @@ void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                loop_body
             );
             break;
@@ -1018,9 +1020,11 @@ void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg); 
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                loop_body
             );
             break;
@@ -1028,9 +1032,11 @@ void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(), 
                loop_body
             );
             break;
@@ -1097,9 +1103,11 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                loop_body
             );
             break;
@@ -1107,9 +1115,11 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                loop_body
             );
             break;
@@ -1117,9 +1127,11 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                loop_body
             );
             break;
@@ -1183,9 +1195,11 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                icount,
                loop_body
             );
@@ -1194,9 +1208,11 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                icount,
                loop_body
             );
@@ -1205,9 +1221,11 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                icount,
                loop_body
             );
@@ -1261,9 +1279,11 @@ void forall_minloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                &min_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1273,9 +1293,11 @@ void forall_minloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                &min_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1285,9 +1307,11 @@ void forall_minloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                &min_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1352,9 +1376,11 @@ void forall_maxloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                &max_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1364,9 +1390,11 @@ void forall_maxloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                &max_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1376,9 +1404,11 @@ void forall_maxloc( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                &max_tmp[omp_get_thread_num()], 
                &loc_tmp[omp_get_thread_num()],
                loop_body
@@ -1441,9 +1471,11 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                &sum_tmp[omp_get_thread_num()],
                loop_body
             );
@@ -1452,9 +1484,11 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg); 
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                &sum_tmp[omp_get_thread_num()],
                loop_body
             );
@@ -1463,9 +1497,11 @@ void forall_sum( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                &sum_tmp[omp_get_thread_num()],
                loop_body
             );

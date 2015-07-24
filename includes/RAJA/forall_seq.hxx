@@ -903,9 +903,11 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                loop_body
             );
             break;
@@ -913,9 +915,11 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                loop_body
             );
             break;
@@ -923,9 +927,11 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                loop_body
             );
             break;
@@ -971,9 +977,11 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                icount,
                loop_body
             );
@@ -982,9 +990,11 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                icount,
                loop_body
             );
@@ -993,9 +1003,11 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_Icount(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                icount,
                loop_body
             );
@@ -1038,9 +1050,11 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                min, loc,
                loop_body
             );
@@ -1049,9 +1063,11 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                min, loc,
                loop_body
             );
@@ -1060,9 +1076,11 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_minloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                min, loc,
                loop_body
             );
@@ -1105,9 +1123,11 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                max, loc,
                loop_body
             );
@@ -1116,9 +1136,11 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                max, loc,
                loop_body
             );
@@ -1127,9 +1149,11 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_maxloc(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                max, loc,
                loop_body
             );
@@ -1172,9 +1196,11 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       switch ( segtype ) {
 
          case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(),
                sum,
                loop_body
             );
@@ -1183,9 +1209,11 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const RangeStrideSegment*>(iseg)),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                sum,
                loop_body
             );
@@ -1194,9 +1222,11 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 #endif
 
          case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
             forall_sum(
                SEG_EXEC_POLICY_T(),
-               *(static_cast<const ListSegment*>(iseg)),
+               tseg->getIndex(), tseg->getLength(),
                sum,
                loop_body
             );
