@@ -150,57 +150,57 @@ class Domain {
 
    void AllocateNodePersistent(Int_t numNode) // Node-centered
    {
-      m_coord.resize(numNode);  // coordinates
+      m_coord.reserve(numNode);  // coordinates
 
-      m_vel.resize(numNode); // velocities
+      m_vel.reserve(numNode); // velocities
 
-      m_acc.resize(numNode); // accelerations
+      m_acc.reserve(numNode); // accelerations
 
-      m_force.resize(numNode);  // forces
+      m_force.reserve(numNode);  // forces
 
-      m_nodalMass.resize(numNode);  // mass
+      m_nodalMass.reserve(numNode);  // mass
    }
 
    void AllocateElemPersistent(Int_t numElem) // Elem-centered
    {
-      m_nodelist.resize(8*numElem);
+      m_nodelist.reserve(8*numElem);
 
       // elem connectivities through face
-      m_faceToElem.resize(numElem);
+      m_faceToElem.reserve(numElem);
 
-      m_elemBC.resize(numElem);
+      m_elemBC.reserve(numElem);
 
-      m_e.resize(numElem);
+      m_e.reserve(numElem);
 
-      m_pq.resize(numElem);
+      m_pq.reserve(numElem);
 
-      m_qlqq.resize(numElem);
+      m_qlqq.reserve(numElem);
 
-      m_vol.resize(numElem);
+      m_vol.reserve(numElem);
 
-      m_delv.resize(numElem);
-      m_vdov.resize(numElem);
+      m_delv.reserve(numElem);
+      m_vdov.reserve(numElem);
 
-      m_arealg.resize(numElem);
+      m_arealg.reserve(numElem);
 
-      m_ss.resize(numElem);
+      m_ss.reserve(numElem);
 
-      m_elemMass.resize(numElem);
+      m_elemMass.reserve(numElem);
 
-      m_vnew.resize(numElem) ;
+      m_vnew.reserve(numElem) ;
    }
 
    void AllocateGradients(Int_t numElem, Int_t allElem)
    {
       // Position gradients
-      m_delx_xi.resize(numElem) ;
-      m_delx_eta.resize(numElem) ;
-      m_delx_zeta.resize(numElem) ;
+      m_delx_xi.reserve(numElem) ;
+      m_delx_eta.reserve(numElem) ;
+      m_delx_zeta.reserve(numElem) ;
 
       // Velocity gradients
-      m_delv_xi.resize(allElem) ;
-      m_delv_eta.resize(allElem);
-      m_delv_zeta.resize(allElem) ;
+      m_delv_xi.reserve(allElem) ;
+      m_delv_eta.reserve(allElem);
+      m_delv_zeta.reserve(allElem) ;
    }
 
    void DeallocateGradients()
@@ -216,9 +216,9 @@ class Domain {
 
    void AllocateStrains(Int_t numElem)
    {
-      m_dxx.resize(numElem) ;
-      m_dyy.resize(numElem) ;
-      m_dzz.resize(numElem) ;
+      m_dxx.reserve(numElem) ;
+      m_dyy.reserve(numElem) ;
+      m_dzz.reserve(numElem) ;
    }
 
    void DeallocateStrains()
@@ -420,14 +420,15 @@ class Domain {
 
   private:
 
-   void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
+   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
+   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
    void SetupThreadSupportStructures();
    void CreateMeshIndexSets();
-   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void CreateSymmetryIndexSets(Int_t edgeNodes);
-   void SetupCommBuffers(Int_t edgeNodes);
-   void SetupElementConnectivities(Int_t edgeElems);
-   void SetupBoundaryConditions(Int_t edgeElems);
+   void CreateRegionIndexSets(Int_t nreg, Int_t balance, Index_t **perm);
+   void CreateSymmetryIndexSets(Index_t edgeNodes);
+   void SetupCommBuffers(Index_t edgeNodes);
+   void SetupElementConnectivities(Index_t edgeElems);
+   void SetupBoundaryConditions(Index_t edgeElems);
 
    //
    // IMPLEMENTATION
@@ -614,7 +615,8 @@ void ParseCommandLineOptions(int argc, char *argv[],
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Domain& locDom,
                                Int_t nx,
-                               Int_t numRanks);
+                               Int_t numRanks,
+                               Index_t *perm);
 
 // lulesh-viz
 void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
