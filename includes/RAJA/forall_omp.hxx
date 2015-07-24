@@ -14,8 +14,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_omp_any_HXX
-#define RAJA_forall_omp_any_HXX
+#ifndef RAJA_forall_omp_HXX
+#define RAJA_forall_omp_HXX
 
 #include "config.hxx"
 

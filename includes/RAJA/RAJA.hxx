@@ -47,28 +47,28 @@
 
 #if defined(RAJA_COMPILER_ICC)
 
-#include "forall_simd_icc.hxx"
-#include "forall_omp_icc.hxx"
-#include "forall_cilk_icc.hxx"
+#include "forall_simd.hxx"
+#include "forall_omp.hxx"
+#include "forall_cilk.hxx"
 
 
 #elif defined(RAJA_COMPILER_GNU)
 
 
-#include "forall_simd_gnu.hxx"
-#include "forall_omp_gnu.hxx"
+#include "forall_simd.hxx"
+#include "forall_omp.hxx"
 
 
 #elif defined(RAJA_COMPILER_XLC12) 
 
-#include "forall_simd_xlc.hxx"
-#include "forall_omp_xlc.hxx"
+#include "forall_simd.hxx"
+#include "forall_omp.hxx"
 
 
 #elif defined(RAJA_COMPILER_CLANG)
 
-#include "forall_simd_clang.hxx"
-#include "forall_omp_clang.hxx"
+#include "forall_simd.hxx"
+#include "forall_omp.hxx"
 
 
 #else
@@ -91,7 +91,7 @@
 //       an index set which may require definitions in the above 
 //       headers for segment execution.
 //
-#include "forall_seq_any.hxx"
+#include "forall_seq.hxx"
 
 
 //

@@ -14,8 +14,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_cilk_icc_HXX
-#define RAJA_forall_cilk_icc_HXX
+#ifndef RAJA_forall_cilk_HXX
+#define RAJA_forall_cilk_HXX
 
 #include "config.hxx"
 
