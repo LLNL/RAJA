@@ -14,8 +14,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_any_HXX
-#define RAJA_forall_simd_any_HXX
+#ifndef RAJA_forall_simd_HXX
+#define RAJA_forall_simd_HXX
 
 #include "config.hxx"
 

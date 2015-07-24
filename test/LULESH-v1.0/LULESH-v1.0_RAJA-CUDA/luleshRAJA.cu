@@ -62,121 +62,34 @@ Additional BSD Notice
 
 */
 
-#include <cmath>
-#include <cstdio>
+#include <math.h>
+#include <stdio.h>
+#include <iostream>
 #include <cstdlib>
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hxx" 
 
-#include "RAJA/IndexSetBuilders.hxx"
-
-#include "Timer.hxx"
-
+#if defined(RAJA_USE_CUDA)
+#define CUDA_HOST_DEVICE __host__ __device__
+#define CUDA_DEVICE __device__
+#else
+#define CUDA_HOST_DEVICE 
+#define CUDA_DEVICE
+#endif
 
 /*
- ***********************************************
- * Set parameters that define how code will run.
- ***********************************************
- */
+#define RAJA_STORAGE static inline
+*/
+#define RAJA_STORAGE 
 
-//
-// Display simulation time and timestep during run.
-//
-const bool show_run_progress = true;
-
-//
-// Set stop time and time increment for run.
-//
-// The absolute value of lulesh_time_step sets the first time step increment.
-//   - If < 0, the CFL condition will be used to determine subsequent time
-//     step sizes (with some upper bound on the amount the timestep can grow).
-//   - If > 0, the time step will be fixed for the entire run.
-//
-const double lulesh_stop_time = 1.0e-2;
-const double lulesh_time_step = -1.0e-7;
-
-//
-// Set mesh size (physical domain size is fixed).
-//
-// Mesh will be lulesh_edge_elems^3.
-//
-const int lulesh_edge_elems = 45;
+//#define LULESH_SHOW_PROGRESS 0
+#define LULESH_SHOW_PROGRESS 1
 
 
-//
-//   Tiling mode.
-//
-enum TilingMode
-{
-   Canonical,       // canonical element ordering -- single range segment
-   Tiled_Index,     // canonical ordering, tiled using unstructured segments
-   Tiled_Order,     // elements permuted, tiled using range segments
-   Tiled_LockFree,  // tiled ordering, lock-free
-};
-//TilingMode lulesh_tiling_mode = Canonical;
-//TilingMode lulesh_tiling_mode = Tiled_Index;
-//TilingMode lulesh_tiling_mode = Tiled_Order;
-TilingMode lulesh_tiling_mode = Tiled_LockFree;
-
-//
-// Set number of tiles in each mesh direction for non-canonical oerderings.
-//
-const int lulesh_xtile = 2;
-const int lulesh_ytile = 2;
-const int lulesh_ztile = 2;
-
-//
-//   RAJA IndexSet type used in loop traversals.
-//
-//   Need to verify if this can be set to RangeSegment or ListSegment
-//   types. It may be useful to compare IndexSet performance to
-//   basic segment types; e.g.,
-//
-//     - Canonical ordering should be able to use IndexSet or
-//                                                RangeSegment.
-//     - Tiled_Index ordering should be able to use IndexSet or
-//                                                  ListSegment.
-//
-// NOTE: If this changes to non-index set (i.e., basic segment
-//       type such as RAJA::RangeSegment or RAJA::ListSegment),
-//       then execution policy types need to change. Also, methods
-//       where index sets are created need to change.
-//
-typedef RAJA::IndexSet LULESH_INDEXSET;
-
-//
-//   Policies for index set segment iteration and segment execution.
-//
-//   NOTE: Currently, we apply single policy across all loop patterns.
-//
-typedef RAJA::seq_segit IndexSet_Seg_Iter;
-
-//typedef RAJA::seq_exec Segment_Exec;
-typedef RAJA::simd_exec Segment_Exec;
-
-typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> minloc_exec_policy;
-typedef                                            Segment_Exec  range_exec_policy;
-
-
-//
-// use RAJA data types for loop operations using RAJA
-//
-typedef RAJA::Index_type  Index_t ; /* array subscript and loop index */
-typedef RAJA::Real_type   Real_t ;  /* floating point representation */
-typedef RAJA::Real_ptr    Real_p;
-typedef RAJA::const_Real_ptr   const_Real_p;
-typedef RAJA::Index_type* Index_p;
+enum { VolumeError = -1, QStopError = -2 } ;
 
 /****************************************************/
-/*                                                  */
 /* Allow flexibility for arithmetic representations */
-/*                                                  */
-/* Think about how to make this consistent w/RAJA   */
-/* type parameterization (above)!!                  */
-/*                                                  */
 /****************************************************/
 
 /* Could also support fixed point and interval arithmetic types */
@@ -184,25 +97,81 @@ typedef float        real4 ;
 typedef double       real8 ;
 typedef long double  real10 ;  /* 10 bytes on x86 */
 
+typedef int    Index_t ; /* array subscript and loop index */
+typedef real8  Real_t ;  /* floating point representation */
 typedef int    Int_t ;   /* integer representation */
 
-inline real4  SQRT(real4  arg) { return sqrtf(arg) ; }
-inline real8  SQRT(real8  arg) { return sqrt(arg) ; }
-inline real10 SQRT(real10 arg) { return sqrtl(arg) ; }
+typedef Real_t * Real_p ;
+typedef Index_t * Index_p ;
 
-inline real4  CBRT(real4  arg) { return cbrtf(arg) ; }
-inline real8  CBRT(real8  arg) { return cbrt(arg) ; }
-inline real10 CBRT(real10 arg) { return cbrtl(arg) ; }
+inline CUDA_DEVICE
+real4  SQRT(real4  arg) { return sqrtf(arg) ; }
+inline CUDA_DEVICE
+real8  SQRT(real8  arg) { return sqrt(arg) ; }
+inline CUDA_DEVICE
+real10 SQRT(real10 arg) { return sqrtl(arg) ; }
 
-inline real4  FABS(real4  arg) { return fabsf(arg) ; }
-inline real8  FABS(real8  arg) { return fabs(arg) ; }
-inline real10 FABS(real10 arg) { return fabsl(arg) ; }
+inline CUDA_DEVICE
+real4  CBRT(real4  arg) { return cbrtf(arg) ; }
+inline CUDA_DEVICE
+real8  CBRT(real8  arg) { return cbrt(arg) ; }
+inline CUDA_DEVICE
+real10 CBRT(real10 arg) { return cbrtl(arg) ; }
+
+inline CUDA_DEVICE
+real4  FABS(real4  arg) { return fabsf(arg) ; }
+inline CUDA_DEVICE
+real8  FABS(real8  arg) { return fabs(arg) ; }
+inline CUDA_DEVICE
+real10 FABS(real10 arg) { return fabsl(arg) ; }
+
+/*
+   Indexset ordering mode:
+   1 = canonical ordering
+   2 = canonical ordering, tiled
+   3 = tiled ordering
+   4 = lock-free tiled ordering
+*/
+
+#ifndef IS_ORDERING
+#define IS_ORDERING 1
+#endif
+
+#if defined(RAJA_USE_CUDA)
+
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> node_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> elem_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec> mat_policy;
+typedef RAJA::cuda_exec range_policy;
+
+#elif defined(WITHOUT_OMP)
+
+#define node_policy vectorized_traversal
+#define elem_policy vectorized_traversal
+#define  mat_policy vectorized_traversal
+
+#else // with omp
+
+#define node_policy omp_vectorized_traversal
+#define elem_policy omp_vectorized_traversal
+#define  mat_policy omp_vectorized_traversal
+
+#endif // WITHOUT_OMP
 
 
-#define RAJA_STORAGE static inline
+#ifdef LULESH_FT
+#include <unistd.h>
+#include <signal.h>
 
-enum { VolumeError = -1, QStopError = -2 } ;
-
+/* fault_type:   == 0 no fault, < 0 unrecoverable, > 0 recoverable */
+volatile int fault_type = 0 ;
+hh: Command not found.
+static void simulate_fault(int sig)
+{
+   /* 10% chance of unrecoverable fault */
+   fault_type = (rand() % 100) - 10 ;
+}
+#endif
 
 /*********************************/
 /* Data structure implementation */
@@ -214,8 +183,8 @@ enum { VolumeError = -1, QStopError = -2 } ;
 struct Domain {
    /* Elem-centered */
 
-   LULESH_INDEXSET *domElemList ;   /* elem indexset */
-   LULESH_INDEXSET *matElemList ;   /* material indexset */
+   RAJA::IndexSet *domElemList ;   /* elem indexset */
+   RAJA::IndexSet *matElemList ;   /* material indexset */
    Index_p nodelist ;     /* elemToNode connectivity */
 
    Index_p lxim ;         /* elem connectivity through face */
@@ -250,6 +219,7 @@ struct Domain {
    /* Elem temporaries */
 
    Real_p vnew ;          /* new relative volume -- temporary */
+   Real_p vnewc ; 
 
    Real_p delv_xi ;       /* velocity gradient -- temporary */
    Real_p delv_eta ;
@@ -265,7 +235,7 @@ struct Domain {
 
    /* Node-centered */
 
-   LULESH_INDEXSET *domNodeList ;   /* node indexset */
+   RAJA::IndexSet *domNodeList ;   /* node indexset */
 
    Real_p x ;             /* coordinates */
    Real_p y ;
@@ -285,6 +255,38 @@ struct Domain {
 
    Real_p nodalMass ;     /* mass */
 
+   /* Temporaries */
+
+   Real_p fx_elem ;
+   Real_p fy_elem ;
+   Real_p fz_elem ;
+
+   Real_p dvdx ;
+   Real_p dvdy ;
+   Real_p dvdz ;
+   Real_p x8n  ;
+   Real_p y8n  ;
+   Real_p z8n  ;
+
+   Real_p sigxx ;
+   Real_p sigyy ;
+   Real_p sigzz ;
+   Real_p determ ;
+
+   Real_p p_old ;
+   Real_p compression ;
+   Real_p compHalfStep ;
+   Real_p work ;
+   Real_p p_new ;
+   Real_p e_new ;
+   Real_p q_new ;
+   Real_p bvc ;
+   Real_p pbvc ;
+   Real_p pHalfStep ;
+
+   // OMP hack 
+   Index_p nodeElemStart ;
+   Index_p nodeElemCornerList ;
 
    /* Boundary nodesets */
 
@@ -333,6 +335,8 @@ struct Domain {
    Index_t numElem ;
 
    Index_t numNode ;
+
+   Index_t idx ; 	/* temp index for error checking */
 } ;
 
 
@@ -340,23 +344,31 @@ template <typename T>
 T *Allocate(size_t size)
 {
    T *retVal ;
+#if defined(RAJA_USE_CUDA)
+   if (cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) != cudaSuccess) {
+     std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+		<< __LINE__ << std::endl;
+      exit(1);
+    }
+#else   
    posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
+#endif   
    return retVal ;
-}
-
-void Release(Real_p ptr)
-{
-   if (ptr != NULL) {
-      free(ptr) ;
-      ptr = NULL ;
-   }
 }
 
 template <typename T>
 void Release(T **ptr)
 {
    if (*ptr != NULL) {
+#if defined(RAJA_USE_CUDA)
+      if (cudaFree(*ptr) != cudaSuccess) {
+      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+		<< __LINE__ << std::endl;
+      exit(1);
+      }
+#else
       free(*ptr) ;
+#endif      
       *ptr = NULL ;
    }
 }
@@ -365,7 +377,15 @@ template <typename T>
 void Release(T * __restrict__ *ptr)
 {
    if (*ptr != NULL) {
+#if defined(RAJA_USE_CUDA)
+    if (cudaFree(*ptr) != cudaSuccess) {
+      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+		<< __LINE__ << std::endl;
+      exit(1);
+    }
+#else
       free(*ptr) ;
+#endif      
       *ptr = NULL ;
    }
 }
@@ -450,22 +470,22 @@ void TimeIncrement(Domain *domain)
 RAJA_STORAGE
 void InitStressTermsForElems(Real_p p, Real_p q,
                              Real_p sigxx, Real_p sigyy, Real_p sigzz,
-                             LULESH_INDEXSET *domElemList)
+                             RAJA::IndexSet *domElemList)
 {
    //
    // pull in the stresses appropriate to the hydro integration
    //
-
-   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int idx) {
+   RAJA::forall<elem_policy>(*domElemList, [=] CUDA_DEVICE (int idx)   {
       sigxx[idx] = sigyy[idx] = sigzz[idx] =  - p[idx] - q[idx] ;
      }
    ) ;
 }
 
 RAJA_STORAGE
-void CalcElemShapeFunctionDerivatives( const_Real_p x,
-                                       const_Real_p y,
-                                       const_Real_p z,
+CUDA_DEVICE
+void CalcElemShapeFunctionDerivatives( Real_p const x,
+                                       Real_p const y,
+                                       Real_p const z,
                                        Real_t b[][8],
                                        Real_t* const volume
                                      )
@@ -553,6 +573,7 @@ void CalcElemShapeFunctionDerivatives( const_Real_p x,
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void SumElemFaceNormal(Real_t *normalX0, Real_t *normalY0, Real_t *normalZ0,
                        Real_t *normalX1, Real_t *normalY1, Real_t *normalZ1,
                        Real_t *normalX2, Real_t *normalY2, Real_t *normalZ2,
@@ -589,13 +610,14 @@ void SumElemFaceNormal(Real_t *normalX0, Real_t *normalY0, Real_t *normalZ0,
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void CalcElemNodeNormals(
                          Real_p pfx,
                          Real_p pfy,
                          Real_p pfz,
-                         const_Real_p x,
-                         const_Real_p y,
-                         const_Real_p z
+                         const Real_p x,
+                         const Real_p y,
+                         const Real_p z
                         )
 {
    for (Index_t i = 0 ; i < 8 ; ++i) {
@@ -648,6 +670,7 @@ void CalcElemNodeNormals(
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void SumElemStressesToNodeForces( const Real_t B[][8],
                                   const Real_t stress_xx,
                                   const Real_t stress_yy,
@@ -699,21 +722,22 @@ void SumElemStressesToNodeForces( const Real_t B[][8],
 }
 
 RAJA_STORAGE
-void IntegrateStressForElems( Index_p nodelist,
+void IntegrateStressForElems( Index_t numElem, Index_p nodelist,
                               Real_p x,  Real_p y,  Real_p z,
                               Real_p fx, Real_p fy, Real_p fz,
                               Real_p sigxx, Real_p sigyy, Real_p sigzz,
-                              Real_p determ, LULESH_INDEXSET *domElemList)
+                              Real_p determ, Index_p nodeElemStart,
+                              Index_p nodeElemCornerList,
+                              Real_p fx_elem, Real_p fy_elem, Real_p fz_elem,
+                              RAJA::IndexSet *domElemList,
+                              RAJA::IndexSet *domNodeList )
 {
   // loop over all elements
-  RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
+  RAJA::forall<elem_policy>(*domElemList, [=] CUDA_DEVICE (int k) {
     Real_t B[3][8] ;// shape function derivatives
     Real_t x_local[8] ;
     Real_t y_local[8] ;
     Real_t z_local[8] ;
-    Real_t fx_local[8] ;
-    Real_t fy_local[8] ;
-    Real_t fz_local[8] ;
 
     const Index_p elemNodes = &nodelist[8*k];
 
@@ -734,21 +758,32 @@ void IntegrateStressForElems( Index_p nodelist,
                          x_local, y_local, z_local );
 
     SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-                                 fx_local, fy_local, fz_local ) ;
+                                 &fx_elem[k*8], &fy_elem[k*8], &fz_elem[k*8]) ;
+   }
+  ) ;
+  
 
-    // copy nodal force contributions to global force arrray.
-    for( Index_t lnode=0 ; lnode<8 ; ++lnode )
-    {
-      Index_t gnode = elemNodes[lnode];
-      fx[gnode] += fx_local[lnode];
-      fy[gnode] += fy_local[lnode];
-      fz[gnode] += fz_local[lnode];
-    }
+  RAJA::forall<node_policy>(*domNodeList, [=] CUDA_DEVICE (int gnode) {
+     Index_t count = nodeElemStart[gnode+1] - nodeElemStart[gnode] ;
+     Index_t *cornerList = &nodeElemCornerList[nodeElemStart[gnode]] ;
+     Real_t fx_sum = Real_t(0.0) ;
+     Real_t fy_sum = Real_t(0.0) ;
+     Real_t fz_sum = Real_t(0.0) ;
+     for (Index_t i=0 ; i < count ; ++i) {
+        Index_t elem = cornerList[i] ;
+        fx_sum += fx_elem[elem] ;
+        fy_sum += fy_elem[elem] ;
+        fz_sum += fz_elem[elem] ;
+     }
+     fx[gnode] = fx_sum ;
+     fy[gnode] = fy_sum ;
+     fz[gnode] = fz_sum ;
    }
   ) ;
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void CollectDomainNodesToElemNodes(Real_p x, Real_p y, Real_p z,
                                    Index_p elemToNode,
                                    Real_p elemX,
@@ -795,6 +830,7 @@ void CollectDomainNodesToElemNodes(Real_p x, Real_p y, Real_p z,
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void VoluDer(const Real_t x0, const Real_t x1, const Real_t x2,
              const Real_t x3, const Real_t x4, const Real_t x5,
              const Real_t y0, const Real_t y1, const Real_t y2,
@@ -825,13 +861,14 @@ void VoluDer(const Real_t x0, const Real_t x1, const Real_t x2,
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void CalcElemVolumeDerivative(
                               Real_p dvdx,
                               Real_p dvdy,
                               Real_p dvdz,
-                              const_Real_p x,
-                              const_Real_p y,
-                              const_Real_p z
+                              const Real_p x,
+                              const Real_p y,
+                              const Real_p z
                              )
 {
    VoluDer(x[1], x[2], x[3], x[4], x[5], x[7],
@@ -869,6 +906,7 @@ void CalcElemVolumeDerivative(
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 void CalcElemFBHourglassForce(
                               Real_p xd, Real_p yd, Real_p zd,
                               Real_p hourgam0, Real_p hourgam1,
@@ -1055,6 +1093,8 @@ void CalcElemFBHourglassForce(
        hourgam7[i02] * h02 + hourgam7[i03] * h03);
 }
 
+#if !defined(RAJA_USE_CUDA)
+
 const Real_t ggamma[4][8] =
 {
    { Real_t( 1.), Real_t( 1.), Real_t(-1.), Real_t(-1.),
@@ -1071,16 +1111,25 @@ const Real_t ggamma[4][8] =
 
 } ;
 
+#endif
+
 
 RAJA_STORAGE
-void CalcFBHourglassForceForElems( Index_p nodelist,
+void CalcFBHourglassForceForElems( Index_t numElem, Index_t numNode,
+                                   Index_p nodelist,
                                    Real_p  ss, Real_p  elemMass,
                                    Real_p  xd, Real_p  yd, Real_p  zd,
                                    Real_p  fx, Real_p  fy, Real_p  fz,
                                    Real_p  determ,
                                    Real_p  x8n, Real_p  y8n, Real_p  z8n,
                                    Real_p  dvdx, Real_p  dvdy, Real_p  dvdz,
-                                   Real_t hourg, LULESH_INDEXSET *domElemList)
+                                   Real_t hourg, Index_p nodeElemStart,
+                                   Index_p nodeElemCornerList,
+                                   Real_p fx_elem,
+                                   Real_p fy_elem,
+                                   Real_p fz_elem,
+                                   RAJA::IndexSet *domElemList,
+                                   RAJA::IndexSet *domNodeList)
 {
    /*************************************************
     *
@@ -1092,14 +1141,33 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
 /*************************************************/
 /*    compute the hourglass modes */
 
-   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int i2) {
-      Real_t hgfx[8], hgfy[8], hgfz[8] ;
-
+   RAJA::forall<elem_policy>(*domElemList, [=] CUDA_DEVICE (int i2) {
       Real_t coefficient;
 
       Real_t hourgam0[4], hourgam1[4], hourgam2[4], hourgam3[4] ;
       Real_t hourgam4[4], hourgam5[4], hourgam6[4], hourgam7[4];
       Real_t xd1[8], yd1[8], zd1[8] ;
+
+#if defined(RAJA_USE_CUDA)
+      // use locally defined constants since cant access host variables
+      // in device code
+      const Real_t ggamma[4][8] =
+      {
+	{ Real_t( 1.), Real_t( 1.), Real_t(-1.), Real_t(-1.),
+	  Real_t(-1.), Real_t(-1.), Real_t( 1.), Real_t( 1.) },
+
+	{ Real_t( 1.), Real_t(-1.), Real_t(-1.), Real_t( 1.),
+	  Real_t(-1.), Real_t( 1.), Real_t( 1.), Real_t(-1.) },
+
+	{ Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.),
+	  Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) },
+
+	{ Real_t(-1.), Real_t( 1.), Real_t(-1.), Real_t( 1.),
+	  Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) }
+
+	} ;
+#endif
+
 
       Index_p elemToNode = &nodelist[8*i2];
       Index_t i3=8*i2;
@@ -1206,44 +1274,31 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
 
       CalcElemFBHourglassForce(xd1,yd1,zd1,
                       hourgam0,hourgam1,hourgam2,hourgam3,
-                      hourgam4,hourgam5,hourgam6,hourgam7,
-                      coefficient, hgfx, hgfy, hgfz);
-
-      fx[n0si2] += hgfx[0];
-      fy[n0si2] += hgfy[0];
-      fz[n0si2] += hgfz[0];
-
-      fx[n1si2] += hgfx[1];
-      fy[n1si2] += hgfy[1];
-      fz[n1si2] += hgfz[1];
-
-      fx[n2si2] += hgfx[2];
-      fy[n2si2] += hgfy[2];
-      fz[n2si2] += hgfz[2];
-
-      fx[n3si2] += hgfx[3];
-      fy[n3si2] += hgfy[3];
-      fz[n3si2] += hgfz[3];
-
-      fx[n4si2] += hgfx[4];
-      fy[n4si2] += hgfy[4];
-      fz[n4si2] += hgfz[4];
-
-      fx[n5si2] += hgfx[5];
-      fy[n5si2] += hgfy[5];
-      fz[n5si2] += hgfz[5];
-
-      fx[n6si2] += hgfx[6];
-      fy[n6si2] += hgfy[6];
-      fz[n6si2] += hgfz[6];
-
-      fx[n7si2] += hgfx[7];
-      fy[n7si2] += hgfy[7];
-      fz[n7si2] += hgfz[7];
+                      hourgam4,hourgam5,hourgam6,hourgam7, coefficient,
+                      &fx_elem[i3], &fy_elem[i3], &fz_elem[i3] );
     }
    ) ; 
 
+   
+   RAJA::forall<node_policy>(*domNodeList, [=] CUDA_DEVICE (int gnode) {
+      Index_t count = nodeElemStart[gnode+1] - nodeElemStart[gnode] ;
+      Index_t *cornerList = &nodeElemCornerList[nodeElemStart[gnode]] ;
+      Real_t fx_sum = Real_t(0.0) ;
+      Real_t fy_sum = Real_t(0.0) ;
+      Real_t fz_sum = Real_t(0.0) ;
+      for (Index_t i=0 ; i < count ; ++i) {
+         Index_t elem = cornerList[i] ;
+         fx_sum += fx_elem[elem] ;
+         fy_sum += fy_elem[elem] ;
+         fz_sum += fz_elem[elem] ;
+      }
+      fx[gnode] += fx_sum ;
+      fy[gnode] += fy_sum ;
+      fz[gnode] += fz_sum ;
+    }
+   ) ;
 }
+
 
 RAJA_STORAGE
 void CalcHourglassControlForElems(Domain *domain,
@@ -1251,61 +1306,52 @@ void CalcHourglassControlForElems(Domain *domain,
                                   Real_t hgcoef)
 {
    Index_t numElem = domain->numElem ;
-   Index_t numElem8 = numElem * 8 ;
-   Real_p dvdx = Allocate<Real_t>(numElem8) ;
-   Real_p dvdy = Allocate<Real_t>(numElem8) ;
-   Real_p dvdz = Allocate<Real_t>(numElem8) ;
-   Real_p x8n  = Allocate<Real_t>(numElem8) ;
-   Real_p y8n  = Allocate<Real_t>(numElem8) ;
-   Real_p z8n  = Allocate<Real_t>(numElem8) ;
 
    /* start loop over elements */
-   RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int idx) {
-      Real_t  x1[8],  y1[8],  z1[8] ;
-      Real_t pfx[8], pfy[8], pfz[8] ;
+   RAJA::forall<elem_policy>(*domain->domElemList, [=] CUDA_DEVICE (int idx) {
 
       Index_p elemToNode = &domain->nodelist[8*idx];
-      CollectDomainNodesToElemNodes(domain->x, domain->y, domain->z,
-                                    elemToNode, x1, y1, z1);
+      CollectDomainNodesToElemNodes(domain->x, domain->y, domain->z, elemToNode,
+                                    &domain->x8n[8*idx],
+                                    &domain->y8n[8*idx],
+                                    &domain->z8n[8*idx] );
 
-      CalcElemVolumeDerivative(pfx, pfy, pfz, x1, y1, z1);
-
-      /* load into temporary storage for FB Hour Glass control */
-      for(int ii=0;ii<8;++ii){
-         int jj=8*idx+ii;
-
-         dvdx[jj] = pfx[ii];
-         dvdy[jj] = pfy[ii];
-         dvdz[jj] = pfz[ii];
-         x8n[jj]  = x1[ii];
-         y8n[jj]  = y1[ii];
-         z8n[jj]  = z1[ii];
-      }
+      CalcElemVolumeDerivative(&domain->dvdx[8*idx],
+                               &domain->dvdy[8*idx],
+                               &domain->dvdz[8*idx],
+                               &domain->x8n[8*idx],
+                               &domain->y8n[8*idx],
+                               &domain->z8n[8*idx]);
 
       determ[idx] = domain->volo[idx] * domain->v[idx];
 
+#if !defined(RAJA_USE_CUDA) 
       /* Do a check for negative volumes */
       if ( domain->v[idx] <= Real_t(0.0) ) {
          exit(VolumeError) ;
       }
+#endif
+
     }
    ) ;
 
+   
    if ( hgcoef > Real_t(0.) ) {
-      CalcFBHourglassForceForElems( domain->nodelist,
+      CalcFBHourglassForceForElems( numElem, domain->numNode,
+                                    domain->nodelist,
                                     domain->ss, domain->elemMass,
                                     domain->xd, domain->yd, domain->zd,
                                     domain->fx, domain->fy, domain->fz,
-                                    determ, x8n, y8n, z8n, dvdx, dvdy, dvdz,
-                                    hgcoef, domain->domElemList) ;
+                                    determ,
+                                    domain->x8n, domain->y8n, domain->z8n,
+                                    domain->dvdx, domain->dvdy, domain->dvdz,
+                                    hgcoef, domain->nodeElemStart,
+                                    domain->nodeElemCornerList,
+                                    domain->fx_elem,
+                                    domain->fy_elem,
+                                    domain->fz_elem,
+                                    domain->domElemList, domain->domNodeList) ;
    }
-
-   Release(z8n) ;
-   Release(y8n) ;
-   Release(x8n) ;
-   Release(dvdz) ;
-   Release(dvdy) ;
-   Release(dvdx) ;
 
    return ;
 }
@@ -1316,49 +1362,53 @@ void CalcVolumeForceForElems(Domain *domain)
    Index_t numElem = domain->numElem ;
    if (numElem != 0) {
       Real_t  hgcoef = domain->hgcoef ;
-      Real_p sigxx  = Allocate<Real_t>(numElem) ;
-      Real_p sigyy  = Allocate<Real_t>(numElem) ;
-      Real_p sigzz  = Allocate<Real_t>(numElem) ;
-      Real_p determ = Allocate<Real_t>(numElem) ;
 
       /* Sum contributions to total stress tensor */
       InitStressTermsForElems(domain->p, domain->q,
-                              sigxx, sigyy, sigzz, domain->domElemList);
+                              domain->sigxx,
+                              domain->sigyy, domain->sigzz,
+                              domain->domElemList);
 
       // call elemlib stress integration loop to produce nodal forces from
       // material stresses.
-      IntegrateStressForElems( domain->nodelist,
+      IntegrateStressForElems( numElem, domain->nodelist,
                                domain->x, domain->y, domain->z,
                                domain->fx, domain->fy, domain->fz,
-                               sigxx, sigyy, sigzz, determ, domain->domElemList) ;
+                               domain->sigxx,
+                               domain->sigyy,
+                               domain->sigzz,
+                               domain->determ,
+                               domain->nodeElemStart,
+                               domain->nodeElemCornerList,
+                               domain->fx_elem,
+                               domain->fy_elem,
+                               domain->fz_elem,
+                               domain->domElemList, domain->domNodeList) ;
 
       // check for negative element volume
-      RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int k) {
-         if (determ[k] <= Real_t(0.0)) {
+#if !defined(RAJA_USE_CUDA)
+      RAJA::forall<elem_policy>(*domain->domElemList, [&] (int k) {
+         if (domain->determ[k] <= Real_t(0.0)) {
             exit(VolumeError) ;
          }
        }
       ) ;
-
-      CalcHourglassControlForElems(domain, determ, hgcoef) ;
-
-      Release(determ) ;
-      Release(sigzz) ;
-      Release(sigyy) ;
-      Release(sigxx) ;
+#endif
+      
+      CalcHourglassControlForElems(domain, domain->determ, hgcoef) ;
    }
 }
 
 RAJA_STORAGE
 void CalcForceForNodes(Domain *domain)
 {
-  RAJA::forall<node_exec_policy>(*domain->domNodeList, [&] (int i) {
+  RAJA::forall<node_policy>(*domain->domNodeList, [=] CUDA_DEVICE (int i) {
      domain->fx[i] = Real_t(0.0) ;
      domain->fy[i] = Real_t(0.0) ;
      domain->fz[i] = Real_t(0.0) ;
    }
   ) ;
-
+  
   /* Calcforce calls partial, force, hourq */
   CalcVolumeForceForElems(domain) ;
 
@@ -1370,9 +1420,10 @@ void CalcForceForNodes(Domain *domain)
 RAJA_STORAGE
 void CalcAccelerationForNodes(Real_p xdd, Real_p ydd, Real_p zdd,
                               Real_p fx, Real_p fy, Real_p fz,
-                              Real_p nodalMass, LULESH_INDEXSET *domNodeList)
+                              Real_p nodalMass, RAJA::IndexSet *domNodeList)
 {
-   RAJA::forall<node_exec_policy>(*domNodeList, [&] (int i) {
+  
+   RAJA::forall<node_policy>(*domNodeList, [=] CUDA_DEVICE (int i) {
       xdd[i] = fx[i] / nodalMass[i];
       ydd[i] = fy[i] / nodalMass[i];
       zdd[i] = fz[i] / nodalMass[i];
@@ -1383,50 +1434,53 @@ void CalcAccelerationForNodes(Real_p xdd, Real_p ydd, Real_p zdd,
 RAJA_STORAGE
 void ApplyAccelerationBoundaryConditionsForNodes(Real_p xdd, Real_p ydd,
                                                  Real_p zdd, Index_p symmX,
-                                                 Index_p symmY,
-                                                 Index_p symmZ, Index_t size)
+                                                 Index_p symmY, Index_p symmZ,
+                                                 Index_t size)
 {
   Index_t numNodeBC = (size+1)*(size+1) ;
 
-  RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [&] (int i) {
+  /*  !!! Interesting FT discussion here -- not converted !!! */
+  /* What if the array index is corrupted? Out of bounds? */
+
+  RAJA::forall<range_policy>(int(0), int(numNodeBC), [=] CUDA_DEVICE (int i) {
      xdd[symmX[i]] = Real_t(0.0) ;
      ydd[symmY[i]] = Real_t(0.0) ;
      zdd[symmZ[i]] = Real_t(0.0) ;
    }
   ) ;
+ 
 }
 
 RAJA_STORAGE
-void CalcVelocityForNodes(Real_p xd,  Real_p yd,  Real_p zd,
+void CalcVelocityForNodes(Index_t numNode, Real_p xd,  Real_p yd,  Real_p zd,
                           Real_p xdd, Real_p ydd, Real_p zdd,
                           const Real_t dt, const Real_t u_cut,
-                          LULESH_INDEXSET *domNodeList)
+                          RAJA::IndexSet *domNodeList)
 {
-   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
-     Real_t xdtmp, ydtmp, zdtmp ;
+   
+   RAJA::forall<node_policy>( *domNodeList, [=] CUDA_DEVICE (int i) {
 
-     xdtmp = xd[i] + xdd[i] * dt ;
+     Real_t xdtmp = xd[i] + xdd[i] * dt ;
      if( FABS(xdtmp) < u_cut ) xdtmp = Real_t(0.0);
      xd[i] = xdtmp ;
 
-     ydtmp = yd[i] + ydd[i] * dt ;
+     Real_t ydtmp = yd[i] + ydd[i] * dt ;
      if( FABS(ydtmp) < u_cut ) ydtmp = Real_t(0.0);
      yd[i] = ydtmp ;
 
-     zdtmp = zd[i] + zdd[i] * dt ;
+     Real_t zdtmp = zd[i] + zdd[i] * dt ;
      if( FABS(zdtmp) < u_cut ) zdtmp = Real_t(0.0);
      zd[i] = zdtmp ;
     }
    ) ;
-
 }
 
 RAJA_STORAGE
-void CalcPositionForNodes(Real_p x,  Real_p y,  Real_p z,
+void CalcPositionForNodes(Index_t numNode, Real_p x,  Real_p y,  Real_p z,
                           Real_p xd, Real_p yd, Real_p zd,
-                          const Real_t dt, LULESH_INDEXSET *domNodeList)
+                          const Real_t dt, RAJA::IndexSet *domNodeList)
 {
-   RAJA::forall<node_exec_policy>( *domNodeList, [&] (int i) {
+   RAJA::forall<node_policy>( *domNodeList, [=] CUDA_DEVICE (int i) {
      x[i] += xd[i] * dt ;
      y[i] += yd[i] * dt ;
      z[i] += zd[i] * dt ;
@@ -1451,13 +1505,15 @@ void LagrangeNodal(Domain *domain)
   ApplyAccelerationBoundaryConditionsForNodes(domain->xdd, domain->ydd,
                                               domain->zdd, domain->symmX,
                                               domain->symmY, domain->symmZ,
-                                              domain->sizeX);
+                                              domain->sizeX );
 
-  CalcVelocityForNodes( domain->xd,  domain->yd,  domain->zd,
+  CalcVelocityForNodes( domain->numNode,
+                        domain->xd,  domain->yd,  domain->zd,
                         domain->xdd, domain->ydd, domain->zdd,
                         delt, u_cut, domain->domNodeList) ;
 
-  CalcPositionForNodes( domain->x,  domain->y,  domain->z,
+  CalcPositionForNodes( domain->numNode,
+                        domain->x,  domain->y,  domain->z,
                         domain->xd, domain->yd, domain->zd,
                         delt, domain->domNodeList );
 
@@ -1465,6 +1521,7 @@ void LagrangeNodal(Domain *domain)
 }
 
 RAJA_STORAGE
+CUDA_HOST_DEVICE
 Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
                const Real_t x2, const Real_t x3,
                const Real_t x4, const Real_t x5,
@@ -1550,8 +1607,9 @@ Real_t CalcElemVolume( const Real_t x0, const Real_t x1,
 }
 
 RAJA_STORAGE
+CUDA_HOST_DEVICE
 Real_t CalcElemVolume(
-                       const_Real_p x, const_Real_p y, const_Real_p z
+                       const Real_p x, const Real_p y, const Real_p z
                      )
 {
 return CalcElemVolume( x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
@@ -1560,6 +1618,7 @@ return CalcElemVolume( x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7],
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 Real_t AreaFace( const Real_t x0, const Real_t x1,
                  const Real_t x2, const Real_t x3,
                  const Real_t y0, const Real_t y1,
@@ -1582,6 +1641,7 @@ Real_t AreaFace( const Real_t x0, const Real_t x1,
 }
 
 RAJA_STORAGE
+CUDA_DEVICE
 Real_t CalcElemCharacteristicLength( const Real_t x[8],
                                      const Real_t y[8],
                                      const Real_t z[8],
@@ -1592,32 +1652,33 @@ Real_t CalcElemCharacteristicLength( const Real_t x[8],
    a = AreaFace(x[0],x[1],x[2],x[3],
                 y[0],y[1],y[2],y[3],
                 z[0],z[1],z[2],z[3]) ;
-   charLength = std::max(a,charLength) ;
+		
+   charLength = a > charLength ? a : charLength;
 
    a = AreaFace(x[4],x[5],x[6],x[7],
                 y[4],y[5],y[6],y[7],
                 z[4],z[5],z[6],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = a > charLength ? a : charLength;
 
    a = AreaFace(x[0],x[1],x[5],x[4],
                 y[0],y[1],y[5],y[4],
                 z[0],z[1],z[5],z[4]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = a > charLength ? a : charLength;
 
    a = AreaFace(x[1],x[2],x[6],x[5],
                 y[1],y[2],y[6],y[5],
                 z[1],z[2],z[6],z[5]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = a > charLength ? a : charLength;
 
    a = AreaFace(x[2],x[3],x[7],x[6],
                 y[2],y[3],y[7],y[6],
                 z[2],z[3],z[7],z[6]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = a > charLength ? a : charLength;
 
    a = AreaFace(x[3],x[0],x[4],x[7],
                 y[3],y[0],y[4],y[7],
                 z[3],z[0],z[4],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = a > charLength ? a : charLength;
 
    charLength = Real_t(4.0) * volume / SQRT(charLength);
 
@@ -1625,6 +1686,7 @@ Real_t CalcElemCharacteristicLength( const Real_t x[8],
 }
 
 RAJA_STORAGE
+CUDA_DEVICE	
 void CalcElemVelocityGrandient( const Real_t* const xvel,
                                 const Real_t* const yvel,
                                 const Real_t* const zvel,
@@ -1694,10 +1756,10 @@ void CalcKinematicsForElems( Index_p nodelist,
                              Real_p dxx, Real_p dyy, Real_p dzz,
                              Real_p v, Real_p volo,
                              Real_p vnew, Real_p delv, Real_p arealg,
-                             Real_t deltaTime, LULESH_INDEXSET *domElemList )
+                             Real_t deltaTime, RAJA::IndexSet *domElemList )
 {
   // loop over all elements
-  RAJA::forall<elem_exec_policy>(*domElemList, [&] (int k) {
+  RAJA::forall<elem_policy>(*domElemList, [=] CUDA_DEVICE (int k) {
     Real_t B[3][8] ; /** shape function derivatives */
     Real_t D[6] ;
     Real_t x_local[8] ;
@@ -1769,10 +1831,6 @@ void CalcLagrangeElements(Domain *domain)
    if (numElem > 0) {
       const Real_t deltatime = domain->deltatime ;
 
-      domain->dxx  = Allocate<Real_t>(numElem) ; /* principal strains */
-      domain->dyy  = Allocate<Real_t>(numElem) ;
-      domain->dzz  = Allocate<Real_t>(numElem) ;
-
       CalcKinematicsForElems(domain->nodelist,
                              domain->x, domain->y, domain->z,
                              domain->xd, domain->yd, domain->zd,
@@ -1782,7 +1840,7 @@ void CalcLagrangeElements(Domain *domain)
                              deltatime, domain->domElemList) ;
 
       // element loop to do some stuff not included in the elemlib function.
-      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
+      RAJA::forall<elem_policy>( *domain->domElemList, [=] CUDA_DEVICE (int k) {
         // calc strain rate and apply as constraint (only done in FB element)
         Real_t vdov = domain->dxx[k] + domain->dyy[k] + domain->dzz[k] ;
         Real_t vdovthird = vdov/Real_t(3.0) ;
@@ -1794,16 +1852,14 @@ void CalcLagrangeElements(Domain *domain)
         domain->dzz[k] -= vdovthird ;
 
         // See if any volumes are negative, and take appropriate action.
+#if !defined(RAJA_USE_CUDA)
         if (domain->vnew[k] <= Real_t(0.0))
         {
            exit(VolumeError) ;
         }
+#endif        
        }
       ) ;
-
-      Release(domain->dzz) ;
-      Release(domain->dyy) ;
-      Release(domain->dxx) ;
    }
 }
 
@@ -1818,11 +1874,11 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
                                      Real_p delx_eta,
                                      Real_p delx_zeta,
                                      Index_p nodelist,
-                                     LULESH_INDEXSET *domElemList)
+                                     RAJA::IndexSet *domElemList)
 {
 #define SUM4(a,b,c,d) (a + b + c + d)
 
-   RAJA::forall<elem_exec_policy>(*domElemList, [&] (int i) {
+   RAJA::forall<elem_policy>(*domElemList, [=] CUDA_DEVICE (int i) {
       const Real_t ptiny = Real_t(1.e-36) ;
       Real_t ax,ay,az ;
       Real_t dxv,dyv,dzv ;
@@ -1961,13 +2017,13 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
       delv_eta[i] = ax*dxv + ay*dyv + az*dzv ;
     }
    ) ;
-
+   
 #undef SUM4
 }
 
 RAJA_STORAGE
 void CalcMonotonicQRegionForElems(
-                           LULESH_INDEXSET *matElemList, Index_p elemBC,
+                           RAJA::IndexSet *matElemList, Index_p elemBC,
                            Index_p lxim,   Index_p lxip,
                            Index_p letam,  Index_p letap,
                            Index_p lzetam, Index_p lzetap,
@@ -1980,7 +2036,8 @@ void CalcMonotonicQRegionForElems(
                            Real_t monoq_max_slope,
                            Real_t ptiny )
 {
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       Real_t qlin, qquad ;
       Real_t phixi, phieta, phizeta ;
       Int_t bcMask = elemBC[i] ;
@@ -2149,14 +2206,6 @@ void CalcQForElems(Domain *domain)
    if (numElem != 0) {
       /* allocate domain length arrays */
 
-      domain->delv_xi = Allocate<Real_t>(numElem) ;   /* velocity gradient */
-      domain->delv_eta = Allocate<Real_t>(numElem) ;
-      domain->delv_zeta = Allocate<Real_t>(numElem) ;
-
-      domain->delx_xi = Allocate<Real_t>(numElem) ;   /* position gradient */
-      domain->delx_eta = Allocate<Real_t>(numElem) ;
-      domain->delx_zeta = Allocate<Real_t>(numElem) ;
-
       /* Calculate velocity gradients, applied at the domain level */
       CalcMonotonicQGradientsForElems(domain->x,  domain->y,  domain->z,
                                       domain->xd, domain->yd, domain->zd,
@@ -2176,28 +2225,20 @@ void CalcQForElems(Domain *domain)
       /* This will be applied at the region level */
       CalcMonotonicQForElems(domain) ;
 
-      /* release domain length arrays */
-
-      Release(domain->delx_zeta) ;
-      Release(domain->delx_eta) ;
-      Release(domain->delx_xi) ;
-
-      Release(domain->delv_zeta) ;
-      Release(domain->delv_eta) ;
-      Release(domain->delv_xi) ;
-
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
-      Index_t idx = -1; 
-      RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int i) {
+      domain->idx = -1; 
+      
+      /* Workaround reference capture by using structure field instead */
+      RAJA::forall<elem_policy>( *domain->domElemList, [=] CUDA_DEVICE (int i) {
          if ( domain->q[i] > qstop ) {
-            idx = i ;
+            domain->idx = i ;
             // break ;
          }
        }
       ) ;
 
-      if(idx >= 0) {
+      if(domain->idx >= 0) {
          exit(QStopError) ;
       }
    }
@@ -2209,16 +2250,18 @@ void CalcPressureForElems(Real_p p_new, Real_p bvc,
                           Real_p compression, Real_p vnewc,
                           Real_t pmin,
                           Real_t p_cut, Real_t eosvmax,
-                          LULESH_INDEXSET *matElemList)
+                          RAJA::IndexSet *matElemList)
 {
    const Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       bvc[i] = c1s * (compression[i] + Real_t(1.));
       pbvc[i] = c1s;
     }
    ) ;
 
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       p_new[i] = bvc[i] * e_old[i] ;
 
       if    (FABS(p_new[i]) <  p_cut   )
@@ -2240,16 +2283,14 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
                         Real_p compression, Real_p compHalfStep,
                         Real_p vnewc, Real_p work, Real_p delvc, Real_t pmin,
                         Real_t p_cut, Real_t  e_cut, Real_t q_cut, Real_t emin,
-                        Real_p qq_old, Real_p ql_old,
+                        Real_p qq_old, Real_p ql_old, Real_p pHalfStep,
                         Real_t rho0,
                         Real_t eosvmax,
-                        LULESH_INDEXSET *matElemList,
-                        Index_t length)
+                        RAJA::IndexSet *matElemList)
 {
    const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
-   Real_p pHalfStep = Allocate<Real_t>(length) ;
 
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       e_new[i] = e_old[i] - Real_t(0.5) * delvc[i] * (p_old[i] + q_old[i])
          + Real_t(0.5) * work[i];
 
@@ -2258,11 +2299,11 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
       }
     }
    ) ;
-
+   
    CalcPressureForElems(pHalfStep, bvc, pbvc, e_new, compHalfStep, vnewc,
                    pmin, p_cut, eosvmax, matElemList);
 
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       Real_t vhalf = Real_t(1.) / (Real_t(1.) + compHalfStep[i]) ;
 
       if ( delvc[i] > Real_t(0.) ) {
@@ -2281,8 +2322,8 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
          q_new[i] = (ssc*ql_old[i] + qq_old[i]) ;
       }
 
-      e_new[i] = e_new[i] + Real_t(0.5) * (delvc[i]
-         * (  Real_t(3.0)*(p_old[i]     + q_old[i])
+      e_new[i] += Real_t(0.5) * (delvc[i]
+           * (  Real_t(3.0)*(p_old[i]     + q_old[i])
               - Real_t(4.0)*(pHalfStep[i] + q_new[i])) + work[i] ) ;
 
       if (FABS(e_new[i]) < e_cut) {
@@ -2293,11 +2334,11 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
       }
     }
    ) ;
-
+   
    CalcPressureForElems(p_new, bvc, pbvc, e_new, compression, vnewc,
                    pmin, p_cut, eosvmax, matElemList);
 
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
       Real_t q_tilde ;
 
       if (delvc[i] > Real_t(0.)) {
@@ -2316,9 +2357,9 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
          q_tilde = (ssc*ql_old[i] + qq_old[i]) ;
       }
 
-      e_new[i] = e_new[i] - (  Real_t(7.0)*(p_old[i]     + q_old[i])
-                               - Real_t(8.0)*(pHalfStep[i] + q_new[i])
-                               + (p_new[i] + q_tilde)) * delvc[i]*sixth ;
+      e_new[i] -= (  Real_t(7.0)*(p_old[i]     + q_old[i])
+                   - Real_t(8.0)*(pHalfStep[i] + q_new[i])
+                   + (p_new[i] + q_tilde)) * delvc[i]*sixth ;
 
       if (FABS(e_new[i]) < e_cut) {
          e_new[i] = Real_t(0.)  ;
@@ -2328,11 +2369,11 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
       }
     }
    ) ;
-
+   
    CalcPressureForElems(p_new, bvc, pbvc, e_new, compression, vnewc,
                    pmin, p_cut, eosvmax, matElemList);
 
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int i) {
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int i) {
 
       if ( delvc[i] <= Real_t(0.) ) {
          Real_t ssc = ( pbvc[i] * e_new[i]
@@ -2350,19 +2391,17 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
       }
     }
    ) ;
-
-   Release(pHalfStep) ;
-
+   
    return ;
 }
 
 RAJA_STORAGE
-void CalcSoundSpeedForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcSoundSpeedForElems(RAJA::IndexSet *matElemList, Real_p ss,
                             Real_p vnewc, Real_t rho0, Real_p enewc,
                             Real_p pnewc, Real_p pbvc,
                             Real_p bvc, Real_t ss4o3)
 {
-   RAJA::forall<mat_exec_policy>( *matElemList, [&] (int iz) {
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int iz) {
       Real_t ssTmp = (pbvc[iz] * enewc[iz] + vnewc[iz] * vnewc[iz] *
                  bvc[iz] * pnewc[iz]) / rho0;
       if (ssTmp <= Real_t(.1111111e-36)) {
@@ -2394,84 +2433,61 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
    /* wastes memory, but allows us to get */
    /* around a "temporary workset" issue */
    /* we have not yet addressed. */
-   Real_p delvc = domain->delv ;
-   Real_p p_old = Allocate<Real_t>(numElem) ;
-   Real_p compression = Allocate<Real_t>(numElem) ;
-   Real_p compHalfStep = Allocate<Real_t>(numElem) ;
-   Real_p work = Allocate<Real_t>(numElem) ;
-   Real_p p_new = Allocate<Real_t>(numElem) ;
-   Real_p e_new = Allocate<Real_t>(numElem) ;
-   Real_p q_new = Allocate<Real_t>(numElem) ;
-   Real_p bvc = Allocate<Real_t>(numElem) ;
-   Real_p pbvc = Allocate<Real_t>(numElem) ;
 
    /* compress data, minimal set */
-   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
-      p_old[zidx] = domain->p[zidx] ;
+   RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zidx) {
+      domain->p_old[zidx] = domain->p[zidx] ;
     }
    ) ;
 
-   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+   RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zidx) {
       Real_t vchalf ;
-      compression[zidx] = Real_t(1.) / vnewc[zidx] - Real_t(1.);
-      vchalf = vnewc[zidx] - delvc[zidx] * Real_t(.5);
-      compHalfStep[zidx] = Real_t(1.) / vchalf - Real_t(1.);
-    }
-   ) ;
+      domain->compression[zidx] = Real_t(1.) / vnewc[zidx] - Real_t(1.);
+      vchalf = vnewc[zidx] - domain->delv[zidx] * Real_t(.5);
+      domain->compHalfStep[zidx] = Real_t(1.) / vchalf - Real_t(1.);
 
-   /* Check for v > eosvmax or v < eosvmin */
-   if ( eosvmin != Real_t(0.) ) {
-      RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+      /* Check for v > eosvmax or v < eosvmin */
+      if ( eosvmin != Real_t(0.) ) {
          if (vnewc[zidx] <= eosvmin) { /* impossible due to calling func? */
-            compHalfStep[zidx] = compression[zidx] ;
+            domain->compHalfStep[zidx] = domain->compression[zidx] ;
          }
        }
-      ) ;
-   }
-   if ( eosvmax != Real_t(0.) ) {
-      RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
+       if ( eosvmax != Real_t(0.) ) {
          if (vnewc[zidx] >= eosvmax) { /* impossible due to calling func? */
-            p_old[zidx]        = Real_t(0.) ;
-            compression[zidx]  = Real_t(0.) ;
-            compHalfStep[zidx] = Real_t(0.) ;
+            domain->p_old[zidx]        = Real_t(0.) ;
+            domain->compression[zidx]  = Real_t(0.) ;
+            domain->compHalfStep[zidx] = Real_t(0.) ;
          }
        }
-      ) ;
-   }
-
-   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
-      work[zidx] = Real_t(0.) ; 
-    }
+     }
    ) ;
 
-   CalcEnergyForElems(p_new, e_new, q_new, bvc, pbvc,
-                 p_old, domain->e,  domain->q, compression, compHalfStep,
-                 vnewc, work,  delvc, pmin,
+
+   RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zidx) {
+      domain->work[zidx] = Real_t(0.) ; 
+    }
+   ) ;
+   
+   CalcEnergyForElems(domain->p_new, domain->e_new, domain->q_new,
+                 domain->bvc, domain->pbvc,
+                 domain->p_old, domain->e,  domain->q,
+                 domain->compression, domain->compHalfStep,
+                 vnewc, domain->work,  domain->delv, pmin,
                  p_cut, e_cut, q_cut, emin,
-                 domain->qq, domain->ql, rho0, eosvmax,
-                 domain->matElemList, numElem);
+                 domain->qq, domain->ql, domain->pHalfStep,
+                 rho0, eosvmax, domain->matElemList);
 
 
-   RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zidx) {
-      domain->p[zidx] = p_new[zidx] ;
-      domain->e[zidx] = e_new[zidx] ;
-      domain->q[zidx] = q_new[zidx] ;
+   RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zidx) {
+      domain->p[zidx] = domain->p_new[zidx] ;
+      domain->e[zidx] = domain->e_new[zidx] ;
+      domain->q[zidx] = domain->q_new[zidx] ;
     }
    ) ;
-
+   
    CalcSoundSpeedForElems(domain->matElemList, domain->ss,
-             vnewc, rho0, e_new, p_new,
-             pbvc, bvc, ss4o3) ;
-
-   Release(pbvc) ;
-   Release(bvc) ;
-   Release(q_new) ;
-   Release(e_new) ;
-   Release(p_new) ;
-   Release(work) ;
-   Release(compHalfStep) ;
-   Release(compression) ;
-   Release(p_old) ;
+             vnewc, rho0, domain->e_new, domain->p_new,
+             domain->pbvc, domain->bvc, ss4o3) ;
 }
 
 RAJA_STORAGE
@@ -2490,65 +2506,60 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
     /* assuming it is ok to allocate a domain length temporary */
     /* rather than a material length temporary. */
 
-    Real_p vnewc = Allocate<Real_t>(numElem) ;
-
-    RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
-       vnewc[zn] = domain->vnew[zn] ;
+    RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zn) {
+       domain->vnewc[zn] = domain->vnew[zn] ;
+       if (eosvmin != Real_t(0.)) {
+          if (domain->vnewc[zn] < eosvmin) {
+             domain->vnewc[zn] = eosvmin ;
+          }
+       }
+       if (eosvmax != Real_t(0.)) {
+          if (domain->vnewc[zn] > eosvmax) {
+             domain->vnewc[zn] = eosvmax ;
+          }
+       }
      }
     ) ;
 
-    if (eosvmin != Real_t(0.)) {
-       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
-          if (vnewc[zn] < eosvmin)
-             vnewc[zn] = eosvmin ;
-        }
-       ) ;
-    }
-
-    if (eosvmax != Real_t(0.)) {
-       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
-          if (vnewc[zn] > eosvmax)
-             vnewc[zn] = eosvmax ;
-        }
-       ) ;
-    }
-
-    RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
+    RAJA::forall<mat_policy>( *domain->matElemList, [=] CUDA_DEVICE (int zn) {
        Real_t vc = domain->v[zn] ;
        if (eosvmin != Real_t(0.)) {
-          if (vc < eosvmin)
+          if (vc < eosvmin) {
              vc = eosvmin ;
+          }
        }
        if (eosvmax != Real_t(0.)) {
-          if (vc > eosvmax)
+          if (vc > eosvmax) {
              vc = eosvmax ;
+          }
        }
+#if !defined(RAJA_USE_CUDA) 
        if (vc <= 0.) {
           exit(VolumeError) ;
        }
+#endif       
      }
     ) ;
-
-    EvalEOSForElems(domain, vnewc, numElem);
-
-    Release(vnewc) ;
-
+    
+    EvalEOSForElems(domain, domain->vnewc, numElem);
   }
 }
 
 RAJA_STORAGE
-void UpdateVolumesForElems(LULESH_INDEXSET *domElemList,
-                           Real_p vnew, Real_p v, Real_t v_cut)
+void UpdateVolumesForElems(Real_p vnew, Real_p v,
+                           Real_t v_cut, Index_t length)
 {
-   RAJA::forall<elem_exec_policy>( *domElemList, [&] (int i) {
-      Real_t tmpV = vnew[i] ;
+   if (length != 0) {
+      RAJA::forall<range_policy>( int(0), int(length), [=] CUDA_DEVICE (int i) {
+         Real_t tmpV = vnew[i] ;
 
-     if ( FABS(tmpV - Real_t(1.0)) < v_cut )
-         tmpV = Real_t(1.0) ;
+         if ( FABS(tmpV - Real_t(1.0)) < v_cut )
+            tmpV = Real_t(1.0) ;
 
-     v[i] = tmpV ;
-    }
-   ) ;
+         v[i] = tmpV ;
+       }
+      ) ;
+   }
 
    return ;
 }
@@ -2556,8 +2567,6 @@ void UpdateVolumesForElems(LULESH_INDEXSET *domElemList,
 RAJA_STORAGE
 void LagrangeElements(Domain *domain, Index_t numElem)
 {
-  /* new relative volume -- temporary */
-  domain->vnew = Allocate<Real_t>(numElem) ;
 
   CalcLagrangeElements(domain) ;
 
@@ -2566,24 +2575,33 @@ void LagrangeElements(Domain *domain, Index_t numElem)
 
   ApplyMaterialPropertiesForElems(domain) ;
 
-  UpdateVolumesForElems(domain->domElemList,
-                        domain->vnew, domain->v, domain->v_cut) ;
-
-  Release(domain->vnew) ;
+  UpdateVolumesForElems(domain->vnew, domain->v,
+                        domain->v_cut, numElem) ;
 }
 
 RAJA_STORAGE
-void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcCourantConstraintForElems(RAJA::IndexSet *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
-
+#if defined(RAJA_USE_CUDA)
+  /* use managed memory */
+  Real_t *min_alloc = Allocate<Real_t>(1);
+  Index_t *loc_alloc = Allocate<Index_t>(1);
+  Real_t &min = *min_alloc;
+  Index_t &loc = *loc_alloc;
+  min = Real_t(1.0e+20) ;
+  loc = -1 ;
+#else
+   Real_t min = Real_t(1.0e+20) ;
+   Index_t loc = -1 ;
+#endif
+   
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
+
+   RAJA::forall_minloc<mat_policy>( *matElemList, &min, &loc,
+        [=] CUDA_DEVICE (int indx, Real_t *myMin, Index_t *myLoc) {
 
       Real_t dtf = ss[indx] * ss[indx] ;
 
@@ -2607,23 +2625,39 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
       }
     }
    ) ;
-
-   if (min_loc != -1) {
-      *dtcourant = min_val ;
+   
+   if (loc != -1) {
+      *dtcourant = min ;
    }
+
+#if defined(RAJA_USE_CUDA)
+  Release(&min_alloc);
+  Release(&loc_alloc);
+#endif
 
    return ;
 }
 
 RAJA_STORAGE
-void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
+void CalcHydroConstraintForElems(RAJA::IndexSet *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
+#if defined(RAJA_USE_CUDA)
+  /* use managed memory */
+  Real_t *min_alloc = Allocate<Real_t>(1);
+  Index_t *loc_alloc = Allocate<Index_t>(1);
+  Real_t &min = *min_alloc;
+  Index_t &loc = *loc_alloc;
+  min = Real_t(1.0e+20) ;
+  loc = -1 ;
+#else
+   Real_t min = Real_t(1.0e+20) ;
+   Index_t loc = -1 ;
+#endif
+   
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
+   RAJA::forall_minloc<mat_policy>( *matElemList, &min, &loc,
+        [=] CUDA_DEVICE (int indx, Real_t *myMin, Index_t *myLoc) {
       if (vdov[indx] != Real_t(0.)) {
          Real_t dtdvov = dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)) ;
          if ( *myMin > dtdvov ) {
@@ -2633,13 +2667,19 @@ void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
       }
     }
    ) ;
-
-   if (min_loc != -1) {
-      *dthydro = min_val ;
+   
+   if (loc != -1) {
+      *dthydro = min ;
    }
+
+#if defined(RAJA_USE_CUDA)
+  Release(&min_alloc);
+  Release(&loc_alloc);
+#endif
 
    return ;
 }
+
 
 RAJA_STORAGE
 void CalcTimeConstraintsForElems(Domain *domain) {
@@ -2665,71 +2705,41 @@ void LagrangeLeapFrog(Domain *domain)
     * material states */
    LagrangeElements(domain, domain->numElem);
 
-   CalcTimeConstraintsForElems(domain);
+   if (domain->dtfixed < 0.0 ) {
+      CalcTimeConstraintsForElems(domain);
+   }
 
 }
 
 int main(int argc, char *argv[])
 {
-
-   RAJA::Timer timer_main;
-   RAJA::Timer timer_cycle;
-
-   timer_main.start();
-
-
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
+   
+#if defined(RAJA_USE_CUDA)
+   /* allocate domain dynamically, so it can be accessed from
+      device code
+    */
+   struct Domain *alloc = Allocate<Domain>(1);
+   struct Domain &domain = *alloc;
+#else   
    struct Domain domain ;
+#endif   
 
-   Index_t edgeElems = lulesh_edge_elems ;
+   Index_t edgeElems = 130 ;
    Index_t edgeNodes = edgeElems+1 ;
 
-   /****************************/
-   /*  Print run parameters    */
-   /****************************/
-   printf("LULESH parallel run parameters:\n");
-   printf("\t stop time = %e\n", double(lulesh_stop_time)) ;
-   if ( lulesh_time_step > 0 ) {
-     printf("\t Fixed time step = %e\n", double(lulesh_time_step)) ;
-   } else {
-     printf("\t CFL-controlled: initial time step = %e\n",
-            double(-lulesh_time_step)) ;
-   }
-   printf("\t Mesh size = %i x %i x %i\n",
-          lulesh_edge_elems, lulesh_edge_elems, lulesh_edge_elems) ;
+#ifdef LULESH_FT
+   /* mock up fault tolerance */
+   sigalrmact.sa_handler = simulate_fault ;
+   sigalrmact.sa_flags = 0 ;
+   sigemptyset(&sigalrmact.sa_mask) ;
 
-   switch (lulesh_tiling_mode) {
-      case Canonical:
-      {
-         printf("\t Tiling mode is 'Canonical'\n");
-         break;
-      }
-      case Tiled_Index:
-      {
-         printf("\t Tiling mode is 'Tiled_Index'\n");
-         break;
-      }
-      case Tiled_Order:
-      {
-         printf("\t Tiling mode is 'Tiled_Order'\n");
-         break;
-      }
-      case Tiled_LockFree:
-      {
-         printf("\t Tiling mode is 'Lock-free chunk'\n");
-         break;
-      }
-      default :
-      {
-         printf("Unknown tiling mode!!!\n");
-      }
+   if (sigaction(SIGUSR1, &sigalrmact, NULL) < 0) {
+      perror("sigaction") ;
+      exit(2) ;
    }
-
-   if (lulesh_tiling_mode != Canonical) {
-      printf("\t Mesh tiling = %i x %i x %i\n",
-             lulesh_xtile, lulesh_ytile, lulesh_ztile) ;
-   }
+#endif
 
    /****************************/
    /*   Initialize Sedov Mesh  */
@@ -2788,6 +2798,22 @@ int main(int argc, char *argv[])
 
    domain.elemMass = Allocate<Real_t>(domElems) ;  /* mass */
 
+   domain.dxx  = Allocate<Real_t>(domElems) ; /* principal strains */
+   domain.dyy  = Allocate<Real_t>(domElems) ;
+   domain.dzz  = Allocate<Real_t>(domElems) ;
+
+   domain.delv_xi = Allocate<Real_t>(domElems) ;   /* velocity gradient */
+   domain.delv_eta = Allocate<Real_t>(domElems) ;
+   domain.delv_zeta = Allocate<Real_t>(domElems) ;
+
+   domain.delx_xi = Allocate<Real_t>(domElems) ;   /* position gradient */
+   domain.delx_eta = Allocate<Real_t>(domElems) ;
+   domain.delx_zeta = Allocate<Real_t>(domElems) ;
+
+  /* new relative volume -- temporary */
+  domain.vnew = Allocate<Real_t>(domElems) ;
+  domain.vnewc = Allocate<Real_t>(domElems) ;
+
    /*****************/
    /* Node-centered */
    /*****************/
@@ -2809,6 +2835,35 @@ int main(int argc, char *argv[])
    domain.fz = Allocate<Real_t>(domNodes) ;
 
    domain.nodalMass = Allocate<Real_t>(domNodes) ;  /* mass */
+
+   /* temporaries */
+
+   domain.fx_elem = Allocate<Real_t>(domElems*8) ;
+   domain.fy_elem = Allocate<Real_t>(domElems*8) ;
+   domain.fz_elem = Allocate<Real_t>(domElems*8) ;
+
+   domain.dvdx = Allocate<Real_t>(domElems*8) ;
+   domain.dvdy = Allocate<Real_t>(domElems*8) ;
+   domain.dvdz = Allocate<Real_t>(domElems*8) ;
+   domain.x8n  = Allocate<Real_t>(domElems*8) ;
+   domain.y8n  = Allocate<Real_t>(domElems*8) ;
+   domain.z8n  = Allocate<Real_t>(domElems*8) ;
+
+   domain.sigxx  = Allocate<Real_t>(domElems) ;
+   domain.sigyy  = Allocate<Real_t>(domElems) ;
+   domain.sigzz  = Allocate<Real_t>(domElems) ;
+   domain.determ = Allocate<Real_t>(domElems) ;
+
+   domain.p_old = Allocate<Real_t>(domElems) ;
+   domain.compression = Allocate<Real_t>(domElems) ;
+   domain.compHalfStep = Allocate<Real_t>(domElems) ;
+   domain.work = Allocate<Real_t>(domElems) ;
+   domain.p_new = Allocate<Real_t>(domElems) ;
+   domain.e_new = Allocate<Real_t>(domElems) ;
+   domain.q_new = Allocate<Real_t>(domElems) ;
+   domain.bvc = Allocate<Real_t>(domElems) ;
+   domain.pbvc = Allocate<Real_t>(domElems) ;
+   domain.pHalfStep = Allocate<Real_t>(domElems) ;
 
    /* Boundary nodesets */
 
@@ -2886,11 +2941,14 @@ int main(int argc, char *argv[])
    }
 
    /* initialize material parameters */
-   domain.dtfixed = Real_t(lulesh_time_step) ;
-   domain.deltatime = Real_t(1.0e-7) ;
+   // domain.dtfixed = Real_t(-1.0e-7) ;
+   // domain.deltatime = Real_t(1.0e-7) ;
+   domain.dtfixed = Real_t(3.33333333333333333e-7) ;
+   domain.deltatime = Real_t(3.3333333333333333e-7) ;
    domain.deltatimemultlb = Real_t(1.1) ;
    domain.deltatimemultub = Real_t(1.2) ;
-   domain.stoptime  = Real_t(lulesh_stop_time) ;
+   // domain.stoptime  = Real_t(1.0e-2) ;
+   domain.stoptime  = Real_t(2.0e-5) ;
    domain.dtcourant = Real_t(1.0e+20) ;
    domain.dthydro   = Real_t(1.0e+20) ;
    domain.dtmax     = Real_t(1.0e-2) ;
@@ -2924,11 +2982,11 @@ int main(int argc, char *argv[])
    domain.refdens =  Real_t(1.0) ;
 
    /* initialize field data */
-   for (Index_t i=0; i<domNodes; ++i) {
+   for(Index_t i=0; i<domNodes; ++i) {
       domain.nodalMass[i] = 0.0 ;
    }
 
-   for (Index_t i=0; i<domElems; ++i) {
+   for(Index_t i=0; i<domElems; ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
       Index_p elemToNode = &domain.nodelist[8*i] ;
       for( Index_t lnode=0 ; lnode<8 ; ++lnode )
@@ -3011,29 +3069,29 @@ int main(int argc, char *argv[])
       }
    }
 
-   /* Create domain Index Sets */
+   /* Create domain IndexSets */
 
    /* always leave the nodes in a canonical ordering */
-   domain.domNodeList = new LULESH_INDEXSET() ;
-   domain.domNodeList->push_back( RAJA::RangeSegment(0, domNodes) );
+   domain.domNodeList = new RAJA::IndexSet() ;
+   domain.domNodeList->push_back( RAJA::RangeSegment(0, domNodes) ) ;
 
-   domain.domElemList = new LULESH_INDEXSET() ;
-   domain.matElemList = new LULESH_INDEXSET() ;
+   /* Indexset ordering mode for elements:
+      1 = canonical ordering
+      2 = canonical ordering, tiled
+      3 = tiled ordering
+      4 = lock-free tiled ordering
+   */
 
-   const Index_t xtile = lulesh_xtile ;
-   const Index_t ytile = lulesh_ytile ;
-   const Index_t ztile = lulesh_ztile ;
+   domain.domElemList = new RAJA::IndexSet() ;
+   domain.matElemList = new RAJA::IndexSet() ;
 
-#if 0
-   if ( lulesh_tiling_mode == Tiled_LockFree ) {
-      printf("Tiled_LockFree ordering not implemented!!! Canonical will be used.\n");
-      lulesh_tiling_mode = Canonical; 
-   }
-#endif
+   const Index_t xtile = 4 ;
+   const Index_t ytile = 4 ;
+   const Index_t ztile = 4 ;
 
-   switch (lulesh_tiling_mode) {
-
-      case Canonical:
+   switch (IS_ORDERING) {
+      default:
+      case 1:
       {
          domain.domElemList->push_back( RAJA::RangeSegment(0, domElems) );
 
@@ -3042,7 +3100,7 @@ int main(int argc, char *argv[])
       }
       break ;
 
-      case Tiled_Index:
+      case 2:
       {
          for (Index_t zt = 0; zt < ztile; ++zt) {
             for (Index_t yt = 0; yt < ytile; ++yt) {
@@ -3055,11 +3113,7 @@ int main(int argc, char *argv[])
                   Index_t zend   =  edgeElems*(zt+1)/ztile ;
                   Index_t tileSize = 
                      (xend - xbegin)*(yend-ybegin)*(zend-zbegin) ;
-#if 0
                   Index_t tileIdx[tileSize] ;
-#else
-                  Index_t* tileIdx = new Index_t[tileSize] ;
-#endif
                   Index_t idx = 0 ;
 
                   for (Index_t plane = zbegin; plane<zend; ++plane) {
@@ -3072,18 +3126,13 @@ int main(int argc, char *argv[])
                   }
                   domain.domElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
                   domain.matElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
-
-#if 0
-#else
-                  delete [] tileIdx ;
-#endif
                }
             }
          }
       }
       break ;
 
-      case Tiled_Order:
+      case 3:
       {
          Index_t idx = 0 ;
          Index_t perm[domElems] ;
@@ -3183,40 +3232,76 @@ int main(int argc, char *argv[])
       }
       break ;
 
-      case Tiled_LockFree:
-      {
-         buildLockFreeBlockIndexset( *domain.domElemList,
-                                     edgeElems, edgeElems, edgeElems) ;
-
-         /* Create a material ISet (entire domain same material for now) */
-         buildLockFreeBlockIndexset ( *domain.matElemList,
-                                      edgeElems, edgeElems, edgeElems) ;
-      }
-      break;
-
-      default :
-      {
-         printf("Unknown index set ordering!!! Left undefined.\n");
-      }
    }
 
+   // OMP Hack
+   // set up node-centered indexing of elements
+   Index_p nodeElemCount = Allocate<Index_t>(domNodes) ;
+
+   for (Index_t i=0; i<domNodes; ++i) {
+     nodeElemCount[i] = 0 ;
+   }
+
+   for (Index_t i=0; i<domElems; ++i) {
+     Index_p nl = &domain.nodelist[8*i] ;
+     for (Index_t j=0; j < 8; ++j) {
+       ++(nodeElemCount[nl[j]] );
+     }
+   }
+
+   domain.nodeElemStart = Allocate<Index_t>(domNodes+1) ;
+
+   domain.nodeElemStart[0] = 0;
+
+   for (Index_t i=1; i <= domNodes; ++i) {
+     domain.nodeElemStart[i] =
+       domain.nodeElemStart[i-1] + nodeElemCount[i-1] ;
+   }
+
+   domain.nodeElemCornerList =
+      Allocate<Index_t>(domain.nodeElemStart[domNodes]);
+
+   for (Index_t i=0; i < domNodes; ++i) {
+     nodeElemCount[i] = 0;
+   }
+
+   for (Index_t i=0; i < domElems; ++i) {
+     Index_p nl = &domain.nodelist[8*i] ;
+     for (Index_t j=0; j < 8; ++j) {
+       Index_t m = nl[j];
+       Index_t k = i*8 + j ;
+       Index_t offset = domain.nodeElemStart[m] + nodeElemCount[m] ;
+       domain.nodeElemCornerList[offset] = k;
+       ++(nodeElemCount[m]) ;
+     }
+   }
+
+#ifdef DEBUG_LULESH
+   Index_t clSize = domain.nodeElemStart[domNodes] ;
+   for (Index_t i=0; i < clSize; ++i) {
+     Index_t clv = domain.nodeElemCornerList[i] ;
+     if ((clv < 0) || (clv > domElems*8)) {
+       fprintf(stderr,
+        "AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
+       exit(-1);
+     }
+   }
+#endif
+
+   Release(&nodeElemCount) ;
+
+   /* Fault Tolerance begins here */
+
    /* timestep to solution */
-   timer_cycle.start();
    while(domain.time < domain.stoptime) {
       TimeIncrement(&domain) ;
       LagrangeLeapFrog(&domain) ;
       /* problem->commNodes->Transfer(CommNodes::syncposvel) ; */
-      if ( show_run_progress ) {
-         printf("time = %e, dt=%e\n",
-                double(domain.time), double(domain.deltatime) ) ;
-      }
+#if LULESH_SHOW_PROGRESS
+      printf("time = %e, dt=%e\n",
+             double(domain.time), double(domain.deltatime) ) ;
+#endif
    }
-   timer_cycle.stop();
-
-   timer_main.stop();
-
-   printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
-   printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );
 
    return 0 ;
 }
