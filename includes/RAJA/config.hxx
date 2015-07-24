@@ -66,7 +66,11 @@ namespace RAJA {
 //
 const int RANGE_ALIGN = 4;
 
+#if defined(RAJA_USE_CUDA)
+const int RANGE_MIN_LENGTH = 32;
+#else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
+#endif
 
 const int DATA_ALIGN = 32;
 
@@ -77,7 +81,11 @@ const int DATA_ALIGN = 32;
 //
 const int RANGE_ALIGN = 4;
 
+#if defined(RAJA_USE_CUDA)
+const int RANGE_MIN_LENGTH = 32;
+#else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
+#endif
 
 const int DATA_ALIGN = 32;
 
@@ -122,10 +130,16 @@ const int DATA_ALIGN = 32;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+#if defined(RAJA_USE_CUDA)
+#define RAJA_ALIGN_DATA(d)
+#else
+
 #if __ICC < 1300  // use alignment intrinsic
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
 #else
 #define RAJA_ALIGN_DATA(d)  // TODO: Define this...
+#endif
+
 #endif
 
 #define RAJA_SIMD  // TODO: Define this...
@@ -138,7 +152,13 @@ const int DATA_ALIGN = 32;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+#if defined(RAJA_USE_CUDA)
+#define RAJA_ALIGN_DATA(d)
+#else
+
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
+
+#endif
 
 #define RAJA_SIMD  // TODO: Define this...
 
@@ -163,7 +183,13 @@ const int DATA_ALIGN = 32;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
+#if defined(RAJA_USE_CUDA)
+#define RAJA_ALIGN_DATA(d)
+#else
+
 #define RAJA_ALIGN_DATA(d) // TODO: Define this...
+
+#endif
 
 #define RAJA_SIMD  // TODO: Define this...
 
