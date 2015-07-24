@@ -68,9 +68,9 @@ Additional BSD Notice
 
 #include "RAJA/RAJA.hxx"
 
-#include "Timer.hxx"
+#include "RAJA/IndexSetBuilders.hxx"
 
-#include "LockFreeIndexSetBuilders.hxx"
+#include "Timer.hxx"
 
 
 /*
