@@ -102,15 +102,9 @@ typedef RAJA::simd_exec               Segment_Exec;
 
 TilingMode lulesh_tiling_mode = Tiled_LockFree;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
-#if 1 // RDH TALK 2 JEFF ABOUT WHETHER WE NEED BOTH OPTIONS FOR THIS....
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> mat_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> minloc_exec_policy;
-#else
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> minloc_exec_policy;
-#endif
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
