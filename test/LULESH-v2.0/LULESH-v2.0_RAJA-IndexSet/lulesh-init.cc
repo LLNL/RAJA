@@ -115,7 +115,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    Index_t initEnergyElemIdx = 0 ;
 
    /* assign each material to a contiguous range of elements */
-   if (m_perm != 0) {
+   if ((m_perm != 0) && (nr != 1)) {
       /* permute nodelist connectivity */
       {
          Index_t tmp[8*numElem()] ;
@@ -499,6 +499,11 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       regElemSize(0) = numElem();
       m_domRegISet.resize(numReg());
       m_domRegISet[0].push_back( RAJA::RangeSegment(0, regElemSize(0)) ) ;
+#if !defined(LULESH_LIST_INDEXSET)
+      for (int i=0; i<numElem(); ++i) {
+         perm(i) = i ;
+      }
+#endif
    }
    //If we have more than one region distribute the elements.
    else {
