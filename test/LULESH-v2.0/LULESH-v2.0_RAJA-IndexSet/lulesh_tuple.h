@@ -27,9 +27,9 @@
 #include "RAJA/RAJA.hxx"
 
 //
-//   RAJA ISet type used in loop traversals.
+//   RAJA IndexSet type used in loop traversals.
 //
-typedef RAJA::HybridISet LULESH_ISET;
+typedef RAJA::IndexSet LULESH_ISET;
 
 
 //**************************************************
@@ -260,13 +260,13 @@ class Domain {
    //
    // Element-centered
    //
-   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
-   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
-   Index_t*  regNumList()            { return &m_regNumList[0] ; }
-   Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
-   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
-
    Index_t*  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
+
+#if !defined(LULESH_LIST_INDEXSET)
+   Index_t&  perm(Index_t idx)     { return m_perm[idx] ; }
+#else
+   Index_t  perm(Index_t idx)     { return idx ; }
+#endif
 
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_faceToElem[idx].lxim ; }
@@ -335,6 +335,14 @@ class Domain {
 
    Index_t *nodeElemCornerList(Index_t idx)
    { return &m_nodeElemCornerList[m_nodeElemStart[idx]] ; }
+
+   // Region Centered
+
+   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
+   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
+   Index_t*  regNumList()            { return &m_regNumList[0] ; }
+   Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
+   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
    // Parameters 
 
@@ -424,7 +432,7 @@ class Domain {
    void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
    void SetupThreadSupportStructures();
    void CreateMeshIndexSets();
-   void CreateRegionIndexSets(Int_t nreg, Int_t balance, Index_t **perm);
+   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
    void CreateSymmetryIndexSets(Index_t edgeNodes);
    void SetupCommBuffers(Index_t edgeNodes);
    void SetupElementConnectivities(Index_t edgeElems);
@@ -462,13 +470,6 @@ class Domain {
    std::vector<Real_t> m_nodalMass ;  /* mass */
 
    // Element-centered
-
-   // Region information
-   Int_t    m_numReg ;
-   Int_t    m_cost; //imbalance cost
-   Index_t *m_regElemSize ;   // Size of region sets
-   Index_t *m_regNumList ;    // Region number per domain element
-   Index_t **m_regElemlist ;  // region indexset 
 
    std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
 
@@ -521,6 +522,17 @@ class Domain {
    std::vector<Real_t> m_ss ;      /* "sound speed" */
 
    std::vector<Real_t> m_elemMass ;  /* mass */
+
+   // Region information
+   Int_t    m_numReg ;
+   Int_t    m_cost; //imbalance cost
+   Index_t *m_regElemSize ;   // Size of region sets
+   Index_t *m_regNumList ;    // Region number per domain element
+   Index_t **m_regElemlist ;  // region indexset 
+
+   // Permutation to pack element-centered material subsets
+   // into a contiguous range per material
+   Index_t *m_perm ;
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
@@ -615,8 +627,7 @@ void ParseCommandLineOptions(int argc, char *argv[],
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Domain& locDom,
                                Int_t nx,
-                               Int_t numRanks,
-                               Index_t *perm);
+                               Int_t numRanks);
 
 // lulesh-viz
 void DumpToVisit(Domain& domain, int numFiles, int myRank, int numRanks);
