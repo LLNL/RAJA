@@ -172,8 +172,7 @@ void ParseCommandLineOptions(int argc, char *argv[],
 void VerifyAndWriteFinalOutput(Real_t elapsed_time,
                                Domain& locDom,
                                Int_t nx,
-                               Int_t numRanks,
-                               Index_t *perm)
+                               Int_t numRanks)
 {
    // GrindTime1 only takes a single domain into account, and is thus a good way to measure
    // processor speed indepdendent of MPI parallelism.
@@ -192,18 +191,26 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    Real_t TotalAbsDiff = Real_t(0.0);
    Real_t   MaxRelDiff = Real_t(0.0);
 
+   Index_t *iperm = new Index_t[locDom.numElem()] ;
+
+   for (Index_t i=0; i<locDom.numElem(); ++i) {
+      iperm[locDom.perm(i)] = i ;
+   }
+
    for (Index_t j=0; j<nx; ++j) {
       for (Index_t k=j+1; k<nx; ++k) {
-         Real_t AbsDiff = FABS(locDom.e(perm[j*nx+k])-locDom.e(perm[k*nx+j]));
+         Real_t AbsDiff = FABS(locDom.e(iperm[j*nx+k])-locDom.e(iperm[k*nx+j]));
          TotalAbsDiff  += AbsDiff;
 
          if (MaxAbsDiff <AbsDiff) MaxAbsDiff = AbsDiff;
 
-         Real_t RelDiff = AbsDiff / locDom.e(perm[k*nx+j]);
+         Real_t RelDiff = AbsDiff / locDom.e(iperm[k*nx+j]);
 
          if (MaxRelDiff <RelDiff)  MaxRelDiff = RelDiff;
       }
    }
+
+   delete [] iperm ;
 
    // Quick symmetry check
    printf("   Testing Plane 0 of Energy Array on rank 0:\n");

@@ -2692,16 +2692,7 @@ int main(int argc, char *argv[])
    }
    
    if ((myRank == 0) && (opts.quiet == 0)) {
-      Index_t *perm = new Index_t[locDom->getElemISet().getLength()] ;
-
-      /* the creation of this vector takes time, even though its parallel */
-      RAJA::forall_Icount<elem_exec_policy>(locDom->getElemISet(), [=] (int i, int elem) {
-         perm[elem] = i ;
-      } ) ;
-
-      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks, perm);
-
-      delete [] perm ;
+      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
    delete locDom;
