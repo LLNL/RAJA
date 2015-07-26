@@ -2035,52 +2035,48 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
                           Real_t p_cut, Real_t eosvmax,
                           LULESH_ISET& regISet)
 {
-   Index_t length = regISet.getLength();
-
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {
       Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
-      bvc[i] = c1s * (compression[i] + Real_t(1.));
-      pbvc[i] = c1s;
+      bvc[ielem] = c1s * (compression[ielem] + Real_t(1.));
+      pbvc[ielem] = c1s;
    } );
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {
-      p_new[i] = bvc[i] * e_old[i] ;
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {
+      p_new[ielem] = bvc[ielem] * e_old[ielem] ;
 
-      if    (FABS(p_new[i]) <  p_cut   )
-         p_new[i] = Real_t(0.0) ;
+      if    (FABS(p_new[ielem]) <  p_cut   )
+         p_new[ielem] = Real_t(0.0) ;
 
       if    ( vnewc[ielem] >= eosvmax ) /* impossible condition here? */
-         p_new[i] = Real_t(0.0) ;
+         p_new[ielem] = Real_t(0.0) ;
 
-      if    (p_new[i]       <  pmin)
-         p_new[i]   = pmin ;
+      if    (p_new[ielem]       <  pmin)
+         p_new[ielem]   = pmin ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
+void CalcEnergyForElems(Domain& domain,
+                        Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         Real_t* bvc, Real_t* pbvc,
-                        Real_t* p_old, Real_t* e_old, Real_t* q_old,
+                        Real_t* p_old,
                         Real_t* compression, Real_t* compHalfStep,
-                        Real_t* vnewc, Real_t* work, Real_t* delvc, Real_t pmin,
-                        Real_t p_cut, Real_t  e_cut, Real_t q_cut, Real_t emin,
-                        Real_t* qq_old, Real_t* ql_old,
+                        Real_t* vnewc, Real_t* work, Real_t *pHalfStep,
+                        Real_t pmin, Real_t p_cut, Real_t  e_cut,
+                        Real_t q_cut, Real_t emin,
                         Real_t rho0,
                         Real_t eosvmax,
                         LULESH_ISET& regISet)
 {
-   Index_t length = regISet.getLength();
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {  
+      e_new[ielem] = domain.e(ielem)
+         - Real_t(0.5) * domain.delv(ielem) * (p_old[ielem] + domain.q(ielem))
+         + Real_t(0.5) * work[ielem];
 
-   Real_t *pHalfStep = Allocate<Real_t>(length) ;
- 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {  
-      e_new[i] = e_old[i] - Real_t(0.5) * delvc[i] * (p_old[i] + q_old[i])
-         + Real_t(0.5) * work[i];
-
-      if (e_new[i]  < emin ) {
-         e_new[i] = emin ;
+      if (e_new[ielem]  < emin ) {
+         e_new[ielem] = emin ;
       }
    } );
 
@@ -2088,15 +2084,15 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         pmin, p_cut, eosvmax, 
                         regISet);
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {  
-      Real_t vhalf = Real_t(1.) / (Real_t(1.) + compHalfStep[i]) ;
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {  
+      Real_t vhalf = Real_t(1.) / (Real_t(1.) + compHalfStep[ielem]) ;
 
-      if ( delvc[i] > Real_t(0.) ) {
-         q_new[i] /* = qq_old[i] = ql_old[i] */ = Real_t(0.) ;
+      if ( domain.delv(ielem) > Real_t(0.) ) {
+         q_new[ielem] /* = domain.qq(ielem) = domain.ql(ielem) */ = Real_t(0.);
       }
       else {
-         Real_t ssc = ( pbvc[i] * e_new[i]
-                 + vhalf * vhalf * bvc[i] * pHalfStep[i] ) / rho0 ;
+         Real_t ssc = ( pbvc[ielem] * e_new[ielem]
+                 + vhalf * vhalf * bvc[ielem] * pHalfStep[ielem] ) / rho0 ;
 
          if ( ssc <= Real_t(.1111111e-36) ) {
             ssc = Real_t(.3333333e-18) ;
@@ -2104,22 +2100,22 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
             ssc = SQRT(ssc) ;
          }
 
-         q_new[i] = (ssc*ql_old[i] + qq_old[i]) ;
+         q_new[ielem] = (ssc*domain.ql(ielem) + domain.qq(ielem)) ;
       }
 
-      e_new[i] = e_new[i] + Real_t(0.5) * delvc[i]
-         * (  Real_t(3.0)*(p_old[i]     + q_old[i])
-              - Real_t(4.0)*(pHalfStep[i] + q_new[i])) ;
+      e_new[ielem] = e_new[ielem] + Real_t(0.5) * domain.delv(ielem)
+         * (  Real_t(3.0)*(p_old[ielem]     + domain.q(ielem))
+              - Real_t(4.0)*(pHalfStep[ielem] + q_new[ielem])) ;
    } );
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {  
-      e_new[i] += Real_t(0.5) * work[i];
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {  
+      e_new[ielem] += Real_t(0.5) * work[ielem];
 
-      if (FABS(e_new[i]) < e_cut) {
-         e_new[i] = Real_t(0.)  ;
+      if (FABS(e_new[ielem]) < e_cut) {
+         e_new[ielem] = Real_t(0.)  ;
       }
-      if (     e_new[i]  < emin ) {
-         e_new[i] = emin ;
+      if (     e_new[ielem]  < emin ) {
+         e_new[ielem] = emin ;
       }
    } );
 
@@ -2127,16 +2123,16 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         pmin, p_cut, eosvmax, 
                         regISet);
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {  
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {  
       const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
       Real_t q_tilde ;
 
-      if (delvc[i] > Real_t(0.)) {
+      if (domain.delv(ielem) > Real_t(0.)) {
          q_tilde = Real_t(0.) ;
       }
       else {
-         Real_t ssc = ( pbvc[i] * e_new[i]
-                 + vnewc[ielem] * vnewc[ielem] * bvc[i] * p_new[i] ) / rho0 ;
+         Real_t ssc = ( pbvc[ielem] * e_new[ielem]
+                 + vnewc[ielem] * vnewc[ielem] * bvc[ielem] * p_new[ielem] ) / rho0 ;
 
          if ( ssc <= Real_t(.1111111e-36) ) {
             ssc = Real_t(.3333333e-18) ;
@@ -2144,18 +2140,18 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
             ssc = SQRT(ssc) ;
          }
 
-         q_tilde = (ssc*ql_old[i] + qq_old[i]) ;
+         q_tilde = (ssc*domain.ql(ielem) + domain.qq(ielem)) ;
       }
 
-      e_new[i] = e_new[i] - (  Real_t(7.0)*(p_old[i]     + q_old[i])
-                               - Real_t(8.0)*(pHalfStep[i] + q_new[i])
-                               + (p_new[i] + q_tilde)) * delvc[i]*sixth ;
+      e_new[ielem] -= (  Real_t(7.0)*(p_old[ielem]     + domain.q(ielem))
+                       - Real_t(8.0)*(pHalfStep[ielem] + q_new[ielem])
+                       + (p_new[ielem] + q_tilde)) * domain.delv(ielem)*sixth ;
 
-      if (FABS(e_new[i]) < e_cut) {
-         e_new[i] = Real_t(0.)  ;
+      if (FABS(e_new[ielem]) < e_cut) {
+         e_new[ielem] = Real_t(0.)  ;
       }
-      if (     e_new[i]  < emin ) {
-         e_new[i] = emin ;
+      if (     e_new[ielem]  < emin ) {
+         e_new[ielem] = emin ;
       }
    } );
 
@@ -2163,10 +2159,10 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
                         pmin, p_cut, eosvmax, 
                         regISet);
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {
-      if ( delvc[i] <= Real_t(0.) ) {
-         Real_t ssc = ( pbvc[i] * e_new[i]
-                 + vnewc[ielem] * vnewc[ielem] * bvc[i] * p_new[i] ) / rho0 ;
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {
+      if ( domain.delv(ielem) <= Real_t(0.) ) {
+         Real_t ssc = ( pbvc[ielem] * e_new[ielem]
+            + vnewc[ielem] * vnewc[ielem] * bvc[ielem] * p_new[ielem] ) / rho0;
 
          if ( ssc <= Real_t(.1111111e-36) ) {
             ssc = Real_t(.3333333e-18) ;
@@ -2174,13 +2170,11 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
             ssc = SQRT(ssc) ;
          }
 
-         q_new[i] = (ssc*ql_old[i] + qq_old[i]) ;
+         q_new[ielem] = (ssc*domain.ql(ielem) + domain.qq(ielem)) ;
 
-         if (FABS(q_new[i]) < q_cut) q_new[i] = Real_t(0.) ;
+         if (FABS(q_new[ielem]) < q_cut) q_new[ielem] = Real_t(0.) ;
       }
    } );
-
-   Release(&pHalfStep) ;
 
    return ;
 }
@@ -2194,9 +2188,9 @@ void CalcSoundSpeedForElems(Domain &domain,
                             Real_t *bvc, Real_t ss4o3,
                             LULESH_ISET& regISet)
 {
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (int i, int ielem) {
-      Real_t ssTmp = (pbvc[i] * enewc[i] + vnewc[ielem] * vnewc[ielem] *
-                 bvc[i] * pnewc[i]) / rho0;
+   RAJA::forall<mat_exec_policy>(regISet, [&] (int ielem) {
+      Real_t ssTmp = (pbvc[ielem] * enewc[ielem] + vnewc[ielem] * vnewc[ielem] *
+                 bvc[ielem] * pnewc[ielem]) / rho0;
       if (ssTmp <= Real_t(.1111111e-36)) {
          ssTmp = Real_t(.3333333e-18);
       }
@@ -2210,9 +2204,12 @@ void CalcSoundSpeedForElems(Domain &domain,
 /******************************************/
 
 RAJA_STORAGE
-void EvalEOSForElems(Domain& domain, Real_t *vnewc,
-                     Int_t reg_num,
-                     Int_t rep)
+void EvalEOSForElems(Domain& domain,
+                     Real_t *vnewc, Real_t *p_old,
+                     Real_t *compression, Real_t *compHalfStep,
+                     Real_t *work, Real_t *p_new, Real_t *e_new,
+                     Real_t *q_new, Real_t *bvc, Real_t *pbvc,
+                     Real_t *pHalfStep, Int_t reg_num, Int_t rep)
 {
    Real_t  e_cut = domain.e_cut() ;
    Real_t  p_cut = domain.p_cut() ;
@@ -2228,75 +2225,52 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
    LULESH_ISET& regISet = domain.getRegionISet(reg_num);
    Int_t numElemReg = regISet.getLength();
  
-   // These temporaries will be of different size for 
-   // each call (due to different sized region element
-   // lists)
-   Real_t *e_old = Allocate<Real_t>(numElemReg) ;
-   Real_t *delvc = Allocate<Real_t>(numElemReg) ;
-   Real_t *p_old = Allocate<Real_t>(numElemReg) ;
-   Real_t *q_old = Allocate<Real_t>(numElemReg) ;
-   Real_t *compression = Allocate<Real_t>(numElemReg) ;
-   Real_t *compHalfStep = Allocate<Real_t>(numElemReg) ;
-   Real_t *qq_old = Allocate<Real_t>(numElemReg) ;
-   Real_t *ql_old = Allocate<Real_t>(numElemReg) ;
-   Real_t *work = Allocate<Real_t>(numElemReg) ;
-   Real_t *p_new = Allocate<Real_t>(numElemReg) ;
-   Real_t *e_new = Allocate<Real_t>(numElemReg) ;
-   Real_t *q_new = Allocate<Real_t>(numElemReg) ;
-   Real_t *bvc = Allocate<Real_t>(numElemReg) ;
-   Real_t *pbvc = Allocate<Real_t>(numElemReg) ;
-
    //loop to add load imbalance based on region number 
    for(Int_t j = 0; j < rep; j++) {
       /* compress data, minimal set */
-      RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (Index_t i, Index_t ielem) {
-         e_old[i] = domain.e(ielem) ;
-         delvc[i] = domain.delv(ielem) ;
-         p_old[i] = domain.p(ielem) ;
-         q_old[i] = domain.q(ielem) ;
-         qq_old[i] = domain.qq(ielem) ;
-         ql_old[i] = domain.ql(ielem) ;
-         work[i] = Real_t(0.) ;
+      RAJA::forall<mat_exec_policy>(regISet, [&] (Index_t ielem) {
+         p_old[ielem] = domain.p(ielem) ;
+         work[ielem] = Real_t(0.0) ;
       } );
 
-      RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (Index_t i, Index_t ielem) {
+      RAJA::forall<mat_exec_policy>(regISet, [&] (Index_t ielem) {
          Real_t vchalf ;
-         compression[i] = Real_t(1.) / vnewc[ielem] - Real_t(1.);
-         vchalf = vnewc[ielem] - delvc[i] * Real_t(.5);
-         compHalfStep[i] = Real_t(1.) / vchalf - Real_t(1.);
+         compression[ielem] = Real_t(1.) / vnewc[ielem] - Real_t(1.);
+         vchalf = vnewc[ielem] - domain.delv(ielem) * Real_t(.5);
+         compHalfStep[ielem] = Real_t(1.) / vchalf - Real_t(1.);
       } );
 
       /* Check for v > eosvmax or v < eosvmin */
       if ( eosvmin != Real_t(0.) ) {
-         RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (Index_t i, Index_t ielem) {
+         RAJA::forall<mat_exec_policy>(regISet, [&] (Index_t ielem) {
             if (vnewc[ielem] <= eosvmin) { /* impossible due to calling func? */
-               compHalfStep[i] = compression[i] ;
+               compHalfStep[ielem] = compression[ielem] ;
             }
          } );
       }
 
       if ( eosvmax != Real_t(0.) ) {
-         RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (Index_t i, Index_t ielem) {
+         RAJA::forall<mat_exec_policy>(regISet, [&] (Index_t ielem) {
             if (vnewc[ielem] >= eosvmax) { /* impossible due to calling func? */
-               p_old[i]        = Real_t(0.) ;
-               compression[i]  = Real_t(0.) ;
-               compHalfStep[i] = Real_t(0.) ;
+               p_old[ielem]        = Real_t(0.) ;
+               compression[ielem]  = Real_t(0.) ;
+               compHalfStep[ielem] = Real_t(0.) ;
             }
          } );
       }
 
-      CalcEnergyForElems(p_new, e_new, q_new, bvc, pbvc,
-                         p_old, e_old,  q_old, compression, compHalfStep,
-                         vnewc, work,  delvc, pmin,
+      CalcEnergyForElems(domain, p_new, e_new, q_new, bvc, pbvc,
+                         p_old, compression, compHalfStep,
+                         vnewc, work, pHalfStep, pmin,
                          p_cut, e_cut, q_cut, emin,
-                         qq_old, ql_old, rho0, eosvmax,
+                         rho0, eosvmax,
                          regISet);
    }
 
-   RAJA::forall_Icount<mat_exec_policy>(regISet, [&] (Index_t i, Index_t ielem) {
-      domain.p(ielem) = p_new[i] ;
-      domain.e(ielem) = e_new[i] ;
-      domain.q(ielem) = q_new[i] ;
+   RAJA::forall<mat_exec_policy>(regISet, [&] (Index_t ielem) {
+      domain.p(ielem) = p_new[ielem] ;
+      domain.e(ielem) = e_new[ielem] ;
+      domain.q(ielem) = q_new[ielem] ;
    } );
 
    CalcSoundSpeedForElems(domain,
@@ -2304,20 +2278,6 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
                           pbvc, bvc, ss4o3,
                           regISet) ;
 
-   Release(&pbvc) ;
-   Release(&bvc) ;
-   Release(&q_new) ;
-   Release(&e_new) ;
-   Release(&p_new) ;
-   Release(&work) ;
-   Release(&ql_old) ;
-   Release(&qq_old) ;
-   Release(&compHalfStep) ;
-   Release(&compression) ;
-   Release(&q_old) ;
-   Release(&p_old) ;
-   Release(&delvc) ;
-   Release(&e_old) ;
 }
 
 /******************************************/
@@ -2332,6 +2292,17 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
     Real_t eosvmin = domain.eosvmin() ;
     Real_t eosvmax = domain.eosvmax() ;
     Real_t *vnewc = Allocate<Real_t>(numElem) ;
+    Real_t *p_old = Allocate<Real_t>(numElem) ;
+    Real_t *compression = Allocate<Real_t>(numElem) ;
+    Real_t *compHalfStep = Allocate<Real_t>(numElem) ;
+    Real_t *work = Allocate<Real_t>(numElem) ;
+    Real_t *p_new = Allocate<Real_t>(numElem) ;
+    Real_t *e_new = Allocate<Real_t>(numElem) ;
+    Real_t *q_new = Allocate<Real_t>(numElem) ;
+    Real_t *bvc = Allocate<Real_t>(numElem) ;
+    Real_t *pbvc = Allocate<Real_t>(numElem) ;
+    Real_t *pHalfStep = Allocate<Real_t>(numElem) ;
+
 
     RAJA::forall<elem_exec_policy>(domain.getElemISet(), [&] (int i) {
        vnewc[i] = domain.vnew(i) ;
@@ -2359,11 +2330,11 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
        Real_t vc = domain.v(i) ;
        if (eosvmin != Real_t(0.)) {
           if (vc < eosvmin)
-             vc = eosvmin ;
+             vc = -1.0 ;
        }
        if (eosvmax != Real_t(0.)) {
           if (vc > eosvmax)
-             vc = eosvmax ;
+             vc = -1.0 ;
        }
        if (vc <= 0.) {
 #if USE_MPI             
@@ -2386,9 +2357,22 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
        //very expensive regions
        else
 	 rep = 10 * (1+ domain.cost());
-       EvalEOSForElems(domain, vnewc, reg_num, rep);
+       EvalEOSForElems(domain, vnewc, p_old, compression, compHalfStep,
+                       work, p_new, e_new, q_new, bvc, pbvc, pHalfStep,
+                       reg_num, rep);
     }
 
+    Release(&pHalfStep) ;
+    Release(&pbvc) ;
+    Release(&bvc) ;
+    Release(&q_new) ;
+    Release(&e_new) ;
+    Release(&p_new) ;
+    Release(&work) ;
+    Release(&compHalfStep) ;
+    Release(&compression) ;
+    Release(&p_old) ;
+    Release(&vnewc) ;
   }
 }
 
@@ -2692,16 +2676,7 @@ int main(int argc, char *argv[])
    }
    
    if ((myRank == 0) && (opts.quiet == 0)) {
-      Index_t *perm = new Index_t[locDom->getElemISet().getLength()] ;
-
-      /* the creation of this vector takes time, even though its parallel */
-      RAJA::forall_Icount<elem_exec_policy>(locDom->getElemISet(), [=] (int i, int elem) {
-         perm[elem] = i ;
-      } ) ;
-
-      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks, perm);
-
-      delete [] perm ;
+      VerifyAndWriteFinalOutput(elapsed_timeG, *locDom, opts.nx, numRanks);
    }
 
    delete locDom;
