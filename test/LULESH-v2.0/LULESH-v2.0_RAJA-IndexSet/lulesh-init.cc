@@ -40,6 +40,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 // set pointers to (potentially) "new'd" arrays to null to 
 // simplify deallocation.
 //
+   m_perm(0),
    m_regNumList(0),
    m_nodeElemStart(0),
    m_nodeElemCornerList(0),
@@ -54,7 +55,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    Index_t edgeElems = nx ;
    Index_t edgeNodes = edgeElems+1 ;
-   Index_t *perm = 0 ;
    this->cost() = cost;
 
    m_tp       = tp ;
@@ -79,6 +79,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 
    m_regNumList = new Index_t[numElem()] ;  // material indexset
 
+#if !defined(LULESH_LIST_INDEXSET)
+   m_perm = new Index_t[numElem()] ;
+#endif
    // Elem-centered 
    AllocateElemPersistent(numElem()) ;
 
@@ -106,18 +109,18 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    // Setup region index sets. For now, these are constant sized
    // throughout the run, but could be changed every cycle to 
    // simulate effects of ALE on the lagrange solver
-   CreateRegionIndexSets(nr, balance, &perm);
+   CreateRegionIndexSets(nr, balance);
 
    /* find element zero index */
    Index_t initEnergyElemIdx = 0 ;
 
    /* assign each material to a contiguous range of elements */
-   if (perm != 0) {
+   if ((m_perm != 0) && (nr != 1)) {
       /* permute nodelist connectivity */
       {
          Index_t tmp[8*numElem()] ;
          for (Index_t i=0; i<numElem(); ++i) {
-            Index_t *localNode = nodelist(perm[i]) ;
+            Index_t *localNode = nodelist(perm(i)) ;
             for (Index_t j=0; j<8; ++j) {
                tmp[i*8+j] = localNode[j] ;
             }
@@ -131,15 +134,15 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          Index_t iperm[numElem()] ; /* inverse permutation */
 
          for (Index_t i=0; i<numElem(); ++i) {
-            iperm[perm[i]] = i ;
+            iperm[perm(i)] = i ;
          }
          for (Index_t i=0; i<numElem(); ++i) {
-            tmp[i*6+0] = iperm[lxim(perm[i])] ;
-            tmp[i*6+1] = iperm[lxip(perm[i])] ;
-            tmp[i*6+2] = iperm[letam(perm[i])] ;
-            tmp[i*6+3] = iperm[letap(perm[i])] ;
-            tmp[i*6+4] = iperm[lzetam(perm[i])] ;
-            tmp[i*6+5] = iperm[lzetap(perm[i])] ;
+            tmp[i*6+0] = iperm[lxim(perm(i))] ;
+            tmp[i*6+1] = iperm[lxip(perm(i))] ;
+            tmp[i*6+2] = iperm[letam(perm(i))] ;
+            tmp[i*6+3] = iperm[letap(perm(i))] ;
+            tmp[i*6+4] = iperm[lzetam(perm(i))] ;
+            tmp[i*6+5] = iperm[lzetap(perm(i))] ;
          }
          for (Index_t i=0; i<numElem(); ++i) {
             lxim(i) = tmp[i*6+0] ;
@@ -156,15 +159,12 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       {
          Int_t tmp[numElem()] ;
          for (Index_t i=0; i<numElem(); ++i) {
-            tmp[i] = elemBC(perm[i]) ;
+            tmp[i] = elemBC(perm(i)) ;
          }
          for (Index_t i=0; i<numElem(); ++i) {
             elemBC(i) = tmp[i] ;
          }
       }
-
-      delete [] perm ;
-      perm = 0 ;
    }
 
    // Basic Field Initialization 
@@ -273,6 +273,9 @@ Domain::~Domain()
    }
    delete [] m_regElemlist;
    
+   if (m_perm != 0) {
+      delete [] m_perm ;
+   }
 #if USE_MPI
    delete [] commDataSend;
    delete [] commDataRecv;
@@ -471,7 +474,7 @@ Domain::CreateMeshIndexSets()
 
 ////////////////////////////////////////////////////////////////////////////////
 void
-Domain::CreateRegionIndexSets(Int_t nr, Int_t balance, Index_t **perm)
+Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 {
 #if USE_MPI   
    Index_t myRank;
@@ -496,6 +499,11 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance, Index_t **perm)
       regElemSize(0) = numElem();
       m_domRegISet.resize(numReg());
       m_domRegISet[0].push_back( RAJA::RangeSegment(0, regElemSize(0)) ) ;
+#if !defined(LULESH_LIST_INDEXSET)
+      for (int i=0; i<numElem(); ++i) {
+         perm(i) = i ;
+      }
+#endif
    }
    //If we have more than one region distribute the elements.
    else {
@@ -564,10 +572,6 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance, Index_t **perm)
 
       delete [] regBinEnd;
 
-#if !defined(LULESH_LIST_INDEXSET)
-      *perm = new Index_t[numElem()] ;
-#endif
-
       // Convert regNumList to region index sets
       // First, count size of each region 
       for (Index_t i=0 ; i<numElem() ; ++i) {
@@ -590,14 +594,13 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance, Index_t **perm)
       m_domRegISet.resize(numReg());
       int elemCount = 0 ;
       for (int r = 0; r < numReg(); ++r) {
-         if (*perm != 0) {
-            memcpy( &(*perm)[elemCount], regElemlist(r), sizeof(Index_t)*regElemSize(r) ) ;
-            m_domRegISet[r].push_back( RAJA::RangeSegment(elemCount, elemCount+regElemSize(r)) );
-            elemCount += regElemSize(r) ;
-         }
-         else {
-            m_domRegISet[r].push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) );
-         }
+#if !defined(LULESH_LIST_INDEXSET)
+         memcpy( &perm(elemCount), regElemlist(r), sizeof(Index_t)*regElemSize(r) ) ;
+         m_domRegISet[r].push_back( RAJA::RangeSegment(elemCount, elemCount+regElemSize(r)) );
+         elemCount += regElemSize(r) ;
+#else
+         m_domRegISet[r].push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) );
+#endif
       }
 
 #if 0 // Check correctness of index sets
