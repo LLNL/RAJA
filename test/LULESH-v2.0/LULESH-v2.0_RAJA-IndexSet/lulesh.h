@@ -31,6 +31,29 @@
 //
 typedef RAJA::IndexSet LULESH_ISET;
 
+//
+//   Policies for hybrid segment iteration and segment execution.
+//
+//   NOTE: Currently, we apply single policy across all loops
+//         with same iteration pattern.
+//
+typedef RAJA::seq_segit              IndexSet_SegIt;
+//typedef RAJA::omp_parallel_for_segit IndexSet_SegIt;
+//typedef RAJA::cilk_for_segit         IndexSet_SegIt;
+
+
+//typedef RAJA::seq_exec              SegExec;
+//typedef RAJA::simd_exec             SegExec;
+typedef RAJA::omp_parallel_for_exec SegExec;
+//typedef RAJA::cilk_for_exec         SegExec;
+
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> node_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> elem_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> mat_exec_policy;
+//typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, RAJA::seq_exec> mat_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> minloc_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> symnode_exec_policy;
+
 
 //**************************************************
 // Allow flexibility for arithmetic representations 
