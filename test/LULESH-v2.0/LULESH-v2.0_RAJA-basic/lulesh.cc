@@ -275,7 +275,7 @@ void TimeIncrement(Domain& domain)
 /******************************************/
 
 RAJA_STORAGE
-void CollectDomainNodesToElemNodes(Domain &domain,
+void CollectDomainNodesToElemNodes(Domain* domain,
                                    const Index_t* elemToNode,
                                    Real_t elemX[8],
                                    Real_t elemY[8],
@@ -290,39 +290,39 @@ void CollectDomainNodesToElemNodes(Domain &domain,
    Index_t nd6i = elemToNode[6] ;
    Index_t nd7i = elemToNode[7] ;
 
-   elemX[0] = domain.x(nd0i);
-   elemX[1] = domain.x(nd1i);
-   elemX[2] = domain.x(nd2i);
-   elemX[3] = domain.x(nd3i);
-   elemX[4] = domain.x(nd4i);
-   elemX[5] = domain.x(nd5i);
-   elemX[6] = domain.x(nd6i);
-   elemX[7] = domain.x(nd7i);
+   elemX[0] = domain->x(nd0i);
+   elemX[1] = domain->x(nd1i);
+   elemX[2] = domain->x(nd2i);
+   elemX[3] = domain->x(nd3i);
+   elemX[4] = domain->x(nd4i);
+   elemX[5] = domain->x(nd5i);
+   elemX[6] = domain->x(nd6i);
+   elemX[7] = domain->x(nd7i);
 
-   elemY[0] = domain.y(nd0i);
-   elemY[1] = domain.y(nd1i);
-   elemY[2] = domain.y(nd2i);
-   elemY[3] = domain.y(nd3i);
-   elemY[4] = domain.y(nd4i);
-   elemY[5] = domain.y(nd5i);
-   elemY[6] = domain.y(nd6i);
-   elemY[7] = domain.y(nd7i);
+   elemY[0] = domain->y(nd0i);
+   elemY[1] = domain->y(nd1i);
+   elemY[2] = domain->y(nd2i);
+   elemY[3] = domain->y(nd3i);
+   elemY[4] = domain->y(nd4i);
+   elemY[5] = domain->y(nd5i);
+   elemY[6] = domain->y(nd6i);
+   elemY[7] = domain->y(nd7i);
 
-   elemZ[0] = domain.z(nd0i);
-   elemZ[1] = domain.z(nd1i);
-   elemZ[2] = domain.z(nd2i);
-   elemZ[3] = domain.z(nd3i);
-   elemZ[4] = domain.z(nd4i);
-   elemZ[5] = domain.z(nd5i);
-   elemZ[6] = domain.z(nd6i);
-   elemZ[7] = domain.z(nd7i);
+   elemZ[0] = domain->z(nd0i);
+   elemZ[1] = domain->z(nd1i);
+   elemZ[2] = domain->z(nd2i);
+   elemZ[3] = domain->z(nd3i);
+   elemZ[4] = domain->z(nd4i);
+   elemZ[5] = domain->z(nd5i);
+   elemZ[6] = domain->z(nd6i);
+   elemZ[7] = domain->z(nd7i);
 
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void InitStressTermsForElems(Domain &domain,
+void InitStressTermsForElems(Domain* domain,
                              Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
                              Index_t numElem)
 {
@@ -331,7 +331,7 @@ void InitStressTermsForElems(Domain &domain,
    //
 
    RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
-      sigxx[i] = sigyy[i] = sigzz[i] =  - domain.p(i) - domain.q(i) ;
+      sigxx[i] = sigyy[i] = sigzz[i] =  - domain->p(i) - domain->q(i) ;
    } );
 }
 
@@ -530,7 +530,7 @@ void SumElemStressesToNodeForces( const Real_t B[][8],
                                   const Real_t stress_xx,
                                   const Real_t stress_yy,
                                   const Real_t stress_zz,
-                                  Real_t fx[], Real_t fy[], Real_t fz[] )
+                                  Real_t* fx, Real_t* fy, Real_t* fz )
 {
    for(Index_t i = 0; i < 8; i++) {
       fx[i] = -( stress_xx * B[0][i] );
@@ -542,7 +542,7 @@ void SumElemStressesToNodeForces( const Real_t B[][8],
 /******************************************/
 
 RAJA_STORAGE
-void IntegrateStressForElems( Domain &domain,
+void IntegrateStressForElems( Domain* domain,
                               Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
                               Real_t *determ, Index_t numElem, Index_t numNode)
 {
@@ -560,6 +560,10 @@ void IntegrateStressForElems( Domain &domain,
    Real_t fy_local[8] ;
    Real_t fz_local[8] ;
 
+   Real_t* tfx_local ;
+   Real_t* tfy_local ;
+   Real_t* tfz_local ;
+
 
   if (numthreads > 1) {
      fx_elem = Allocate<Real_t>(numElem8) ;
@@ -569,7 +573,7 @@ void IntegrateStressForElems( Domain &domain,
   // loop over all elements
 
   RAJA::forall<elem_exec_policy>(0, numElem, [=] (int k) {
-    const Index_t* const elemToNode = domain.nodelist(k);
+    const Index_t* const elemToNode = domain->nodelist(k);
     Real_t B[3][8] ;// shape function derivatives
     Real_t x_local[8] ;
     Real_t y_local[8] ;
@@ -595,14 +599,14 @@ void IntegrateStressForElems( Domain &domain,
     }
     else {
        SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-                                    fx_local, fy_local, fz_local ) ;
+                                    tfx_local, tfy_local, tfz_local ) ;
 
        // copy nodal force contributions to global force arrray.
        for( Index_t lnode=0 ; lnode<8 ; ++lnode ) {
           Index_t gnode = elemToNode[lnode];
-          domain.fx(gnode) += fx_local[lnode];
-          domain.fy(gnode) += fy_local[lnode];
-          domain.fz(gnode) += fz_local[lnode];
+          domain->fx(gnode) += tfx_local[lnode];
+          domain->fy(gnode) += tfy_local[lnode];
+          domain->fz(gnode) += tfz_local[lnode];
        }
     }
   } );
@@ -611,8 +615,8 @@ void IntegrateStressForElems( Domain &domain,
      // If threaded, then we need to copy the data out of the temporary
      // arrays used above into the final forces field
      RAJA::forall<node_exec_policy>(0, numNode, [=] (int gnode) {
-        Index_t count = domain.nodeElemCount(gnode) ;
-        Index_t *cornerList = domain.nodeElemCornerList(gnode) ;
+        Index_t count = domain->nodeElemCount(gnode) ;
+        Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
         Real_t fx_tmp = Real_t(0.0) ;
         Real_t fy_tmp = Real_t(0.0) ;
         Real_t fz_tmp = Real_t(0.0) ;
@@ -622,9 +626,9 @@ void IntegrateStressForElems( Domain &domain,
            fy_tmp += fy_elem[ielem] ;
            fz_tmp += fz_elem[ielem] ;
         }
-        domain.fx(gnode) = fx_tmp ;
-        domain.fy(gnode) = fy_tmp ;
-        domain.fz(gnode) = fz_tmp ;
+        domain->fx(gnode) = fx_tmp ;
+        domain->fy(gnode) = fy_tmp ;
+        domain->fz(gnode) = fz_tmp ;
      } );
      Release(&fz_elem) ;
      Release(&fy_elem) ;
@@ -754,7 +758,7 @@ void CalcElemFBHourglassForce(Real_t *xd, Real_t *yd, Real_t *zd,  Real_t hourga
 /******************************************/
 
 RAJA_STORAGE
-void CalcFBHourglassForceForElems( Domain &domain,
+void CalcFBHourglassForceForElems( Domain* domain,
                                    Real_t *determ,
                                    Real_t *x8n, Real_t *y8n, Real_t *z8n,
                                    Real_t *dvdx, Real_t *dvdy, Real_t *dvdz,
@@ -834,7 +838,7 @@ void CalcFBHourglassForceForElems( Domain &domain,
       Real_t hourgam[8][4];
       Real_t xd1[8], yd1[8], zd1[8] ;
 
-      const Index_t *elemToNode = domain.nodelist(i2);
+      const Index_t *elemToNode = domain->nodelist(i2);
       Index_t i3=8*i2;
       Real_t volinv=Real_t(1.0)/determ[i2];
       Real_t ss1, mass1, volume13 ;
@@ -895,8 +899,8 @@ void CalcFBHourglassForceForElems( Domain &domain,
       /* compute forces */
       /* store forces into h arrays (force arrays) */
 
-      ss1=domain.ss(i2);
-      mass1=domain.elemMass(i2);
+      ss1=domain->ss(i2);
+      mass1=domain->elemMass(i2);
       volume13=CBRT(determ[i2]);
 
       Index_t n0si2 = elemToNode[0];
@@ -908,32 +912,32 @@ void CalcFBHourglassForceForElems( Domain &domain,
       Index_t n6si2 = elemToNode[6];
       Index_t n7si2 = elemToNode[7];
 
-      xd1[0] = domain.xd(n0si2);
-      xd1[1] = domain.xd(n1si2);
-      xd1[2] = domain.xd(n2si2);
-      xd1[3] = domain.xd(n3si2);
-      xd1[4] = domain.xd(n4si2);
-      xd1[5] = domain.xd(n5si2);
-      xd1[6] = domain.xd(n6si2);
-      xd1[7] = domain.xd(n7si2);
+      xd1[0] = domain->xd(n0si2);
+      xd1[1] = domain->xd(n1si2);
+      xd1[2] = domain->xd(n2si2);
+      xd1[3] = domain->xd(n3si2);
+      xd1[4] = domain->xd(n4si2);
+      xd1[5] = domain->xd(n5si2);
+      xd1[6] = domain->xd(n6si2);
+      xd1[7] = domain->xd(n7si2);
 
-      yd1[0] = domain.yd(n0si2);
-      yd1[1] = domain.yd(n1si2);
-      yd1[2] = domain.yd(n2si2);
-      yd1[3] = domain.yd(n3si2);
-      yd1[4] = domain.yd(n4si2);
-      yd1[5] = domain.yd(n5si2);
-      yd1[6] = domain.yd(n6si2);
-      yd1[7] = domain.yd(n7si2);
+      yd1[0] = domain->yd(n0si2);
+      yd1[1] = domain->yd(n1si2);
+      yd1[2] = domain->yd(n2si2);
+      yd1[3] = domain->yd(n3si2);
+      yd1[4] = domain->yd(n4si2);
+      yd1[5] = domain->yd(n5si2);
+      yd1[6] = domain->yd(n6si2);
+      yd1[7] = domain->yd(n7si2);
 
-      zd1[0] = domain.zd(n0si2);
-      zd1[1] = domain.zd(n1si2);
-      zd1[2] = domain.zd(n2si2);
-      zd1[3] = domain.zd(n3si2);
-      zd1[4] = domain.zd(n4si2);
-      zd1[5] = domain.zd(n5si2);
-      zd1[6] = domain.zd(n6si2);
-      zd1[7] = domain.zd(n7si2);
+      zd1[0] = domain->zd(n0si2);
+      zd1[1] = domain->zd(n1si2);
+      zd1[2] = domain->zd(n2si2);
+      zd1[3] = domain->zd(n3si2);
+      zd1[4] = domain->zd(n4si2);
+      zd1[5] = domain->zd(n5si2);
+      zd1[6] = domain->zd(n6si2);
+      zd1[7] = domain->zd(n7si2);
 
       coefficient = - hourg * Real_t(0.01) * ss1 * mass1 / volume13;
 
@@ -975,45 +979,45 @@ void CalcFBHourglassForceForElems( Domain &domain,
          fz_local[7] = hgfz[7];
       }
       else {
-         domain.fx(n0si2) += hgfx[0];
-         domain.fy(n0si2) += hgfy[0];
-         domain.fz(n0si2) += hgfz[0];
+         domain->fx(n0si2) += hgfx[0];
+         domain->fy(n0si2) += hgfy[0];
+         domain->fz(n0si2) += hgfz[0];
 
-         domain.fx(n1si2) += hgfx[1];
-         domain.fy(n1si2) += hgfy[1];
-         domain.fz(n1si2) += hgfz[1];
+         domain->fx(n1si2) += hgfx[1];
+         domain->fy(n1si2) += hgfy[1];
+         domain->fz(n1si2) += hgfz[1];
 
-         domain.fx(n2si2) += hgfx[2];
-         domain.fy(n2si2) += hgfy[2];
-         domain.fz(n2si2) += hgfz[2];
+         domain->fx(n2si2) += hgfx[2];
+         domain->fy(n2si2) += hgfy[2];
+         domain->fz(n2si2) += hgfz[2];
 
-         domain.fx(n3si2) += hgfx[3];
-         domain.fy(n3si2) += hgfy[3];
-         domain.fz(n3si2) += hgfz[3];
+         domain->fx(n3si2) += hgfx[3];
+         domain->fy(n3si2) += hgfy[3];
+         domain->fz(n3si2) += hgfz[3];
 
-         domain.fx(n4si2) += hgfx[4];
-         domain.fy(n4si2) += hgfy[4];
-         domain.fz(n4si2) += hgfz[4];
+         domain->fx(n4si2) += hgfx[4];
+         domain->fy(n4si2) += hgfy[4];
+         domain->fz(n4si2) += hgfz[4];
 
-         domain.fx(n5si2) += hgfx[5];
-         domain.fy(n5si2) += hgfy[5];
-         domain.fz(n5si2) += hgfz[5];
+         domain->fx(n5si2) += hgfx[5];
+         domain->fy(n5si2) += hgfy[5];
+         domain->fz(n5si2) += hgfz[5];
 
-         domain.fx(n6si2) += hgfx[6];
-         domain.fy(n6si2) += hgfy[6];
-         domain.fz(n6si2) += hgfz[6];
+         domain->fx(n6si2) += hgfx[6];
+         domain->fy(n6si2) += hgfy[6];
+         domain->fz(n6si2) += hgfz[6];
 
-         domain.fx(n7si2) += hgfx[7];
-         domain.fy(n7si2) += hgfy[7];
-         domain.fz(n7si2) += hgfz[7];
+         domain->fx(n7si2) += hgfx[7];
+         domain->fy(n7si2) += hgfy[7];
+         domain->fz(n7si2) += hgfz[7];
       }
    } );
 
    if (numthreads > 1) {
      // Collect the data from the local arrays into the final force arrays
       RAJA::forall<node_exec_policy>(0, numNode, [=] (int gnode) {
-         Index_t count = domain.nodeElemCount(gnode) ;
-         Index_t *cornerList = domain.nodeElemCornerList(gnode) ;
+         Index_t count = domain->nodeElemCount(gnode) ;
+         Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
          Real_t fx_tmp = Real_t(0.0) ;
          Real_t fy_tmp = Real_t(0.0) ;
          Real_t fz_tmp = Real_t(0.0) ;
@@ -1023,9 +1027,9 @@ void CalcFBHourglassForceForElems( Domain &domain,
             fy_tmp += fy_elem[ielem] ;
             fz_tmp += fz_elem[ielem] ;
          }
-         domain.fx(gnode) += fx_tmp ;
-         domain.fy(gnode) += fy_tmp ;
-         domain.fz(gnode) += fz_tmp ;
+         domain->fx(gnode) += fx_tmp ;
+         domain->fy(gnode) += fy_tmp ;
+         domain->fz(gnode) += fz_tmp ;
       } );
       Release(&fz_elem) ;
       Release(&fy_elem) ;
@@ -1036,10 +1040,10 @@ void CalcFBHourglassForceForElems( Domain &domain,
 /******************************************/
 
 RAJA_STORAGE
-void CalcHourglassControlForElems(Domain& domain,
+void CalcHourglassControlForElems(Domain* domain,
                                   Real_t determ[], Real_t hgcoef)
 {
-   Index_t numElem = domain.numElem() ;
+   Index_t numElem = domain->numElem() ;
    Index_t numElem8 = numElem * 8 ;
    Real_t *dvdx = Allocate<Real_t>(numElem8) ;
    Real_t *dvdy = Allocate<Real_t>(numElem8) ;
@@ -1053,7 +1057,7 @@ void CalcHourglassControlForElems(Domain& domain,
       Real_t  x1[8],  y1[8],  z1[8] ;
       Real_t pfx[8], pfy[8], pfz[8] ;
 
-      Index_t* elemToNode = domain.nodelist(i);
+      Index_t* elemToNode = domain->nodelist(i);
       CollectDomainNodesToElemNodes(domain, elemToNode, x1, y1, z1);
 
       CalcElemVolumeDerivative(pfx, pfy, pfz, x1, y1, z1);
@@ -1070,10 +1074,10 @@ void CalcHourglassControlForElems(Domain& domain,
          z8n[jj]  = z1[ii];
       }
 
-      determ[i] = domain.volo(i) * domain.v(i);
+      determ[i] = domain->volo(i) * domain->v(i);
 
       /* Do a check for negative volumes */
-      if ( domain.v(i) <= Real_t(0.0) ) {
+      if ( domain->v(i) <= Real_t(0.0) ) {
 #if USE_MPI         
          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
@@ -1085,7 +1089,7 @@ void CalcHourglassControlForElems(Domain& domain,
    if ( hgcoef > Real_t(0.) ) {
       CalcFBHourglassForceForElems( domain,
                                     determ, x8n, y8n, z8n, dvdx, dvdy, dvdz,
-                                    hgcoef, numElem, domain.numNode()) ;
+                                    hgcoef, numElem, domain->numNode()) ;
    }
 
    Release(&z8n) ;
@@ -1101,11 +1105,11 @@ void CalcHourglassControlForElems(Domain& domain,
 /******************************************/
 
 RAJA_STORAGE
-void CalcVolumeForceForElems(Domain& domain)
+void CalcVolumeForceForElems(Domain* domain)
 {
-   Index_t numElem = domain.numElem() ;
+   Index_t numElem = domain->numElem() ;
    if (numElem != 0) {
-      Real_t  hgcoef = domain.hgcoef() ;
+      Real_t  hgcoef = domain->hgcoef() ;
       Real_t *sigxx  = Allocate<Real_t>(numElem) ;
       Real_t *sigyy  = Allocate<Real_t>(numElem) ;
       Real_t *sigzz  = Allocate<Real_t>(numElem) ;
@@ -1118,7 +1122,7 @@ void CalcVolumeForceForElems(Domain& domain)
       // material stresses.
       IntegrateStressForElems( domain,
                                sigxx, sigyy, sigzz, determ, numElem,
-                               domain.numNode()) ;
+                               domain->numNode()) ;
 
       // check for negative element volume
       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int k) {
@@ -1142,20 +1146,20 @@ void CalcVolumeForceForElems(Domain& domain)
 
 /******************************************/
 
-RAJA_STORAGE void CalcForceForNodes(Domain& domain)
+RAJA_STORAGE void CalcForceForNodes(Domain* domain)
 {
-  Index_t numNode = domain.numNode() ;
+  Index_t numNode = domain->numNode() ;
 
 #if USE_MPI  
-  CommRecv(domain, MSG_COMM_SBN, 3,
-           domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+  CommRecv(*domain, MSG_COMM_SBN, 3,
+           domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() + 1,
            true, false) ;
 #endif  
 
   RAJA::forall<node_exec_policy>(0, numNode, [=] (int i) {
-     domain.fx(i) = Real_t(0.0) ;
-     domain.fy(i) = Real_t(0.0) ;
-     domain.fz(i) = Real_t(0.0) ;
+     domain->fx(i) = Real_t(0.0) ;
+     domain->fy(i) = Real_t(0.0) ;
+     domain->fz(i) = Real_t(0.0) ;
   } );
 
   /* Calcforce calls partial, force, hourq */
@@ -1167,32 +1171,32 @@ RAJA_STORAGE void CalcForceForNodes(Domain& domain)
   fieldData[1] = &Domain::fy ;
   fieldData[2] = &Domain::fz ;
   
-  CommSend(domain, MSG_COMM_SBN, 3, fieldData,
-           domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() +  1,
+  CommSend(*domain, MSG_COMM_SBN, 3, fieldData,
+           domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() +  1,
            true, false) ;
-  CommSBN(domain, 3, fieldData) ;
+  CommSBN(*domain, 3, fieldData) ;
 #endif  
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcAccelerationForNodes(Domain &domain, Index_t numNode)
+void CalcAccelerationForNodes(Domain* domain, Index_t numNode)
 {
    
    RAJA::forall<node_exec_policy>(0, numNode, [=] (int i) {
-      domain.xdd(i) = domain.fx(i) / domain.nodalMass(i);
-      domain.ydd(i) = domain.fy(i) / domain.nodalMass(i);
-      domain.zdd(i) = domain.fz(i) / domain.nodalMass(i);
+      domain->xdd(i) = domain->fx(i) / domain->nodalMass(i);
+      domain->ydd(i) = domain->fy(i) / domain->nodalMass(i);
+      domain->zdd(i) = domain->fz(i) / domain->nodalMass(i);
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
+void ApplyAccelerationBoundaryConditionsForNodes(Domain* domain)
 {
-   Index_t size = domain.sizeX();
+   Index_t size = domain->sizeX();
    Index_t numNodeBC = (size+1)*(size+1) ;
 
 #if defined(TRY_NO_WAIT)
@@ -1200,33 +1204,33 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
    {
 #endif
 
-   if (!domain.symmXempty() != 0) {
+   if (!domain->symmXempty() != 0) {
 #if defined(TRY_NO_WAIT)
       RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [=] (int i) {
 #else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [=] (int i) {
 #endif
-         domain.xdd(domain.symmX(i)) = Real_t(0.0) ;
+         domain->xdd(domain->symmX(i)) = Real_t(0.0) ;
       } );
    }
 
-   if (!domain.symmYempty() != 0) {
+   if (!domain->symmYempty() != 0) {
 #if defined(TRY_NO_WAIT)
       RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [=] (int i) {
 #else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [=] (int i) {
 #endif
-         domain.ydd(domain.symmY(i)) = Real_t(0.0) ;
+         domain->ydd(domain->symmY(i)) = Real_t(0.0) ;
       } );
    }
 
-   if (!domain.symmZempty() != 0) {
+   if (!domain->symmZempty() != 0) {
 #if defined(TRY_NO_WAIT)
       RAJA::forall<range_nowait_exec>(int(0), int(numNodeBC), [=] (int i) {
 #else
       RAJA::forall<range_exec_policy>(int(0), int(numNodeBC), [=] (int i) {
 #endif
-         domain.zdd(domain.symmZ(i)) = Real_t(0.0) ;
+         domain->zdd(domain->symmZ(i)) = Real_t(0.0) ;
       } );
    }
 
@@ -1239,50 +1243,50 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain& domain)
 /******************************************/
 
 RAJA_STORAGE
-void CalcVelocityForNodes(Domain &domain, const Real_t dt, const Real_t u_cut,
+void CalcVelocityForNodes(Domain* domain, const Real_t dt, const Real_t u_cut,
                           Index_t numNode)
 {
 
    RAJA::forall<node_exec_policy>(0, numNode, [=] (int i) {
      Real_t xdtmp, ydtmp, zdtmp ;
 
-     xdtmp = domain.xd(i) + domain.xdd(i) * dt ;
+     xdtmp = domain->xd(i) + domain->xdd(i) * dt ;
      if( FABS(xdtmp) < u_cut ) xdtmp = Real_t(0.0);
-     domain.xd(i) = xdtmp ;
+     domain->xd(i) = xdtmp ;
 
-     ydtmp = domain.yd(i) + domain.ydd(i) * dt ;
+     ydtmp = domain->yd(i) + domain->ydd(i) * dt ;
      if( FABS(ydtmp) < u_cut ) ydtmp = Real_t(0.0);
-     domain.yd(i) = ydtmp ;
+     domain->yd(i) = ydtmp ;
 
-     zdtmp = domain.zd(i) + domain.zdd(i) * dt ;
+     zdtmp = domain->zd(i) + domain->zdd(i) * dt ;
      if( FABS(zdtmp) < u_cut ) zdtmp = Real_t(0.0);
-     domain.zd(i) = zdtmp ;
+     domain->zd(i) = zdtmp ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcPositionForNodes(Domain &domain, const Real_t dt, Index_t numNode)
+void CalcPositionForNodes(Domain* domain, const Real_t dt, Index_t numNode)
 {
    RAJA::forall<node_exec_policy>(0, numNode, [=] (int i) {
-     domain.x(i) += domain.xd(i) * dt ;
-     domain.y(i) += domain.yd(i) * dt ;
-     domain.z(i) += domain.zd(i) * dt ;
+     domain->x(i) += domain->xd(i) * dt ;
+     domain->y(i) += domain->yd(i) * dt ;
+     domain->z(i) += domain->zd(i) * dt ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void LagrangeNodal(Domain& domain)
+void LagrangeNodal(Domain* domain)
 {
 #if defined(SEDOV_SYNC_POS_VEL_EARLY)
    Domain_member fieldData[6] ;
 #endif
 
-   const Real_t delt = domain.deltatime() ;
-   Real_t u_cut = domain.u_cut() ;
+   const Real_t delt = domain->deltatime() ;
+   Real_t u_cut = domain->u_cut() ;
 
   /* time of boundary condition evaluation is beginning of step for force and
    * acceleration boundary conditions. */
@@ -1290,19 +1294,19 @@ void LagrangeNodal(Domain& domain)
 
 #if USE_MPI  
 #if defined(SEDOV_SYNC_POS_VEL_EARLY)
-   CommRecv(domain, MSG_SYNC_POS_VEL, 6,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   CommRecv(*domain, MSG_SYNC_POS_VEL, 6,
+            domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() + 1,
             false, false) ;
 #endif
 #endif
    
-   CalcAccelerationForNodes(domain, domain.numNode());
+   CalcAccelerationForNodes(domain, domain->numNode());
    
    ApplyAccelerationBoundaryConditionsForNodes(domain);
 
-   CalcVelocityForNodes( domain, delt, u_cut, domain.numNode()) ;
+   CalcVelocityForNodes( domain, delt, u_cut, domain->numNode()) ;
 
-   CalcPositionForNodes( domain, delt, domain.numNode() );
+   CalcPositionForNodes( domain, delt, domain->numNode() );
 #if USE_MPI
 #if defined(SEDOV_SYNC_POS_VEL_EARLY)
   fieldData[0] = &Domain::x ;
@@ -1312,10 +1316,10 @@ void LagrangeNodal(Domain& domain)
   fieldData[4] = &Domain::yd ;
   fieldData[5] = &Domain::zd ;
 
-   CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   CommSend(*domain, MSG_SYNC_POS_VEL, 6, fieldData,
+            domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() + 1,
             false, false) ;
-   CommSyncPosVel(domain) ;
+   CommSyncPosVel(*domain) ;
 #endif
 #endif
    
@@ -1556,7 +1560,7 @@ void CalcElemVelocityGradient( const Real_t* const xvel,
 /******************************************/
 
 //RAJA_STORAGE
-void CalcKinematicsForElems( Domain &domain,
+void CalcKinematicsForElems( Domain* domain,
                              Real_t deltaTime, Index_t numElem )
 {
 
@@ -1574,28 +1578,28 @@ void CalcKinematicsForElems( Domain &domain,
 
     Real_t volume ;
     Real_t relativeVolume ;
-    const Index_t* const elemToNode = domain.nodelist(k) ;
+    const Index_t* const elemToNode = domain->nodelist(k) ;
 
     // get nodal coordinates from global arrays and copy into local arrays.
     CollectDomainNodesToElemNodes(domain, elemToNode, x_local, y_local, z_local);
 
     // volume calculations
     volume = CalcElemVolume(x_local, y_local, z_local );
-    relativeVolume = volume / domain.volo(k) ;
-    domain.vnew(k) = relativeVolume ;
-    domain.delv(k) = relativeVolume - domain.v(k) ;
+    relativeVolume = volume / domain->volo(k) ;
+    domain->vnew(k) = relativeVolume ;
+    domain->delv(k) = relativeVolume - domain->v(k) ;
 
     // set characteristic length
-    domain.arealg(k) = CalcElemCharacteristicLength(x_local, y_local, z_local,
+    domain->arealg(k) = CalcElemCharacteristicLength(x_local, y_local, z_local,
                                              volume);
 
     // get nodal velocities from global array and copy into local arrays.
     for( Index_t lnode=0 ; lnode<8 ; ++lnode )
     {
       Index_t gnode = elemToNode[lnode];
-      xd_local[lnode] = domain.xd(gnode);
-      yd_local[lnode] = domain.yd(gnode);
-      zd_local[lnode] = domain.zd(gnode);
+      xd_local[lnode] = domain->xd(gnode);
+      yd_local[lnode] = domain->yd(gnode);
+      zd_local[lnode] = domain->zd(gnode);
     }
 
     Real_t dt2 = Real_t(0.5) * deltaTime;
@@ -1613,39 +1617,39 @@ void CalcKinematicsForElems( Domain &domain,
                                B, detJ, D );
 
     // put velocity gradient quantities into their global arrays.
-    domain.dxx(k) = D[0];
-    domain.dyy(k) = D[1];
-    domain.dzz(k) = D[2];
+    domain->dxx(k) = D[0];
+    domain->dyy(k) = D[1];
+    domain->dzz(k) = D[2];
   } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcLagrangeElements(Domain& domain)
+void CalcLagrangeElements(Domain* domain)
 {
-   Index_t numElem = domain.numElem() ;
+   Index_t numElem = domain->numElem() ;
    if (numElem > 0) {
-      const Real_t deltatime = domain.deltatime() ;
+      const Real_t deltatime = domain->deltatime() ;
 
-      domain.AllocateStrains(numElem);
+      domain->AllocateStrains(numElem);
 
       CalcKinematicsForElems(domain, deltatime, numElem) ;
 
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int k) {
          // calc strain rate and apply as constraint (only done in FB element)
-         Real_t vdov = domain.dxx(k) + domain.dyy(k) + domain.dzz(k) ;
+         Real_t vdov = domain->dxx(k) + domain->dyy(k) + domain->dzz(k) ;
          Real_t vdovthird = vdov/Real_t(3.0) ;
 
          // make the rate of deformation tensor deviatoric
-         domain.vdov(k) = vdov ;
-         domain.dxx(k) -= vdovthird ;
-         domain.dyy(k) -= vdovthird ;
-         domain.dzz(k) -= vdovthird ;
+         domain->vdov(k) = vdov ;
+         domain->dxx(k) -= vdovthird ;
+         domain->dyy(k) -= vdovthird ;
+         domain->dzz(k) -= vdovthird ;
 
         // See if any volumes are negative, and take appropriate action.
-         if (domain.vnew(k) <= Real_t(0.0))
+         if (domain->vnew(k) <= Real_t(0.0))
         {
 #if USE_MPI           
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
@@ -1654,23 +1658,23 @@ void CalcLagrangeElements(Domain& domain)
 #endif
         }
       } );
-      domain.DeallocateStrains();
+      domain->DeallocateStrains();
    }
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcMonotonicQGradientsForElems(Domain& domain)
+void CalcMonotonicQGradientsForElems(Domain* domain)
 {
-   Index_t numElem = domain.numElem();
+   Index_t numElem = domain->numElem();
 
    RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
       const Real_t ptiny = Real_t(1.e-36) ;
       Real_t ax,ay,az ;
       Real_t dxv,dyv,dzv ;
 
-      const Index_t *elemToNode = domain.nodelist(i);
+      const Index_t *elemToNode = domain->nodelist(i);
       Index_t n0 = elemToNode[0] ;
       Index_t n1 = elemToNode[1] ;
       Index_t n2 = elemToNode[2] ;
@@ -1680,61 +1684,61 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       Index_t n6 = elemToNode[6] ;
       Index_t n7 = elemToNode[7] ;
 
-      Real_t x0 = domain.x(n0) ;
-      Real_t x1 = domain.x(n1) ;
-      Real_t x2 = domain.x(n2) ;
-      Real_t x3 = domain.x(n3) ;
-      Real_t x4 = domain.x(n4) ;
-      Real_t x5 = domain.x(n5) ;
-      Real_t x6 = domain.x(n6) ;
-      Real_t x7 = domain.x(n7) ;
+      Real_t x0 = domain->x(n0) ;
+      Real_t x1 = domain->x(n1) ;
+      Real_t x2 = domain->x(n2) ;
+      Real_t x3 = domain->x(n3) ;
+      Real_t x4 = domain->x(n4) ;
+      Real_t x5 = domain->x(n5) ;
+      Real_t x6 = domain->x(n6) ;
+      Real_t x7 = domain->x(n7) ;
 
-      Real_t y0 = domain.y(n0) ;
-      Real_t y1 = domain.y(n1) ;
-      Real_t y2 = domain.y(n2) ;
-      Real_t y3 = domain.y(n3) ;
-      Real_t y4 = domain.y(n4) ;
-      Real_t y5 = domain.y(n5) ;
-      Real_t y6 = domain.y(n6) ;
-      Real_t y7 = domain.y(n7) ;
+      Real_t y0 = domain->y(n0) ;
+      Real_t y1 = domain->y(n1) ;
+      Real_t y2 = domain->y(n2) ;
+      Real_t y3 = domain->y(n3) ;
+      Real_t y4 = domain->y(n4) ;
+      Real_t y5 = domain->y(n5) ;
+      Real_t y6 = domain->y(n6) ;
+      Real_t y7 = domain->y(n7) ;
 
-      Real_t z0 = domain.z(n0) ;
-      Real_t z1 = domain.z(n1) ;
-      Real_t z2 = domain.z(n2) ;
-      Real_t z3 = domain.z(n3) ;
-      Real_t z4 = domain.z(n4) ;
-      Real_t z5 = domain.z(n5) ;
-      Real_t z6 = domain.z(n6) ;
-      Real_t z7 = domain.z(n7) ;
+      Real_t z0 = domain->z(n0) ;
+      Real_t z1 = domain->z(n1) ;
+      Real_t z2 = domain->z(n2) ;
+      Real_t z3 = domain->z(n3) ;
+      Real_t z4 = domain->z(n4) ;
+      Real_t z5 = domain->z(n5) ;
+      Real_t z6 = domain->z(n6) ;
+      Real_t z7 = domain->z(n7) ;
 
-      Real_t xv0 = domain.xd(n0) ;
-      Real_t xv1 = domain.xd(n1) ;
-      Real_t xv2 = domain.xd(n2) ;
-      Real_t xv3 = domain.xd(n3) ;
-      Real_t xv4 = domain.xd(n4) ;
-      Real_t xv5 = domain.xd(n5) ;
-      Real_t xv6 = domain.xd(n6) ;
-      Real_t xv7 = domain.xd(n7) ;
+      Real_t xv0 = domain->xd(n0) ;
+      Real_t xv1 = domain->xd(n1) ;
+      Real_t xv2 = domain->xd(n2) ;
+      Real_t xv3 = domain->xd(n3) ;
+      Real_t xv4 = domain->xd(n4) ;
+      Real_t xv5 = domain->xd(n5) ;
+      Real_t xv6 = domain->xd(n6) ;
+      Real_t xv7 = domain->xd(n7) ;
 
-      Real_t yv0 = domain.yd(n0) ;
-      Real_t yv1 = domain.yd(n1) ;
-      Real_t yv2 = domain.yd(n2) ;
-      Real_t yv3 = domain.yd(n3) ;
-      Real_t yv4 = domain.yd(n4) ;
-      Real_t yv5 = domain.yd(n5) ;
-      Real_t yv6 = domain.yd(n6) ;
-      Real_t yv7 = domain.yd(n7) ;
+      Real_t yv0 = domain->yd(n0) ;
+      Real_t yv1 = domain->yd(n1) ;
+      Real_t yv2 = domain->yd(n2) ;
+      Real_t yv3 = domain->yd(n3) ;
+      Real_t yv4 = domain->yd(n4) ;
+      Real_t yv5 = domain->yd(n5) ;
+      Real_t yv6 = domain->yd(n6) ;
+      Real_t yv7 = domain->yd(n7) ;
 
-      Real_t zv0 = domain.zd(n0) ;
-      Real_t zv1 = domain.zd(n1) ;
-      Real_t zv2 = domain.zd(n2) ;
-      Real_t zv3 = domain.zd(n3) ;
-      Real_t zv4 = domain.zd(n4) ;
-      Real_t zv5 = domain.zd(n5) ;
-      Real_t zv6 = domain.zd(n6) ;
-      Real_t zv7 = domain.zd(n7) ;
+      Real_t zv0 = domain->zd(n0) ;
+      Real_t zv1 = domain->zd(n1) ;
+      Real_t zv2 = domain->zd(n2) ;
+      Real_t zv3 = domain->zd(n3) ;
+      Real_t zv4 = domain->zd(n4) ;
+      Real_t zv5 = domain->zd(n5) ;
+      Real_t zv6 = domain->zd(n6) ;
+      Real_t zv7 = domain->zd(n7) ;
 
-      Real_t vol = domain.volo(i)*domain.vnew(i) ;
+      Real_t vol = domain->volo(i)*domain->vnew(i) ;
       Real_t norm = Real_t(1.0) / ( vol + ptiny ) ;
 
       Real_t dxj = Real_t(-0.25)*((x0+x1+x5+x4) - (x3+x2+x6+x7)) ;
@@ -1755,7 +1759,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       ay = dzi*dxj - dxi*dzj ;
       az = dxi*dyj - dyi*dxj ;
 
-      domain.delx_zeta(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
+      domain->delx_zeta(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
 
       ax *= norm ;
       ay *= norm ;
@@ -1765,7 +1769,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       dyv = Real_t(0.25)*((yv4+yv5+yv6+yv7) - (yv0+yv1+yv2+yv3)) ;
       dzv = Real_t(0.25)*((zv4+zv5+zv6+zv7) - (zv0+zv1+zv2+zv3)) ;
 
-      domain.delv_zeta(i) = ax*dxv + ay*dyv + az*dzv ;
+      domain->delv_zeta(i) = ax*dxv + ay*dyv + az*dzv ;
 
       /* find delxi and delvi ( j cross k ) */
 
@@ -1773,7 +1777,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       ay = dzj*dxk - dxj*dzk ;
       az = dxj*dyk - dyj*dxk ;
 
-      domain.delx_xi(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
+      domain->delx_xi(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
 
       ax *= norm ;
       ay *= norm ;
@@ -1783,7 +1787,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       dyv = Real_t(0.25)*((yv1+yv2+yv6+yv5) - (yv0+yv3+yv7+yv4)) ;
       dzv = Real_t(0.25)*((zv1+zv2+zv6+zv5) - (zv0+zv3+zv7+zv4)) ;
 
-      domain.delv_xi(i) = ax*dxv + ay*dyv + az*dzv ;
+      domain->delv_xi(i) = ax*dxv + ay*dyv + az*dzv ;
 
       /* find delxj and delvj ( k cross i ) */
 
@@ -1791,7 +1795,7 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       ay = dzk*dxi - dxk*dzi ;
       az = dxk*dyi - dyk*dxi ;
 
-      domain.delx_eta(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
+      domain->delx_eta(i) = vol / SQRT(ax*ax + ay*ay + az*az + ptiny) ;
 
       ax *= norm ;
       ay *= norm ;
@@ -1801,35 +1805,35 @@ void CalcMonotonicQGradientsForElems(Domain& domain)
       dyv = Real_t(-0.25)*((yv0+yv1+yv5+yv4) - (yv3+yv2+yv6+yv7)) ;
       dzv = Real_t(-0.25)*((zv0+zv1+zv5+zv4) - (zv3+zv2+zv6+zv7)) ;
 
-      domain.delv_eta(i) = ax*dxv + ay*dyv + az*dzv ;
+      domain->delv_eta(i) = ax*dxv + ay*dyv + az*dzv ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
+void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
                                   Real_t ptiny)
 {
-   Real_t monoq_limiter_mult = domain.monoq_limiter_mult();
-   Real_t monoq_max_slope = domain.monoq_max_slope();
-   Real_t qlc_monoq = domain.qlc_monoq();
-   Real_t qqc_monoq = domain.qqc_monoq();
+   Real_t monoq_limiter_mult = domain->monoq_limiter_mult();
+   Real_t monoq_max_slope = domain->monoq_max_slope();
+   Real_t qlc_monoq = domain->qlc_monoq();
+   Real_t qqc_monoq = domain->qqc_monoq();
 
-   RAJA::forall<mat_exec_policy>(0, domain.regElemSize(r), [=] (int i) { 
-      Index_t ielem = domain.regElemlist(r,i);
+   RAJA::forall<mat_exec_policy>(0, domain->regElemSize(r), [=] (int i) { 
+      Index_t ielem = domain->regElemlist(r,i);
       Real_t qlin, qquad ;
       Real_t phixi, phieta, phizeta ;
-      Int_t bcMask = domain.elemBC(ielem) ;
+      Int_t bcMask = domain->elemBC(ielem) ;
       Real_t delvm = 0.0, delvp =0.0;
 
       /*  phixi     */
-      Real_t norm = Real_t(1.) / (domain.delv_xi(ielem)+ ptiny ) ;
+      Real_t norm = Real_t(1.) / (domain->delv_xi(ielem)+ ptiny ) ;
 
       switch (bcMask & XI_M) {
          case XI_M_COMM: /* needs comm data */
-         case 0:         delvm = domain.delv_xi(domain.lxim(ielem)); break ;
-         case XI_M_SYMM: delvm = domain.delv_xi(ielem) ;       break ;
+         case 0:         delvm = domain->delv_xi(domain->lxim(ielem)); break ;
+         case XI_M_SYMM: delvm = domain->delv_xi(ielem) ;       break ;
          case XI_M_FREE: delvm = Real_t(0.0) ;      break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1838,8 +1842,8 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
       }
       switch (bcMask & XI_P) {
          case XI_P_COMM: /* needs comm data */
-         case 0:         delvp = domain.delv_xi(domain.lxip(ielem)) ; break ;
-         case XI_P_SYMM: delvp = domain.delv_xi(ielem) ;       break ;
+         case 0:         delvp = domain->delv_xi(domain->lxip(ielem)) ; break ;
+         case XI_P_SYMM: delvp = domain->delv_xi(ielem) ;       break ;
          case XI_P_FREE: delvp = Real_t(0.0) ;      break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1862,12 +1866,12 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
 
 
       /*  phieta     */
-      norm = Real_t(1.) / ( domain.delv_eta(ielem) + ptiny ) ;
+      norm = Real_t(1.) / ( domain->delv_eta(ielem) + ptiny ) ;
 
       switch (bcMask & ETA_M) {
          case ETA_M_COMM: /* needs comm data */
-         case 0:          delvm = domain.delv_eta(domain.letam(ielem)) ; break ;
-         case ETA_M_SYMM: delvm = domain.delv_eta(ielem) ;        break ;
+         case 0:          delvm = domain->delv_eta(domain->letam(ielem)) ; break ;
+         case ETA_M_SYMM: delvm = domain->delv_eta(ielem) ;        break ;
          case ETA_M_FREE: delvm = Real_t(0.0) ;        break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1876,8 +1880,8 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
       }
       switch (bcMask & ETA_P) {
          case ETA_P_COMM: /* needs comm data */
-         case 0:          delvp = domain.delv_eta(domain.letap(ielem)) ; break ;
-         case ETA_P_SYMM: delvp = domain.delv_eta(ielem) ;        break ;
+         case 0:          delvp = domain->delv_eta(domain->letap(ielem)) ; break ;
+         case ETA_P_SYMM: delvp = domain->delv_eta(ielem) ;        break ;
          case ETA_P_FREE: delvp = Real_t(0.0) ;        break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1899,12 +1903,12 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
       if ( phieta > monoq_max_slope)  phieta = monoq_max_slope;
 
       /*  phizeta     */
-      norm = Real_t(1.) / ( domain.delv_zeta(ielem) + ptiny ) ;
+      norm = Real_t(1.) / ( domain->delv_zeta(ielem) + ptiny ) ;
 
       switch (bcMask & ZETA_M) {
          case ZETA_M_COMM: /* needs comm data */
-         case 0:           delvm = domain.delv_zeta(domain.lzetam(ielem)) ; break ;
-         case ZETA_M_SYMM: delvm = domain.delv_zeta(ielem) ;         break ;
+         case 0:           delvm = domain->delv_zeta(domain->lzetam(ielem)) ; break ;
+         case ZETA_M_SYMM: delvm = domain->delv_zeta(ielem) ;         break ;
          case ZETA_M_FREE: delvm = Real_t(0.0) ;          break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1913,8 +1917,8 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
       }
       switch (bcMask & ZETA_P) {
          case ZETA_P_COMM: /* needs comm data */
-         case 0:           delvp = domain.delv_zeta(domain.lzetap(ielem)) ; break ;
-         case ZETA_P_SYMM: delvp = domain.delv_zeta(ielem) ;         break ;
+         case 0:           delvp = domain->delv_zeta(domain->lzetap(ielem)) ; break ;
+         case ZETA_P_SYMM: delvp = domain->delv_zeta(ielem) ;         break ;
          case ZETA_P_FREE: delvp = Real_t(0.0) ;          break ;
          default:          fprintf(stderr, "Error in switch at %s line %d\n",
                                    __FILE__, __LINE__);
@@ -1937,20 +1941,20 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
 
       /* Remove length scale */
 
-      if ( domain.vdov(ielem) > Real_t(0.) )  {
+      if ( domain->vdov(ielem) > Real_t(0.) )  {
          qlin  = Real_t(0.) ;
          qquad = Real_t(0.) ;
       }
       else {
-         Real_t delvxxi   = domain.delv_xi(ielem)   * domain.delx_xi(ielem)   ;
-         Real_t delvxeta  = domain.delv_eta(ielem)  * domain.delx_eta(ielem)  ;
-         Real_t delvxzeta = domain.delv_zeta(ielem) * domain.delx_zeta(ielem) ;
+         Real_t delvxxi   = domain->delv_xi(ielem)   * domain->delx_xi(ielem)   ;
+         Real_t delvxeta  = domain->delv_eta(ielem)  * domain->delx_eta(ielem)  ;
+         Real_t delvxzeta = domain->delv_zeta(ielem) * domain->delx_zeta(ielem) ;
 
          if ( delvxxi   > Real_t(0.) ) delvxxi   = Real_t(0.) ;
          if ( delvxeta  > Real_t(0.) ) delvxeta  = Real_t(0.) ;
          if ( delvxzeta > Real_t(0.) ) delvxzeta = Real_t(0.) ;
 
-         Real_t rho = domain.elemMass(ielem) / (domain.volo(ielem) * domain.vnew(ielem)) ;
+         Real_t rho = domain->elemMass(ielem) / (domain->volo(ielem) * domain->vnew(ielem)) ;
 
          qlin = -qlc_monoq * rho *
             (  delvxxi   * (Real_t(1.) - phixi) +
@@ -1963,15 +1967,15 @@ void CalcMonotonicQRegionForElems(Domain &domain, Int_t r,
                delvxzeta*delvxzeta * (Real_t(1.) - phizeta*phizeta)  ) ;
       }
 
-      domain.qq(ielem) = qquad ;
-      domain.ql(ielem) = qlin  ;
+      domain->qq(ielem) = qquad ;
+      domain->ql(ielem) = qlin  ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcMonotonicQForElems(Domain& domain)
+void CalcMonotonicQForElems(Domain* domain)
 {  
    //
    // initialize parameters
@@ -1981,8 +1985,8 @@ void CalcMonotonicQForElems(Domain& domain)
    //
    // calculate the monotonic q for all regions
    //
-   for (Index_t r=0 ; r<domain.numReg() ; ++r) {
-      if (domain.regElemSize(r) > 0) {
+   for (Index_t r=0 ; r<domain->numReg() ; ++r) {
+      if (domain->regElemSize(r) > 0) {
          CalcMonotonicQRegionForElems(domain, r, ptiny) ;
       }
    }
@@ -1991,25 +1995,25 @@ void CalcMonotonicQForElems(Domain& domain)
 /******************************************/
 
 RAJA_STORAGE
-void CalcQForElems(Domain& domain)
+void CalcQForElems(Domain* domain)
 {
    //
    // MONOTONIC Q option
    //
 
-   Index_t numElem = domain.numElem() ;
+   Index_t numElem = domain->numElem() ;
 
    if (numElem != 0) {
       Int_t allElem = numElem +  /* local elem */
-            2*domain.sizeX()*domain.sizeY() + /* plane ghosts */
-            2*domain.sizeX()*domain.sizeZ() + /* row ghosts */
-            2*domain.sizeY()*domain.sizeZ() ; /* col ghosts */
+            2*domain->sizeX()*domain->sizeY() + /* plane ghosts */
+            2*domain->sizeX()*domain->sizeZ() + /* row ghosts */
+            2*domain->sizeY()*domain->sizeZ() ; /* col ghosts */
 
-      domain.AllocateGradients(numElem, allElem);
+      domain->AllocateGradients(numElem, allElem);
 
 #if USE_MPI      
-      CommRecv(domain, MSG_MONOQ, 3,
-               domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+      CommRecv(*domain, MSG_MONOQ, 3,
+               domain->sizeX(), domain->sizeY(), domain->sizeZ(),
                true, true) ;
 #endif      
 
@@ -2026,22 +2030,22 @@ void CalcQForElems(Domain& domain)
       fieldData[1] = &Domain::delv_eta ;
       fieldData[2] = &Domain::delv_zeta ;
 
-      CommSend(domain, MSG_MONOQ, 3, fieldData,
-               domain.sizeX(), domain.sizeY(), domain.sizeZ(),
+      CommSend(*domain, MSG_MONOQ, 3, fieldData,
+               domain->sizeX(), domain->sizeY(), domain->sizeZ(),
                true, true) ;
 
-      CommMonoQ(domain) ;
+      CommMonoQ(*domain) ;
 #endif      
 
       CalcMonotonicQForElems(domain) ;
 
       // Free up memory
-      domain.DeallocateGradients();
+      domain->DeallocateGradients();
 
       /* Don't allow excessive artificial viscosity */
       Index_t idx = -1; 
       for (Index_t i=0; i<numElem; ++i) {
-         if ( domain.q(i) > domain.qstop() ) {
+         if ( domain->q(i) > domain->qstop() ) {
             idx = i ;
             break ;
          }
@@ -2220,7 +2224,7 @@ void CalcEnergyForElems(Real_t* p_new, Real_t* e_new, Real_t* q_new,
 /******************************************/
 
 RAJA_STORAGE
-void CalcSoundSpeedForElems(Domain &domain,
+void CalcSoundSpeedForElems(Domain* domain,
                             Real_t *vnewc, Real_t rho0, Real_t *enewc,
                             Real_t *pnewc, Real_t *pbvc,
                             Real_t *bvc, Real_t ss4o3,
@@ -2237,26 +2241,26 @@ void CalcSoundSpeedForElems(Domain &domain,
       else {
          ssTmp = SQRT(ssTmp);
       }
-      domain.ss(ielem) = ssTmp ;
+      domain->ss(ielem) = ssTmp ;
    } );
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void EvalEOSForElems(Domain& domain, Real_t *vnewc,
+void EvalEOSForElems(Domain* domain, Real_t *vnewc,
                      Int_t numElemReg, Index_t *regElemList, Int_t rep)
 {
-   Real_t  e_cut = domain.e_cut() ;
-   Real_t  p_cut = domain.p_cut() ;
-   Real_t  ss4o3 = domain.ss4o3() ;
-   Real_t  q_cut = domain.q_cut() ;
+   Real_t  e_cut = domain->e_cut() ;
+   Real_t  p_cut = domain->p_cut() ;
+   Real_t  ss4o3 = domain->ss4o3() ;
+   Real_t  q_cut = domain->q_cut() ;
 
-   Real_t eosvmax = domain.eosvmax() ;
-   Real_t eosvmin = domain.eosvmin() ;
-   Real_t pmin    = domain.pmin() ;
-   Real_t emin    = domain.emin() ;
-   Real_t rho0    = domain.refdens() ;
+   Real_t eosvmax = domain->eosvmax() ;
+   Real_t eosvmin = domain->eosvmin() ;
+   Real_t pmin    = domain->pmin() ;
+   Real_t emin    = domain->emin() ;
+   Real_t rho0    = domain->refdens() ;
 
    // These temporaries will be of different size for 
    // each call (due to different sized region element
@@ -2290,12 +2294,12 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
       RAJA::forall<mat_exec_policy>(0, numElemReg, [=] (int i) {
 #endif
          Index_t ielem = regElemList[i];
-         e_old[i] = domain.e(ielem) ;
-         delvc[i] = domain.delv(ielem) ;
-         p_old[i] = domain.p(ielem) ;
-         q_old[i] = domain.q(ielem) ;
-         qq_old[i] = domain.qq(ielem) ;
-         ql_old[i] = domain.ql(ielem) ;
+         e_old[i] = domain->e(ielem) ;
+         delvc[i] = domain->delv(ielem) ;
+         p_old[i] = domain->p(ielem) ;
+         q_old[i] = domain->q(ielem) ;
+         qq_old[i] = domain->qq(ielem) ;
+         ql_old[i] = domain->ql(ielem) ;
          work[i] = Real_t(0.) ;
       } );
 
@@ -2349,9 +2353,9 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
 
    RAJA::forall<mat_exec_policy>(0, numElemReg, [=] (int i) {
       Index_t ielem = regElemList[i];
-      domain.p(ielem) = p_new[i] ;
-      domain.e(ielem) = e_new[i] ;
-      domain.q(ielem) = q_new[i] ;
+      domain->p(ielem) = p_new[i] ;
+      domain->e(ielem) = e_new[i] ;
+      domain->q(ielem) = q_new[i] ;
    } );
 
    CalcSoundSpeedForElems(domain,
@@ -2378,14 +2382,14 @@ void EvalEOSForElems(Domain& domain, Real_t *vnewc,
 /******************************************/
 
 RAJA_STORAGE
-void ApplyMaterialPropertiesForElems(Domain& domain)
+void ApplyMaterialPropertiesForElems(Domain* domain)
 {
-   Index_t numElem = domain.numElem() ;
+   Index_t numElem = domain->numElem() ;
 
   if (numElem != 0) {
     /* Expose all of the variables needed for material evaluation */
-    Real_t eosvmin = domain.eosvmin() ;
-    Real_t eosvmax = domain.eosvmax() ;
+    Real_t eosvmin = domain->eosvmin() ;
+    Real_t eosvmax = domain->eosvmax() ;
     Real_t *vnewc = Allocate<Real_t>(numElem) ;
 
 #if defined(TRY_NO_WAIT)
@@ -2398,7 +2402,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
 #else
     RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
 #endif
-       vnewc[i] = domain.vnew(i) ;
+       vnewc[i] = domain->vnew(i) ;
     } );
 
     // Bound the updated relative volumes with eosvmin/max
@@ -2432,7 +2436,7 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
 #else
     RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
 #endif
-       Real_t vc = domain.v(i) ;
+       Real_t vc = domain->v(i) ;
        if (eosvmin != Real_t(0.)) {
           if (vc < eosvmin)
              vc = eosvmin ;
@@ -2454,20 +2458,20 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
    }
 #endif
 
-    for (Int_t r=0 ; r<domain.numReg() ; r++) {
-       Index_t numElemReg = domain.regElemSize(r);
-       Index_t *regElemList = domain.regElemlist(r);
+    for (Int_t r=0 ; r<domain->numReg() ; r++) {
+       Index_t numElemReg = domain->regElemSize(r);
+       Index_t *regElemList = domain->regElemlist(r);
        Int_t rep;
        //Determine load imbalance for this region
        //round down the number with lowest cost
-       if(r < domain.numReg()/2)
+       if(r < domain->numReg()/2)
 	 rep = 1;
        //you don't get an expensive region unless you at least have 5 regions
-       else if(r < (domain.numReg() - (domain.numReg()+15)/20))
-         rep = 1 + domain.cost();
+       else if(r < (domain->numReg() - (domain->numReg()+15)/20))
+         rep = 1 + domain->cost();
        //very expensive regions
        else
-	 rep = 10 * (1+ domain.cost());
+	 rep = 10 * (1+ domain->cost());
        EvalEOSForElems(domain, vnewc, numElemReg, regElemList, rep);
     }
 
@@ -2477,17 +2481,17 @@ void ApplyMaterialPropertiesForElems(Domain& domain)
 /******************************************/
 
 RAJA_STORAGE
-void UpdateVolumesForElems(Domain &domain,
+void UpdateVolumesForElems(Domain* domain,
                            Real_t v_cut, Index_t length)
 {
    if (length != 0) {
       RAJA::forall<range_exec_policy>( int(0), int(length), [=] (int i) {
-         Real_t tmpV = domain.vnew(i) ;
+         Real_t tmpV = domain->vnew(i) ;
 
          if ( FABS(tmpV - Real_t(1.0)) < v_cut )
             tmpV = Real_t(1.0) ;
 
-         domain.v(i) = tmpV ;
+         domain->v(i) = tmpV ;
       } );
    }
 
@@ -2497,7 +2501,7 @@ void UpdateVolumesForElems(Domain &domain,
 /******************************************/
 
 RAJA_STORAGE
-void LagrangeElements(Domain& domain, Index_t numElem)
+void LagrangeElements(Domain* domain, Index_t numElem)
 {
   CalcLagrangeElements(domain) ;
 
@@ -2507,13 +2511,13 @@ void LagrangeElements(Domain& domain, Index_t numElem)
   ApplyMaterialPropertiesForElems(domain) ;
 
   UpdateVolumesForElems(domain,
-                        domain.v_cut(), numElem) ;
+                        domain->v_cut(), numElem) ;
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void CalcCourantConstraintForElems(Domain &domain, Index_t length,
+void CalcCourantConstraintForElems(Domain* domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
@@ -2527,18 +2531,18 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
         [=] (int i, Real_t *myMin, Index_t *myLoc) {
 
       Index_t indx = regElemlist[i] ;
-      Real_t dtf = domain.ss(indx) * domain.ss(indx) ;
+      Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
 
-      if ( domain.vdov(indx) < Real_t(0.) ) {
+      if ( domain->vdov(indx) < Real_t(0.) ) {
          dtf = dtf
-             + qqc2 * domain.arealg(indx) * domain.arealg(indx)
-             * domain.vdov(indx) * domain.vdov(indx) ;
+             + qqc2 * domain->arealg(indx) * domain->arealg(indx)
+             * domain->vdov(indx) * domain->vdov(indx) ;
       }
 
       dtf = SQRT(dtf) ;
-      dtf = domain.arealg(indx) / dtf ;
+      dtf = domain->arealg(indx) / dtf ;
 
-      if (domain.vdov(indx) != Real_t(0.)) {
+      if (domain->vdov(indx) != Real_t(0.)) {
          if ( dtf < *myMin ) {
             *myMin = dtf ;
             *myLoc  = indx ;
@@ -2558,7 +2562,7 @@ void CalcCourantConstraintForElems(Domain &domain, Index_t length,
 /******************************************/
 
 RAJA_STORAGE
-void CalcHydroConstraintForElems(Domain &domain, Index_t length,
+void CalcHydroConstraintForElems(Domain* domain, Index_t length,
                                  Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
 
@@ -2571,8 +2575,8 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
 
       Index_t indx = regElemlist[i] ;
 
-      if (domain.vdov(indx) != Real_t(0.)) {
-         Real_t dtdvov = dvovmax / (FABS(domain.vdov(indx))+Real_t(1.e-20)) ;
+      if (domain->vdov(indx) != Real_t(0.)) {
+         Real_t dtdvov = dvovmax / (FABS(domain->vdov(indx))+Real_t(1.e-20)) ;
 
          if ( *myMin > dtdvov ) {
             *myMin = dtdvov ;
@@ -2592,31 +2596,31 @@ void CalcHydroConstraintForElems(Domain &domain, Index_t length,
 /******************************************/
 
 RAJA_STORAGE
-void CalcTimeConstraintsForElems(Domain& domain) {
+void CalcTimeConstraintsForElems(Domain* domain) {
 
    // Initialize conditions to a very large value
-   domain.dtcourant() = 1.0e+20;
-   domain.dthydro() = 1.0e+20;
+   domain->dtcourant() = 1.0e+20;
+   domain->dthydro() = 1.0e+20;
 
-   for (Index_t r=0 ; r < domain.numReg() ; ++r) {
+   for (Index_t r=0 ; r < domain->numReg() ; ++r) {
       /* evaluate time constraint */
-      CalcCourantConstraintForElems(domain, domain.regElemSize(r),
-                                    domain.regElemlist(r),
-                                    domain.qqc(),
-                                    domain.dtcourant()) ;
+      CalcCourantConstraintForElems(domain, domain->regElemSize(r),
+                                    domain->regElemlist(r),
+                                    domain->qqc(),
+                                    domain->dtcourant()) ;
 
       /* check hydro constraint */
-      CalcHydroConstraintForElems(domain, domain.regElemSize(r),
-                                  domain.regElemlist(r),
-                                  domain.dvovmax(),
-                                  domain.dthydro()) ;
+      CalcHydroConstraintForElems(domain, domain->regElemSize(r),
+                                  domain->regElemlist(r),
+                                  domain->dvovmax(),
+                                  domain->dthydro()) ;
    }
 }
 
 /******************************************/
 
 RAJA_STORAGE
-void LagrangeLeapFrog(Domain& domain)
+void LagrangeLeapFrog(Domain* domain)
 {
 #if defined(SEDOV_SYNC_POS_VEL_LATE)
    Domain_member fieldData[6] ;
@@ -2632,12 +2636,12 @@ void LagrangeLeapFrog(Domain& domain)
 
    /* calculate element quantities (i.e. velocity gradient & q), and update
     * material states */
-   LagrangeElements(domain, domain.numElem());
+   LagrangeElements(domain, domain->numElem());
 
 #if USE_MPI   
 #if defined(SEDOV_SYNC_POS_VEL_LATE)
-   CommRecv(domain, MSG_SYNC_POS_VEL, 6,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   CommRecv(*domain, MSG_SYNC_POS_VEL, 6,
+            domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() + 1,
             false, false) ;
 
    fieldData[0] = &Domain::x ;
@@ -2647,8 +2651,8 @@ void LagrangeLeapFrog(Domain& domain)
    fieldData[4] = &Domain::yd ;
    fieldData[5] = &Domain::zd ;
    
-   CommSend(domain, MSG_SYNC_POS_VEL, 6, fieldData,
-            domain.sizeX() + 1, domain.sizeY() + 1, domain.sizeZ() + 1,
+   CommSend(*domain, MSG_SYNC_POS_VEL, 6, fieldData,
+            domain->sizeX() + 1, domain->sizeY() + 1, domain->sizeZ() + 1,
             false, false) ;
 #endif
 #endif   
@@ -2657,7 +2661,7 @@ void LagrangeLeapFrog(Domain& domain)
 
 #if USE_MPI   
 #if defined(SEDOV_SYNC_POS_VEL_LATE)
-   CommSyncPosVel(domain) ;
+   CommSyncPosVel(*domain) ;
 #endif
 #endif   
 }
@@ -2750,7 +2754,7 @@ int main(int argc, char *argv[])
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
       TimeIncrement(*locDom) ;
-      LagrangeLeapFrog(*locDom) ;
+      LagrangeLeapFrog(locDom) ;
 
       if ((opts.showProg != 0) && (opts.quiet == 0) && (myRank == 0)) {
          printf("cycle = %d, time = %e, dt=%e\n",
