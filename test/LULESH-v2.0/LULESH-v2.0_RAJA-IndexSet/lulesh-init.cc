@@ -119,12 +119,13 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       /* permute nodelist connectivity */
       {
          Index_t tmp[8*numElem()] ;
-         for (Index_t i=0; i<numElem(); ++i) {
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             Index_t *localNode = nodelist(perm(i)) ;
             for (Index_t j=0; j<8; ++j) {
                tmp[i*8+j] = localNode[j] ;
             }
-         }
+         } ) ;
          memcpy(nodelist(0), tmp, 8*sizeof(Index_t)*numElem()) ;
       }
 
@@ -133,68 +134,73 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          Index_t tmp[6*numElem()] ;
          Index_t iperm[numElem()] ; /* inverse permutation */
 
-         for (Index_t i=0; i<numElem(); ++i) {
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             iperm[perm(i)] = i ;
-         }
-         for (Index_t i=0; i<numElem(); ++i) {
+         } ) ;
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             tmp[i*6+0] = iperm[lxim(perm(i))] ;
             tmp[i*6+1] = iperm[lxip(perm(i))] ;
             tmp[i*6+2] = iperm[letam(perm(i))] ;
             tmp[i*6+3] = iperm[letap(perm(i))] ;
             tmp[i*6+4] = iperm[lzetam(perm(i))] ;
             tmp[i*6+5] = iperm[lzetap(perm(i))] ;
-         }
-         for (Index_t i=0; i<numElem(); ++i) {
+         } ) ;
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             lxim(i) = tmp[i*6+0] ;
             lxip(i) = tmp[i*6+1] ;
             letam(i) = tmp[i*6+2] ;
             letap(i) = tmp[i*6+3] ;
             lzetam(i) = tmp[i*6+4] ;
             lzetap(i) = tmp[i*6+5] ;
-         }
+         } ) ;
 
          initEnergyElemIdx = iperm[0] ;
       }
       /* permute elemBC */
       {
          Int_t tmp[numElem()] ;
-         for (Index_t i=0; i<numElem(); ++i) {
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             tmp[i] = elemBC(perm(i)) ;
-         }
-         for (Index_t i=0; i<numElem(); ++i) {
+         } ) ;
+         RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+         // for (Index_t i=0; i<numElem(); ++i) {
             elemBC(i) = tmp[i] ;
-         }
+         } ) ;
       }
    }
 
    // Basic Field Initialization 
-   for (Index_t i=0; i<numElem(); ++i) {
+   RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
       e(i) =  Real_t(0.0) ;
       p(i) =  Real_t(0.0) ;
       q(i) =  Real_t(0.0) ;
       ss(i) = Real_t(0.0) ;
-   }
+   } ) ;
 
    // Note - v initializes to 1.0, not 0.0!
-   for (Index_t i=0; i<numElem(); ++i) {
+   RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
       v(i) = Real_t(1.0) ;
-   }
+   } ) ;
 
-   for (Index_t i=0; i<numNode(); ++i) {
+   RAJA::forall<node_exec_policy>(getNodeISet(), [&] (int i) {
       xd(i) = Real_t(0.0) ;
       yd(i) = Real_t(0.0) ;
       zd(i) = Real_t(0.0) ;
-   }
+   } ) ;
 
-   for (Index_t i=0; i<numNode(); ++i) {
+   RAJA::forall<node_exec_policy>(getNodeISet(), [&] (int i) {
       xdd(i) = Real_t(0.0) ;
       ydd(i) = Real_t(0.0) ;
       zdd(i) = Real_t(0.0) ;
-   }
+   } ) ;
 
-   for (Index_t i=0; i<numNode(); ++i) {
+   RAJA::forall<node_exec_policy>(getNodeISet(), [&] (int i) {
       nodalMass(i) = Real_t(0.0) ;
-   }
+   } ) ;
 
 #if USE_OMP
    SetupThreadSupportStructures();
@@ -221,7 +227,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    cycle()   = Int_t(0) ;
 
    // initialize field data 
-   for (Index_t i=0; i<numElem(); ++i) {
+   RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
       Index_t *elemToNode = nodelist(i) ;
       for( Index_t lnode=0 ; lnode<8 ; ++lnode )
@@ -240,7 +246,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          Index_t idx = elemToNode[j] ;
          nodalMass(idx) += volume / Real_t(8.0) ;
       }
-   }
+   } ) ;
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with
