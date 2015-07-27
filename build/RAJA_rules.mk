@@ -14,8 +14,8 @@
 ##
 ## -DRAJA_USE_STL
 ##
-RAJA_USING_STL   = -DRAJA_USE_STL
-#RAJA_USING_STL   = 
+#RAJA_USING_STL   = -DRAJA_USE_STL
+RAJA_USING_STL   = 
 
 ##
 ## Available options for RAJA scalar floating point types are:
