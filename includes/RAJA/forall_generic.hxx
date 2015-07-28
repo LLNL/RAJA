@@ -127,6 +127,27 @@ void forall_Icount(const RangeSegment& iseg,
 /*!
  ******************************************************************************
  *
+ * \brief  Generic min reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const Index_type begin, const Index_type end,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               begin, end,
+               min, 
+               loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Generic minloc reduction over index range.
  *
  ******************************************************************************

@@ -1,0 +1,10 @@
+##
+## For ipa...
+##
+
+module load cudatoolkit/7.5 ;
+use gcc-4.9.0p ;
+cp lulesh.cc.keep lulesh.cu ;
+make ;
+rm -rf lulesh.cu
+

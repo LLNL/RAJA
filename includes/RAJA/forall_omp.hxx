@@ -151,6 +151,47 @@ void forall_Icount(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  omp parallel for min reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const Index_type begin, const Index_type end,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   const int nthreads = omp_get_max_threads();
+
+   RAJAVec<T> min_tmp(nthreads);
+
+   RAJA_FT_BEGIN ;
+
+   for ( int i = 0; i < nthreads; ++i ) {
+       min_tmp[i] = *min ;
+   }
+
+#pragma omp parallel for
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, &min_tmp[omp_get_thread_num()] );
+   }
+
+   for ( int i = 1; i < nthreads; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+      }
+   }
+
+   RAJA_FT_END ;
+
+   *min = min_tmp[0] ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  omp parallel for minloc reduction over index range.
  *
  ******************************************************************************

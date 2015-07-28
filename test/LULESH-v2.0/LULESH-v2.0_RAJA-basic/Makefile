@@ -44,6 +44,9 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
+#ipa-cuda
+#RAJA_ARCH = ipa_cuda
+
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
@@ -56,12 +59,10 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 ##
 include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
-
 ##
 ## Options to turn on/off MPI and OpenMP
 ##
 LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
-
 
 ##
 ## Include file containing compiler version and options.
@@ -69,11 +70,39 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
-
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
+
+##-----------------------------------------------------------
+
+##
+## If compiling with nvcc on ipa (see RAJA_ARCH defn above) 
+##
+ifeq ($(RAJA_ARCH),ipa_cuda)
+
+#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
+
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+
+LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
+LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
+
+LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
+
+else
+##
+## Pull in CXX_COMPILE and CXXFLAGS from ../../compilers.mk
+## (see RAJA_ARCH defn above)
+##
+
 LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
+
+endif
+
+##-----------------------------------------------------------
+
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
@@ -81,6 +110,7 @@ default: $(OBJFILES)
 	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh2.0_RAJA-basic.exe
 
 ## Uncomment these lines to generate an executable to run...
+%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
@@ -99,5 +129,5 @@ default: $(OBJFILES)
 clean-obj: 
 	rm -rf *.o $(RAJA_SRC)/*.o
 
-clean: clean-obj
-	rm -rf *.s *.lst *.exe 
+clean-all: clean-obj
+	rm -rf *.cpp*.i* *.cuda*.* *.fatbin* *.hash* *.module_id* *.ptx *.reg.c *.s *.lst *.exe 

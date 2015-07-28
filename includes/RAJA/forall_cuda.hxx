@@ -25,8 +25,82 @@
 
 #include "fault_tolerance.hxx"
 
+//
+// Note: run-time is sensitive to # threads per thread block
+//
+// RDH TODO come up with something better than this.... 
+//
+#define THREADS_PER_BLOCK 256
+
 
 namespace RAJA {
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Reduction classes
+//
+//////////////////////////////////////////////////////////////////////
+//
+#if 0 // RDH
+template <typename T>
+class ReduceMin<T> 
+{
+public:
+
+   explicit ReduceMin(T init_val) 
+   {
+      cudaDeviceSetSharedMemConfig(cudaSharedMemBankSizeEightByte);
+      cudaMallocManaged((void **)& m_minval, sizeof(T), cudaMemAttachGlobal) ;
+      *m_minval = init_val ;
+      cudaDeviceSynchronize();
+   } ;
+
+#if 0
+   ~ReduceMin()
+   {
+      cudaDeviceSynchronize();
+      cudaFree(m_minval) ;
+   } ;
+#endif
+
+   __device__ const ReduceMin<T> operator+=(T val) const {
+      __shared__ T sd[THREADS_PER_BLOCK];
+      sd[threadIdx.x] = val;
+      T temp = 0.0;
+      __syncthreads();
+      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+         if (threadIdx.x < i) {
+            sd[threadIdx.x] += sd[threadIdx.x + i];
+         }
+         __syncthreads();
+      }
+      if (threadIdx.x < WARP_SIZE) {
+         temp = sd[threadIdx.x];
+         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+            temp += shfl_xor(temp, i);
+         }
+      }
+      // one thread adds to gmem
+      if (threadIdx.x == 0) {
+         atomicAdd(m_minval, temp);
+      }
+      return *this ;
+   }
+
+   operator double() const {
+      cudaDeviceSynchronize() ;
+      return *m_minval ;
+   }
+
+private:
+   T* m_minval ;
+} ;
+#endif
+
+
+
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -69,7 +143,7 @@ void forall(cuda_exec,
 
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = 256;
+   size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin) / blockSize + 1;
    forall_kernel<<<gridSize, blockSize>>>(loop_body, end - begin);
 #ifdef RAJA_SYNC
@@ -84,6 +158,7 @@ void forall(cuda_exec,
 }
 
 
+#if 1 // Original code...
 /*!
  ******************************************************************************
  *
@@ -91,9 +166,10 @@ void forall(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 __global__ void forall_minloc_kernel(LOOP_BODY loop_body, 
-                                     double *min, int *loc,
+                                     T* min, Index_type* loc,
                                      Index_type length)
 {
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -109,17 +185,18 @@ __global__ void forall_minloc_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(cuda_exec,
                    Index_type begin, Index_type end,
-                   double *min, int *loc,
+                   T* min, Index_type* loc,
                    LOOP_BODY loop_body)
 {
 
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = 256;
+   size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin) / blockSize + 1;
    forall_minloc_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                  min, loc,
@@ -134,6 +211,12 @@ void forall_minloc(cuda_exec,
 
    RAJA_FT_END ;
 }
+
+#else // Holger's prototype...
+
+
+
+#endif
 
 
 /*!
@@ -169,7 +252,7 @@ void forall(cuda_exec,
 {
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = 256;
+   size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = len / blockSize + 1;
    forall_kernel<<<gridSize, blockSize>>>(loop_body, idx, len);
 #ifdef RAJA_SYNC
@@ -220,7 +303,7 @@ void forall_minloc(cuda_exec,
 {
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = 256;
+   size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = len / blockSize + 1;
    forall_minloc_kernel<<<gridSize, blockSize>>>(loop_body,
                                                  min, loc,
