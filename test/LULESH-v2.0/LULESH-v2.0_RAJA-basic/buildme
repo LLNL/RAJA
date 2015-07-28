@@ -1,0 +1,8 @@
+##
+## For non-CUDA compilation
+##
+
+cp lulesh.cc.keep lulesh.cc ;
+make ;
+rm -rf lulesh.cc
+
