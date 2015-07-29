@@ -74,14 +74,17 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 
 ##-----------------------------------------------------------
+## This section is a complete hack....
+##-----------------------------------------------------------
 
 ##
 ## If compiling with nvcc on ipa (see RAJA_ARCH defn above) 
 ##
 ifeq ($(RAJA_ARCH),ipa_cuda)
 
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+### Testing non-GPU build with nvcc...
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
+#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
 CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
 
@@ -101,6 +104,7 @@ LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 endif
 
 ##-----------------------------------------------------------
+
 
 CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 

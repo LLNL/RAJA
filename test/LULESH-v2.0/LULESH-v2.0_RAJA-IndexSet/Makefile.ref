@@ -44,9 +44,6 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
-#ipa-cuda
-#RAJA_ARCH = ipa_cuda
-
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
@@ -59,11 +56,14 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 ##
 include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
+SILO_INCDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/include
+SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
+
 
 ##
 ## Options to turn on/off MPI and OpenMP
 ##
-LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
+LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 -DVIZ_MESH $(LULESH_TIMER_OPTS)
 
 
 ##
@@ -72,63 +72,19 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 include ../../compilers.mk
 
 
-RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
-
-
-##-----------------------------------------------------------
-## This section is a complete hack....
-##-----------------------------------------------------------
-
-##
-## If compiling with nvcc on ipa (see RAJA_ARCH defn above)
-##
-ifeq ($(RAJA_ARCH),ipa_cuda)
-
-SILO_INCDIR =
-SILO_LIBDIR =
-
-### Testing non-GPU build with nvcc...
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
-
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
-
-LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
-LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
-
-LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
-
-LDFLAGS_FINAL = $(LDFLAGS) $(LDTIMER) $(LDPATH)
-
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
-
-else
-##
-## Pull in CXX_COMPILE and CXXFLAGS from ../../compilers.mk
-## (see RAJA_ARCH defn above)
-##
-
-LULESH_OPTS += -DVIZ_MESH
-SILO_INCDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/include
-SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
-
-LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
-
-LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so
-
+#CXXFLAGS_BUILD = -DLULESH_LIST_INDEXSET=1 -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
-endif
+RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
-##-----------------------------------------------------------
+LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
 default: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS_FINAL) -o lulesh2.0_RAJA-ISet.exe
+	$(CXX_COMPILE) -I${SILO_INCDIR} -DVIZ_MESH $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so -o lulesh2.0_RAJA-ISet.exe
 
 ## Uncomment these lines to generate an executable to run...
-%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
@@ -147,5 +103,5 @@ default: $(OBJFILES)
 clean-obj: 
 	rm -rf *.o $(RAJA_SRC)/*.o
 
-clean-all: clean-obj
-	rm -rf *.cpp*.i* *.cuda*.* *.fatbin* *.hash* *.module_id* *.ptx *.reg.c *.s *.lst *.exe
+clean: clean-obj
+	rm -rf *.s *.lst *.exe 

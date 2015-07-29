@@ -169,6 +169,27 @@ void forall_minloc(const Index_type begin, const Index_type end,
 /*!
  ******************************************************************************
  *
+ * \brief  Generic min reduction over range index set object.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const RangeSegment& iseg,
+                T* min, 
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               iseg.getBegin(), iseg.getEnd(),
+               min,
+               loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Generic minloc reduction over range index set object.
  *
  ******************************************************************************
@@ -363,6 +384,7 @@ void forall_Icount(const RangeStrideSegment& iseg,
                   icount,
                   loop_body );
 }
+
 
 /*!
  ******************************************************************************
@@ -586,6 +608,27 @@ void forall_Icount(const ListSegment& iseg,
 /*!
  ******************************************************************************
  *
+ * \brief  Generic min reduction over indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const Index_type* idx, const Index_type len,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               idx, len,
+               min,
+               loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Generic minloc reduction over indirection array.
  *
  ******************************************************************************
@@ -602,6 +645,27 @@ void forall_minloc(const Index_type* idx, const Index_type len,
                   idx, len, 
                   min, loc,
                   loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Generic min reduction over list segment object.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const ListSegment& iseg,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               iseg.getIndex(), iseg.getLength(),
+               min,
+               loop_body );
 }
 
 /*!
@@ -783,6 +847,28 @@ void forall_Icount(const INDEXSET_T& iset,
                  iset, 
                  icount,
                  loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic min reduction iteration over arbitrary index set.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename INDEXSET_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const INDEXSET_T& iset,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min(EXEC_POLICY_T(),
+              iset,
+              min,
+              loop_body);
 }
 
 /*!
