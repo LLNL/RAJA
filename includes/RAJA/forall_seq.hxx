@@ -147,6 +147,31 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  Sequential min reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const Index_type begin, const Index_type end,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, min );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Sequential minloc reduction over index range.
  *
  ******************************************************************************
@@ -164,6 +189,34 @@ void forall_minloc(seq_exec,
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, min, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential min reduction over range index set object.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const RangeSegment& iseg,
+                T* min, Index_type* loc,
+                LOOP_BODY loop_body)
+{
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, min );
    }
 
    RAJA_FT_END ;
@@ -712,6 +765,31 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  Sequential min reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const Index_type* __restrict__ idx, const Index_type len,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], min );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Sequential minloc reduction over indices in indirection array.
  *
  ******************************************************************************
@@ -729,6 +807,34 @@ void forall_minloc(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], min, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential min reduction over list segment object.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const ListSegment& iseg,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], min );
    }
 
    RAJA_FT_END ;
@@ -1026,7 +1132,80 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  Minloc operation that iterates over index set segments
+ * \brief  min reduction that iterates over index set segments
+ *         sequentially and uses execution policy template parameter to 
+ *         execute segments.
+ *
+ ******************************************************************************
+ */
+template <typename SEG_EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& iset,
+                 T* min,
+                 LOOP_BODY loop_body)
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               min,
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               min,
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               min,
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  minloc reduction that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
@@ -1099,7 +1278,7 @@ void forall_minloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  Maxloc operation that iterates over index set segments
+ * \brief  maxloc reduction that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
@@ -1172,7 +1351,7 @@ void forall_maxloc( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  Sum operation that iterates over index set segments
+ * \brief  sum reduction that iterates over index set segments
  *         sequentially and uses execution policy template parameter to 
  *         execute segments.
  *
