@@ -175,7 +175,7 @@ typedef RAJA::omp_parallel_for_exec Segment_Exec;
 
 typedef Segment_Exec node_exec_policy;
 typedef Segment_Exec elem_exec_policy;
-typedef Segment_Exec minloc_exec_policy;
+typedef Segment_Exec min_exec_policy;
 typedef Segment_Exec mat_exec_policy;
 typedef Segment_Exec range_exec_policy;
 
@@ -560,9 +560,9 @@ void IntegrateStressForElems( Domain* domain,
    Real_t fy_local[8] ;
    Real_t fz_local[8] ;
 
-   Real_t* tfx_local ;
-   Real_t* tfy_local ;
-   Real_t* tfz_local ;
+   Real_t* tfx_local = fx_local;
+   Real_t* tfy_local = fy_local;
+   Real_t* tfz_local = fz_local;
 
 
   if (numthreads > 1) {
@@ -2521,14 +2521,11 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
-
    Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
-   Real_t   dtcourant_tmp = dtcourant;
-   Index_t  courant_elem  = -1 ;
 
-   RAJA::forall_minloc<minloc_exec_policy>(0, length, 
-                                           &dtcourant_tmp, &courant_elem,
-        [=] (int i, Real_t *myMin, Index_t *myLoc) {
+   RAJA::forall_min<min_exec_policy>(0, length,
+                                        &dtcourant,
+        [=] (int i, Real_t *myMin) {
 
       Index_t indx = regElemlist[i] ;
       Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
@@ -2545,18 +2542,12 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
       if (domain->vdov(indx) != Real_t(0.)) {
          if ( dtf < *myMin ) {
             *myMin = dtf ;
-            *myLoc  = indx ;
          }
       }
 
    } );
 
-   if (courant_elem != -1) {
-      dtcourant = dtcourant_tmp ;
-   }
-
    return ;
-
 }
 
 /******************************************/
@@ -2565,13 +2556,9 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(Domain* domain, Index_t length,
                                  Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
-
-   Real_t dthydro_tmp = dthydro ;
-   Index_t hydro_elem = -1 ;
-
-   RAJA::forall_minloc<minloc_exec_policy>(0, length, 
-                                           &dthydro_tmp, &hydro_elem,
-        [=] (int i, Real_t *myMin, Index_t *myLoc) {
+   RAJA::forall_min<min_exec_policy>(0, length,
+                                     &dthydro,
+        [=] (int i, Real_t *myMin) {
 
       Index_t indx = regElemlist[i] ;
 
@@ -2580,15 +2567,10 @@ void CalcHydroConstraintForElems(Domain* domain, Index_t length,
 
          if ( *myMin > dtdvov ) {
             *myMin = dtdvov ;
-            *myLoc = indx ;
          }
       }
 
    } );
-
-   if (hydro_elem != -1) {
-      dthydro =  dthydro_tmp ;
-   }
 
    return ;
 }

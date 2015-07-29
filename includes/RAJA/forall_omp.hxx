@@ -238,6 +238,27 @@ void forall_minloc(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  omp parallel for min reduction over range index set object.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const RangeSegment& iseg,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min(omp_parallel_for_exec(),
+              iseg.getBegin(), iseg.getEnd(),
+              min,
+              loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  omp parallel for minloc reduction over range index set object.
  *
  ******************************************************************************
@@ -822,6 +843,48 @@ void forall_Icount(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
+ * \brief  omp parallel for min reduction over given indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const Index_type* __restrict__ idx, const Index_type len,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   const int nthreads = omp_get_max_threads();
+
+   RAJAVec<T> min_tmp(nthreads);
+
+   RAJA_FT_BEGIN ;
+
+   for ( int i = 0; i < nthreads; ++i ) {
+       min_tmp[i] = *min ;
+   }
+
+#pragma novector
+#pragma omp parallel for
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], &min_tmp[omp_get_thread_num()] );
+   }
+
+   for ( int i = 1; i < nthreads; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+      }
+   }
+
+   RAJA_FT_END ;
+
+   *min = min_tmp[0] ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  omp parallel for minloc reduction over given indirection array.
  *
  ******************************************************************************
@@ -864,6 +927,27 @@ void forall_minloc(omp_parallel_for_exec,
 
    *min = min_tmp[0] ;
    *loc = loc_tmp[0] ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp parallel for min reduction over list segment object.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const ListSegment& iseg,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   forall_min(omp_parallel_for_exec(),
+              iseg.getIndex(), iseg.getLength(),
+              min,
+              loop_body);
 }
 
 /*!
@@ -1284,7 +1368,97 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
 /*!
  ******************************************************************************
  *
- * \brief  Minloc operation that iterates over index set segments 
+ * \brief  min reduction that iterates over index set segments 
+ *         using omp parallel for execution policy and uses execution 
+ *         policy template parameter to execute segments.
+ *
+ ******************************************************************************
+ */
+template <typename SEG_EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& iset, 
+                 T* min,
+                 LOOP_BODY loop_body )
+{
+   const int nthreads = omp_get_max_threads();
+
+   RAJAVec<T> min_tmp(nthreads);
+
+   for ( int i = 0; i < nthreads; ++i ) {
+       min_tmp[i] = *min ;
+   }
+
+   const int num_seg = iset.getNumSegments();
+
+#pragma omp parallel for 
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               &min_tmp[omp_get_thread_num()], 
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               &min_tmp[omp_get_thread_num()], 
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               &min_tmp[omp_get_thread_num()], 
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+   for ( int i = 1; i < nthreads; ++i ) {
+      if ( min_tmp[i] < min_tmp[0] ) {
+         min_tmp[0] = min_tmp[i];
+      }
+   }
+
+   *min = min_tmp[0] ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  minloc reduction that iterates over index set segments 
  *         using omp parallel for execution policy and uses execution 
  *         policy template parameter to execute segments.
  *

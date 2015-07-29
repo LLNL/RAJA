@@ -1,8 +1,0 @@
-##
-## To build and run on ipa...
-##
-
-> ./buildme-cuda
-> salloc -p nvidia -N1
-> setenv CUDA_VISIBLE_DEVICES 0
-> ./runme-cuda
