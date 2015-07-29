@@ -118,11 +118,12 @@ private:
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-__global__ void forall_kernel(LOOP_BODY loop_body, Index_type length)
+__global__ void forall_kernel(LOOP_BODY loop_body,
+                              Index_type begin, Index_type end)
 {
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
-  if (ii < length) {
-    loop_body(ii);
+  if (ii < end) {
+    loop_body(begin+ii);
   }
 }
 
@@ -144,8 +145,8 @@ void forall(cuda_exec,
    RAJA_FT_BEGIN ;
 
    size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin) / blockSize + 1;
-   forall_kernel<<<gridSize, blockSize>>>(loop_body, end - begin);
+   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
+   forall_kernel<<<gridSize, blockSize>>>(loop_body, begin, end);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
@@ -253,7 +254,7 @@ void forall(cuda_exec,
    RAJA_FT_BEGIN ;
 
    size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = len / blockSize + 1;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
    forall_kernel<<<gridSize, blockSize>>>(loop_body, idx, len);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {
