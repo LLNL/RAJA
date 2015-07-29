@@ -20,6 +20,11 @@
 #include <cstring>
 #endif
 
+#if defined(RAJA_USE_CUDA)
+#include <cuda.h>
+#include <cuda_runtime.h>
+#endif
+
 namespace RAJA {
 
 
@@ -56,7 +61,15 @@ ListSegment& ListSegment::operator=(const ListSegment& rhs)
 ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
+#if defined(RAJA_USE_CUDA)
+      if (cudaFree(m_indx) != cudaSuccess) {
+         std::cerr << "\n ERROR in cudaFree call, FILE: "
+                      << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+       }
+#else
       delete[] m_indx ;
+#endif
    }
 }
 
@@ -114,12 +127,23 @@ void ListSegment::initIndexData(const Index_type* indx,
       m_indx_own = indx_own;
 
       if ( m_indx_own == Owned ) {
-         m_indx = new Index_type[len];
-#if defined(RAJA_USE_STL)
-         std::copy(indx, indx + getLength(), m_indx);
+#if defined(RAJA_USE_CUDA)
+
+         if ( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type), 
+                                 cudaMemAttachGlobal) != cudaSuccess ) {
+            std::cerr << "\n ERROR in cudaMallocManaged call, FILE: " 
+                      << __FILE__ << " line " << __LINE__ << std::endl;
+            exit(1);
+         } 
+
 #else
-         memcpy(m_indx, indx, getLength()*sizeof(Index_type));
+         m_indx = new Index_type[len];
 #endif
+
+         for (Index_type i = 0; i < m_len; ++i) {
+            m_indx[i] = indx[i] ;
+         }
+
       } else {
          // Uh-oh. Using evil const_cast.... 
          m_indx = const_cast<Index_type*>(indx);
