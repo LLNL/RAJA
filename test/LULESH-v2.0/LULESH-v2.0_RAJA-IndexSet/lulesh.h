@@ -51,7 +51,8 @@ typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> node_exec_policy;
 typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> elem_exec_policy;
 typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> mat_exec_policy;
 //typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, RAJA::seq_exec> mat_exec_policy;
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> minloc_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> min_exec_policy;
+// typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> minloc_exec_policy;
 typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> symnode_exec_policy;
 
 
