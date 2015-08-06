@@ -84,11 +84,13 @@ typedef const Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIG
 
 
 #elif defined(RAJA_COMPILER_XLC12)
+#ifndef RAJA_COMPILER_XLC_POWER8
 extern
 #ifdef __cplusplus
 "builtin"
 #endif
 void __alignx(int n, const void* addr);
+#endif
 
 
 #elif defined(RAJA_COMPILER_CLANG)

@@ -118,7 +118,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
    if ((m_perm != 0) && (nr != 1)) {
       /* permute nodelist connectivity */
       {
-         Index_t tmp[8*numElem()] ;
+         Index_t *tmp = new Index_t[8*numElem()] ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
          // for (Index_t i=0; i<numElem(); ++i) {
             Index_t *localNode = nodelist(perm(i)) ;
@@ -127,12 +127,13 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
             }
          } ) ;
          memcpy(nodelist(0), tmp, 8*sizeof(Index_t)*numElem()) ;
+         delete [] tmp ;
       }
 
       /* permute lxim, lxip, letam, letap, lzetam, lzetap */
       {
-         Index_t tmp[6*numElem()] ;
-         Index_t iperm[numElem()] ; /* inverse permutation */
+         Index_t *tmp = new Index_t[6*numElem()] ;
+         Index_t *iperm = new Index_t[numElem()] ; /* inverse permutation */
 
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
          // for (Index_t i=0; i<numElem(); ++i) {
@@ -158,10 +159,13 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          } ) ;
 
          initEnergyElemIdx = iperm[0] ;
+
+         delete [] iperm ;
+         delete [] tmp ;
       }
       /* permute elemBC */
       {
-         Int_t tmp[numElem()] ;
+         Int_t *tmp = new Int_t[numElem()] ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
          // for (Index_t i=0; i<numElem(); ++i) {
             tmp[i] = elemBC(perm(i)) ;
@@ -170,6 +174,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          // for (Index_t i=0; i<numElem(); ++i) {
             elemBC(i) = tmp[i] ;
          } ) ;
+         delete [] tmp ;
       }
    }
 
