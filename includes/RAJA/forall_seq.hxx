@@ -22,16 +22,200 @@
 #include "int_datatypes.hxx"
 
 #include "execpolicy.hxx"
+#include "reducers.hxx"
 
 #include "fault_tolerance.hxx"
 
+#include "MemUtilsCPU.hxx"
+
+#if 0
+#include<string>
+#include<iostream> 
+#endif
 
 namespace RAJA {
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets.
+// Reduction classes and operations.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Min reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMin<seq_reduce, T> {
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMin(T init_val) 
+   : m_is_copy(false) 
+   {
+      m_myID = getCPUReductionId(_MIN_);
+     
+      m_min = getCPUReductionMemBlock(m_myID);  
+      m_min[0] = init_val; 
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMin( const ReduceMin<seq_reduce, T>& other ) 
+   : m_is_copy(true)
+   {
+      copy(other);
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMin() {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object 
+      }
+   }
+
+   //
+   // Operator to retrieve min value (before object is destroyed).
+   //
+   operator T() const {
+      return m_min[0] ;
+   }
+
+   //
+   // Min function that sets object min to minimum of current value and arg.
+   //
+   ReduceMin<seq_reduce, T> min(T val) const {
+      m_min[0] = RAJA_MIN(m_min[0], val);
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMin<seq_reduce, T>();
+
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceMin<seq_reduce, T>& other)
+   {
+      m_myID = other.m_myID;
+      m_min  = other.m_min;
+   }
+
+
+   bool m_is_copy;
+   int m_myID;
+   CPUReductionBlockDataType* m_min;
+} ;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sum reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceSum<seq_reduce, T> {
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceSum(T init_val)
+   : m_is_copy(false), m_accessor_called(false)
+   {
+      m_myID = getCPUReductionId(_SUM_);
+
+      m_sum = getCPUReductionMemBlock(m_myID);
+      m_sum[0] = 0;
+      setCPUReductionInitValue(m_myID, init_val);
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceSum( const ReduceSum<seq_reduce, T>& other )
+   : m_is_copy(true)
+   {
+      copy(other);
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceSum() {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
+   }
+
+   //
+   // Operator to retrieve sum value (before object is destroyed).
+   //
+   operator T() const {
+      if (!m_accessor_called) {
+         m_sum[0] += getCPUReductionInitValue(m_myID);
+      }
+      return m_sum[0];
+   }
+
+   //
+   // += operator that performs accumulation into object min val.
+   //
+   ReduceSum<seq_reduce, T> operator+=(T val) const {
+      m_sum[0] += val;
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceSum<seq_reduce, T>();
+
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceSum<seq_reduce, T>& other)
+   {
+      m_accessor_called = other.m_accessor_called;
+      m_myID = other.m_myID;
+      m_sum  =  other.m_sum;
+   }
+
+   bool m_is_copy;
+   bool m_accessor_called; 
+   int m_myID;
+   CPUReductionBlockDataType* m_sum;
+} ;
+
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -46,7 +230,7 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const Index_type begin, const Index_type end, 
+            Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
 
@@ -63,7 +247,7 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over index range, including index count.
+ * \brief  Sequential iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -72,8 +256,8 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type loop_end = end - begin;
@@ -91,7 +275,178 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over index range set object.
+ * \brief  Sequential min reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                Index_type begin, Index_type end,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, min );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                Index_type begin, Index_type end,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential minloc reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T, 
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_minloc(seq_exec,
+                   Index_type begin, Index_type end, 
+                   T* min, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, min, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential max reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_max(seq_exec,
+                Index_type begin, Index_type end,
+                T* max,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, max );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential maxloc reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_maxloc(seq_exec,
+                   Index_type begin, Index_type end,
+                   T* max, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, max, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential sum reduction over index range.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                Index_type begin, Index_type end,
+                T* sum,
+                LOOP_BODY loop_body)
+{
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii, sum );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                Index_type begin, Index_type end,
+                LOOP_BODY loop_body)
+{
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range segments. 
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over range segment object.
  *
  ******************************************************************************
  */
@@ -117,8 +472,7 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over index range set object,
- *         including index count.
+ * \brief  Sequential iteration over range segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -128,7 +482,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
                    const RangeSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
@@ -147,57 +501,7 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential min reduction over index range.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const Index_type begin, const Index_type end,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, min );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential minloc reduction over index range.
- *
- ******************************************************************************
- */
-template <typename T, 
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_minloc(seq_exec,
-                   const Index_type begin, const Index_type end, 
-                   T* min, Index_type* loc,
-                   LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, min, loc );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over range index set object.
+ * \brief  Sequential min reduction over range segment object.
  *
  ******************************************************************************
  */
@@ -222,10 +526,30 @@ void forall_min(seq_exec,
    RAJA_FT_END ;
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const RangeSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 /*!
  ******************************************************************************
  *
- * \brief  Sequential minloc reduction over range index set object.
+ * \brief  Sequential minloc reduction over range segment object.
  *
  ******************************************************************************
  */
@@ -253,24 +577,26 @@ void forall_minloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over index range.
+ * \brief  Sequential max reduction over range segment object.
  *
  ******************************************************************************
  */
 template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(seq_exec,
-                   const Index_type begin, const Index_type end,
-                   T* max, Index_type* loc,
-                   LOOP_BODY loop_body)
+void forall_max(seq_exec,
+                const RangeSegment& iseg,
+                T* max, Index_type* loc,
+                LOOP_BODY loop_body)
 {
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, max, loc );
+      loop_body( ii, max );
    }
 
    RAJA_FT_END ;
@@ -279,7 +605,7 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over range index set object.
+ * \brief  Sequential maxloc reduction over range segment object.
  *
  ******************************************************************************
  */
@@ -307,33 +633,7 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential sum reduction over index range.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const Index_type begin, const Index_type end,
-                T* sum,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, sum );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential sum reduction over range index set object.
+ * \brief  Sequential sum reduction over range segment object.
  *
  ******************************************************************************
  */
@@ -358,12 +658,32 @@ void forall_sum(seq_exec,
    RAJA_FT_END ;
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                const RangeSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets with stride.
+// Function templates that iterate over index ranges with stride.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -378,8 +698,8 @@ void forall_sum(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const Index_type begin, const Index_type end,
-            const Index_type stride,
+            Index_type begin, Index_type end,
+            Index_type stride,
             LOOP_BODY loop_body)
 {  
 
@@ -406,9 +726,9 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type loop_end = (end-begin)/stride;
@@ -426,7 +746,146 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over range index set with stride object.
+ * \brief  Sequential min reduction over index range with stride.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                Index_type begin, Index_type end,
+                Index_type stride,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+      loop_body( ii, min );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential minloc reduction over index range with stride.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_minloc(seq_exec,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
+                   T* min, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+      loop_body( ii, min, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential max reduction over index range with stride.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_max(seq_exec,
+                Index_type begin, Index_type end,
+                Index_type stride,
+                T* max,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+      loop_body( ii, max );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential maxloc reduction over index range with stride.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_maxloc(seq_exec,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
+                   T* max, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+      loop_body( ii, max, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential sum reduction over index range with stride.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                Index_type begin, Index_type end,
+                Index_type stride,
+                T* sum, 
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+      loop_body( ii, sum );
+   }
+
+   RAJA_FT_END ;
+}
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range-stride segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential iteration over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -453,8 +912,8 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over range index set with stride object,
- *         including index count.
+ * \brief  Sequential iteration over range-stride segment object 
+ *         with index count,
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -464,7 +923,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
                    const RangeStrideSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type begin    = iseg.getBegin();
@@ -484,24 +943,28 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential minloc reduction over index range with stride.
- *
+ * \brief  Sequential min reduction over range-stride segment object
+ *         with index count.
+ * 
  ******************************************************************************
  */
 template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_minloc(seq_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   T* min, Index_type* loc,
-                   LOOP_BODY loop_body)
+void forall_min(seq_exec,
+                const RangeStrideSegment& iseg,
+                T* min,
+                LOOP_BODY loop_body)
 {
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
+
    RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, min, loc );
+      loop_body( ii, min );
    }
 
    RAJA_FT_END ;
@@ -510,7 +973,8 @@ void forall_minloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential minloc reduction over range index set with stride object.
+ * \brief  Sequential minloc reduction over range-stride segment object
+ *         with index count.
  * 
  ******************************************************************************
  */
@@ -539,24 +1003,27 @@ void forall_minloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over index range with stride.
+ * \brief  Sequential max reduction over range-stride segment object.
  *
  ******************************************************************************
  */
 template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(seq_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   T* max, Index_type* loc,
-                   LOOP_BODY loop_body)
+void forall_max(seq_exec,
+                const RangeStrideSegment& iseg,
+                T* max,
+                LOOP_BODY loop_body)
 {
+   const Index_type begin  = iseg.getBegin();
+   const Index_type end    = iseg.getEnd();
+   const Index_type stride = iseg.getStride();
+
    RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, max, loc );
+      loop_body( ii, max );
    }
 
    RAJA_FT_END ;
@@ -565,7 +1032,7 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over range index set with stride object.
+ * \brief  Sequential maxloc reduction over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -594,33 +1061,7 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential sum reduction over index range with stride.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const Index_type begin, const Index_type end,
-                const Index_type stride,
-                T* sum, 
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, sum );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential sum reduction over range index set with stride object.
+ * \brief  Sequential sum reduction over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -650,7 +1091,7 @@ void forall_sum(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over list segments.
+// Function templates that iterate over indirection arrays.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -665,7 +1106,7 @@ void forall_sum(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(seq_exec,
-            const Index_type* __restrict__ idx, const Index_type len,
+            const Index_type* __restrict__ idx, Index_type len,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -681,8 +1122,8 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over indices in indirection array,
- *         including index count.
+ * \brief  Sequential iteration over indices in indirection array 
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -691,8 +1132,8 @@ void forall(seq_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
-                   const Index_type icount,
+                   const Index_type* __restrict__ idx, Index_type len,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -705,6 +1146,173 @@ void forall_Icount(seq_exec,
    RAJA_FT_END ;
 }
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential min reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                T* min,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], min );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential minloc reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_minloc(seq_exec,
+                   const Index_type* __restrict__ idx, Index_type len,
+                   T* min, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], min, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential max reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_max(seq_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                T* max,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], max );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential maxloc reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_maxloc(seq_exec,
+                   const Index_type* __restrict__ idx, Index_type len,
+                   T* max, Index_type* loc,
+                   LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], max, loc );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sequential sum reduction over indices in indirection array.
+ *
+ ******************************************************************************
+ */
+template <typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                T* sum,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k], sum );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
 /*!
  ******************************************************************************
@@ -735,8 +1343,7 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over list segment object,
- *         including index count.
+ * \brief  Sequential iteration over list segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -746,7 +1353,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(seq_exec,
                    const ListSegment& iseg,
-                   const Index_type icount, 
+                   Index_type icount, 
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
@@ -757,56 +1364,6 @@ void forall_Icount(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const Index_type* __restrict__ idx, const Index_type len,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], min );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential minloc reduction over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_minloc(seq_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
-                   T* min, Index_type* loc,
-                   LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], min, loc );
    }
 
    RAJA_FT_END ;
@@ -835,6 +1392,26 @@ void forall_min(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], min );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(seq_exec,
+                const ListSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
    }
 
    RAJA_FT_END ;
@@ -871,23 +1448,26 @@ void forall_minloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential maxloc reduction over indices in indirection array.
+ * \brief  Sequential max reduction over list segment object.
  *
  ******************************************************************************
  */
 template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_maxloc(seq_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
-                   T* max, Index_type* loc,
-                   LOOP_BODY loop_body)
+void forall_max(seq_exec,
+                const ListSegment& iseg,
+                T* max,
+                LOOP_BODY loop_body)
 {
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
+
    RAJA_FT_BEGIN ;
 
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], max, loc );
+      loop_body( idx[k], max );
    }
 
    RAJA_FT_END ;
@@ -924,31 +1504,6 @@ void forall_maxloc(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential sum reduction over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const Index_type* __restrict__ idx, const Index_type len,
-                T* sum,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], sum );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
  * \brief  Sequential sum reduction over list segment object.
  *
  ******************************************************************************
@@ -969,6 +1524,26 @@ void forall_sum(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], sum );
+   }
+
+   RAJA_FT_END ;
+}
+
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(seq_exec,
+                const ListSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
    }
 
    RAJA_FT_END ;
@@ -1202,6 +1777,66 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 }
 
+// RDH NEW REDUCE
+template <typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& iset,
+                 LOOP_BODY loop_body)
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+}
+
 /*!
  ******************************************************************************
  *
@@ -1418,6 +2053,70 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       }  // switch on segment type
 
    } // iterate over segments of index set
+
+}
+
+// RDH NEW REDUCE
+template <typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& iset,
+                 LOOP_BODY loop_body)
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_sum(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_sum(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_sum(
+               SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+#if 0 // RDH
+   sum_obj += sum_obj.getInitVal();
+#endif
 
 }
 
