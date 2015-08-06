@@ -24,14 +24,214 @@
 #include "RAJAVec.hxx"
 
 #include "execpolicy.hxx"
+#include "reducers.hxx"
 
 #include "fault_tolerance.hxx"
 
-#include <omp.h>
+#include "MemUtilsCPU.hxx"
 
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
 
 namespace RAJA {
 
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Reduction classes and operations.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Min reducer class template for use in OpenMP execution.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMin<omp_reduce, T> {
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMin(T init_val)
+   : m_is_copy(false)
+   {
+      m_myID = getCPUReductionId(_MIN_);
+
+      m_min = getCPUReductionMemBlock(m_myID);
+
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for 
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_min[i] = init_val ;
+      }
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMin( const ReduceMin<omp_reduce, T>& other )
+   : m_is_copy(true)
+   {
+      copy(other);
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMin() {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
+   }
+
+   //
+   // Operator to retrieve min value (before object is destroyed).
+   //
+   operator T() const {
+      int nthreads = omp_get_max_threads();
+      T ret_val = m_min[0];
+      for ( int i = 1; i < nthreads; ++i ) {
+         ret_val = RAJA_MIN(ret_val, m_min[i]);
+      }
+      return ret_val ;
+   }
+
+   //
+   // Min function that sets object min to minimum of current value and arg.
+   //
+   ReduceMin<omp_reduce, T> min(T val) const {
+      int tid = omp_get_thread_num();
+      m_min[tid] = RAJA_MIN(m_min[tid], val);
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMin<omp_reduce, T>();
+
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceMin<omp_reduce, T>& other)
+   {
+      m_myID = other.m_myID;
+      m_min  = other.m_min;
+   }
+
+
+   bool m_is_copy;
+   int m_myID;
+   CPUReductionBlockDataType* m_min;
+} ;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Min reducer class template for use in OpenMP execution.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceSum<omp_reduce, T> {
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceSum(T init_val)
+   : m_is_copy(false), m_accessor_called(false)
+   {
+      m_myID = getCPUReductionId(_MIN_);
+
+      m_sum = getCPUReductionMemBlock(m_myID);
+
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for 
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_sum[i] = 0 ;
+      }
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceSum( const ReduceSum<omp_reduce, T>& other )
+   : m_is_copy(true)
+   {
+      copy(other);
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceSum() {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
+   }
+
+   //
+   // Operator to retrieve sum value (before object is destroyed).
+   //
+   operator T() const {
+      if (!m_accessor_called) {
+         int nthreads = omp_get_max_threads();
+         for ( int i = 1; i < nthreads; ++i ) {
+            m_sum[0] += m_sum[i];
+         }
+         m_sum[0] += getCPUReductionInitValue(m_myID);
+      }
+
+      return  m_sum[0];
+   }
+
+   //
+   // += operator that performs accumulation into object min val.
+   //
+   ReduceSum<omp_reduce, T> operator+=(T val) const {
+      int tid = omp_get_thread_num();
+      m_sum[tid] += val;
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceSum<omp_reduce, T>();
+
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceSum<omp_reduce, T>& other)
+   {
+      m_accessor_called = other.m_accessor_called;
+      m_myID = other.m_myID;
+      m_sum  = other.m_sum;
+   }
+
+
+   bool m_is_copy;
+   bool m_accessor_called;
+   int m_myID;
+   CPUReductionBlockDataType* m_sum;
+} ;
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -51,7 +251,7 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_parallel_for_exec,
-            const Index_type begin, const Index_type end, 
+            Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -76,8 +276,8 @@ void forall(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type loop_end = end - begin;
@@ -132,7 +332,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
                    const RangeSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {           
    const Index_type begin = iseg.getBegin();
@@ -159,7 +359,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
-                const Index_type begin, const Index_type end,
+                Index_type begin, Index_type end,
                 T* min,
                 LOOP_BODY loop_body)
 {
@@ -189,6 +389,23 @@ void forall_min(omp_parallel_for_exec,
    *min = min_tmp[0] ;
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                Index_type begin, Index_type end,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma omp parallel for
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 /*!
  ******************************************************************************
  *
@@ -200,7 +417,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end,
+                   Index_type begin, Index_type end,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -256,6 +473,26 @@ void forall_min(omp_parallel_for_exec,
               loop_body);
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const RangeSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
+
+   RAJA_FT_BEGIN ;
+
+#pragma omp parallel for
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 /*!
  ******************************************************************************
  *
@@ -288,7 +525,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end,
+                   Index_type begin, Index_type end,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -355,7 +592,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(omp_parallel_for_exec,
-                const Index_type begin, const Index_type end,
+                Index_type begin, Index_type end,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -420,8 +657,8 @@ void forall_sum(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_parallel_for_exec,
-            const Index_type begin, const Index_type end, 
-            const Index_type stride,
+            Index_type begin, Index_type end, 
+            Index_type stride,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -447,9 +684,9 @@ void forall(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type loop_end = (end-begin)/stride;
@@ -505,7 +742,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
                    const RangeStrideSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type begin    = iseg.getBegin();
@@ -533,8 +770,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -602,8 +839,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(omp_parallel_for_exec,
-                   const Index_type begin, const Index_type end, 
-                   const Index_type stride,
+                   Index_type begin, Index_type end, 
+                   Index_type stride,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -671,8 +908,8 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(omp_parallel_for_exec,
-                const Index_type begin, const Index_type end, 
-                const Index_type stride,
+                Index_type begin, Index_type end, 
+                Index_type stride,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -740,7 +977,7 @@ void forall_sum(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_parallel_for_exec,
-            const Index_type* __restrict__ idx, const Index_type len,
+            const Index_type* __restrict__ idx, Index_type len,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -767,8 +1004,8 @@ void forall(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
-                   const Index_type icount,
+                   const Index_type* __restrict__ idx, Index_type len,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -823,7 +1060,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
                    const ListSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
@@ -851,7 +1088,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
-                const Index_type* __restrict__ idx, const Index_type len,
+                const Index_type* __restrict__ idx, Index_type len,
                 T* min,
                 LOOP_BODY loop_body)
 {
@@ -882,6 +1119,24 @@ void forall_min(omp_parallel_for_exec,
    *min = min_tmp[0] ;
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const Index_type* __restrict__ idx, Index_type len,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+#pragma omp parallel for
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
 /*!
  ******************************************************************************
  *
@@ -893,7 +1148,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_minloc(omp_parallel_for_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
+                   const Index_type* __restrict__ idx, Index_type len,
                    T* min, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -950,6 +1205,27 @@ void forall_min(omp_parallel_for_exec,
               loop_body);
 }
 
+// RDH NEW REDUCE
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(omp_parallel_for_exec,
+                const ListSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   const Index_type len = iseg.getLength();
+
+#pragma novector
+#pragma omp parallel for
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
 /*!
  ******************************************************************************
  *
@@ -982,7 +1258,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_maxloc(omp_parallel_for_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
+                   const Index_type* __restrict__ idx, Index_type len,
                    T* max, Index_type *loc,
                    LOOP_BODY loop_body)
 {
@@ -1050,7 +1326,7 @@ template <typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(omp_parallel_for_exec,
-                const Index_type* __restrict__ idx, const Index_type len,
+                const Index_type* __restrict__ idx, Index_type len,
                 T* sum,
                 LOOP_BODY loop_body)
 {
@@ -1454,6 +1730,7 @@ void forall_min( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 
    *min = min_tmp[0] ;
 }
+
 
 /*!
  ******************************************************************************
@@ -1976,6 +2253,7 @@ void forall_segments(omp_taskgraph_interval_segit,
 }
 
 
+#if 0
 ////////////////////////////////////////////////////////////////////////////
 /// Jeff's "reducer" project...
 ////////////////////////////////////////////////////////////////////////////
@@ -2022,6 +2300,7 @@ private:
    double *m_var ;
    double m_val[16*128] ; /* assume 16 threads maximum */
 } ; 
+#endif
 
 }  // closing brace for RAJA namespace
 

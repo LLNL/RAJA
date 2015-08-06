@@ -30,6 +30,8 @@
 
 #include "execpolicy.hxx"
 
+#include "reducers.hxx"
+
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"

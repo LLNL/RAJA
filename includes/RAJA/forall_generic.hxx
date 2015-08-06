@@ -145,6 +145,19 @@ void forall_min(const Index_type begin, const Index_type end,
                loop_body );
 }
 
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const Index_type begin, const Index_type end,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               begin, end,
+               loop_body );
+}
+
+
 /*!
  ******************************************************************************
  *
@@ -184,6 +197,18 @@ void forall_min(const RangeSegment& iseg,
    forall_min( EXEC_POLICY_T(),
                iseg.getBegin(), iseg.getEnd(),
                min,
+               loop_body );
+}
+
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const RangeSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               iseg.getBegin(), iseg.getEnd(),
                loop_body );
 }
 
@@ -271,6 +296,19 @@ void forall_sum(const Index_type begin, const Index_type end,
                loop_body );
 }
 
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(const Index_type begin, const Index_type end,
+                LOOP_BODY loop_body)
+{
+   forall_sum( EXEC_POLICY_T(),
+               begin, end,
+               loop_body );
+}
+
+
 /*!
  ******************************************************************************
  *
@@ -289,6 +327,18 @@ void forall_sum(const RangeSegment& iseg,
    forall_sum( EXEC_POLICY_T(),
                iseg.getBegin(), iseg.getEnd(),
                sum,
+               loop_body );
+}
+
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(const RangeSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   forall_sum( EXEC_POLICY_T(),
+               iseg.getBegin(), iseg.getEnd(),
                loop_body );
 }
 
@@ -626,6 +676,19 @@ void forall_min(const Index_type* idx, const Index_type len,
                loop_body );
 }
 
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const Index_type* idx, const Index_type len,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               idx, len,
+               loop_body );
+}
+
+
 /*!
  ******************************************************************************
  *
@@ -665,6 +728,18 @@ void forall_min(const ListSegment& iseg,
    forall_min( EXEC_POLICY_T(),
                iseg.getIndex(), iseg.getLength(),
                min,
+               loop_body );
+}
+
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const ListSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   forall_min( EXEC_POLICY_T(),
+               iseg.getIndex(), iseg.getLength(),
                loop_body );
 }
 
@@ -752,6 +827,18 @@ void forall_sum(const Index_type* idx, const Index_type len,
                loop_body );
 }
 
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(const Index_type* idx, const Index_type len,
+                LOOP_BODY loop_body)
+{
+   forall_sum( EXEC_POLICY_T(),
+               idx, len,
+               loop_body );
+}
+
 /*!
  ******************************************************************************
  *
@@ -770,6 +857,18 @@ void forall_sum(const ListSegment& iseg,
    forall_sum( EXEC_POLICY_T(),
                iseg.getIndex(), iseg.getLength(),
                sum,
+               loop_body );
+}
+
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(const ListSegment& iseg,
+                LOOP_BODY loop_body)
+{
+   forall_sum( EXEC_POLICY_T(),
+               iseg.getIndex(), iseg.getLength(),
                loop_body );
 }
 
@@ -871,6 +970,19 @@ void forall_min(const INDEXSET_T& iset,
               loop_body);
 }
 
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename INDEXSET_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min(const INDEXSET_T& iset,
+                LOOP_BODY loop_body)
+{
+   forall_min(EXEC_POLICY_T(),
+              iset,
+              loop_body);
+}
+
 /*!
  ******************************************************************************
  *
@@ -936,6 +1048,20 @@ void forall_sum(const INDEXSET_T& iset,
               sum,
               loop_body);
 }
+
+// RDH NEW REDUCE
+template <typename EXEC_POLICY_T,
+          typename INDEXSET_T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_sum(const INDEXSET_T& iset,
+                LOOP_BODY loop_body)
+{
+   forall_sum(EXEC_POLICY_T(),
+              iset,
+              loop_body);
+}
+
 
 
 /*!
