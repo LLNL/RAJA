@@ -387,12 +387,7 @@ Domain::SetupCommBuffers(Int_t edgeNodes)
 #endif   
 
   // Boundary nodesets
-  if (m_colLoc == 0)
-    m_symmX.resize(edgeNodes*edgeNodes);
-  if (m_rowLoc == 0)
-    m_symmY.resize(edgeNodes*edgeNodes);
-  if (m_planeLoc == 0)
-    m_symmZ.resize(edgeNodes*edgeNodes);
+  AllocateSymmetry(edgeNodes*edgeNodes) ;
 }
 
 
