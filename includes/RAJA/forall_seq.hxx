@@ -81,7 +81,8 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMin() {
+   ~ReduceMin() 
+   {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
          // free any data owned by reduction object 
@@ -91,14 +92,16 @@ public:
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T() const {
+   operator T() const 
+   {
       return m_min[0] ;
    }
 
    //
    // Min function that sets object min to minimum of current value and arg.
    //
-   ReduceMin<seq_reduce, T> min(T val) const {
+   ReduceMin<seq_reduce, T> min(T val) const 
+   {
       m_min[0] = RAJA_MIN(m_min[0], val);
       return *this ;
    }
@@ -163,7 +166,8 @@ public:
    //
    // Destructor.
    //
-   ~ReduceSum() {
+   ~ReduceSum() 
+   {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
          // free any data owned by reduction object
@@ -173,7 +177,8 @@ public:
    //
    // Operator to retrieve sum value (before object is destroyed).
    //
-   operator T() const {
+   operator T() const 
+   {
       if (!m_accessor_called) {
          m_sum[0] += getCPUReductionInitValue(m_myID);
       }
@@ -183,7 +188,8 @@ public:
    //
    // += operator that performs accumulation into object min val.
    //
-   ReduceSum<seq_reduce, T> operator+=(T val) const {
+   ReduceSum<seq_reduce, T> operator+=(T val) const 
+   {
       m_sum[0] += val;
       return *this ;
    }
