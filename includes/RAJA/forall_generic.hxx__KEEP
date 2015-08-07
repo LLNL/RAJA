@@ -147,13 +147,17 @@ void forall_min(const Index_type begin, const Index_type end,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(const Index_type begin, const Index_type end,
+                ReduceMin<REDUCE_POLICY_T, T> min_obj,
                 LOOP_BODY loop_body)
 {
    forall_min( EXEC_POLICY_T(),
                begin, end,
+               min_obj,
                loop_body );
 }
 
@@ -202,13 +206,17 @@ void forall_min(const RangeSegment& iseg,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(const RangeSegment& iseg,
+                ReduceMin<REDUCE_POLICY_T, T> min_obj,
                 LOOP_BODY loop_body)
 {
    forall_min( EXEC_POLICY_T(),
                iseg.getBegin(), iseg.getEnd(),
+               min_obj,
                loop_body );
 }
 
@@ -298,13 +306,17 @@ void forall_sum(const Index_type begin, const Index_type end,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(const Index_type begin, const Index_type end,
+                ReduceSum<REDUCE_POLICY_T, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
                begin, end,
+               sum_obj,
                loop_body );
 }
 
@@ -332,13 +344,17 @@ void forall_sum(const RangeSegment& iseg,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(const RangeSegment& iseg,
+                ReduceSum<REDUCE_POLICY_T, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
                iseg.getBegin(), iseg.getEnd(),
+               sum_obj,
                loop_body );
 }
 
@@ -678,13 +694,17 @@ void forall_min(const Index_type* idx, const Index_type len,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(const Index_type* idx, const Index_type len,
+                ReduceMin<REDUCE_POLICY_T, T> min_obj,
                 LOOP_BODY loop_body)
 {
    forall_min( EXEC_POLICY_T(),
                idx, len,
+               min_obj,
                loop_body );
 }
 
@@ -733,13 +753,17 @@ void forall_min(const ListSegment& iseg,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(const ListSegment& iseg,
+                ReduceMin<REDUCE_POLICY_T, T> min_obj,
                 LOOP_BODY loop_body)
 {
    forall_min( EXEC_POLICY_T(),
                iseg.getIndex(), iseg.getLength(),
+               min_obj,
                loop_body );
 }
 
@@ -829,13 +853,17 @@ void forall_sum(const Index_type* idx, const Index_type len,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(const Index_type* idx, const Index_type len,
+                ReduceSum<REDUCE_POLICY_T, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
                idx, len,
+               sum_obj,
                loop_body );
 }
 
@@ -862,13 +890,17 @@ void forall_sum(const ListSegment& iseg,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(const ListSegment& iseg,
+                ReduceSum<REDUCE_POLICY_T, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    forall_sum( EXEC_POLICY_T(),
                iseg.getIndex(), iseg.getLength(),
+               sum_obj,
                loop_body );
 }
 
@@ -972,14 +1004,18 @@ void forall_min(const INDEXSET_T& iset,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
           typename INDEXSET_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(const INDEXSET_T& iset,
+                ReduceMin<REDUCE_POLICY_T, T> min_obj,
                 LOOP_BODY loop_body)
 {
    forall_min(EXEC_POLICY_T(),
               iset,
+              min_obj,
               loop_body);
 }
 
@@ -1051,14 +1087,18 @@ void forall_sum(const INDEXSET_T& iset,
 
 // RDH NEW REDUCE
 template <typename EXEC_POLICY_T,
+          typename REDUCE_POLICY_T,
           typename INDEXSET_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(const INDEXSET_T& iset,
+                ReduceSum<REDUCE_POLICY_T, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    forall_sum(EXEC_POLICY_T(),
               iset,
+              sum_obj,
               loop_body);
 }
 
