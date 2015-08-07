@@ -29,28 +29,26 @@
 
 #include "fault_tolerance.hxx"
 
-#include "MemUtilsCuda.hxx"
+#include "MemUtils.hxx"
 
+#if 0
 #include <iostream>
 #include <cstdlib>
+#endif
 
 namespace RAJA {
 
 //
 // Operations in this file are parametrized using the following
-// values.  RDH -- can we come up with something better than this??
+// values.  RDH -- should we move these somewhere else??
 //
 const int THREADS_PER_BLOCK = 256;
 const int WARP_SIZE = 32;
-const int BLOCK_LENGTH = (1024 + 8) * 16;
-const int RAJA_MAX_REDUCE_VARS_CUDA = 8;
-
-__device__ __managed__ int cuda_reduction_gid = -1;
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Reduction classes and operations.
+// Reduction classes.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -72,62 +70,73 @@ public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMin(T init_val) {
-       m_init_val = init_val;
-       m_blockdata = static_cast<RAJA::CudaReduceBlockAllocType*>(
-          allocCudaReductionMemBlockData(BLOCK_LENGTH, RAJA_MAX_REDUCE_VARS_CUDA) ;
-       m_myID = ++cuda_reduction_gid;
-       m_blockoffset = m_myID * BLOCK_LENGTH;
+   explicit ReduceMin(T init_val)
+   {
+      m_is_copy = false;
 
-       if ( m_myID >= RAJA_MAX_REDUCE_VARS_CUDA ) {
-          std::cerr << "\n ERROR in CUDA ReduceMin ctor, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-          exit(1);
-       }
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
 
-       m_is_copy = false;
+      m_myID = getCudaReductionId();
 
-       m_blockdata[m_blockoffset] = init_val;
-       cudaDeviceSynchronize();
+      m_blockdata = getCudaReductionMemBlock() ;
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+
+      cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor tracks whether object is a copy to work properly.
+   // Copy ctor execcutes on both host and device.
    //
    __host__ __device__ ReduceMin( const ReduceMin<cuda_reduce, T>& other )
    {
-      copy(other);
-      m_is_copy = true; 
+      *this = other;
+      m_is_copy = true;
    }
 
    //
-   // Destructor decrements cuda_reduction_gid value only if reducer object 
-   // not created via copy construction (to make copy ctor work properly).
+   // Destructor executes on both host and device.
    //
-   __host__ __device__ ~ReduceMin() {
-      if (!m_is_copy) {
-          // call cudaFree on cudaMalloc data if needed.
-          cuda_reduction_gid--;
-      }
+   __host__ __device__ ~ReduceMin<cuda_reduce, T>()
+   {
+       if (!m_is_copy) {
+          m_myID[0] -= 1;
+          // OK to perform cudaFree of cudaMalloc vars if needed...
+       }
    }
 
    //
-   // Operator to retrieve min value (before object is destroyed).
+   // Operator to retrieve reduced min value (before object is destroyed).
    //
-   operator T() const {
+   operator T()
+   {
       cudaDeviceSynchronize() ;
-      return static_cast<T>(m_blockdata[m_blockoffset]) ;
+
+      if ( !m_reduction_is_final ) {
+         size_t current_grid_size = getCurrentGridSize();
+         for (int i=1; i<=current_grid_size; ++i) {
+            m_blockdata[m_blockoffset] =
+                RAJA_MIN(m_blockdata[m_blockoffset],
+                         m_blockdata[m_blockoffset+i]) ;
+         }
+         m_reduced_val = RAJA_MIN(m_reduced_val,
+                                  static_cast<T>(m_blockdata[m_blockoffset]));
+
+         m_reduction_is_final = true;
+      }
+
+      return m_reduced_val;
    }
 
    //
-   // Min function that sets appropriate thread block value to
-   // minimum of initial value and current block min.
+   // Updates reduced value in the proper shared memory block locations.
    //
-   __device__ const ReduceMin<cuda_reduce, T> min(T val) const {
+   __device__ ReduceMin<cuda_reduce, T> min(T val) const
+   {
       __shared__ T sd[THREADS_PER_BLOCK];
 
-      if(threadIdx.x == 0) {
-          for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_init_val;
+      if (threadIdx.x == 0) {
+         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_reduced_val;
       }
       __syncthreads();
 
@@ -135,10 +144,10 @@ public:
       __syncthreads();
 
       for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
-         if (threadIdx.x < i) {
-            sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x + i]);
-         }
-         __syncthreads();
+          if (threadIdx.x < i) {
+              sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x + i]);
+          }
+          __syncthreads();
       }
 
       if (threadIdx.x < 16) {
@@ -175,26 +184,15 @@ private:
    //
    ReduceMin<cuda_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceMin<cuda_reduce, T>& other)
-   {
-      m_init_val = other.m_init_val;
-      m_blockdata = other.m_blockdata;
-      m_blockoffset = other.m_blockoffset;
-      m_myID = other.m_myID;
-      m_is_copy = true;
-   }
-   
-
-   T m_init_val;
-   CudaReduceBlockAllocType* m_blockdata;
-   int m_blockoffset;
-   int m_myID;
    bool m_is_copy;
-} ;
+   int* m_myID;
 
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
+   CudaReductionBlockDataType* m_blockdata;
+   int m_blockoffset;
+} ;
 
 /*!
  ******************************************************************************
@@ -213,101 +211,112 @@ public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMax(T init_val) {
-       m_init_val = init_val;
-       m_blockdata = static_cast<RAJA::CudaReduceBlockAllocType*>(
-          allocCudaReductionMemBlockData(BLOCK_LENGTH, RAJA_MAX_REDUCE_VARS_CUDA) ;
-       m_blockoffset = m_myID * BLOCK_LENGTH;
-       m_myID = ++cuda_reduction_gid;
+   explicit ReduceMax(T init_val)
+   {
+      m_is_copy = false;
 
-       if ( m_myID >= RAJA_MAX_REDUCE_VARS_CUDA ) {
-          std::cerr << "\n ERROR in CUDA ReduceMax ctor, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-          exit(1);
-       }
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
 
-       m_is_copy = false;
+      m_myID = getCudaReductionId();
 
-       m_blockdata[m_blockoffset] = init_val;
-       cudaDeviceSynchronize();
+      m_blockdata = getCudaReductionMemBlock() ;
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+
+      cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor tracks whether object is a copy to work properly.
+   // Copy ctor execcutes on both host and device.
    //
    __host__ __device__ ReduceMax( const ReduceMax<cuda_reduce, T>& other )
    {
-      copy(other);
-      m_is_copy = true; 
+      *this = other;
+      m_is_copy = true;
    }
 
    //
-   // Destructor decrements cuda_reduction_gid value only if reducer object 
-   // not created via copy construction (to make copy ctor work properly).
+   // Destructor executes on both host and device.
    //
-   __host__ __device__ ~ReduceMax() {
-      if (!m_is_copy) {
-          // call cudaFree on cudaMalloc data if needed.
-          cuda_reduction_gid--;
-      }
-   }
-
-   //
-   // Operator to retrieve max value (before object is destroyed).
-   //
-   operator T() const {
-       cudaDeviceSynchronize() ;
-       return static_cast<T>(m_blockdata[m_blockoffset]) ;
-   }
-
-   //
-   // Max function that sets appropriate thread block value to
-   // maximum of initial value and current block max.
-   //
-   __device__ const ReduceMax<cuda_reduce, T> max(T val) const {
-       __shared__ T sd[THREADS_PER_BLOCK];
-
-       if(threadIdx.x == 0) {
-           for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_init_val;
+   __host__ __device__ ~ReduceMax<cuda_reduce, T>()
+   {
+       if (!m_is_copy) {
+          m_myID[0] -= 1;
+          // OK to perform cudaFree of cudaMalloc vars if needed...
        }
-       __syncthreads();
+   }
 
-       sd[threadIdx.x] = val;
-       __syncthreads();
+   //
+   // Operator to retrieve reduced max value (before object is destroyed).
+   //
+   operator T()
+   {
+      cudaDeviceSynchronize() ;
 
-       for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+      if ( !m_reduction_is_final ) {
+         size_t current_grid_size = getCurrentGridSize();
+         for (int i=1; i<=current_grid_size; ++i) {
+            m_blockdata[m_blockoffset] =
+                RAJA_MAX(m_blockdata[m_blockoffset],
+                         m_blockdata[m_blockoffset+i]) ;
+         }
+         m_reduced_val = RAJA_MAX(m_reduced_val,
+                                  static_cast<T>(m_blockdata[m_blockoffset]));
+
+         m_reduction_is_final = true;
+      }
+
+      return m_reduced_val;
+   }
+
+   //
+   // Updates reduced value in the proper shared memory block locations.
+   //
+   __device__ ReduceMax<cuda_reduce, T> max(T val) const
+   {
+      __shared__ T sd[THREADS_PER_BLOCK];
+
+      if (threadIdx.x == 0) {
+         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_reduced_val;
+      }
+      __syncthreads();
+
+      sd[threadIdx.x] = val;
+      __syncthreads();
+
+      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
           if (threadIdx.x < i) {
-             sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x + i]);
+              sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x + i]);
           }
           __syncthreads();
-       }
+      }
 
-       if (threadIdx.x < 16) {
-           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+16]);
-       }
-       __syncthreads();
+      if (threadIdx.x < 16) {
+          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+16]);
+      }
+      __syncthreads();
 
-       if (threadIdx.x < 8) {
-           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+8]);
-       }
-       __syncthreads();
+      if (threadIdx.x < 8) {
+          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+8]);
+      }
+      __syncthreads();
 
-       if (threadIdx.x < 4) {
-           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+4]);
-       }
-       __syncthreads();
+      if (threadIdx.x < 4) {
+          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+4]);
+      }
+      __syncthreads();
 
-       if (threadIdx.x < 2) {
-           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+2]);
-       }
-       __syncthreads();
+      if (threadIdx.x < 2) {
+          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+2]);
+      }
+      __syncthreads();
 
-       if (threadIdx.x < 1) {
-           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
-           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-       }
+      if (threadIdx.x < 1) {
+          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
+          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
+      }
 
-       return *this ;
+      return *this ;
    }
 
 private:
@@ -316,27 +325,34 @@ private:
    //
    ReduceMax<cuda_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceMax<cuda_reduce, T>& other)
-   {
-      m_init_val = other.m_init_val;
-      m_blockdata = other.m_blockdata;
-      m_blockoffset = other.m_blockoffset;
-      m_myID = other.m_myID;
-      m_is_copy = true;
-   }
-   
-
-   T m_init_val;
-   CudaReduceBlockAllocType* m_blockdata;
-   int m_blockoffset;
-   int m_myID;
    bool m_is_copy;
+   int* m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
+   CudaReductionBlockDataType* m_blockdata;
+   int m_blockoffset;
 } ;
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Method to shuffle 32b registers in sum reduction.
+ *
+ *  RDH -- why do we do this? is this specific to Kepler architecture?
+ *
+ ******************************************************************************
+ */
+__device__ __forceinline__
+double shfl_xor(double var, int laneMask)
+{
+    int lo = __shfl_xor( __double2loint(var), laneMask );
+    int hi = __shfl_xor( __double2hiint(var), laneMask );
+    return __hiloint2double( hi, lo );
+}
+ 
 /*!
  ******************************************************************************
  *
@@ -352,84 +368,95 @@ template <typename T>
 class ReduceSum<cuda_reduce, T> {
 public:
    //
-   // Constructor takes default value (default ctor is disabled).
+   // Constructor takes initial reduction value (default ctor is disabled).
    //
-   explicit ReduceSum(T init_val) {
-       m_init_val = init_val;
-       m_blockdata = static_cast<RAJA::CudaReduceBlockAllocType*>(
-          allocCudaReductionMemBlockData(BLOCK_LENGTH, RAJA_MAX_REDUCE_VARS_CUDA) ;
-       m_blockoffset = m_myID * BLOCK_LENGTH;
-       m_myID = ++cuda_reduction_gid;
+   explicit ReduceSum(T init_val)
+   {
+      m_is_copy = false;
 
-       if ( m_myID >= RAJA_MAX_REDUCE_VARS_CUDA ) {
-          std::cerr << "\n ERROR in CUDA ReduceSum ctor, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-          exit(1);
-       }
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
 
-       m_is_copy = false;
+      m_myID = getCudaReductionId();
 
-       cudaDeviceSynchronize();
+      m_blockdata = getCudaReductionMemBlock();
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+
+      cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor tracks whether object is a copy to work properly.
+   // Copy ctor execcutes on both host and device.
    //
    __host__ __device__ ReduceSum( const ReduceSum<cuda_reduce, T>& other )
    {
-      copy(other);
-      m_is_copy = true; 
+      *this = other;
+      m_is_copy = true;
    }
 
    //
-   // Destructor decrements cuda_reduction_gid value only if reducer object 
-   // not created via copy construction (to make copy ctor work properly).
+   // Destructor executes on both host and device.
    //
-   __host__ __device__ ~ReduceSum() {
+   __host__ __device__ ~ReduceSum<cuda_reduce, T>()
+   {
       if (!m_is_copy) {
-          // call cudaFree on cudaMalloc data if needed.
-          cuda_reduction_gid--;
+         m_myID[0] -= 1;
+         // OK to perform cudaFree of cudaMalloc vars if needed...
       }
    }
 
    //
-   // Operator to retrieve sum value (before object is destroyed).
+   // Operator to retrieve reduced sum value (before object is destroyed).
    //
-   operator T() const {
-       cudaDeviceSynchronize() ;
-       return static_cast<T>(m_blockdata[m_blockoffset]);
+   operator T()
+   {
+      cudaDeviceSynchronize() ;
+
+      if ( !m_reduction_is_final ) {
+         size_t current_grid_size = getCurrentGridSize();
+         for (int i=1; i<=current_grid_size; ++i) {
+            m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
+         }
+         m_reduced_val += static_cast<T>(m_blockdata[m_blockoffset]);
+
+         m_reduction_is_final = true;
+      }
+
+      return m_reduced_val;
    }
 
    //
-   // += operator that performs accumulation into the appropriate 
-   // thread block value 
+   // += operator to accumulate arg value in the proper shared
+   // memory block location.
    //
-   __device__ const ReduceSum<cuda_reduce, T> operator+=(T val) const {
-       __shared__ T sd[THREADS_PER_BLOCK];
+   __device__ ReduceSum<cuda_reduce, T> operator+=(T val) const
+   {
+      __shared__ T sd[THREADS_PER_BLOCK];
+      sd[threadIdx.x] = val;
 
-       sd[threadIdx.x] = val;
-       T temp = 0.0;
-       __syncthreads(); 
+      T temp = 0;
 
-       for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
-          if (threadIdx.x < i) {
-             sd[threadIdx.x] += sd[threadIdx.x + i];
-          }
-          __syncthreads();
-       }
-       if (threadIdx.x < WARP_SIZE) {
-          temp = sd[threadIdx.x];
-          for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-             temp += shfl_xor(temp, i);
-          }
+      __syncthreads();
+      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+         if (threadIdx.x < i) {
+            sd[threadIdx.x] += sd[threadIdx.x + i];
+         }
+         __syncthreads();
       }
 
-      // one thread adds to global memory, we skip m_blockdata[m_blockoffset] 
-      // as we're going to accumlate into this
+      if (threadIdx.x < WARP_SIZE) {
+         temp = sd[threadIdx.x];
+         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+            temp += shfl_xor(temp, i);
+         }
+      }
+
+      // one thread adds to gmem, we skip m_blockdata[m_blockoffset]
+      // because we are accumlating into this
       if (threadIdx.x == 0) {
-          m_blockdata[m_blockoffset + blockIdx.x+1] += temp ;
+         m_blockdata[m_blockoffset + blockIdx.x+1] += temp ;
       }
-      
+
       return *this ;
    }
 
@@ -439,35 +466,14 @@ private:
    //
    ReduceSum<cuda_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceSum<cuda_reduce, T>& other)
-   {
-      m_init_val = other.m_init_val;
-      m_blockdata = other.m_blockdata;
-      m_blockoffset = other.m_blockoffset;
-      m_myID = other.m_myID;
-      m_is_copy = true;
-   }
-
-   //
-   // Shuffle operation that I don't understand...
-   //
-   __device__ __forceinline__
-   T shfl_xor(T var, int laneMask)
-   {
-      int lo = __shfl_xor( __double2loint(var), laneMask );
-      int hi = __shfl_xor( __double2hiint(var), laneMask );
-      return __hiloint2double( hi, lo );
-   }
-   
-
-   T m_init_val;
-   CudaReduceBlockAllocType* m_blockdata;
-   int m_blockoffset;
-   int m_myID;
    bool m_is_copy;
+   int* m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
+   CudaReductionBlockDataType* m_blockdata ;
+   int m_blockoffset;
 } ;
 
 
@@ -592,6 +598,9 @@ void forall(cuda_exec,
    }
 #endif
 
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
+
    RAJA_FT_END ;
 }
 
@@ -628,141 +637,8 @@ void forall_Icount(cuda_exec,
    }
 #endif
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall min reduction over index range via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(cuda_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata = 
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-          blockdata[BLOCK_LENGTH*k] =
-             RAJA_MIN(blockdata[BLOCK_LENGTH*k],
-                        blockdata[(BLOCK_LENGTH*k)+i]) ;
-       }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need minloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall max reduction over index range via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_max(cuda_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata = 
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-          blockdata[BLOCK_LENGTH*k] =
-             RAJA_MAX(blockdata[BLOCK_LENGTH*k],
-                        blockdata[(BLOCK_LENGTH*k)+i]) ;
-       }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need maxloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall sum reduction over index range via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(cuda_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-           blockdata[BLOCK_LENGTH*k] += blockdata[(BLOCK_LENGTH*k)+i];
-       }
-    }
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -806,6 +682,9 @@ void forall(cuda_exec,
    }
 #endif
 
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
+
    RAJA_FT_END ;
 }
 
@@ -843,151 +722,11 @@ void forall_Icount(cuda_exec,
    }
 #endif
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall min reduction over range segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(cuda_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata = 
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-          blockdata[BLOCK_LENGTH*k] =
-             RAJA_MIN(blockdata[BLOCK_LENGTH*k],
-                        blockdata[(BLOCK_LENGTH*k)+i]) ;
-       }
-    }
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
-
-
-//
-// RDH -- need minloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall max reduction over range segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_max(cuda_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata = 
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-          blockdata[BLOCK_LENGTH*k] =
-             RAJA_MAX(blockdata[BLOCK_LENGTH*k],
-                        blockdata[(BLOCK_LENGTH*k)+i]) ;
-       }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need maxloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall sum reduction over range segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(cuda_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, end);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-           blockdata[BLOCK_LENGTH*k] += blockdata[(BLOCK_LENGTH*k)+i];
-       }
-    }
-
-   RAJA_FT_END ;
-}
-
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -1023,6 +762,9 @@ void forall(cuda_exec,
       exit(1);
    }
 #endif
+
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -1060,141 +802,8 @@ void forall_Icount(cuda_exec,
    }
 #endif
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall min reduction over indirection array via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(cuda_exec,
-                const Index_type* idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for(int k=0;k<=cuda_reduction_gid;k++) {
-        for (int i=1; i<=gridSize ; ++i) {
-            blockdata[BLOCK_LENGTH*k] =
-                RAJA_MIN(blockdata[BLOCK_LENGTH*k],
-                           blockdata[(BLOCK_LENGTH*k)+i]) ;
-        }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need minloc reduction
-//
-
-
-/*!
- ******************************************************************************
- * 
- * \brief  Forall max reduction over indirection array via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_max(cuda_exec,
-                const Index_type* idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for(int k=0;k<=cuda_reduction_gid;k++) {
-        for (int i=1; i<=gridSize ; ++i) {
-            blockdata[BLOCK_LENGTH*k] =
-                RAJA_MAX(blockdata[BLOCK_LENGTH*k],
-                           blockdata[(BLOCK_LENGTH*k)+i]) ;
-        }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need maxloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall sum reduction over indirection array via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(cuda_exec,
-                const Index_type* idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-           blockdata[BLOCK_LENGTH*k] += blockdata[(BLOCK_LENGTH*k)+i];
-       }
-    }
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -1238,6 +847,9 @@ void forall(cuda_exec,
    }
 #endif
 
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
+
    RAJA_FT_END ;
 }
 
@@ -1276,147 +888,8 @@ void forall_Icount(cuda_exec,
    }
 #endif
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall min reduction over list segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(cuda_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type* idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for(int k=0;k<=cuda_reduction_gid;k++) {
-        for (int i=1; i<=gridSize ; ++i) {
-            blockdata[BLOCK_LENGTH*k] =
-                RAJA_MIN(blockdata[BLOCK_LENGTH*k],
-                           blockdata[(BLOCK_LENGTH*k)+i]) ;
-        }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need minloc reduction
-//
-
-
-/*!
- ******************************************************************************
- * 
- * \brief  Forall max reduction over list segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_max(cuda_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type* idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for(int k=0;k<=cuda_reduction_gid;k++) {
-        for (int i=1; i<=gridSize ; ++i) {
-            blockdata[BLOCK_LENGTH*k] =
-                RAJA_MAX(blockdata[BLOCK_LENGTH*k],
-                           blockdata[(BLOCK_LENGTH*k)+i]) ;
-        }
-    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-// RDH -- need maxloc reduction
-//
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall sum reduction over list segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(cuda_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type* idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
-#ifdef RAJA_SYNC
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
-#endif
-
-    CudaReduceBlockAllocType* blockdata =
-       getReductionMemBlockData< CudaReduceBlockAllocType >() ;
-
-    for (int k=0; k<=cuda_reduction_gid; k++) {
-       for (int i=1; i<=gridSize; ++i) {
-           blockdata[BLOCK_LENGTH*k] += blockdata[(BLOCK_LENGTH*k)+i];
-       }
-    }
+   // set current grid size for reductions that may have been done in forall...
+   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
