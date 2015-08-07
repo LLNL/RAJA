@@ -19,6 +19,7 @@
 
 namespace RAJA {
 
+#if 0 // RDH Will we ever need something like this?
 ///
 /// Enum defining valid reduction type.
 ///
@@ -30,6 +31,7 @@ enum ReductionType {
                      _MAXLOC_,
                      _INACTIVE_
                    };
+#endif
 
 ///
 /// Macros for type agnostic reduction operations.

@@ -26,7 +26,7 @@
 
 #include "fault_tolerance.hxx"
 
-#include "MemUtilsCPU.hxx"
+#include "MemUtils.hxx"
 
 #if 0
 #include<string>
@@ -61,9 +61,13 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceMin(T init_val) 
-   : m_is_copy(false) 
    {
-      m_myID = getCPUReductionId(_MIN_);
+      m_is_copy = false;
+
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
      
       m_min = getCPUReductionMemBlock(m_myID);  
       m_min[0] = init_val; 
@@ -73,15 +77,15 @@ public:
    // Copy ctor.
    //
    ReduceMin( const ReduceMin<seq_reduce, T>& other ) 
-   : m_is_copy(true)
    {
-      copy(other);
+      *this = other;
+      m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceMin() 
+   ~ReduceMin<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -92,9 +96,14 @@ public:
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T() const 
+   operator T()
    {
-      return m_min[0] ;
+      if ( !m_reduction_is_final ) {
+         m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[0]));
+
+         m_reduction_is_final = true; 
+      }
+      return m_reduced_val;
    }
 
    //
@@ -102,7 +111,7 @@ public:
    //
    ReduceMin<seq_reduce, T> min(T val) const 
    {
-      m_min[0] = RAJA_MIN(m_min[0], val);
+      m_min[0] = RAJA_MIN(static_cast<T>(m_min[0]), val);
       return *this ;
    }
 
@@ -112,18 +121,12 @@ private:
    //
    ReduceMin<seq_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceMin<seq_reduce, T>& other)
-   {
-      m_myID = other.m_myID;
-      m_min  = other.m_min;
-   }
-
-
    bool m_is_copy;
    int m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
    CPUReductionBlockDataType* m_min;
 } ;
 
@@ -145,28 +148,31 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceSum(T init_val)
-   : m_is_copy(false), m_accessor_called(false)
    {
-      m_myID = getCPUReductionId(_SUM_);
+      m_is_copy = false;
+
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
 
       m_sum = getCPUReductionMemBlock(m_myID);
       m_sum[0] = 0;
-      setCPUReductionInitValue(m_myID, init_val);
    }
 
    //
    // Copy ctor.
    //
    ReduceSum( const ReduceSum<seq_reduce, T>& other )
-   : m_is_copy(true)
    {
-      copy(other);
+      *this = other;
+      m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceSum() 
+   ~ReduceSum<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -177,12 +183,14 @@ public:
    //
    // Operator to retrieve sum value (before object is destroyed).
    //
-   operator T() const 
+   operator T()
    {
-      if (!m_accessor_called) {
-         m_sum[0] += getCPUReductionInitValue(m_myID);
+      if ( !m_reduction_is_final ) {
+         m_reduced_val += static_cast<T>(m_sum[0]);
+
+         m_reduction_is_final = true;
       }
-      return m_sum[0];
+      return m_reduced_val;
    }
 
    //
@@ -200,19 +208,12 @@ private:
    //
    ReduceSum<seq_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceSum<seq_reduce, T>& other)
-   {
-      m_accessor_called = other.m_accessor_called;
-      m_myID = other.m_myID;
-      m_sum  =  other.m_sum;
-   }
-
    bool m_is_copy;
-   bool m_accessor_called; 
    int m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
    CPUReductionBlockDataType* m_sum;
 } ;
 
