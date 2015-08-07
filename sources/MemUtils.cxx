@@ -51,8 +51,6 @@ int s_cpu_reduction_id = -1;
 CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
 int s_block_offset = 0;
 
-CPUReductionBlockDataType* s_cpu_reduction_init_vals = 0;
-
 
 /*
 *************************************************************************
@@ -160,56 +158,6 @@ void freeCPUReductionMemBlock()
    if ( s_cpu_reduction_mem_block != 0 ) {
       delete [] s_cpu_reduction_mem_block;
       s_cpu_reduction_mem_block = 0; 
-   }
-}
-
-/*
-*************************************************************************
-*
-* Set value in shared memory block that holds initial values for RAJA-CPU 
-* reductions. Allocates block if not already allocated.
-*
-*************************************************************************
-*/
-void setCPUReductionInitValue(int id, CPUReductionBlockDataType val)
-{
-   if (s_cpu_reduction_init_vals == 0) {
-      int len = RAJA_MAX_REDUCE_VARS;
-      s_cpu_reduction_init_vals = new CPUReductionBlockDataType[len];
-
-      atexit(freeCPUReductionInitData);
-   }
-   
-   s_cpu_reduction_init_vals[id] = val;
-}
-
-/*
-*************************************************************************
-*
-* Get value in shared memory block that holds initial values for RAJA-CPU
-* reductions.
-*
-*************************************************************************
-*/
-CPUReductionBlockDataType getCPUReductionInitValue(int id)
-{
-   return s_cpu_reduction_init_vals[id];
-}
-
-
-/*
-*************************************************************************
-*
-* Free managed memory block used to hold initial values for RAJA-CPU 
-* reductions.
-*
-*************************************************************************
-*/
-void freeCPUReductionInitData()
-{
-   if ( s_cpu_reduction_init_vals != 0 ) {
-      delete [] s_cpu_reduction_init_vals;
-      s_cpu_reduction_init_vals = 0;
    }
 }
 
