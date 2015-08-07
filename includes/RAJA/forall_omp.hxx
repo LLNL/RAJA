@@ -87,7 +87,8 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMin() {
+   ~ReduceMin() 
+   {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
          // free any data owned by reduction object
@@ -97,7 +98,8 @@ public:
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T() const {
+   operator T() const 
+   {
       int nthreads = omp_get_max_threads();
       T ret_val = m_min[0];
       for ( int i = 1; i < nthreads; ++i ) {
@@ -109,7 +111,8 @@ public:
    //
    // Min function that sets object min to minimum of current value and arg.
    //
-   ReduceMin<omp_reduce, T> min(T val) const {
+   ReduceMin<omp_reduce, T> min(T val) const 
+   {
       int tid = omp_get_thread_num();
       m_min[tid] = RAJA_MIN(m_min[tid], val);
       return *this ;
@@ -179,7 +182,8 @@ public:
    //
    // Destructor.
    //
-   ~ReduceSum() {
+   ~ReduceSum() 
+   {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
          // free any data owned by reduction object
@@ -189,7 +193,8 @@ public:
    //
    // Operator to retrieve sum value (before object is destroyed).
    //
-   operator T() const {
+   operator T() const 
+   {
       if (!m_accessor_called) {
          int nthreads = omp_get_max_threads();
          for ( int i = 1; i < nthreads; ++i ) {
@@ -204,7 +209,8 @@ public:
    //
    // += operator that performs accumulation into object min val.
    //
-   ReduceSum<omp_reduce, T> operator+=(T val) const {
+   ReduceSum<omp_reduce, T> operator+=(T val) const 
+   {
       int tid = omp_get_thread_num();
       m_sum[tid] += val;
       return *this ;
