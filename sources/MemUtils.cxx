@@ -226,6 +226,24 @@ int* getCudaReductionId()
    return s_gid;
 }
 
+#if 0 // RDH We can't use this b/c we can't access managed data pointer
+      // that lives on host from device methods (i.e., reduction object
+      // destructors).
+/*
+*************************************************************************
+*
+* Release given redution id and make inactive.
+*
+*************************************************************************
+*/
+void releaseCudaReductionId(int id)
+{
+   if (!s_gid == 0) {
+      s_gid[0] -= 1;
+   }
+}
+#endif
+
 /*
 *************************************************************************
 *
@@ -245,24 +263,6 @@ void freeCudaReductionIdMem()
        }
    }
 }
-
-#if 0 // RDH We can't use this b/c we can't access managed data pointer
-      // that lives on host from device methods (i.e., reduction object
-      // destructors).
-/*
-*************************************************************************
-*
-* Release given redution id and make inactive.
-*
-*************************************************************************
-*/
-void releaseCudaReductionId(int id)
-{
-   if (!s_gid == 0) {
-      s_gid[0] -= 1;
-   }
-}
-#endif
 
 /*
 *************************************************************************
@@ -320,19 +320,6 @@ CudaReductionBlockDataType* getCudaReductionMemBlock()
 /*
 *************************************************************************
 *
-* Return offset into shared RAJA-Cuda reduction memory block for
-* reduction object with given id.
-*
-*************************************************************************
-*/
-int getCudaReductionMemBlockOffset(int id)
-{
-   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH);
-}
-
-/*
-*************************************************************************
-*
 * Free managed memory blocks used in RAJA-Cuda reductions.
 *
 *************************************************************************
@@ -348,6 +335,19 @@ void freeCudaReductionMemBlock()
          exit(1);
        }
    }
+}
+
+/*
+*************************************************************************
+*
+* Return offset into shared RAJA-Cuda reduction memory block for
+* reduction object with given id.
+*
+*************************************************************************
+*/
+int getCudaReductionMemBlockOffset(int id)
+{
+   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH);
 }
 
 #endif // #if defined(RAJA_USE_CUDA)
