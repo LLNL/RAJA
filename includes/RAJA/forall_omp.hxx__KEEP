@@ -28,18 +28,17 @@
 
 #include "fault_tolerance.hxx"
 
-#include "MemUtils.hxx"
+#include "OpenMPMemUtils.hxx"
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
+
 
 namespace RAJA {
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Reduction classes.
+// Reduction classes and operations.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -47,7 +46,7 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Min reducer class template for use in OpenMP execution.
+ * \brief  Min reducer class template for use in OpenMP reduction.
  *
  * \verbatim
  *         Fill this in...
@@ -62,15 +61,10 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceMin(T init_val)
+   : m_is_copy(false)
    {
-      m_is_copy = false;
-
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
-
-      m_myID = getCPUReductionId();
-
-      m_min = getCPUReductionMemBlock(m_myID);
+      m_min = static_cast<RAJA::OpenMPReduceBlockAllocType*>(
+                                allocOpenMPReductionMemBlockData() );
 
       int nthreads = omp_get_max_threads();
 #pragma omp parallel for 
@@ -84,44 +78,37 @@ public:
    //
    ReduceMin( const ReduceMin<omp_reduce, T>& other )
    {
-      *this = other;
+      copy(other);
       m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceMin<omp_reduce, T>() 
-   {
+   ~ReduceMin() {
       if (!m_is_copy) {
-         releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         // free any memory if needed.
       }
    }
 
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T()
-   {
-      if ( !m_reduction_is_final ) {
-         int nthreads = omp_get_max_threads();
-         for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i]));
-         }
-
-         m_reduction_is_final = true;
-      } 
-      return m_reduced_val;
+   operator T() const {
+      const int nthreads = omp_get_max_threads();
+      T ret_val = m_min[0];
+      for ( int i = 1; i < nthreads; ++i ) {
+         ret_val = RAJA_MIN(ret_val, m_min[i]);
+      }
+      return ret_val ;
    }
 
    //
-   // Min function that sets min for current thread.
+   // Min function that sets object min to minimum of current value and arg.
    //
-   ReduceMin<omp_reduce, T> min(T val) const 
-   {
+   ReduceMin<omp_reduce, T> min(T val) const {
       int tid = omp_get_thread_num();
-      m_min[tid] = RAJA_MIN(static_cast<T>(m_min[tid]), val);
+      m_min[tid] = RAJA_MIN(m_min[tid], val);
       return *this ;
    }
 
@@ -131,110 +118,20 @@ private:
    //
    ReduceMin<omp_reduce, T>();
 
-   bool m_is_copy;
-   int m_myID;
-
-   bool m_reduction_is_final;
-   T m_reduced_val;
-
-   CPUReductionBlockDataType* m_min;
-} ;
-
-/*!
- ******************************************************************************
- *
- * \brief  Min reducer class template for use in OpenMP execution.
- *
- * \verbatim
- *         Fill this in...
- * \endverbatim
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceSum<omp_reduce, T> {
-public:
    //
-   // Constructor takes default value (default ctor is disabled).
+   // Copy function for copy-and-swap idiom (shallow).
    //
-   explicit ReduceSum(T init_val)
+   void copy(const ReduceMin<omp_reduce, T>& other)
    {
-      m_is_copy = false;
-
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
-
-      m_myID = getCPUReductionId();
-
-      m_sum = getCPUReductionMemBlock(m_myID);
-
-      int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
-      for ( int i = 0; i < nthreads; ++i ) {
-         m_sum[i] = 0 ;
-      }
-   }
-
-   //
-   // Copy ctor.
-   //
-   ReduceSum( const ReduceSum<omp_reduce, T>& other )
-   {
-      *this = other;
       m_is_copy = true;
+      m_min = other.m_min;
    }
 
-   //
-   // Destructor.
-   //
-   ~ReduceSum<omp_reduce, T>() 
-   {
-      if (!m_is_copy) {
-         releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
-      }
-   }
-
-   //
-   // Operator to retrieve sum value (before object is destroyed).
-   //
-   operator T()
-   {
-      if ( !m_reduction_is_final ) {
-         int nthreads = omp_get_max_threads();
-         for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val += static_cast<T>(m_sum[i]);
-         }
-
-         m_reduction_is_final = true;
-      }
-      return m_reduced_val;
-   }
-
-   //
-   // += operator that performs accumulation for current thread.
-   //
-   ReduceSum<omp_reduce, T> operator+=(T val) const 
-   {
-      int tid = omp_get_thread_num();
-      m_sum[tid] += val;
-      return *this ;
-   }
-
-private:
-   //
-   // Default ctor is declared private and not implemented.
-   //
-   ReduceSum<omp_reduce, T>();
 
    bool m_is_copy;
-   int m_myID;
-
-   bool m_reduction_is_final;
-   T m_reduced_val;
-
-   CPUReductionBlockDataType* m_sum;
+   T* m_min;
 } ;
+
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -393,10 +290,12 @@ void forall_min(omp_parallel_for_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
                 Index_type begin, Index_type end,
+                ReduceMin<omp_reduce, T> min_obj,  // unused here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -477,10 +376,12 @@ void forall_min(omp_parallel_for_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
                 const RangeSegment& iseg,
+                ReduceMin<omp_reduce, T> min_obj,  // unused here...
                 LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
@@ -1123,10 +1024,12 @@ void forall_min(omp_parallel_for_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
                 const Index_type* __restrict__ idx, Index_type len,
+                ReduceMin<omp_reduce, T> min_obj,  // unused here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -1209,10 +1112,12 @@ void forall_min(omp_parallel_for_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(omp_parallel_for_exec,
                 const ListSegment& iseg,
+                ReduceMin<omp_reduce, T> min_obj,  // unused here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -1733,6 +1638,72 @@ void forall_min( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>
 
    *min = min_tmp[0] ;
 }
+
+// RDH NEW REDUCE
+template <typename SEG_EXEC_POLICY_T,
+          typename T,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                 const IndexSet& iset,
+                 ReduceMin<omp_reduce, T> min_obj, // not used here...
+                 LOOP_BODY loop_body)
+{
+   const int num_seg = iset.getNumSegments();
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      const BaseSegment* iseg = iset.getSegment(isi);
+      SegmentType segtype = iseg->getType();
+
+      switch ( segtype ) {
+
+         case _RangeSeg_ : {
+            const RangeSegment* tseg =
+               static_cast<const RangeSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(),
+               min_obj,
+               loop_body
+            );
+            break;
+         }
+
+#if 0  // RDH RETHINK
+         case _RangeStrideSeg_ : {
+            const RangeStrideSegment* tseg =
+               static_cast<const RangeStrideSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               min_obj,
+               loop_body
+            );
+            break;
+         }
+#endif
+
+         case _ListSeg_ : {
+            const ListSegment* tseg =
+               static_cast<const ListSegment*>(iseg);
+            forall_min(
+               SEG_EXEC_POLICY_T(),
+               tseg->getIndex(), tseg->getLength(),
+               min_obj,
+               loop_body
+            );
+            break;
+         }
+
+         default : {
+         }
+
+      }  // switch on segment type
+
+   } // iterate over segments of index set
+
+}
+
 
 
 /*!

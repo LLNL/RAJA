@@ -1,0 +1,203 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file defining prototypes for operations used to manage
+ *          memory for reductions and other operations.
+ *
+ * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
+ * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_MemUtils_HXX
+#define RAJA_MemUtils_HXX
+
+#include "reducers.hxx"
+
+#include <cstdio>
+
+namespace RAJA {
+
+//////////////////////////////////////////////////////////////////////
+//
+// Utilities and methods for CPU reductions.
+//
+//////////////////////////////////////////////////////////////////////
+
+///
+/// Typedef defining common data type for RAJA-CPU reduction data blocks
+/// (use this in all cases to avoid type confusion).
+///
+typedef double CPUReductionBlockDataType;
+
+/*!
+*************************************************************************
+*
+* Return available valid reduction id and record reduction type for
+* that id, or complain and exit if no ids are available.
+*
+*************************************************************************
+*/
+#if 0 // RDH Will we ever need something like this?
+int getCPUReductionId(ReductionType type);
+#else
+int getCPUReductionId();
+#endif
+
+/*!
+*************************************************************************
+*
+* Release given redution id so it can be reused.
+*
+*************************************************************************
+*/
+void releaseCPUReductionId(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Return pointer into shared memory block for RAJA-CPU reduction
+ *         with given id.
+ *
+ *         Allocates data block if it isn't allocated already.
+ *
+ * NOTE: Block size will be of one of the following sizes:
+ *
+ *       When compiled with OpenMP : 
+ * 
+ *          sizeof(CPUReductionBlockDataType) * omp_get_max_threads() *
+ *          MAX_REDUCE_VARS_CPU
+ *
+ *       When compiled without OpenMP :
+ *
+ *          sizeof(CPUReductionBlockDataType) * MAX_REDUCE_VARS_CPU
+ *
+ ******************************************************************************
+ */
+CPUReductionBlockDataType* getCPUReductionMemBlock(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory block used in RAJA-CPU reductions.
+ *
+ ******************************************************************************
+ */
+void freeCPUReductionMemBlock();
+
+
+
+#if defined(RAJA_USE_CUDA)
+
+//////////////////////////////////////////////////////////////////////
+//
+// Utilities and methods for CUDA reductions.
+//
+//////////////////////////////////////////////////////////////////////
+
+
+#define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
+
+///
+/// Typedef defining common data type for RAJA-Cuda reduction data blocks
+/// (use this in all cases to avoid type confusion).
+///
+typedef double CudaReductionBlockDataType;
+
+/*!
+*************************************************************************
+*
+* Return next available valid reduction id, or complain and exit if
+* no valid id is available.
+*
+*************************************************************************
+*/
+int* getCudaReductionId();
+
+#if 0 // RDH We can't use this b/c we can't access managed data pointer
+      // that lives on host from device methods (i.e., reduction object
+      // destructors).
+/*!
+*************************************************************************
+*
+* Release given redution id and make inactive.
+*
+*************************************************************************
+*/
+__host__ __device__ void releaseCudaReductionId(int id);
+#endif
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory block for RAJA-CUDA reduction ids.
+ *
+ ******************************************************************************
+ */
+void freeCudaReductionIdMem();
+
+/*!
+*************************************************************************
+*
+* Set current CUDA grid size used in forall methods as given arg value
+* so it can be used in other methods (i.e., reduction finalization).
+*
+*************************************************************************
+*/
+void setCurrentGridSize(size_t s);
+
+/*!
+*************************************************************************
+*
+* Retrieve current CUDA grid size value.
+*
+*************************************************************************
+*/
+size_t getCurrentGridSize();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Return pointer into shared memory block for RAJA-Cuda reduction
+ *         with given id.
+ *
+ *         Allocates data block if it isn't allocated already.
+ *
+ * NOTE: Block size will be:
+ *
+ *          sizeof(CudaReductionBlockDataType) * RAJA_CUDA_REDUCE_BLOCK_LENGTH *
+ *          RAJA_MAX_REDUCE_VARS
+ *
+ ******************************************************************************
+ */
+CudaReductionBlockDataType* getCudaReductionMemBlock();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory block used in RAJA-Cuda reductions.
+ *
+ ******************************************************************************
+ */
+void freeCudaReductionMemBlock();
+
+/*!
+*************************************************************************
+*
+* Return offset into shared RAJA-Cuda reduction memory block for
+* reduction object with given id.
+*
+*************************************************************************
+*/
+int getCudaReductionMemBlockOffset(int id);
+
+
+#endif
+
+}  // closing brace for RAJA namespace
+
+
+#endif  // closing endif for header file include guard

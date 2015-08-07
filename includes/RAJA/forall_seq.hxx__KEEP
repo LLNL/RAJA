@@ -26,19 +26,18 @@
 
 #include "fault_tolerance.hxx"
 
-#include "MemUtils.hxx"
-
-#if 0
+#if 0 // RDH 
 #include<string>
-#include<iostream> 
+#include<iostream>
 #endif
+
 
 namespace RAJA {
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Reduction classes.
+// Reduction classes and operations.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -61,57 +60,42 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceMin(T init_val) 
+   : m_is_copy(false) 
    {
-      m_is_copy = false;
-
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
-
-      m_myID = getCPUReductionId();
-     
-      m_min = getCPUReductionMemBlock(m_myID);  
+      m_min = new T[1];
       m_min[0] = init_val; 
    }
 
    //
    // Copy ctor.
    //
-   ReduceMin( const ReduceMin<seq_reduce, T>& other ) 
+   ReduceMin( const ReduceMin<seq_reduce, T>& other )
    {
-      *this = other;
+      copy(other);
       m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceMin<seq_reduce, T>() 
-   {
+   ~ReduceMin() {
       if (!m_is_copy) {
-         releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object 
+         delete [] m_min;
       }
    }
 
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T()
-   {
-      if ( !m_reduction_is_final ) {
-         m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[0]));
-
-         m_reduction_is_final = true; 
-      }
-      return m_reduced_val;
+   operator T() const {
+      return *m_min ;
    }
 
    //
    // Min function that sets object min to minimum of current value and arg.
    //
-   ReduceMin<seq_reduce, T> min(T val) const 
-   {
-      m_min[0] = RAJA_MIN(static_cast<T>(m_min[0]), val);
+   ReduceMin<seq_reduce, T> min(T val) const {
+      *m_min = RAJA_MIN(*m_min, val);
       return *this ;
    }
 
@@ -121,13 +105,18 @@ private:
    //
    ReduceMin<seq_reduce, T>();
 
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceMin<seq_reduce, T>& other)
+   {
+      m_is_copy = true;
+      m_min = other.m_min;
+   }
+
+
+   T* m_min;
    bool m_is_copy;
-   int m_myID;
-
-   bool m_reduction_is_final;
-   T m_reduced_val;
-
-   CPUReductionBlockDataType* m_min;
 } ;
 
 /*!
@@ -148,16 +137,10 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceSum(T init_val)
+   : m_init_val(init_val), m_is_copy(false) 
    {
-      m_is_copy = false;
-
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
-
-      m_myID = getCPUReductionId();
-
-      m_sum = getCPUReductionMemBlock(m_myID);
-      m_sum[0] = 0;
+      m_sum = new T[1];
+      m_sum[0] = 0; 
    }
 
    //
@@ -165,41 +148,39 @@ public:
    //
    ReduceSum( const ReduceSum<seq_reduce, T>& other )
    {
-      *this = other;
+      copy(other);
       m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceSum<seq_reduce, T>() 
-   {
+   ~ReduceSum() {
       if (!m_is_copy) {
-         releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         delete [] m_sum;
       }
    }
 
    //
    // Operator to retrieve sum value (before object is destroyed).
    //
-   operator T()
-   {
-      if ( !m_reduction_is_final ) {
-         m_reduced_val += static_cast<T>(m_sum[0]);
-
-         m_reduction_is_final = true;
-      }
-      return m_reduced_val;
+   operator T() const {
+      return *m_sum;
    }
 
    //
    // += operator that performs accumulation into object min val.
    //
-   ReduceSum<seq_reduce, T> operator+=(T val) const 
-   {
-      m_sum[0] += val;
+   ReduceSum<seq_reduce, T> operator+=(T val) const {
+      *m_sum += val;
       return *this ;
+   }
+
+   //
+   // Retrieve initial value (before object is destroyed).
+   //
+   const T getInitVal() const {
+      return m_init_val;
    }
 
 private:
@@ -208,13 +189,19 @@ private:
    //
    ReduceSum<seq_reduce, T>();
 
+   //
+   // Copy function for copy-and-swap idiom (shallow).
+   //
+   void copy(const ReduceSum<seq_reduce, T>& other)
+   {
+      m_init_val = other.m_init_val;
+      m_is_copy = true;
+      m_sum = other.m_sum;
+   }
+
+   T m_init_val;
    bool m_is_copy;
-   int m_myID;
-
-   bool m_reduction_is_final;
-   T m_reduced_val;
-
-   CPUReductionBlockDataType* m_sum;
+   T* m_sum;
 } ;
 
 
@@ -305,10 +292,12 @@ void forall_min(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(seq_exec,
                 Index_type begin, Index_type end,
+                ReduceMin<seq_reduce, T> min_obj,  // not used here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -424,10 +413,12 @@ void forall_sum(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
                 Index_type begin, Index_type end,
+                ReduceSum<seq_reduce, T> sum_obj,
                 LOOP_BODY loop_body)
 {
 
@@ -534,10 +525,12 @@ void forall_min(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(seq_exec,
                 const RangeSegment& iseg,
+                ReduceMin<seq_reduce, T> min_obj, // not used here...
                 LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
@@ -666,10 +659,12 @@ void forall_sum(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
                 const RangeSegment& iseg,
+                ReduceSum<seq_reduce, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
@@ -1179,10 +1174,12 @@ void forall_min(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(seq_exec,
                 const Index_type* __restrict__ idx, Index_type len,
+                ReduceMin<seq_reduce, T> min_obj, // not used here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -1296,10 +1293,12 @@ void forall_sum(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
                 const Index_type* __restrict__ idx, Index_type len,
+                ReduceSum<seq_reduce, T> sum_obj,  // not used here...
                 LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -1405,10 +1404,12 @@ void forall_min(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_min(seq_exec,
                 const ListSegment& iseg,
+                ReduceMin<seq_reduce, T> min_obj,  // not used here...
                 LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
@@ -1537,10 +1538,12 @@ void forall_sum(seq_exec,
 }
 
 // RDH NEW REDUCE
-template <typename LOOP_BODY>
+template <typename T,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum(seq_exec,
                 const ListSegment& iseg,
+                ReduceSum<seq_reduce, T> sum_obj,
                 LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
@@ -1786,10 +1789,12 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 // RDH NEW REDUCE
 template <typename SEG_EXEC_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
                  const IndexSet& iset,
+                 ReduceMin<seq_reduce, T> min_obj, // not used here...
                  LOOP_BODY loop_body)
 {
    const int num_seg = iset.getNumSegments();
@@ -1806,6 +1811,7 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_min(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(),
+               min_obj, 
                loop_body
             );
             break;
@@ -1818,6 +1824,7 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_min(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               min_obj,
                loop_body
             );
             break;
@@ -1830,6 +1837,7 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_min(
                SEG_EXEC_POLICY_T(),
                tseg->getIndex(), tseg->getLength(),
+               min_obj,
                loop_body
             );
             break;
@@ -2065,10 +2073,12 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
 // RDH NEW REDUCE
 template <typename SEG_EXEC_POLICY_T,
+          typename T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
                  const IndexSet& iset,
+                 ReduceSum<seq_reduce, T> sum_obj,
                  LOOP_BODY loop_body)
 {
    const int num_seg = iset.getNumSegments();
@@ -2085,6 +2095,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_sum(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(),
+               sum_obj,
                loop_body
             );
             break;
@@ -2097,6 +2108,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_sum(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+               sum_obj,
                loop_body
             );
             break;
@@ -2109,6 +2121,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
             forall_sum(
                SEG_EXEC_POLICY_T(),
                tseg->getIndex(), tseg->getLength(),
+               sum_obj,
                loop_body
             );
             break;
@@ -2121,9 +2134,7 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
 
    } // iterate over segments of index set
 
-#if 0 // RDH
    sum_obj += sum_obj.getInitVal();
-#endif
 
 }
 
