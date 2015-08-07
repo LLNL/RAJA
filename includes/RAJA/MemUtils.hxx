@@ -17,6 +17,7 @@
 
 #include "reducers.hxx"
 
+#include <cstdio>
 
 namespace RAJA {
 
@@ -128,6 +129,15 @@ int* getCudaReductionId();
 */
 __host__ __device__ void releaseCudaReductionId(int id);
 #endif
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory block for RAJA-CUDA reduction ids.
+ *
+ ******************************************************************************
+ */
+void freeCudaReductionIdMem();
 
 /*!
 *************************************************************************
