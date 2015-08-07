@@ -87,40 +87,6 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id);
  */
 void freeCPUReductionMemBlock();
 
-/*!
- ******************************************************************************
- *
- * \brief  Set value in RAJA-CPU initial value shared memory block for
- *         reduction object with given id. 
- *
- *         Allocates data block if it isn't allocated already.
- *
- * NOTE: Block size will be of size
- *       sizeof(CPUReduceBlockAllocType) * MAX_REDUCE_VARS_CPU
- *
- ******************************************************************************
- */
-void setCPUReductionInitValue(int id, CPUReductionBlockDataType val);
-
-/*!
- ******************************************************************************
- *
- * \brief  Get value in RAJA-CPU initial value shared memory block for
- *         reduction object with given id.
- *
- ******************************************************************************
- */
-CPUReductionBlockDataType getCPUReductionInitValue(int id);
-
-/*!
- ******************************************************************************
- *
- * \brief  Free shared memory block for initial values used in RAJA-CPU 
- *         reductions.
- *
- ******************************************************************************
- */
-void freeCPUReductionInitData();
 
 
 #if defined(RAJA_USE_CUDA)

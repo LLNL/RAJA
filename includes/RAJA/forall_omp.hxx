@@ -62,8 +62,12 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceMin(T init_val)
-   : m_is_copy(false)
    {
+      m_is_copy = false;
+
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
+
       m_myID = getCPUReductionId();
 
       m_min = getCPUReductionMemBlock(m_myID);
@@ -79,15 +83,15 @@ public:
    // Copy ctor.
    //
    ReduceMin( const ReduceMin<omp_reduce, T>& other )
-   : m_is_copy(true)
    {
-      copy(other);
+      *this = other;
+      m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceMin() 
+   ~ReduceMin<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -98,23 +102,26 @@ public:
    //
    // Operator to retrieve min value (before object is destroyed).
    //
-   operator T() const 
+   operator T()
    {
-      int nthreads = omp_get_max_threads();
-      T ret_val = m_min[0];
-      for ( int i = 1; i < nthreads; ++i ) {
-         ret_val = RAJA_MIN(ret_val, m_min[i]);
-      }
-      return ret_val ;
+      if ( !m_reduction_is_final ) {
+         int nthreads = omp_get_max_threads();
+         for ( int i = 0; i < nthreads; ++i ) {
+            m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i]));
+         }
+
+         m_reduction_is_final = true;
+      } 
+      return m_reduced_val;
    }
 
    //
-   // Min function that sets object min to minimum of current value and arg.
+   // Min function that sets min for current thread.
    //
    ReduceMin<omp_reduce, T> min(T val) const 
    {
       int tid = omp_get_thread_num();
-      m_min[tid] = RAJA_MIN(m_min[tid], val);
+      m_min[tid] = RAJA_MIN(static_cast<T>(m_min[tid]), val);
       return *this ;
    }
 
@@ -124,18 +131,12 @@ private:
    //
    ReduceMin<omp_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceMin<omp_reduce, T>& other)
-   {
-      m_myID = other.m_myID;
-      m_min  = other.m_min;
-   }
-
-
    bool m_is_copy;
    int m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
    CPUReductionBlockDataType* m_min;
 } ;
 
@@ -157,8 +158,12 @@ public:
    // Constructor takes default value (default ctor is disabled).
    //
    explicit ReduceSum(T init_val)
-   : m_is_copy(false), m_accessor_called(false)
    {
+      m_is_copy = false;
+
+      m_reduction_is_final = false;
+      m_reduced_val = init_val;
+
       m_myID = getCPUReductionId();
 
       m_sum = getCPUReductionMemBlock(m_myID);
@@ -168,22 +173,21 @@ public:
       for ( int i = 0; i < nthreads; ++i ) {
          m_sum[i] = 0 ;
       }
-      setCPUReductionInitValue(m_myID, init_val);
    }
 
    //
    // Copy ctor.
    //
    ReduceSum( const ReduceSum<omp_reduce, T>& other )
-   : m_is_copy(true)
    {
-      copy(other);
+      *this = other;
+      m_is_copy = true;
    }
 
    //
    // Destructor.
    //
-   ~ReduceSum() 
+   ~ReduceSum<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -194,21 +198,21 @@ public:
    //
    // Operator to retrieve sum value (before object is destroyed).
    //
-   operator T() const 
+   operator T()
    {
-      if (!m_accessor_called) {
+      if ( !m_reduction_is_final ) {
          int nthreads = omp_get_max_threads();
-         for ( int i = 1; i < nthreads; ++i ) {
-            m_sum[0] += m_sum[i];
+         for ( int i = 0; i < nthreads; ++i ) {
+            m_reduced_val += static_cast<T>(m_sum[i]);
          }
-         m_sum[0] += getCPUReductionInitValue(m_myID);
-      }
 
-      return  m_sum[0];
+         m_reduction_is_final = true;
+      }
+      return m_reduced_val;
    }
 
    //
-   // += operator that performs accumulation into object min val.
+   // += operator that performs accumulation for current thread.
    //
    ReduceSum<omp_reduce, T> operator+=(T val) const 
    {
@@ -223,20 +227,12 @@ private:
    //
    ReduceSum<omp_reduce, T>();
 
-   //
-   // Copy function for copy-and-swap idiom (shallow).
-   //
-   void copy(const ReduceSum<omp_reduce, T>& other)
-   {
-      m_accessor_called = other.m_accessor_called;
-      m_myID = other.m_myID;
-      m_sum  = other.m_sum;
-   }
-
-
    bool m_is_copy;
-   bool m_accessor_called;
    int m_myID;
+
+   bool m_reduction_is_final;
+   T m_reduced_val;
+
    CPUReductionBlockDataType* m_sum;
 } ;
 
