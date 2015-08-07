@@ -28,7 +28,7 @@
 
 #include "fault_tolerance.hxx"
 
-#include "MemUtilsCPU.hxx"
+#include "MemUtils.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -64,7 +64,7 @@ public:
    explicit ReduceMin(T init_val)
    : m_is_copy(false)
    {
-      m_myID = getCPUReductionId(_MIN_);
+      m_myID = getCPUReductionId();
 
       m_min = getCPUReductionMemBlock(m_myID);
 
@@ -159,7 +159,7 @@ public:
    explicit ReduceSum(T init_val)
    : m_is_copy(false), m_accessor_called(false)
    {
-      m_myID = getCPUReductionId(_MIN_);
+      m_myID = getCPUReductionId();
 
       m_sum = getCPUReductionMemBlock(m_myID);
 
@@ -168,6 +168,7 @@ public:
       for ( int i = 0; i < nthreads; ++i ) {
          m_sum[i] = 0 ;
       }
+      setCPUReductionInitValue(m_myID, init_val);
    }
 
    //
