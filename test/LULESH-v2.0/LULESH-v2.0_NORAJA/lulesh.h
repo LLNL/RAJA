@@ -21,6 +21,7 @@
 #define SEDOV_SYNC_POS_VEL_EARLY 1
 #endif
 
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
@@ -102,6 +103,29 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
    (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL-1))
 
 //////////////////////////////////////////////////////
+// Helper functions
+//////////////////////////////////////////////////////
+
+/* might want to add access methods so that memory can be */
+/* better managed, as in luleshFT */
+
+template <typename T>
+inline T *Allocate(size_t size)
+{
+   return static_cast<T *>(malloc(sizeof(T)*size)) ;
+}
+
+template <typename T>
+inline void Release(T **ptr)
+{
+   if (*ptr != NULL) {
+      free(*ptr) ;
+      *ptr = NULL ;
+   }
+}
+
+
+//////////////////////////////////////////////////////
 // Primary data structure
 //////////////////////////////////////////////////////
 
@@ -140,7 +164,7 @@ class Domain {
    // ALLOCATION
    //
 
-   void AllocateNodePersistent(Int_t numNode) // Node-centered
+   void AllocateNodePersistent(Index_t numNode) // Node-centered
    {
       m_x.resize(numNode);  // coordinates
       m_y.resize(numNode);
@@ -161,7 +185,7 @@ class Domain {
       m_nodalMass.resize(numNode);  // mass
    }
 
-   void AllocateElemPersistent(Int_t numElem) // Elem-centered
+   void AllocateElemPersistent(Index_t numElem) // Elem-centered
    {
       m_nodelist.resize(8*numElem);
 
@@ -197,7 +221,7 @@ class Domain {
       m_vnew.resize(numElem) ;
    }
 
-   void AllocateGradients(Int_t numElem, Int_t allElem)
+   void AllocateGradients(Index_t numElem, Index_t allElem)
    {
       // Position gradients
       m_delx_xi.resize(numElem) ;
@@ -221,7 +245,7 @@ class Domain {
       m_delv_xi.clear() ;
    }
 
-   void AllocateStrains(Int_t numElem)
+   void AllocateStrains(Index_t numElem)
    {
       m_dxx.resize(numElem) ;
       m_dyy.resize(numElem) ;
@@ -234,7 +258,20 @@ class Domain {
       m_dyy.clear() ;
       m_dxx.clear() ;
    }
-   
+
+   void AllocateSymmetry(Index_t size)
+   {
+      if (m_colLoc == 0) {
+        m_symmX.resize(size);
+      }
+      if (m_rowLoc == 0) {
+        m_symmY.resize(size);
+      }
+      if (m_planeLoc == 0) {
+        m_symmZ.resize(size);
+      }
+   }
+
    //
    // ACCESSORS
    //

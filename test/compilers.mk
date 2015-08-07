@@ -208,6 +208,52 @@ LDPATH          =
 
 endif
 
+#
+#  Clang compiler for rzmist
+#
+ifeq ($(RAJA_ARCH),rzmist_clang)
+CXX             = clang++
+
+ifeq ($(OPT_DEBUG),opt)
+#
+CXX_COMPILE = $(CXX) -O3 -mllvm -inline-threshold=10000 -std=c++11 -fopenmp
+LDFLAGS =
+endif
+
+ifeq ($(OPT_DEBUG),debug)
+CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
+LDFLAGS = -std=c++11 -g -O0 -Wl,--export-dynamic
+endif
+
+CXXFLAGS        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
+LDPATH          =
+
+endif
+
+
+
+#
+#  XLC compiler for rzmist
+# 
+ifeq ($(RAJA_ARCH),rzmist_xlc)
+CXX 		=  xlC
+
+ifeq ($(OPT_DEBUG),opt)
+CXX_COMPILE = $(CXX) -O3 -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=auto:level=10 -qsmp=omp
+LDFLAGS	= 
+## The following is needed for lompbeta1
+#LDFLAGS = -O3 -qsmp=omp -qdebug=lompinterface
+endif
+
+ifeq ($(OPT_DEBUG),debug)
+CXX_COMPILE = $(CXX) -g -O0 -qlanglvl=extended0x -qsmp=omp
+LDFLAGS	= 
+endif
+
+CXXFLAGS 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_XLC12 -DRAJA_COMPILER_XLC_POWER8
+LDPATH		=
+
+endif
 
 
 #

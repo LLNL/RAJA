@@ -148,7 +148,6 @@ Additional BSD Notice
 #include <vector>
 #include <math.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
@@ -163,32 +162,6 @@ Additional BSD Notice
 #include "lulesh.h"
 
 #include "Timer.hxx"
-
-
-
-/*********************************/
-/* Data structure implementation */
-/*********************************/
-
-/* might want to add access methods so that memory can be */
-/* better managed, as in luleshFT */
-
-template <typename T>
-T *Allocate(size_t size)
-{
-   return static_cast<T *>(malloc(sizeof(T)*size)) ;
-}
-
-template <typename T>
-void Release(T **ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
-
-
 
 /******************************************/
 

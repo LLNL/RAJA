@@ -24,38 +24,6 @@
 #include <math.h>
 #include <vector>
 
-#include "RAJA/RAJA.hxx"
-
-//
-//   RAJA IndexSet type used in loop traversals.
-//
-typedef RAJA::IndexSet LULESH_ISET;
-
-//
-//   Policies for hybrid segment iteration and segment execution.
-//
-//   NOTE: Currently, we apply single policy across all loops
-//         with same iteration pattern.
-//
-typedef RAJA::seq_segit              IndexSet_SegIt;
-//typedef RAJA::omp_parallel_for_segit IndexSet_SegIt;
-//typedef RAJA::cilk_for_segit         IndexSet_SegIt;
-
-
-//typedef RAJA::seq_exec              SegExec;
-//typedef RAJA::simd_exec             SegExec;
-typedef RAJA::omp_parallel_for_exec SegExec;
-//typedef RAJA::cilk_for_exec         SegExec;
-
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> node_exec_policy;
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> elem_exec_policy;
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> mat_exec_policy;
-//typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, RAJA::seq_exec> mat_exec_policy;
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> min_exec_policy;
-// typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> minloc_exec_policy;
-typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> symnode_exec_policy;
-
-
 //**************************************************
 // Allow flexibility for arithmetic representations 
 //**************************************************
@@ -71,6 +39,10 @@ typedef long double  real10 ;  // 10 bytes on x86
 typedef int    Index_t ; // array subscript and loop index
 typedef real8  Real_t ;  // floating point representation
 typedef int    Int_t ;   // integer representation
+
+typedef Real_t * __restrict__ Real_p ;
+typedef Index_t * __restrict__ Index_p ;
+typedef Int_t * __restrict__ Int_p ;
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
@@ -134,6 +106,29 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
    (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL-1))
 
 //////////////////////////////////////////////////////
+// Helper functions
+//////////////////////////////////////////////////////
+
+/* might want to add access methods so that memory can be */
+/* better managed, as in luleshFT */
+
+template <typename T>
+inline T *Allocate(size_t size)
+{
+   return static_cast<T *>(malloc(sizeof(T)*size)) ;
+}
+
+template <typename T>
+inline void Release(T **ptr)
+{
+   if (*ptr != NULL) {
+      free(*ptr) ;
+      *ptr = NULL ;
+   }
+}
+
+
+//////////////////////////////////////////////////////
 // Primary data structure
 //////////////////////////////////////////////////////
 
@@ -172,101 +167,108 @@ class Domain {
    // ALLOCATION
    //
 
-   void AllocateNodePersistent(Int_t numNode) // Node-centered
+   void AllocateNodePersistent(Index_t numNode) // Node-centered
    {
-      m_x.reserve(numNode);  // coordinates
-      m_y.reserve(numNode);
-      m_z.reserve(numNode);
+      m_x = Allocate<Real_t>(numNode) ; // coordinates
+      m_y = Allocate<Real_t>(numNode) ;
+      m_z = Allocate<Real_t>(numNode) ;
 
-      m_xd.reserve(numNode); // velocities
-      m_yd.reserve(numNode);
-      m_zd.reserve(numNode);
+      m_xd = Allocate<Real_t>(numNode) ; // velocities
+      m_yd = Allocate<Real_t>(numNode) ;
+      m_zd = Allocate<Real_t>(numNode) ;
 
-      m_xdd.reserve(numNode); // accelerations
-      m_ydd.reserve(numNode);
-      m_zdd.reserve(numNode);
+      m_xdd = Allocate<Real_t>(numNode) ; // accelerations
+      m_ydd = Allocate<Real_t>(numNode) ;
+      m_zdd = Allocate<Real_t>(numNode) ;
 
-      m_fx.reserve(numNode);  // forces
-      m_fy.reserve(numNode);
-      m_fz.reserve(numNode);
+      m_fx = Allocate<Real_t>(numNode) ; // forces
+      m_fy = Allocate<Real_t>(numNode) ;
+      m_fz = Allocate<Real_t>(numNode) ;
 
-      m_nodalMass.reserve(numNode);  // mass
+      m_nodalMass = Allocate<Real_t>(numNode) ; // mass
    }
 
-   void AllocateElemPersistent(Int_t numElem) // Elem-centered
+   void AllocateElemPersistent(Index_t numElem) // Elem-centered
    {
-      m_nodelist.reserve(8*numElem);
+      m_nodelist = Allocate<Index_t>(8*numElem) ;
 
       // elem connectivities through face
-      m_lxim.reserve(numElem);
-      m_lxip.reserve(numElem);
-      m_letam.reserve(numElem);
-      m_letap.reserve(numElem);
-      m_lzetam.reserve(numElem);
-      m_lzetap.reserve(numElem);
+      m_lxim = Allocate<Index_t>(numElem) ;
+      m_lxip = Allocate<Index_t>(numElem) ;
+      m_letam = Allocate<Index_t>(numElem) ;
+      m_letap = Allocate<Index_t>(numElem) ;
+      m_lzetam = Allocate<Index_t>(numElem) ;
+      m_lzetap = Allocate<Index_t>(numElem) ;
 
-      m_elemBC.reserve(numElem);
+      m_elemBC = Allocate<Int_t>(numElem) ;
 
-      m_e.reserve(numElem);
-      m_p.reserve(numElem);
+      m_e = Allocate<Real_t>(numElem) ;
+      m_p = Allocate<Real_t>(numElem) ;
 
-      m_q.reserve(numElem);
-      m_ql.reserve(numElem);
-      m_qq.reserve(numElem);
+      m_q = Allocate<Real_t>(numElem) ;
+      m_ql = Allocate<Real_t>(numElem) ;
+      m_qq = Allocate<Real_t>(numElem) ;
 
-      m_v.reserve(numElem);
+      m_v = Allocate<Real_t>(numElem) ;
 
-      m_volo.reserve(numElem);
-      m_delv.reserve(numElem);
-      m_vdov.reserve(numElem);
+      m_volo = Allocate<Real_t>(numElem) ;
+      m_delv = Allocate<Real_t>(numElem) ;
+      m_vdov = Allocate<Real_t>(numElem) ;
 
-      m_arealg.reserve(numElem);
+      m_arealg = Allocate<Real_t>(numElem) ;
 
-      m_ss.reserve(numElem);
+      m_ss = Allocate<Real_t>(numElem) ;
 
-      m_elemMass.reserve(numElem);
+      m_elemMass = Allocate<Real_t>(numElem) ;
 
-      m_vnew.reserve(numElem) ;
+      m_vnew = Allocate<Real_t>(numElem) ;
    }
 
-   void AllocateGradients(Int_t numElem, Int_t allElem)
+   void AllocateGradients(Index_t numElem, Index_t allElem)
    {
       // Position gradients
-      m_delx_xi.reserve(numElem) ;
-      m_delx_eta.reserve(numElem) ;
-      m_delx_zeta.reserve(numElem) ;
+      m_delx_xi = Allocate<Real_t>(numElem) ;
+      m_delx_eta = Allocate<Real_t>(numElem) ;
+      m_delx_zeta = Allocate<Real_t>(numElem) ;
 
       // Velocity gradients
-      m_delv_xi.reserve(allElem) ;
-      m_delv_eta.reserve(allElem);
-      m_delv_zeta.reserve(allElem) ;
+      m_delv_xi = Allocate<Real_t>(allElem) ;
+      m_delv_eta = Allocate<Real_t>(allElem) ;
+      m_delv_zeta = Allocate<Real_t>(allElem) ;
    }
 
    void DeallocateGradients()
    {
-      m_delx_zeta.clear() ;
-      m_delx_eta.clear() ;
-      m_delx_xi.clear() ;
+      Release(&m_delv_zeta) ;
+      Release(&m_delv_eta) ;
+      Release(&m_delv_xi) ;
 
-      m_delv_zeta.clear() ;
-      m_delv_eta.clear() ;
-      m_delv_xi.clear() ;
+      Release(&m_delx_zeta) ;
+      Release(&m_delx_eta) ;
+      Release(&m_delx_xi) ;
    }
 
-   void AllocateStrains(Int_t numElem)
+   void AllocateStrains(Index_t numElem)
    {
-      m_dxx.reserve(numElem) ;
-      m_dyy.reserve(numElem) ;
-      m_dzz.reserve(numElem) ;
+      m_dxx = Allocate<Real_t>(numElem) ;
+      m_dyy = Allocate<Real_t>(numElem) ;
+      m_dzz = Allocate<Real_t>(numElem) ;
    }
 
    void DeallocateStrains()
    {
-      m_dzz.clear() ;
-      m_dyy.clear() ;
-      m_dxx.clear() ;
+      Release(&m_dzz) ;
+      Release(&m_dyy) ;
+      Release(&m_dxx) ;
    }
    
+   void AllocateSymmetry(Index_t size)
+   {
+     m_symmX = ((m_colLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0 );
+     m_symmY = ((m_rowLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0 );
+     m_symmZ = ((m_planeLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0);
+   }
+
    //
    // ACCESSORS
    //
@@ -296,16 +298,24 @@ class Domain {
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
 
+   // Nodes on symmertry planes
+   Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
+   Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
+   Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
+   bool symmXempty()          { return (m_symmX == 0); }
+   bool symmYempty()          { return (m_symmY == 0); }
+   bool symmZempty()          { return (m_symmZ == 0); }
+
    //
    // Element-centered
    //
-   Index_t*  nodelist(Index_t idx) { return &m_nodelist[Index_t(8)*idx] ; }
+   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
+   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
+   Index_p  regNumList()            { return &m_regNumList[0] ; }
+   Index_p  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
+   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
-#if !defined(LULESH_LIST_INDEXSET)
-   Index_t&  perm(Index_t idx)     { return m_perm[idx] ; }
-#else
-   Index_t  perm(Index_t idx)     { return idx ; }
-#endif
+   Index_p  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
 
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
@@ -372,16 +382,8 @@ class Domain {
    Index_t nodeElemCount(Index_t idx)
    { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }
 
-   Index_t *nodeElemCornerList(Index_t idx)
+   Index_p nodeElemCornerList(Index_t idx)
    { return &m_nodeElemCornerList[m_nodeElemStart[idx]] ; }
-
-   // Region Centered
-
-   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
-   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
-   Index_t*  regNumList()            { return &m_regNumList[0] ; }
-   Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
-   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
 
    // Parameters 
 
@@ -438,27 +440,15 @@ class Domain {
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
-
-   //
-   // Accessors for index sets
-   //
-   LULESH_ISET& getNodeISet()  { return m_domNodeISet ; }
-   LULESH_ISET& getElemISet()  { return m_domElemISet ; }
-
-   LULESH_ISET& getRegionISet(int r) { return m_domRegISet[r] ; }
-
-   LULESH_ISET& getXSymNodeISet() { return m_domXSymNodeISet ; }
-   LULESH_ISET& getYSymNodeISet() { return m_domYSymNodeISet ; }
-   LULESH_ISET& getZSymNodeISet() { return m_domZSymNodeISet ; }
-
+   
    //
    // MPI-Related additional data
    //
 
 #if USE_MPI   
    // Communication Work space 
-   Real_t *commDataSend ;
-   Real_t *commDataRecv ;
+   Real_p commDataSend ;
+   Real_p commDataRecv ;
    
    // Maximum number of block neighbors 
    MPI_Request recvRequest[26] ; // 6 faces + 12 edges + 8 corners 
@@ -467,104 +457,91 @@ class Domain {
 
   private:
 
-   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
-   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
+   void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
    void SetupThreadSupportStructures();
-   void CreateMeshIndexSets();
    void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void CreateSymmetryIndexSets(Index_t edgeNodes);
-   void SetupCommBuffers(Index_t edgeNodes);
-   void SetupElementConnectivities(Index_t edgeElems);
-   void SetupBoundaryConditions(Index_t edgeElems);
+   void SetupCommBuffers(Int_t edgeNodes);
+   void SetupSymmetryPlanes(Int_t edgeNodes);
+   void SetupElementConnectivities(Int_t edgeElems);
+   void SetupBoundaryConditions(Int_t edgeElems);
 
    //
    // IMPLEMENTATION
    //
 
-   /* mesh-based index sets */
-   LULESH_ISET m_domNodeISet ;
-   LULESH_ISET m_domElemISet ;
-
-   LULESH_ISET m_domXSymNodeISet ;
-   LULESH_ISET m_domYSymNodeISet ;
-   LULESH_ISET m_domZSymNodeISet ;
-
-   /* region-based index sets */
-   std::vector<LULESH_ISET> m_domRegISet;
-
    /* Node-centered */
-   std::vector<Real_t> m_x ;  /* coordinates */
-   std::vector<Real_t> m_y ;
-   std::vector<Real_t> m_z ;
+   Real_p m_x ;  /* coordinates */
+   Real_p m_y ;
+   Real_p m_z ;
 
-   std::vector<Real_t> m_xd ; /* velocities */
-   std::vector<Real_t> m_yd ;
-   std::vector<Real_t> m_zd ;
+   Real_p m_xd ; /* velocities */
+   Real_p m_yd ;
+   Real_p m_zd ;
 
-   std::vector<Real_t> m_xdd ; /* accelerations */
-   std::vector<Real_t> m_ydd ;
-   std::vector<Real_t> m_zdd ;
+   Real_p m_xdd ; /* accelerations */
+   Real_p m_ydd ;
+   Real_p m_zdd ;
 
-   std::vector<Real_t> m_fx ;  /* forces */
-   std::vector<Real_t> m_fy ;
-   std::vector<Real_t> m_fz ;
+   Real_p m_fx ;  /* forces */
+   Real_p m_fy ;
+   Real_p m_fz ;
 
-   std::vector<Real_t> m_nodalMass ;  /* mass */
+   Real_p m_nodalMass ;  /* mass */
+
+   Index_p m_symmX ;  /* symmetry plane nodesets */
+   Index_p m_symmY ;
+   Index_p m_symmZ ;
 
    // Element-centered
-
-   std::vector<Index_t>  m_nodelist ;     /* elemToNode connectivity */
-
-   std::vector<Index_t>  m_lxim ;  /* element connectivity across each face */
-   std::vector<Index_t>  m_lxip ;
-   std::vector<Index_t>  m_letam ;
-   std::vector<Index_t>  m_letap ;
-   std::vector<Index_t>  m_lzetam ;
-   std::vector<Index_t>  m_lzetap ;
-
-   std::vector<Int_t>    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
-
-   std::vector<Real_t> m_dxx ;  /* principal strains -- temporary */
-   std::vector<Real_t> m_dyy ;
-   std::vector<Real_t> m_dzz ;
-
-   std::vector<Real_t> m_delv_xi ;    /* velocity gradient -- temporary */
-   std::vector<Real_t> m_delv_eta ;
-   std::vector<Real_t> m_delv_zeta ;
-
-   std::vector<Real_t> m_delx_xi ;    /* coordinate gradient -- temporary */
-   std::vector<Real_t> m_delx_eta ;
-   std::vector<Real_t> m_delx_zeta ;
-   
-   std::vector<Real_t> m_e ;   /* energy */
-
-   std::vector<Real_t> m_p ;   /* pressure */
-   std::vector<Real_t> m_q ;   /* q */
-   std::vector<Real_t> m_ql ;  /* linear term for q */
-   std::vector<Real_t> m_qq ;  /* quadratic term for q */
-
-   std::vector<Real_t> m_v ;     /* relative volume */
-   std::vector<Real_t> m_volo ;  /* reference volume */
-   std::vector<Real_t> m_vnew ;  /* new relative volume -- temporary */
-   std::vector<Real_t> m_delv ;  /* m_vnew - m_v */
-   std::vector<Real_t> m_vdov ;  /* volume derivative over volume */
-
-   std::vector<Real_t> m_arealg ;  /* characteristic length of an element */
-   
-   std::vector<Real_t> m_ss ;      /* "sound speed" */
-
-   std::vector<Real_t> m_elemMass ;  /* mass */
 
    // Region information
    Int_t    m_numReg ;
    Int_t    m_cost; //imbalance cost
-   Index_t *m_regElemSize ;   // Size of region sets
-   Index_t *m_regNumList ;    // Region number per domain element
-   Index_t **m_regElemlist ;  // region indexset 
+   Index_p m_regElemSize ;   // Size of region sets
+   Index_p m_regNumList ;    // Region number per domain element
+   Index_p *m_regElemlist ;  // region indexset 
 
-   // Permutation to pack element-centered material subsets
-   // into a contiguous range per material
-   Index_t *m_perm ;
+   Index_p  m_nodelist ;     /* elemToNode connectivity */
+
+   Index_p  m_lxim ;  /* element connectivity across each face */
+   Index_p  m_lxip ;
+   Index_p  m_letam ;
+   Index_p  m_letap ;
+   Index_p  m_lzetam ;
+   Index_p  m_lzetap ;
+
+   Int_p    m_elemBC ;  /* symmetry/free-surface flags for each elem face */
+
+   Real_p m_dxx ;  /* principal strains -- temporary */
+   Real_p m_dyy ;
+   Real_p m_dzz ;
+
+   Real_p m_delv_xi ;    /* velocity gradient -- temporary */
+   Real_p m_delv_eta ;
+   Real_p m_delv_zeta ;
+
+   Real_p m_delx_xi ;    /* coordinate gradient -- temporary */
+   Real_p m_delx_eta ;
+   Real_p m_delx_zeta ;
+   
+   Real_p m_e ;   /* energy */
+
+   Real_p m_p ;   /* pressure */
+   Real_p m_q ;   /* q */
+   Real_p m_ql ;  /* linear term for q */
+   Real_p m_qq ;  /* quadratic term for q */
+
+   Real_p m_v ;     /* relative volume */
+   Real_p m_volo ;  /* reference volume */
+   Real_p m_vnew ;  /* new relative volume -- temporary */
+   Real_p m_delv ;  /* m_vnew - m_v */
+   Real_p m_vdov ;  /* volume derivative over volume */
+
+   Real_p m_arealg ;  /* characteristic length of an element */
+   
+   Real_p m_ss ;      /* "sound speed" */
+
+   Real_p m_elemMass ;  /* mass */
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
@@ -602,6 +579,7 @@ class Domain {
    Real_t  m_dtmax ;             // maximum allowable time increment 
    Real_t  m_stoptime ;          // end time for simulation 
 
+
    Int_t   m_numRanks ;
 
    Index_t m_colLoc ;
@@ -619,8 +597,8 @@ class Domain {
    Index_t m_maxEdgeSize ;
 
    // OMP hack 
-   Index_t *m_nodeElemStart ;
-   Index_t *m_nodeElemCornerList ;
+   Index_p m_nodeElemStart ;
+   Index_p m_nodeElemCornerList ;
 
    // Used in setup
    Index_t m_rowMin, m_rowMax;
