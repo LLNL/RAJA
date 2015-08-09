@@ -21,6 +21,7 @@
 #define SEDOV_SYNC_POS_VEL_EARLY 1
 #endif
 
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
@@ -132,6 +133,28 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 
 #define CACHE_ALIGN_REAL(n) \
    (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL-1))
+
+//////////////////////////////////////////////////////
+// Helper functions
+//////////////////////////////////////////////////////
+
+/* might want to add access methods so that memory can be */
+/* better managed, as in luleshFT */
+
+template <typename T>
+inline T *Allocate(size_t size)
+{
+   return static_cast<T *>(malloc(sizeof(T)*size)) ;
+}
+
+template <typename T>
+inline void Release(T **ptr)
+{
+   if (*ptr != NULL) {
+      free(*ptr) ;
+      *ptr = NULL ;
+   }
+}
 
 //////////////////////////////////////////////////////
 // Primary data structure
