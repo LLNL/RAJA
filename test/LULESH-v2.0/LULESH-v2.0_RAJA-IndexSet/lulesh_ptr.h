@@ -160,6 +160,15 @@ inline void Release(T **ptr)
    }
 }
 
+template <typename T>
+inline void Release(T * __restrict__ *ptr)
+{
+   if (*ptr != NULL) {
+      free(*ptr) ;
+      *ptr = NULL ;
+   }
+}
+
 //////////////////////////////////////////////////////
 // Primary data structure
 //////////////////////////////////////////////////////

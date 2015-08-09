@@ -21,6 +21,7 @@
 #define SEDOV_SYNC_POS_VEL_EARLY 1
 #endif
 
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
@@ -120,6 +121,15 @@ inline T *Allocate(size_t size)
 
 template <typename T>
 inline void Release(T **ptr)
+{
+   if (*ptr != NULL) {
+      free(*ptr) ;
+      *ptr = NULL ;
+   }
+}
+
+template <typename T>
+inline void Release(T * __restrict__ *ptr)
 {
    if (*ptr != NULL) {
       free(*ptr) ;
@@ -264,9 +274,9 @@ class Domain {
    
    void AllocateSymmetry(Index_t size)
    {
-     m_symmX = ((m_colLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0 );
-     m_symmY = ((m_rowLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0 );
-     m_symmZ = ((m_planeLoc == 0) ? Allocate<Index_t>(edgeNodes*edgeNodes) : 0);
+     m_symmX = ((m_colLoc == 0) ? Allocate<Index_t>(size) : 0 );
+     m_symmY = ((m_rowLoc == 0) ? Allocate<Index_t>(size) : 0 );
+     m_symmZ = ((m_planeLoc == 0) ? Allocate<Index_t>(size) : 0);
    }
 
    //
