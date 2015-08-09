@@ -171,7 +171,7 @@ int ljForce(SimFlat* s)
    // lock-free schedule and programming model are embedded in the IndexSets
    RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
    [&] (RAJA::IndexSet *iBox) {
-      real_t ePotLocal = 0.0;
+      // real_t ePotLocal = 0.0;
 //    int localPairs = 0 ;
 
       RAJA::IndexSet *iBoxNeighbors =
@@ -206,7 +206,8 @@ int ljForce(SimFlat* s)
 #else
                U[iOff] += 0.5*eLocal;
 #endif
-               ePotLocal += 0.5*eLocal;
+               // ePotLocal += 0.5*eLocal;
+               ePot += 0.5*eLocal;
 
                // different formulation to avoid sqrt computation
                real_t fr = - 4.0*epsilon*r6*r2*(12.0*r6 - 6.0);
@@ -226,7 +227,7 @@ int ljForce(SimFlat* s)
          } ) ; // loop over atoms in iBox
       } ) ; // loop over atoms in IBoxNeighbors
 //    pairsChecked += localPairs ;
-      ePot += ePotLocal;
+      // ePot += ePotLocal;
    } ) ; // loop over local boxes in system
    }
 
