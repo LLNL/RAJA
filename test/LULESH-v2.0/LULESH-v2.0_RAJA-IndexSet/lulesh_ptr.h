@@ -21,6 +21,7 @@
 #define SEDOV_SYNC_POS_VEL_EARLY 1
 #endif
 
+#include <stdlib.h>
 #include <math.h>
 #include <vector>
 
