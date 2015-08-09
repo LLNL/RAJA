@@ -103,7 +103,7 @@ static int* mkForceRecvCellList(LinkCell* boxes, int face, int nCells);
 static int loadForceBuffer(void* vparms, void* data, int face, char* charBuf);
 static void unloadForceBuffer(void* vparms, void* data, int face, int bufSize, char* charBuf);
 static void destroyForceExchange(void* vparms);
-static int sortAtomsById(const void* a, const void* b);
+extern "C" int sortAtomsById(const void* a, const void* b);
 
 /// \details
 /// When called in proper sequence by redistributeAtoms, the atom halo

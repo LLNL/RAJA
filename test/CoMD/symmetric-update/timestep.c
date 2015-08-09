@@ -91,25 +91,18 @@ void advancePosition(SimFlat* s, RAJA::IndexSet *extent, real_t dt)
 void kineticEnergy(SimFlat* s)
 {
    real_t eLocal[2];
-   real_t kenergy = 0.0;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> kenergy(0.0) ;
    eLocal[0] = s->ePotential;
    eLocal[1] = 0;
 
    {
-// RAJA::ReduceSum kenergyR(&kenergy) ;
    RAJA::forall<atomWork>(*s->isLocal, [&] (int iOff) {
       int iSpecies = s->atoms->iSpecies[iOff];
       real_t invMass = 0.5/s->species[iSpecies].mass;
-#if 1
-      RAJA::atomicAdd(kenergy, ( s->atoms->p[iOff][0] * s->atoms->p[iOff][0] +
-                                 s->atoms->p[iOff][1] * s->atoms->p[iOff][1] +
-                                 s->atoms->p[iOff][2] * s->atoms->p[iOff][2] )*
-                                 invMass ) ;
-#else
-      kenergyR +=  ( s->atoms->p[iOff][0] * s->atoms->p[iOff][0] +
-                     s->atoms->p[iOff][1] * s->atoms->p[iOff][1] +
-                     s->atoms->p[iOff][2] * s->atoms->p[iOff][2] ) * invMass ;
-#endif
+      kenergy += ( s->atoms->p[iOff][0] * s->atoms->p[iOff][0] +
+                   s->atoms->p[iOff][1] * s->atoms->p[iOff][1] +
+                   s->atoms->p[iOff][2] * s->atoms->p[iOff][2] )*
+                  invMass ;
    } ) ;
    }
 

@@ -145,7 +145,7 @@ void ljPrint(FILE* file, BasePotential* pot)
 int ljForce(SimFlat* s)
 {
 // static int pcount = 0 ;
-// int pairsChecked = 0 ;
+// ReduceSum<RAJA::omp_reduce, int>  pairsChecked(0) ;
    LjPotential* pot = (LjPotential *) s->pot;
    real_t sigma = pot->sigma;
    real_t epsilon = pot->epsilon;
@@ -153,7 +153,7 @@ int ljForce(SimFlat* s)
    real_t rCut2 = rCut*rCut;
 
    // zero forces and energy
-   real_t ePot = 0.0;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> ePot(0.0);
    s->ePotential = 0.0;
    
    RAJA::forall<atomWork>(*s->isTotal, [=] (int ii) {
@@ -167,7 +167,6 @@ int ljForce(SimFlat* s)
    real_t eShift = POT_SHIFT * rCut6 * (rCut6 - 1.0);
 
    {
-// RAJA::ReduceSum epotR(&ePot) ;
    // loop over local boxes
    // lock-free schedule and programming model are embedded in the IndexSets
    RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
@@ -226,17 +225,12 @@ int ljForce(SimFlat* s)
 //          }
          } ) ; // loop over atoms in iBox
       } ) ; // loop over atoms in IBoxNeighbors
-//    RAJA::atomicAdd(pairsChecked, localPairs) ;
-#if 1
-      RAJA::atomicAdd(ePot, ePotLocal);
-#else
-      epotR += ePotLocal ;
-#endif
+//    pairsChecked += localPairs ;
+      ePot += ePotLocal;
    } ) ; // loop over local boxes in system
    }
 
-   ePot = ePot*4.0*epsilon;
-   s->ePotential = ePot;
+   s->ePotential = ePot*4.0*epsilon;
 
 // printf("pairs = %d\n", pairsChecked) ;
 
