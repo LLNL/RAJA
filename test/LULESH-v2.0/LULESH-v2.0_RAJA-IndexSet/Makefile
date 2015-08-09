@@ -91,7 +91,8 @@ SILO_LIBDIR =
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
 #CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+#CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
 
 LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))

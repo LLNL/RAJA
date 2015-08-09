@@ -25,6 +25,38 @@
 #include <math.h>
 #include <vector>
 
+#include "RAJA/RAJA.hxx"
+
+//
+//   RAJA IndexSet type used in loop traversals.
+//
+typedef RAJA::IndexSet LULESH_ISET;
+
+//
+//   Policies for hybrid segment iteration and segment execution.
+//
+//   NOTE: Currently, we apply single policy across all loops
+//         with same iteration pattern.
+//
+typedef RAJA::seq_segit              IndexSet_SegIt;
+//typedef RAJA::omp_parallel_for_segit IndexSet_SegIt;
+//typedef RAJA::cilk_for_segit         IndexSet_SegIt;
+
+
+//typedef RAJA::seq_exec              SegExec;
+//typedef RAJA::simd_exec             SegExec;
+typedef RAJA::omp_parallel_for_exec SegExec;
+//typedef RAJA::cilk_for_exec         SegExec;
+
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> node_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> elem_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> mat_exec_policy;
+//typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, RAJA::seq_exec> mat_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> min_exec_policy;
+// typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> minloc_exec_policy;
+typedef LULESH_ISET::ExecPolicy<IndexSet_SegIt, SegExec> symnode_exec_policy;
+
+
 //**************************************************
 // Allow flexibility for arithmetic representations 
 //**************************************************
@@ -136,7 +168,6 @@ inline void Release(T * __restrict__ *ptr)
       *ptr = NULL ;
    }
 }
-
 
 //////////////////////////////////////////////////////
 // Primary data structure
@@ -271,13 +302,6 @@ class Domain {
       Release(&m_dyy) ;
       Release(&m_dxx) ;
    }
-   
-   void AllocateSymmetry(Index_t size)
-   {
-     m_symmX = ((m_colLoc == 0) ? Allocate<Index_t>(size) : 0 );
-     m_symmY = ((m_rowLoc == 0) ? Allocate<Index_t>(size) : 0 );
-     m_symmZ = ((m_planeLoc == 0) ? Allocate<Index_t>(size) : 0);
-   }
 
    //
    // ACCESSORS
@@ -308,24 +332,16 @@ class Domain {
    // Nodal mass
    Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
 
-   // Nodes on symmertry planes
-   Index_t symmX(Index_t idx) { return m_symmX[idx] ; }
-   Index_t symmY(Index_t idx) { return m_symmY[idx] ; }
-   Index_t symmZ(Index_t idx) { return m_symmZ[idx] ; }
-   bool symmXempty()          { return (m_symmX == 0); }
-   bool symmYempty()          { return (m_symmY == 0); }
-   bool symmZempty()          { return (m_symmZ == 0); }
-
    //
    // Element-centered
    //
-   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
-   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
-   Index_p  regNumList()            { return &m_regNumList[0] ; }
-   Index_p  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
-   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
+   Index_p  nodelist(Index_t idx) { return &m_nodelist[Index_t(8)*idx] ; }
 
-   Index_p  nodelist(Index_t idx)    { return &m_nodelist[Index_t(8)*idx] ; }
+#if !defined(LULESH_LIST_INDEXSET)
+   Index_t&  perm(Index_t idx)     { return m_perm[idx] ; }
+#else
+   Index_t  perm(Index_t idx)     { return idx ; }
+#endif
 
    // elem connectivities through face
    Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
@@ -395,6 +411,14 @@ class Domain {
    Index_p nodeElemCornerList(Index_t idx)
    { return &m_nodeElemCornerList[m_nodeElemStart[idx]] ; }
 
+   // Region Centered
+
+   Index_t&  regElemSize(Index_t idx) { return m_regElemSize[idx] ; }
+   Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
+   Index_p   regNumList()            { return &m_regNumList[0] ; }
+   Index_p   regElemlist(Int_t r)    { return m_regElemlist[r] ; }
+   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
+
    // Parameters 
 
    // Cutoffs
@@ -450,7 +474,19 @@ class Domain {
    
    Index_t&  maxPlaneSize()       { return m_maxPlaneSize ; }
    Index_t&  maxEdgeSize()        { return m_maxEdgeSize ; }
-   
+
+   //
+   // Accessors for index sets
+   //
+   LULESH_ISET& getNodeISet()  { return m_domNodeISet ; }
+   LULESH_ISET& getElemISet()  { return m_domElemISet ; }
+
+   LULESH_ISET& getRegionISet(int r) { return m_domRegISet[r] ; }
+
+   LULESH_ISET& getXSymNodeISet() { return m_domXSymNodeISet ; }
+   LULESH_ISET& getYSymNodeISet() { return m_domYSymNodeISet ; }
+   LULESH_ISET& getZSymNodeISet() { return m_domZSymNodeISet ; }
+
    //
    // MPI-Related additional data
    //
@@ -467,17 +503,30 @@ class Domain {
 
   private:
 
-   void BuildMesh(Int_t nx, Int_t edgeNodes, Int_t edgeElems);
+   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
+   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
    void SetupThreadSupportStructures();
+   void CreateMeshIndexSets();
    void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void SetupCommBuffers(Int_t edgeNodes);
-   void SetupSymmetryPlanes(Int_t edgeNodes);
-   void SetupElementConnectivities(Int_t edgeElems);
-   void SetupBoundaryConditions(Int_t edgeElems);
+   void CreateSymmetryIndexSets(Index_t edgeNodes);
+   void SetupCommBuffers(Index_t edgeNodes);
+   void SetupElementConnectivities(Index_t edgeElems);
+   void SetupBoundaryConditions(Index_t edgeElems);
 
    //
    // IMPLEMENTATION
    //
+
+   /* mesh-based index sets */
+   LULESH_ISET m_domNodeISet ;
+   LULESH_ISET m_domElemISet ;
+
+   LULESH_ISET m_domXSymNodeISet ;
+   LULESH_ISET m_domYSymNodeISet ;
+   LULESH_ISET m_domZSymNodeISet ;
+
+   /* region-based index sets */
+   std::vector<LULESH_ISET> m_domRegISet;
 
    /* Node-centered */
    Real_p m_x ;  /* coordinates */
@@ -498,18 +547,7 @@ class Domain {
 
    Real_p m_nodalMass ;  /* mass */
 
-   Index_p m_symmX ;  /* symmetry plane nodesets */
-   Index_p m_symmY ;
-   Index_p m_symmZ ;
-
    // Element-centered
-
-   // Region information
-   Int_t    m_numReg ;
-   Int_t    m_cost; //imbalance cost
-   Index_p m_regElemSize ;   // Size of region sets
-   Index_p m_regNumList ;    // Region number per domain element
-   Index_p *m_regElemlist ;  // region indexset 
 
    Index_p  m_nodelist ;     /* elemToNode connectivity */
 
@@ -533,7 +571,7 @@ class Domain {
    Real_p m_delx_xi ;    /* coordinate gradient -- temporary */
    Real_p m_delx_eta ;
    Real_p m_delx_zeta ;
-   
+
    Real_p m_e ;   /* energy */
 
    Real_p m_p ;   /* pressure */
@@ -548,10 +586,21 @@ class Domain {
    Real_p m_vdov ;  /* volume derivative over volume */
 
    Real_p m_arealg ;  /* characteristic length of an element */
-   
+
    Real_p m_ss ;      /* "sound speed" */
 
    Real_p m_elemMass ;  /* mass */
+
+   // Region information
+   Int_t    m_numReg ;
+   Int_t    m_cost; //imbalance cost
+   Index_p m_regElemSize ;   // Size of region sets
+   Index_p m_regNumList ;    // Region number per domain element
+   Index_p *m_regElemlist ;  // region indexset
+
+   // Permutation to pack element-centered material subsets
+   // into a contiguous range per material
+   Index_p m_perm ;
 
    // Cutoffs (treat as constants)
    const Real_t  m_e_cut ;             // energy tolerance 
@@ -588,7 +637,6 @@ class Domain {
    Real_t  m_deltatimemultub ;
    Real_t  m_dtmax ;             // maximum allowable time increment 
    Real_t  m_stoptime ;          // end time for simulation 
-
 
    Int_t   m_numRanks ;
 
