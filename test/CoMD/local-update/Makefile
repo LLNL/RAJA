@@ -111,7 +111,7 @@ CFLAGS += -DSINGLE
 endif
 
 # Set executable name and add includes & libraries for MPI if needed.
-CoMD_VARIANT = CoMD-openmp
+CoMD_VARIANT = CoMD-local
 ifeq ($(DO_MPI), ON)
 CoMD_VARIANT = CoMD-openmp-mpi
 INCLUDES += ${MPI_INCLUDE}
