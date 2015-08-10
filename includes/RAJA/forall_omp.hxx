@@ -217,7 +217,7 @@ public:
    ReduceSum<omp_reduce, T> operator+=(T val) const 
    {
       int tid = omp_get_thread_num();
-      m_sum[tid*COHERENCE_BLOCK_SIZE/sizeof(T)] += val;
+      ((CPUReductionBlockDataType * __restrict__)m_sum)[tid*COHERENCE_BLOCK_SIZE/sizeof(T)] += val;
       return *this ;
    }
 
