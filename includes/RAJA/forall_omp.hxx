@@ -121,7 +121,9 @@ public:
    ReduceMin<omp_reduce, T> min(T val) const 
    {
       int tid = omp_get_thread_num();
-      m_min[tid] = RAJA_MIN(static_cast<T>(m_min[tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]), val);
+      int min_idx = tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+      m_min[min_idx] = RAJA_MIN(static_cast<T>(m_min[min_idx]), val);
+
       return *this ;
    }
 
