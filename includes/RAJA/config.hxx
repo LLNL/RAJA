@@ -70,6 +70,7 @@ const int RANGE_ALIGN = 4;
 const int RANGE_MIN_LENGTH = 32;
 #else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
+#define COHERENCE_BLOCK_SIZE 64
 #endif
 
 const int DATA_ALIGN = 32;
@@ -85,10 +86,10 @@ const int RANGE_ALIGN = 4;
 const int RANGE_MIN_LENGTH = 32;
 #else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
+#define COHERENCE_BLOCK_SIZE 64
 #endif
 
 const int DATA_ALIGN = 32;
-
 
 #elif defined(RAJA_PLATFORM_BGQ)
 //
@@ -101,6 +102,7 @@ const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
 
 const int DATA_ALIGN = 32;
 
+#define COHERENCE_BLOCK_SIZE 64
 
 #else
 #error RAJA platform is undefined!
