@@ -232,7 +232,7 @@ int eamForce(SimFlat* s)
    }
    
    real_t rCut2 = pot->cutoff*pot->cutoff;
-   real_t etot = 0.;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> etot(0.0) ;
 
    // zero forces / energy / rho /rhoprime
    RAJA::forall<atomWork>(*s->isTotal, [=] (int ii) {
@@ -245,7 +245,7 @@ int eamForce(SimFlat* s)
    // loop over local boxes
    RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
    [&] (RAJA::IndexSet *iBox) {
-      real_t etotLocal = 0.;
+      // real_t etotLocal = 0.;
 
       RAJA::IndexSet *iBoxNeighbors =
            static_cast<RAJA::IndexSet *>(iBox->getSegment(0)->getPrivate()) ;
@@ -295,7 +295,8 @@ int eamForce(SimFlat* s)
 #else
                Up[iOff] += 0.5*phiTmp;
 #endif
-               etotLocal += 0.5*phiTmp;
+               // etotLocal += 0.5*phiTmp;
+               etot += 0.5*phiTmp;
 
                // accumulate rhobar for each atom
 #if 1
@@ -306,7 +307,7 @@ int eamForce(SimFlat* s)
             }
          }) ; // loop over atoms in iBox
       }) ; // loop over atoms in IBoxNeighbors
-      RAJA::atomicAdd(etot, etotLocal);
+      // etot += etotLocal ;
    }) ; // loop over local boxes in system
 
    // Compute Embedding Energy
@@ -326,7 +327,7 @@ int eamForce(SimFlat* s)
       dfEmbedp[iOff] = dfEmbed; // save derivative for halo exchange
       Up[iOff] += fEmbed;
 #endif
-      RAJA::atomicAdd(etot, fEmbed) ;
+      etot += fEmbed ;
    } ) ;
 
    // exchange derivative of the embedding energy with repsect to rhobar
@@ -379,7 +380,7 @@ int eamForce(SimFlat* s)
       }) ; // loop over atoms in IBoxNeighbors
    }) ; // loop over local boxes in system
 
-   s->ePotential = (real_t) etot;
+   s->ePotential = etot;
 
    return 0;
 }
@@ -390,10 +391,10 @@ void eamPrint(FILE* file, BasePotential* pot)
    fprintf(file, "  Potential type  : EAM\n");
    fprintf(file, "  Species name    : %s\n", eamPot->name);
    fprintf(file, "  Atomic number   : %d\n", eamPot->atomicNo);
-   fprintf(file, "  Mass            : 'FMT1' amu\n", eamPot->mass/amuToInternalMass); // print in amu
+   fprintf(file, "  Mass            : "FMT1" amu\n", eamPot->mass/amuToInternalMass); // print in amu
    fprintf(file, "  Lattice type    : %s\n", eamPot->latticeType);
-   fprintf(file, "  Lattice spacing : 'FMT1' Angstroms\n", eamPot->lat);
-   fprintf(file, "  Cutoff          : 'FMT1' Angstroms\n", eamPot->cutoff);
+   fprintf(file, "  Lattice spacing : "FMT1" Angstroms\n", eamPot->lat);
+   fprintf(file, "  Cutoff          : "FMT1" Angstroms\n", eamPot->cutoff);
 }
 
 void eamDestroy(BasePotential** pPot)

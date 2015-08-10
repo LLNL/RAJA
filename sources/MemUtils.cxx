@@ -137,12 +137,14 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 
    if (s_cpu_reduction_mem_block == 0) {
       int len = nthreads * RAJA_MAX_REDUCE_VARS;
-      s_cpu_reduction_mem_block = new CPUReductionBlockDataType[len];
+      s_cpu_reduction_mem_block = new CPUReductionBlockDataType
+          [len*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)];
 
       atexit(freeCPUReductionMemBlock);
    }
 
-   return &(s_cpu_reduction_mem_block[s_block_offset * id]) ;
+   return &(s_cpu_reduction_mem_block
+      [s_block_offset * id * COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]) ;
 }
 
 

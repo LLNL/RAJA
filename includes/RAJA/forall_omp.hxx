@@ -75,7 +75,7 @@ public:
       int nthreads = omp_get_max_threads();
 #pragma omp parallel for 
       for ( int i = 0; i < nthreads; ++i ) {
-         m_min[i] = init_val ;
+         m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = init_val ;
       }
    }
 
@@ -107,7 +107,7 @@ public:
       if ( !m_reduction_is_final ) {
          int nthreads = omp_get_max_threads();
          for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i]));
+            m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]));
          }
 
          m_reduction_is_final = true;
@@ -121,7 +121,7 @@ public:
    ReduceMin<omp_reduce, T> min(T val) const 
    {
       int tid = omp_get_thread_num();
-      m_min[tid] = RAJA_MIN(static_cast<T>(m_min[tid]), val);
+      m_min[tid] = RAJA_MIN(static_cast<T>(m_min[tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]), val);
       return *this ;
    }
 
@@ -171,7 +171,7 @@ public:
       int nthreads = omp_get_max_threads();
 #pragma omp parallel for 
       for ( int i = 0; i < nthreads; ++i ) {
-         m_sum[i] = 0 ;
+         m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = 0 ;
       }
    }
 
@@ -203,7 +203,7 @@ public:
       if ( !m_reduction_is_final ) {
          int nthreads = omp_get_max_threads();
          for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val += static_cast<T>(m_sum[i]);
+            m_reduced_val += static_cast<T>(m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]);
          }
 
          m_reduction_is_final = true;
@@ -217,7 +217,7 @@ public:
    ReduceSum<omp_reduce, T> operator+=(T val) const 
    {
       int tid = omp_get_thread_num();
-      m_sum[tid] += val;
+      ((CPUReductionBlockDataType * __restrict__)m_sum)[tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] += val;
       return *this ;
    }
 

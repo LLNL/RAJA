@@ -189,19 +189,19 @@ void computeVcm(SimFlat* s, real_t vcm[3])
 {
    real_t vcmLocal[4] = {0., 0., 0., 0.};
    real_t vcmSum[4] = {0., 0., 0., 0.};
-   real_t v0 = 0.0;
-   real_t v1 = 0.0;
-   real_t v2 = 0.0;
-   real_t v3 = 0.0;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> v0(0.0) ;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> v1(0.0) ;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> v2(0.0) ;
+   RAJA::ReduceSum<RAJA::omp_reduce, real_t> v3(0.0) ;
 
    // sum the momenta and particle masses 
    RAJA::forall<atomWork>(*s->isLocal, [&] (int iOff) {
-      RAJA::atomicAdd(v0, s->atoms->p[iOff][0]) ;
-      RAJA::atomicAdd(v1, s->atoms->p[iOff][1]) ;
-      RAJA::atomicAdd(v2, s->atoms->p[iOff][2]) ;
+      v0 += s->atoms->p[iOff][0] ;
+      v1 += s->atoms->p[iOff][1] ;
+      v2 += s->atoms->p[iOff][2] ;
 
       int iSpecies = s->atoms->iSpecies[iOff];
-      RAJA::atomicAdd(v3, s->species[iSpecies].mass) ;
+      v3 += s->species[iSpecies].mass ;
    } ) ;
 
   vcmLocal[0] = v0;

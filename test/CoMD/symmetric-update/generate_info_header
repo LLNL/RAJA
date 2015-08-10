@@ -1,0 +1,75 @@
+#!/bin/bash
+
+comd_variant=${1}
+cc=`which ${2}`
+cflags=${3}
+ldflags=${4}
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+cc="unknown";
+fi
+echo "CC: ${cc}"
+
+cc_ver=`${cc} --version 2>&1`
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+cc_ver=`${cc} -V 2>&1`;
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+cc_ver="unknown";
+fi
+fi
+
+cc_ver=${cc_ver// /@}
+cc_version=""
+for i in $(echo ${cc_ver});
+do
+ if [ "$cc_version" == "" ]; then
+    cc_version=$i;
+ fi
+done
+cc_version=${cc_version//@/ }
+echo "Compiler version: ${cc_version}"
+
+hostname=`uname -n`
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+hostname="unknown";
+fi
+
+kern_name=`uname -s`
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+kern_name="unknown";
+fi
+
+kern_rel=`uname -r`
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+kern_rel="unknown";
+fi
+
+proc=`uname -p`
+errcode="$?"
+if [ ${errcode} != "0" ] ; then
+proc="unknown";
+fi
+
+
+cat << END_CAT > CoMD_info.h
+#ifndef CoMD_info_hpp
+#define CoMD_info_hpp
+
+#define CoMD_VARIANT "${comd_variant}"
+#define CoMD_HOSTNAME "${hostname}"
+#define CoMD_KERNEL_NAME "'${kern_name}'"
+#define CoMD_KERNEL_RELEASE "'${kern_rel}'"
+#define CoMD_PROCESSOR "'${proc}'"
+
+#define CoMD_COMPILER "'${cc}'"
+#define CoMD_COMPILER_VERSION "'${cc_version}'"
+#define CoMD_CFLAGS "'${cflags}'"
+#define CoMD_LDFLAGS "'${ldflags}'"
+
+#endif
+END_CAT
