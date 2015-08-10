@@ -392,22 +392,6 @@ void forall_min(omp_parallel_for_exec,
    *min = min_tmp[0] ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(omp_parallel_for_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
 
 /*!
  ******************************************************************************
@@ -474,26 +458,6 @@ void forall_min(omp_parallel_for_exec,
               iseg.getBegin(), iseg.getEnd(),
               min,
               loop_body);
-}
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(omp_parallel_for_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
 }
 
 /*!
@@ -1122,24 +1086,6 @@ void forall_min(omp_parallel_for_exec,
    *min = min_tmp[0] ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(omp_parallel_for_exec,
-                const Index_type* __restrict__ idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp parallel for
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 /*!
  ******************************************************************************
  *
@@ -1206,27 +1152,6 @@ void forall_min(omp_parallel_for_exec,
               iseg.getIndex(), iseg.getLength(),
               min,
               loop_body);
-}
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(omp_parallel_for_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-#pragma novector
-#pragma omp parallel for
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
 }
 
 /*!
@@ -2255,55 +2180,6 @@ void forall_segments(omp_taskgraph_interval_segit,
    } // end omp parallel region
 }
 
-
-#if 0
-////////////////////////////////////////////////////////////////////////////
-/// Jeff's "reducer" project...
-////////////////////////////////////////////////////////////////////////////
-template <typename T>
-RAJA_INLINE
-void atomicAdd(T &accum, T value) {
-#pragma omp atomic
-   accum += value ;
-}
-
-class ReduceSum {
-public:
-   ReduceSum(double *var) : m_var(var)
-   {
-#pragma omp parallel
-      {
-         int maxThreads = omp_get_max_threads() ;
-#pragma omp for schedule(static, 1)
-         for (int i=0; i< maxThreads; ++i) {        
-            m_val[i*128] = 0.0 ;
-         }
-      }
-   }
-
-   double & operator+=(double val) {
-      int tid = omp_get_thread_num() ;
-      m_val[tid] += val ;
-      return m_val[tid*128] ;
-   }
-
-   ~ReduceSum()
-   {
-      /* reduce values back into referenced variable */
-      int maxThreads = omp_get_max_threads() ;
-      double tmp =  m_val[0] ;
-      for (int i=1; i< maxThreads; ++i) {
-            tmp += m_val[i*128] ;
-      }
-      *m_var = tmp ;
-   }
-
-private:
-
-   double *m_var ;
-   double m_val[16*128] ; /* assume 16 threads maximum */
-} ; 
-#endif
 
 }  // closing brace for RAJA namespace
 

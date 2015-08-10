@@ -304,23 +304,6 @@ void forall_min(seq_exec,
    RAJA_FT_END ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
 /*!
  ******************************************************************************
  *
@@ -423,24 +406,6 @@ void forall_sum(seq_exec,
    RAJA_FT_END ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                Index_type begin, Index_type end,
-                LOOP_BODY loop_body)
-{
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -528,26 +493,6 @@ void forall_min(seq_exec,
 #pragma novector
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii, min );
-   }
-
-   RAJA_FT_END ;
-}
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
    }
 
    RAJA_FT_END ;
@@ -664,27 +609,6 @@ void forall_sum(seq_exec,
 
    RAJA_FT_END ;
 }
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const RangeSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 
 //
@@ -1178,23 +1102,6 @@ void forall_min(seq_exec,
    RAJA_FT_END ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const Index_type* __restrict__ idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 /*!
  ******************************************************************************
  *
@@ -1295,23 +1202,6 @@ void forall_sum(seq_exec,
    RAJA_FT_END ;
 }
 
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const Index_type* __restrict__ idx, Index_type len,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -1399,26 +1289,6 @@ void forall_min(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k], min );
-   }
-
-   RAJA_FT_END ;
-}
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
    }
 
    RAJA_FT_END ;
@@ -1535,27 +1405,6 @@ void forall_sum(seq_exec,
 
    RAJA_FT_END ;
 }
-
-// RDH NEW REDUCE
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum(seq_exec,
-                const ListSegment& iseg,
-                LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -1770,66 +1619,6 @@ void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
                SEG_EXEC_POLICY_T(),
                tseg->getIndex(), tseg->getLength(),
                min,
-               loop_body
-            );
-            break;
-         }
-
-         default : {
-         }
-
-      }  // switch on segment type
-
-   } // iterate over segments of index set
-
-}
-
-// RDH NEW REDUCE
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                 const IndexSet& iset,
-                 LOOP_BODY loop_body)
-{
-   const int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const BaseSegment* iseg = iset.getSegment(isi);
-      SegmentType segtype = iseg->getType();
-
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            const RangeSegment* tseg =
-               static_cast<const RangeSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(),
-               loop_body
-            );
-            break;
-         }
-
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
-            const RangeStrideSegment* tseg =
-               static_cast<const RangeStrideSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
-               loop_body
-            );
-            break;
-         }
-#endif
-
-         case _ListSeg_ : {
-            const ListSegment* tseg =
-               static_cast<const ListSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getIndex(), tseg->getLength(),
                loop_body
             );
             break;
@@ -2060,70 +1849,6 @@ void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       }  // switch on segment type
 
    } // iterate over segments of index set
-
-}
-
-// RDH NEW REDUCE
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_sum( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                 const IndexSet& iset,
-                 LOOP_BODY loop_body)
-{
-   const int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const BaseSegment* iseg = iset.getSegment(isi);
-      SegmentType segtype = iseg->getType();
-
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            const RangeSegment* tseg =
-               static_cast<const RangeSegment*>(iseg);
-            forall_sum(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(),
-               loop_body
-            );
-            break;
-         }
-
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
-            const RangeStrideSegment* tseg =
-               static_cast<const RangeStrideSegment*>(iseg);
-            forall_sum(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
-               loop_body
-            );
-            break;
-         }
-#endif
-
-         case _ListSeg_ : {
-            const ListSegment* tseg =
-               static_cast<const ListSegment*>(iseg);
-            forall_sum(
-               SEG_EXEC_POLICY_T(),
-               tseg->getIndex(), tseg->getLength(),
-               loop_body
-            );
-            break;
-         }
-
-         default : {
-         }
-
-      }  // switch on segment type
-
-   } // iterate over segments of index set
-
-#if 0 // RDH
-   sum_obj += sum_obj.getInitVal();
-#endif
 
 }
 
