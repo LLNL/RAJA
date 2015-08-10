@@ -245,7 +245,7 @@ int eamForce(SimFlat* s)
    // loop over local boxes
    RAJA::forall_segments<task_graph_policy>(*s->isLocal, 
    [&] (RAJA::IndexSet *iBox) {
-      real_t etotLocal = 0.;
+      // real_t etotLocal = 0.;
 
       RAJA::IndexSet *iBoxNeighbors =
            static_cast<RAJA::IndexSet *>(iBox->getSegment(0)->getPrivate()) ;
@@ -295,7 +295,8 @@ int eamForce(SimFlat* s)
 #else
                Up[iOff] += 0.5*phiTmp;
 #endif
-               etotLocal += 0.5*phiTmp;
+               // etotLocal += 0.5*phiTmp;
+               etot += 0.5*phiTmp;
 
                // accumulate rhobar for each atom
 #if 1
@@ -306,7 +307,7 @@ int eamForce(SimFlat* s)
             }
          }) ; // loop over atoms in iBox
       }) ; // loop over atoms in IBoxNeighbors
-      etot += etotLocal ;
+      // etot += etotLocal ;
    }) ; // loop over local boxes in system
 
    // Compute Embedding Energy
