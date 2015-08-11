@@ -492,10 +492,10 @@ private:
  */
 template <typename LOOP_BODY>
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   Index_type begin, Index_type end)
+                                   Index_type begin, Index_type len)
 {
    Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
-   if (ii < end) {
+   if (ii < len) {
       loop_body(begin+ii);
    }
 }
@@ -511,11 +511,11 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  */
 template <typename LOOP_BODY>
 __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
-                                          Index_type begin, Index_type end,
+                                          Index_type begin, Index_type len,
                                           Index_type icount)
 {
    Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
-   if (ii < end) {
+   if (ii < len) {
       loop_body(ii+icount, ii+begin);
    }
 }
@@ -586,8 +586,9 @@ void forall(cuda_exec,
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin + blockSize - 1) / blockSize;
+   Index_type len = end - begin;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               begin, end);
+                                               begin, len);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
@@ -624,8 +625,9 @@ void forall_Icount(cuda_exec,
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin + blockSize - 1) / blockSize;
+   Index_type len = end - begin;
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                                      begin, end,
+                                                      begin, len,
                                                       icount);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {
@@ -670,8 +672,9 @@ void forall(cuda_exec,
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin + blockSize - 1) / blockSize;
+   Index_type len = end - begin;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               begin, end);
+                                               begin, len);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "

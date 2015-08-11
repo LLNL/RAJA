@@ -70,8 +70,8 @@ const int RANGE_ALIGN = 4;
 const int RANGE_MIN_LENGTH = 32;
 #else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
-#define COHERENCE_BLOCK_SIZE 64
 #endif
+#define COHERENCE_BLOCK_SIZE 64
 
 const int DATA_ALIGN = 32;
 
@@ -86,8 +86,8 @@ const int RANGE_ALIGN = 4;
 const int RANGE_MIN_LENGTH = 32;
 #else
 const int RANGE_MIN_LENGTH = 2*RANGE_ALIGN;
-#define COHERENCE_BLOCK_SIZE 64
 #endif
+#define COHERENCE_BLOCK_SIZE 64
 
 const int DATA_ALIGN = 32;
 
