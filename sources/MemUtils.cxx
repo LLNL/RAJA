@@ -204,7 +204,7 @@ CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
 int* getCudaReductionId()
 {
   if (s_gid == 0) {
-      cudaError_t cudaerr = cudaMallocManaged((void **)&s_gid, 1,
+      cudaError_t cudaerr = cudaMallocManaged((void **)&s_gid, sizeof(int)*1,
                                               cudaMemAttachGlobal);
 
       if ( cudaerr != cudaSuccess ) {
