@@ -120,7 +120,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       {
          Index_t *tmp = new Index_t[8*numElem()] ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             Index_t *localNode = nodelist(perm(i)) ;
             for (Index_t j=0; j<8; ++j) {
                tmp[i*8+j] = localNode[j] ;
@@ -136,11 +135,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
          Index_t *iperm = new Index_t[numElem()] ; /* inverse permutation */
 
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             iperm[perm(i)] = i ;
          } ) ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             tmp[i*6+0] = iperm[lxim(perm(i))] ;
             tmp[i*6+1] = iperm[lxip(perm(i))] ;
             tmp[i*6+2] = iperm[letam(perm(i))] ;
@@ -149,7 +146,6 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
             tmp[i*6+5] = iperm[lzetap(perm(i))] ;
          } ) ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             lxim(i) = tmp[i*6+0] ;
             lxip(i) = tmp[i*6+1] ;
             letam(i) = tmp[i*6+2] ;
@@ -167,11 +163,9 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       {
          Int_t *tmp = new Int_t[numElem()] ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             tmp[i] = elemBC(perm(i)) ;
          } ) ;
          RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
-         // for (Index_t i=0; i<numElem(); ++i) {
             elemBC(i) = tmp[i] ;
          } ) ;
          delete [] tmp ;
@@ -247,11 +241,17 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       Real_t volume = CalcElemVolume(x_local, y_local, z_local );
       volo(i) = volume ;
       elemMass(i) = volume ;
+   } ) ;
+
+   // RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
+   for (Index_t i=0; i<numElem(); ++i) {
+      Index_t *elemToNode = nodelist(i) ;
+      Real_t cornerMass = elemMass(i) / Real_t(8.0) ;
       for (Index_t j=0; j<8; ++j) {
          Index_t idx = elemToNode[j] ;
-         nodalMass(idx) += volume / Real_t(8.0) ;
+         nodalMass(idx) += cornerMass ;
       }
-   } ) ;
+   } // ) ;
 
    // deposit initial energy
    // An energy of 3.948746e+7 is correct for a problem with
