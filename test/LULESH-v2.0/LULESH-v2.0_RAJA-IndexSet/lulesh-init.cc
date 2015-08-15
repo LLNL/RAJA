@@ -243,6 +243,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       elemMass(i) = volume ;
    } ) ;
 
+   /* RAJA is not thread-safe here -- address when more policies defined */
    // RAJA::forall<elem_exec_policy>(getElemISet(), [&] (int i) {
    for (Index_t i=0; i<numElem(); ++i) {
       Index_t *elemToNode = nodelist(i) ;
