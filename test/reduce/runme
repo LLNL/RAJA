@@ -1,0 +1,3 @@
+date ;
+srun -N 1 -p pdebug --exclusive time ./reduce-test.exe ;
+date

@@ -65,7 +65,6 @@ public:
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
       m_reduced_val = init_val;
 
       m_myID = getCPUReductionId();
@@ -75,7 +74,8 @@ public:
       int nthreads = omp_get_max_threads();
 #pragma omp parallel for 
       for ( int i = 0; i < nthreads; ++i ) {
-         m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = init_val ;
+//       m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = init_val ;
+         m_min[i*s_block_offset] = init_val ;
       }
    }
 
@@ -104,14 +104,13 @@ public:
    //
    operator T()
    {
-      if ( !m_reduction_is_final ) {
-         int nthreads = omp_get_max_threads();
-         for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]));
-         }
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+//       m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]));
+         m_reduced_val = RAJA_MIN(m_reduced_val, 
+                                  static_cast<T>(m_min[i*s_block_offset]));
+      }
 
-         m_reduction_is_final = true;
-      } 
       return m_reduced_val;
    }
 
@@ -121,7 +120,8 @@ public:
    ReduceMin<omp_reduce, T> min(T val) const 
    {
       int tid = omp_get_thread_num();
-      int min_idx = tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+//    int min_idx = tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+      int min_idx = tid*s_block_offset;
       m_min[min_idx] = RAJA_MIN(static_cast<T>(m_min[min_idx]), val);
 
       return *this ;
@@ -133,10 +133,12 @@ private:
    //
    ReduceMin<omp_reduce, T>();
 
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
+
    bool m_is_copy;
    int m_myID;
 
-   bool m_reduction_is_final;
    T m_reduced_val;
 
    CPUReductionBlockDataType* m_min;
@@ -173,7 +175,8 @@ public:
       int nthreads = omp_get_max_threads();
 #pragma omp parallel for 
       for ( int i = 0; i < nthreads; ++i ) {
-         m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = 0 ;
+//       m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] = 0 ;
+         m_sum[i*s_block_offset] = 0 ;
       }
    }
 
@@ -205,7 +208,8 @@ public:
       if ( !m_reduction_is_final ) {
          int nthreads = omp_get_max_threads();
          for ( int i = 0; i < nthreads; ++i ) {
-            m_reduced_val += static_cast<T>(m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]);
+//          m_reduced_val += static_cast<T>(m_sum[i*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]);
+            m_reduced_val += static_cast<T>(m_sum[i*s_block_offset]);
          }
 
          m_reduction_is_final = true;
@@ -219,7 +223,7 @@ public:
    ReduceSum<omp_reduce, T> operator+=(T val) const 
    {
       int tid = omp_get_thread_num();
-      ((CPUReductionBlockDataType * __restrict__)m_sum)[tid*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)] += val;
+      m_sum[tid*s_block_offset] += val;
       return *this ;
    }
 
@@ -228,6 +232,9 @@ private:
    // Default ctor is declared private and not implemented.
    //
    ReduceSum<omp_reduce, T>();
+
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
 
    bool m_is_copy;
    int m_myID;
