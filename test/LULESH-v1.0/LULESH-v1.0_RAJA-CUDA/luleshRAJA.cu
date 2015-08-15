@@ -2591,7 +2591,7 @@ void CalcCourantConstraintForElems(RAJA::IndexSet *matElemList, Real_p ss,
       Real_t dtf = ss[indx] * ss[indx] ;
       Real_t dtf_cmp ;
 
-      if ( vdov[i] < Real_t(0.) ) {
+      if ( vdov[indx] < Real_t(0.) ) {
          dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
