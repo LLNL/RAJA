@@ -53,6 +53,7 @@ const int WARP_SIZE = 32;
 //////////////////////////////////////////////////////////////////////
 //
 
+
 /*!
  ******************************************************************************
  *
@@ -69,6 +70,7 @@ class ReduceMin<cuda_reduce, T> {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
+   // Ctor only executes on the host.
    //
    explicit ReduceMin(T init_val)
    {
@@ -77,15 +79,16 @@ public:
       m_reduced_val = init_val;
 
       m_myID = getCudaReductionId();
+//    std::cout << "ReduceMin id = " << m_myID << std::endl;
 
       m_blockdata = getCudaReductionMemBlock() ;
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
 
       cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor execcutes on both host and device.
+   // Copy ctor executes on both host and device.
    //
    __host__ __device__ ReduceMin( const ReduceMin<cuda_reduce, T>& other )
    {
@@ -95,17 +98,22 @@ public:
 
    //
    // Destructor executes on both host and device.
+   // Destruction on host releases the unique id for others to use. 
    //
    __host__ __device__ ~ReduceMin<cuda_reduce, T>()
    {
-       if (!m_is_copy) {
-          m_myID[0] -= 1;
-          // OK to perform cudaFree of cudaMalloc vars if needed...
-       }
+      if (!m_is_copy) {
+#if defined( __CUDA_ARCH__ ) 
+#else
+         releaseCudaReductionId(m_myID); 
+#endif
+         // OK to perform cudaFree of cudaMalloc vars if needed...
+      }
    }
 
    //
    // Operator to retrieve reduced min value (before object is destroyed).
+   // Accessor only operates on host.
    //
    operator T()
    {
@@ -180,7 +188,7 @@ private:
    ReduceMin<cuda_reduce, T>();
 
    bool m_is_copy;
-   int* m_myID;
+   int m_myID;
 
    T m_reduced_val;
 
@@ -204,6 +212,7 @@ class ReduceMax<cuda_reduce, T> {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
+   // Ctor only executes on the host.
    //
    explicit ReduceMax(T init_val)
    {
@@ -212,15 +221,16 @@ public:
       m_reduced_val = init_val;
 
       m_myID = getCudaReductionId();
+//    std::cout << "ReduceMax id = " << m_myID << std::endl;
 
       m_blockdata = getCudaReductionMemBlock() ;
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
 
       cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor execcutes on both host and device.
+   // Copy ctor executes on both host and device.
    //
    __host__ __device__ ReduceMax( const ReduceMax<cuda_reduce, T>& other )
    {
@@ -230,17 +240,22 @@ public:
 
    //
    // Destructor executes on both host and device.
+   // Destruction on host releases the unique id for others to use. 
    //
    __host__ __device__ ~ReduceMax<cuda_reduce, T>()
    {
-       if (!m_is_copy) {
-          m_myID[0] -= 1;
-          // OK to perform cudaFree of cudaMalloc vars if needed...
-       }
+      if (!m_is_copy) {
+#if defined( __CUDA_ARCH__ )
+#else
+        releaseCudaReductionId(m_myID);
+#endif
+        // OK to perform cudaFree of cudaMalloc vars if needed...
+      }
    }
 
    //
    // Operator to retrieve reduced max value (before object is destroyed).
+   // Accessor only operates on host.
    //
    operator T()
    {
@@ -315,9 +330,8 @@ private:
    ReduceMax<cuda_reduce, T>();
 
    bool m_is_copy;
-   int* m_myID;
+   int m_myID;
 
-   bool m_reduction_is_final;
    T m_reduced_val;
 
    CudaReductionBlockDataType* m_blockdata;
@@ -358,24 +372,26 @@ class ReduceSum<cuda_reduce, T> {
 public:
    //
    // Constructor takes initial reduction value (default ctor is disabled).
+   // Ctor only executes on the host.
    //
    explicit ReduceSum(T init_val)
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
+      m_init_val = init_val;
+      m_reduced_val = static_cast<T>(0);
 
       m_myID = getCudaReductionId();
+//    std::cout << "ReduceSum id = " << m_myID << std::endl;
 
       m_blockdata = getCudaReductionMemBlock();
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID[0]);
+      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
 
       cudaDeviceSynchronize();
    }
 
    //
-   // Copy ctor execcutes on both host and device.
+   // Copy ctor executes on both host and device.
    //
    __host__ __device__ ReduceSum( const ReduceSum<cuda_reduce, T>& other )
    {
@@ -385,32 +401,33 @@ public:
 
    //
    // Destructor executes on both host and device.
+   // Destruction on host releases the unique id for others to use. 
    //
    __host__ __device__ ~ReduceSum<cuda_reduce, T>()
    {
       if (!m_is_copy) {
-         m_myID[0] -= 1;
+#if defined( __CUDA_ARCH__ )
+#else
+         releaseCudaReductionId(m_myID);
+#endif
          // OK to perform cudaFree of cudaMalloc vars if needed...
       }
    }
 
    //
    // Operator to retrieve reduced sum value (before object is destroyed).
+   // Accessor only operates on host.
    //
    operator T()
    {
       cudaDeviceSynchronize() ;
 
-      if ( !m_reduction_is_final ) {
-         m_blockdata[m_blockoffset] = m_reduced_val;
-         size_t current_grid_size = getCurrentGridSize();
-         for (int i=1; i<=current_grid_size; ++i) {
-            m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
-         }
-         m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
-
-         m_reduction_is_final = true;
+      m_blockdata[m_blockoffset] = static_cast<T>(0);
+      size_t current_grid_size = getCurrentGridSize();
+      for (int i=1; i<=current_grid_size; ++i) {
+         m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
       }
+      m_reduced_val = m_init_val + static_cast<T>(m_blockdata[m_blockoffset]);
 
       return m_reduced_val;
    }
@@ -457,9 +474,9 @@ private:
    ReduceSum<cuda_reduce, T>();
 
    bool m_is_copy;
-   int* m_myID;
+   int m_myID;
 
-   bool m_reduction_is_final;
+   T m_init_val;
    T m_reduced_val;
 
    CudaReductionBlockDataType* m_blockdata ;

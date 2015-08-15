@@ -45,14 +45,30 @@ int main(int argc, char *argv[])
          dsum6 += value[i] * 7;
          dsum7 += value[i] * 8;
       } ) ;
+
+      if ( k < loops-1) { 
+         printf("\n\n loop count = %d....\n", k);
+         int kloop = k+1; 
+         printf("(check = %lf) dsum0 = %lf\n",(double)(TEST_VEC_LEN)*1*kloop, double(dsum0));
+         printf("(check = %lf) dsum1 = %lf\n",(double)(TEST_VEC_LEN)*2*kloop+tinit*1.0, double(dsum1));
+         printf("(check = %lf) dsum2 = %lf\n",(double)(TEST_VEC_LEN)*3*kloop, double(dsum2));
+         printf("(check = %lf) dsum3 = %lf\n",(double)(TEST_VEC_LEN)*4*kloop+tinit*3.0, double(dsum3));
+         printf("(check = %lf) dsum4 = %lf\n",(double)(TEST_VEC_LEN)*5*kloop, double(dsum4));
+         printf("(check = %lf) dsum5 = %lf\n",(double)(TEST_VEC_LEN)*6*kloop+tinit*5.0, double(dsum5));
+         printf("(check = %lf) dsum6 = %lf\n",(double)(TEST_VEC_LEN)*7*kloop, double(dsum6));
+         printf("(check = %lf) dsum7 = %lf\n",(double)(TEST_VEC_LEN)*8*kloop+tinit*7.0, double(dsum7));
+      }
    }
 
+#if 0
    CudaReductionBlockDataType* blockdata = getCudaReductionMemBlock(); 
    for(int k=0;k<8;k++) {
       int blockoffset = getCudaReductionMemBlockOffset(k);
       printf("blockSum[%d]= %lf\n",blockoffset,blockdata[blockoffset]);
    }
+#endif
 
+   printf("\n\nFINAL RESULTS....\n");
    printf("(check = %lf) dsum0 = %lf\n",(double)(TEST_VEC_LEN)*1*loops, double(dsum0));
    printf("(check = %lf) dsum1 = %lf\n",(double)(TEST_VEC_LEN)*2*loops+tinit*1.0, double(dsum1));
    printf("(check = %lf) dsum2 = %lf\n",(double)(TEST_VEC_LEN)*3*loops, double(dsum2));
@@ -64,4 +80,3 @@ int main(int argc, char *argv[])
 
    return 0 ;
 }
-
