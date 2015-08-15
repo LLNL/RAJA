@@ -34,6 +34,8 @@
 #include <iostream>
 #include <cstdlib>
 
+#include <cfloat>
+
 namespace RAJA {
 
 //
@@ -72,7 +74,6 @@ public:
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
       m_reduced_val = init_val;
 
       m_myID = getCudaReductionId();
@@ -110,18 +111,14 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      if ( !m_reduction_is_final ) {
-         size_t current_grid_size = getCurrentGridSize();
-         for (int i=1; i<=current_grid_size; ++i) {
-            m_blockdata[m_blockoffset] =
-                RAJA_MIN(m_blockdata[m_blockoffset],
-                         m_blockdata[m_blockoffset+i]) ;
-         }
-         m_reduced_val = RAJA_MIN(m_reduced_val,
-                                  static_cast<T>(m_blockdata[m_blockoffset]));
-
-         m_reduction_is_final = true;
+      m_blockdata[m_blockoffset] = m_reduced_val;
+      size_t current_grid_size = getCurrentGridSize();
+      for (int i=1; i<=current_grid_size; ++i) {
+         m_blockdata[m_blockoffset] =
+             RAJA_MIN(m_blockdata[m_blockoffset],
+                      m_blockdata[m_blockoffset+i]) ;
       }
+      m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
 
       return m_reduced_val;
    }
@@ -185,7 +182,6 @@ private:
    bool m_is_copy;
    int* m_myID;
 
-   bool m_reduction_is_final;
    T m_reduced_val;
 
    CudaReductionBlockDataType* m_blockdata;
@@ -213,7 +209,6 @@ public:
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
       m_reduced_val = init_val;
 
       m_myID = getCudaReductionId();
@@ -251,18 +246,14 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      if ( !m_reduction_is_final ) {
-         size_t current_grid_size = getCurrentGridSize();
-         for (int i=1; i<=current_grid_size; ++i) {
-            m_blockdata[m_blockoffset] =
-                RAJA_MAX(m_blockdata[m_blockoffset],
-                         m_blockdata[m_blockoffset+i]) ;
-         }
-         m_reduced_val = RAJA_MAX(m_reduced_val,
-                                  static_cast<T>(m_blockdata[m_blockoffset]));
-
-         m_reduction_is_final = true;
+      m_blockdata[m_blockoffset] = m_reduced_val;
+      size_t current_grid_size = getCurrentGridSize();
+      for (int i=1; i<=current_grid_size; ++i) {
+         m_blockdata[m_blockoffset] =
+             RAJA_MAX(m_blockdata[m_blockoffset],
+                      m_blockdata[m_blockoffset+i]) ;
       }
+      m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
 
       return m_reduced_val;
    }
@@ -411,11 +402,12 @@ public:
       cudaDeviceSynchronize() ;
 
       if ( !m_reduction_is_final ) {
+         m_blockdata[m_blockoffset] = m_reduced_val;
          size_t current_grid_size = getCurrentGridSize();
          for (int i=1; i<=current_grid_size; ++i) {
             m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
          }
-         m_reduced_val += static_cast<T>(m_blockdata[m_blockoffset]);
+         m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
 
          m_reduction_is_final = true;
       }
