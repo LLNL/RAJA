@@ -36,20 +36,16 @@ namespace RAJA {
 //
 //////////////////////////////////////////////////////////////////////
 
-#if 0 // RDH Will we ever need something like this?
 //
-// Array holding rection types for valid reduction ids.
+// Static array used to keep track of which unique ids
+// for CUDA reduction objects are used and which are not.
 //
-static ReductionType cpu_reduction_type[RAJA_MAX_REDUCE_VARS];
-#else
-int s_cpu_reduction_id = -1;
-#endif
+static bool cpu_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
 // 
-// Pointers to hold shared memory blocks for RAJA-CPU reductions.
+// Pointer to hold shared memory block for RAJA-CPU reductions.
 //
 CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
-int s_block_offset = 0;
 
 
 /*
@@ -60,50 +56,34 @@ int s_block_offset = 0;
 *
 *************************************************************************
 */
-#if 0 // RDH Will we ever need something like this?
-int getCPUReductionId(ReductionType type)
+int getCPUReductionId()
 {
    static int first_time_called = true;
 
    if (first_time_called) {
 
       for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
-         cpu_reduction_type[id] = _INACTIVE_;
+         cpu_reduction_id_used[id] = false;
       }
 
       first_time_called = false;
    }
 
    int id = 0;
-   while ( id < RAJA_MAX_REDUCE_VARS && 
-           cpu_reduction_type[id] != _INACTIVE_ ) {
-     id++;    
+   while ( id < RAJA_MAX_REDUCE_VARS && cpu_reduction_id_used[id] ) {
+     id++;
    }
 
    if ( id >= RAJA_MAX_REDUCE_VARS ) {
-      std::cerr << "\n Exceeded allowable RAJA reduction count, "
+      std::cerr << "\n Exceeded allowable RAJA CPU reduction count, "
                 << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
       exit(1);
-   } else {
-      cpu_reduction_type[id] = type;
    }
+
+   cpu_reduction_id_used[id] = true;
 
    return id;
 }
-#else
-int getCPUReductionId()
-{
-   s_cpu_reduction_id++;
-
-   if ( s_cpu_reduction_id >= RAJA_MAX_REDUCE_VARS ) {
-      std::cerr << "\n Exceeded allowable RAJA reduction count, "
-                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
-      exit(1);
-   }
-
-   return s_cpu_reduction_id;
-}
-#endif
 
 /*
 *************************************************************************
@@ -115,9 +95,9 @@ int getCPUReductionId()
 void releaseCPUReductionId(int id)
 {
    if ( id < RAJA_MAX_REDUCE_VARS ) {
-      s_cpu_reduction_id--;
+      cpu_reduction_id_used[id] = false;
    }
-} 
+}
 
 /*
 *************************************************************************
@@ -133,18 +113,18 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 #if defined(_OPENMP)
    nthreads = omp_get_max_threads();
 #endif
-   s_block_offset = nthreads;
+
+   int block_offset = COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
 
    if (s_cpu_reduction_mem_block == 0) {
       int len = nthreads * RAJA_MAX_REDUCE_VARS;
-      s_cpu_reduction_mem_block = new CPUReductionBlockDataType
-          [len*COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)];
+      s_cpu_reduction_mem_block = 
+         new CPUReductionBlockDataType[len*block_offset];
 
       atexit(freeCPUReductionMemBlock);
    }
 
-   return &(s_cpu_reduction_mem_block
-      [s_block_offset * id * COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)]) ;
+   return &(s_cpu_reduction_mem_block[nthreads * id * block_offset]) ;
 }
 
 
@@ -187,7 +167,7 @@ static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 size_t s_current_grid_size = 0;
 
 //
-// Pointers to hold shared memory blocks for RAJA-Cuda reductions.
+// Pointer to hold shared managed memory block for RAJA-Cuda reductions.
 //
 CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
 
@@ -271,7 +251,7 @@ size_t getCurrentGridSize()
 /*
 *************************************************************************
 *
-* Return pointer to shared RAJA-Cuda reduction memory block.
+* Return pointer to shared RAJA-CUDA managed reduction memory block.
 * Allocates block if not alreay allocated.
 *
 *************************************************************************
@@ -280,9 +260,10 @@ CudaReductionBlockDataType* getCudaReductionMemBlock()
 {
    if (s_cuda_reduction_mem_block == 0) {
       int len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS;
-      cudaError_t cudaerr = cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
-                            sizeof(CudaReductionBlockDataType)*len,
-                            cudaMemAttachGlobal);
+      cudaError_t cudaerr = 
+         cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
+                           sizeof(CudaReductionBlockDataType)*len,
+                           cudaMemAttachGlobal);
 
       if ( cudaerr != cudaSuccess ) {
          std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
@@ -310,7 +291,7 @@ void freeCudaReductionMemBlock()
       s_cuda_reduction_mem_block = 0;
       if (cudaerr != cudaSuccess) {
          std::cerr << "\n ERROR in cudaFree call, FILE: "
-                      << __FILE__ << " line " << __LINE__ << std::endl;
+                   << __FILE__ << " line " << __LINE__ << std::endl;
          exit(1);
        }
    }

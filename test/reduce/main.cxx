@@ -82,7 +82,7 @@ void forall_reduce_CheckResult(const std::string& name,
  
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA::forall_min tests with available RAJA execution policies....
+// Run RAJA::forall min reduce tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllMinTests( const IndexSet& hindex, 
@@ -94,103 +94,60 @@ void runForAllMinTests( const IndexSet& hindex,
    std::cout << "\n\n BEGIN RAJA::forall MIN tests...." << std::endl;
 
 {
+   std::cout << "\nExecPolicy<seq_segit, seq_exec> test:\n\n";
+
    ReduceMin<seq_reduce, Real_type> tmin0(1.0e+20);
    ReduceMin<seq_reduce, Real_type> tmin1(-200.0);
 
-   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-      [=] (Index_type idx) {
-      tmin0.min(parent[idx]);
-      tmin1.min(parent[idx]);
-   } );
-   forall_reduce_CheckResult("ExecPolicy<seq_segit, seq_exec>",
-                             ref_min, tmin0);
-   std::cout << "\n\t ExecPolicy<seq_segit, seq_exec> test:\n "
-             << "\t result = " << tmin0
-             << " -- ref result = "<< ref_min 
-             << std::endl;
+   int loops = 2;
 
-   std::cout << "\t tmin1 result = " << tmin1 << std::endl;
+   for (int k = 1; k <= loops; ++ k) {
+
+      std::cout << "k = " << k << std::endl;
+
+      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
+         [=] (Index_type idx) {
+         tmin0.min(k*parent[idx]);
+         tmin1.min(parent[idx]);
+      } );
+
+      forall_reduce_CheckResult("ExecPolicy<seq_segit, seq_exec>",
+                                k*ref_min, tmin0);
+      std::cout << "\n\t result = " << tmin0
+                << " -- ref result = "<< k*ref_min 
+                << std::endl;
+
+      std::cout << "\t tmin1 result = " << tmin1 << std::endl;
+   }
 }
 
-{
+{ 
+   std::cout << "\nExecPolicy<seq_segit, omp_parallel_for_exec> test:\n\n";
+
    ReduceMin<omp_reduce, Real_type> tmin0(1.0e+20);
-   ReduceMin<seq_reduce, Real_type> tmin1(-200.0);
+   ReduceMin<omp_reduce, Real_type> tmin1(-200.0);
 
-   forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >( hindex,
-      [=] (Index_type idx) {
-      tmin0.min(parent[idx]);
-      tmin1.min(parent[idx]);
-   } );
-   forall_reduce_CheckResult("ExecPolicy<seq_segit, omp_parallel_for_exec>",
-                             ref_min, tmin0);
-   std::cout << "\n\t ExecPolicy<seq_segit, omp_parallel_for_exec> test:\n"
-             << "\t result = " << tmin0
-             << " -- ref result = "<< ref_min 
-             << std::endl;
+   int loops = 2;
 
-   std::cout << "\t tmin1 result = " << tmin1 << std::endl;
+   for (int k = 1; k <= loops; ++ k) {
+
+      std::cout << "k = " << k << std::endl;
+
+      forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >( hindex,
+         [=] (Index_type idx) {
+         tmin0.min(k*parent[idx]);
+         tmin1.min(parent[idx]);
+      } );
+
+      forall_reduce_CheckResult("ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                                k*ref_min, tmin0);
+      std::cout << "\n\t result = " << tmin0
+                << " -- ref result = "<< k*ref_min 
+                << std::endl;
+
+      std::cout << "\t tmin1 result = " << tmin1 << std::endl;
+   }
 }
-
-#if 0
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<seq_segit, simd_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-#if defined(RAJA_COMPILER_ICC)
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-
-   tmin = 1.0e+20 ;
-   tloc = -1 ;
-   forall_minloc< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
-                                      hindex, &tmin, &tloc, forall_minloc_op);
-   forall_reduceloc_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
-                                ref_min_val, ref_min_indx, tmin, tloc);
-#endif
-
-#endif
 
    std::cout << "\n END RAJA::forall MIN tests... " << std::endl;
 }
@@ -198,7 +155,7 @@ void runForAllMinTests( const IndexSet& hindex,
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA::forall_sum tests with available RAJA execution policies....
+// Run RAJA::forall sum reduce tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
 void runForAllSumTests( const IndexSet& hindex, 
@@ -210,124 +167,62 @@ void runForAllSumTests( const IndexSet& hindex,
    std::cout << "\n\n BEGIN RAJA::forall SUM tests...." << std::endl;
 
 {
+   std::cout << "\nExecPolicy<seq_segit, seq_exec> test:\n\n";
 
    ReduceSum<seq_reduce, Real_type> tsum0(0.0);
    ReduceSum<seq_reduce, Real_type> tsum1(5.0);
 
-   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-      [=] (Index_type idx) {
-      Real_type tval = parent[idx];
-      tsum0 += parent[idx];
-      parent[idx] = 1.0;
-      tsum1 += parent[idx];
-      parent[idx] = tval;
-   } );
+   int loops = 2;
 
-   forall_reduce_CheckResult("ExecPolicy<seq_segit, seq_exec>",
-                             ref_sum, tsum0);
-   std::cout << "\n\t ExecPolicy<seq_segit, seq_exec> test:\n "
-             << "\t result = " << tsum0
-             << " -- ref result = "<< ref_sum 
-             << std::endl;
+   for (int k = 1; k <= loops; ++k) {
 
-   std::cout << "\t tsum1 result = " << tsum1 
-             << " -- ref result = "<< hindex.getLength() + 5.0 << std::endl;
+      std::cout << "k = " << k << std::endl;
+
+      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
+         [=] (Index_type idx) {
+         tsum0 += parent[idx];
+         tsum1 += 1.0;
+      } );
+
+      forall_reduce_CheckResult("ExecPolicy<seq_segit, seq_exec>",
+                                k*ref_sum, tsum0);
+      std::cout << "\t result = " << tsum0
+                << " -- ref result = "<< k*ref_sum 
+                << std::endl;
+
+      std::cout << "\t tsum1 result = " << tsum1 
+                << " -- ref result = "<< k*hindex.getLength() + 5.0 << std::endl;
+   }
 }
 
 {
+   std::cout << "\nExecPolicy<seq_segit, omp_parallel_for_exec> test:\n\n";
+
    ReduceSum<omp_reduce, Real_type> tsum0(0.0);
-   ReduceSum<seq_reduce, Real_type> tsum1(5.0);
+   ReduceSum<omp_reduce, Real_type> tsum1(5.0);
 
-   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-      [=] (Index_type idx) {
-      Real_type tval = parent[idx];
-      tsum0 += parent[idx];
-      parent[idx] = 1.0;
-      tsum1 += parent[idx];
-      parent[idx] = tval;
-   } );
+   int loops = 2;
 
-   forall_reduce_CheckResult("ExecPolicy<seq_segit, omp_parallel_for_exec>",
-                             ref_sum, tsum0);
-   std::cout << "\n\t ExecPolicy<seq_segit, omp_parallel_for_exec> test:\n "
-             << "\t result = " << tsum0
-             << " -- ref result = "<< ref_sum 
-             << std::endl;
+   for (int k = 1; k <= loops; ++k) {
 
-   std::cout << "\t tsum1 result = " << tsum1 
-             << " -- ref result = "<< hindex.getLength() + 5.0 << std::endl;
+      std::cout << "k = " << k << std::endl;
+
+      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
+         [=] (Index_type idx) {
+         tsum0 += parent[idx];
+         tsum1 += 1.0;
+      } );
+
+      forall_reduce_CheckResult("ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                                k*ref_sum, tsum0);
+      std::cout << "\n\t result = " << tsum0
+                << " -- ref result = "<< k*ref_sum 
+                << std::endl;
+
+      std::cout << "\t tsum1 result = " << tsum1 
+                << " -- ref result = "<< k*hindex.getLength() + 5.0 << std::endl;
+   }
 }
-
-#if 0
-// Run various maxloc traversals and check results against reference...
-
-   Real_type tsum = 0.0;
-
-   std::cout << "\n\n BEGIN RAJA::forall_sum tests: ibuild = " 
-             << ibuild << std::endl;
-
-   forall_sum< IndexSet::ExecPolicy<seq_segit, seq_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, seq_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<seq_segit, simd_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, simd_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>",
-                             ref_sum, tsum);
-
-#if defined(RAJA_COMPILER_ICC)
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<seq_segit, cilk_for_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<seq_segit, cilk_for_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, seq_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, seq_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, simd_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<cilk_for_segit, omp_parallel_for_exec>",
-                             ref_sum, tsum);
-
-   tsum = 0.0;
-   forall_sum< IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec> >(
-                                   hindex, &tsum, forall_sum_op);
-   forall_reduce_CheckResult("IndexSet::ExecPolicy<omp_parallel_for_segit, cilk_for_exec>",
-                             ref_sum, tsum);
-#endif
-
-#endif
 
    std::cout << "\n END RAJA::forall SUM tests...." << std::endl;
 }
@@ -378,7 +273,7 @@ int main(int argc, char *argv[])
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA::forall_min loop reduction tests...
+// Run RAJA::forall min reduction tests...
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -409,11 +304,11 @@ int main(int argc, char *argv[])
 
    runForAllMinTests( hindex, parent, ref_min_val );
 
-   std::cout << "\n forall_min() : " << ntests_passed << " / " << ntests_run << std::endl; 
+   std::cout << "\n MIN reduction : " << ntests_passed << " / " << ntests_run << std::endl; 
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA::forall_sum loop reduction tests...
+// Run RAJA::forall sum reduction tests...
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -435,7 +330,7 @@ int main(int argc, char *argv[])
 
    runForAllSumTests( hindex, parent, ref_sum );
 
-   std::cout << "\n\n forall_sum() : " << ntests_passed << " / " << ntests_run << std::endl; 
+   std::cout << "\n\n SUM reduction : " << ntests_passed << " / " << ntests_run << std::endl; 
 
 
    ///
