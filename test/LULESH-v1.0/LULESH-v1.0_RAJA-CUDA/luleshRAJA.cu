@@ -2678,7 +2678,7 @@ int main(int argc, char *argv[])
    struct Domain domain ;
 #endif   
 
-   Index_t edgeElems = 130 ;
+   Index_t edgeElems = 45 ;
    Index_t edgeNodes = edgeElems+1 ;
 
 #ifdef LULESH_FT
@@ -2893,14 +2893,11 @@ int main(int argc, char *argv[])
    }
 
    /* initialize material parameters */
-   // domain.dtfixed = Real_t(-1.0e-7) ;
-   // domain.deltatime = Real_t(1.0e-7) ;
-   domain.dtfixed = Real_t(3.33333333333333333e-7) ;
-   domain.deltatime = Real_t(3.3333333333333333e-7) ;
+   domain.dtfixed = Real_t(-1.0e-7) ;
+   domain.deltatime = Real_t(1.0e-7) ;
    domain.deltatimemultlb = Real_t(1.1) ;
    domain.deltatimemultub = Real_t(1.2) ;
-   // domain.stoptime  = Real_t(1.0e-2) ;
-   domain.stoptime  = Real_t(2.0e-5) ;
+   domain.stoptime  = Real_t(1.0e-2) ;
    domain.dtcourant = Real_t(1.0e+20) ;
    domain.dthydro   = Real_t(1.0e+20) ;
    domain.dtmax     = Real_t(1.0e-2) ;
