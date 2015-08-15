@@ -41,11 +41,7 @@ typedef double CPUReductionBlockDataType;
 *
 *************************************************************************
 */
-#if 0 // RDH Will we ever need something like this?
-int getCPUReductionId(ReductionType type);
-#else
 int getCPUReductionId();
-#endif
 
 /*!
 *************************************************************************

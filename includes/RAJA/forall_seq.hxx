@@ -28,10 +28,9 @@
 
 #include "MemUtils.hxx"
 
-#if 0
 #include<string>
 #include<iostream> 
-#endif
+
 
 namespace RAJA {
 
@@ -64,13 +63,14 @@ public:
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
       m_reduced_val = init_val;
 
       m_myID = getCPUReductionId();
+//    std::cout << "ReduceMin id = " << m_myID << std::endl;
      
-      m_min = getCPUReductionMemBlock(m_myID);  
-      m_min[0] = init_val; 
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+
+      m_blockdata[0] = init_val; 
    }
 
    //
@@ -98,11 +98,8 @@ public:
    //
    operator T()
    {
-      if ( !m_reduction_is_final ) {
-         m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_min[0]));
+      m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
 
-         m_reduction_is_final = true; 
-      }
       return m_reduced_val;
    }
 
@@ -111,7 +108,7 @@ public:
    //
    ReduceMin<seq_reduce, T> min(T val) const 
    {
-      m_min[0] = RAJA_MIN(static_cast<T>(m_min[0]), val);
+      m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
       return *this ;
    }
 
@@ -124,10 +121,9 @@ private:
    bool m_is_copy;
    int m_myID;
 
-   bool m_reduction_is_final;
    T m_reduced_val;
 
-   CPUReductionBlockDataType* m_min;
+   CPUReductionBlockDataType* m_blockdata;
 } ;
 
 /*!
@@ -151,13 +147,14 @@ public:
    {
       m_is_copy = false;
 
-      m_reduction_is_final = false;
-      m_reduced_val = init_val;
+      m_init_val = init_val;
+      m_reduced_val = static_cast<T>(0);
 
       m_myID = getCPUReductionId();
 
-      m_sum = getCPUReductionMemBlock(m_myID);
-      m_sum[0] = 0;
+      m_blockdata = getCPUReductionMemBlock(m_myID);
+
+      m_blockdata[0] = 0;
    }
 
    //
@@ -185,11 +182,8 @@ public:
    //
    operator T()
    {
-      if ( !m_reduction_is_final ) {
-         m_reduced_val += static_cast<T>(m_sum[0]);
+      m_reduced_val = m_init_val + static_cast<T>(m_blockdata[0]);
 
-         m_reduction_is_final = true;
-      }
       return m_reduced_val;
    }
 
@@ -198,7 +192,7 @@ public:
    //
    ReduceSum<seq_reduce, T> operator+=(T val) const 
    {
-      m_sum[0] += val;
+      m_blockdata[0] += val;
       return *this ;
    }
 
@@ -211,10 +205,10 @@ private:
    bool m_is_copy;
    int m_myID;
 
-   bool m_reduction_is_final;
+   T m_init_val;
    T m_reduced_val;
 
-   CPUReductionBlockDataType* m_sum;
+   CPUReductionBlockDataType* m_blockdata;
 } ;
 
 
