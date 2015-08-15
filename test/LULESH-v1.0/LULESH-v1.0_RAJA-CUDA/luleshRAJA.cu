@@ -2584,56 +2584,29 @@ void CalcCourantConstraintForElems(RAJA::IndexSet *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-#if defined(RAJA_USE_CUDA)
-  /* use managed memory */
-  Real_t *min_alloc = Allocate<Real_t>(1);
-  Index_t *loc_alloc = Allocate<Index_t>(1);
-  Real_t &min = *min_alloc;
-  Index_t &loc = *loc_alloc;
-  min = Real_t(1.0e+20) ;
-  loc = -1 ;
-#else
-   Real_t min = Real_t(1.0e+20) ;
-   Index_t loc = -1 ;
-#endif
-   
+   RAJA::ReduceMin<RAJA::cuda_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-
-   RAJA::forall_minloc<mat_policy>( *matElemList, &min, &loc,
-        [=] CUDA_DEVICE (int indx, Real_t *myMin, Index_t *myLoc) {
-
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int indx) {
       Real_t dtf = ss[indx] * ss[indx] ;
+      Real_t dtf_cmp ;
 
-      if ( vdov[indx] < Real_t(0.) ) {
-
-         dtf = dtf
-            + qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
+      if ( vdov[i] < Real_t(0.) ) {
+         dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
-      dtf = SQRT(dtf) ;
-
-      dtf = arealg[indx] / dtf ;
+      dtf_cmp = (vdov[indx] != Real_t(0.)) 
+              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+10) ;
 
       /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
 
-      if (vdov[indx] != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
-   
-   if (loc != -1) {
-      *dtcourant = min ;
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      *dtcourant = dtcourantLoc ;
    }
-
-#if defined(RAJA_USE_CUDA)
-  Release(&min_alloc);
-  Release(&loc_alloc);
-#endif
 
    return ;
 }
@@ -2642,44 +2615,23 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(RAJA::IndexSet *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-#if defined(RAJA_USE_CUDA)
-  /* use managed memory */
-  Real_t *min_alloc = Allocate<Real_t>(1);
-  Index_t *loc_alloc = Allocate<Index_t>(1);
-  Real_t &min = *min_alloc;
-  Index_t &loc = *loc_alloc;
-  min = Real_t(1.0e+20) ;
-  loc = -1 ;
-#else
-   Real_t min = Real_t(1.0e+20) ;
-   Index_t loc = -1 ;
-#endif
-   
+   RAJA::ReduceMin<RAJA::cuda_reduce, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
-   RAJA::forall_minloc<mat_policy>( *matElemList, &min, &loc,
-        [=] CUDA_DEVICE (int indx, Real_t *myMin, Index_t *myLoc) {
-      if (vdov[indx] != Real_t(0.)) {
-         Real_t dtdvov = dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)) ;
-         if ( *myMin > dtdvov ) {
-            *myMin = dtdvov ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
-   
-   if (loc != -1) {
-      *dthydro = min ;
+   RAJA::forall<mat_policy>( *matElemList, [=] CUDA_DEVICE (int indx) {
+
+      Real_t dtvov_cmp = (vdov[indx] != Real_t(0.))
+                       ? (dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)))
+                       : Real_t(1.0e+10) ;
+
+      dthydroLoc.min(dtvov_cmp) ;
+   } ) ;
+
+   if (dthydroLoc < Real_t(1.0e+20)) {
+      *dthydro = dthydroLoc ;
    }
-
-#if defined(RAJA_USE_CUDA)
-  Release(&min_alloc);
-  Release(&loc_alloc);
-#endif
 
    return ;
 }
-
 
 RAJA_STORAGE
 void CalcTimeConstraintsForElems(Domain *domain) {
