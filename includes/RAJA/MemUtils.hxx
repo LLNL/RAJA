@@ -115,11 +115,8 @@ typedef double CudaReductionBlockDataType;
 *
 *************************************************************************
 */
-int* getCudaReductionId();
+int getCudaReductionId();
 
-#if 0 // RDH We can't use this b/c we can't access managed data pointer
-      // that lives on host from device methods (i.e., reduction object
-      // destructors).
 /*!
 *************************************************************************
 *
@@ -127,17 +124,7 @@ int* getCudaReductionId();
 *
 *************************************************************************
 */
-__host__ __device__ void releaseCudaReductionId(int id);
-#endif
-
-/*!
- ******************************************************************************
- *
- * \brief  Free managed memory block for RAJA-CUDA reduction ids.
- *
- ******************************************************************************
- */
-void freeCudaReductionIdMem();
+void releaseCudaReductionId(int id);
 
 /*!
 *************************************************************************

@@ -174,12 +174,10 @@ void freeCPUReductionMemBlock()
 
 
 //
-// Counter variable for number of active reducer objects, used to
-// computer offset into shared managed reduction memory block.
-// Must be accessable from both host and device, so allocated as
-// a CUDA managed array.
+// Static array used to keep track of which unique ids 
+// for CUDA reduction objects are used and which are not.
 //
-int* s_gid = 0;
+static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
 //
 // Used to track current CUDA grid size used in forall methods, so
@@ -201,36 +199,36 @@ CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
 *
 *************************************************************************
 */
-int* getCudaReductionId()
+int getCudaReductionId()
 {
-  if (s_gid == 0) {
-      cudaError_t cudaerr = cudaMallocManaged((void **)&s_gid, sizeof(int)*1,
-                                              cudaMemAttachGlobal);
+   static int first_time_called = true;
 
-      if ( cudaerr != cudaSuccess ) {
-         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
+   if (first_time_called) {
+
+      for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
+         cuda_reduction_id_used[id] = false;
       }
-      s_gid[0] = -1;
 
-      atexit(freeCudaReductionIdMem);
+      first_time_called = false;
    }
 
-   s_gid[0] += 1;
+   int id = 0;
+   while ( id < RAJA_MAX_REDUCE_VARS && cuda_reduction_id_used[id] ) {
+     id++;
+   }
 
-   if ( s_gid[0] >= RAJA_MAX_REDUCE_VARS ) {
-      std::cerr << "\n Exceeded allowable RAJA CUDA reduction object count, "
+   if ( id >= RAJA_MAX_REDUCE_VARS ) {
+      std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
                 << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
       exit(1);
    }
 
-   return s_gid;
+   cuda_reduction_id_used[id] = true;
+
+   return id;
 }
 
-#if 0 // RDH We can't use this b/c we can't access managed data pointer
-      // that lives on host from device methods (i.e., reduction object
-      // destructors).
+
 /*
 *************************************************************************
 *
@@ -240,29 +238,8 @@ int* getCudaReductionId()
 */
 void releaseCudaReductionId(int id)
 {
-   if (!s_gid == 0) {
-      s_gid[0] -= 1;
-   }
-}
-#endif
-
-/*
-*************************************************************************
-*
-* Free managed memory for RAJA-Cuda reduction ids.
-*
-*************************************************************************
-*/
-void freeCudaReductionIdMem()
-{
-   if ( s_gid != 0 ) {
-      cudaError_t cudaerr = cudaFree(s_gid);
-      s_gid = 0;
-      if (cudaerr != cudaSuccess) {
-         std::cerr << "\n ERROR in cudaFree call, FILE: "
-                      << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-       }
+   if ( id < RAJA_MAX_REDUCE_VARS ) {
+      cuda_reduction_id_used[id] = false;
    }
 }
 
