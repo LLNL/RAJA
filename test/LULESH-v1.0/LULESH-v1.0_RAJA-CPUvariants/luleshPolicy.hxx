@@ -20,6 +20,7 @@
 //   7 = LockFree_ColorSIMD (Colored like USE_CASE 6, but the colors are then
 //                           permuted to be contiguous chunks, like USE_CASE 4)
 //   8 = Cilk         (cilk_for applied to each loop)
+//   9 = CUDA         (CUDA kernel launch applied to each loop)
 
 
 // ----------------------------------------------------
@@ -29,11 +30,12 @@ TilingMode lulesh_tiling_mode = Canonical;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> symnode_exec_policy;
 
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::simd_exec              Segment_Exec;
+
+typedef RAJA::seq_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 2
@@ -47,11 +49,12 @@ TilingMode lulesh_tiling_mode = Canonical;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> symnode_exec_policy;
 
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
+
+typedef RAJA::omp_reduce reduce_policy;
 
 // ----------------------------------------------------
 #elif USE_CASE == 3
@@ -66,11 +69,12 @@ TilingMode lulesh_tiling_mode = Tiled_Index;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
+
+typedef RAJA::omp_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 4
@@ -84,11 +88,12 @@ TilingMode lulesh_tiling_mode = Tiled_Order;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
+
+typedef RAJA::omp_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 5
@@ -104,12 +109,12 @@ TilingMode lulesh_tiling_mode = Tiled_LockFree;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
 
+typedef RAJA::omp_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 6
@@ -122,11 +127,12 @@ TilingMode lulesh_tiling_mode = Tiled_LockFreeColor;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> symnode_exec_policy;
 
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
+
+typedef RAJA::omp_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 7
@@ -139,12 +145,13 @@ TilingMode lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> symnode_exec_policy;
 
 
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
+
+typedef RAJA::omp_reduce reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == 8
@@ -158,11 +165,27 @@ TilingMode lulesh_tiling_mode = Canonical;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> node_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> minloc_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> symnode_exec_policy;
 
 typedef RAJA::cilk_for_segit         Hybrid_Seg_Iter;
 typedef RAJA::cilk_for_exec          Segment_Exec;
+
+#elif USE_CASE == 9
+
+// Requires OMP_HACK 
+#define OMP_HACK 1
+
+TilingMode lulesh_tiling_mode = Canonical;
+
+typedef RAJA::seq_segit         Hybrid_Seg_Iter;
+typedef RAJA::cuda_exec         Segment_Exec;
+
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+
+typedef RAJA::cuda_reduce reduce_policy; 
 
 #else
 
