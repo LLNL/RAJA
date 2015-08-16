@@ -303,110 +303,6 @@ class Domain {
       Release(&dxx) ;
    }
 
-#if 0
-   //
-   // ACCESSORS
-   //
-
-   // Node-centered
-
-   // Nodal coordinates
-   Real_t& x(Index_t idx)    { return m_x[idx] ; }
-   Real_t& y(Index_t idx)    { return m_y[idx] ; }
-   Real_t& z(Index_t idx)    { return m_z[idx] ; }
-
-   // Nodal velocities
-   Real_t& xd(Index_t idx)   { return m_xd[idx] ; }
-   Real_t& yd(Index_t idx)   { return m_yd[idx] ; }
-   Real_t& zd(Index_t idx)   { return m_zd[idx] ; }
-
-   // Nodal accelerations
-   Real_t& xdd(Index_t idx)  { return m_xdd[idx] ; }
-   Real_t& ydd(Index_t idx)  { return m_ydd[idx] ; }
-   Real_t& zdd(Index_t idx)  { return m_zdd[idx] ; }
-
-   // Nodal forces
-   Real_t& fx(Index_t idx)   { return m_fx[idx] ; }
-   Real_t& fy(Index_t idx)   { return m_fy[idx] ; }
-   Real_t& fz(Index_t idx)   { return m_fz[idx] ; }
-
-   // Nodal mass
-   Real_t& nodalMass(Index_t idx) { return m_nodalMass[idx] ; }
-
-   //
-   // Element-centered
-   //
-   Index_p  nodelist(Index_t idx) { return &m_nodelist[Index_t(8)*idx] ; }
-
-#if !defined(LULESH_LIST_INDEXSET)
-   Index_t&  perm(Index_t idx)     { return m_perm[idx] ; }
-#else
-   Index_t  perm(Index_t idx)     { return idx ; }
-#endif
-
-   // elem connectivities through face
-   Index_t&  lxim(Index_t idx) { return m_lxim[idx] ; }
-   Index_t&  lxip(Index_t idx) { return m_lxip[idx] ; }
-   Index_t&  letam(Index_t idx) { return m_letam[idx] ; }
-   Index_t&  letap(Index_t idx) { return m_letap[idx] ; }
-   Index_t&  lzetam(Index_t idx) { return m_lzetam[idx] ; }
-   Index_t&  lzetap(Index_t idx) { return m_lzetap[idx] ; }
-
-   // elem face symm/free-surface flag
-   Int_t&  elemBC(Index_t idx) { return m_elemBC[idx] ; }
-
-   // Principal strains - temporary
-   Real_t& dxx(Index_t idx)  { return m_dxx[idx] ; }
-   Real_t& dyy(Index_t idx)  { return m_dyy[idx] ; }
-   Real_t& dzz(Index_t idx)  { return m_dzz[idx] ; }
-
-   // New relative volume - temporary
-   Real_t& vnew(Index_t idx)  { return m_vnew[idx] ; }
-
-   // Velocity gradient - temporary
-   Real_t& delv_xi(Index_t idx)    { return m_delv_xi[idx] ; }
-   Real_t& delv_eta(Index_t idx)   { return m_delv_eta[idx] ; }
-   Real_t& delv_zeta(Index_t idx)  { return m_delv_zeta[idx] ; }
-
-   // Position gradient - temporary
-   Real_t& delx_xi(Index_t idx)    { return m_delx_xi[idx] ; }
-   Real_t& delx_eta(Index_t idx)   { return m_delx_eta[idx] ; }
-   Real_t& delx_zeta(Index_t idx)  { return m_delx_zeta[idx] ; }
-
-   // Energy
-   Real_t& e(Index_t idx)          { return m_e[idx] ; }
-
-   // Pressure
-   Real_t& p(Index_t idx)          { return m_p[idx] ; }
-
-   // Artificial viscosity
-   Real_t& q(Index_t idx)          { return m_q[idx] ; }
-
-   // Linear term for q
-   Real_t& ql(Index_t idx)         { return m_ql[idx] ; }
-   // Quadratic term for q
-   Real_t& qq(Index_t idx)         { return m_qq[idx] ; }
-
-   // Relative volume
-   Real_t& v(Index_t idx)          { return m_v[idx] ; }
-   Real_t& delv(Index_t idx)       { return m_delv[idx] ; }
-
-   // Reference volume
-   Real_t& volo(Index_t idx)       { return m_volo[idx] ; }
-
-   // volume derivative over volume
-   Real_t& vdov(Index_t idx)       { return m_vdov[idx] ; }
-
-   // Element characteristic length
-   Real_t& arealg(Index_t idx)     { return m_arealg[idx] ; }
-
-   // Sound speed
-   Real_t& ss(Index_t idx)         { return m_ss[idx] ; }
-
-   // Element mass
-   Real_t& elemMass(Index_t idx)  { return m_elemMass[idx] ; }
-#endif
-
    Index_t nodeElemCount(Index_t idx)
    { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }
 
@@ -502,16 +398,6 @@ class Domain {
    MPI_Request recvRequest[26] ; // 6 faces + 12 edges + 8 corners 
    MPI_Request sendRequest[26] ; // 6 faces + 12 edges + 8 corners 
 #endif
-
-   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
-   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
-   void SetupThreadSupportStructures();
-   void CreateMeshIndexSets();
-   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
-   void CreateSymmetryIndexSets(Index_t edgeNodes);
-   void SetupCommBuffers(Index_t edgeNodes);
-   void SetupElementConnectivities(Index_t edgeElems);
-   void SetupBoundaryConditions(Index_t edgeElems);
 
    //
    // IMPLEMENTATION
@@ -662,6 +548,18 @@ class Domain {
    Index_t m_rowMin, m_rowMax;
    Index_t m_colMin, m_colMax;
    Index_t m_planeMin, m_planeMax ;
+
+   private:
+
+   void BuildMeshTopology(Index_t edgeNodes, Index_t edgeElems);
+   void BuildMeshCoordinates(Index_t nx, Index_t edgeNodes);
+   void SetupThreadSupportStructures();
+   void CreateMeshIndexSets();
+   void CreateRegionIndexSets(Int_t nreg, Int_t balance);
+   void CreateSymmetryIndexSets(Index_t edgeNodes);
+   void SetupCommBuffers(Index_t edgeNodes);
+   void SetupElementConnectivities(Index_t edgeElems);
+   void SetupBoundaryConditions(Index_t edgeElems);
 
 } ;
 
