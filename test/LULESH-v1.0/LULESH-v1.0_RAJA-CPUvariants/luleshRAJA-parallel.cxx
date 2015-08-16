@@ -135,7 +135,6 @@ typedef RAJA::IndexSet LULESH_INDEXSET;
 // execution.
 // ########################################################
 #include "luleshPolicy.hxx"
-// ########################################################
 
 
 //
@@ -175,15 +174,20 @@ inline real4  FABS(real4  arg) { return fabsf(arg) ; }
 inline real8  FABS(real8  arg) { return fabs(arg) ; }
 inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 
+// ########################################################
+//  Memory allocate/release routines
+// ########################################################
+#include "luleshMemory.hxx"
+
 
 //#define RAJA_STORAGE static inline
 #define RAJA_STORAGE
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
-/*********************************/
-/* Data structure implementation */
-/*********************************/
+/***********************************/
+/* Domain structure implementation */
+/***********************************/
 
 /* might want to add access methods so that memory can be */
 /* better managed, as in luleshFT */
@@ -343,59 +347,6 @@ struct Domain {
 #define ZETA_P_SYMM 0x400
 #define ZETA_P_FREE 0x800
 
-
-//--------------------------------------------------------------------------
-//
-// THIS BLOCK OF ALLOCATE/RELEASE FUNCTIONS SHOULD BE IN A RAJA HEADER FILE
-//
-
-template <typename T>
-inline T *Allocate(size_t size)
-{
-   T *retVal ;
-   posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
-   return retVal ;
-}
-
-template <typename EXEC_POLICY_T, typename T>
-inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
-{
-   T *retVal ;
-   posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
-
-   /* we should specialize by policy type here */
-   RAJA::forall<EXEC_POLICY_T>( *is, [&] (int i) {
-      retVal[i] = 0 ;
-   } ) ;
-
-   return retVal ;
-}
-
-inline void Release(Real_p ptr)
-{
-   if (ptr != NULL) {
-      free(ptr) ;
-      ptr = NULL ;
-   }
-}
-
-template <typename T>
-inline void Release(T **ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
-
-template <typename T>
-inline void Release(T * __restrict__ *ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
 
 //--------------------------------------------------------------------------
 

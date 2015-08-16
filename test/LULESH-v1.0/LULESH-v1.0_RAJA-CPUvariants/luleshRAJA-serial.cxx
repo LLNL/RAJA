@@ -335,41 +335,10 @@ struct Domain {
    Index_t numNode ;
 } ;
 
-
-template <typename T>
-T *Allocate(size_t size)
-{
-   T *retVal ;
-   posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
-   return retVal ;
-}
-
-void Release(Real_p ptr)
-{
-   if (ptr != NULL) {
-      free(ptr) ;
-      ptr = NULL ;
-   }
-}
-
-template <typename T>
-void Release(T **ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
-
-template <typename T>
-void Release(T * __restrict__ *ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
-
+// ########################################################
+//  Memory allocate/release routines
+// ########################################################
+#include "luleshMemory.hxx"
 
 /* Stuff needed for boundary conditions */
 /* 2 BCs on each of 6 hexahedral faces (12 bits) */
