@@ -1,0 +1,53 @@
+This is the README for LULESH 2.0
+
+More information including LULESH 1.0 can be found at https://codesign.llnl.gov/lulesh.php
+
+If you have any questions or problems please contact:
+
+Ian Karlin <karlin1@llnl.gov>
+Jeff Keasler <keasler1@llnl.gov> or
+Rob Neely <neely4@llnl.gov>
+
+Also please send any notable results to Ian Karlin <karlin1@llnl.gov> as we are still evaluating the performance of this code.
+
+*** Notable changes in LULESH 2.0 ***
+
+Split functionality into different files
+lulesh.cc - where most (all?) of the timed functionality lies
+lulesh-comm.cc - MPI functionality
+lulesh-init.cc - Setup code
+lulesh-viz.cc  - Support for visualization option
+lulesh-util.cc - Non-timed functions
+
+The concept of "regions" was added, although every region is the same ideal gas material, and the same sedov blast wave problem is still the only problem its hardcoded to solve. Regions allow two things important to making this proxy app more representative:
+
+Four of the LULESH routines are now performed on a region-by-region basis, making the memory access patterns non-unit stride
+
+Artificial load imbalances can be easily introduced that could impact parallelization strategies.  
+   * The load balance flag changes region assignment.  Region number is raised to the power entered for assignment probability.  Most likely regions changes with MPI process id.
+   * The cost flag raises the cost of ~45% of the regions to evaluate EOS by the entered multiple.  The cost of 5% is 10x the entered
+ multiple.
+
+MPI and OpenMP were added, and coalesced into a single version of the source that can support serial builds, MPI-only, OpenMP-only, and MPI+OpenMP
+
+Added support to write plot files using "poor mans parallel I/O" when linked with the silo library, which in turn can be read by VisIt.
+
+Enabled variable timestep calculation by default (courant condition), which results in an additional reduction.  Also, seeded the initial timestep based on analytical equation to allow scaling to arbitrary size.  Therefore steps to solution will differ from LULESH 1.0.
+
+Default domain (mesh) size reduced from 45^3 to 30^3
+
+Command line options to allow for numerous test cases without needing to recompile
+
+Performance optimizations and code cleanup uncovered during study of LULESH 1.0
+
+Added a "Figure of Merit" calculation (elements solved per microsecond) and output in support of using LULESH 2.0 for the 2017 CORAL procurement
+
+Possible Future 2.0 minor updates (other changes possible as discovered)
+
+* Different default parameters
+* Minor code performance changes and cleanupS
+
+TODO in future versions
+* Add reader for (truly) unstructured meshes, probably serial only
+* CMake based build system
+
