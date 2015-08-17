@@ -83,6 +83,7 @@ typedef struct SimFlatSt
 
    RAJA::IndexSet *isTotal ;
    RAJA::IndexSet *isLocal ;
+   RAJA::IndexSet *isWavefront ;
    
 } SimFlat;
 

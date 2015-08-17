@@ -178,46 +178,42 @@ int ljForce(SimFlat* s)
            static_cast<RAJA::IndexSet *>(iBox->getSegment(0)->getPrivate()) ;
 
       RAJA::forall<linkCellWork>(*iBoxNeighbors, [&] (int jOff) {
+         int jId = s->atoms->gid[jOff] ;
+
          RAJA::forall<linkCellWork>(*iBox, [&] (int iOff) {
-            real3 dr;
-            real_t r2 = 0.0;
-            real3_ptr r =  s->atoms->r ;
-            for (int m=0; m<3; m++)
-            {
-#if 0
-               dr[m] = s->atoms->r[iOff][m]-s->atoms->r[jOff][m];
-#else
-               dr[m] = r[iOff][m] - r[jOff][m];
-#endif
-               r2 += dr[m]*dr[m];
-            }
-            if ( r2 <= rCut2 && r2 > 0.0)
-            {
-
-               // Important note:
-               // from this point on r actually refers to 1.0/r
-               real_ptr U = s->atoms->U ;
-               real3_ptr f = s->atoms->f ;
-               r2 = 1.0/r2;
-               real_t r6 = s6 * (r2*r2*r2);
-               real_t eLocal = r6 * (r6 - 1.0) - eShift;
-#if 0
-               s->atoms->U[iOff] += 0.5*eLocal;
-#else
-               U[iOff] += 0.5*eLocal;
-#endif
-               // ePotLocal += 0.5*eLocal;
-               ePot += 0.5*eLocal;
-
-               // different formulation to avoid sqrt computation
-               real_t fr = - 4.0*epsilon*r6*r2*(12.0*r6 - 6.0);
+            int iId = s->atoms->gid[iOff] ;
+            if (!((jOff < s->boxes->nLocalBoxes*MAXATOMS) && (jId <= iId))) {
+               real3 dr;
+               real_t r2 = 0.0;
+               real3_ptr r = s->atoms->r ;
                for (int m=0; m<3; m++)
                {
-#if 0
-                  s->atoms->f[iOff][m] -= dr[m]*fr;
-#else
-                  f[iOff][m] -= dr[m]*fr;
-#endif
+                  dr[m] = r[iOff][m] - r[jOff][m];
+                  r2 += dr[m]*dr[m];
+               }
+               if ( r2 <= rCut2 && r2 > 0.0)
+               {
+                  // Important note:
+                  // from this point on r actually refers to 1.0/r
+                  real_t ePotTmp ;
+                  real_ptr U = s->atoms->U ;
+                  real3_ptr f = s->atoms->f ;
+                  r2 = 1.0/r2;
+                  real_t r6 = s6 * (r2*r2*r2);
+                  real_t eLocal = r6 * (r6 - 1.0) - eShift;
+                  U[iOff] += 0.5*eLocal;
+                  U[jOff] += 0.5*eLocal;
+                  // ePotLocal += 0.5*eLocal;
+                  ePotTmp =  (jOff < s->boxes->nLocalBoxes*MAXATOMS) ? eLocal : 0.5*eLocal ;
+                  ePot += ePotTmp ;
+
+                  // different formulation to avoid sqrt computation
+                  real_t fr = - 4.0*epsilon*r6*r2*(12.0*r6 - 6.0);
+                  for (int m=0; m<3; m++)
+                  {
+                     f[iOff][m] -= dr[m]*fr;
+                     f[jOff][m] += dr[m]*fr;
+                  }
                }
             }
 //          ++localPairs ;
