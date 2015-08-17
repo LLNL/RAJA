@@ -80,6 +80,11 @@ static int getBoxFromCoord(LinkCell* boxes, real_t rr[3]);
 static void emptyHaloCells(LinkCell* boxes);
 static void getTuple(LinkCell* boxes, int iBox, int* ixp, int* iyp, int* izp);
 
+extern "C" int boxSort(const void *v1, const void *v2)
+{
+   return *(static_cast<const int *>(v2)) - *(static_cast<const int *>(v1)) ;
+}
+
 LinkCell* initLinkCells(const Domain* domain, real_t cutoff)
 {
    assert(domain);
@@ -118,6 +123,7 @@ LinkCell* initLinkCells(const Domain* domain, real_t cutoff)
    for (int iBox=0; iBox<ll->nLocalBoxes; ++iBox)
    {
       int nNbrBoxes = getNeighborBoxes(ll, iBox, ll->nbrBoxes[iBox]);
+      qsort(ll->nbrBoxes[iBox], 27, sizeof(int), boxSort) ;
    }
 
    return ll;
@@ -467,4 +473,209 @@ void getTuple(LinkCell* boxes, int iBox, int* ixp, int* iyp, int* izp)
    *izp = iz;
 }
 
+static void getlimit(int span, int parts, int index, int *begin, int *end)
+{
+    int chunk = span / parts ;
+    int rem   = span % parts ;
+    *begin = index*chunk + ((index < rem) ? index : rem) ;
+    *end   = (index+1)*chunk + (((index+1) < rem) ? (index+1) : rem) ;
+}
+
+static void WavefrontCorner(int nx, int ny, int nz, int xs, int ys, int zs,
+               LinkCell *boxes, int *outlist, int stride, int pad)
+{
+   ++nx ;
+   int max = nx+ny+nz - 2 ;
+   int index = 0 ;
+
+   for (int plane = 0; plane<max ; ++plane) {
+      for (int z = 0; z<plane; ++z) {
+         for (int y = 0; y < (plane - z); ++y) {
+            int x = plane - y - z ;
+            if (x<(nx-pad) && y<(ny-pad) && z<(nz-pad)) {
+               outlist[index*stride] = getBoxFromTuple(boxes, xs+x-1,  ys+y, zs+z) ;
+               ++index ;
+            }
+         }
+      }
+   }
+
+   if (pad != 0) {
+      for (int plane = 0; plane<max ; ++plane) {
+         for (int z = 0; z<plane; ++z) {
+            for (int y = 0; y < (plane - z); ++y) {
+               int x = plane - y - z ;
+               if ( (x>=(nx-pad) || y>=(ny-pad) || z>=(nz-pad)) &&
+                   x<nx && y<ny && z<nz) {
+                  outlist[index*stride] = getBoxFromTuple(boxes, xs+x-1,  ys+y, zs+z) ;
+                  ++index ;
+               }
+            }
+         }
+      }
+   }
+}
+
+static void WavefrontEdge(int nx, int ny, int nz, int xs, int ys, int zs,
+                          LinkCell *boxes, int *outlist, int stride, int pad)
+{
+   ++ny ;
+   int max = ny+nz - 1 ;
+   int index = 0 ;
+
+   for (int plane = 0; plane<max ; ++plane) {
+      for (int z = 0; z<plane; ++z) {
+         int y = plane - z ;
+         for (int x=0; x<nx; ++x) {
+            if (x<(nx-pad) && y<(ny-pad) && z<(nz-pad)) {
+               outlist[index*stride] = getBoxFromTuple(boxes, xs+x,  ys+y-1, zs+z) ;
+               ++index ;
+            }
+         }
+      }
+   }
+
+   if (pad != 0) {
+      for (int plane = 0; plane<max ; ++plane) {
+         for (int z = 0; z<plane; ++z) {
+            int y = plane - z ;
+            for (int x = 0; x < nx; ++x) {
+               if ( (x>=(nx-pad) || y>=(ny-pad) || z>=(nz-pad)) &&
+                   x<nx && y<ny && z<nz) {
+                  outlist[index*stride] = getBoxFromTuple(boxes, xs+x,  ys+y-1, zs+z) ;
+                  ++index ;
+               }
+            }
+         }
+      }
+   }
+}
+
+static void WavefrontPlane(int nx, int ny, int nz, int xs, int ys, int zs,
+                           LinkCell *boxes, int *outlist, int stride, int pad)
+{
+   int index = 0 ;
+
+   for (int z = 0; z<nz ; ++z) {
+      for (int y = 0; y<ny; ++y) {
+         for (int x=0; x<nx; ++x) {
+            if (x<(nx-pad) && y<(ny-pad) && z<(nz-pad)) {
+               outlist[index*stride] = getBoxFromTuple(boxes, xs+x,  ys+y, zs+z) ;
+               ++index ;
+            }
+         }
+      }
+   }
+
+   if (pad != 0) {
+      for (int z = 0; z<nz ; ++z) {
+         for (int y = 0; z<ny; ++y) {
+            for (int x = 0; x < nx; ++x) {
+               if ( (x>=(nx-pad) || y>=(ny-pad) || z>=(nz-pad)) &&
+                   x<nx && y<ny && z<nz) {
+                  outlist[index*stride] = getBoxFromTuple(boxes, xs+x,  ys+y, zs+z) ;
+                  ++index ;
+               }
+            }
+         }
+      }
+   }
+}
+
+RAJA::IndexSet *BuildWavefront(LinkCell *boxes,
+                               RAJA::IndexSet *master,
+                               int nx, int ny, int nz,
+                               int numThreads, int pad)
+{
+   RAJA::IndexSet *slave ;
+   int px, py, pz ;
+   int maxX = 0, maxY = 0, maxZ = 0 ;
+
+   switch (numThreads) {
+
+      case 1:
+         // return clone of master ;
+         px = 1 ; py = 1 ; pz = 1 ;
+         break ;
+
+      case 2:
+         px = 1 ; py = 1 ; pz = 2 ;
+         break ;
+
+      case 4:
+         px = 1 ; py = 2 ; pz = 2 ;
+         break ;
+
+      case 8:
+         px = 1 ; py = 2 ; pz = 4 ;
+         break ;
+
+      case 16:
+         px = 2 ; py = 2 ; pz = 4 ;
+         break ;
+   }
+
+   for (int z=0; z<pz; ++z) {
+      for (int y=0; y<py; ++y) {
+         for (int x=0; x<px; ++x) {
+            int dx, dy, dz ;
+            int xs, xe ;
+            int ys, ye ;
+            int zs, ze ;
+            getlimit(nx, px, x, &xs, &xe) ;
+            getlimit(ny, py, y, &ys, &ye) ;
+            getlimit(nz, pz, z, &zs, &ze) ;
+            dx = xe-xs ;
+            dy = ye-ys ;
+            dz = ze-zs ;
+            if (dx > maxX) maxX = dx ;
+            if (dy > maxY) maxY = dy ;
+            if (dz > maxZ) maxZ = dz ;
+         }
+      }
+   }
+
+   int *segList = (int *) comdMalloc(numThreads*maxX*maxY*maxZ*sizeof(int)) ;
+   for (int i=0 ; i<maxX*maxY*maxZ; ++i) {
+      segList[i] = -1 ; /* initialize to empty segments */
+   }
+
+   int tid = 0 ;
+   for (int z=0; z<pz; ++z) {
+      for (int y=0; y<py; ++y) {
+         for (int x=0; x<px; ++x) {
+            int xs, xe ;
+            int ys, ye ;
+            int zs, ze ;
+            getlimit(nx, px, x, &xs, &xe) ;
+            getlimit(ny, py, y, &ys, &ye) ;
+            getlimit(nz, pz, z, &zs, &ze) ;
+
+            /* assume x is most dominant (stride-1) and z is least dominant */
+            if (px != 1 && py != 1 && pz != 1) {
+               WavefrontCorner(xe-xs, ye-ys, ze-zs,
+                               xs, ys, zs,
+                               boxes, &segList[tid], numThreads, pad) ;
+            }
+            else if (py != 1 && pz != 1) {
+               WavefrontEdge(xe-xs, ye-ys, ze-zs,
+                             xs, ys, zs,
+                             boxes, &segList[tid], numThreads, pad) ;
+            }
+            else {
+               WavefrontPlane(xe-xs, ye-ys, ze-zs,
+                              xs, ys, zs,
+                              boxes, &segList[tid], numThreads, pad) ;
+            }
+
+            ++tid ;
+         }
+      }
+   }
+
+   slave = master->createView(segList, numThreads*maxX*maxY*maxZ) ;
+   comdFree(segList) ;
+
+   return slave ;
+}
 
