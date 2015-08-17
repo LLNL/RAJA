@@ -1,0 +1,5 @@
+##
+## For non-CUDA compilation
+##
+
+make serial;
