@@ -149,6 +149,14 @@ struct cuda_exec {};
 //
 struct cuda_reduce {};
 
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+
+#else 
+
+#define RAJA_HOST_DEVICE
+#define RAJA_DEVICE
+
 #endif
 
 }  // closing brace for RAJA namespace
