@@ -252,58 +252,41 @@ int eamForce(SimFlat* s)
 
       RAJA::forall<linkCellWork>(*iBoxNeighbors, [&] (int jOff) {
          RAJA::forall<linkCellWork>(*iBox, [&] (int iOff) {
-            real3 dr;
-            real_t r2 = 0.0;
-#if 0
-            real3_ptr rp = s->atoms->r ;
-#endif
-            for (int k=0; k<3; k++)
-            {
-#if 1
-               dr[k] = s->atoms->r[iOff][k] - s->atoms->r[jOff][k];
-#else
-               dr[k] = rp[iOff][k] - rp[jOff][k];
-#endif
-               r2+=dr[k]*dr[k];
-            }
-
-            if(r2 <= rCut2 && r2 > 0.0)
-            {
-#if 0
-               real3_ptr fp = s->atoms->f ;
-               real_ptr  Up = s->atoms->U ;
-               real_ptr  rhobar = pot->rhobar ;
-#endif
-               real_t r = sqrt(r2);
-
-               real_t phiTmp, dPhi, rhoTmp, dRho;
-               interpolate(pot->phi, r, &phiTmp, &dPhi);
-               interpolate(pot->rho, r, &rhoTmp, &dRho);
-
+            if (jOff > iOff) {
+               real3 dr;
+               real_t r2 = 0.0;
                for (int k=0; k<3; k++)
                {
-#if 1
-                  s->atoms->f[iOff][k] -= dPhi*dr[k]/r;
-#else
-                  fp[iOff][k] -= dPhi*dr[k]/r;
-#endif
+                  dr[k] = s->atoms->r[iOff][k] - s->atoms->r[jOff][k];
+                  r2+=dr[k]*dr[k];
                }
 
-               // Calculate energy contribution
-#if 1 
-               s->atoms->U[iOff] += 0.5*phiTmp;
-#else
-               Up[iOff] += 0.5*phiTmp;
-#endif
-               // etotLocal += 0.5*phiTmp;
-               etot += 0.5*phiTmp;
+               if(r2 <= rCut2 && r2 > 0.0)
+               {
+                  real_t etotTmp ;
+                  real_t r = sqrt(r2);
 
-               // accumulate rhobar for each atom
-#if 1
-               pot->rhobar[iOff] += rhoTmp;
-#else
-               rhobar[iOff] += rhoTmp;
-#endif
+                  real_t phiTmp, dPhi, rhoTmp, dRho;
+                  interpolate(pot->phi, r, &phiTmp, &dPhi);
+                  interpolate(pot->rho, r, &rhoTmp, &dRho);
+
+                  for (int k=0; k<3; k++)
+                  {
+                     s->atoms->f[iOff][k] -= dPhi*dr[k]/r;
+                     s->atoms->f[jOff][k] += dPhi*dr[k]/r;
+                  }
+
+                  // Calculate energy contribution
+                  s->atoms->U[iOff] += 0.5*phiTmp;
+                  s->atoms->U[jOff] += 0.5*phiTmp;
+
+                  etotTmp = (jOff < s->boxes->nLocalBoxes*MAXATOMS) ?  phiTmp : 0.5*phiTmp ;
+                  etot += etotTmp ;
+
+                  // accumulate rhobar for each atom
+                  pot->rhobar[iOff] += rhoTmp;
+                  pot->rhobar[jOff] += rhoTmp;
+               }
             }
          }) ; // loop over atoms in iBox
       }) ; // loop over atoms in IBoxNeighbors
@@ -313,20 +296,10 @@ int eamForce(SimFlat* s)
    // Compute Embedding Energy
    // loop over all local boxes
    RAJA::forall<atomWork>(*s->isLocal, [&] (int iOff) {
-#if 1
       real_t fEmbed, dfEmbed;
       interpolate(pot->f, pot->rhobar[iOff], &fEmbed, &dfEmbed);
       pot->dfEmbed[iOff] = dfEmbed; // save derivative for halo exchange
       s->atoms->U[iOff] += fEmbed;
-#else
-      real_ptr  rhobarp = pot->rhobar ;
-      real_ptr  dfEmbedp = pot->dfEmbed ;
-      real_ptr  Up = s->atoms->U ;
-      real_t fEmbed, dfEmbed;
-      interpolate(pot->f, rhobarp[iOff], &fEmbed, &dfEmbed);
-      dfEmbedp[iOff] = dfEmbed; // save derivative for halo exchange
-      Up[iOff] += fEmbed;
-#endif
       etot += fEmbed ;
    } ) ;
 
@@ -347,33 +320,28 @@ int eamForce(SimFlat* s)
 
       RAJA::forall<linkCellWork>(*iBoxNeighbors, [=] (int jOff) {
          RAJA::forall<linkCellWork>(*iBox, [=] (int iOff) {
-            real3_ptr rp = s->atoms->r ;
-            real_t r2 = 0.0;
-            real3 dr;
-            for (int k=0; k<3; k++)
-            {
-               dr[k]=rp[iOff][k] - rp[jOff][k];
-               r2+=dr[k]*dr[k];
-            }
-
-            if(r2 <= rCut2 && r2 > 0.0)
-            {
-#if 0
-               real_ptr  dfEmbedp = pot->dfEmbed ;
-               real3_ptr fp = s->atoms->f ;
-#endif
-               real_t r = sqrt(r2);
-
-               real_t rhoTmp, dRho;
-               interpolate(pot->rho, r, &rhoTmp, &dRho);
-
+            if (jOff > iOff) {
+               real3_ptr rp = s->atoms->r ;
+               real_t r2 = 0.0;
+               real3 dr;
                for (int k=0; k<3; k++)
                {
-#if 1
-                  s->atoms->f[iOff][k] -= (pot->dfEmbed[iOff] + pot->dfEmbed[jOff])*dRho*dr[k]/r;
-#else
-                  fp[iOff][k] -= (dfEmbedp[iOff] + dfEmbedp[jOff])*dRho*dr[k]/r;
-#endif
+                  dr[k]=rp[iOff][k] - rp[jOff][k];
+                  r2+=dr[k]*dr[k];
+               }
+
+               if(r2 <= rCut2 && r2 > 0.0)
+               {
+                  real_t r = sqrt(r2);
+
+                  real_t rhoTmp, dRho;
+                  interpolate(pot->rho, r, &rhoTmp, &dRho);
+
+                  for (int k=0; k<3; k++)
+                  {
+                     s->atoms->f[iOff][k] -= (pot->dfEmbed[iOff] + pot->dfEmbed[jOff])*dRho*dr[k]/r;
+                     s->atoms->f[jOff][k] += (pot->dfEmbed[iOff] + pot->dfEmbed[jOff])*dRho*dr[k]/r;
+                  }
                }
             }
          }) ; // loop over atoms in iBox

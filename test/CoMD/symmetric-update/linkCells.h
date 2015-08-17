@@ -5,6 +5,7 @@
 #define __LINK_CELLS_H_
 
 #include "mytype.h"
+#include "RAJA/RAJA.hxx"
 
 /// The maximum number of atoms that can be stored in a link cell.
 #define MAXATOMS 64 
@@ -47,5 +48,9 @@ void updateLinkCells(LinkCell* boxes, struct AtomsSt* atoms);
 
 int maxOccupancy(LinkCell* boxes);
 
+RAJA::IndexSet *BuildWavefront(LinkCell *boxes,
+                               RAJA::IndexSet *master,
+                               int nx, int ny, int nz,
+                               int numThreads, int pad = 0) ;
 
 #endif

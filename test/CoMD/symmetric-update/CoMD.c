@@ -208,18 +208,46 @@ SimFlat* initSimulation(Command cmd)
       sim->isTotal->push_back( rangeArray[i] ) ;
    }
 
-   /* Create Local IndexSet View */
-   sim->isLocal = sim->isTotal->createView(0, sim->boxes->nLocalBoxes);
-
-
    /* Create Neighbor IndexSet Views */
    for (int i=0; i<sim->boxes->nLocalBoxes; ++i) {
-      RAJA::IndexSet *neighbors = 
-         sim->isTotal->createView(sim->boxes->nbrBoxes[i], 27) ;
+      RAJA::IndexSet *neighbors ;
 
-      sim->isLocal->getSegment(i)->setPrivate(
+      if (cmd.doeam) {
+         int tmpBox[27] ;
+         int tmpCount = 0 ;
+
+         for (int j=0; j<27; ++j) {
+            if (sim->boxes->nbrBoxes[i][j] >= i) {
+               tmpBox[tmpCount++] = sim->boxes->nbrBoxes[i][j] ;
+            }
+         }
+         neighbors =
+            sim->isTotal->createView(tmpBox, tmpCount) ;
+      }
+      else {
+         neighbors =
+            sim->isTotal->createView(sim->boxes->nbrBoxes[i], 27) ;
+      }
+
+      sim->isTotal->getSegment(i)->setPrivate(
          reinterpret_cast<void *>(neighbors)
       ) ;
+   }
+
+   /* Create Wavefront traversal */
+   sim->isWavefront = BuildWavefront(sim->boxes, sim->isTotal,
+                                     sim->boxes->gridSize[0],
+                                     sim->boxes->gridSize[1],
+                                     sim->boxes->gridSize[2],
+                                     omp_get_max_threads()) ;
+
+   /* Create Local IndexSet View */
+   if (0 /* cmd.doeam || (sim->boxes->gridSize[0]%4 + sim->boxes->gridSize[1]%4 + sim->boxes->gridSize[2]%4 != 0) */) {
+      /* Create "Simple" Local IndexSet View */
+      sim->isLocal = sim->isTotal->createView(0, sim->boxes->nLocalBoxes);
+   }
+   else {
+      sim->isLocal = sim->isWavefront ;
    }
 
    setTemperature(sim, cmd.temperature);
