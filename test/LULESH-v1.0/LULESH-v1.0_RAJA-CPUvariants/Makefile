@@ -20,9 +20,9 @@ OPT_DEBUG = opt
 ##
 ## Set option to report basic runtime information.
 ##
-##LULESH_OPTS = -DRAJA_USE_CYCLE
-#LULESH_OPTS = -DRAJA_USE_CLOCK
-LULESH_OPTS = -DRAJA_USE_GETTIME
+##LULESH_TIMER_OPTS = -DRAJA_USE_CYCLE
+#LULESH_TIMER_OPTS = -DRAJA_USE_CLOCK
+LULESH_TIMER_OPTS = -DRAJA_USE_GETTIME
 
 # This is needed for RAJA_USE_GETTIME
 LDTIMER = -lrt
@@ -44,6 +44,9 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
+#ipa-nvcc
+#RAJA_ARCH = ipa_nvcc
+
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
@@ -56,6 +59,11 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 ##
 include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
+##
+## Options for LULESH
+##
+LULESH_OPTS = $(LULESH_TIMER_OPTS)
+
 
 ##
 ## Include file containing compiler version and options.
@@ -63,16 +71,47 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
-
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
-#TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
-TESTOBJS = 
 
-OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(TESTOBJS) $(RAJAOBJS)
-OBJFILES_PAR    = luleshRAJA-parallel.o $(TESTOBJS) $(RAJAOBJS)
-OBJFILES_SER    = luleshRAJA-serial.o $(TESTOBJS) $(RAJAOBJS)
+##-----------------------------------------------------------
+## This section is a complete hack....
+##-----------------------------------------------------------
+
+##
+## If compiling with nvcc on ipa (see RAJA_ARCH defn above)
+##
+ifeq ($(RAJA_ARCH),ipa_nvcc)
+
+### Test nvcc build and run non-GPU variant...
+#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
+
+### nvcc build and run GPU variant...
+CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -DRAJA_SYNC
+
+
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+## To debug
+##CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+
+RAJA_RULES = -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
+
+else
+##
+## Pull in CXX_COMPILE and CXXFLAGS from ../../compilers.mk
+## (see RAJA_ARCH defn above)
+##
+endif
+
+##-----------------------------------------------------------
+
+
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+
+
+OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(RAJAOBJS)
+OBJFILES_PAR    = luleshRAJA-parallel.o $(RAJAOBJS)
+OBJFILES_SER    = luleshRAJA-serial.o $(RAJAOBJS)
 
 default:
 	echo "Please specify version to build make serial, make parallel, or make parallel-FT"
@@ -89,6 +128,7 @@ serial: $(OBJFILES_SER)
 
 ## Uncomment this line to generate an executable to run...
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
@@ -106,4 +146,4 @@ clean-obj:
 	rm -rf *.o $(RAJA_SRC)/*.o
 
 clean: clean-obj
-	rm -rf *.s *.lst *.exe 
+	rm -rf luleshRAJA-parallel.cxx luleshRAJA-parallel.cu *.cpp*.i* *.cuda*.* *.fatbin* *.hash* *.module_id* *.ptx *.reg.c *.s *.lst *.exe 

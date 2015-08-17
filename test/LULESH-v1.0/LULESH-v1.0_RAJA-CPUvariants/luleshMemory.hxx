@@ -6,19 +6,17 @@
 // ALLOCATE/RELEASE FUNCTIONS 
 //
 
+#if defined(RAJA_USE_CUDA) // CUDA managed memory allocate/release
+
 template <typename T>
 inline T *Allocate(size_t size)
 {
    T *retVal ;
-#if defined(RAJA_USE_CUDA)
    if (cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) != cudaSuccess) {
-     std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
-      exit(1);
-    }
-#else
-   posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
-#endif
+     exit(1);
+   }
    return retVal ;
 }
 
@@ -26,21 +24,48 @@ template <typename EXEC_POLICY_T, typename T>
 inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
 {
    T *retVal ;
-
-#if defined(RAJA_USE_CUDA)
    if (cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) != cudaSuccess) {
-     std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
-    }
-#else
+   }
+   return retVal ;
+}
+
+template <typename T>
+inline void Release(T **ptr)
+{
+   if (*ptr != NULL) {
+      if (cudaFree(*ptr) != cudaSuccess) {
+        std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+                  << __LINE__ << std::endl;
+        exit(1);
+      }
+      *ptr = NULL ;
+   }
+}
+
+
+#else  // Standard CPU memory allocate/release
+
+template <typename T>
+inline T *Allocate(size_t size)
+{
+   T *retVal ;
+   posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
+   return retVal ;
+}
+
+template <typename EXEC_POLICY_T, typename T>
+inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
+{
+   T *retVal ;
    posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
 
    /* we should specialize by policy type here */
    RAJA::forall<EXEC_POLICY_T>( *is, [&] (int i) {
       retVal[i] = 0 ;
    } ) ;
-#endif
 
    return retVal ;
 }
@@ -48,15 +73,7 @@ inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
 inline void Release(Real_p ptr)
 {
    if (ptr != NULL) {
-#if defined(RAJA_USE_CUDA)
-      if (cudaFree(ptr) != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-      }
-#else
       free(ptr) ;
-#endif
       ptr = NULL ;
    }
 }
@@ -65,15 +82,7 @@ template <typename T>
 inline void Release(T **ptr)
 {
    if (*ptr != NULL) {
-#if defined(RAJA_USE_CUDA)
-      if (cudaFree(*ptr) != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-      }
-#else
       free(*ptr) ;
-#endif
       *ptr = NULL ;
    }
 }
@@ -82,15 +91,9 @@ template <typename T>
 inline void Release(T * __restrict__ *ptr)
 {
    if (*ptr != NULL) {
-#if defined(RAJA_USE_CUDA)
-    if (cudaFree(*ptr) != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-    }
-#else
       free(*ptr) ;
-#endif
       *ptr = NULL ;
    }
 }
+
+#endif 

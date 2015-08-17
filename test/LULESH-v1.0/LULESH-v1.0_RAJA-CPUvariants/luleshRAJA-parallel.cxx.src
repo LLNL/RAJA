@@ -755,9 +755,9 @@ void IntegrateStressForElems( Index_p nodelist,
    }
   ) ;
 
-  Release(fz_elem) ;
-  Release(fy_elem) ;
-  Release(fx_elem) ;
+  Release(&fz_elem) ;
+  Release(&fy_elem) ;
+  Release(&fx_elem) ;
 #endif
 }
 
@@ -1072,23 +1072,6 @@ void CalcElemFBHourglassForce(
        hourgam7[i02] * h02 + hourgam7[i03] * h03);
 }
 
-const Real_t ggamma[4][8] =
-{
-   { Real_t( 1.), Real_t( 1.), Real_t(-1.), Real_t(-1.),
-     Real_t(-1.), Real_t(-1.), Real_t( 1.), Real_t( 1.) },
-
-   { Real_t( 1.), Real_t(-1.), Real_t(-1.), Real_t( 1.),
-     Real_t(-1.), Real_t( 1.), Real_t( 1.), Real_t(-1.) },
-
-   { Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.),
-     Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) },
-
-   { Real_t(-1.), Real_t( 1.), Real_t(-1.), Real_t( 1.),
-     Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) }
-
-} ;
-
-
 RAJA_STORAGE
 void CalcFBHourglassForceForElems( Index_p nodelist,
                                    Real_p  ss, Real_p  elemMass,
@@ -1131,6 +1114,22 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
       Real_t hourgam0[4], hourgam1[4], hourgam2[4], hourgam3[4] ;
       Real_t hourgam4[4], hourgam5[4], hourgam6[4], hourgam7[4];
       Real_t xd1[8], yd1[8], zd1[8] ;
+
+      // Define this here so code works on both host and device
+      const Real_t ggamma[4][8] =
+      {
+        { Real_t( 1.), Real_t( 1.), Real_t(-1.), Real_t(-1.),
+          Real_t(-1.), Real_t(-1.), Real_t( 1.), Real_t( 1.) },
+
+        { Real_t( 1.), Real_t(-1.), Real_t(-1.), Real_t( 1.),
+          Real_t(-1.), Real_t( 1.), Real_t( 1.), Real_t(-1.) },
+
+        { Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.),
+          Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) },
+
+        { Real_t(-1.), Real_t( 1.), Real_t(-1.), Real_t( 1.),
+          Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) }
+      } ;
 
       Index_p elemToNode = &nodelist[8*i2];
       Index_t i3=8*i2;
@@ -1300,9 +1299,9 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
     }
    ) ;
 
-   Release(fz_elem) ;
-   Release(fy_elem) ;
-   Release(fx_elem) ;
+   Release(&fz_elem) ;
+   Release(&fy_elem) ;
+   Release(&fx_elem) ;
 #endif
 }
 
@@ -1361,12 +1360,12 @@ void CalcHourglassControlForElems(Domain *domain,
                                   ) ;
    }
 
-   Release(z8n) ;
-   Release(y8n) ;
-   Release(x8n) ;
-   Release(dvdz) ;
-   Release(dvdy) ;
-   Release(dvdx) ;
+   Release(&z8n) ;
+   Release(&y8n) ;
+   Release(&x8n) ;
+   Release(&dvdz) ;
+   Release(&dvdy) ;
+   Release(&dvdx) ;
 
    return ;
 }
@@ -1406,7 +1405,7 @@ void CalcVolumeForceForElems(Domain *domain)
 
       // check for negative element volume
       RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
-      RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] (int k) {
+      RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] RAJA_DEVICE (int k) {
          minvol.min(determ[k]);
        }
       ) ;
@@ -1417,10 +1416,10 @@ void CalcVolumeForceForElems(Domain *domain)
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
-      Release(determ) ;
-      Release(sigzz) ;
-      Release(sigyy) ;
-      Release(sigxx) ;
+      Release(&determ) ;
+      Release(&sigzz) ;
+      Release(&sigyy) ;
+      Release(&sigxx) ;
    }
 }
 
@@ -1672,32 +1671,32 @@ Real_t CalcElemCharacteristicLength( const Real_t x[8],
    a = AreaFace(x[0],x[1],x[2],x[3],
                 y[0],y[1],y[2],y[3],
                 z[0],z[1],z[2],z[3]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    a = AreaFace(x[4],x[5],x[6],x[7],
                 y[4],y[5],y[6],y[7],
                 z[4],z[5],z[6],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    a = AreaFace(x[0],x[1],x[5],x[4],
                 y[0],y[1],y[5],y[4],
                 z[0],z[1],z[5],z[4]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    a = AreaFace(x[1],x[2],x[6],x[5],
                 y[1],y[2],y[6],y[5],
                 z[1],z[2],z[6],z[5]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    a = AreaFace(x[2],x[3],x[7],x[6],
                 y[2],y[3],y[7],y[6],
                 z[2],z[3],z[7],z[6]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    a = AreaFace(x[3],x[0],x[4],x[7],
                 y[3],y[0],y[4],y[7],
                 z[3],z[0],z[4],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = RAJA_MAX(a,charLength) ;
 
    charLength = Real_t(4.0) * volume / SQRT(charLength);
 
@@ -1885,9 +1884,9 @@ void CalcLagrangeElements(Domain *domain)
          exit(VolumeError) ;
       }
 
-      Release(domain->dzz) ;
-      Release(domain->dyy) ;
-      Release(domain->dxx) ;
+      Release(&domain->dzz) ;
+      Release(&domain->dyy) ;
+      Release(&domain->dxx) ;
    }
 }
 
@@ -2262,13 +2261,13 @@ void CalcQForElems(Domain *domain)
 
       /* release domain length arrays */
 
-      Release(domain->delx_zeta) ;
-      Release(domain->delx_eta) ;
-      Release(domain->delx_xi) ;
+      Release(&domain->delx_zeta) ;
+      Release(&domain->delx_eta) ;
+      Release(&domain->delx_xi) ;
 
-      Release(domain->delv_zeta) ;
-      Release(domain->delv_eta) ;
-      Release(domain->delv_xi) ;
+      Release(&domain->delv_zeta) ;
+      Release(&domain->delv_eta) ;
+      Release(&domain->delv_xi) ;
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
@@ -2437,7 +2436,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
-   Release(pHalfStep) ;
+   Release(&pHalfStep) ;
 
    return ;
 }
@@ -2545,15 +2544,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
              vnewc, rho0, e_new, p_new,
              pbvc, bvc, ss4o3) ;
 
-   Release(pbvc) ;
-   Release(bvc) ;
-   Release(q_new) ;
-   Release(e_new) ;
-   Release(p_new) ;
-   Release(work) ;
-   Release(compHalfStep) ;
-   Release(compression) ;
-   Release(p_old) ;
+   Release(&pbvc) ;
+   Release(&bvc) ;
+   Release(&q_new) ;
+   Release(&e_new) ;
+   Release(&p_new) ;
+   Release(&work) ;
+   Release(&compHalfStep) ;
+   Release(&compression) ;
+   Release(&p_old) ;
 }
 
 RAJA_STORAGE
@@ -2618,7 +2617,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     EvalEOSForElems(domain, vnewc, numElem);
 
-    Release(vnewc) ;
+    Release(&vnewc) ;
 
   }
 }
@@ -2656,7 +2655,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
   UpdateVolumesForElems(domain->domElemList,
                         domain->vnew, domain->v, domain->v_cut) ;
 
-  Release(domain->vnew) ;
+  Release(&domain->vnew) ;
 }
 
 RAJA_STORAGE
@@ -2664,6 +2663,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
+#if 1
    RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
@@ -2687,6 +2687,32 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
    if (dtcourantLoc < Real_t(1.0e+20)) {
       *dtcourant = dtcourantLoc ;
    }
+#else // Hack in OMP reduction
+   RAJA::ReduceMin<RAJA::omp_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+   Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
+
+   RAJA::forall< LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >( *matElemList, [=] (int indx) {
+      Real_t dtf = ss[indx] * ss[indx] ;
+      Real_t dtf_cmp ;
+
+      if ( vdov[indx] < Real_t(0.) ) {
+         dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
+      }
+
+      dtf_cmp = (vdov[indx] != Real_t(0.))
+              ?  arealg[indx] / sqrt(dtf) : Real_t(1.0e+10) ;
+
+      /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
+
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      *dtcourant = dtcourantLoc ;
+   }
+
+#endif
 
    return ;
 }
@@ -2695,6 +2721,7 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
+#if 0
    RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
@@ -2709,6 +2736,23 @@ void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
    if (dthydroLoc < Real_t(1.0e+20)) {
       *dthydro = dthydroLoc ;
    }
+#else // Hack in OMP reduction
+   RAJA::ReduceMin<RAJA::omp_reduce, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
+
+   RAJA::forall< LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >( *matElemList, [=] (int indx) {
+
+      Real_t dtvov_cmp = (vdov[indx] != Real_t(0.))
+                       ? (dvovmax / (fabs(vdov[indx])+Real_t(1.e-20)))
+                       : Real_t(1.0e+10) ;
+
+      dthydroLoc.min(dtvov_cmp) ;
+   } ) ;
+
+   if (dthydroLoc < Real_t(1.0e+20)) {
+      *dthydro = dthydroLoc ;
+   }
+
+#endif
 
    return ;
 }
@@ -2752,7 +2796,11 @@ int main(int argc, char *argv[])
 
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
-   struct Domain domain ;
+
+   //
+   // Allocate domain so it can be accessed from host or device code.
+   //
+   Domain* domain = Allocate<Domain>(1);
 
    Index_t edgeElems = lulesh_edge_elems ;
    Index_t edgeNodes = edgeElems+1 ;
@@ -2851,22 +2899,22 @@ int main(int argc, char *argv[])
 
    /* construct a uniform box for this processor */
 
-   domain.sizeX = edgeElems ;
-   domain.sizeY = edgeElems ;
-   domain.sizeZ = edgeElems ;
-   domain.numElem = edgeElems*edgeElems*edgeElems ;
+   domain->sizeX = edgeElems ;
+   domain->sizeY = edgeElems ;
+   domain->sizeZ = edgeElems ;
+   domain->numElem = edgeElems*edgeElems*edgeElems ;
 
-   domain.numNode = edgeNodes*edgeNodes*edgeNodes ;
+   domain->numNode = edgeNodes*edgeNodes*edgeNodes ;
 
-   Index_t domElems = domain.numElem ;
-   Index_t domNodes = domain.numNode ;
+   Index_t domElems = domain->numElem ;
+   Index_t domNodes = domain->numNode ;
 
    /**************************************************/
    /* Create Nodelist, needed by Tiled_LockFreeColor */
    /**************************************************/
 
    /* elemToNode connectivity */
-   domain.nodelist = Allocate<Index_t>(8*domElems) ;
+   domain->nodelist = Allocate<Index_t>(8*domElems) ;
 
    /* embed hexehedral elements in nodal point lattice */
 
@@ -2875,7 +2923,7 @@ int main(int argc, char *argv[])
    for (Index_t plane=0; plane<edgeElems; ++plane) {
       for (Index_t row=0; row<edgeElems; ++row) {
          for (Index_t col=0; col<edgeElems; ++col) {
-            Index_p localNode = &domain.nodelist[8*zidx] ;
+            Index_p localNode = &domain->nodelist[8*zidx] ;
             localNode[0] = nidx                                       ;
             localNode[1] = nidx                                   + 1 ;
             localNode[2] = nidx                       + edgeNodes + 1 ;
@@ -2897,11 +2945,11 @@ int main(int argc, char *argv[])
    /****************************/
 
    /* always leave the nodes in a canonical ordering */
-   domain.domNodeList = new LULESH_INDEXSET() ;
-   domain.domNodeList->push_back( RAJA::RangeSegment(0, domNodes) ) ;
+   domain->domNodeList = new LULESH_INDEXSET() ;
+   domain->domNodeList->push_back( RAJA::RangeSegment(0, domNodes) ) ;
 
-   domain.domElemList = new LULESH_INDEXSET() ;
-   domain.matElemList = new LULESH_INDEXSET() ;
+   domain->domElemList = new LULESH_INDEXSET() ;
+   domain->matElemList = new LULESH_INDEXSET() ;
 
    const Index_t xtile = lulesh_xtile ;
    const Index_t ytile = lulesh_ytile ;
@@ -2911,10 +2959,10 @@ int main(int argc, char *argv[])
 
       case Canonical:
       {
-         domain.domElemList->push_back( RAJA::RangeSegment(0, domElems) );
+         domain->domElemList->push_back( RAJA::RangeSegment(0, domElems) );
 
          /* Create a material ISet (entire domain same material for now) */
-         domain.matElemList->push_back( RAJA::RangeSegment(0, domElems) ) ;
+         domain->matElemList->push_back( RAJA::RangeSegment(0, domElems) ) ;
       }
       break ;
 
@@ -2942,8 +2990,8 @@ int main(int argc, char *argv[])
                         }
                      }
                   }
-                  domain.domElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
-                  domain.matElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
+                  domain->domElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
+                  domain->matElemList->push_back( RAJA::ListSegment(tileIdx, tileSize) );
                }
             }
          }
@@ -2979,8 +3027,8 @@ int main(int argc, char *argv[])
                      }
                   }
                   Index_t tileEnd = tileBegin + tileSize ;
-                  domain.domElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
-                  domain.matElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
+                  domain->domElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
+                  domain->matElemList->push_back( RAJA::RangeSegment(tileBegin, tileEnd) );
                   tileBegin = tileEnd ;
                }
             }
@@ -2990,11 +3038,11 @@ int main(int argc, char *argv[])
 
       case Tiled_LockFree:
       {
-         buildLockFreeBlockIndexset( *domain.domElemList,
+         buildLockFreeBlockIndexset( *domain->domElemList,
                                      edgeElems, edgeElems, edgeElems) ;
 
          /* Create a material indexset (entire domain same material for now) */
-         buildLockFreeBlockIndexset ( *domain.matElemList,
+         buildLockFreeBlockIndexset ( *domain->matElemList,
                                       edgeElems, edgeElems, edgeElems) ;
       }
       break;
@@ -3002,13 +3050,13 @@ int main(int argc, char *argv[])
       case Tiled_LockFreeColor:
       {
          // printf("Elements:\n") ;
-         buildLockFreeColorIndexset( *domain.domElemList,
-                                     domain.nodelist, domElems, 8, domNodes) ;
+         buildLockFreeColorIndexset( *domain->domElemList,
+                                     domain->nodelist, domElems, 8, domNodes) ;
 
          /* Create a material indexset (entire domain same material for now) */
          // printf("Material:\n") ;
-         buildLockFreeColorIndexset ( *domain.matElemList,
-                                      domain.nodelist, domElems, 8, domNodes) ;
+         buildLockFreeColorIndexset ( *domain->matElemList,
+                                      domain->nodelist, domElems, 8, domNodes) ;
       }
       break;
 
@@ -3018,14 +3066,14 @@ int main(int argc, char *argv[])
          iperm = Allocate<Index_t>(domElems) ; /* inverse permutation */
 
          // printf("Elements:\n") ;
-         buildLockFreeColorIndexset( *domain.domElemList,
-                                     domain.nodelist, domElems, 8, domNodes,
+         buildLockFreeColorIndexset( *domain->domElemList,
+                                     domain->nodelist, domElems, 8, domNodes,
                                      perm, iperm) ;
 
          /* Create a material indexset (entire domain same material for now) */
          // printf("Material:\n") ;
-         buildLockFreeColorIndexset ( *domain.matElemList,
-                                      domain.nodelist, domElems, 8, domNodes,
+         buildLockFreeColorIndexset ( *domain->matElemList,
+                                      domain->nodelist, domElems, 8, domNodes,
                                       perm, iperm) ;
       }
       break;
@@ -3039,7 +3087,7 @@ int main(int argc, char *argv[])
 
    /* Boundary nodesets */
 
-   domain.symmX = new LULESH_INDEXSET() ;
+   domain->symmX = new LULESH_INDEXSET() ;
    {
      Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
      Index_t nidx = 0 ;
@@ -3049,11 +3097,11 @@ int main(int argc, char *argv[])
          nset[nidx++] = planeInc + j*edgeNodes ;
        }
      }
-     domain.symmX->push_back( RAJA::ListSegment(nset, edgeNodes*edgeNodes) );
+     domain->symmX->push_back( RAJA::ListSegment(nset, edgeNodes*edgeNodes) );
      delete [] nset ;
    }
 
-   domain.symmY = new LULESH_INDEXSET() ;
+   domain->symmY = new LULESH_INDEXSET() ;
    {
      Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
      Index_t nidx = 0 ;
@@ -3063,13 +3111,13 @@ int main(int argc, char *argv[])
          nset[nidx++] = planeInc + j ;
        }
      }
-     domain.symmY->push_back( RAJA::ListSegment(nset, edgeNodes*edgeNodes) );
+     domain->symmY->push_back( RAJA::ListSegment(nset, edgeNodes*edgeNodes) );
      delete [] nset ;
    }
 
-   domain.symmZ = new LULESH_INDEXSET() ;
+   domain->symmZ = new LULESH_INDEXSET() ;
    {
-     domain.symmZ->push_back( RAJA::RangeSegment(0, edgeNodes*edgeNodes) );
+     domain->symmZ->push_back( RAJA::RangeSegment(0, edgeNodes*edgeNodes) );
    }
 
 
@@ -3082,67 +3130,67 @@ int main(int argc, char *argv[])
    /*****************/
 
    /* elem connectivity through face */
-   domain.lxim =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
-   domain.lxip =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
-   domain.letam =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
-   domain.letap =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
-   domain.lzetam =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
-   domain.lzetap =
-     AllocateTouch<elem_exec_policy, Index_t>(domain.domElemList, domElems) ;
+   domain->lxim =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
+   domain->lxip =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
+   domain->letam =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
+   domain->letap =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
+   domain->lzetam =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
+   domain->lzetap =
+     AllocateTouch<elem_exec_policy, Index_t>(domain->domElemList, domElems) ;
 
    /* elem face symm/free-surface flag */
-   domain.elemBC =
-     AllocateTouch<elem_exec_policy, Int_t>(domain.domElemList, domElems) ;
+   domain->elemBC =
+     AllocateTouch<elem_exec_policy, Int_t>(domain->domElemList, domElems) ;
 
-   domain.volo = /* reference volume */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->volo = /* reference volume */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
-   domain.elemMass = /* element mass */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->elemMass = /* element mass */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
    /*****************/
    /* Node-centered */
    /*****************/
 
    /* coordinates */
-   domain.x =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.y =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes)  ;
-   domain.z =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes)  ;
+   domain->x =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->y =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes)  ;
+   domain->z =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes)  ;
 
    /* velocities */
-   domain.xd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.yd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.zd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
+   domain->xd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->yd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->zd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
 
    /* accelerations */
-   domain.xdd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.ydd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.zdd =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
+   domain->xdd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->ydd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->zdd =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
 
    /* forces */
-   domain.fx =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.fy =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
-   domain.fz =
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
+   domain->fx =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->fy =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
+   domain->fz =
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
 
-   domain.nodalMass = /* nodal mass */
-     AllocateTouch<node_exec_policy, Real_t>(domain.domNodeList, domNodes) ;
+   domain->nodalMass = /* nodal mass */
+     AllocateTouch<node_exec_policy, Real_t>(domain->domNodeList, domNodes) ;
 
    /* initialize nodal coordinates */
 
@@ -3153,9 +3201,9 @@ int main(int argc, char *argv[])
       for (Index_t row=0; row<edgeNodes; ++row) {
          tx = Real_t(0.) ;
          for (Index_t col=0; col<edgeNodes; ++col) {
-            domain.x[nidx] = tx ;
-            domain.y[nidx] = ty ;
-            domain.z[nidx] = tz ;
+            domain->x[nidx] = tx ;
+            domain->y[nidx] = ty ;
+            domain->z[nidx] = tz ;
             ++nidx ;
             // tx += ds ; /* may accumulate roundoff... */
             tx = Real_t(1.125)*Real_t(col+1)/Real_t(edgeElems) ;
@@ -3168,98 +3216,98 @@ int main(int argc, char *argv[])
    }
 
    /* initialize material parameters */
-   domain.dtfixed = Real_t(lulesh_time_step) ;
-   domain.deltatime = Real_t(1.0e-7) ;
-   domain.deltatimemultlb = Real_t(1.1) ;
-   domain.deltatimemultub = Real_t(1.2) ;
-   domain.stoptime  = Real_t(lulesh_stop_time) ;
-   domain.dtcourant = Real_t(1.0e+20) ;
-   domain.dthydro   = Real_t(1.0e+20) ;
-   domain.dtmax     = Real_t(1.0e-2) ;
-   domain.time    = Real_t(0.) ;
-   domain.cycle   = 0 ;
+   domain->dtfixed = Real_t(lulesh_time_step) ;
+   domain->deltatime = Real_t(1.0e-7) ;
+   domain->deltatimemultlb = Real_t(1.1) ;
+   domain->deltatimemultub = Real_t(1.2) ;
+   domain->stoptime  = Real_t(lulesh_stop_time) ;
+   domain->dtcourant = Real_t(1.0e+20) ;
+   domain->dthydro   = Real_t(1.0e+20) ;
+   domain->dtmax     = Real_t(1.0e-2) ;
+   domain->time    = Real_t(0.) ;
+   domain->cycle   = 0 ;
 
-   domain.e_cut = Real_t(1.0e-7) ;
-   domain.p_cut = Real_t(1.0e-7) ;
-   domain.q_cut = Real_t(1.0e-7) ;
-   domain.u_cut = Real_t(1.0e-7) ;
-   domain.v_cut = Real_t(1.0e-10) ;
+   domain->e_cut = Real_t(1.0e-7) ;
+   domain->p_cut = Real_t(1.0e-7) ;
+   domain->q_cut = Real_t(1.0e-7) ;
+   domain->u_cut = Real_t(1.0e-7) ;
+   domain->v_cut = Real_t(1.0e-10) ;
 
-   domain.hgcoef      = Real_t(3.0) ;
-   domain.ss4o3       = Real_t(4.0)/Real_t(3.0) ;
+   domain->hgcoef      = Real_t(3.0) ;
+   domain->ss4o3       = Real_t(4.0)/Real_t(3.0) ;
 
-   domain.qstop              =  Real_t(1.0e+12) ;
-   domain.monoq_max_slope    =  Real_t(1.0) ;
-   domain.monoq_limiter_mult =  Real_t(2.0) ;
-   domain.qlc_monoq          = Real_t(0.5) ;
-   domain.qqc_monoq          = Real_t(2.0)/Real_t(3.0) ;
-   domain.qqc                = Real_t(2.0) ;
+   domain->qstop              =  Real_t(1.0e+12) ;
+   domain->monoq_max_slope    =  Real_t(1.0) ;
+   domain->monoq_limiter_mult =  Real_t(2.0) ;
+   domain->qlc_monoq          = Real_t(0.5) ;
+   domain->qqc_monoq          = Real_t(2.0)/Real_t(3.0) ;
+   domain->qqc                = Real_t(2.0) ;
 
-   domain.pmin =  Real_t(0.) ;
-   domain.emin = Real_t(-1.0e+15) ;
+   domain->pmin =  Real_t(0.) ;
+   domain->emin = Real_t(-1.0e+15) ;
 
-   domain.dvovmax =  Real_t(0.1) ;
+   domain->dvovmax =  Real_t(0.1) ;
 
-   domain.eosvmax =  Real_t(1.0e+9) ;
-   domain.eosvmin =  Real_t(1.0e-9) ;
+   domain->eosvmax =  Real_t(1.0e+9) ;
+   domain->eosvmin =  Real_t(1.0e-9) ;
 
-   domain.refdens =  Real_t(1.0) ;
+   domain->refdens =  Real_t(1.0) ;
 
    /* initialize field data */
    for (Index_t i=0; i<domNodes; ++i) {
-      domain.nodalMass[i] = 0.0 ;
+      domain->nodalMass[i] = 0.0 ;
    }
 
    for (Index_t i=0; i<domElems; ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
-      Index_p elemToNode = &domain.nodelist[8*i] ;
+      Index_p elemToNode = &domain->nodelist[8*i] ;
       for( Index_t lnode=0 ; lnode<8 ; ++lnode )
       {
         Index_t gnode = elemToNode[lnode];
-        x_local[lnode] = domain.x[gnode];
-        y_local[lnode] = domain.y[gnode];
-        z_local[lnode] = domain.z[gnode];
+        x_local[lnode] = domain->x[gnode];
+        y_local[lnode] = domain->y[gnode];
+        z_local[lnode] = domain->z[gnode];
       }
 
       // volume calculations
       Real_t volume = CalcElemVolume(x_local, y_local, z_local );
-      domain.volo[i] = volume ;
-      domain.elemMass[i] = volume ;
+      domain->volo[i] = volume ;
+      domain->elemMass[i] = volume ;
       for (Index_t j=0; j<8; ++j) {
          Index_t idx = elemToNode[j] ;
-         domain.nodalMass[idx] += volume / Real_t(8.0) ;
+         domain->nodalMass[idx] += volume / Real_t(8.0) ;
       }
    }
 
    /* set up elemement connectivity information */
-   domain.lxim[0] = 0 ;
+   domain->lxim[0] = 0 ;
    for (Index_t i=1; i<domElems; ++i) {
-      domain.lxim[i]   = i-1 ;
-      domain.lxip[i-1] = i ;
+      domain->lxim[i]   = i-1 ;
+      domain->lxip[i-1] = i ;
    }
-   domain.lxip[domElems-1] = domElems-1 ;
+   domain->lxip[domElems-1] = domElems-1 ;
 
    for (Index_t i=0; i<edgeElems; ++i) {
-      domain.letam[i] = i ; 
-      domain.letap[domElems-edgeElems+i] = domElems-edgeElems+i ;
+      domain->letam[i] = i ; 
+      domain->letap[domElems-edgeElems+i] = domElems-edgeElems+i ;
    }
    for (Index_t i=edgeElems; i<domElems; ++i) {
-      domain.letam[i] = i-edgeElems ;
-      domain.letap[i-edgeElems] = i ;
+      domain->letam[i] = i-edgeElems ;
+      domain->letap[i-edgeElems] = i ;
    }
 
    for (Index_t i=0; i<edgeElems*edgeElems; ++i) {
-      domain.lzetam[i] = i ;
-      domain.lzetap[domElems-edgeElems*edgeElems+i] = domElems-edgeElems*edgeElems+i ;
+      domain->lzetam[i] = i ;
+      domain->lzetap[domElems-edgeElems*edgeElems+i] = domElems-edgeElems*edgeElems+i ;
    }
    for (Index_t i=edgeElems*edgeElems; i<domElems; ++i) {
-      domain.lzetam[i] = i - edgeElems*edgeElems ;
-      domain.lzetap[i-edgeElems*edgeElems] = i ;
+      domain->lzetam[i] = i - edgeElems*edgeElems ;
+      domain->lzetap[i-edgeElems*edgeElems] = i ;
    }
 
    /* set up boundary condition information */
    for (Index_t i=0; i<domElems; ++i) {
-      domain.elemBC[i] = 0 ;  /* clear BCs by default */
+      domain->elemBC[i] = 0 ;  /* clear BCs by default */
    }
 
    /* faces on "external" boundaries will be */
@@ -3268,12 +3316,12 @@ int main(int argc, char *argv[])
       Index_t planeInc = i*edgeElems*edgeElems ;
       Index_t rowInc   = i*edgeElems ;
       for (Index_t j=0; j<edgeElems; ++j) {
-         domain.elemBC[planeInc+j*edgeElems] |= XI_M_SYMM ;
-         domain.elemBC[planeInc+j*edgeElems+edgeElems-1] |= XI_P_FREE ;
-         domain.elemBC[planeInc+j] |= ETA_M_SYMM ;
-         domain.elemBC[planeInc+j+edgeElems*edgeElems-edgeElems] |= ETA_P_FREE ;
-         domain.elemBC[rowInc+j] |= ZETA_M_SYMM ;
-         domain.elemBC[rowInc+j+domElems-edgeElems*edgeElems] |= ZETA_P_FREE ;
+         domain->elemBC[planeInc+j*edgeElems] |= XI_M_SYMM ;
+         domain->elemBC[planeInc+j*edgeElems+edgeElems-1] |= XI_P_FREE ;
+         domain->elemBC[planeInc+j] |= ETA_M_SYMM ;
+         domain->elemBC[planeInc+j+edgeElems*edgeElems-edgeElems] |= ETA_P_FREE ;
+         domain->elemBC[rowInc+j] |= ZETA_M_SYMM ;
+         domain->elemBC[rowInc+j+domElems-edgeElems*edgeElems] |= ZETA_P_FREE ;
       }
    }
 
@@ -3284,61 +3332,61 @@ int main(int argc, char *argv[])
          Index_t tmp[8*domElems] ;
          for (Index_t i=0; i<domElems; ++i) {
             for (Index_t j=0; j<8; ++j) {
-               tmp[i*8+j] = domain.nodelist[perm[i]*8+j] ;
+               tmp[i*8+j] = domain->nodelist[perm[i]*8+j] ;
             }
          }
          for (Index_t i=0; i<8*domElems; ++i) {
-            domain.nodelist[i] = tmp[i] ;
+            domain->nodelist[i] = tmp[i] ;
          }
       }
       /* permute volo */
       {
          Real_t tmp[domElems] ;
          for (Index_t i=0; i<domElems; ++i) {
-            tmp[i] = domain.volo[perm[i]] ;
+            tmp[i] = domain->volo[perm[i]] ;
          }
          for (Index_t i=0; i<domElems; ++i) {
-            domain.volo[i] = tmp[i] ;
+            domain->volo[i] = tmp[i] ;
          }
       }
       /* permute elemMass */
       {
          Real_t tmp[domElems] ;
          for (Index_t i=0; i<domElems; ++i) {
-            tmp[i] = domain.elemMass[perm[i]] ;
+            tmp[i] = domain->elemMass[perm[i]] ;
          }
          for (Index_t i=0; i<domElems; ++i) {
-            domain.elemMass[i] = tmp[i] ;
+            domain->elemMass[i] = tmp[i] ;
          }
       }
       /* permute lxim, lxip, letam, letap, lzetam, lzetap */
       {
          Index_t tmp[6*domElems] ;
          for (Index_t i=0; i<domElems; ++i) {
-            tmp[i*6+0] = iperm[domain.lxim[perm[i]]] ;
-            tmp[i*6+1] = iperm[domain.lxip[perm[i]]] ;
-            tmp[i*6+2] = iperm[domain.letam[perm[i]]] ;
-            tmp[i*6+3] = iperm[domain.letap[perm[i]]] ;
-            tmp[i*6+4] = iperm[domain.lzetam[perm[i]]] ;
-            tmp[i*6+5] = iperm[domain.lzetap[perm[i]]] ;
+            tmp[i*6+0] = iperm[domain->lxim[perm[i]]] ;
+            tmp[i*6+1] = iperm[domain->lxip[perm[i]]] ;
+            tmp[i*6+2] = iperm[domain->letam[perm[i]]] ;
+            tmp[i*6+3] = iperm[domain->letap[perm[i]]] ;
+            tmp[i*6+4] = iperm[domain->lzetam[perm[i]]] ;
+            tmp[i*6+5] = iperm[domain->lzetap[perm[i]]] ;
          }
          for (Index_t i=0; i<domElems; ++i) {
-            domain.lxim[i] = tmp[i*6+0] ;
-            domain.lxip[i] = tmp[i*6+1] ;
-            domain.letam[i] = tmp[i*6+2] ;
-            domain.letap[i] = tmp[i*6+3] ;
-            domain.lzetam[i] = tmp[i*6+4] ;
-            domain.lzetap[i] = tmp[i*6+5] ;
+            domain->lxim[i] = tmp[i*6+0] ;
+            domain->lxip[i] = tmp[i*6+1] ;
+            domain->letam[i] = tmp[i*6+2] ;
+            domain->letap[i] = tmp[i*6+3] ;
+            domain->lzetam[i] = tmp[i*6+4] ;
+            domain->lzetap[i] = tmp[i*6+5] ;
          }
       }
       /* permute elemBC */
       {
          Int_t tmp[domElems] ;
          for (Index_t i=0; i<domElems; ++i) {
-            tmp[i] = domain.elemBC[perm[i]] ;
+            tmp[i] = domain->elemBC[perm[i]] ;
          }
          for (Index_t i=0; i<domElems; ++i) {
-            domain.elemBC[i] = tmp[i] ;
+            domain->elemBC[i] = tmp[i] ;
          }
       }
       delete [] iperm ;
@@ -3351,41 +3399,41 @@ int main(int argc, char *argv[])
    /* Elem-centered */
    /*****************/
 
-   domain.e =  /* energy */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
-   domain.p = /* pressure */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->e =  /* energy */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
+   domain->p = /* pressure */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
-   domain.q = /* artificial viscosity */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
-   domain.ql = /* linear term for q */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
-   domain.qq = /* quadratic term for q */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->q = /* artificial viscosity */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
+   domain->ql = /* linear term for q */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
+   domain->qq = /* quadratic term for q */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
-   domain.v = /* relative volume */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ; 
-   domain.delv = /* m_vnew - m_v */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
-   domain.vdov = /* volume deriv over volume */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->v = /* relative volume */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ; 
+   domain->delv = /* m_vnew - m_v */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
+   domain->vdov = /* volume deriv over volume */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
-   domain.arealg = /* elem characteristic length */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->arealg = /* elem characteristic length */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
-   domain.ss = /* "sound speed" */
-     AllocateTouch<elem_exec_policy, Real_t>(domain.domElemList, domElems) ;
+   domain->ss = /* "sound speed" */
+     AllocateTouch<elem_exec_policy, Real_t>(domain->domElemList, domElems) ;
 
    /* Basic Field Initialization */
 
    for (Index_t i=0; i<domElems; ++i) {
-      domain.v[i] = Real_t(1.0) ;
+      domain->v[i] = Real_t(1.0) ;
 
 
    }
 
    /* deposit energy -- we know elem zero stays put for all permutations */
-   domain.e[0] = Real_t(3.948746e+7) ;
+   domain->e[0] = Real_t(3.948746e+7) ;
 
 #ifdef OMP_HACK
    // set up node-centered indexing of elements
@@ -3397,43 +3445,43 @@ int main(int argc, char *argv[])
    }
 
    for (Index_t i=0; i<domElems; ++i) {
-     Index_p nl = &domain.nodelist[8*i] ;
+     Index_p nl = &domain->nodelist[8*i] ;
      for (Index_t j=0; j < 8; ++j) {
        ++(nodeElemCount[nl[j]] );
      }
    }
 
-   domain.nodeElemStart = Allocate<Index_t>(domNodes+1) ;
+   domain->nodeElemStart = Allocate<Index_t>(domNodes+1) ;
 
-   domain.nodeElemStart[0] = 0;
+   domain->nodeElemStart[0] = 0;
 
    for (Index_t i=1; i <= domNodes; ++i) {
-     domain.nodeElemStart[i] =
-       domain.nodeElemStart[i-1] + nodeElemCount[i-1] ;
+     domain->nodeElemStart[i] =
+       domain->nodeElemStart[i-1] + nodeElemCount[i-1] ;
    }
 
-   domain.nodeElemCornerList =
-      Allocate<Index_t>(domain.nodeElemStart[domNodes]);
+   domain->nodeElemCornerList =
+      Allocate<Index_t>(domain->nodeElemStart[domNodes]);
 
    for (Index_t i=0; i < domNodes; ++i) {
      nodeElemCount[i] = 0;
    }
 
    for (Index_t i=0; i < domElems; ++i) {
-     Index_p nl = &domain.nodelist[8*i] ;
+     Index_p nl = &domain->nodelist[8*i] ;
      for (Index_t j=0; j < 8; ++j) {
        Index_t m = nl[j];
        Index_t k = i*8 + j ;
-       Index_t offset = domain.nodeElemStart[m] + nodeElemCount[m] ;
-       domain.nodeElemCornerList[offset] = k;
+       Index_t offset = domain->nodeElemStart[m] + nodeElemCount[m] ;
+       domain->nodeElemCornerList[offset] = k;
        ++(nodeElemCount[m]) ;
      }
    }
 
 #ifdef DEBUG_LULESH
-   Index_t clSize = domain.nodeElemStart[domNodes] ;
+   Index_t clSize = domain->nodeElemStart[domNodes] ;
    for (Index_t i=0; i < clSize; ++i) {
-     Index_t clv = domain.nodeElemCornerList[i] ;
+     Index_t clv = domain->nodeElemCornerList[i] ;
      if ((clv < 0) || (clv > domElems*8)) {
        fprintf(stderr,
         "AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
@@ -3441,20 +3489,19 @@ int main(int argc, char *argv[])
      }
    }
 #endif
-
    Release(&nodeElemCount) ;
    }
 #endif
 
    /* timestep to solution */
    timer_cycle.start();
-   while(domain.time < domain.stoptime) {
-      TimeIncrement(&domain) ;
-      LagrangeLeapFrog(&domain) ;
+   while(domain->time < domain->stoptime) {
+      TimeIncrement(domain) ;
+      LagrangeLeapFrog(domain) ;
       /* problem->commNodes->Transfer(CommNodes::syncposvel) ; */
       if ( show_run_progress ) {
          printf("time = %e, dt=%e\n",
-                double(domain.time), double(domain.deltatime) ) ;
+                double(domain->time), double(domain->deltatime) ) ;
       }
    }
    timer_cycle.stop();
@@ -3463,6 +3510,8 @@ int main(int argc, char *argv[])
 
    printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
    printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );
+
+   Release(&domain) ;
 
    return 0 ;
 }
