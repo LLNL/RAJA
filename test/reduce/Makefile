@@ -33,6 +33,9 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
+#rzmist
+#RAJA_ARCH = rzmist_clang
+#RAJA_ARCH = rzmist_xlc
 
 RAJA_TOPDIR    = ../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/

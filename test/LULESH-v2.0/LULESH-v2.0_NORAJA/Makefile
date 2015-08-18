@@ -45,6 +45,10 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
+#rzmist
+#RAJA_ARCH = rzmist_clang
+#RAJA_ARCH = rzmist_xlc
+
 LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1
 
 #common places you might find silo on the Livermore machines.
