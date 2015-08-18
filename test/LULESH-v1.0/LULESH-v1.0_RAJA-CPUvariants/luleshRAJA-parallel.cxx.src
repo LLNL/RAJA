@@ -2663,7 +2663,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-#if 1
+#if 1  // Reduction based on luleshPolicy.hxx choice
    RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
@@ -2721,7 +2721,7 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-#if 0
+#if 1  // Reduction based on luleshPolicy.hxx choice
    RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
