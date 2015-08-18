@@ -21,6 +21,9 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
+#rzmist
+#RAJA_ARCH = rzmist_clang
+#RAJA_ARCH = rzmist_xlc
 
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
@@ -111,7 +114,7 @@ CFLAGS += -DSINGLE
 endif
 
 # Set executable name and add includes & libraries for MPI if needed.
-CoMD_VARIANT = CoMD-openmp
+CoMD_VARIANT = CoMD-symmetric
 ifeq ($(DO_MPI), ON)
 CoMD_VARIANT = CoMD-openmp-mpi
 INCLUDES += ${MPI_INCLUDE}

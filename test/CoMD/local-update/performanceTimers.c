@@ -143,7 +143,7 @@ void printPerformanceResults(int nGlobalAtoms, int printRate)
    {
       double totalTime = perfTimer[ii].total*tick;
       if (perfTimer[ii].count > 0)
-         fprintf(screenOut, "%-16s%12"PRIu64"     %8.4f      %8.4f    %8.2f\n", 
+         fprintf(screenOut, "%-16s%12" PRIu64 "     %8.4f      %8.4f    %8.2f\n", 
                  timerName[ii],
                  perfTimer[ii].count,
                  totalTime/(double)perfTimer[ii].count,
@@ -202,7 +202,7 @@ void printPerformanceResultsYaml(FILE* file)
       {
          double totalTime = perfTimer[ii].total*tick;
          fprintf(file, "  Timer: %s\n", timerName[ii]);
-         fprintf(file, "    CallCount:  %"PRIu64"\n", perfTimer[ii].count); 
+         fprintf(file, "    CallCount:  %" PRIu64 "\n", perfTimer[ii].count); 
          fprintf(file, "    AvgPerCall: %8.4f\n", totalTime/(double)perfTimer[ii].count);
          fprintf(file, "    Total:      %8.4f\n", totalTime);
          fprintf(file, "    PercentLoop: %8.2f\n", totalTime/loopTime*100);

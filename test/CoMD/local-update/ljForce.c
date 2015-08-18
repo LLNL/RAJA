@@ -134,12 +134,12 @@ void ljPrint(FILE* file, BasePotential* pot)
    fprintf(file, "  Potential type   : Lennard-Jones\n");
    fprintf(file, "  Species name     : %s\n", ljPot->name);
    fprintf(file, "  Atomic number    : %d\n", ljPot->atomicNo);
-   fprintf(file, "  Mass             : "FMT1" amu\n", ljPot->mass / amuToInternalMass); // print in amu
+   fprintf(file, "  Mass             : " FMT1 " amu\n", ljPot->mass / amuToInternalMass); // print in amu
    fprintf(file, "  Lattice Type     : %s\n", ljPot->latticeType);
-   fprintf(file, "  Lattice spacing  : "FMT1" Angstroms\n", ljPot->lat);
-   fprintf(file, "  Cutoff           : "FMT1" Angstroms\n", ljPot->cutoff);
-   fprintf(file, "  Epsilon          : "FMT1" eV\n", ljPot->epsilon);
-   fprintf(file, "  Sigma            : "FMT1" Angstroms\n", ljPot->sigma);
+   fprintf(file, "  Lattice spacing  : " FMT1 " Angstroms\n", ljPot->lat);
+   fprintf(file, "  Cutoff           : " FMT1 " Angstroms\n", ljPot->cutoff);
+   fprintf(file, "  Epsilon          : " FMT1 " eV\n", ljPot->epsilon);
+   fprintf(file, "  Sigma            : " FMT1 " Angstroms\n", ljPot->sigma);
 }
 
 int ljForce(SimFlat* s)
