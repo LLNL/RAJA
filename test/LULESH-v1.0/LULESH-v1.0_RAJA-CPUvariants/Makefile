@@ -47,6 +47,10 @@ RAJA_ARCH = x86_sse_icc
 #ipa-nvcc
 #RAJA_ARCH = ipa_nvcc
 
+#rzmist
+#RAJA_ARCH = rzmist_clang
+#RAJA_ARCH = rzmist_xlc
+
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
