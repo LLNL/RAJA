@@ -135,6 +135,7 @@ void ListSegment::initIndexData(const Index_type* indx,
                       << __FILE__ << " line " << __LINE__ << std::endl;
             exit(1);
          } 
+         cudaMemset(m_indx,0,m_len*sizeof(Index_type));
 
 #else
          m_indx = new Index_type[len];

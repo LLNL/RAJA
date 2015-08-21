@@ -270,6 +270,8 @@ CudaReductionBlockDataType* getCudaReductionMemBlock()
                    << __FILE__ << " line " << __LINE__ << std::endl;
          exit(1);
       }
+      cudaMemset(s_cuda_reduction_mem_block, 0, 
+                 sizeof(CudaReductionBlockDataType)*len);
 
       atexit(freeCudaReductionMemBlock);
    }
