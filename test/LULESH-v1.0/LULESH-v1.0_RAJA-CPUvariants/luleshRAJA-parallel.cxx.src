@@ -2663,7 +2663,6 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-#if 1  // Reduction based on luleshPolicy.hxx choice
    RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
@@ -2687,32 +2686,6 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
    if (dtcourantLoc < Real_t(1.0e+20)) {
       *dtcourant = dtcourantLoc ;
    }
-#else // Hack in OMP reduction
-   RAJA::ReduceMin<RAJA::omp_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
-   Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
-
-   RAJA::forall< LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >( *matElemList, [=] (int indx) {
-      Real_t dtf = ss[indx] * ss[indx] ;
-      Real_t dtf_cmp ;
-
-      if ( vdov[indx] < Real_t(0.) ) {
-         dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
-      }
-
-      dtf_cmp = (vdov[indx] != Real_t(0.))
-              ?  arealg[indx] / sqrt(dtf) : Real_t(1.0e+10) ;
-
-      /* determine minimum timestep with its corresponding elem */
-      dtcourantLoc.min(dtf_cmp) ;
-   } ) ;
-
-   /* Don't try to register a time constraint if none of the elements
-    * were active */
-   if (dtcourantLoc < Real_t(1.0e+20)) {
-      *dtcourant = dtcourantLoc ;
-   }
-
-#endif
 
    return ;
 }
@@ -2721,7 +2694,6 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-#if 1  // Reduction based on luleshPolicy.hxx choice
    RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
@@ -2736,23 +2708,6 @@ void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
    if (dthydroLoc < Real_t(1.0e+20)) {
       *dthydro = dthydroLoc ;
    }
-#else // Hack in OMP reduction
-   RAJA::ReduceMin<RAJA::omp_reduce, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
-
-   RAJA::forall< LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> >( *matElemList, [=] (int indx) {
-
-      Real_t dtvov_cmp = (vdov[indx] != Real_t(0.))
-                       ? (dvovmax / (fabs(vdov[indx])+Real_t(1.e-20)))
-                       : Real_t(1.0e+10) ;
-
-      dthydroLoc.min(dtvov_cmp) ;
-   } ) ;
-
-   if (dthydroLoc < Real_t(1.0e+20)) {
-      *dthydro = dthydroLoc ;
-   }
-
-#endif
 
    return ;
 }
@@ -2891,6 +2846,8 @@ int main(int argc, char *argv[])
       printf("\t Mesh tiling = %i x %i x %i\n",
              lulesh_xtile, lulesh_ytile, lulesh_ztile) ;
    }
+
+
    
 
    /****************************/

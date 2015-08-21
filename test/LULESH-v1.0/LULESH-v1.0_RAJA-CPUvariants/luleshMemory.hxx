@@ -8,6 +8,9 @@
 
 #if defined(RAJA_USE_CUDA) // CUDA managed memory allocate/release
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 template <typename T>
 inline T *Allocate(size_t size)
 {
@@ -17,6 +20,7 @@ inline T *Allocate(size_t size)
                 << __LINE__ << std::endl;
      exit(1);
    }
+   cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 
@@ -29,6 +33,7 @@ inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
                 << __LINE__ << std::endl;
       exit(1);
    }
+   cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 
@@ -48,11 +53,15 @@ inline void Release(T **ptr)
 
 #else  // Standard CPU memory allocate/release
 
+#include <cstdlib>
+#include <cstring>
+
 template <typename T>
 inline T *Allocate(size_t size)
 {
    T *retVal ;
    posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
+   memset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 

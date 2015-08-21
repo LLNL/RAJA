@@ -1,0 +1,41 @@
+#
+# This directory contains three different versions of LULESH-1.0, all
+# using RAJA:
+#
+# 1) luleshRAJA-serial.cxx contains a serial-only version.
+# 2) luleshRAJA-parallel.cxx.src contains a version that can be run 
+#    in 9 different parallel variants using RAJA (different data layouts,
+#    different OpenMP parallelization strategies (including lock-free
+#    dependency graphs), CilkPlus, and GPU using CUDA). See luleshPolicy.hxx
+#    more more details and how to select the exeuction mode.
+# 3) luleshRAJA-parallel-FT.cxx contains a version of #2, but with a
+#    loop-level fault tolerance mechanism enabled. All loops in the FT
+#    version are idempotent.  
+#
+
+##
+## To build and run the serial CPU variant:
+##
+## 1) Set RAJA_ARCH for the compiler and platform in the Makefile.
+## 2) type ./build-serial
+## 3) type ./run-serial
+##
+
+##
+## To build and run any of the parallel CPU variants:
+##
+## 1) Set RAJA_ARCH for the compiler and platform in the Makefile.
+## 2) Set the USE_VASE value in luleshPolicy.hx
+## 3) type ./build-parallel
+## 4) type ./run-parallel
+##
+## To build and run on the GPU version (e.g., ipa or rzhasgpu)
+##
+## 1) Set RAJA_ARCH = ipa_nvcc
+## 2) Set the USE_VASE value to 9 in luleshPolicy.hxx
+## 3) type ./build-parallel-gpu
+## 4) Allocate a node on the machine. E.g., on ipa
+> salloc -p nvidia -N1
+> setenv CUDA_VISIBLE_DEVICES 0
+## 5) type ./run-parallel-gpu 
+##
