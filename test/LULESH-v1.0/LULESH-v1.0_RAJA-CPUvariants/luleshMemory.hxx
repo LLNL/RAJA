@@ -61,7 +61,7 @@ inline T *Allocate(size_t size)
 {
    T *retVal ;
    posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
-   memset(retVal,0,sizeof(T)*size);
+// memset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 
