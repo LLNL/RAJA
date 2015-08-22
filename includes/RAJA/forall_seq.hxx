@@ -54,7 +54,8 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<seq_reduce, T> {
+class ReduceMin<seq_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).
@@ -129,6 +130,91 @@ private:
 /*!
  ******************************************************************************
  *
+ * \brief  Max reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMax<seq_reduce, T> 
+{
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMax(T init_val) 
+   {
+      m_is_copy = false;
+
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMax id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+
+      m_blockdata[0] = init_val; 
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMax( const ReduceMax<seq_reduce, T>& other ) 
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMax<seq_reduce, T>() 
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object 
+      }
+   }
+
+   //
+   // Operator to retrieve max value (before object is destroyed).
+   //
+   operator T()
+   {
+      m_reduced_val = RAJA_MAX(m_reduced_val, static_cast<T>(m_blockdata[0]));
+
+      return m_reduced_val;
+   }
+
+   //
+   // Max function that sets object max to maximum of current value and arg.
+   //
+   ReduceMax<seq_reduce, T> max(T val) const 
+   {
+      m_blockdata[0] = RAJA_MAX(static_cast<T>(m_blockdata[0]), val);
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMax<seq_reduce, T>();
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+
+   CPUReductionBlockDataType* m_blockdata;
+} ;
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Sum reducer class template for use in sequential reduction.
  *
  * \verbatim
@@ -138,7 +224,8 @@ private:
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<seq_reduce, T> {
+class ReduceSum<seq_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).

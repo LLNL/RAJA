@@ -60,7 +60,8 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<omp_reduce, T> {
+class ReduceMin<omp_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).
@@ -124,9 +125,9 @@ public:
    ReduceMin<omp_reduce, T> min(T val) const 
    {
       int tid = omp_get_thread_num();
-      int min_idx = tid*s_block_offset;
-      m_blockdata[min_idx] = 
-         RAJA_MIN(static_cast<T>(m_blockdata[min_idx]), val);
+      int idx = tid*s_block_offset;
+      m_blockdata[idx] = 
+         RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
 
       return *this ;
    }
@@ -151,6 +152,107 @@ private:
 /*!
  ******************************************************************************
  *
+ * \brief  Max reducer class template for use in OpenMP execution.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMax<omp_reduce, T> 
+{
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMax(T init_val)
+   {
+      m_is_copy = false;
+
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMax id = " << m_myID << std::endl;
+
+      m_blockdata = getCPUReductionMemBlock(m_myID);
+
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for 
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_blockdata[i*s_block_offset] = init_val ;
+      }
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMax( const ReduceMax<omp_reduce, T>& other )
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMax<omp_reduce, T>() 
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
+   }
+
+   //
+   // Operator to retrieve max value (before object is destroyed).
+   //
+   operator T()
+   {
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_reduced_val = 
+            RAJA_MAX(m_reduced_val, 
+                     static_cast<T>(m_blockdata[i*s_block_offset]));
+      }
+
+      return m_reduced_val;
+   }
+
+   //
+   // Max function that sets max for current thread.
+   //
+   ReduceMax<omp_reduce, T> max(T val) const 
+   {
+      int tid = omp_get_thread_num();
+      int idx = tid*s_block_offset;
+      m_blockdata[idx] = 
+         RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
+
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMax<omp_reduce, T>();
+
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+
+   CPUReductionBlockDataType* m_blockdata;
+} ;
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Min reducer class template for use in OpenMP execution.
  *
  * \verbatim
@@ -160,7 +262,8 @@ private:
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<omp_reduce, T> {
+class ReduceSum<omp_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).
