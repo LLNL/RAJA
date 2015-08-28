@@ -14,8 +14,8 @@
 #             the file ../compilers.mk.
 #
 
-#OPT_DEBUG = opt
-OPT_DEBUG = debug
+OPT_DEBUG = opt
+#OPT_DEBUG = debug
 
 #rzalastor
 RAJA_ARCH = x86_sse_icc
