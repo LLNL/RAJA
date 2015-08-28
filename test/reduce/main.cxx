@@ -2,15 +2,12 @@
 // Main program illustrating simple RAJA index set creation 
 // and execution and methods.
 //
-// NOTE: Some compilers do not support C++ lambda expressions; for such
-//       compilers, the macro constant USE_LAMBDA must be undefined to
-//       compile and run program.
-//
 
 #include <cstdlib>
 #include <time.h>
 
 #include<string>
+#include<vector>
 #include<iostream>
 
 #include "RAJA/RAJA.hxx"
@@ -23,16 +20,11 @@ using namespace RAJA;
 //
 // Global variables for counting tests executed/passed.
 //
-unsigned ntests_run_total = 0;
-unsigned ntests_passed_total = 0;
+unsigned s_ntests_run_total = 0;
+unsigned s_ntests_passed_total = 0;
 
-unsigned ntests_run = 0;
-unsigned ntests_passed = 0;
-
-//
-// For tested platforms, only xlc compiler fails to support C++ lambda fcns.
-//
-#define USE_LAMBDA
+unsigned s_ntests_run = 0;
+unsigned s_ntests_passed = 0;
 
 
 
@@ -45,14 +37,14 @@ void forall_reduceloc_CheckResult(const std::string& name,
                                   Real_type check_val,
                                   Index_type check_idx)
 {
-   ntests_run_total++;
-   ntests_run++;
+   s_ntests_run_total++;
+   s_ntests_run++;
   
    bool is_correct = (ref_val == check_val) && (ref_idx == check_idx);
 
    if ( is_correct ) {
-      ntests_passed_total++;
-      ntests_passed++;
+      s_ntests_passed_total++;
+      s_ntests_passed++;
    } else {
       std::cout << name << " is WRONG" << std::endl;                               
    } 
@@ -65,111 +57,141 @@ void forall_reduce_CheckResult(const std::string& name,
                                const Real_type ref_val,
                                Real_type check_val)
 {
-   ntests_run_total++;
-   ntests_run++;
+   s_ntests_run_total++;
+   s_ntests_run++;
   
    bool is_correct = (ref_val == check_val);
 
    if ( is_correct ) {
-      ntests_passed_total++;
-      ntests_passed++;
+      s_ntests_passed_total++;
+      s_ntests_passed++;
    } else {
       std::cout << name << " is WRONG" << std::endl;
    } 
 }
 
+//=========================================================================
+//=========================================================================
+// 
+// Methods that define and run various RAJA reduction tests
+// 
+//=========================================================================
+//=========================================================================
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Method that defines and runs basic RAJA min reduction tests 
+// based on execution policy template
+//
+///////////////////////////////////////////////////////////////////////////
+template <typename ISET_POLICY_T,
+          typename REDUCE_POLICY_T>
+void runBasicMinReductionTest(const std::string& policy,
+                              Real_ptr in_array, Index_type alen,
+                              const IndexSet& iset,
+                              RAJAVec<Index_type> is_indices)
+{
+   Real_ptr test_array;
+   posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
+
+   //
+   // Make all test array values positve
+   //
+   for (Index_type i=0 ; i<alen; ++i) {
+      test_array[i] = std::abs( in_array[i] );
+   }
+
+   //
+   // Generate reference result for min in middle of index set.
+   //
+   const Index_type ref_min_indx =
+      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_min_val  = -100.0;
+
+   test_array[ref_min_indx] = ref_min_val;
+
+#if 0
+   std::cout << "ref_min_indx = " << ref_min_indx << std::endl;
+   std::cout << "ref_min_val = " << ref_min_val << std::endl;
+   std::cout << "test_array[ref_min_indx] = " 
+             << test_array[ref_min_indx] << std::endl;
+#endif 
+
+   std::cout << "\n Test MIN reduction for " << policy << "\n";
+
+   ReduceMin<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20);
+   ReduceMin<REDUCE_POLICY_T, Real_type> tmin1(-200.0);
+
+   int loops = 2;
+
+   for (int k = 1; k <= loops; ++ k) {
+
+//    std::cout << "k = " << k << std::endl;
+
+      forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
+         tmin0.min(k*test_array[idx]);
+         tmin1.min(test_array[idx]);
+      } );
+
+      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin0",
+                                k*ref_min_val, tmin0);
+      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin1",
+                                -200.0, tmin1);
+   }
+
+   free(test_array); 
+
+}
 
  
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA min reduce tests with available RAJA execution policies....
+// Run RAJA min reduction tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-void runMinReduceTests( const IndexSet& hindex, 
-                        Real_ptr parent, 
-                        Real_type ref_min )
+void runMinReduceTests( Real_ptr in_array,
+                        Index_type alen,
+                        const IndexSet& iset,
+                        const RAJAVec<Index_type>& is_indices )
 {
-// Run various min reductions and check results against reference...
-
    std::cout << "\n\n   BEGIN RAJA::forall MIN REDUCE tests...." << std::endl;
 
-{
-   std::string policy("ExecPolicy<seq_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
+   // initialize test counters for this test set
+   s_ntests_run = 0; 
+   s_ntests_passed = 0; 
 
-   ReduceMin<seq_reduce, Real_type> tmin0(1.0e+20);
-   ReduceMin<seq_reduce, Real_type> tmin1(-200.0);
+   runBasicMinReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, seq_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   int loops = 2;
+   runBasicMinReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, simd_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   for (int k = 1; k <= loops; ++ k) {
+   runBasicMinReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
+               "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-//    std::cout << "k = " << k << std::endl;
+   runBasicMinReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmin0.min(k*parent[idx]);
-         tmin1.min(parent[idx]);
-      } );
+   runBasicMinReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin0",
-                                k*ref_min, tmin0);
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin1",
-                                -200.0, tmin1);
-   }
-}
-
-{ 
-   std::string policy("ExecPolicy<seq_segit, omp_parallel_for_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceMin<omp_reduce, Real_type> tmin0(1.0e+20);
-   ReduceMin<omp_reduce, Real_type> tmin1(-200.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++ k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmin0.min(k*parent[idx]);
-         tmin1.min(parent[idx]);
-      } );
-
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin0",
-                                k*ref_min, tmin0);
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin1",
-                                -200.0, tmin1);
-   }
-}
-
-{
-   std::string policy("ExecPolicy<omp_parallel_for_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceMin<omp_reduce, Real_type> tmin0(1.0e+20);
-   ReduceMin<omp_reduce, Real_type> tmin1(-200.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++ k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmin0.min(k*parent[idx]);
-         tmin1.min(parent[idx]);
-      } );
-
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin0",
-                                k*ref_min, tmin0);
-      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin1",
-                                -200.0, tmin1);
-   }
-}
+   std::cout << "\n tests passed / test run: " 
+             << s_ntests_passed << " / " << s_ntests_run << std::endl; 
 
    std::cout << "\n   END RAJA::forall MIN REDUCE tests... " << std::endl;
 }
@@ -177,97 +199,172 @@ void runMinReduceTests( const IndexSet& hindex,
 
 ///////////////////////////////////////////////////////////////////////////
 //
+// Method that defines and runs basic RAJA max reduction tests 
+// based on execution policy template
+//
+///////////////////////////////////////////////////////////////////////////
+template <typename ISET_POLICY_T,
+          typename REDUCE_POLICY_T>
+void runBasicMaxReductionTest(const std::string& policy,
+                              Real_ptr in_array, Index_type alen,
+                              const IndexSet& iset,
+                              RAJAVec<Index_type> is_indices)
+{
+   Real_ptr test_array;
+   posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
+
+   //
+   // Make all test array values negative
+   //
+   for (Index_type i=0 ; i<alen; ++i) {
+      test_array[i] = -std::abs( in_array[i] );
+   }
+
+   //
+   // Generate reference result for max in middle of index set.
+   //
+   const Index_type ref_max_indx =
+      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_max_val  = 100.0;
+
+   test_array[ref_max_indx] = ref_max_val;
+
+#if 0
+   std::cout << "ref_max_indx = " << ref_max_indx << std::endl;
+   std::cout << "ref_max_val = " << ref_max_val << std::endl;
+   std::cout << "test_array[ref_max_indx] = " 
+             << test_array[ref_max_indx] << std::endl;
+#endif 
+
+   std::cout << "\n Test MAX reduction for " << policy << "\n";
+
+   ReduceMax<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20);
+   ReduceMax<REDUCE_POLICY_T, Real_type> tmax1(200.0);
+
+   int loops = 2;
+
+   for (int k = 1; k <= loops; ++ k) {
+
+//    std::cout << "k = " << k << std::endl;
+
+      forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
+         tmax0.max(k*test_array[idx]);
+         tmax1.max(test_array[idx]);
+      } );
+
+      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax0",
+                                k*ref_max_val, tmax0);
+      forall_reduce_CheckResult("ReduceMin:" + policy + ": tmax1",
+                                200.0, tmax1);
+   }
+
+   free(test_array); 
+
+}
+
+ 
+///////////////////////////////////////////////////////////////////////////
+//
 // Run RAJA max reduce tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-void runMaxReduceTests( const IndexSet& hindex, 
-                        Real_ptr parent, 
-                        Real_type ref_max )
+void runMaxReduceTests( Real_ptr in_array,
+                        Index_type alen,
+                        const IndexSet& iset,
+                        const RAJAVec<Index_type>& is_indices )
 {
-// Run various max reductions and check results against reference...
-
    std::cout << "\n\n   BEGIN RAJA::forall MAX REDUCE tests...." << std::endl;
 
-{
-   std::string policy("ExecPolicy<seq_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
+   // initialize test counters for this test set
+   s_ntests_run = 0; 
+   s_ntests_passed = 0; 
 
-   ReduceMax<seq_reduce, Real_type> tmax0(-1.0e+20);
-   ReduceMax<seq_reduce, Real_type> tmax1(200.0);
+   runBasicMaxReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, seq_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   int loops = 2;
+   runBasicMaxReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, simd_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   for (int k = 1; k <= loops; ++ k) {
+   runBasicMaxReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
+               "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-//    std::cout << "k = " << k << std::endl;
+   runBasicMaxReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmax0.max(k*parent[idx]);
-         tmax1.max(parent[idx]);
-      } );
+   runBasicMaxReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax0",
-                                k*ref_max, tmax0);
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax1",
-                                200.0, tmax1);
-   }
-}
-
-{ 
-   std::string policy("ExecPolicy<seq_segit, omp_parallel_for_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceMax<omp_reduce, Real_type> tmax0(-1.0e+20);
-   ReduceMax<omp_reduce, Real_type> tmax1(200.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++ k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmax0.max(k*parent[idx]);
-         tmax1.max(parent[idx]);
-      } );
-
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax0",
-                                k*ref_max, tmax0);
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax1",
-                                200.0, tmax1);
-   }
-}
-
-{
-   std::string policy("ExecPolicy<omp_parallel_for_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceMax<omp_reduce, Real_type> tmax0(-1.0e+20);
-   ReduceMax<omp_reduce, Real_type> tmax1(200.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++ k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tmax0.max(k*parent[idx]);
-         tmax1.max(parent[idx]);
-      } );
-
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax0",
-                                k*ref_max, tmax0);
-      forall_reduce_CheckResult("ReduceMax:" + policy + ": tmax1",
-                                200.0, tmax1);
-   }
-}
+   std::cout << "\n tests passed / test run: " 
+             << s_ntests_passed << " / " << s_ntests_run << std::endl; 
+   
 
    std::cout << "\n   END RAJA::forall MAX REDUCE tests... " << std::endl;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Method that defines and runs basic RAJA sum reduction tests 
+// based on execution policy template
+//
+///////////////////////////////////////////////////////////////////////////
+template <typename ISET_POLICY_T,
+          typename REDUCE_POLICY_T>
+void runBasicSumReductionTest(const std::string& policy,
+                              Real_ptr in_array, Index_type alen,
+                              const IndexSet& iset,
+                              RAJAVec<Index_type> is_indices)
+{
+   //
+   // Generate reference result for sum
+   //
+   Real_type  ref_sum  = 0.0;
+
+   for (Index_type i = 0; i < is_indices.size(); ++i) {
+      ref_sum += in_array[ is_indices[i] ];
+   }
+
+#if 0
+   std::cout << "ref_sum = " << ref_sum << std::endl;
+#endif 
+
+   std::cout << "\n Test SUM reduction for " << policy << "\n";
+
+   ReduceSum<REDUCE_POLICY_T, Real_type> tsum0(0.0);
+   ReduceSum<REDUCE_POLICY_T, Real_type> tsum1(5.0);
+
+   int loops = 2;
+
+   for (int k = 1; k <= loops; ++ k) {
+
+//    std::cout << "k = " << k << std::endl;
+
+      forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
+         tsum0 += in_array[idx];
+         tsum1 += 1.0;
+      } );
+
+      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum0",
+                                k*ref_sum, tsum0);
+      forall_reduce_CheckResult("ReduceMin:" + policy + ": tsum1",
+                                k*iset.getLength() + 5.0, tsum1);
+   }
+
 }
 
 
@@ -276,94 +373,52 @@ void runMaxReduceTests( const IndexSet& hindex,
 // Run RAJA sum reduce tests with available RAJA execution policies....
 //
 ///////////////////////////////////////////////////////////////////////////
-void runSumReduceTests( const IndexSet& hindex, 
-                        Real_ptr parent, 
-                        Real_type ref_sum )
+void runSumReduceTests( Real_ptr in_array,
+                        Index_type alen,
+                        const IndexSet& iset,
+                        const RAJAVec<Index_type>& is_indices )
 {
-// Run various sum reductions and check results against reference...
-
    std::cout << "\n\n   BEGIN RAJA::forall SUM REDUCE tests...." << std::endl;
 
-{
-   std::string policy("ExecPolicy<seq_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
+   // initialize test counters for this test set
+   s_ntests_run = 0; 
+   s_ntests_passed = 0; 
 
-   ReduceSum<seq_reduce, Real_type> tsum0(0.0);
-   ReduceSum<seq_reduce, Real_type> tsum1(5.0);
+   runBasicSumReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, seq_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   int loops = 2;
+   runBasicSumReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, simd_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-   for (int k = 1; k <= loops; ++k) {
+   runBasicSumReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
+               "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-//    std::cout << "k = " << k << std::endl;
+   runBasicSumReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-      forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tsum0 += parent[idx];
-         tsum1 += 1.0;
-      } );
+   runBasicSumReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
 
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum0",
-                                k*ref_sum, tsum0);
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum1",
-                                k*hindex.getLength() + 5.0, tsum1);
-   }
-}
+   std::cout << "\n tests passed / test run: " 
+             << s_ntests_passed << " / " << s_ntests_run << std::endl; 
+   
 
-{
-   std::string policy("ExecPolicy<seq_segit, omp_parallel_for_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceSum<omp_reduce, Real_type> tsum0(0.0);
-   ReduceSum<omp_reduce, Real_type> tsum1(5.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> >( hindex,
-         [=] (Index_type idx) {
-         tsum0 += parent[idx];
-         tsum1 += 1.0;
-      } );
-
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum0",
-                                k*ref_sum, tsum0);
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum1",
-                                k*hindex.getLength() + 5.0, tsum1);
-   }
-}
-
-{
-   std::string policy("ExecPolicy<omp_parallel_for_segit, seq_exec>");
-   std::cout << "\n" << policy << " tests...\n";
-
-   ReduceSum<omp_reduce, Real_type> tsum0(0.0);
-   ReduceSum<omp_reduce, Real_type> tsum1(5.0);
-
-   int loops = 2;
-
-   for (int k = 1; k <= loops; ++k) {
-
-//    std::cout << "k = " << k << std::endl;
-
-      forall< IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec> >( hindex,
-         [=] (Index_type idx) {
-         tsum0 += parent[idx];
-         tsum1 += 1.0;
-      } );
-
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum0",
-                                k*ref_sum, tsum0);
-      forall_reduce_CheckResult("ReduceSum:" + policy + ": tsum1",
-                                k*hindex.getLength() + 5.0, tsum1);
-   }
-}
-
-
-   std::cout << "\n END   RAJA::forall SUM REDUCE tests...." << std::endl;
+   std::cout << "\n   END RAJA::forall SUM REDUCE tests... " << std::endl;
 }
 
 
@@ -378,8 +433,8 @@ int main(int argc, char *argv[])
 // 
 //  All methods to construct index sets should generate equivalent results.
 //
-   IndexSet hindex;
-   buildIndexSet( hindex );
+   IndexSet iset;
+   buildIndexSet( iset );
 
    //
    // Allocate and initialize arrays for tests...
@@ -403,118 +458,73 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 // Set up indexing information for tests...
 ///////////////////////////////////////////////////////////////////////////
-#if defined(RAJA_USE_STL)
-   std::vector<Index_type> is_indices = getIndices(hindex);
-#else
-   RAJAVec<Index_type> is_indices = getIndices(hindex);
-#endif
+   RAJAVec<Index_type> is_indices = getIndices(iset);
 
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA min reduction tests...
+// Run RAJA reduction tests...
 //
 ///////////////////////////////////////////////////////////////////////////
 
-   //
-   // Make all array values positive...
-   //
-   for (Index_type ic = 0; ic < array_length; ++ic) {
-      parent[ic] = std::abs( parent[ic] );
+   runMinReduceTests( parent, array_length,
+                      iset, is_indices );
+
+   runMaxReduceTests( parent, array_length,
+                      iset, is_indices );
+
+   runSumReduceTests( parent, array_length,
+                      iset, is_indices );
+
+
+   ///
+   /// Print total number of tests passed/run.
+   ///
+   std::cout << "\n All Tests : " 
+             << s_ntests_passed_total << " / " 
+             << s_ntests_run_total << std::endl;
+
+
+#if 0  // just screwing around with OpenMP
+
+   int len = is_indices.size();
+   std::vector<double> min_array(len);
+   for (int j = 0; j < len; ++j) {
+      min_array[j] = std::abs( parent[ is_indices[j] ] );
    }
+   const Index_type ref_min_indx = len/2;
+   min_array[ref_min_indx] = ref_min_val;
 
-   //
-   // Generate reference result to check correctness
-   //
-   const Index_type ref_min_indx =
-   static_cast<Index_type>(is_indices[is_indices.size()/2]);
-   const Real_type  ref_min_val  = -100.0;
-
-   parent[ref_min_indx] = ref_min_val;
-
-#if 1
-   std::cout << "ref_min_indx = " << ref_min_indx << std::endl;
-   std::cout << "ref_min_val = " << ref_min_val << std::endl;
-   std::cout << "parent[ref_min_indx] = " << parent[ref_min_indx] << std::endl;
-#endif
-
-   ntests_run = 0; 
-   ntests_passed = 0; 
-
-   runMinReduceTests( hindex, parent, ref_min_val );
-
-   std::cout << "\n MIN reduction : " << ntests_passed << " / " << ntests_run << std::endl; 
-
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Run RAJA max reduction tests...
-//
-///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Make all array values negative...
-   //
-   for (Index_type ic = 0; ic < array_length; ++ic) {
-      parent[ic] = -std::abs( parent[ic] );
-   }
-
-   //
-   // Generate reference result to check correctness
-   //
-   const Index_type ref_max_indx =
-   static_cast<Index_type>(is_indices[is_indices.size()/2]);
-   const Real_type  ref_max_val  = 100.0;
-
-   parent[ref_max_indx] = ref_max_val;
-
-#if 0
-   std::cout << "ref_max_indx = " << ref_max_indx << std::endl;
-   std::cout << "ref_max_val = " << ref_max_val << std::endl;
-   std::cout << "parent[ref_max_indx] = " << parent[ref_max_indx] << std::endl;
-#endif
-
-   ntests_run = 0;
-   ntests_passed = 0;
-
-   runMaxReduceTests( hindex, parent, ref_max_val );
-
-   std::cout << "\n MAX reduction : " << ntests_passed << " / " << ntests_run <<
- std::endl;
-
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Run RAJA sum reduction tests...
-//
-///////////////////////////////////////////////////////////////////////////
-
-   //
-   // Generate reference result to check correctness
-   //
    Real_type  ref_sum  = 0.0;
 
    for (Index_type i = 0; i < is_indices.size(); ++i) {
       ref_sum += parent[ is_indices[i] ];
    }
+  
+   double osum1 = 0.0; 
+   double osum2 = 5.0;
 
-#if 0
-   std::cout << "ref_sum = " << ref_sum << std::endl;
-#endif
+   double omin1 = 1.0e+20;
+   double omin2 = -200.0;
 
-   ntests_run = 0; 
-   ntests_passed = 0; 
+   #pragma omp parallel for reduction(+:osum1,osum2) reduction(min:omin1,omin2)
+   for (int i = 0; i < len; ++i) {
+      osum1 += parent[ is_indices[i] ]; 
+      osum2 += 1.0;
+      if ( min_array[ i ] < omin1 ) omin1 = min_array[ i ];
+      if ( min_array[ i ] < omin2 ) omin2 = min_array[ i ];
+   } 
 
-   runSumReduceTests( hindex, parent, ref_sum );
+   std::cout << "\n\nReduceSum OpenMP: osum1 = " << osum1 
+             << " -- ( " << ref_sum << " )" << std::endl;
+   std::cout << "ReduceSum OpenMP: osum2 = " << osum2 
+             << " -- ( " << iset.getLength() + 5.0 << " )" << std::endl;
+   std::cout << "ReduceMin OpenMP: omin1 = " << omin1 
+             << " -- ( " << ref_min_val << " )" << std::endl;
+   std::cout << "ReduceMin OpenMP: omin2 = " << omin2 
+             << " -- ( " << -200.0 << " )" << std::endl;
 
-   std::cout << "\n\n SUM reduction : " << ntests_passed << " / " << ntests_run << std::endl; 
-
-
-   ///
-   /// Print number of tests passed/run.
-   ///
-   std::cout << "\n All Tests : " 
-             << ntests_passed_total << " / " << ntests_run_total << std::endl;
+#endif 
 
 //
 // Clean up....
