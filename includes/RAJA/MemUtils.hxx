@@ -56,7 +56,7 @@ void releaseCPUReductionId(int id);
  ******************************************************************************
  *
  * \brief  Return pointer into shared memory block for RAJA-CPU reduction
- *         with given id.
+ *         data for reduction object with given id.
  *
  *         Allocates data block if it isn't allocated already.
  *
@@ -64,12 +64,13 @@ void releaseCPUReductionId(int id);
  *
  *       When compiled with OpenMP : 
  * 
- *          sizeof(CPUReductionBlockDataType) * omp_get_max_threads() *
- *          MAX_REDUCE_VARS_CPU
+ *          omp_get_max_threads() * MAX_REDUCE_VARS_CPU *
+ *          COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)
  *
  *       When compiled without OpenMP :
  *
- *          sizeof(CPUReductionBlockDataType) * MAX_REDUCE_VARS_CPU
+ *          MAX_REDUCE_VARS_CPU *
+ *          COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)
  *
  ******************************************************************************
  */
@@ -84,6 +85,38 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id);
  */
 void freeCPUReductionMemBlock();
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Return pointer into shared memory block for index location in
+ *         RAJA-CPU "loc" reductions for reduction object with given id.
+ *
+ *         Allocates data block if it isn't allocated already.
+ *
+ * NOTE: Block size will be of one of the following sizes:
+ *
+ *       When compiled with OpenMP :
+ *
+ *          omp_get_max_threads() * MAX_REDUCE_VARS_CPU *
+ *          COHERENCE_BLOCK_SIZE/sizeof(Index_type)
+ *
+ *       When compiled without OpenMP :
+ *
+ *          MAX_REDUCE_VARS_CPU *  
+ *          COHERENCE_BLOCK_SIZE/sizeof(Index_type)
+ *
+ ******************************************************************************
+ */
+Index_type* getCPUReductionLocBlock(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory location index block used in RAJA-CPU reductions.
+ *
+ ******************************************************************************
+ */
+void freeCPUReductionLocBlock();
 
 
 #if defined(RAJA_USE_CUDA)
