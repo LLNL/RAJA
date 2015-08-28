@@ -147,7 +147,6 @@ void runBasicMinReductionTest(const std::string& policy,
    }
 
    free(test_array); 
-
 }
 
  
@@ -224,6 +223,157 @@ void runMinReduceTests( Real_ptr in_array,
 
 ///////////////////////////////////////////////////////////////////////////
 //
+// Method that defines and runs basic RAJA min-loc reduction tests 
+// based on execution policy template
+//
+///////////////////////////////////////////////////////////////////////////
+template <typename ISET_POLICY_T,
+          typename REDUCE_POLICY_T>
+void runBasicMinLocReductionTest(const std::string& policy,
+                                 Real_ptr in_array, Index_type alen,
+                                 const IndexSet& iset,
+                                 RAJAVec<Index_type> is_indices)
+{
+   Real_ptr test_array;
+   posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
+
+   //
+   // Make all test array values positve
+   //
+   for (Index_type i=0 ; i<alen; ++i) {
+      test_array[i] = std::abs( in_array[i] );
+   }
+
+   //
+   // Generate reference result for min in middle of index set.
+   //
+   const Index_type ref_min_indx =
+      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_min_val  = -100.0;
+
+   test_array[ref_min_indx] = ref_min_val;
+
+#if 0
+   std::cout << "ref_min_indx = " << ref_min_indx << std::endl;
+   std::cout << "ref_min_val = " << ref_min_val << std::endl;
+   std::cout << "test_array[ref_min_indx] = " 
+             << test_array[ref_min_indx] << std::endl;
+#endif 
+
+   std::cout << "\n Test MIN-LOC reduction for " << policy << "\n";
+
+   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20, -1);
+   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
+
+   int loops = 2;
+
+   for (int k = 1; k <= loops; ++ k) {
+
+//    std::cout << "k = " << k << std::endl;
+
+      forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
+         tmin0.minloc(k*test_array[idx], idx);
+         tmin1.minloc(test_array[idx], idx);
+      } );
+
+      forall_reduceloc_CheckResult("ReduceMinLoc:" + policy + ": tmin0",
+                                   k*ref_min_val, ref_min_indx,
+                                   tmin0, tmin0.getMinLoc());
+      forall_reduceloc_CheckResult("ReduceMinLoc:" + policy + ": tmin1",
+                                   -200.0, -1, 
+                                   tmin1, tmin1.getMinLoc());
+
+#if 0
+      std::cout << "tmin0, loc = " <<  static_cast<Real_type>(tmin0) 
+                << " , " << tmin0.getMinLoc()
+                << " -- ( " << k*ref_min_val << ", " 
+                            << ref_min_indx << " ) " << std::endl;
+      std::cout << "tmin1, loc = " <<  static_cast<Real_type>(tmin1) 
+                << " , " << tmin1.getMinLoc()
+                << " -- ( " << -200.0 << ", " 
+                            << -1 << " ) " << std::endl;
+#endif
+   }
+
+   free(test_array); 
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA min-loc reduction tests with available RAJA execution policies....
+//
+///////////////////////////////////////////////////////////////////////////
+void runMinLocReduceTests( Real_ptr in_array,
+                           Index_type alen,
+                           const IndexSet& iset,
+                           const RAJAVec<Index_type>& is_indices )
+{
+   std::cout << "\n\n   BEGIN RAJA::forall MIN-LOC REDUCE tests...." << std::endl;
+
+   // initialize test counters for this test set
+   s_ntests_run = 0; 
+   s_ntests_passed = 0; 
+
+   runBasicMinLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, seq_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMinLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, simd_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+#if 0
+   runBasicMinLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
+               "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMinLocReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMinLocReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMinLocReductionTest<
+      IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
+               "ExecPolicy<seq_segit, cilk_for_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMinLocReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, seq_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMinLocReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, simd_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices );
+#endif
+
+   std::cout << "\n tests passed / test run: " 
+             << s_ntests_passed << " / " << s_ntests_run << std::endl; 
+
+   std::cout << "\n   END RAJA::forall MIN-LOC REDUCE tests... " << std::endl;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 // Method that defines and runs basic RAJA max reduction tests 
 // based on execution policy template
 //
@@ -290,7 +440,6 @@ void runBasicMaxReductionTest(const std::string& policy,
    }
 
    free(test_array); 
-
 }
 
  
@@ -368,6 +517,157 @@ void runMaxReduceTests( Real_ptr in_array,
 
 ///////////////////////////////////////////////////////////////////////////
 //
+// Method that defines and runs basic RAJA max-loc reduction tests 
+// based on execution policy template
+//
+///////////////////////////////////////////////////////////////////////////
+template <typename ISET_POLICY_T,
+          typename REDUCE_POLICY_T>
+void runBasicMaxLocReductionTest(const std::string& policy,
+                                 Real_ptr in_array, Index_type alen,
+                                 const IndexSet& iset,
+                                 RAJAVec<Index_type> is_indices)
+{
+   Real_ptr test_array;
+   posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
+
+   //
+   // Make all test array values negative
+   //
+   for (Index_type i=0 ; i<alen; ++i) {
+      test_array[i] = -std::abs( in_array[i] );
+   }
+
+   //
+   // Generate reference result for min in middle of index set.
+   //
+   const Index_type ref_max_indx =
+      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Real_type  ref_max_val  = 100.0;
+
+   test_array[ref_max_indx] = ref_max_val;
+
+#if 0
+   std::cout << "ref_max_indx = " << ref_max_indx << std::endl;
+   std::cout << "ref_max_val = " << ref_max_val << std::endl;
+   std::cout << "test_array[ref_max_indx] = " 
+             << test_array[ref_max_indx] << std::endl;
+#endif 
+
+   std::cout << "\n Test MIN-LOC reduction for " << policy << "\n";
+
+   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
+   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
+
+   int loops = 2;
+
+   for (int k = 1; k <= loops; ++ k) {
+
+//    std::cout << "k = " << k << std::endl;
+
+      forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
+         tmax0.maxloc(k*test_array[idx], idx);
+         tmax1.maxloc(test_array[idx], idx);
+      } );
+
+      forall_reduceloc_CheckResult("ReduceMaxLoc:" + policy + ": tmax0",
+                                   k*ref_max_val, ref_max_indx,
+                                   tmax0, tmax0.getMaxLoc());
+      forall_reduceloc_CheckResult("ReduceMaxLoc:" + policy + ": tmax1",
+                                   200.0, -1, 
+                                   tmax1, tmax1.getMaxLoc());
+
+#if 0
+      std::cout << "tmax0, loc = " <<  static_cast<Real_type>(tmax0) 
+                << " , " << tmax0.getMaxLoc()
+                << " -- ( " << k*ref_max_val << ", " 
+                            << ref_max_indx << " ) " << std::endl;
+      std::cout << "tmax1, loc = " <<  static_cast<Real_type>(tmax1) 
+                << " , " << tmax1.getMaxLoc()
+                << " -- ( " << 200.0 << ", " 
+                            << -1 << " ) " << std::endl;
+#endif
+   }
+
+   free(test_array); 
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA max-loc reduction tests with available RAJA execution policies....
+//
+///////////////////////////////////////////////////////////////////////////
+void runMaxLocReduceTests( Real_ptr in_array,
+                           Index_type alen,
+                           const IndexSet& iset,
+                           const RAJAVec<Index_type>& is_indices )
+{
+   std::cout << "\n\n   BEGIN RAJA::forall MAX-LOC REDUCE tests...." << std::endl;
+
+   // initialize test counters for this test set
+   s_ntests_run = 0; 
+   s_ntests_passed = 0; 
+
+   runBasicMaxLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, seq_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMaxLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, simd_exec>, seq_reduce > ( 
+               "ExecPolicy<seq_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+#if 0
+   runBasicMaxLocReductionTest< 
+      IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
+               "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMaxLocReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMaxLocReductionTest< 
+      IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce > ( 
+               "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices ); 
+
+   runBasicMaxLocReductionTest<
+      IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
+               "ExecPolicy<seq_segit, cilk_for_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMaxLocReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, seq_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMaxLocReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, simd_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices );
+#endif
+
+   std::cout << "\n tests passed / test run: " 
+             << s_ntests_passed << " / " << s_ntests_run << std::endl; 
+
+   std::cout << "\n   END RAJA::forall MAX-LOC REDUCE tests... " << std::endl;
+}
+
+
+///////////////////////////////////////////////////////////////////////////
+//
 // Method that defines and runs basic RAJA sum reduction tests 
 // based on execution policy template
 //
@@ -420,7 +720,6 @@ void runBasicSumReductionTest(const std::string& policy,
                               << " ) " << std::endl;
 #endif
    }
-
 }
 
 
@@ -549,6 +848,12 @@ int main(int argc, char *argv[])
 
    runSumReduceTests( parent, array_length,
                       iset, is_indices );
+
+   runMinLocReduceTests( parent, array_length,
+                         iset, is_indices );
+
+   runMaxLocReduceTests( parent, array_length,
+                         iset, is_indices );
 
 
    ///

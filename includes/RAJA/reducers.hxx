@@ -14,6 +14,7 @@
 #ifndef RAJA_reducers_HXX
 #define RAJA_reducers_HXX
 
+#include "int_datatypes.hxx"
 
 #define RAJA_MAX_REDUCE_VARS (8)
 

@@ -130,6 +130,113 @@ private:
 /*!
  ******************************************************************************
  *
+ * \brief  Min-loc reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMinLoc<seq_reduce, T> 
+{
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMinLoc(T init_val, Index_type init_loc) 
+   {
+      m_is_copy = false;
+
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMinLoc id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+      m_blockdata[0] = init_val; 
+
+      m_idxdata = getCPUReductionLocBlock(m_myID);  
+      m_idxdata[0] = init_loc; 
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMinLoc( const ReduceMinLoc<seq_reduce, T>& other ) 
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMinLoc<seq_reduce, T>() 
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object 
+      }
+   }
+
+   //
+   // Operator to retrieve min value (before object is destroyed).
+   //
+   operator T()
+   {
+      if ( static_cast<T>(m_blockdata[0]) <= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
+      }
+      return m_reduced_val;
+   }
+
+   //
+   // Operator to retrieve min value (before object is destroyed).
+   //
+   Index_type getMinLoc()
+   {
+      if ( static_cast<T>(m_blockdata[0]) <= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
+      }
+      return m_reduced_idx;
+   }
+
+   //
+   // Min-loc function that sets object min to minimum of current value 
+   // and value arg and updates location index accordingly.
+   //
+   ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const 
+   {
+      if ( val <= static_cast<T>(m_blockdata[0]) ) {
+         m_blockdata[0] = val;
+         m_idxdata[0] = idx;
+      }
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMinLoc<seq_reduce, T>();
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+   Index_type m_reduced_idx;
+
+   CPUReductionBlockDataType* m_blockdata;
+   Index_type* m_idxdata;
+} ;
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Max reducer class template for use in sequential reduction.
  *
  * \verbatim
@@ -212,6 +319,122 @@ private:
    CPUReductionBlockDataType* m_blockdata;
 } ;
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Max-loc reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMaxLoc<seq_reduce, T> 
+{
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMaxLoc(T init_val, Index_type init_loc) 
+   {
+      m_is_copy = false;
+
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMinLoc id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+      m_blockdata[0] = init_val; 
+
+      m_idxdata = getCPUReductionLocBlock(m_myID);  
+      m_idxdata[0] = init_loc; 
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMaxLoc( const ReduceMaxLoc<seq_reduce, T>& other ) 
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMaxLoc<seq_reduce, T>() 
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object 
+      }
+   }
+
+   //
+   // Operator to retrieve max value (before object is destroyed).
+   //
+   operator T()
+   {
+      if ( static_cast<T>(m_blockdata[0]) >= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
+      }
+      return m_reduced_val;
+   }
+
+   //
+   // Operator to retrieve max value (before object is destroyed).
+   //
+   Index_type getMaxLoc()
+   {
+      if ( static_cast<T>(m_blockdata[0]) >= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
+      }
+      return m_reduced_idx;
+   }
+
+   //
+   // Max-loc function that sets object max to maximum of current value 
+   // and value arg and updates location index accordingly.
+   //
+   ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const 
+   {
+      if ( val >= static_cast<T>(m_blockdata[0]) ) {
+         m_blockdata[0] = val;
+         m_idxdata[0] = idx;
+      }
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMaxLoc<seq_reduce, T>();
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+   Index_type m_reduced_idx;
+
+   CPUReductionBlockDataType* m_blockdata;
+   Index_type* m_idxdata;
+} ;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Max reducer class template for use in sequential reduction.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
 /*!
  ******************************************************************************
  *
