@@ -137,6 +137,13 @@ void runBasicMinReductionTest(const std::string& policy,
                                 k*ref_min_val, tmin0);
       forall_reduce_CheckResult("ReduceMin:" + policy + ": tmin1",
                                 -200.0, tmin1);
+
+#if 0
+      std::cout << "tmin0 = " <<  static_cast<Real_type>(tmin0) 
+                              << " -- ( " << k*ref_min_val << " ) " << std::endl;
+      std::cout << "tmin1 = " <<  static_cast<Real_type>(tmin1) 
+                              << " -- ( " << -200.0 << " ) " << std::endl;
+#endif
    }
 
    free(test_array); 
@@ -189,6 +196,24 @@ void runMinReduceTests( Real_ptr in_array,
                "ExecPolicy<omp_parallel_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices ); 
+
+   runBasicMinReductionTest<
+      IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
+               "ExecPolicy<seq_segit, cilk_for_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMinReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, seq_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMinReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, simd_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices );
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -256,6 +281,12 @@ void runBasicMaxReductionTest(const std::string& policy,
                                 k*ref_max_val, tmax0);
       forall_reduce_CheckResult("ReduceMin:" + policy + ": tmax1",
                                 200.0, tmax1);
+#if 0
+      std::cout << "tmax0 = " <<  static_cast<Real_type>(tmax0) 
+                              << " -- ( " << k*ref_max_val << " ) " << std::endl;
+      std::cout << "tmax1 = " <<  static_cast<Real_type>(tmax1) 
+                              << " -- ( " << 200.0 << " ) " << std::endl;
+#endif
    }
 
    free(test_array); 
@@ -308,6 +339,24 @@ void runMaxReduceTests( Real_ptr in_array,
                "ExecPolicy<omp_parallel_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices ); 
+
+   runBasicMaxReductionTest<
+      IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
+               "ExecPolicy<seq_segit, cilk_for_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMaxReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, seq_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicMaxReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, simd_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices );
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -363,6 +412,13 @@ void runBasicSumReductionTest(const std::string& policy,
                                 k*ref_sum, tsum0);
       forall_reduce_CheckResult("ReduceMin:" + policy + ": tsum1",
                                 k*iset.getLength() + 5.0, tsum1);
+#if 0
+      std::cout << "tsum0 = " <<  static_cast<Real_type>(tsum0) 
+                              << " -- ( " << k*ref_sum << " ) " << std::endl;
+      std::cout << "tmax1 = " <<  static_cast<Real_type>(tsum1) 
+                              << " -- ( " << k*iset.getLength() + 5.0 
+                              << " ) " << std::endl;
+#endif
    }
 
 }
@@ -413,6 +469,24 @@ void runSumReduceTests( Real_ptr in_array,
                "ExecPolicy<omp_parallel_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices ); 
+
+   runBasicSumReductionTest<
+      IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
+               "ExecPolicy<seq_segit, cilk_for_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicSumReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, seq_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, seq_exec>",
+                in_array, alen,
+                iset, is_indices );
+
+   runBasicSumReductionTest<
+      IndexSet::ExecPolicy<cilk_for_segit, simd_exec>, cilk_reduce > (
+               "ExecPolicy<cilk_for_segit, simd_exec>",
+                in_array, alen,
+                iset, is_indices );
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
