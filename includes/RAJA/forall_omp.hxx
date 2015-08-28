@@ -253,7 +253,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Min reducer class template for use in OpenMP execution.
+ * \brief  Sum reducer class template for use in OpenMP execution.
  *
  * \verbatim
  *         Fill this in...
