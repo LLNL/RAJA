@@ -47,6 +47,12 @@ static bool cpu_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 //
 CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
 
+//
+// Pointer to hold shared memory block for index locations in RAJA-CPU 
+// "loc" reductions.
+//
+Index_type* s_cpu_reduction_loc_block = 0;
+
 
 /*
 *************************************************************************
@@ -131,7 +137,7 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 /*
 *************************************************************************
 *
-* Free managed memory blocks used in RAJA-CPU reductions.
+* Free managed memory block used in RAJA-CPU reductions.
 *
 *************************************************************************
 */
@@ -142,6 +148,51 @@ void freeCPUReductionMemBlock()
       s_cpu_reduction_mem_block = 0; 
    }
 }
+
+/*
+*************************************************************************
+*
+* Return pointer into shared RAJA-CPU memory block index location for
+* reduction object with given id. Allocates block if not alreay allocated.
+*
+*************************************************************************
+*/
+Index_type* getCPUReductionLocBlock(int id)
+{
+   int nthreads = 1;
+#if defined(_OPENMP)
+   nthreads = omp_get_max_threads();
+#endif
+
+   int block_offset = COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+
+   if (s_cpu_reduction_loc_block == 0) {
+      int len = nthreads * RAJA_MAX_REDUCE_VARS;
+      s_cpu_reduction_loc_block =
+         new Index_type[len*block_offset];
+
+      atexit(freeCPUReductionLocBlock);
+   }
+
+   return &(s_cpu_reduction_loc_block[nthreads * id * block_offset]) ;
+}
+
+
+/*
+*************************************************************************
+*
+* Free managed index location memory block used in RAJA-CPU reductions.
+*
+*************************************************************************
+*/
+void freeCPUReductionLocBlock()
+{
+   if ( s_cpu_reduction_loc_block != 0 ) {
+      delete [] s_cpu_reduction_loc_block;
+      s_cpu_reduction_loc_block = 0;
+   }
+}
+
 
 
 #if defined(RAJA_USE_CUDA)

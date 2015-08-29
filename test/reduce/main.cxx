@@ -327,7 +327,6 @@ void runMinLocReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
-#if 0
    runBasicMinLocReductionTest< 
       IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
                "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -363,7 +362,6 @@ void runMinLocReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
-#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -554,7 +552,7 @@ void runBasicMaxLocReductionTest(const std::string& policy,
              << test_array[ref_max_indx] << std::endl;
 #endif 
 
-   std::cout << "\n Test MIN-LOC reduction for " << policy << "\n";
+   std::cout << "\n Test MAX-LOC reduction for " << policy << "\n";
 
    ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
    ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
@@ -621,7 +619,6 @@ void runMaxLocReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
-#if 0
    runBasicMaxLocReductionTest< 
       IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
                "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -657,7 +654,6 @@ void runMaxLocReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
-#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -712,7 +708,7 @@ void runBasicSumReductionTest(const std::string& policy,
                                 k*ref_sum, tsum0);
       forall_reduce_CheckResult("ReduceMin:" + policy + ": tsum1",
                                 k*iset.getLength() + 5.0, tsum1);
-#if 0
+#if 1
       std::cout << "tsum0 = " <<  static_cast<Real_type>(tsum0) 
                               << " -- ( " << k*ref_sum << " ) " << std::endl;
       std::cout << "tmax1 = " <<  static_cast<Real_type>(tsum1) 

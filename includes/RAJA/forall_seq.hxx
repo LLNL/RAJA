@@ -194,7 +194,7 @@ public:
    }
 
    //
-   // Operator to retrieve min value (before object is destroyed).
+   // Operator to retrieve index value of min (before object is destroyed).
    //
    Index_type getMinLoc()
    {
