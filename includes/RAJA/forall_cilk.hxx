@@ -142,6 +142,131 @@ private:
 /*!
  ******************************************************************************
  *
+ * \brief  Min-loc reducer class template for use in CilkPlus execution.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
+ *
+ ******************************************************************************
+ */
+template <typename T>
+class ReduceMinLoc<cilk_reduce, T>
+{
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMinLoc(T init_val, Index_type init_loc)
+   {
+      m_is_copy = false;
+
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMinLoc id = " << m_myID << std::endl;
+
+      m_blockdata = getCPUReductionMemBlock(m_myID);
+      m_idxdata = getCPUReductionLocBlock(m_myID);
+
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_blockdata[i*s_block_offset] = init_val ;
+         m_idxdata[i*s_idx_offset] = init_loc ;
+      }
+   }
+
+   //
+   // Copy ctor.
+   //
+   ReduceMinLoc( const ReduceMinLoc<cilk_reduce, T>& other )
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor.
+   //
+   ~ReduceMinLoc<cilk_reduce, T>()
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
+   }
+
+   //
+   // Operator to retrieve min value (before object is destroyed).
+   //
+   operator T()
+   {
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+         if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
+            m_reduced_val = m_blockdata[i*s_block_offset];
+            m_reduced_idx = m_idxdata[i*s_idx_offset];
+         }
+      }
+
+      return m_reduced_val;
+   }
+
+   //
+   // Operator to retrieve index value of min (before object is destroyed).
+   //
+   Index_type getMinLoc()
+   {
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+         if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
+            m_reduced_val = m_blockdata[i*s_block_offset];
+            m_reduced_idx = m_idxdata[i*s_idx_offset];
+         }
+      }
+
+      return m_reduced_idx;
+   }
+
+   //
+   // Min-loc function that sets min for current thread.
+   //
+   ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
+   {
+      int tid = omp_get_thread_num();
+      if ( val <= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
+         m_blockdata[tid*s_block_offset] = val;
+         m_idxdata[tid*s_idx_offset] = idx;
+      }
+
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMinLoc<cilk_reduce, T>();
+
+   static const int s_block_offset =
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   static const int s_idx_offset =
+      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+   Index_type m_reduced_idx;
+
+   CPUReductionBlockDataType* m_blockdata;
+   Index_type* m_idxdata;
+} ;
+
+/*!
+ ******************************************************************************
+ *
  * \brief  Max reducer class template for use in CilkPlus execution.
  *
  * \verbatim
@@ -239,92 +364,130 @@ private:
    CPUReductionBlockDataType* m_blockdata;
 } ;
 
-
-
-
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range index sets.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range.
+ * \brief  Max-loc reducer class template for use in CilkPlus execution.
+ *
+ * \verbatim
+ *         Fill this in...
+ * \endverbatim
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(cilk_for_exec,
-            const Index_type begin, const Index_type end, 
-            LOOP_BODY loop_body)
+template <typename T>
+class ReduceMaxLoc<cilk_reduce, T>
 {
-   RAJA_FT_BEGIN ;
+public:
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+   {
+      m_is_copy = false;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
+      m_reduced_val = init_val;
+
+      m_myID = getCPUReductionId();
+//    std::cout << "ReduceMaxLoc id = " << m_myID << std::endl;
+
+      m_blockdata = getCPUReductionMemBlock(m_myID);
+      m_idxdata = getCPUReductionLocBlock(m_myID);
+
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for
+      for ( int i = 0; i < nthreads; ++i ) {
+         m_blockdata[i*s_block_offset] = init_val ;
+         m_idxdata[i*s_idx_offset] = init_loc ;
+      }
    }
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  cilk_for iteration over index range, including index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(cilk_for_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   const Index_type loop_end = end - begin;
-
-   RAJA_FT_BEGIN ;
-
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, ii+begin );
+   //
+   // Copy ctor.
+   //
+   ReduceMaxLoc( const ReduceMaxLoc<cilk_reduce, T>& other )
+   {
+      *this = other;
+      m_is_copy = true;
    }
 
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  cilk_for  iteration over index range set object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(cilk_for_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
+   //
+   // Destructor.
+   //
+   ~ReduceMaxLoc<cilk_reduce, T>()
+   {
+      if (!m_is_copy) {
+         releaseCPUReductionId(m_myID);
+         // free any data owned by reduction object
+      }
    }
 
-   RAJA_FT_END ;
-}
+   //
+   // Operator to retrieve max value (before object is destroyed).
+   //
+   operator T()
+   {
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+         if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
+            m_reduced_val = m_blockdata[i*s_block_offset];
+            m_reduced_idx = m_idxdata[i*s_idx_offset];
+         }
+      }
+
+      return m_reduced_val;
+   }
+
+   //
+   // Operator to retrieve index value of max (before object is destroyed).
+   //
+   Index_type getMaxLoc()
+   {
+      int nthreads = omp_get_max_threads();
+      for ( int i = 0; i < nthreads; ++i ) {
+         if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
+            m_reduced_val = m_blockdata[i*s_block_offset];
+            m_reduced_idx = m_idxdata[i*s_idx_offset];
+         }
+      }
+
+      return m_reduced_idx;
+   }
+
+   //
+   // Max-loc function that sets max for current thread.
+   //
+   ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
+   {
+      int tid = omp_get_thread_num();
+      if ( val >= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
+         m_blockdata[tid*s_block_offset] = val;
+         m_idxdata[tid*s_idx_offset] = idx;
+      }
+
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceMaxLoc<cilk_reduce, T>();
+
+   static const int s_block_offset =
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   static const int s_idx_offset =
+      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+
+   bool m_is_copy;
+   int m_myID;
+
+   T m_reduced_val;
+   Index_type m_reduced_idx;
+
+   CPUReductionBlockDataType* m_blockdata;
+   Index_type* m_idxdata;
+} ;
 
 /*!
  ******************************************************************************
@@ -423,6 +586,91 @@ private:
 
    CPUReductionBlockDataType* m_blockdata;
 } ;
+
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range index sets.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over index range.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall(cilk_for_exec,
+            const Index_type begin, const Index_type end, 
+            LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for iteration over index range, including index count.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(cilk_for_exec,
+                   const Index_type begin, const Index_type end,
+                   const Index_type icount,
+                   LOOP_BODY loop_body)
+{
+   const Index_type loop_end = end - begin;
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+      loop_body( ii+icount, ii+begin );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  cilk_for  iteration over index range set object.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall(cilk_for_exec,
+            const RangeSegment& iseg,
+            LOOP_BODY loop_body)
+{
+   const Index_type begin = iseg.getBegin();
+   const Index_type end   = iseg.getEnd();
+
+   RAJA_FT_BEGIN ;
+
+   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
+      loop_body( ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 
 //
 //////////////////////////////////////////////////////////////////////
