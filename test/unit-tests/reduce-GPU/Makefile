@@ -26,7 +26,7 @@ LULESH_OPTS = -DRAJA_USE_GETTIME
 LDTIMER = -lrt
 
 
-RAJA_TOPDIR    = ../..
+RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
@@ -40,7 +40,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 ##
 ## Include file containing compiler version and options.
 ##
-#include ../../compilers.mk
+#include ../../../compilers.mk
 
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
@@ -52,8 +52,8 @@ LULESH_OPTS += -DRAJA_SYNC
 
 
 #CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v
-#CXX_COMPILE = nvcc -g -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v
+#CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
 #CXX_COMPILE = nvcc -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
 #CXX_COMPILE = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 
@@ -62,10 +62,11 @@ CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
-TESTOBJS = luleshRAJA.o $(RAJAOBJS)
-
 reducemin: ReduceMin.o $(RAJAOBJS) 
 	$(CXX_COMPILE) ReduceMin.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemin.exe
+
+reducemax: ReduceMax.o $(RAJAOBJS) 
+	$(CXX_COMPILE) ReduceMax.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemax.exe
 
 reducesum: ReduceSum.o $(RAJAOBJS) 
 	$(CXX_COMPILE) ReduceSum.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducesum.exe

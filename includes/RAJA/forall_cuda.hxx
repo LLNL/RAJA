@@ -36,6 +36,7 @@
 
 #include <cfloat>
 
+
 namespace RAJA {
 
 //
@@ -45,6 +46,100 @@ namespace RAJA {
 const int THREADS_PER_BLOCK = 256;
 const int WARP_SIZE = 32;
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Utility methods used in GPU reductions.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Method to shuffle 32b registers in sum reduction.
+ *
+ ******************************************************************************
+ */
+__device__ __forceinline__
+double shfl_xor(double var, int laneMask)
+{
+    int lo = __shfl_xor( __double2loint(var), laneMask );
+    int hi = __shfl_xor( __double2hiint(var), laneMask );
+    return __hiloint2double( hi, lo );
+}
+ 
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic min update method used to gather current min reduction value.
+ *
+ ******************************************************************************
+ */
+__device__ inline void atomicMin1(double *address, double value)
+{
+    unsigned long long oldval, newval, readback;
+    oldval = __double_as_longlong(*address);
+    newval = __double_as_longlong(value);
+    while ((readback = 
+            atomicCAS((unsigned long long*)address,oldval,newval)) != oldval)
+    {
+        oldval = readback;
+        newval = __double_as_longlong( 
+                    RAJA_MIN(__longlong_as_double(oldval),value) );
+    }
+}
+/// Alternative implementation that appears to be more robust (why? no one knows.)
+__device__ inline void atomicMin2(double *address, double value)
+{
+    unsigned long long int* address_as_ull =
+                            (unsigned long long int*)address;
+    unsigned long long int oldval = *address_as_ull, assumed;
+
+    do {
+       assumed = oldval;
+       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong( 
+                        RAJA_MIN( __longlong_as_double(assumed), value) ) );
+    } while (assumed != oldval);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic min update method used to gather current min reduction value.
+ *
+ ******************************************************************************
+ */
+__device__ inline void atomicMax1(double *address, double value)
+{
+    unsigned long long oldval, newval, readback;
+    oldval = __double_as_longlong(*address);
+    newval = __double_as_longlong(value);
+    while ((readback =
+            atomicCAS((unsigned long long*)address,oldval,newval)) != oldval)
+    {
+        oldval = readback;
+        newval = __double_as_longlong(
+                    RAJA_MAX(__longlong_as_double(oldval),value) );
+    }
+}
+/// Alternative implementation that appears to be more robust (why? no one knows.)
+__device__ inline void atomicMax2(double *address, double value)
+{
+    unsigned long long int* address_as_ull =
+                            (unsigned long long int*)address;
+    unsigned long long int oldval = *address_as_ull, assumed;
+
+    do {
+       assumed = oldval;
+       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong(
+                        RAJA_MAX( __longlong_as_double(assumed), value) ) );
+    } while (assumed != oldval);
+}
+
+
+
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -52,7 +147,6 @@ const int WARP_SIZE = 32;
 //
 //////////////////////////////////////////////////////////////////////
 //
-
 
 /*!
  ******************************************************************************
@@ -66,7 +160,8 @@ const int WARP_SIZE = 32;
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<cuda_reduce, T> {
+class ReduceMin<cuda_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).
@@ -83,6 +178,7 @@ public:
 
       m_blockdata = getCudaReductionMemBlock() ;
       m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
+      m_blockdata[m_blockoffset] = init_val;
 
       cudaDeviceSynchronize();
    }
@@ -119,7 +215,6 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      m_blockdata[m_blockoffset] = m_reduced_val;
       size_t current_grid_size = getCurrentGridSize();
       for (int i=1; i<=current_grid_size; ++i) {
          m_blockdata[m_blockoffset] =
@@ -176,6 +271,13 @@ public:
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x+1]);
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
+#if 0
+          atomicMin1( &m_blockdata[m_blockoffset],
+#else
+          atomicMin2( &m_blockdata[m_blockoffset],
+#endif
+                     RAJA_MIN( m_blockdata[m_blockoffset],
+                              m_blockdata[m_blockoffset + blockIdx.x+1] ) );
       }
 
       return *this ;
@@ -208,7 +310,8 @@ private:
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<cuda_reduce, T> {
+class ReduceMax<cuda_reduce, T> 
+{
 public:
    //
    // Constructor takes default value (default ctor is disabled).
@@ -225,6 +328,7 @@ public:
 
       m_blockdata = getCudaReductionMemBlock() ;
       m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
+      m_blockdata[m_blockoffset] = init_val;
 
       cudaDeviceSynchronize();
    }
@@ -261,7 +365,6 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      m_blockdata[m_blockoffset] = m_reduced_val;
       size_t current_grid_size = getCurrentGridSize();
       for (int i=1; i<=current_grid_size; ++i) {
          m_blockdata[m_blockoffset] =
@@ -318,6 +421,13 @@ public:
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
+#if 0
+          atomicMax1( &m_blockdata[m_blockoffset],
+#else
+          atomicMax2( &m_blockdata[m_blockoffset],
+#endif
+                     RAJA_MAX( m_blockdata[m_blockoffset],
+                              m_blockdata[m_blockoffset + blockIdx.x+1] ) );
       }
 
       return *this ;
@@ -338,24 +448,6 @@ private:
    int m_blockoffset;
 } ;
 
-
-/*!
- ******************************************************************************
- *
- * \brief Method to shuffle 32b registers in sum reduction.
- *
- *  RDH -- why do we do this? is this specific to Kepler architecture?
- *
- ******************************************************************************
- */
-__device__ __forceinline__
-double shfl_xor(double var, int laneMask)
-{
-    int lo = __shfl_xor( __double2loint(var), laneMask );
-    int hi = __shfl_xor( __double2hiint(var), laneMask );
-    return __hiloint2double( hi, lo );
-}
- 
 /*!
  ******************************************************************************
  *
@@ -368,7 +460,8 @@ double shfl_xor(double var, int laneMask)
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<cuda_reduce, T> {
+class ReduceSum<cuda_reduce, T> 
+{
 public:
    //
    // Constructor takes initial reduction value (default ctor is disabled).

@@ -37,7 +37,7 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = rzmist_clang
 #RAJA_ARCH = rzmist_xlc
 
-RAJA_TOPDIR    = ../..
+RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/includes/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
@@ -53,7 +53,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 ##
 ## Include file containing compiler version and options.
 ##
-include ../compilers.mk
+include ../../compilers.mk
 
 
 CXXFLAGS_BUILD = -I. -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
@@ -65,7 +65,7 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 OBJFILES = $(TESTOBJS) $(RAJAOBJS)
 
-simple-test: $(OBJFILES)
+CPUtraversal-test: $(OBJFILES)
 	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
 
 ## Uncomment this line to generate an executable to run...
