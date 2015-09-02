@@ -3346,10 +3346,8 @@ int main(int argc, char *argv[])
             domain->elemBC[i] = tmp[i] ;
          }
       }
-      delete [] iperm ;
-      delete [] perm ;
-      perm = 0 ;
-      iperm = 0 ;
+      Release(&iperm) ;
+      Release(&perm) ;
    }
 
    /*****************/
