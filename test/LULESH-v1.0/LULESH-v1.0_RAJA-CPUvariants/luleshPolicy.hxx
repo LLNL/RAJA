@@ -21,6 +21,7 @@
 //                           permuted to be contiguous chunks, like USE_CASE 4)
 //   8 = Cilk         (cilk_for applied to each loop)
 //   9 = CUDA         (CUDA kernel launch applied to each loop)
+//   10 = CUDA        (Use technique 7 on GPU to avoid OMP_HACK data movement)
 
 
 // ----------------------------------------------------
@@ -170,6 +171,7 @@ typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> s
 typedef RAJA::cilk_for_segit         Hybrid_Seg_Iter;
 typedef RAJA::cilk_for_exec          Segment_Exec;
 
+// ----------------------------------------------------
 #elif USE_CASE == 9
 
 // Requires OMP_HACK 
@@ -184,6 +186,23 @@ typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_pol
 typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
 typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+
+typedef RAJA::cuda_reduce reduce_policy; 
+
+// ----------------------------------------------------
+#elif USE_CASE == 10
+
+// Can be used with or without OMP_HACK; without will have less data movement and memory use
+
+typedef RAJA::seq_segit         Hybrid_Seg_Iter;
+typedef RAJA::cuda_exec         Segment_Exec;
+
+TilingMode lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+
 
 typedef RAJA::cuda_reduce reduce_policy; 
 
