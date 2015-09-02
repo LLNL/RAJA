@@ -310,7 +310,8 @@ size_t getCurrentGridSize()
 CudaReductionBlockDataType* getCudaReductionMemBlock()
 {
    if (s_cuda_reduction_mem_block == 0) {
-      int len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS;
+      int len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS +
+                                                RAJA_MAX_REDUCE_VARS;
       cudaError_t cudaerr = 
          cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
                            sizeof(CudaReductionBlockDataType)*len,
@@ -360,7 +361,7 @@ void freeCudaReductionMemBlock()
 */
 int getCudaReductionMemBlockOffset(int id)
 {
-   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH);
+   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH + id);
 }
 
 #endif // #if defined(RAJA_USE_CUDA)

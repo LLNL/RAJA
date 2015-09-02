@@ -184,8 +184,9 @@ size_t getCurrentGridSize();
  *
  * NOTE: Block size will be:
  *
- *          sizeof(CudaReductionBlockDataType) * RAJA_CUDA_REDUCE_BLOCK_LENGTH *
- *          RAJA_MAX_REDUCE_VARS
+ *          sizeof(CudaReductionBlockDataType) * 
+ *            (RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS +
+ *                                             RAJA_MAX_REDUCE_VARS)
  *
  ******************************************************************************
  */
