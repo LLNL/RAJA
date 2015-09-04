@@ -89,7 +89,7 @@ template <typename ISET_POLICY_T,
 void runBasicMinReductionTest(const std::string& policy,
                               Real_ptr in_array, Index_type alen,
                               const IndexSet& iset,
-                              RAJAVec<Index_type> is_indices)
+                              const RAJAVec<Index_type>& is_indices)
 {
    Real_ptr test_array;
    posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
@@ -196,6 +196,7 @@ void runMinReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
+#if defined(RAJA_COMPILER_ICC)
    runBasicMinReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -213,6 +214,7 @@ void runMinReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
+#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -232,7 +234,7 @@ template <typename ISET_POLICY_T,
 void runBasicMinLocReductionTest(const std::string& policy,
                                  Real_ptr in_array, Index_type alen,
                                  const IndexSet& iset,
-                                 RAJAVec<Index_type> is_indices)
+                                 const RAJAVec<Index_type>& is_indices)
 {
    Real_ptr test_array;
    posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
@@ -345,6 +347,7 @@ void runMinLocReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
+#if defined(RAJA_COMPILER_ICC)
    runBasicMinLocReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -362,6 +365,7 @@ void runMinLocReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
+#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -381,7 +385,7 @@ template <typename ISET_POLICY_T,
 void runBasicMaxReductionTest(const std::string& policy,
                               Real_ptr in_array, Index_type alen,
                               const IndexSet& iset,
-                              RAJAVec<Index_type> is_indices)
+                              const RAJAVec<Index_type>& is_indices)
 {
    Real_ptr test_array;
    posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
@@ -487,6 +491,7 @@ void runMaxReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
+#if defined(RAJA_COMPILER_ICC)
    runBasicMaxReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -504,6 +509,7 @@ void runMaxReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
+#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -524,7 +530,7 @@ template <typename ISET_POLICY_T,
 void runBasicMaxLocReductionTest(const std::string& policy,
                                  Real_ptr in_array, Index_type alen,
                                  const IndexSet& iset,
-                                 RAJAVec<Index_type> is_indices)
+                                 const RAJAVec<Index_type>& is_indices)
 {
    Real_ptr test_array;
    posix_memalign((void **)&test_array, DATA_ALIGN, alen*sizeof(Real_type)) ;
@@ -637,6 +643,7 @@ void runMaxLocReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
+#if defined(RAJA_COMPILER_ICC)
    runBasicMaxLocReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -654,6 +661,7 @@ void runMaxLocReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
+#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -673,7 +681,7 @@ template <typename ISET_POLICY_T,
 void runBasicSumReductionTest(const std::string& policy,
                               Real_ptr in_array, Index_type alen,
                               const IndexSet& iset,
-                              RAJAVec<Index_type> is_indices)
+                              const RAJAVec<Index_type>& is_indices)
 {
    //
    // Generate reference result for sum
@@ -765,6 +773,7 @@ void runSumReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
+#if defined(RAJA_COMPILER_ICC)
    runBasicSumReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -782,6 +791,7 @@ void runSumReduceTests( Real_ptr in_array,
                "ExecPolicy<cilk_for_segit, simd_exec>",
                 in_array, alen,
                 iset, is_indices );
+#endif
 
    std::cout << "\n tests passed / test run: " 
              << s_ntests_passed << " / " << s_ntests_run << std::endl; 
@@ -811,16 +821,10 @@ int main(int argc, char *argv[])
    const Index_type array_length = 2000;
 
    Real_ptr parent;
-   Real_ptr child;
-   Real_ptr child_ref;
    posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
-   posix_memalign((void **)&child, DATA_ALIGN, array_length*sizeof(Real_type)) ;
-   posix_memalign((void **)&child_ref, DATA_ALIGN, array_length*sizeof(Real_type)) ;
 
    for (Index_type i=0 ; i<array_length; ++i) {
       parent[i] = static_cast<Real_type>( rand() % 65536 );
-      child[i] = 0.0;
-      child_ref[i] = 0.0;
    }
 
 
@@ -855,7 +859,7 @@ int main(int argc, char *argv[])
    ///
    /// Print total number of tests passed/run.
    ///
-   std::cout << "\n All Tests : " 
+   std::cout << "\n All Tests : # run / # passed = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << std::endl;
 
@@ -905,8 +909,6 @@ int main(int argc, char *argv[])
 // Clean up....
 //
    free(parent);
-   free(child);
-   free(child_ref);
 
    std::cout << "\n DONE!!! " << std::endl;
 
