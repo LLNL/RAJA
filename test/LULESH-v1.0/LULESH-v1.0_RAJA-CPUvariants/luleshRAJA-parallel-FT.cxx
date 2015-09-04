@@ -161,6 +161,7 @@ typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> mat_exec_po
 typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> minloc_exec_policy;
 typedef                                            Segment_Exec  range_exec_policy;
 
+typedef                                            RAJA::omp_reduce  reduce_policy;
 
 //
 // use RAJA data types for loop operations using RAJA
@@ -1279,6 +1280,9 @@ void CalcHourglassControlForElems(Domain *domain,
    Real_p y8n  = Allocate<Real_t>(numElem8) ;
    Real_p z8n  = Allocate<Real_t>(numElem8) ;
 
+   // For negative element volume check
+   RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int idx) {
 
@@ -1291,12 +1295,16 @@ void CalcHourglassControlForElems(Domain *domain,
 
       determ[idx] = domain->volo[idx] * domain->v[idx];
 
-      /* Do a check for negative volumes */
-      if ( domain->v[idx] <= Real_t(0.0) ) {
-         exit(VolumeError) ;
-      }
+      determ[idx] = domain->volo[idx] * domain->v[idx];
+
+      minvol.min(domain->v[idx]);
+
     }
    ) ;
+
+   if ( Real_t(minvol) <= Real_t(0.0) ) {
+      exit(VolumeError) ;
+   }
 
    if ( hgcoef > Real_t(0.) ) {
       CalcFBHourglassForceForElems( numElem, domain->numNode,
@@ -1346,12 +1354,15 @@ void CalcVolumeForceForElems(Domain *domain)
                                domain->domElemList, domain->domNodeList) ;
 
       // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
       RAJA::forall<elem_exec_policy>(*domain->domElemList, [&] (int k) {
-         if (determ[k] <= Real_t(0.0)) {
-            exit(VolumeError) ;
-         }
+         minvol.min(determ[k]);
        }
       ) ;
+
+      if ( Real_t(minvol) <= Real_t(0.0)) {
+         exit(VolumeError) ;
+      }
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
@@ -1832,6 +1843,8 @@ void CalcLagrangeElements(Domain *domain)
                              domain->vnew, domain->delv, domain->arealg,
                              deltatime, domain->domElemList) ;
 
+
+
       /* For FT... since domain dxx, dyy, dzz are not used, not really needed */
       RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
          dxx_tmp[k] =  domain->dxx[k] ;
@@ -1839,6 +1852,9 @@ void CalcLagrangeElements(Domain *domain)
          dzz_tmp[k] =  domain->dzz[k] ;
        }
       ) ;
+
+      // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
 
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>( *domain->domElemList, [&] (int k) {
@@ -1852,13 +1868,13 @@ void CalcLagrangeElements(Domain *domain)
         domain->dyy[k] = dyy_tmp[k] - vdovthird ;
         domain->dzz[k] = dzz_tmp[k] - vdovthird ;
 
-        // See if any volumes are negative, and take appropriate action.
-        if (domain->vnew[k] <= Real_t(0.0))
-        {
-           exit(VolumeError) ;
-        }
+        minvol.min(domain->vnew[k]);
        }
       ) ;
+
+      if ( Real_t(minvol) <= Real_t(0.0)) {
+         exit(VolumeError) ;
+      }
 
       Release(domain->dzz) ;
       Release(domain->dyy) ;
@@ -2571,24 +2587,24 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
        vnewc[zn] = domain->vnew[zn] ;
+
+       if (eosvmin != Real_t(0.)) {
+          if (vnewc[zn] < eosvmin) {
+             vnewc[zn] = eosvmin ;
+          }
+       }
+
+       if (eosvmax != Real_t(0.)) {
+          if (vnewc[zn] > eosvmax) {
+             vnewc[zn] = eosvmax ;
+          }
+       }
+
      }
     ) ;
 
-    if (eosvmin != Real_t(0.)) {
-       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
-          if (vnewc[zn] < eosvmin)
-             vnewc[zn] = eosvmin ;
-        }
-       ) ;
-    }
-
-    if (eosvmax != Real_t(0.)) {
-       RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
-          if (vnewc[zn] > eosvmax)
-             vnewc[zn] = eosvmax ;
-        }
-       ) ;
-    }
+    // check for negative element volume
+    RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
 
     RAJA::forall<mat_exec_policy>( *domain->matElemList, [&] (int zn) {
        Real_t vc = domain->v[zn] ;
@@ -2602,11 +2618,14 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
              vc = eosvmax ;
           }
        }
-       if (vc <= 0.) {
-          exit(VolumeError) ;
-       }
+
+       minvol.min(vc);
      }
     ) ;
+
+    if ( Real_t(minvol) <= Real_t(0.) ) {
+       exit(VolumeError) ;
+    }
 
     EvalEOSForElems(domain, vnewc, numElem);
 
@@ -2658,39 +2677,28 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
-
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
-
+   RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
       Real_t dtf = ss[indx] * ss[indx] ;
+      Real_t dtf_cmp ;
 
       if ( vdov[indx] < Real_t(0.) ) {
-
-         dtf = dtf
-            + qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
+         dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
-      dtf = SQRT(dtf) ;
-
-      dtf = arealg[indx] / dtf ;
+      dtf_cmp = (vdov[indx] != Real_t(0.))
+              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+10) ;
 
       /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
 
-      if (vdov[indx] != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
-
-   if (min_loc != -1) {
-      *dtcourant = min_val ;
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      *dtcourant = dtcourantLoc ;
    }
 
    return ;
@@ -2700,23 +2708,19 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
+   RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
-      if (vdov[indx] != Real_t(0.)) {
-         Real_t dtdvov = dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)) ;
-         if ( *myMin > dtdvov ) {
-            *myMin = dtdvov ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
+   RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
 
-   if (min_loc != -1) {
-      *dthydro = min_val ;
+      Real_t dtvov_cmp = (vdov[indx] != Real_t(0.))
+                       ? (dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)))
+                       : Real_t(1.0e+10) ;
+
+      dthydroLoc.min(dtvov_cmp) ;
+   } ) ;
+
+   if (dthydroLoc < Real_t(1.0e+20)) {
+      *dthydro = dthydroLoc ;
    }
 
    return ;
