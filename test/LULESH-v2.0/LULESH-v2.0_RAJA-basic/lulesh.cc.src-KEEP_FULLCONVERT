@@ -185,7 +185,6 @@ typedef Segment_Exec mat_exec_policy;
 typedef Segment_Exec range_exec_policy;
 
 
-
 /*********************************/
 /* Data structure implementation */
 /*********************************/
@@ -1052,6 +1051,9 @@ void CalcHourglassControlForElems(Domain* domain,
    Real_t *y8n  = Allocate<Real_t>(numElem8) ;
    Real_t *z8n  = Allocate<Real_t>(numElem8) ;
 
+   // For negative element volume check
+   RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
       Real_t  x1[8],  y1[8],  z1[8] ;
@@ -1076,15 +1078,18 @@ void CalcHourglassControlForElems(Domain* domain,
 
       determ[i] = domain->volo(i) * domain->v(i);
 
-      /* Do a check for negative volumes */
-      if ( domain->v(i) <= Real_t(0.0) ) {
+      minvol.min(domain->v(i));
+
+    }
+   ) ;
+
+   if ( Real_t(minvol) <= Real_t(0.0) ) {
 #if USE_MPI         
-         MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+      MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
-         exit(VolumeError);
+      exit(VolumeError);
 #endif
-      }
-   } );
+   }
 
    if ( hgcoef > Real_t(0.) ) {
       CalcFBHourglassForceForElems( domain,
@@ -1125,15 +1130,19 @@ void CalcVolumeForceForElems(Domain* domain)
                                domain->numNode()) ;
 
       // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int k) {
-         if (determ[k] <= Real_t(0.0)) {
+         minvol.min(determ[k]);
+       }
+      ) ;
+
+      if ( Real_t(minvol) <= Real_t(0.0)) {
 #if USE_MPI            
-            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+         MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
-            exit(VolumeError);
+         exit(VolumeError);
 #endif
-         }
-      } );
+      }
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
@@ -1615,6 +1624,9 @@ void CalcLagrangeElements(Domain* domain)
 
       CalcKinematicsForElems(domain, deltatime, numElem) ;
 
+      // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int k) {
          // calc strain rate and apply as constraint (only done in FB element)
@@ -1627,16 +1639,18 @@ void CalcLagrangeElements(Domain* domain)
          domain->dyy(k) -= vdovthird ;
          domain->dzz(k) -= vdovthird ;
 
-        // See if any volumes are negative, and take appropriate action.
-         if (domain->vnew(k) <= Real_t(0.0))
-        {
+        minvol.min(domain->vnew(k));
+       }
+      ) ;
+
+      if ( Real_t(minvol) <= Real_t(0.0)) {
 #if USE_MPI           
            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
            exit(VolumeError);
 #endif
-        }
-      } );
+      }
+
       domain->DeallocateStrains();
    }
 }
@@ -2353,26 +2367,30 @@ void ApplyMaterialPropertiesForElems(Domain* domain)
 
     RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
        vnewc[i] = domain->vnew(i) ;
-    } );
 
-    // Bound the updated relative volumes with eosvmin/max
-    if (eosvmin != Real_t(0.)) {
-       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
-          if (vnewc[i] < eosvmin)
+       // Bound the updated relative volumes with eosvmin/max
+       if (eosvmin != Real_t(0.)) {
+          if (vnewc[i] < eosvmin) {
              vnewc[i] = eosvmin ;
-       } );
-    }
+          }
+       }
 
-    if (eosvmax != Real_t(0.)) {
-       RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
-          if (vnewc[i] > eosvmax)
+       if (eosvmax != Real_t(0.)) {
+          if (vnewc[i] > eosvmax) {
              vnewc[i] = eosvmax ;
-       } );
-    }
+          }
+       }
+
+     }
+    ) ;
 
     // This check may not make perfect sense in LULESH, but
     // it's representative of something in the full code -
     // just leave it in, please
+
+    // check for negative element volume
+    RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+
     RAJA::forall<elem_exec_policy>(0, numElem, [=] (int i) {
        Real_t vc = domain->v(i) ;
        if (eosvmin != Real_t(0.)) {
@@ -2383,14 +2401,18 @@ void ApplyMaterialPropertiesForElems(Domain* domain)
           if (vc > eosvmax)
              vc = eosvmax ;
        }
-       if (vc <= 0.) {
+
+       minvol.min(vc);
+     }
+    ) ;
+
+    if ( Real_t(minvol) <= Real_t(0.) ) {
 #if USE_MPI             
-          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+       MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
 #else
-          exit(VolumeError);
+       exit(VolumeError);
 #endif
-       }
-    } );
+    }
 
     for (Int_t r=0 ; r<domain->numReg() ; r++) {
        Index_t numElemReg = domain->regElemSize(r);
@@ -2455,9 +2477,7 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
-#if 1 // New reduction...
    RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
-// RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
    RAJA::forall<mat_exec_policy>(0, length, [=] (int i) {
@@ -2466,7 +2486,7 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
       Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
 
       if ( domain->vdov(indx) < Real_t(0.) ) {
-         dtf += qqc2 * domain->arealg(indx) * domain->arealg(indx) *
+         dtf += qqc2 * domain->arealg(indx) * domain->arealg(indx) * 
                 domain->vdov(indx) * domain->vdov(indx) ;
       }
 
@@ -2482,34 +2502,6 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
    if (dtcourantLoc < Real_t(1.0e+20)) {
       dtcourant = dtcourantLoc ;
    }
-#else // old reduction
-
-   Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
-
-   RAJA::forall_min<min_exec_policy>(0, length,
-                                        &dtcourant,
-        [=] (int i, Real_t *myMin) {
-
-      Index_t indx = regElemlist[i] ;
-      Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
-
-      if ( domain->vdov(indx) < Real_t(0.) ) {
-         dtf = dtf
-             + qqc2 * domain->arealg(indx) * domain->arealg(indx)
-             * domain->vdov(indx) * domain->vdov(indx) ;
-      }
-
-      dtf = SQRT(dtf) ;
-      dtf = domain->arealg(indx) / dtf ;
-
-      if (domain->vdov(indx) != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-         }
-      }
-
-   } );
-#endif
 
    return ;
 }
