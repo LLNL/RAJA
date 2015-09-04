@@ -160,6 +160,8 @@ typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> mat_exec_po
 typedef LULESH_INDEXSET::ExecPolicy<IndexSet_Seg_Iter, Segment_Exec> minloc_exec_policy;
 typedef                                            Segment_Exec  range_exec_policy;
 
+typedef                                            RAJA::seq_reduce  reduce_policy;
+
 
 //
 // use RAJA data types for loop operations using RAJA
@@ -2546,39 +2548,28 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
-
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
-
+   RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
       Real_t dtf = ss[indx] * ss[indx] ;
+      Real_t dtf_cmp ;
 
       if ( vdov[indx] < Real_t(0.) ) {
-
-         dtf = dtf
-            + qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
+         dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
-      dtf = SQRT(dtf) ;
-
-      dtf = arealg[indx] / dtf ;
+      dtf_cmp = (vdov[indx] != Real_t(0.))
+              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+10) ;
 
       /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
 
-      if (vdov[indx] != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
-
-   if (min_loc != -1) {
-      *dtcourant = min_val ;
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      *dtcourant = dtcourantLoc ;
    }
 
    return ;
@@ -2588,23 +2579,19 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
-   Real_t min_val = Real_t(1.0e+20) ;
-   Index_t min_loc = -1 ;
+   RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
 
-   RAJA::forall_minloc<minloc_exec_policy>( *matElemList, &min_val, &min_loc,
-        [&] (int indx, Real_t *myMin, Index_t *myLoc) {
-      if (vdov[indx] != Real_t(0.)) {
-         Real_t dtdvov = dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)) ;
-         if ( *myMin > dtdvov ) {
-            *myMin = dtdvov ;
-            *myLoc = indx ;
-         }
-      }
-    }
-   ) ;
+   RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
 
-   if (min_loc != -1) {
-      *dthydro = min_val ;
+      Real_t dtvov_cmp = (vdov[indx] != Real_t(0.))
+                       ? (dvovmax / (FABS(vdov[indx])+Real_t(1.e-20)))
+                       : Real_t(1.0e+10) ;
+
+      dthydroLoc.min(dtvov_cmp) ;
+   } ) ;
+
+   if (dthydroLoc < Real_t(1.0e+20)) {
+      *dthydro = dthydroLoc ;
    }
 
    return ;
