@@ -1,14 +1,14 @@
 ##
 ## Common build and run (e.g., TLCC2, BG/Q, etc.) ...
 ##
-> ./buildme
-> ./runme
+> ./build-cpu
+> ./run-cpu
 
 ##
 ## To build and run on ipa using nvcc...
 ##
 
-> ./buildme-cuda
+> ./build-gpu
 > salloc -p nvidia -N1
 > setenv CUDA_VISIBLE_DEVICES 0
-> ./runme-cuda
+> ./run-gpu
