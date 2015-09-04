@@ -25,6 +25,10 @@ typedef RAJA::IndexSet::ExecPolicy<IndexSet_SegIt, SegExec> mat_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<IndexSet_SegIt, SegExec> min_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<IndexSet_SegIt, SegExec> symnode_exec_policy;
 
+//typedef RAJA::seq_reduce              reduce_policy;
+typedef RAJA::omp_reduce              reduce_policy;
+//typedef RAJA::cilk_reduce              reduce_policy;
+
 
 #if !defined(LULESH_HEADER)
 #include "lulesh_stl.h"

@@ -2368,6 +2368,34 @@ RAJA_STORAGE
 void CalcCourantConstraintForElems(Domain* domain, int reg_num,
                                    Real_t qqc, Real_t& dtcourant)
 {
+#if 0  // new reduction
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+// RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+   Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
+
+   RAJA::forall<mat_exec_policy>(domain->getRegionISet(reg_num), [=] (int indx) {
+
+      Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
+
+      if ( domain->vdov(indx) < Real_t(0.) ) {
+         dtf += qqc2 * domain->arealg(indx) * domain->arealg(indx) *
+                domain->vdov(indx) * domain->vdov(indx) ;
+      }
+
+      Real_t dtf_cmp = (domain->vdov(indx) != Real_t(0.))
+                     ?  domain->arealg(indx) / SQRT(dtf) : Real_t(1.0e+20) ;
+
+      /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
+
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      dtcourant = dtcourantLoc ;
+   }
+
+#else
    Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
 
    RAJA::forall_min<min_exec_policy>(domain->getRegionISet(reg_num),
@@ -2392,6 +2420,7 @@ void CalcCourantConstraintForElems(Domain* domain, int reg_num,
       }
 
    } );
+#endif
 
    return ;
 }
