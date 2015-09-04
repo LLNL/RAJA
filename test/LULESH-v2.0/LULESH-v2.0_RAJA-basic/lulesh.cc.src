@@ -2456,11 +2456,16 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
                                    Real_t qqc, Real_t& dtcourant)
 {
 #if 1 // New reduction...
-   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
-// RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
+#if 1
+   RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+   RAJA::forall<RAJA::seq_exec>(0, length, [=] (int i) {
+#else
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    RAJA::forall<mat_exec_policy>(0, length, [=] (int i) {
+#endif
 
       Index_t indx = regElemlist[i] ;
       Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
