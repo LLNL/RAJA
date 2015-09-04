@@ -2560,7 +2560,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
       }
 
       dtf_cmp = (vdov[indx] != Real_t(0.))
-              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+10) ;
+              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
 
       /* determine minimum timestep with its corresponding elem */
       dtcourantLoc.min(dtf_cmp) ;
