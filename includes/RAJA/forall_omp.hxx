@@ -1019,7 +1019,8 @@ void forall_Icount(omp_parallel_for_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = (end-begin)/stride;
+   Index_type loop_end = (end-begin)/stride;
+   if ( (end-begin) % stride != 0 ) loop_end++;
 
    RAJA_FT_BEGIN ;
 
@@ -1075,9 +1076,8 @@ void forall_Icount(omp_parallel_for_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin    = iseg.getBegin();
-   const Index_type stride   = iseg.getStride();
-   const Index_type loop_end = (iseg.getEnd()-begin)/stride;
+   Index_type loop_end = (iseg.getEnd()-iseg.getBegin())/iseg.getStride();
+   if ( (iseg.getEnd()-iseg.getBegin()) % iseg.getStride() != 0 ) loop_end++;
 
    RAJA_FT_BEGIN ;
 

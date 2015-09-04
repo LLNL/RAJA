@@ -3343,8 +3343,8 @@ int main(int argc, char *argv[])
       LagrangeLeapFrog(&domain) ;
       /* problem->commNodes->Transfer(CommNodes::syncposvel) ; */
       if ( show_run_progress ) {
-         printf("time = %e, dt=%e\n",
-                double(domain.time), double(domain.deltatime) ) ;
+         printf("cycle = %d, time = %e, dt=%e\n",
+                domain.cycle,double(domain.time), double(domain.deltatime) ) ;
       }
    }
    timer_cycle.stop();

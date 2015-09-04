@@ -4,7 +4,7 @@
 #
 # 1) luleshRAJA-serial.cxx contains a serial-only version.
 # 2) luleshRAJA-parallel.cxx.src contains a version that can be run 
-#    in 9 different parallel variants using RAJA (different data layouts,
+#    in 10 different parallel variants using RAJA (different data layouts,
 #    different OpenMP parallelization strategies (including lock-free
 #    dependency graphs), CilkPlus, and GPU using CUDA). See luleshPolicy.hxx
 #    more more details and how to select the exeuction mode.
@@ -25,14 +25,14 @@
 ## To build and run any of the parallel CPU variants:
 ##
 ## 1) Set RAJA_ARCH for the compiler and platform in the Makefile.
-## 2) Set the USE_VASE value in luleshPolicy.hx
+## 2) Set the USE_VASE value in luleshPolicy.hxx to an integer between 1 and 8.
 ## 3) type ./build-parallel
 ## 4) type ./run-parallel
 ##
 ## To build and run on the GPU version (e.g., ipa or rzhasgpu)
 ##
 ## 1) Set RAJA_ARCH = ipa_nvcc
-## 2) Set the USE_VASE value to 9 in luleshPolicy.hxx
+## 2) Set the USE_VASE value to 9 or 10 in luleshPolicy.hxx
 ## 3) type ./build-parallel-gpu
 ## 4) Allocate a node on the machine. E.g., on ipa
 > salloc -p nvidia -N1

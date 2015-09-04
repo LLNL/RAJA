@@ -725,9 +725,10 @@ void forall_Icount(cuda_exec,
 
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
    Index_type len = end - begin;
+
+   size_t blockSize = THREADS_PER_BLOCK;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                       begin, len,
                                                       icount);
@@ -809,14 +810,16 @@ void forall_Icount(cuda_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
+   const Index_type len = iseg.getEnd() - begin;
+
    size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
+
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                                      begin, end,
+                                                      begin, len,
                                                       icount);
 #ifdef RAJA_SYNC
    if (cudaDeviceSynchronize() != cudaSuccess) {

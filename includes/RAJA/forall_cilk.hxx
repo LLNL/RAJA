@@ -948,7 +948,8 @@ void forall_Icount(cilk_for_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = (end-begin)/stride;
+   Index_type loop_end = (end-begin)/stride;
+   if ( (end-begin) % stride != 0 ) loop_end++;
 
    RAJA_FT_BEGIN ;
 
@@ -1002,9 +1003,8 @@ void forall_Icount(cilk_for_exec,
                    const Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin    = iseg.getBegin();
-   const Index_type stride   = iseg.getStride();
-   const Index_type loop_end = (iseg.getEnd()-begin)/stride;
+   Index_type loop_end = (iseg.getEnd()-iseg.getBegin())/iseg.getStride();
+   if ( (iseg.getEnd()-iseg.getBegin()) % iseg.getStride() != 0 ) loop_end++;
 
    RAJA_FT_BEGIN ;
 
@@ -1618,7 +1618,7 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          case _RangeSeg_ : {
             const RangeSegment* tseg =
                static_cast<const RangeSegment*>(iseg);
-            foral_Icount(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(),
                icount,
@@ -1631,7 +1631,7 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          case _RangeStrideSeg_ : {
             const RangeStrideSegment* tseg =
                static_cast<const RangeStrideSegment*>(iseg);
-            foral_Icount(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
                icount,
@@ -1644,7 +1644,7 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
          case _ListSeg_ : {
             const ListSegment* tseg =
                static_cast<const ListSegment*>(iseg);
-            foral_Icount(
+            forall_Icount(
                SEG_EXEC_POLICY_T(),
                tseg->getIndex(), tseg->getLength(),
                icount,
