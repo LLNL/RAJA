@@ -1,14 +1,15 @@
-Script started on Fri Sep  4 12:34:16 2015
+Script started on Fri Sep  4 12:45:33 2015
 hornung1@rzalastor2>{master} ./ru
 run-parallel*     run-parallel-FT*  run-parallel-gpu* run-serial*
-hornung1@rzalastor2>{master} ./run-serial 
-Fri Sep  4 12:34:20 PDT 2015
+hornung1@rzalastor2>{master} ./run-pa
+run-parallel*     run-parallel-FT*  run-parallel-gpu* 
+hornung1@rzalastor2>{master} ./run-parallel
+Fri Sep  4 12:45:37 PDT 2015
 LULESH parallel run parameters:
 	 stop time = 1.000000e-02
 	 CFL-controlled: initial time step = 1.000000e-07
 	 Mesh size = 45 x 45 x 45
 	 Tiling mode is 'Lock-free chunk'
-	 Mesh tiling = 2 x 2 x 2
 cycle = 1, time = 1.000000e-07, dt=1.000000e-07
 cycle = 2, time = 2.200000e-07, dt=1.200000e-07
 cycle = 3, time = 3.640000e-07, dt=1.440000e-07
@@ -1504,12 +1505,12 @@ cycle = 1492, time = 9.968440e-03, dt=1.508001e-05
 cycle = 1493, time = 9.983520e-03, dt=1.508001e-05
 cycle = 1494, time = 9.993573e-03, dt=1.005334e-05
 cycle = 1495, time = 1.000000e-02, dt=6.426643e-06
-Total Cycle Time (sec) = 115.857989
-Total main Time (sec) = 115.874648
-97.20user 18.66system 1:55.91elapsed 99%CPU (0avgtext+0avgdata 64504maxresident)k
-2320inputs+0outputs (9major+5854056minor)pagefaults 0swaps
-Fri Sep  4 12:36:16 PDT 2015
+Total Cycle Time (sec) = 19.999732
+Total main Time (sec) = 20.216004
+320.54user 62.35system 0:20.26elapsed 1889%CPU (0avgtext+0avgdata 88652maxresident)k
+2848inputs+0outputs (10major+5893751minor)pagefaults 0swaps
+Fri Sep  4 12:45:58 PDT 2015
 hornung1@rzalastor2>{master} exit
 exit
 
-Script done on Fri Sep  4 12:39:15 2015
+Script done on Fri Sep  4 12:46:03 2015
