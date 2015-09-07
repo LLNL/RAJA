@@ -2368,10 +2368,9 @@ RAJA_STORAGE
 void CalcCourantConstraintForElems(Domain* domain, int reg_num,
                                    Real_t qqc, Real_t& dtcourant)
 {
-#if 0  // new reduction
-   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
-// RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
+
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(dtcourant) ;
 
    RAJA::forall<mat_exec_policy>(domain->getRegionISet(reg_num), [=] (int indx) {
 
@@ -2394,33 +2393,6 @@ void CalcCourantConstraintForElems(Domain* domain, int reg_num,
    if (dtcourantLoc < Real_t(1.0e+20)) {
       dtcourant = dtcourantLoc ;
    }
-
-#else
-   Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
-
-   RAJA::forall_min<min_exec_policy>(domain->getRegionISet(reg_num),
-                                     &dtcourant,
-        [=] (int indx, Real_t *myMin) {
-
-      Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
-
-      if ( domain->vdov(indx) < Real_t(0.) ) {
-         dtf = dtf
-             + qqc2 * domain->arealg(indx) * domain->arealg(indx)
-             * domain->vdov(indx) * domain->vdov(indx) ;
-      }
-
-      dtf = SQRT(dtf) ;
-      dtf = domain->arealg(indx) / dtf ;
-
-      if (domain->vdov(indx) != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-         }
-      }
-
-   } );
-#endif
 
    return ;
 }
