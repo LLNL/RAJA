@@ -583,31 +583,6 @@ void forall_Icount(seq_exec,
    RAJA_FT_END ;
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over index range.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                Index_type begin, Index_type end,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, min );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -667,34 +642,6 @@ void forall_Icount(seq_exec,
 #pragma novector
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, ii+begin );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over range segment object.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const RangeSegment& iseg,
-                T* min, Index_type* loc,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii, min );
    }
 
    RAJA_FT_END ;
@@ -760,32 +707,6 @@ void forall_Icount(seq_exec,
 #pragma novector
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over index range with stride.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                Index_type begin, Index_type end,
-                Index_type stride,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, min );
    }
 
    RAJA_FT_END ;
@@ -857,36 +778,6 @@ void forall_Icount(seq_exec,
    RAJA_FT_END ;
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over range-stride segment object
- *         with index count.
- * 
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const RangeStrideSegment& iseg,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   const Index_type begin  = iseg.getBegin();
-   const Index_type end    = iseg.getEnd();
-   const Index_type stride = iseg.getStride();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii, min );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -941,31 +832,6 @@ void forall_Icount(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const Index_type* __restrict__ idx, Index_type len,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], min );
    }
 
    RAJA_FT_END ;
@@ -1030,34 +896,6 @@ void forall_Icount(seq_exec,
 #pragma novector
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential min reduction over list segment object.
- *
- ******************************************************************************
- */
-template <typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min(seq_exec,
-                const ListSegment& iseg,
-                T* min,
-                LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k], min );
    }
 
    RAJA_FT_END ;
@@ -1215,80 +1053,6 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
       }  // switch on segment type
 
    } // iterate over segments of index set
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief  min reduction that iterates over index set segments
- *         sequentially and uses execution policy template parameter to 
- *         execute segments.
- *
- ******************************************************************************
- */
-template <typename SEG_EXEC_POLICY_T,
-          typename T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_min( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                 const IndexSet& iset,
-                 T* min,
-                 LOOP_BODY loop_body)
-{
-   const int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const BaseSegment* iseg = iset.getSegment(isi);
-      SegmentType segtype = iseg->getType();
-
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            const RangeSegment* tseg =
-               static_cast<const RangeSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(),
-               min,
-               loop_body
-            );
-            break;
-         }
-
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
-            const RangeStrideSegment* tseg =
-               static_cast<const RangeStrideSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
-               min,
-               loop_body
-            );
-            break;
-         }
-#endif
-
-         case _ListSeg_ : {
-            const ListSegment* tseg =
-               static_cast<const ListSegment*>(iseg);
-            forall_min(
-               SEG_EXEC_POLICY_T(),
-               tseg->getIndex(), tseg->getLength(),
-               min,
-               loop_body
-            );
-            break;
-         }
-
-         default : {
-         }
-
-      }  // switch on segment type
-
-   } // iterate over segments of index set
-
 }
 
 
