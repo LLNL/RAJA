@@ -2491,7 +2491,7 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(Domain* domain, Index_t length,
                                  Index_t *regElemlist, Real_t dvovmax, Real_t& dthydro)
 {
-   RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
+   RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(dthydro) ;
 
    RAJA::forall<mat_exec_policy>(0, length, [=] (int i) {
 
