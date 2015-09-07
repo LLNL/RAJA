@@ -2368,30 +2368,31 @@ RAJA_STORAGE
 void CalcCourantConstraintForElems(Domain* domain, int reg_num,
                                    Real_t qqc, Real_t& dtcourant)
 {
-   Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
+   Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-   RAJA::forall_min<min_exec_policy>(domain->getRegionISet(reg_num),
-                                     &dtcourant,
-        [=] (int indx, Real_t *myMin) {
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(dtcourant) ;
+
+   RAJA::forall<mat_exec_policy>(domain->getRegionISet(reg_num), [=] (int indx) {
 
       Real_t dtf = domain->ss[indx] * domain->ss[indx] ;
 
       if ( domain->vdov[indx] < Real_t(0.) ) {
-         dtf = dtf
-             + qqc2 * domain->arealg[indx] * domain->arealg[indx]
-             * domain->vdov[indx] * domain->vdov[indx] ;
+         dtf += qqc2 * domain->arealg[indx] * domain->arealg[indx] *
+                domain->vdov[indx] * domain->vdov[indx] ;
       }
 
-      dtf = SQRT(dtf) ;
-      dtf = domain->arealg[indx] / dtf ;
+      Real_t dtf_cmp = (domain->vdov[indx] != Real_t(0.))
+                     ?  domain->arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
 
-      if (domain->vdov[indx] != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-         }
-      }
+      /* determine minimum timestep with its corresponding elem */
+      dtcourantLoc.min(dtf_cmp) ;
+   } ) ;
 
-   } );
+   /* Don't try to register a time constraint if none of the elements
+    * were active */
+   if (dtcourantLoc < Real_t(1.0e+20)) {
+      dtcourant = dtcourantLoc ;
+   }
 
    return ;
 }
@@ -2402,19 +2403,21 @@ RAJA_STORAGE
 void CalcHydroConstraintForElems(Domain* domain, int reg_num,
                                  Real_t dvovmax, Real_t& dthydro)
 {
-   RAJA::forall_min<min_exec_policy>(domain->getRegionISet(reg_num),
-                                     &dthydro,
-        [=] (int indx, Real_t *myMin) {
+   RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(dthydro) ;
 
-      if (domain->vdov[indx] != Real_t(0.)) {
-         Real_t dtdvov = dvovmax / (FABS(domain->vdov[indx])+Real_t(1.e-20)) ;
+   RAJA::forall<mat_exec_policy>(domain->getRegionISet(reg_num), [=] (int indx) {
 
-         if ( *myMin > dtdvov ) {
-            *myMin = dtdvov ;
-         }
-      }
+       Real_t dtvov_cmp = (domain->vdov[indx] != Real_t(0.))
+                        ? (dvovmax / (FABS(domain->vdov[indx])+Real_t(1.e-20)))
+                        : Real_t(1.0e+20) ;
 
-   } );
+      dthydroLoc.min(dtvov_cmp) ;
+
+   } ) ;
+
+   if (dthydroLoc < Real_t(1.0e+20)) {
+      dthydro = dthydroLoc ;
+   }
 
    return ;
 }
