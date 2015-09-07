@@ -2455,17 +2455,11 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
                                    Index_t *regElemlist,
                                    Real_t qqc, Real_t& dtcourant)
 {
-#if 1 // New reduction...
-
    Real_t  qqc2 = Real_t(64.0) * qqc * qqc ;
 
-#if 1
-   RAJA::ReduceMin<RAJA::seq_reduce, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
-   RAJA::forall<RAJA::seq_exec>(0, length, [=] (int i) {
-#else
-   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(Real_t(1.0e+20)) ;
+   RAJA::ReduceMin<reduce_policy, Real_t> dtcourantLoc(dtcourant) ;
+
    RAJA::forall<mat_exec_policy>(0, length, [=] (int i) {
-#endif
 
       Index_t indx = regElemlist[i] ;
       Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
@@ -2487,34 +2481,6 @@ void CalcCourantConstraintForElems(Domain* domain, Index_t length,
    if (dtcourantLoc < Real_t(1.0e+20)) {
       dtcourant = dtcourantLoc ;
    }
-#else // old reduction
-
-   Real_t   qqc2 = Real_t(64.0) * qqc * qqc ;
-
-   RAJA::forall_min<min_exec_policy>(0, length,
-                                        &dtcourant,
-        [=] (int i, Real_t *myMin) {
-
-      Index_t indx = regElemlist[i] ;
-      Real_t dtf = domain->ss(indx) * domain->ss(indx) ;
-
-      if ( domain->vdov(indx) < Real_t(0.) ) {
-         dtf = dtf
-             + qqc2 * domain->arealg(indx) * domain->arealg(indx)
-             * domain->vdov(indx) * domain->vdov(indx) ;
-      }
-
-      dtf = SQRT(dtf) ;
-      dtf = domain->arealg(indx) / dtf ;
-
-      if (domain->vdov(indx) != Real_t(0.)) {
-         if ( dtf < *myMin ) {
-            *myMin = dtf ;
-         }
-      }
-
-   } );
-#endif
 
    return ;
 }
