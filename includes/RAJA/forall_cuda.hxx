@@ -479,6 +479,7 @@ public:
 
       m_blockdata = getCudaReductionMemBlock();
       m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
+      m_blockdata[m_blockoffset] = static_cast<T>(0);
 
       cudaDeviceSynchronize();
    }
@@ -532,11 +533,12 @@ public:
    __device__ ReduceSum<cuda_reduce, T> operator+=(T val) const
    {
       __shared__ T sd[THREADS_PER_BLOCK];
+
       sd[threadIdx.x] = val;
 
       T temp = 0;
-
       __syncthreads();
+
       for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
          if (threadIdx.x < i) {
             sd[threadIdx.x] += sd[threadIdx.x + i];
@@ -552,7 +554,7 @@ public:
       }
 
       // one thread adds to gmem, we skip m_blockdata[m_blockoffset]
-      // because we are accumlating into this
+      // because we will be accumlating into this
       if (threadIdx.x == 0) {
          m_blockdata[m_blockoffset + blockIdx.x+1] += temp ;
       }
