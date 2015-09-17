@@ -1,5 +1,8 @@
 
-#include <stdio.h>
+#include<string>
+#include<iostream>
+#include<iomanip>
+#include <cstdio>
 #include <cfloat>
 #include <random>
 
@@ -8,75 +11,293 @@
 #define TEST_VEC_LEN  1024 * 1024
 
 using namespace RAJA;
+using namespace std;
+
+bool equal(double a, double b) 
+{
+   return (abs(a-b) <= ( ( abs(a) < abs(b) ? abs(a) : abs(b) ) * 10e-12 ) );  
+}
+
+bool equal(int a, int b) 
+{
+   return a == b ;
+}
+
+//
+// Global variables for counting tests executed/passed.
+//
+unsigned s_ntests_run = 0;
+unsigned s_ntests_passed = 0;
 
 int main(int argc, char *argv[])
 {
-   double tinit = 5.0;
+   cout << "\n Begin RAJA GPU ReduceSum tests!!! " << endl;
 
-   ReduceSum<cuda_reduce, double> dsum0(0.0);
-   ReduceSum<cuda_reduce, double> dsum1(tinit * 1.0);
-   ReduceSum<cuda_reduce, double> dsum2(0.0);
-   ReduceSum<cuda_reduce, double> dsum3(tinit * 3.0);
-   ReduceSum<cuda_reduce, double> dsum4(0.0);
-   ReduceSum<cuda_reduce, double> dsum5(tinit * 5.0);
-   ReduceSum<cuda_reduce, double> dsum6(0.0);
-   ReduceSum<cuda_reduce, double> dsum7(tinit * 7.0);
+   const int test_repeat = 1;
 
-   double *value ;
+   //
+   // Allocate and initialize managed data arrays
+   //
+   double dinit_val = 0.1;
+   int iinit_val = 1; 
 
-   cudaMallocManaged((void **)&value,
-      sizeof(double)*TEST_VEC_LEN,
-      cudaMemAttachGlobal) ;
+   double* dvalue ;
+   int* ivalue ;
 
+   cudaMallocManaged((void **)&dvalue, sizeof(double)*TEST_VEC_LEN,
+                     cudaMemAttachGlobal) ;
    for (int i=0; i<TEST_VEC_LEN; ++i) {
-      value[i] = 1 ;
+      dvalue[i] = dinit_val ;
    }
 
-   int loops = 2;
-
-   for(int k=0; k < loops ; k++) {
-      forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
-         dsum0 += value[i] ;
-         dsum1 += value[i] * 2;
-         dsum2 += value[i] * 3;
-         dsum3 += value[i] * 4;
-         dsum4 += value[i] * 5;
-         dsum5 += value[i] * 6;
-         dsum6 += value[i] * 7;
-         dsum7 += value[i] * 8;
-      } ) ;
-
-      if ( k < loops-1) { 
-         printf("\n\n loop count = %d....\n", k);
-         int kloop = k+1; 
-         printf("(check = %lf) dsum0 = %lf\n",(double)(TEST_VEC_LEN)*1*kloop, double(dsum0));
-         printf("(check = %lf) dsum1 = %lf\n",(double)(TEST_VEC_LEN)*2*kloop+tinit*1.0, double(dsum1));
-         printf("(check = %lf) dsum2 = %lf\n",(double)(TEST_VEC_LEN)*3*kloop, double(dsum2));
-         printf("(check = %lf) dsum3 = %lf\n",(double)(TEST_VEC_LEN)*4*kloop+tinit*3.0, double(dsum3));
-         printf("(check = %lf) dsum4 = %lf\n",(double)(TEST_VEC_LEN)*5*kloop, double(dsum4));
-         printf("(check = %lf) dsum5 = %lf\n",(double)(TEST_VEC_LEN)*6*kloop+tinit*5.0, double(dsum5));
-         printf("(check = %lf) dsum6 = %lf\n",(double)(TEST_VEC_LEN)*7*kloop, double(dsum6));
-         printf("(check = %lf) dsum7 = %lf\n",(double)(TEST_VEC_LEN)*8*kloop+tinit*7.0, double(dsum7));
-      }
+   cudaMallocManaged((void **)&ivalue, sizeof(int)*TEST_VEC_LEN,
+                     cudaMemAttachGlobal) ;
+   for (int i=0; i<TEST_VEC_LEN; ++i) {
+      ivalue[i] = iinit_val ;
    }
+
+////////////////////////////////////////////////////////////////////////////
+// Run 3 different sum reduction tests in a loop
+////////////////////////////////////////////////////////////////////////////  
+
+   for (int tcount = 0; tcount < test_repeat; ++tcount) {
+
+      cout << "\t tcount = " << tcount << endl;
+    
+      //
+      // test 1 runs 8 reductions over a range multiple times to check
+      //        that reduction value can be retrieved and then subsequent
+      //        reductions can be run with the same reduction objects.
+      //
+      { // begin test 1
+
+         double dtinit = 5.0;
+
+         ReduceSum<cuda_reduce, double> dsum0(0.0);
+         ReduceSum<cuda_reduce, double> dsum1(dtinit * 1.0);
+         ReduceSum<cuda_reduce, double> dsum2(0.0);
+         ReduceSum<cuda_reduce, double> dsum3(dtinit * 3.0);
+         ReduceSum<cuda_reduce, double> dsum4(0.0);
+         ReduceSum<cuda_reduce, double> dsum5(dtinit * 5.0);
+         ReduceSum<cuda_reduce, double> dsum6(0.0);
+         ReduceSum<cuda_reduce, double> dsum7(dtinit * 7.0);
+
+         int loops = 2;
+         for (int k=0; k < loops ; k++) {
+
+            s_ntests_run++;
+
+            forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
+               dsum0 += dvalue[i] ;
+               dsum1 += dvalue[i] * 2.0;
+               dsum2 += dvalue[i] * 3.0;
+               dsum3 += dvalue[i] * 4.0;
+               dsum4 += dvalue[i] * 5.0;
+               dsum5 += dvalue[i] * 6.0;
+               dsum6 += dvalue[i] * 7.0;
+               dsum7 += dvalue[i] * 8.0;
+            } ) ;
+   
+            double base_chk_val = dinit_val*double(TEST_VEC_LEN)*(k+1);
+   
+            if ( !equal( double(dsum0), base_chk_val )                  ||
+                 !equal( double(dsum1), 2*base_chk_val+(dtinit * 1.0) ) ||
+                 !equal( double(dsum2), 3*base_chk_val )                ||
+                 !equal( double(dsum3), 4*base_chk_val+(dtinit * 3.0) ) ||
+                 !equal( double(dsum4), 5*base_chk_val )                ||
+                 !equal( double(dsum5), 6*base_chk_val+(dtinit * 5.0) ) ||
+                 !equal( double(dsum6), 7*base_chk_val )                ||
+                 !equal( double(dsum7), 8*base_chk_val+(dtinit * 7.0) ) ) {
+
+               cout << "\n TEST 1 FAILURE: tcount, k = "
+                    << tcount << " , " << k << endl;
+               cout << setprecision(20) 
+                    << "\tdsum0 = " << static_cast<double>(dsum0) << " ("
+                    << base_chk_val << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum1 = " << static_cast<double>(dsum1) << " ("
+                    << 2*base_chk_val+(dtinit * 1.0) << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum2 = " << static_cast<double>(dsum2) << " ("
+                    << 3*base_chk_val << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum3 = " << static_cast<double>(dsum3) << " ("
+                    << 4*base_chk_val+(dtinit * 3.0) << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum4 = " << static_cast<double>(dsum4) << " ("
+                    << 5*base_chk_val << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum5 = " << static_cast<double>(dsum5) << " ("
+                    << 6*base_chk_val+(dtinit * 5.0) << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum6 = " << static_cast<double>(dsum6) << " ("
+                    << 7*base_chk_val << ") " << endl;
+               cout << setprecision(20) 
+                    << "\tdsum7 = " << static_cast<double>(dsum7) << " ("
+                    << 8*base_chk_val+(dtinit * 7.0) << ") " << endl;
+
+            } else {
+               s_ntests_passed++;
+            }
+
+         }
+
+      }  // end test 1
+
+////////////////////////////////////////////////////////////////////////////
+
+      //
+      // test 2 runs 4 reductions (2 int, 2 double) over complete array 
+      //        using an indexset with two range segments to check 
+      //        reduction object state is maintained properly across 
+      //        kernel invocations.
+      //
+      { // begin test 2
+
+         s_ntests_run++;
 
 #if 0
-   CudaReductionBlockDataType* blockdata = getCudaReductionMemBlock(); 
-   for(int k=0;k<8;k++) {
-      int blockoffset = getCudaReductionMemBlockOffset(k);
-      printf("blockSum[%d]= %lf\n",blockoffset,blockdata[blockoffset]);
-   }
+         RangeSegment seg0(0, TEST_VEC_LEN/2);
+         RangeSegment seg1(TEST_VEC_LEN/2 + 1, TEST_VEC_LEN);
+
+         IndexSet iset;
+         iset.push_back(seg0);
+         iset.push_back(seg1);
+#else
+         RangeSegment seg0(0, TEST_VEC_LEN);
+
+         IndexSet iset;
+         iset.push_back(seg0);
 #endif
 
-   printf("\n\nFINAL RESULTS....\n");
-   printf("(check = %lf) dsum0 = %lf\n",(double)(TEST_VEC_LEN)*1*loops, double(dsum0));
-   printf("(check = %lf) dsum1 = %lf\n",(double)(TEST_VEC_LEN)*2*loops+tinit*1.0, double(dsum1));
-   printf("(check = %lf) dsum2 = %lf\n",(double)(TEST_VEC_LEN)*3*loops, double(dsum2));
-   printf("(check = %lf) dsum3 = %lf\n",(double)(TEST_VEC_LEN)*4*loops+tinit*3.0, double(dsum3));
-   printf("(check = %lf) dsum4 = %lf\n",(double)(TEST_VEC_LEN)*5*loops, double(dsum4));
-   printf("(check = %lf) dsum5 = %lf\n",(double)(TEST_VEC_LEN)*6*loops+tinit*5.0, double(dsum5));
-   printf("(check = %lf) dsum6 = %lf\n",(double)(TEST_VEC_LEN)*7*loops, double(dsum6));
-   printf("(check = %lf) dsum7 = %lf\n",(double)(TEST_VEC_LEN)*8*loops+tinit*7.0, double(dsum7));
+         double dtinit = 5.0;
+         int    itinit = 4;
+
+         ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
+//       ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
+         ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
+//       ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
+
+         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+            [=] __device__ (int i) {
+               dsum0 += dvalue[i] ;
+//             isum1 += 2*ivalue[i] ;
+               dsum2 += 3*dvalue[i] ;
+//             isum3 += 4*ivalue[i] ;
+         } ) ;
+
+         double dbase_chk_val = dinit_val*double(TEST_VEC_LEN);
+         int ibase_chk_val = iinit_val*double(TEST_VEC_LEN);
+
+#if 0   
+         if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
+              !equal( int(isum1),    2*ibase_chk_val+(itinit * 2) )   ||
+              !equal( double(dsum2), 3*dbase_chk_val+(dtinit * 3.0) ) ||
+              !equal( int(isum3),    4*ibase_chk_val+(itinit * 4) ) ) {
+#else
+         if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
+              !equal( double(dsum2), 3*dbase_chk_val+(dtinit * 3.0) ) ) {
+#endif
+
+            cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
+            cout << setprecision(20)
+                 << "\tdsum0 = " << static_cast<double>(dsum0) << " ("
+                 << dbase_chk_val+(dtinit * 1.0) << ") " << endl;
+//          cout << setprecision(20)
+//               << "\tisum1 = " << static_cast<double>(isum1) << " ("
+//               << 2*ibase_chk_val+(itinit * 2) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tdsum2 = " << static_cast<double>(dsum2) << " ("
+                 << 3*dbase_chk_val+(dtinit * 3.0) << ") " << endl;
+//          cout << setprecision(20)
+//               << "\tisum3 = " << static_cast<double>(isum3) << " ("
+//               << 4*ibase_chk_val+(itinit * 4) << ") " << endl;
+
+         } else {
+            s_ntests_passed++;
+         }
+
+      } // end test 2
+
+////////////////////////////////////////////////////////////////////////////
+
+      //
+      // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks 
+      //        of the array using an indexset with four range segments 
+      //        not aligned with warp boundaries to check that reduction 
+      //        mechanics don't depend on any sort of special indexing.
+      //
+      { // begin test 3
+
+         s_ntests_run++;
+
+         RangeSegment seg0(1, 1230);
+         RangeSegment seg1(1237, 3385);
+         RangeSegment seg2(4860, 10110);
+         RangeSegment seg3(20490, 32003);
+
+         IndexSet iset;
+         iset.push_back(seg0);
+         iset.push_back(seg1);
+         iset.push_back(seg2);
+         iset.push_back(seg3);
+
+         double dtinit = 5.0;
+         int    itinit = 4;
+
+         ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
+         ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
+         ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
+         ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
+
+         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+            [=] __device__ (int i) {
+               dsum0 += dvalue[i] ;
+               isum1 += 2*ivalue[i] ;
+               dsum2 += 3*dvalue[i] ;
+               isum3 += 4*ivalue[i] ;
+         } ) ;
+
+         double dbase_chk_val = dinit_val*double(iset.getLength());
+         int ibase_chk_val = iinit_val*double(iset.getLength());
+   
+         if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
+              !equal( int(isum1),    2*ibase_chk_val+(itinit * 2) )   ||
+              !equal( double(dsum2), 3*dbase_chk_val+(dtinit * 3.0) ) ||
+              !equal( int(isum3),    4*ibase_chk_val+(itinit * 4) ) ) {
+
+            cout << "\n TEST 3 FAILURE: tcount = " << tcount << endl;
+            cout << setprecision(20)
+                 << "\tdsum0 = " << static_cast<double>(dsum0) << " ("
+                 << dbase_chk_val+(dtinit * 1.0) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tisum1 = " << static_cast<double>(isum1) << " ("
+                 << 2*ibase_chk_val+(itinit * 2) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tdsum2 = " << static_cast<double>(dsum2) << " ("
+                 << 3*dbase_chk_val+(dtinit * 3.0) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tisum3 = " << static_cast<double>(isum3) << " ("
+                 << 4*ibase_chk_val+(itinit * 4) << ") " << endl;
+
+         } else {
+            s_ntests_passed++;
+         }
+
+      } // end test 3
+
+   } // end test repeat loop
+
+   ///
+   /// Print total number of tests passed/run.
+   ///
+   cout << "\n Tests Passed / Tests Run = "
+        << s_ntests_passed << " / " << s_ntests_run << endl;
+
+   cudaFree(dvalue);
+   cudaFree(ivalue);
+
+
 
    return 0 ;
 }
