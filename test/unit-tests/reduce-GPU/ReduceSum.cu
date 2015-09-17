@@ -186,8 +186,8 @@ int main(int argc, char *argv[])
 //             isum3 += 4*ivalue[i] ;
          } ) ;
 
-         double dbase_chk_val = dinit_val*double(TEST_VEC_LEN);
-         int ibase_chk_val = iinit_val*double(TEST_VEC_LEN);
+         double dbase_chk_val = dinit_val*double(iset.getLength());
+         int ibase_chk_val = iinit_val*(iset.getLength());
 
 #if 0   
          if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
