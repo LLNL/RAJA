@@ -479,7 +479,11 @@ public:
 
       m_blockdata = getCudaReductionMemBlock();
       m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
-      m_blockdata[m_blockoffset] = static_cast<T>(0);
+
+      // Shared memory block must be initialized to zero so sum reduction is correct
+      size_t len = getCudaReductionMemBlockOffset(m_myID+1) - m_blockoffset;
+      cudaMemset(&m_blockdata[m_blockoffset], 0,
+                 sizeof(CudaReductionBlockDataType)*len);
 
       cudaDeviceSynchronize();
    }
@@ -533,6 +537,11 @@ public:
    __device__ ReduceSum<cuda_reduce, T> operator+=(T val) const
    {
       __shared__ T sd[THREADS_PER_BLOCK];
+
+      if (threadIdx.x == 0) {
+         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = 0;
+      }
+      __syncthreads();
 
       sd[threadIdx.x] = val;
 

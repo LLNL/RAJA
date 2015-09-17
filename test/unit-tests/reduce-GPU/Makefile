@@ -52,8 +52,8 @@ LULESH_OPTS += -DRAJA_SYNC
 
 
 #CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
-#CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
-CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+#CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
 #CXX_COMPILE = nvcc -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
 #CXX_COMPILE = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 

@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 {
    cout << "\n Begin RAJA GPU ReduceSum tests!!! " << endl;
 
-   const int test_repeat = 1;
+   const int test_repeat = 10;
 
    //
    // Allocate and initialize managed data arrays
@@ -63,7 +63,7 @@ int main(int argc, char *argv[])
    for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
       cout << "\t tcount = " << tcount << endl;
-    
+
       //
       // test 1 runs 8 reductions over a range multiple times to check
       //        that reduction value can be retrieved and then subsequent
@@ -156,62 +156,50 @@ int main(int argc, char *argv[])
 
          s_ntests_run++;
 
-#if 0
          RangeSegment seg0(0, TEST_VEC_LEN/2);
          RangeSegment seg1(TEST_VEC_LEN/2 + 1, TEST_VEC_LEN);
 
          IndexSet iset;
          iset.push_back(seg0);
          iset.push_back(seg1);
-#else
-         RangeSegment seg0(0, TEST_VEC_LEN);
-
-         IndexSet iset;
-         iset.push_back(seg0);
-#endif
 
          double dtinit = 5.0;
          int    itinit = 4;
 
          ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
-//       ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
+         ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
          ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
-//       ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
+         ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
 
          forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
             [=] __device__ (int i) {
                dsum0 += dvalue[i] ;
-//             isum1 += 2*ivalue[i] ;
+               isum1 += 2*ivalue[i] ;
                dsum2 += 3*dvalue[i] ;
-//             isum3 += 4*ivalue[i] ;
+               isum3 += 4*ivalue[i] ;
          } ) ;
 
          double dbase_chk_val = dinit_val*double(iset.getLength());
          int ibase_chk_val = iinit_val*(iset.getLength());
 
-#if 0   
          if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
               !equal( int(isum1),    2*ibase_chk_val+(itinit * 2) )   ||
               !equal( double(dsum2), 3*dbase_chk_val+(dtinit * 3.0) ) ||
               !equal( int(isum3),    4*ibase_chk_val+(itinit * 4) ) ) {
-#else
-         if ( !equal( double(dsum0), dbase_chk_val+(dtinit * 1.0) )   ||
-              !equal( double(dsum2), 3*dbase_chk_val+(dtinit * 3.0) ) ) {
-#endif
 
             cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
             cout << setprecision(20)
                  << "\tdsum0 = " << static_cast<double>(dsum0) << " ("
                  << dbase_chk_val+(dtinit * 1.0) << ") " << endl;
-//          cout << setprecision(20)
-//               << "\tisum1 = " << static_cast<double>(isum1) << " ("
-//               << 2*ibase_chk_val+(itinit * 2) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tisum1 = " << static_cast<double>(isum1) << " ("
+                 << 2*ibase_chk_val+(itinit * 2) << ") " << endl;
             cout << setprecision(20)
                  << "\tdsum2 = " << static_cast<double>(dsum2) << " ("
                  << 3*dbase_chk_val+(dtinit * 3.0) << ") " << endl;
-//          cout << setprecision(20)
-//               << "\tisum3 = " << static_cast<double>(isum3) << " ("
-//               << 4*ibase_chk_val+(itinit * 4) << ") " << endl;
+            cout << setprecision(20)
+                 << "\tisum3 = " << static_cast<double>(isum3) << " ("
+                 << 4*ibase_chk_val+(itinit * 4) << ") " << endl;
 
          } else {
             s_ntests_passed++;
@@ -296,8 +284,6 @@ int main(int argc, char *argv[])
 
    cudaFree(dvalue);
    cudaFree(ivalue);
-
-
 
    return 0 ;
 }
