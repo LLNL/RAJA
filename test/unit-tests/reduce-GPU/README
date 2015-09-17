@@ -9,9 +9,10 @@
 ## To build and run on ipa...
 ##
 
-> ./buildme
+> ./buildtests
 > salloc -p nvidia -N1
 > setenv CUDA_VISIBLE_DEVICES 0
 
 > ./reducemin.exe (for min reduction test)
+> ./reducemax.exe (for max reduction test)
 > ./reducesum.exe (for sum reduction test)

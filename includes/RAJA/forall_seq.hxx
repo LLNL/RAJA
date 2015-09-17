@@ -765,8 +765,10 @@ void forall_Icount(seq_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   Index_type loop_end = (iseg.getEnd()-iseg.getBegin())/iseg.getStride();
-   if ( (iseg.getEnd()-iseg.getBegin()) % iseg.getStride() != 0 ) loop_end++;
+   Index_type begin = iseg.getBegin();
+   Index_type stride = iseg.getStride();
+   Index_type loop_end = (iseg.getEnd()-begin)/stride;
+   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
 
    RAJA_FT_BEGIN ;
 
