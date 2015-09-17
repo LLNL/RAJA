@@ -1,5 +1,7 @@
 
-#include <stdio.h>
+#include<string>
+#include<iostream>
+#include <cstdio>
 #include <cfloat>
 #include <random>
 
@@ -8,6 +10,7 @@
 #define TEST_VEC_LEN  1024 * 1024
 
 using namespace RAJA;
+using namespace std;
 
 //
 // Global variables for counting tests executed/passed.
@@ -17,161 +20,192 @@ unsigned s_ntests_passed = 0;
 
 int main(int argc, char *argv[])
 {
-   std::cout << "\n Begin RAJA GPU ReduceMax tests!!! " << std::endl;
+   cout << "\n Begin RAJA GPU ReduceMax tests!!! " << endl;
 
    const int test_repeat = 10;
 
+   //
+   // Allocate and initialize managed data array
+   //
    double *dvalue ;
 
-   cudaMallocManaged((void **)&dvalue,
-      sizeof(double)*TEST_VEC_LEN,
-      cudaMemAttachGlobal) ;
-
-   std::random_device rd;
-   std::mt19937 mt(rd());
-   std::uniform_real_distribution<double> dist(-10, 10);
-   std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN-1);
-
-   //
-   // Run TEST 1 only once
-   //
-   { // begin test 1
-
-      for (int i=0; i<TEST_VEC_LEN; ++i) {
-         dvalue[i] = -DBL_MAX ;
-      }
-
-      double BIG_MAX = 500.0;
-      ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
-      ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
-      ReduceMax<cuda_reduce, double> dmax2(BIG_MAX);
-
-      int loops = 16;
-      double dcurrentMax = -DBL_MAX;
-
-      for(int k=0; k < loops ; k++) {
-         double droll = dist(mt) ; 
-         int index = int(dist2(mt));
-         dvalue[index] = droll;
-         dcurrentMax = RAJA_MAX(dcurrentMax,dvalue[index]); 
-         forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
-            dmax0.max(dvalue[i]) ;
-            dmax1.max(2*dvalue[i]) ;
-            dmax2.max(dvalue[i]) ;
-         } ) ;
-
-         s_ntests_run++;
-
-         if ( double(dmax0) != dcurrentMax ||
-              double(dmax1) != 2*dcurrentMax ||
-              double(dmax2) != BIG_MAX ) {
-
-            printf("\n TEST 1 FAILURE...\n");
-            printf("(droll[%d] = %lf, \t check0 = %lf \t check1= %lf) \t dmax0 = %lf \t dmax1 = %lf\n",
-            index,droll,dcurrentMax,2*dcurrentMax,double(dmax0),double(dmax1));
-            printf("(check2 = %lf) \t dmax2 = %lf\n\n", BIG_MAX,double(dmax2));
-         } else {
-            s_ntests_passed++;
-         }
-      }
-
-   }  // end test 1
+   cudaMallocManaged((void **)&dvalue, sizeof(double)*TEST_VEC_LEN,
+                     cudaMemAttachGlobal) ;
+   for (int i=0; i<TEST_VEC_LEN; ++i) {
+      dvalue[i] = -DBL_MAX ;
+   }
 
 ////////////////////////////////////////////////////////////////////////////
+// Run 3 different max reduction tests in a loop
+////////////////////////////////////////////////////////////////////////////
+
+   // current running max value
+   double dcurrentMax = -DBL_MAX;
+
+   // for setting random min values in arrays
+   random_device rd;
+   mt19937 mt(rd());
+   uniform_real_distribution<double> dist(-10, 10);
+   uniform_real_distribution<double> dist2(0, TEST_VEC_LEN-1);
 
    for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-      printf("\ttcount = %d\n",tcount);
+      cout << "\t tcount = " << tcount << endl;
 
+      //
+      // test 1 runs 3 reductions over a range multiple times to check
+      //        that reduction value can be retrieved and then subsequent
+      //        reductions can be run with the same reduction objects.
+      //
+      { // begin test 1
+
+         double BIG_MAX = 500.0;
+         ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
+         ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
+         ReduceMax<cuda_reduce, double> dmax2(BIG_MAX);
+
+         int loops = 16;
+         for(int k=0; k < loops ; k++) {
+
+            s_ntests_run++;
+
+            double droll = dist(mt) ; 
+            int index = int(dist2(mt));
+            dvalue[index] = droll;
+            dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]); 
+
+            forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
+               dmax0.max(dvalue[i]) ;
+               dmax1.max(2*dvalue[i]) ;
+               dmax2.max(dvalue[i]) ;
+            } ) ;
+
+            if ( double(dmax0) != dcurrentMax ||
+                 double(dmax1) != 2*dcurrentMax ||
+                 double(dmax2) != BIG_MAX ) {
+               cout << "\n TEST 1 FAILURE: tcount, k = "
+                    << tcount << " , " << k << endl;
+               cout << "  droll = " << droll << endl;
+               cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
+                                    << dcurrentMax << ") " << endl;
+               cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
+                                    << 2*dcurrentMax << ") " << endl;
+               cout << "\tdmax2 = " << static_cast<double>(dmax2) << " ("
+                                    << BIG_MAX << ") " << endl;
+            } else {
+               s_ntests_passed++;
+            }
+         }
+
+      }  // end test 1
+
+////////////////////////////////////////////////////////////////////////////
+
+      //
+      // test 2 runs 2 reductions over complete array using an indexset
+      //        with two range segments to check reduction object state
+      //        is maintained properly across kernel invocations.
+      //
       { // begin test 2
 
-      s_ntests_run++;
+         s_ntests_run++;
 
-      for (int i=0; i<TEST_VEC_LEN; ++i) {
-         dvalue[i] = -DBL_MAX ;
-      }
+         RangeSegment seg0(0, TEST_VEC_LEN/2);
+         RangeSegment seg1(TEST_VEC_LEN/2 + 1, TEST_VEC_LEN);
 
-      RangeSegment seg0(0, TEST_VEC_LEN/2);
-      RangeSegment seg1(TEST_VEC_LEN/2 + 1, TEST_VEC_LEN);
+         IndexSet iset;
+         iset.push_back(seg0);
+         iset.push_back(seg1);
 
-      IndexSet iset;
-      iset.push_back(seg0);
-      iset.push_back(seg1);
+         ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
+         ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
 
-      ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
-      ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
+         int index = int(dist2(mt));
 
-      int index = int(dist2(mt));
+         double droll = dist(mt) ;
+         dvalue[index] = droll;
 
-      double droll = dist(mt) ;
-      dvalue[index] = droll;
+         dcurrentMax = RAJA_MAX(dcurrentMax,dvalue[index]);
 
-      double dcurrentMax = -DBL_MAX;
-      dcurrentMax = RAJA_MAX(dcurrentMax,dvalue[index]);
+         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+            [=] __device__ (int i) {
+               dmax0.max(dvalue[i]) ;
+               dmax1.max(2*dvalue[i]) ;
+         } ) ;
 
-      forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
-         [=] __device__ (int i) {
-            dmax0.max(dvalue[i]) ;
-            dmax1.max(2*dvalue[i]) ;
-      } ) ;
-
-      if ( double(dmax0) != dcurrentMax ||
-           double(dmax1) != 2*dcurrentMax ) {
-         printf("\n TEST 1 FAILURE...\n");
-         printf("(droll[%d] = %lf, \t check0 = %lf \t check1= %lf) \t dmax0 = %lf \t dmax1 = %lf\n",
-         index,droll,dcurrentMax,2*dcurrentMax,double(dmax0),double(dmax1));
-      } else {
-         s_ntests_passed++;
-      }
+         if ( double(dmax0) != dcurrentMax ||
+              double(dmax1) != 2*dcurrentMax ) {
+            cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
+            cout << "  droll = " << droll << endl;
+            cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
+                                 << dcurrentMax << ") " << endl;
+            cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
+                                 << 2*dcurrentMax << ") " << endl;
+         } else {
+            s_ntests_passed++;
+         }
 
       } // end test 2
 
 ////////////////////////////////////////////////////////////////////////////
 
+      //
+      // test 3 runs 2 reductions over disjoint chunks of the array using
+      //        an indexset with four range segments not aligned with
+      //        warp boundaries to check that reduction mechanics don't
+      //        depend on any sort of special indexing.
+      //
       { // begin test 3
 
-      s_ntests_run++;
+         s_ntests_run++;
 
-      for (int i=0; i<TEST_VEC_LEN; ++i) {
-         dvalue[i] = -DBL_MAX ;
-      }
+         for (int i=0; i<TEST_VEC_LEN; ++i) {
+            dvalue[i] = -DBL_MAX ;
+         }
+         dcurrentMax = -DBL_MAX;
 
-      RangeSegment seg0(1, 1230);
-      RangeSegment seg1(1237, 3385);
-      RangeSegment seg2(4860, 10110);
-      RangeSegment seg3(20490, 32003);
+         RangeSegment seg0(1, 1230);
+         RangeSegment seg1(1237, 3385);
+         RangeSegment seg2(4860, 10110);
+         RangeSegment seg3(20490, 32003);
 
-      IndexSet iset;
-      iset.push_back(seg0);
-      iset.push_back(seg1);
-      iset.push_back(seg2);
-      iset.push_back(seg3);
+         IndexSet iset;
+         iset.push_back(seg0);
+         iset.push_back(seg1);
+         iset.push_back(seg2);
+         iset.push_back(seg3);
 
-      ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
-      ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
+         ReduceMax<cuda_reduce, double> dmax0(-DBL_MAX);
+         ReduceMax<cuda_reduce, double> dmax1(-DBL_MAX);
 
-      int index = 1297;
+         // pick an index in one of the segments
+         int index = 897;                      // seg 0
+         if ( tcount % 2 == 0 ) index = 1297;  // seg 1
+         if ( tcount % 3 == 0 ) index = 7853;  // seg 2
+         if ( tcount % 4 == 0 ) index = 29457; // seg 3
 
-      double droll = dist(mt) ;
-      dvalue[index] = droll;
+         double droll = dist(mt) ;
+         dvalue[index] = droll;
 
-      double dcurrentMax = -DBL_MAX;
-      dcurrentMax = RAJA_MAX(dcurrentMax,dvalue[index]);
+         dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
-      forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
-         [=] __device__ (int i) {
-            dmax0.max(dvalue[i]) ;
-            dmax1.max(2*dvalue[i]) ;
-      } ) ;
+         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+            [=] __device__ (int i) {
+               dmax0.max(dvalue[i]) ;
+               dmax1.max(2*dvalue[i]) ;
+         } ) ;
 
-      if ( double(dmax0) != dcurrentMax ||
-           double(dmax1) != 2*dcurrentMax ) {
-         printf("\n TEST 1 FAILURE...\n");
-         printf("(droll[%d] = %lf, \t check0 = %lf \t check1= %lf) \t dmax0 = %lf \t dmax1 = %lf\n",
-         index,droll,dcurrentMax,2*dcurrentMax,double(dmax0),double(dmax1));
-      } else {
-         s_ntests_passed++;
-      }
+         if ( double(dmax0) != dcurrentMax ||
+              double(dmax1) != 2*dcurrentMax ) {
+            cout << "\n TEST 3 FAILURE: tcount = " << tcount << endl;
+            cout << "  droll = " << droll << endl;
+            cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
+                                 << dcurrentMax << ") " << endl;
+            cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
+                                 << 2*dcurrentMax << ") " << endl;
+         } else {
+            s_ntests_passed++;
+         }
 
       } // end test 3
 
@@ -180,12 +214,12 @@ int main(int argc, char *argv[])
    ///
    /// Print total number of tests passed/run.
    ///
-   std::cout << "\n Tests Passed / Tests Run = "
-             << s_ntests_passed << " / " << s_ntests_run << std::endl;
+   cout << "\n Tests Passed / Tests Run = "
+        << s_ntests_passed << " / " << s_ntests_run << endl;
 
    cudaFree(dvalue); 
 
-   std::cout << "\n RAJA GPU ReduceMax tests DONE!!! " << std::endl;
+   cout << "\n RAJA GPU ReduceMax tests DONE!!! " << endl;
    
    return 0 ;
 }
