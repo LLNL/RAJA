@@ -100,6 +100,45 @@ public:
    IndexOwnership getIndexOwnership() const { return Owned; }
 
    ///
+   /// Equality operator returns true if segments are equal; else false.
+   ///
+   bool operator ==(const RangeSegment& other) const
+   {
+      return ( (m_begin == other.m_begin) && (m_end == other.m_end) );
+   }
+
+   ///
+   /// Inequality operator returns true if segments are not equal, else false.
+   ///
+   bool operator !=(const RangeSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
+
+   ///
+   /// Equality operator returns true if segments are equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator ==(const BaseSegment& other) const
+   {
+      const RangeSegment* o_ptr = dynamic_cast<const RangeSegment*>(&other);
+      if ( o_ptr ) {
+        return ( *this == *o_ptr );
+      } else {
+        return false;
+      }
+   }
+
+   ///
+   /// Inquality operator returns true if segments are not equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator !=(const BaseSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
+
+   ///
    /// Print segment data to given output stream.
    ///
    void print(std::ostream& os) const;
@@ -197,6 +236,48 @@ public:
    /// representing its indices.
    ///
    IndexOwnership getIndexOwnership() const { return Owned; }
+
+   ///
+   /// Equality operator returns true if segments are equal; else false.
+   ///
+   bool operator ==(const RangeStrideSegment& other) const
+   {
+      return ( (m_begin == other.m_begin) && 
+               (m_end == other.m_end) &&
+               (m_stride == other.m_stride) );
+   }
+
+   ///
+   /// Inequality operator returns true if segments are not equal, else false.
+   ///
+   bool operator !=(const RangeStrideSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
+
+   ///
+   /// Equality operator returns true if segments are equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator ==(const BaseSegment& other) const
+   {
+      const RangeStrideSegment* o_ptr = 
+            dynamic_cast<const RangeStrideSegment*>(&other);
+      if ( o_ptr ) {
+        return ( *this == *o_ptr );
+      } else {
+        return false;
+      }
+   }
+
+   ///
+   /// Inquality operator returns true if segments are not equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator !=(const BaseSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
 
    ///
    /// Print segment data to given output stream.

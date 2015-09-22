@@ -47,8 +47,6 @@ class IndexSet
 public:
 
 //
-// RDH TO DO: Add "==" operator and others?
-//
 // RDH TO DO: Add COMPILE TIME segment type selection.
 //
 
@@ -120,31 +118,32 @@ public:
     *            The copy/no-copy methods are further distinguished 
     *            by taking a const reference (copy) or non-const 
     *            pointer (no-copy).
+    *
+    *            Each method returns true if segment is added successfully;
+    *            false otherwise.
     */
 
    ///
    /// Add segment to back end of index set without making a copy.
    ///
-   void push_back_nocopy(BaseSegment* segment) 
-   { (void) push_back_private(segment, false 
-                                      /* index set does not own segment */); } 
+   bool push_back_nocopy(BaseSegment* segment) 
+   { return( push_back_private(segment, false /* does not own segment */) ); } 
 
    ///
    /// Add segment to front end of index set without making a copy.
    ///
-   void push_front_nocopy(BaseSegment* segment)
-   { (void) push_front_private(segment, false 
-                                       /* index set does not own segment */); } 
+   bool push_front_nocopy(BaseSegment* segment)
+   { return( push_front_private(segment, false /* does not own segment */) ); }
 
    ///
    /// Add copy of segment to back end of index set.
    ///
-   void push_back(const BaseSegment& segment);
+   bool push_back(const BaseSegment& segment);
 
    ///
    /// Add copy of segment to front end of index set.
    ///
-   void push_front(const BaseSegment& segment);
+   bool push_front(const BaseSegment& segment);
 
 
    ///
@@ -322,6 +321,27 @@ public:
 
 //@}
 
+//@{
+//!  @name Index set equality/inequality check methods
+
+   ///
+   /// Equality operator returns true if all segments are equal; else false.
+   /// 
+   /// Note: method does not check equality of anything other than segment 
+   ///       types and indices; e.g., dependency info not checked.
+   ///
+   bool operator ==(const IndexSet& other) const ;
+
+   ///
+   /// Inequality operator returns true if any segment is not equal, else false.
+   ///
+   bool operator !=(const IndexSet& other) const
+   {
+      return ( !(*this == other) );
+   }
+
+//@}
+
 
    ///
    /// Print index set data, including segments, to given output stream.
@@ -336,19 +356,15 @@ private:
 
    ///
    /// Helper function to add segment to back end of index set.
+   /// Returns true if segment added, false otherwise.
    ///
    bool push_back_private(BaseSegment* seg, bool owns_segment);
 
    ///
    /// Helper function to add segment to front end of index set.
+   /// Returns true if segment added, false otherwise.
    ///
    bool push_front_private(BaseSegment* seg, bool owns_segment);
-
-   ///
-   /// Helper function to determine if segment type is valid for this 
-   /// IndexSet class and give an error message if not.
-   ///
-   bool isValidSegmentType_private(const BaseSegment* seg) const;
 
    ///
    /// Helper function to create a copy of a given segment given a 

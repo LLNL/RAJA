@@ -36,6 +36,8 @@ namespace RAJA {
 *************************************************************************
 */
 
+////
+////
 ListSegment::ListSegment(const Index_type* indx, Index_type len,
                          IndexOwnership indx_own)
 : BaseSegment( _ListSeg_ )
@@ -43,12 +45,16 @@ ListSegment::ListSegment(const Index_type* indx, Index_type len,
    initIndexData(indx, len, indx_own);
 }
 
+////
+////
 ListSegment::ListSegment(const ListSegment& other)
 : BaseSegment( _ListSeg_ )
 {
    initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
 }
 
+////
+////
 ListSegment& ListSegment::operator=(const ListSegment& rhs)
 {
    if ( &rhs != this ) {
@@ -58,6 +64,8 @@ ListSegment& ListSegment::operator=(const ListSegment& rhs)
    return *this;
 }
 
+////
+////
 ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
@@ -73,6 +81,8 @@ ListSegment::~ListSegment()
    }
 }
 
+////
+////
 void ListSegment::swap(ListSegment& other)
 {
 #if defined(RAJA_USE_STL)
@@ -95,6 +105,31 @@ void ListSegment::swap(ListSegment& other)
 #endif
 }
 
+////
+////
+bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const
+{
+   bool equal = true;
+
+   if ( len != m_len || indx == 0 || m_indx == 0 ) {
+
+      equal = false;
+
+   } else {
+
+     Index_type i = 0;
+     while ( equal && i < m_len ) {
+        equal =  (m_indx[i] == indx[i]) ;
+        i++;
+     }
+
+   }
+
+   return equal;
+}
+
+////
+////
 void ListSegment::print(std::ostream& os) const
 {
    os << "ListSegment : length, owns index = " << getLength() 

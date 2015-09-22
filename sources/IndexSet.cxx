@@ -103,16 +103,20 @@ void IndexSet::swap(IndexSet& other)
 bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
 {
    bool ret_val = false;
+
+   if ( segment ) {
    
-   SegmentType seg_type = segment->getType(); 
+      SegmentType seg_type = segment->getType(); 
    
-   if ( seg_type == _RangeSeg_ ||
+      if ( seg_type == _RangeSeg_ ||
 #if 0 // RDH RETHINK
-        seg_type == _RangeStrideSeg_ ||
+           seg_type == _RangeStrideSeg_ ||
 #endif
-        seg_type == _ListSeg_ ) 
-   {
-      ret_val = true;
+           seg_type == _ListSeg_ ) 
+      {
+         ret_val = true;
+      }
+
    }
 
    return ret_val;
@@ -126,22 +130,30 @@ bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
 *************************************************************************
 */
 
-void IndexSet::push_back(const BaseSegment& segment)
+bool IndexSet::push_back(const BaseSegment& segment)
 {
-   BaseSegment* new_seg =  createSegmentCopy(segment);
+   bool retval = false;
 
-   if ( !push_back_private( new_seg, true /* index owns segment */ ) ) {
-      delete new_seg;
+   if ( isValidSegmentType(&segment) ) {
+      BaseSegment* new_seg =  createSegmentCopy(segment);
+      retval = push_back_private( new_seg, true /* owns segment */ );
+      if ( !retval ) delete new_seg;
    }
+
+   return retval;
 }
 
-void IndexSet::push_front(const BaseSegment& segment)
+bool IndexSet::push_front(const BaseSegment& segment)
 {
-   BaseSegment* new_seg =  createSegmentCopy(segment);
+   bool retval = false;
 
-   if ( !push_front_private( new_seg, true /* index owns segment */ ) ) {
-      delete new_seg; 
+   if ( isValidSegmentType(&segment) ) {
+      BaseSegment* new_seg =  createSegmentCopy(segment);
+      retval = push_front_private( new_seg, true /* owns segment */ );
+      if ( !retval ) delete new_seg;
    }
+
+   return retval;
 }
 
 
@@ -221,11 +233,42 @@ void IndexSet::initDependencyGraph()
 /*
 *************************************************************************
 *
+* Index equality check method.
+*
+*************************************************************************
+*/
+bool IndexSet::operator ==(const IndexSet& other) const
+{
+   // Are # segments the same, as well as total length??
+   bool equal = ( m_segments.size() == other.m_segments.size() &&
+                  getLength() == other.getLength() );
+
+   if ( equal ) {
+
+      int isi = 0;
+      while ( equal && isi < m_segments.size() ) {
+
+         const BaseSegment* iseg = getSegmentInfo(isi)->getSegment();
+         const BaseSegment* o_iseg = other.getSegmentInfo(isi)->getSegment();
+
+         equal = (*iseg == *o_iseg);
+     
+         isi++; 
+      }    
+
+   }
+
+   return equal;
+}
+
+
+/*
+*************************************************************************
+*
 * Print contents of index set to given output stream.
 *
 *************************************************************************
 */
-
 void IndexSet::print(std::ostream& os) const
 {
    os << "\nINDEX SET : " 
@@ -351,7 +394,7 @@ void IndexSet::copy(const IndexSet& other)
 
 bool IndexSet::push_back_private(BaseSegment* seg, bool owns_segment)
 {
-   if ( isValidSegmentType_private(seg) ) {
+   if ( isValidSegmentType(seg) ) {
 
       m_segments.push_back( IndexSetSegInfo(seg, owns_segment) );
       m_segments[ m_segments.size() - 1 ].setIcount(m_len);
@@ -367,7 +410,7 @@ bool IndexSet::push_back_private(BaseSegment* seg, bool owns_segment)
 
 bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment)
 {
-   if ( isValidSegmentType_private(seg) ) {
+   if ( isValidSegmentType(seg) ) {
 
       m_segments.push_front( IndexSetSegInfo(seg, owns_segment) );
       m_segments[ 0 ].setIcount(0);
@@ -385,16 +428,6 @@ bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment)
       return true;
    
    } else {
-      return false;
-   }
-}
-
-bool IndexSet::isValidSegmentType_private(const BaseSegment* seg) const
-{
-   if ( seg != 0 && isValidSegmentType(seg) ) {
-      return true;
-   } else {
-      std::cout << "\t Given segment is null or has invalid type for IndexSet class!!! \n";
       return false;
    }
 }

@@ -108,7 +108,52 @@ public:
    /// representing its indices.
    ///
    IndexOwnership getIndexOwnership() const { return m_indx_own; }
+
+   ///
+   /// Return true if given array of indices is same as indices described
+   /// by this segment object; else false.
+   /// 
+   bool indicesEqual(const Index_type* indx, Index_type len) const;
     
+   ///
+   /// Equality operator returns true if segments are equal; else false.
+   ///
+   bool operator ==(const ListSegment& other) const
+   {
+      return ( indicesEqual(other.m_indx, other.m_len) );
+   }
+
+   ///
+   /// Inequality operator returns true if segments are not equal, else false.
+   ///
+   bool operator !=(const ListSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
+
+   ///
+   /// Equality operator returns true if segments are equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator ==(const BaseSegment& other) const
+   {
+      const ListSegment* o_ptr = dynamic_cast<const ListSegment*>(&other);
+      if ( o_ptr ) {
+        return ( *this == *o_ptr );
+      } else {
+        return false;
+      }
+   }
+
+   ///
+   /// Inequality operator returns true if segments are not equal; else false.
+   /// (Implements pure virtual method in BaseSegment class).
+   ///
+   bool operator !=(const BaseSegment& other) const
+   {
+      return ( !(*this == other) );
+   }
+
    ///
    /// Print segment data to given output stream.
    ///
