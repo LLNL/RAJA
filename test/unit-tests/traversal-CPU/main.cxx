@@ -12,6 +12,9 @@
 #include "RAJA/RAJA.hxx"
 
 using namespace RAJA;
+using namespace std;
+
+#include "Compare.hxx"
 
 #include "buildIndexSet.hxx"
 
@@ -26,54 +29,6 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 
-//
-//  Simple utility function to check results of forall traversals
-//
-void forall_CheckResult(const std::string& name,
-                        Real_ptr ref_result,  
-                        Real_ptr to_check,  
-                        Index_type alen)
-{
-   s_ntests_run_total++;
-   s_ntests_run++;
-  
-   bool is_correct = true;
-   for (Index_type i = 0 ; i < alen && is_correct; ++i) {
-      is_correct &= ref_result[i] == to_check[i];
-   }
-
-   if ( is_correct ) {
-      s_ntests_passed_total++;
-      s_ntests_passed++;
-   } else {
-      std::cout << name << " is WRONG" << std::endl; 
-   }
-}
-
-//
-//  Simple utility function to check results of forall_Icount traversals
-//
-void forall_Icount_CheckResult(const std::string& name,
-                               Real_ptr ref_result,
-                               Real_ptr to_check,
-                               Index_type alen)
-{
-   s_ntests_run_total++;
-   s_ntests_run++;
-
-   bool is_correct = true;
-   for (Index_type i = 0 ; i < alen && is_correct; ++i) {
-      is_correct &= ref_result[i] == to_check[i];
-   }
-
-   if ( is_correct ) {
-      s_ntests_passed_total++;
-      s_ntests_passed++;
-   } else {
-      std::cout << name << " is WRONG" << std::endl;
-   }
-}
-
 ///////////////////////////////////////////////////////////////////////////
 //
 // Method that defines and runs basic RAJA traversal tests
@@ -81,7 +36,7 @@ void forall_Icount_CheckResult(const std::string& name,
 //
 ///////////////////////////////////////////////////////////////////////////
 template <typename ISET_POLICY_T>
-void runBasicForallTest(const std::string& policy,
+void runBasicForallTest(const string& policy,
                         Real_ptr in_array, Index_type alen,
                         const IndexSet& iset,
                         const RAJAVec<Index_type>& is_indices)
@@ -105,23 +60,30 @@ void runBasicForallTest(const std::string& policy,
          in_array[ is_indices[i] ] * in_array[ is_indices[i] ];
    }
 
-   std::cout << "\n Test forall execution for " << policy << "\n";
+   cout << "\n Test forall execution for " << policy << "\n";
+
+   s_ntests_run++;
+   s_ntests_run_total++;
 
    forall< ISET_POLICY_T >( iset, [=] (Index_type idx) {
       test_array[idx] = in_array[idx] * in_array[idx]; 
    } );
 
-   forall_CheckResult(policy, ref_array, test_array, alen);
-
+   if ( !array_equal(ref_array, test_array, alen) ) {
+      cout << "\n TEST FAILURE " << endl;
 #if 0
-   std::cout << std::endl << std::endl;
-   for (Index_type i = 0; i < is_indices.size(); ++i) {
-      std::cout << "test_array[" << is_indices[i] << "] = " 
-                << test_array[ is_indices[i] ]
-                << " ( " << ref_array[ is_indices[i] ] << " ) " << std::endl;
-   }
-   std::cout << std::endl;
+      cout << endl << endl;
+      for (Index_type i = 0; i < is_indices.size(); ++i) {
+         cout << "test_array[" << is_indices[i] << "] = " 
+                   << test_array[ is_indices[i] ]
+                   << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
+      }
+      cout << endl;
 #endif
+   } else {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   }
 
    free(test_array);
    free(ref_array);
@@ -138,8 +100,8 @@ void runForallTests( unsigned ibuild,
                      const RAJAVec<Index_type>& is_indices )
 {
 
-   std::cout << "\n\n BEGIN RAJA::forall tests: ibuild = " 
-             << ibuild << std::endl;
+   cout << "\n\n BEGIN RAJA::forall tests: ibuild = " 
+             << ibuild << endl;
 
    // initialize test counters for this test set
    s_ntests_run = 0;
@@ -195,11 +157,11 @@ void runForallTests( unsigned ibuild,
                 iset, is_indices );
 #endif
 
-   std::cout << "\n tests passed / test run: "
-             << s_ntests_passed << " / " << s_ntests_run << std::endl;
+   cout << "\n tests passed / test run: "
+             << s_ntests_passed << " / " << s_ntests_run << endl;
 
-   std::cout << "\n END RAJA::forall tests: ibuild = " 
-             << ibuild << std::endl;
+   cout << "\n END RAJA::forall tests: ibuild = " 
+             << ibuild << endl;
 }
 
 
@@ -210,7 +172,7 @@ void runForallTests( unsigned ibuild,
 //
 ///////////////////////////////////////////////////////////////////////////
 template <typename ISET_POLICY_T>
-void runBasicForall_IcountTest(const std::string& policy,
+void runBasicForall_IcountTest(const string& policy,
                                Real_ptr in_array, Index_type alen,
                                const IndexSet& iset,
                                const RAJAVec<Index_type>& is_indices)
@@ -235,22 +197,31 @@ void runBasicForall_IcountTest(const std::string& policy,
          in_array[ is_indices[i] ] * in_array[ is_indices[i] ];
    }
 
-   std::cout << "\n Test forall_Icount execution for " << policy << "\n";
+   cout << "\n Test forall_Icount execution for " << policy << "\n";
+
+   s_ntests_run++;
+   s_ntests_run_total++;
 
    forall_Icount< ISET_POLICY_T >( iset, [=] (Index_type icount, Index_type idx) {
       test_array[icount] = in_array[idx] * in_array[idx];
    } );
 
-   forall_Icount_CheckResult(policy, ref_array, test_array, test_alen);
 
+   if ( !array_equal(ref_array, test_array, test_alen) ) {
+      cout << "\n TEST FAILURE " << endl;
 #if 0
-   std::cout << std::endl << std::endl;
-   for (Index_type i = 0; i < is_indices.size(); ++i) {
-      std::cout << "test_array[" << i << "] = " << test_array[ i ]
-                << " ( " << ref_array[ i ] << " ) " << std::endl;
-   }
-   std::cout << std::endl;
+      cout << endl << endl;
+      for (Index_type i = 0; i < test_alen; ++i) {
+         cout << "test_array[" << i << "] = " << test_array[ i ]
+              << " ( " << ref_array[ i ] << " ) " << endl;
+      }
+      cout << endl;
 #endif
+   } else {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   }
+
 
    free(test_array);
    free(ref_array);
@@ -267,8 +238,8 @@ void runForall_IcountTests( unsigned ibuild,
                             const RAJAVec<Index_type>& is_indices )
 {
 
-   std::cout << "\n\n BEGIN RAJA::forall_Icount tests: ibuild = " 
-             << ibuild << std::endl;
+   cout << "\n\n BEGIN RAJA::forall_Icount tests: ibuild = " 
+             << ibuild << endl;
 
    // initialize test counters for this test set
    s_ntests_run = 0;
@@ -324,11 +295,11 @@ void runForall_IcountTests( unsigned ibuild,
                 iset, is_indices );
 #endif
 
-   std::cout << "\n tests passed / test run: "
-             << s_ntests_passed << " / " << s_ntests_run << std::endl;
+   cout << "\n tests passed / test run: "
+             << s_ntests_passed << " / " << s_ntests_run << endl;
 
-   std::cout << "\n END RAJA::forall_Icount tests: ibuild = " 
-             << ibuild << std::endl;
+   cout << "\n END RAJA::forall_Icount tests: ibuild = " 
+             << ibuild << endl;
 }
 
 
@@ -356,21 +327,21 @@ RDH TODO -- checks for equality of index set variants here (need to add proper
 #endif
 
 #if 0
-   std::cout << std::endl << std::endl;
+   cout << endl << endl;
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      std::cout << "index with build method " << ibuild << std::endl;
-      index[ibuild].print(std::cout);
-      std::cout << std::endl;
+      cout << "index with build method " << ibuild << endl;
+      index[ibuild].print(cout);
+      cout << endl;
    } 
-   std::cout << std::endl;
+   cout << endl;
 #endif
 
 #if 0  // Test attempt to add invalid segment type.
    RangeStrideSegment rs_segment(0, 4, 2);
    if ( index[0].isValidSegmentType(&rs_segment) ) {
-      std::cout << "RangeStrideSegment VALID for index[0]" << std::endl;
+      cout << "RangeStrideSegment VALID for index[0]" << endl;
    } else {
-      std::cout << "RangeStrideSegment INVALID for index[0]" << std::endl;
+      cout << "RangeStrideSegment INVALID for index[0]" << endl;
    }
    index[0].push_back(rs_segment);
    index[0].push_back_nocopy(&rs_segment);
@@ -434,15 +405,15 @@ RDH TODO -- checks for equality of index set variants here (need to add proper
    IndexSet hiset_even;
    hiset_even.push_back( ListSegment(&even_indices[0], even_indices.size()) );
 
-   std::cout << "\n\n INDEX SET WITH EVEN INDICES ONLY..." << std::endl;
-   hiset_even.print(std::cout);
+   cout << "\n\n INDEX SET WITH EVEN INDICES ONLY..." << endl;
+   hiset_even.print(cout);
 
 
    IndexSet hiset_lt_300;
    hiset_even.push_back( ListSegment(&lt_300_indices[0], lt_300_indices.size()) );
 
-   std::cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << std::endl;
-   hiset_lt_300.print(std::cout);
+   cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << endl;
+   hiset_lt_300.print(cout);
 
 #endif  //  !defined(RAJA_COMPILER_XLC12)
 
@@ -451,16 +422,16 @@ RDH TODO -- checks for equality of index set variants here (need to add proper
    ///
    /// Print number of tests passed/run.
    ///
-   std::cout << "\n All Tests : # run / # passed = " 
+   cout << "\n All Tests : # run / # passed = " 
              << s_ntests_passed_total << " / " 
-             << s_ntests_run_total << std::endl;
+             << s_ntests_run_total << endl;
 
 //
 // Clean up....
 //
    free(parent);
 
-   std::cout << "\n DONE!!! " << std::endl;
+   cout << "\n DONE!!! " << endl;
 
    return 0 ;
 }

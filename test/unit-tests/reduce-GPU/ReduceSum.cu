@@ -8,20 +8,12 @@
 
 #include "RAJA/RAJA.hxx"
 
+#include "Compare.hxx"
+
 #define TEST_VEC_LEN  1024 * 1024
 
 using namespace RAJA;
 using namespace std;
-
-bool equal(double a, double b) 
-{
-   return (abs(a-b) <= ( ( abs(a) < abs(b) ? abs(a) : abs(b) ) * 10e-12 ) );  
-}
-
-bool equal(int a, int b) 
-{
-   return a == b ;
-}
 
 //
 // Global variables for counting tests executed/passed.
