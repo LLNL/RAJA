@@ -82,6 +82,18 @@ public:
    ///
    virtual IndexOwnership getIndexOwnership() const = 0;
 
+   ///
+   /// Pure virtual equality operator returns true if segments are equal; 
+   /// else false.
+   ///
+   virtual bool operator ==(const BaseSegment& other) const = 0;
+
+   ///
+   /// Pure virtual inequality operator returns true if segments are not 
+   /// equal, else false.
+   ///
+   virtual bool operator !=(const BaseSegment& other) const = 0;
+
 private:
    ///
    /// The default ctor is not implemented.

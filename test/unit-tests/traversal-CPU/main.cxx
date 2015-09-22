@@ -320,36 +320,118 @@ int main(int argc, char *argv[])
       buildIndexSet( index, static_cast<IndexSetBuildMethod>(ibuild) );
    }  
 
-#if 0 
-RDH TODO -- checks for equality of index set variants here (need to add proper 
-            methods to IndexSet class) instead of running tests for each
-            index set?
-#endif
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run checks for equality of all constructed index sets.
+//
+///////////////////////////////////////////////////////////////////////////
+
+   cout << "\n\n BEGIN IndexSet equality/inequality tests " << endl;
+
+   // initialize test counters for this test set
+   s_ntests_run = 0;
+   s_ntests_passed = 0;
+
+   for (unsigned ibuild = 1; ibuild < NumBuildMethods; ++ibuild) {
+
+      s_ntests_run++;
+      s_ntests_run_total++;
+
+      if ( index[ibuild] == index[0] ) {
+         s_ntests_passed++; 
+         s_ntests_passed_total++; 
+      } else {
+         cout << "\tIndexSet " << ibuild 
+              << " DOES NOT MATCH IndexSet 0!! " << endl;
+      }
+
+      s_ntests_run++;
+      s_ntests_run_total++;
+
+      if ( index[ibuild] != index[0] ) {
+         cout << "\tIndexSet " << ibuild
+              << " MATCHES IndexSet 0!! " << endl;
+      } else {
+         s_ntests_passed++; 
+         s_ntests_passed_total++;
+      }
 
 #if 0
-   cout << endl << endl;
-   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      cout << endl << endl << "index 0 " << endl << endl;
+      index[ibuild].print(cout);
+      cout << endl << endl;
       cout << "index with build method " << ibuild << endl;
       index[ibuild].print(cout);
-      cout << endl;
-   } 
-   cout << endl;
+      cout << endl << endl;
 #endif
 
-#if 0  // Test attempt to add invalid segment type.
-   RangeStrideSegment rs_segment(0, 4, 2);
-   if ( index[0].isValidSegmentType(&rs_segment) ) {
-      cout << "RangeStrideSegment VALID for index[0]" << endl;
-   } else {
-      cout << "RangeStrideSegment INVALID for index[0]" << endl;
    }
-   index[0].push_back(rs_segment);
-   index[0].push_back_nocopy(&rs_segment);
-#endif
 
+   cout << "\n tests passed / test run: "
+        << s_ntests_passed << " / " << s_ntests_run << endl;
+
+   cout << "\n END IndexSet equality/inequality tests " << endl;
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run checks for adding invalid segment type to index set.
+//
+///////////////////////////////////////////////////////////////////////////
+
+   cout << "\n\n BEGIN IndexSet invalid segment tests " << endl;
+
+   // initialize test counters for this test set
+   s_ntests_run = 0;
+   s_ntests_passed = 0;
+
+   RangeStrideSegment rs_segment(0, 4, 2);
+   s_ntests_run++;
+   s_ntests_run_total++;
+   if ( index[0].isValidSegmentType(&rs_segment) ) {
+      cout << "RangeStrideSegment reported as VALID for index[0]!!!" << endl;
+   } else {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   }
+
+   s_ntests_run++;
+   s_ntests_run_total++;
+   if ( index[0].push_back(rs_segment) ) {
+      cout << "push_back(RangeStrideSegment) SUCCEEDED!!!" << endl;
+   } else {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   }
+
+   s_ntests_run++;
+   s_ntests_run_total++;
+   if ( index[0].push_back_nocopy(&rs_segment) ) {
+      cout << "push_back_cocopy(RangeStrideSegment) SUCCEEDED!!!" << endl;
+   } else {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   }
+
+   cout << "\n tests passed / test run: "
+        << s_ntests_passed << " / " << s_ntests_run << endl;
+
+   cout << "\n END IndexSet invalid segment tests " << endl;
+
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall loop iteration tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   // initialize test counters for this test set
+   s_ntests_run = 0;
+   s_ntests_passed = 0;
 
    //
-   // Allocate and initialize arrays for tests...
+   // Allocate and initialize arrays for traversal tests...
    //
    const Index_type array_length = 2000;
 
@@ -361,37 +443,33 @@ RDH TODO -- checks for equality of index set variants here (need to add proper
    }
 
 
-///////////////////////////////////////////////////////////////////////////
-// Set up indexing information for tests...
-///////////////////////////////////////////////////////////////////////////
+   //
+   // Set up indexing information for traversal tests...
+   //
    RAJAVec<Index_type> is_indices = getIndices(index[0]);
 
 
-///////////////////////////////////////////////////////////////////////////
-//
-// Run RAJA::forall loop iteration tests...
-//
-///////////////////////////////////////////////////////////////////////////
+   unsigned run_tests = 1;
+// unsigned run_tests = NumBuildMethods;
 
-   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+   for (unsigned ibuild = 0; ibuild < run_tests; ++ibuild) {
       runForallTests( ibuild, parent, array_length, 
                       index[ibuild], is_indices );
    }
 
-   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+   for (unsigned ibuild = 0; ibuild < run_tests; ++ibuild) {
       runForall_IcountTests( ibuild, parent, array_length, 
                              index[ibuild], is_indices );
    }
 
 
-#if 0 
+#if !defined(RAJA_COMPILER_XLC12) && 0
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Check some basic conditional IndexSet construction operations....
 //
 ///////////////////////////////////////////////////////////////////////////
-
-#if !defined(RAJA_COMPILER_XLC12)
 
    RAJAVec<Index_type> even_indices; 
    RAJAVec<Index_type> lt_300_indices; 
@@ -415,9 +493,7 @@ RDH TODO -- checks for equality of index set variants here (need to add proper
    cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << endl;
    hiset_lt_300.print(cout);
 
-#endif  //  !defined(RAJA_COMPILER_XLC12)
-
-#endif  //  do basic conditional checks...
+#endif  //  !defined(RAJA_COMPILER_XLC12) || 0
 
    ///
    /// Print number of tests passed/run.
