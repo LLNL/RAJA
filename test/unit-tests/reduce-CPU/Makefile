@@ -56,7 +56,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
 
 
 TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
