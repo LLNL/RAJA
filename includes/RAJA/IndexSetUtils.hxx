@@ -30,81 +30,47 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Returns all indices in given index set or segment 
- *         as std::vector or RAJAVec.
+ * \brief  Get all indices in given index set (or segment) in given container.
+ *         Container must be template on element type, have default and 
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-#if defined(RAJA_USE_STL)
-template <typename INDEXSET_T>
+template <typename CONTAINER_T,
+          typename INDEXSET_T>
 RAJA_INLINE
-std::vector<Index_type> getIndices(const INDEXSET_T& iset)
+void getIndices(CONTAINER_T& con, const INDEXSET_T& iset)
 {
-   std::vector<Index_type> ivec;
-   ivec.reserve(iset.getLength());
+   CONTAINER_T tcon;
    forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
-      ivec.push_back(idx);
+      tcon.push_back(idx);
    } );
-   return ivec;
+   con = tcon;
 }
-#else
-
-///
-/// No-stl version
-///
-template <typename INDEXSET_T>
-RAJA_INLINE
-RAJAVec<Index_type> getIndices(const INDEXSET_T& iset)
-{
-   RAJAVec<Index_type> ivec(iset.getLength());
-   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
-      ivec.push_back(idx);
-   } );
-   return ivec;
-}
-#endif
 
 /*!
  ******************************************************************************
  *
- * \brief  Returns all indices in given index set or segment that satisfy 
- *         conditional as std::vector or RAJAVec.
+ * \brief  Get all indices in given index set (or segment) that satisy
+ *         given conditional in given container. 
+ *         Container must be template on element type, have default and 
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-#if defined(RAJA_USE_STL)
-template <typename INDEXSET_T,
+template <typename CONTAINER_T,
+          typename INDEXSET_T,
           typename CONDITIONAL>
 RAJA_INLINE
-std::vector<Index_type> getIndicesConditional(const INDEXSET_T& iset,
-                                              CONDITIONAL conditional)
+void getIndicesConditional(CONTAINER_T& con, const INDEXSET_T& iset,
+                           CONDITIONAL conditional)
 {
-   std::vector<Index_type> ivec;
-   ivec.reserve(iset.getLength());
+   CONTAINER_T tcon;
    forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
-      if ( conditional( idx ) ) ivec.push_back(idx);
+      if ( conditional( idx ) ) tcon.push_back(idx);
    } );
-   return ivec;
+   con = tcon;
 }
-#else
-
-///
-/// No-stl version
-///
-template <typename INDEXSET_T,
-          typename CONDITIONAL>
-RAJA_INLINE
-RAJAVec<Index_type> getIndicesConditional(const INDEXSET_T& iset,
-                                          CONDITIONAL conditional)
-{
-   RAJAVec<Index_type> ivec(iset.getLength());
-   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
-      if ( conditional( idx ) ) ivec.push_back(idx);
-   } );
-   return ivec;
-}
-#endif
-
 
 }  // closing brace for RAJA namespace
 
