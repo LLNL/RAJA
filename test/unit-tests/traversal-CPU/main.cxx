@@ -312,12 +312,22 @@ void runForall_IcountTests( unsigned ibuild,
 int main(int argc, char *argv[])
 {
 
+   //
+   // Record maximum index in IndexSets for proper array allocation later. 
+   //
+   Index_type last_indx = 0;
+
 // 
 //  All methods to construct index sets should generate equivalent results.
 //
    IndexSet index[NumBuildMethods];
    for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      buildIndexSet( index, static_cast<IndexSetBuildMethod>(ibuild) );
+      last_indx = max( last_indx, 
+         buildIndexSet( index, static_cast<IndexSetBuildMethod>(ibuild) ) );
+#if 0 // print index set for debugging
+      cout << "\n\nIndexSet( " << ibuild << " ) " << endl;
+      index[ibuild].print(cout);
+#endif
    }  
 
 
@@ -426,15 +436,11 @@ int main(int argc, char *argv[])
 //
 ///////////////////////////////////////////////////////////////////////////
 
-   // initialize test counters for this test set
-   s_ntests_run = 0;
-   s_ntests_passed = 0;
+   const Index_type array_length = last_indx + 1;
 
    //
-   // Allocate and initialize arrays for traversal tests...
+   // Allocate "parent" array for traversal tests and initialize to...
    //
-   const Index_type array_length = 2000;
-
    Real_ptr parent;
    posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
 
@@ -442,13 +448,20 @@ int main(int argc, char *argv[])
       parent[i] = static_cast<Real_type>( rand() % 65536 );
    }
 
+   //
+   // Collect actual indices in index set for testing.
+   //
+   RAJAVec<Index_type> is_indices;
+   getIndices(is_indices, index[0]);
+
+   // initialize test counters for this test set
+   s_ntests_run = 0;
+   s_ntests_passed = 0;
 
    //
-   // Set up indexing information for traversal tests...
+   // Earlier tests should confirm all index sets are identical.
+   // But, can still run tests for all index sets if desired.
    //
-   RAJAVec<Index_type> is_indices = getIndices(index[0]);
-
-
    unsigned run_tests = 1;
 // unsigned run_tests = NumBuildMethods;
 
@@ -463,35 +476,71 @@ int main(int argc, char *argv[])
    }
 
 
-#if !defined(RAJA_COMPILER_XLC12) && 0
+#if !defined(RAJA_COMPILER_XLC12) && 1
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Check some basic conditional IndexSet construction operations....
+// Check some basic conditional IndexSet operations....
 //
 ///////////////////////////////////////////////////////////////////////////
+
+   cout << "\n\n BEGIN IndexSet conditional operation tests " << endl;
+
+   // initialize test counters for this test set
+   s_ntests_run = 0;
+   s_ntests_passed = 0;
+
+
+   s_ntests_run++;
+   s_ntests_run_total++;
 
    RAJAVec<Index_type> even_indices; 
-   RAJAVec<Index_type> lt_300_indices; 
+   getIndicesConditional(even_indices, index[0], 
+                         [](Index_type idx) { return !(idx%2);} );
 
-   even_indices = 
-      getIndicesConditional(index[0], [](Index_type idx) { return !(idx%2);} );
+   RAJAVec<Index_type> ref_even_indices;
+   for (Index_type i = 0; i < is_indices.size(); ++i ) {
+      Index_type idx = is_indices[i];
+      if ( idx % 2 == 0 ) ref_even_indices.push_back(idx); 
+   }
 
-   lt_300_indices = 
-      getIndicesConditional(index[0], [](Index_type idx) { return (idx<300);} );
+   if ( ( even_indices.size() == ref_even_indices.size() ) &&
+        array_equal(&even_indices[0], &ref_even_indices[0], 
+                    ref_even_indices.size()) ) {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   } else {
+      cout << "\n even_indices TEST_FAILURE " << endl;
+   }
 
-   IndexSet hiset_even;
-   hiset_even.push_back( ListSegment(&even_indices[0], even_indices.size()) );
+// -------------------------------------------------------------------------   
 
-   cout << "\n\n INDEX SET WITH EVEN INDICES ONLY..." << endl;
-   hiset_even.print(cout);
+   s_ntests_run++;
+   s_ntests_run_total++;
 
+   RAJAVec<Index_type> lt300_indices; 
+   getIndicesConditional(lt300_indices, index[0],
+                         [](Index_type idx) { return (idx<300);} );
 
-   IndexSet hiset_lt_300;
-   hiset_even.push_back( ListSegment(&lt_300_indices[0], lt_300_indices.size()) );
+   RAJAVec<Index_type> ref_lt300_indices;
+   for (Index_type i = 0; i < is_indices.size(); ++i ) {
+      Index_type idx = is_indices[i];
+      if ( idx < 300 ) ref_lt300_indices.push_back(idx);
+   }
 
-   cout << "\n\n INDEX SET WITH INDICES < 300 ONLY..." << endl;
-   hiset_lt_300.print(cout);
+   if ( ( lt300_indices.size() == ref_lt300_indices.size() ) &&
+        array_equal(&lt300_indices[0], &ref_lt300_indices[0], 
+                    ref_lt300_indices.size()) ) {
+      s_ntests_passed++;
+      s_ntests_passed_total++;
+   } else {
+      cout << "\n lt300_indices TEST_FAILURE " << endl;
+   }
+
+   cout << "\n tests passed / test run: "
+             << s_ntests_passed << " / " << s_ntests_run << endl;
+
+   cout << "\n END IndexSet conditional operation tests " << endl;
 
 #endif  //  !defined(RAJA_COMPILER_XLC12) || 0
 

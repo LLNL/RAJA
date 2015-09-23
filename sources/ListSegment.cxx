@@ -133,7 +133,7 @@ bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const
 void ListSegment::print(std::ostream& os) const
 {
    os << "ListSegment : length, owns index = " << getLength() 
-      << (m_indx_own == Owned ? "Owned" : "Unowned") << std::endl;
+      << (m_indx_own == Owned ? " -- Owned" : " -- Unowned") << std::endl;
    for (Index_type i = 0; i < getLength(); ++i) {
       os << "\t" << m_indx[i] << std::endl;
    }

@@ -1,6 +1,6 @@
 //
-// Header file defining methods that build various hybrid index
-// sets for testing...
+// Header file defining methods that build index sets in various ways
+// for testing...
 //
 
 #include "RAJA/RAJA.hxx"
@@ -11,10 +11,6 @@
 enum IndexSetBuildMethod {
    AddSegments = 0,
    AddSegmentsReverse,
-#if defined(RAJA_USE_STL)
-   AddSegmentsAsVectors,
-   AddSegmentsAsVectorsReverse,
-#endif
    AddSegmentsNoCopy,
    AddSegmentsNoCopyReverse,
    MakeViewRange,
@@ -27,6 +23,8 @@ enum IndexSetBuildMethod {
 };
 
 //
-//  Initialize hybrid index set by adding segments as indicated by enum value.
+//  Initialize index set by adding segments as indicated by enum value.
+//  Return last index in IndexSet.
 //
-void buildIndexSet(RAJA::IndexSet* hindex, IndexSetBuildMethod use_vector);
+RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex, 
+                               IndexSetBuildMethod use_vector);
