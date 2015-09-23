@@ -58,15 +58,17 @@ include ../../compilers.mk
 
 CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
 
-
-TESTOBJS := $(patsubst %.cxx,%.o,$(wildcard ./*.cxx))
+TESTOBJS = buildIndexSet.o
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 OBJFILES = $(TESTOBJS) $(RAJAOBJS)
 
-CPUreduce-test: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+CPUtraversal-test: main-traversal.o $(OBJFILES)
+	$(CXX_COMPILE) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+
+CPUreduce-test: main-reduce.o $(OBJFILES)
+	$(CXX_COMPILE) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
 
 ## Uncomment this line to generate an executable to run...
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 

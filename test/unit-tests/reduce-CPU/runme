@@ -1,5 +1,0 @@
-setenv OMP_NUM_THREADS 10 ;
-setenv CILK_NWORKERS 10 ;
-date ;
-srun -N 1 -p pdebug --exclusive time ./CPUreduce-test.exe ;
-date

@@ -788,17 +788,44 @@ void runSumReduceTests( Real_ptr in_array,
 int main(int argc, char *argv[])
 {
 
-// 
+   //
+   // Record maximum index in IndexSets for proper array allocation later.
+   //
+   Index_type last_indx = 0;
+
+//
 //  All methods to construct index sets should generate equivalent results.
 //
-   IndexSet iset;
-   buildIndexSet( iset );
+   IndexSet index[NumBuildMethods];
+   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+      last_indx = max( last_indx,
+         buildIndexSet( index, static_cast<IndexSetBuildMethod>(ibuild) ) );
+#if 0 // print index set for debugging
+      cout << "\n\nIndexSet( " << ibuild << " ) " << endl;
+      index[ibuild].print(cout);
+#endif
+   }
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Checks for equality of all constructed index sets are performed
+// in traversal test program.
+//
+///////////////////////////////////////////////////////////////////////////
+
+///////////////////////////////////////////////////////////////////////////
+//
+// Run RAJA::forall reduction tests...
+//
+///////////////////////////////////////////////////////////////////////////
+
+   IndexSet& iset = index[0]; 
+
+   const Index_type array_length = last_indx + 1;
 
    //
-   // Allocate and initialize arrays for tests...
+   // Allocate "parent" array for traversal tests and initialize to...
    //
-   const Index_type array_length = 2000;
-
    Real_ptr parent;
    posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
 
@@ -806,18 +833,12 @@ int main(int argc, char *argv[])
       parent[i] = static_cast<Real_type>( rand() % 65536 );
    }
 
+   //
+   // Collect actual indices in index set for testing.
+   //
+   RAJAVec<Index_type> is_indices;
+   getIndices(is_indices, index[0]);
 
-///////////////////////////////////////////////////////////////////////////
-// Set up indexing information for tests...
-///////////////////////////////////////////////////////////////////////////
-   RAJAVec<Index_type> is_indices = getIndices(iset);
-
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Run RAJA reduction tests...
-//
-///////////////////////////////////////////////////////////////////////////
 
    runMinReduceTests( parent, array_length,
                       iset, is_indices );
