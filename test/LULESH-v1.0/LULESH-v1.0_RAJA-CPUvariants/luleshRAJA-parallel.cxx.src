@@ -192,8 +192,88 @@ real10 FABS(real10 arg) { return fabsl(arg) ; }
 // ########################################################
 #include "luleshMemory.hxx"
 
-
 enum { VolumeError = -1, QStopError = -2 } ;
+
+/**********************************/
+/* Memory Pool                    */
+/**********************************/
+
+namespace RAJA {
+
+template <typename EXEC_POLICY_T,
+          typename VARTYPE >
+struct MemoryPool {
+public:
+   MemoryPool()
+   {
+      for (int i=0; i<32; ++i) {
+         lenType[i] = 0 ;
+         ptr[i] = 0 ;
+      }
+   }
+
+   VARTYPE *allocate(int len) {
+      VARTYPE *retVal ;
+      int i ;
+      for (i=0; i<32; ++i) {
+         if (lenType[i] == len) {
+            lenType[i] = -lenType[i] ;
+            retVal = ptr[i] ;
+            break ;
+         }
+         else if (lenType[i] == 0) {
+            lenType[i] = -len ;
+            ptr[i] = Allocate<VARTYPE>(len) ;
+            retVal = ptr[i] ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         retVal = 0 ;  /* past max available pointers */
+      }
+      return retVal ;
+   }
+
+   bool release(VARTYPE **oldPtr) {
+      int i ;
+      bool success = true ;
+      for (i=0; i<32; ++i) {
+         if (ptr[i] == *oldPtr) {
+            lenType[i] = -lenType[i] ;
+            *oldPtr = 0 ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         success = false ; /* error -- not found */
+      }
+      return success ;
+   }
+
+   bool release(VARTYPE * __restrict__ *oldPtr) {
+      int i ;
+      bool success = true ;
+      for (i=0; i<32; ++i) {
+         if (ptr[i] == *oldPtr) {
+            lenType[i] = -lenType[i] ;
+            *oldPtr = 0 ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         success = false ; /* error -- not found */
+      }
+      return success ; 
+   }
+
+   VARTYPE *ptr[32] ; 
+   int lenType[32] ;
+} ;
+
+}
+
+RAJA::MemoryPool< elem_exec_policy, Real_t > elemMemPool ;
+
 
 /***********************************/
 /* Domain structure implementation */
@@ -681,9 +761,9 @@ void IntegrateStressForElems( Index_p nodelist,
                             )
 {
 #ifdef OMP_HACK
-  Real_p fx_elem = Allocate<Real_t>(numElem*8) ;
-  Real_p fy_elem = Allocate<Real_t>(numElem*8) ;
-  Real_p fz_elem = Allocate<Real_t>(numElem*8) ;
+  Real_p fx_elem = elemMemPool.allocate(numElem*8) ;
+  Real_p fy_elem = elemMemPool.allocate(numElem*8) ;
+  Real_p fz_elem = elemMemPool.allocate(numElem*8) ;
 #endif
 
   // loop over all elements
@@ -755,9 +835,9 @@ void IntegrateStressForElems( Index_p nodelist,
    }
   ) ;
 
-  Release(&fz_elem) ;
-  Release(&fy_elem) ;
-  Release(&fx_elem) ;
+  elemMemPool.release(&fz_elem) ;
+  elemMemPool.release(&fy_elem) ;
+  elemMemPool.release(&fx_elem) ;
 #endif
 }
 
@@ -1097,9 +1177,9 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
     *************************************************/
 
 #ifdef OMP_HACK
-   Real_p fx_elem = Allocate<Real_t>(numElem*8) ;
-   Real_p fy_elem = Allocate<Real_t>(numElem*8) ;
-   Real_p fz_elem = Allocate<Real_t>(numElem*8) ;
+   Real_p fx_elem = elemMemPool.allocate(numElem*8) ;
+   Real_p fy_elem = elemMemPool.allocate(numElem*8) ;
+   Real_p fz_elem = elemMemPool.allocate(numElem*8) ;
 #endif
 
 /*************************************************/
@@ -1299,9 +1379,9 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
     }
    ) ;
 
-   Release(&fz_elem) ;
-   Release(&fy_elem) ;
-   Release(&fx_elem) ;
+   elemMemPool.release(&fz_elem) ;
+   elemMemPool.release(&fy_elem) ;
+   elemMemPool.release(&fx_elem) ;
 #endif
 }
 
@@ -1312,12 +1392,12 @@ void CalcHourglassControlForElems(Domain *domain,
 {
    Index_t numElem = domain->numElem ;
    Index_t numElem8 = numElem * 8 ;
-   Real_p dvdx = Allocate<Real_t>(numElem8) ;
-   Real_p dvdy = Allocate<Real_t>(numElem8) ;
-   Real_p dvdz = Allocate<Real_t>(numElem8) ;
-   Real_p x8n  = Allocate<Real_t>(numElem8) ;
-   Real_p y8n  = Allocate<Real_t>(numElem8) ;
-   Real_p z8n  = Allocate<Real_t>(numElem8) ;
+   Real_p dvdx = elemMemPool.allocate(numElem8) ;
+   Real_p dvdy = elemMemPool.allocate(numElem8) ;
+   Real_p dvdz = elemMemPool.allocate(numElem8) ;
+   Real_p x8n  = elemMemPool.allocate(numElem8) ;
+   Real_p y8n  = elemMemPool.allocate(numElem8) ;
+   Real_p z8n  = elemMemPool.allocate(numElem8) ;
 
    // For negative element volume check
    RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
@@ -1360,12 +1440,12 @@ void CalcHourglassControlForElems(Domain *domain,
                                   ) ;
    }
 
-   Release(&z8n) ;
-   Release(&y8n) ;
-   Release(&x8n) ;
-   Release(&dvdz) ;
-   Release(&dvdy) ;
-   Release(&dvdx) ;
+   elemMemPool.release(&z8n) ;
+   elemMemPool.release(&y8n) ;
+   elemMemPool.release(&x8n) ;
+   elemMemPool.release(&dvdz) ;
+   elemMemPool.release(&dvdy) ;
+   elemMemPool.release(&dvdx) ;
 
    return ;
 }
@@ -1376,10 +1456,10 @@ void CalcVolumeForceForElems(Domain *domain)
    Index_t numElem = domain->numElem ;
    if (numElem != 0) {
       Real_t  hgcoef = domain->hgcoef ;
-      Real_p sigxx  = Allocate<Real_t>(numElem) ;
-      Real_p sigyy  = Allocate<Real_t>(numElem) ;
-      Real_p sigzz  = Allocate<Real_t>(numElem) ;
-      Real_p determ = Allocate<Real_t>(numElem) ;
+      Real_p sigxx = elemMemPool.allocate(numElem) ;
+      Real_p sigyy = elemMemPool.allocate(numElem) ;
+      Real_p sigzz = elemMemPool.allocate(numElem) ;
+      Real_p determ = elemMemPool.allocate(numElem) ;
 
       /* Sum contributions to total stress tensor */
       InitStressTermsForElems(domain->p, domain->q,
@@ -1416,10 +1496,10 @@ void CalcVolumeForceForElems(Domain *domain)
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
-      Release(&determ) ;
-      Release(&sigzz) ;
-      Release(&sigyy) ;
-      Release(&sigxx) ;
+      elemMemPool.release(&determ) ;
+      elemMemPool.release(&sigzz) ;
+      elemMemPool.release(&sigyy) ;
+      elemMemPool.release(&sigxx) ;
    }
 }
 
@@ -1849,9 +1929,10 @@ void CalcLagrangeElements(Domain *domain)
    if (numElem > 0) {
       const Real_t deltatime = domain->deltatime ;
 
-      domain->dxx  = Allocate<Real_t>(numElem) ; /* principal strains */
-      domain->dyy  = Allocate<Real_t>(numElem) ;
-      domain->dzz  = Allocate<Real_t>(numElem) ;
+      /* pricipal strains */
+      domain->dxx  = elemMemPool.allocate(numElem) ;
+      domain->dyy  = elemMemPool.allocate(numElem) ;
+      domain->dzz  = elemMemPool.allocate(numElem) ;
 
       CalcKinematicsForElems(domain->nodelist,
                              domain->x, domain->y, domain->z,
@@ -1884,9 +1965,9 @@ void CalcLagrangeElements(Domain *domain)
          exit(VolumeError) ;
       }
 
-      Release(&domain->dzz) ;
-      Release(&domain->dyy) ;
-      Release(&domain->dxx) ;
+      elemMemPool.release(&domain->dzz) ;
+      elemMemPool.release(&domain->dyy) ;
+      elemMemPool.release(&domain->dxx) ;
    }
 }
 
@@ -2232,13 +2313,15 @@ void CalcQForElems(Domain *domain)
    if (numElem != 0) {
       /* allocate domain length arrays */
 
-      domain->delv_xi = Allocate<Real_t>(numElem) ;   /* velocity gradient */
-      domain->delv_eta = Allocate<Real_t>(numElem) ;
-      domain->delv_zeta = Allocate<Real_t>(numElem) ;
+      /* velocity gradient */
+      domain->delv_xi   = elemMemPool.allocate(numElem) ;
+      domain->delv_eta  = elemMemPool.allocate(numElem) ;
+      domain->delv_zeta = elemMemPool.allocate(numElem) ;
 
-      domain->delx_xi = Allocate<Real_t>(numElem) ;   /* position gradient */
-      domain->delx_eta = Allocate<Real_t>(numElem) ;
-      domain->delx_zeta = Allocate<Real_t>(numElem) ;
+      /* position gradient */
+      domain->delx_xi   = elemMemPool.allocate(numElem) ;
+      domain->delx_eta  = elemMemPool.allocate(numElem) ;
+      domain->delx_zeta = elemMemPool.allocate(numElem) ;
 
       /* Calculate velocity gradients, applied at the domain level */
       CalcMonotonicQGradientsForElems(domain->x,  domain->y,  domain->z,
@@ -2261,13 +2344,13 @@ void CalcQForElems(Domain *domain)
 
       /* release domain length arrays */
 
-      Release(&domain->delx_zeta) ;
-      Release(&domain->delx_eta) ;
-      Release(&domain->delx_xi) ;
+      elemMemPool.release(&domain->delx_zeta) ;
+      elemMemPool.release(&domain->delx_eta) ;
+      elemMemPool.release(&domain->delx_xi) ;
 
-      Release(&domain->delv_zeta) ;
-      Release(&domain->delv_eta) ;
-      Release(&domain->delv_xi) ;
+      elemMemPool.release(&domain->delv_zeta) ;
+      elemMemPool.release(&domain->delv_eta) ;
+      elemMemPool.release(&domain->delv_xi) ;
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
@@ -2332,7 +2415,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
                         Index_t length)
 {
    const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
-   Real_p pHalfStep = Allocate<Real_t>(length) ;
+   Real_p pHalfStep = elemMemPool.allocate(length) ;
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int i) {
       e_new[i] = e_old[i] - Real_t(0.5) * delvc[i] * (p_old[i] + q_old[i])
@@ -2436,7 +2519,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
-   Release(&pHalfStep) ;
+   elemMemPool.release(&pHalfStep) ;
 
    return ;
 }
@@ -2480,15 +2563,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
    /* around a "temporary workset" issue */
    /* we have not yet addressed. */
    Real_p delvc = domain->delv ;
-   Real_p p_old = Allocate<Real_t>(numElem) ;
-   Real_p compression = Allocate<Real_t>(numElem) ;
-   Real_p compHalfStep = Allocate<Real_t>(numElem) ;
-   Real_p work = Allocate<Real_t>(numElem) ;
-   Real_p p_new = Allocate<Real_t>(numElem) ;
-   Real_p e_new = Allocate<Real_t>(numElem) ;
-   Real_p q_new = Allocate<Real_t>(numElem) ;
-   Real_p bvc = Allocate<Real_t>(numElem) ;
-   Real_p pbvc = Allocate<Real_t>(numElem) ;
+   Real_p p_old        = elemMemPool.allocate(numElem) ;
+   Real_p compression  = elemMemPool.allocate(numElem) ;
+   Real_p compHalfStep = elemMemPool.allocate(numElem) ;
+   Real_p work         = elemMemPool.allocate(numElem) ;
+   Real_p p_new        = elemMemPool.allocate(numElem) ;
+   Real_p e_new        = elemMemPool.allocate(numElem) ;
+   Real_p q_new        = elemMemPool.allocate(numElem) ;
+   Real_p bvc          = elemMemPool.allocate(numElem) ;
+   Real_p pbvc         = elemMemPool.allocate(numElem) ;
 
    /* compress data, minimal set */
    RAJA::forall<mat_exec_policy>( *domain->matElemList, [=] RAJA_DEVICE (int zidx) {
@@ -2544,15 +2627,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
              vnewc, rho0, e_new, p_new,
              pbvc, bvc, ss4o3) ;
 
-   Release(&pbvc) ;
-   Release(&bvc) ;
-   Release(&q_new) ;
-   Release(&e_new) ;
-   Release(&p_new) ;
-   Release(&work) ;
-   Release(&compHalfStep) ;
-   Release(&compression) ;
-   Release(&p_old) ;
+   elemMemPool.release(&pbvc) ;
+   elemMemPool.release(&bvc) ;
+   elemMemPool.release(&q_new) ;
+   elemMemPool.release(&e_new) ;
+   elemMemPool.release(&p_new) ;
+   elemMemPool.release(&work) ;
+   elemMemPool.release(&compHalfStep) ;
+   elemMemPool.release(&compression) ;
+   elemMemPool.release(&p_old) ;
 }
 
 RAJA_STORAGE
@@ -2571,7 +2654,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
     /* assuming it is ok to allocate a domain length temporary */
     /* rather than a material length temporary. */
 
-    Real_p vnewc = Allocate<Real_t>(numElem) ;
+    Real_p vnewc = elemMemPool.allocate(numElem) ;
 
     RAJA::forall<mat_exec_policy>( *domain->matElemList, [=] RAJA_DEVICE (int zn) {
        vnewc[zn] = domain->vnew[zn] ;
@@ -2617,8 +2700,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     EvalEOSForElems(domain, vnewc, numElem);
 
-    Release(&vnewc) ;
-
+    elemMemPool.release(&vnewc) ;
   }
 }
 
@@ -2643,7 +2725,7 @@ RAJA_STORAGE
 void LagrangeElements(Domain *domain, Index_t numElem)
 {
   /* new relative volume -- temporary */
-  domain->vnew = Allocate<Real_t>(numElem) ;
+  domain->vnew = elemMemPool.allocate(numElem) ;
 
   CalcLagrangeElements(domain) ;
 
@@ -2655,7 +2737,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
   UpdateVolumesForElems(domain->domElemList,
                         domain->vnew, domain->v, domain->v_cut) ;
 
-  Release(&domain->vnew) ;
+  elemMemPool.release(&domain->vnew) ;
 }
 
 RAJA_STORAGE
