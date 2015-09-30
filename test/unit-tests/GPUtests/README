@@ -13,3 +13,4 @@
 > ./reducemin.exe (for min reduction test)
 > ./reducemax.exe (for max reduction test)
 > ./reducesum.exe (for sum reduction test)
+> ./traversal.exe (for traversal test)
