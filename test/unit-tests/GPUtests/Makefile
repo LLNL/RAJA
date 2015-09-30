@@ -18,9 +18,9 @@
 ##
 ## Set option to report basic runtime information.
 ##
-##LULESH_OPTS = -DRAJA_USE_CYCLE
-#LULESH_OPTS = -DRAJA_USE_CLOCK
-LULESH_OPTS = -DRAJA_USE_GETTIME
+##TEST_OPTS = -DRAJA_USE_CYCLE
+#TEST_OPTS = -DRAJA_USE_CLOCK
+TEST_OPTS = -DRAJA_USE_GETTIME
 
 # This is needed for RAJA_USE_GETTIME
 LDTIMER = -lrt
@@ -35,19 +35,19 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 ## To change the rules, the file in the RAJA include directory can be edited
 ## or it can be replaced with custom version here.
 ##
-include $(RAJA_TOPDIR)/build/RAJA_rules.mk
+###include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
 ##
 ## Include file containing compiler version and options.
 ##
 #include ../../../compilers.mk
 
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
 
 #
 # This is needed, or else the code dies with a bus error. Why???
 #
-LULESH_OPTS += -DRAJA_SYNC
+TEST_OPTS += -DRAJA_SYNC
 
 
 
@@ -57,7 +57,7 @@ CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcomp
 #CXX_COMPILE = nvcc -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
 #CXX_COMPILE = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(TEST_OPTS)
 
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
@@ -70,6 +70,9 @@ reducemax: ReduceMax.o $(RAJAOBJS)
 
 reducesum: ReduceSum.o $(RAJAOBJS) 
 	$(CXX_COMPILE) ReduceSum.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducesum.exe
+
+traversal: Traversal.o $(RAJAOBJS) 
+	$(CXX_COMPILE) Traversal.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  traversal.exe
 
 %.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
