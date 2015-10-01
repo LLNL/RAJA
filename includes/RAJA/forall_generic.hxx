@@ -53,7 +53,7 @@ namespace RAJA {
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const Index_type begin, const Index_type end, 
+void forall(Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
@@ -73,8 +73,8 @@ void forall(const Index_type begin, const Index_type end,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const Index_type begin, const Index_type end,
-                   const Index_type icount,
+void forall_Icount(Index_type begin, Index_type end,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -115,7 +115,7 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(const RangeSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -143,8 +143,8 @@ void forall_Icount(const RangeSegment& iseg,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const Index_type begin, const Index_type end, 
-            const Index_type stride,
+void forall(Index_type begin, Index_type end, 
+            Index_type stride,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
@@ -165,9 +165,9 @@ void forall(const Index_type begin, const Index_type end,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   const Index_type icount, 
+void forall_Icount(Index_type begin, Index_type end,
+                   Index_type stride,
+                   Index_type icount, 
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -208,7 +208,7 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(const RangeStrideSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -236,7 +236,7 @@ void forall_Icount(const RangeStrideSegment& iseg,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(const Index_type* idx, const Index_type len,
+void forall(const Index_type* idx, Index_type len,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
@@ -257,8 +257,8 @@ void forall(const Index_type* idx, const Index_type len,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(const Index_type* idx, const Index_type len,
-                   const Index_type icount,
+void forall_Icount(const Index_type* idx, Index_type len,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -298,7 +298,7 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(const ListSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
@@ -375,7 +375,7 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(const INDEXSET_T& iset, 
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    forall_Icount(EXEC_POLICY_T(),

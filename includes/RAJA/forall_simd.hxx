@@ -46,7 +46,7 @@ namespace RAJA {
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const Index_type begin, const Index_type end, 
+            Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -71,11 +71,11 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = end - begin;
+   Index_type loop_end = end - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -100,8 +100,8 @@ void forall(simd_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
+   Index_type begin = iseg.getBegin();
+   Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -126,11 +126,11 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
                    const RangeSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type loop_end = iseg.getEnd() - iseg.getBegin();
+   Index_type begin = iseg.getBegin();
+   Index_type loop_end = iseg.getEnd() - iseg.getBegin();
 
    RAJA_FT_BEGIN ;
 
@@ -162,8 +162,8 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const Index_type begin, const Index_type end, 
-            const Index_type stride,
+            Index_type begin, Index_type end, 
+            Index_type stride,
             LOOP_BODY loop_body)
 {  
    RAJA_FT_BEGIN ;
@@ -188,9 +188,9 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const Index_type begin, const Index_type end,
-                   const Index_type stride,
-                   const Index_type icount,
+                   Index_type begin, Index_type end,
+                   Index_type stride,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    Index_type loop_end = (end-begin)/stride;
@@ -219,9 +219,9 @@ void forall(simd_exec,
             const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin  = iseg.getBegin();
-   const Index_type end    = iseg.getEnd();
-   const Index_type stride = iseg.getStride();
+   Index_type begin  = iseg.getBegin();
+   Index_type end    = iseg.getEnd();
+   Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -247,7 +247,7 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
                    const RangeStrideSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    Index_type begin = iseg.getBegin();
@@ -287,7 +287,7 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            const Index_type* __restrict__ idx, const Index_type len,
+            const Index_type* __restrict__ idx, Index_type len,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -313,8 +313,8 @@ void forall(simd_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   const Index_type* __restrict__ idx, const Index_type len,
-                   const Index_type icount,
+                   const Index_type* __restrict__ idx, Index_type len,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -342,7 +342,7 @@ void forall(simd_exec,
             LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -368,11 +368,11 @@ template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
                    const ListSegment& iseg,
-                   const Index_type icount,
+                   Index_type icount,
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
