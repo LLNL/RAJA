@@ -64,9 +64,55 @@ public:
      m_begin(begin), 
      m_end(end) { ; }
 
-   /*
-    * Using compiler-generated dtor, copy ctor, copy assignment.
-    */
+   ///
+   /// Destructor defined because some compilers don't appear to inline the
+   /// one they generate.
+   ///
+   ~RangeSegment() {;}
+
+   ///
+   /// Copy ctor defined because some compilers don't appear to inline the
+   /// one they generate.
+   ///
+   RangeSegment(const RangeSegment& other) 
+   : BaseSegment( _RangeSeg_ ),
+     m_begin(other.m_begin),
+     m_end(other.m_end) { ; }
+
+   ///
+   /// Copy assignment operator defined because some compilers don't 
+   /// appear to inline the one they generate.
+   ///
+   RangeSegment& operator=(const RangeSegment& rhs)
+   {
+      if ( &rhs != this ) {
+         RangeSegment copy(rhs);
+         this->swap(copy);
+      }
+      return *this;
+   }
+
+   ///
+   /// Swap function for copy-and-swap idiom.
+   ///
+   void swap(RangeSegment& other)
+   {
+#if defined(RAJA_USE_STL)
+      using std::swap;
+      swap(m_begin, other.m_begin);
+      swap(m_end, other.m_end);
+#else
+      Index_type tbegin = m_begin;
+      Index_type tend   = m_end;
+
+      m_begin = other.m_begin;
+      m_end   = other.m_end;
+
+      other.m_begin = tbegin;
+      other.m_end   = tend;
+#endif
+   }
+
 
    ///
    /// Return starting index for range. 
@@ -191,9 +237,60 @@ public:
      m_end(end), 
      m_stride(stride) { ; }
 
-   /*
-    * Using compiler-generated dtor, copy ctor, copy assignment.
-    */
+   ///
+   /// Destructor defined because some compilers don't appear to inline the
+   /// one they generate.
+   ///
+   ~RangeStrideSegment() {;}
+
+   ///
+   /// Copy ctor defined because some compilers don't appear to inline the
+   /// one they generate.
+   ///
+   RangeStrideSegment(const RangeStrideSegment& other)
+   : BaseSegment( _RangeStrideSeg_ ),
+     m_begin(other.m_begin),
+     m_end(other.m_end),
+     m_stride(other.m_stride) { ; }
+
+   ///
+   /// Copy assignment operator defined because some compilers don't
+   /// appear to inline the one they generate.
+   ///
+   RangeStrideSegment& operator=(const RangeStrideSegment& rhs)
+   {
+      if ( &rhs != this ) {
+         RangeStrideSegment copy(rhs);
+         this->swap(copy);
+      }
+      return *this;
+   }
+
+   ///
+   /// Swap function for copy-and-swap idiom.
+   ///
+   void swap(RangeStrideSegment& other)
+   {
+#if defined(RAJA_USE_STL)
+      using std::swap;
+      swap(m_begin, other.m_begin);
+      swap(m_end, other.m_end);
+      swap(m_stride, other.m_stride);
+#else
+      Index_type tbegin  = m_begin;
+      Index_type tend    = m_end;
+      Index_type tstride = m_stride;
+
+      m_begin  = other.m_begin;
+      m_end    = other.m_end;
+      m_stride = other.m_stride;
+
+      other.m_begin  = tbegin;
+      other.m_end    = tend;
+      other.m_stride = tstride;
+#endif
+   }
+
 
    ///
    /// Return starting index for range. 

@@ -76,12 +76,12 @@ public:
    ///
    /// Copy-constructor for list segment.
    ///
-   ListSegment(const ListSegment& obj);
+   ListSegment(const ListSegment& other);
 
    ///
    /// Copy-assignment for list segment.
    ///
-   ListSegment& operator=(const ListSegment& other);
+   ListSegment& operator=(const ListSegment& rhs);
 
    ///
    /// Destroy segment including its contents.
