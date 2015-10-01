@@ -779,8 +779,8 @@ void forall(cuda_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
+   Index_type begin = iseg.getBegin();
+   Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -820,11 +820,11 @@ void forall_Icount(cuda_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
+   Index_type begin = iseg.getBegin();
 
    RAJA_FT_BEGIN ;
 
-   const Index_type len = iseg.getEnd() - begin;
+   Index_type len = iseg.getEnd() - begin;
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
@@ -949,7 +949,7 @@ void forall(cuda_exec,
             LOOP_BODY loop_body)
 {
    const Index_type* idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -989,7 +989,7 @@ void forall_Icount(cuda_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type* idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 

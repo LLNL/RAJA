@@ -571,7 +571,7 @@ void forall_Icount(seq_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = end - begin;
+   Index_type loop_end = end - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -605,8 +605,8 @@ void forall(seq_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
+   Index_type begin = iseg.getBegin();
+   Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -634,8 +634,8 @@ void forall_Icount(seq_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type loop_end = iseg.getEnd() - iseg.getBegin();
+   Index_type begin = iseg.getBegin();
+   Index_type loop_end = iseg.getEnd() - iseg.getBegin();
 
    RAJA_FT_BEGIN ;
 
@@ -734,9 +734,9 @@ void forall(seq_exec,
             const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin  = iseg.getBegin();
-   const Index_type end    = iseg.getEnd();
-   const Index_type stride = iseg.getStride();
+   Index_type begin  = iseg.getBegin();
+   Index_type end    = iseg.getEnd();
+   Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -862,7 +862,7 @@ void forall(seq_exec,
             LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -891,7 +891,7 @@ void forall_Icount(seq_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -929,7 +929,7 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
              const IndexSet& iset, 
              LOOP_BODY loop_body )
 {
-   const int num_seg = iset.getNumSegments();
+   int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const BaseSegment* iseg = iset.getSegment(isi);
@@ -999,7 +999,7 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
                     const IndexSet& iset, 
                     LOOP_BODY loop_body )
 {
-   const int num_seg = iset.getNumSegments();
+   int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
@@ -1076,7 +1076,7 @@ void forall_segments(seq_segit,
                      LOOP_BODY loop_body)
 {
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   const int num_seg = ncis.getNumSegments();
+   int num_seg = ncis.getNumSegments();
 
    /* Create a temporary IndexSet with one Segment */
    IndexSet is_tmp;

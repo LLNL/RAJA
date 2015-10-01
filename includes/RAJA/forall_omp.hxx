@@ -646,7 +646,7 @@ void forall_Icount(omp_parallel_for_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   const Index_type loop_end = end - begin;
+   Index_type loop_end = end - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -671,8 +671,8 @@ void forall(omp_parallel_for_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin = iseg.getBegin();
-   const Index_type end   = iseg.getEnd();
+   Index_type begin = iseg.getBegin();
+   Index_type end   = iseg.getEnd();
 
    RAJA_FT_BEGIN ;
 
@@ -701,8 +701,8 @@ void forall_Icount(omp_parallel_for_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {           
-   const Index_type begin = iseg.getBegin();
-   const Index_type loop_end = iseg.getEnd() - begin;
+   Index_type begin = iseg.getBegin();
+   Index_type loop_end = iseg.getEnd() - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -791,9 +791,9 @@ void forall(omp_parallel_for_exec,
             const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
-   const Index_type begin  = iseg.getBegin();
-   const Index_type end    = iseg.getEnd();
-   const Index_type stride = iseg.getStride();
+   Index_type begin  = iseg.getBegin();
+   Index_type end    = iseg.getEnd();
+   Index_type stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
@@ -912,7 +912,7 @@ void forall(omp_parallel_for_exec,
             LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -943,7 +943,7 @@ void forall_Icount(omp_parallel_for_exec,
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
-   const Index_type len = iseg.getLength();
+   Index_type len = iseg.getLength();
 
    RAJA_FT_BEGIN ;
 
@@ -981,7 +981,7 @@ RAJA_INLINE
 void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
              const IndexSet& iset, LOOP_BODY loop_body )
 {
-   const int num_seg = iset.getNumSegments();
+   int num_seg = iset.getNumSegments();
 
 #pragma omp parallel for schedule(static, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -1054,7 +1054,7 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
 {
    IndexSet &ncis = (*const_cast<IndexSet *>(&iset)) ;
 
-   const int num_seg = ncis.getNumSegments();
+   int num_seg = ncis.getNumSegments();
 
 #pragma omp parallel for schedule(static, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -1164,7 +1164,7 @@ RAJA_INLINE
 void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
                     const IndexSet& iset, LOOP_BODY loop_body )
 {
-   const int num_seg = iset.getNumSegments();
+   int num_seg = iset.getNumSegments();
 
 #pragma omp parallel for schedule(static, 1)
    for ( int isi = 0; isi < num_seg; ++isi ) {
@@ -1246,7 +1246,7 @@ void forall_segments(omp_parallel_segit,
                      LOOP_BODY loop_body)
 {
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   const int num_seg = ncis.getNumSegments();
+   int num_seg = ncis.getNumSegments();
 
 #pragma omp parallel
    {
@@ -1298,7 +1298,7 @@ void forall_segments(omp_taskgraph_segit,
                      LOOP_BODY loop_body)
 {
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   const int num_seg = ncis.getNumSegments();
+   int num_seg = ncis.getNumSegments();
 
 #pragma omp parallel
    {
@@ -1394,7 +1394,7 @@ void forall_segments(omp_taskgraph_interval_segit,
                      LOOP_BODY loop_body)
 {
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   const int num_seg = ncis.getNumSegments();
+   int num_seg = ncis.getNumSegments();
 
 #pragma omp parallel
    {
