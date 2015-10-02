@@ -47,10 +47,6 @@ namespace RAJA {
  *
  * \brief  Min reducer class template for use in sequential reduction.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
- *
  ******************************************************************************
  */
 template <typename T>
@@ -131,10 +127,6 @@ private:
  ******************************************************************************
  *
  * \brief  Min-loc reducer class template for use in sequential reduction.
- *
- * \verbatim
- *         Fill this in...
- * \endverbatim
  *
  ******************************************************************************
  */
@@ -239,10 +231,6 @@ private:
  *
  * \brief  Max reducer class template for use in sequential reduction.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
- *
  ******************************************************************************
  */
 template <typename T>
@@ -323,10 +311,6 @@ private:
  ******************************************************************************
  *
  * \brief  Max-loc reducer class template for use in sequential reduction.
- *
- * \verbatim
- *         Fill this in...
- * \endverbatim
  *
  ******************************************************************************
  */
@@ -429,20 +413,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Max reducer class template for use in sequential reduction.
- *
- * \verbatim
- *         Fill this in...
- * \endverbatim
- *
-/*!
- ******************************************************************************
- *
  * \brief  Sum reducer class template for use in sequential reduction.
- *
- * \verbatim
- *         Fill this in...
- * \endverbatim
  *
  ******************************************************************************
  */
@@ -544,7 +515,6 @@ void forall(seq_exec,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
-
    RAJA_FT_BEGIN ;
 
 #pragma novector
@@ -684,8 +654,7 @@ void forall(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over index range with stride,
- *         including index count.
+ * \brief  Sequential iteration over index range with stride with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -752,7 +721,7 @@ void forall(seq_exec,
  ******************************************************************************
  *
  * \brief  Sequential iteration over range-stride segment object 
- *         with index count,
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -907,8 +876,8 @@ void forall_Icount(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// The following function templates iterate over index set
-// segments sequentially.  Segment execution is defined by segment
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
 // execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
@@ -918,7 +887,7 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  *
  * \brief  Sequential iteration over segments of index set and
- *         use execution policy template parameter to execute segments.
+ *         use segment execution policy template parameter for segments.
  *
  ******************************************************************************
  */
@@ -984,7 +953,7 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
  ******************************************************************************
  *
  * \brief  Sequential iteration over segments of index set and
- *         use execution policy template parameter to execute segments.
+ *         use segment execution policy template parameter for segments.
  *
  *         This method passes index count to segment iteration.
  *

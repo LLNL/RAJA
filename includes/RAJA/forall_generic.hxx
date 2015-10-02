@@ -3,10 +3,11 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set iteration template methods 
- *          that take execution policy as a template parameter.
+ * \brief   Header file containing RAJA index set and segment iteration 
+ *          template methods that take an execution policy as a template 
+ *          parameter.
  *
- *          These templates support the following usage pattern:
+ *          The templates for segments support the following usage pattern:
  *
  *             forall<exec_policy>( index set, loop body );
  *
@@ -14,7 +15,26 @@
  *
  *             forall( exec_policy(), index set, loop body );
  *
- *          The former is slightly more concise.
+ *          The former is slightly more concise. Here, the execution policy 
+ *          type is associated with a tag struct defined in the exec_poilicy 
+ *          hearder file. Usage of the forall_Icount() is similar. 
+ * 
+ *          The forall() and forall_Icount() methods that take an index set
+ *          take an execution policy of the form:
+ *
+ *          IndexSet::ExecPolicy< seg_it_policy, seg_exec_policy >
+ *
+ *          Here, the first template parameter determines the scheme for
+ *          iteratiing over the index set segments and the second determines
+ *          how each segment is executed.
+ *
+ *          The forall() templates accept a loop body argument that takes 
+ *          a single Index_type argument identifying the index of a loop
+ *          iteration. The forall_Icount() templates accept a loop body that
+ *          takes two Index_type arguments. The first is the number of the 
+ *          iteration in the indes set or segment, the second if the actual 
+ *          index of the loop iteration.
+ *
  *
  *          IMPORTANT: Use of any of these methods requires a specialization
  *                     for the given index set type and execution policy.
@@ -38,7 +58,7 @@ namespace RAJA {
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets.
+// Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -64,7 +84,7 @@ void forall(Index_type begin, Index_type end,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over index range, including index count.
+ * \brief Generic iteration over index range with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index). 
  *
@@ -83,10 +103,19 @@ void forall_Icount(Index_type begin, Index_type end,
                   loop_body );
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range segments.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief Generic iterations over range index set object.
+ * \brief Generic iterations over range segment object.
  *
  ******************************************************************************
  */
@@ -104,8 +133,7 @@ void forall(const RangeSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief Generic iterations over range index set object,
- *        including index count.
+ * \brief Generic iterations over range segment object with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index).
  *
@@ -128,7 +156,7 @@ void forall_Icount(const RangeSegment& iseg,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets with stride.
+// Function templates that iterate over index ranges with stride.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -155,8 +183,7 @@ void forall(Index_type begin, Index_type end,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over index range with stride,
- *        including index count.
+ * \brief Generic iteration over index range with stride with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index).
  *
@@ -176,10 +203,19 @@ void forall_Icount(Index_type begin, Index_type end,
                   loop_body );
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range-stride segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief Generic iterations over range index set with stride object.
+ * \brief Generic iterations over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -197,8 +233,7 @@ void forall(const RangeStrideSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief Generic iterations over range index set with stride object,
- *        including index count.
+ * \brief Generic iterations over range-stride segment object with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index).
  *
@@ -221,7 +256,7 @@ void forall_Icount(const RangeStrideSegment& iseg,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over list segments.
+// Function templates that iterate over indirection arrays.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -229,7 +264,7 @@ void forall_Icount(const RangeStrideSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief  Generic iteration over indirection array.
+ * \brief  Generic iteration over indices in indirection array.
  *
  ******************************************************************************
  */
@@ -247,8 +282,7 @@ void forall(const Index_type* idx, Index_type len,
 /*!
  ******************************************************************************
  *
- * \brief  Generic iteration over indirection array,
- *         including index count.
+ * \brief  Generic iteration over indices in indirection array with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -267,10 +301,19 @@ void forall_Icount(const Index_type* idx, Index_type len,
                   loop_body );
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over list segments.
+ * \brief Generic iteration over list segment object.
  *
  ******************************************************************************
  */
@@ -288,7 +331,7 @@ void forall(const ListSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over list segment object, including index count.
+ * \brief Generic iteration over list segment object with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index). 
  *
@@ -311,7 +354,8 @@ void forall_Icount(const ListSegment& iseg,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over index sets.
+// Function templates that iterate over index sets or segments 
+// according to execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -319,7 +363,7 @@ void forall_Icount(const ListSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over index set, including index count.
+ * \brief Generic iteration over index set with index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index). 
  *
@@ -334,19 +378,10 @@ void forall_Icount(const IndexSet& iset, LOOP_BODY loop_body)
                  iset, loop_body);
 }
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Methods that iterate over arbitrary index set or segment types.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over arbitrary index set.
+ * \brief Generic iteration over arbitrary index set or segment.
  *
  ******************************************************************************
  */
@@ -363,8 +398,8 @@ void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over arbitrary index set,
- *        including index count.
+ * \brief Generic iteration over arbitrary index set or segment with 
+ *        index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index).
  *
@@ -387,7 +422,7 @@ void forall_Icount(const INDEXSET_T& iset,
 /*!
  ******************************************************************************
  *
- * \brief Generic task-graph segment iteration over index set segments.
+ * \brief Generic dependency-graph segment iteration over index set segments.
  *
  ******************************************************************************
  */
