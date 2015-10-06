@@ -363,24 +363,6 @@ void forall_Icount(const ListSegment& iseg,
 /*!
  ******************************************************************************
  *
- * \brief Generic iteration over index set with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index). 
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(const IndexSet& iset, LOOP_BODY loop_body)
-{
-   forall_Icount(EXEC_POLICY_T(),
-                 iset, loop_body);
-}
-
-/*!
- ******************************************************************************
- *
  * \brief Generic iteration over arbitrary index set or segment.
  *
  ******************************************************************************
@@ -398,8 +380,28 @@ void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
 /*!
  ******************************************************************************
  *
+ * \brief Generic iteration over arbitrary index set or segment with index 
+ *        count.
+ *
+ *        NOTE: lambda loop body requires two args (icount, index). 
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename INDEXSET_T, 
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(const INDEXSET_T& iset, LOOP_BODY loop_body)
+{
+   forall_Icount(EXEC_POLICY_T(),
+                 iset, loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief Generic iteration over arbitrary index set or segment with 
- *        index count.
+ *        starting index count.
  *
  *        NOTE: lambda loop body requires two args (icount, index).
  *

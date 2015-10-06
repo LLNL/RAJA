@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   Header file containing RAJA index set iteration template 
- *          methods for OpenMP execution policies.
+ *          methods for OpenMP execution.
  *
  *          These methods should work on any platform.
  *
@@ -34,8 +34,8 @@
 #include <omp.h>
 #endif
 
+#include <string>
 #include <iostream>
-#include <cstdlib>
 
 
 namespace RAJA {
@@ -53,9 +53,7 @@ namespace RAJA {
  *
  * \brief  Min reducer class template for use in OpenMP execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -154,9 +152,7 @@ private:
  *
  * \brief  Min-loc reducer class template for use in OpenMP execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -279,9 +275,7 @@ private:
  *
  * \brief  Max-loc reducer class template for use in OpenMP execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -404,9 +398,7 @@ private:
  *
  * \brief  Max reducer class template for use in OpenMP execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -505,9 +497,7 @@ private:
  *
  * \brief  Sum reducer class template for use in OpenMP execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -602,7 +592,7 @@ private:
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets.
+// Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -633,7 +623,7 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range, including index count.
+ * \brief  omp parallel for iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -658,10 +648,19 @@ void forall_Icount(omp_parallel_for_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range segments. 
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range set object.
+ * \brief  omp parallel for iteration over range segment object.
  *
  ******************************************************************************
  */
@@ -687,8 +686,8 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range set object,
- *         including index count.
+ * \brief  omp parallel for iteration over range segment object 
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -718,7 +717,7 @@ void forall_Icount(omp_parallel_for_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over index rnages with stride.
+// Function templates that iterate over index ranges with stride.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -733,7 +732,7 @@ void forall_Icount(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_parallel_for_exec,
-            Index_type begin, Index_type end, 
+            Index_type begin, Index_type end,
             Index_type stride,
             LOOP_BODY loop_body)
 {
@@ -750,8 +749,8 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range with stride,
- *         including index count.
+ * \brief  omp parallel for iteration over index range with stride
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -778,10 +777,19 @@ void forall_Icount(omp_parallel_for_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range-stride segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over range index set with stride object.
+ * \brief  omp parallel for iteration over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -808,8 +816,8 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over range index set with stride object,
- *         including index count.
+ * \brief  omp parallel for iteration over range-stride segment object
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -841,7 +849,7 @@ void forall_Icount(omp_parallel_for_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over list segments.
+// Function templates that iterate over indirection arrays.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -873,8 +881,8 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over indirection array,
- *         including index count.
+ * \brief  omp parallel for iteration over indirection array
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -897,6 +905,15 @@ void forall_Icount(omp_parallel_for_exec,
 
    RAJA_FT_END ;
 }
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
 /*!
  ******************************************************************************
@@ -928,8 +945,8 @@ void forall(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over list segment object,
- *         including index count.
+ * \brief  omp parallel for iteration over list segment object
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -961,7 +978,8 @@ void forall_Icount(omp_parallel_for_exec,
 //////////////////////////////////////////////////////////////////////
 //
 // The following function templates iterate over index set
-// segments using omp execution policies.
+// segments using omp execution. Segment execution is defined by 
+// segment execution policy template parameter. 
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -970,8 +988,7 @@ void forall_Icount(omp_parallel_for_exec,
  ******************************************************************************
  *
  * \brief  Iterate over index set segments using omp parallel for 
- *         execution policy and use execution policy template parameter 
- *         for segments.
+ *         and use execution policy template parameter for segments.
  *
  ******************************************************************************
  */
@@ -1052,7 +1069,14 @@ RAJA_INLINE
 void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
              const IndexSet& iset, LOOP_BODY loop_body )
 {
-   IndexSet &ncis = (*const_cast<IndexSet *>(&iset)) ;
+   if ( !iset.dependencyGraphSet() ) {
+      std::cerr << "\n RAJA IndexSet dependency graph not set , "
+                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
+      exit(1);
+   }
+
+
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
 
    int num_seg = ncis.getNumSegments();
 
@@ -1149,8 +1173,7 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
  ******************************************************************************
  *
  * \brief  Iterate over index set segments using omp parallel for
- *         execution policy and use execution policy template parameter
- *         for segments.
+ *         execution and use execution policy template parameter for segments.
  *
  *         This method passes index count to segment iteration.
  *
@@ -1232,7 +1255,7 @@ void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY
  *         segment iteration loop. Individual segment execution is defined 
  *         in loop body.
  *
- *         This method does not use an task dependency graph for
+ *         This method does not use a task dependency graph for
  *         the index set segments. 
  *
  *         NOTE: IndexSet must contain only RangeSegments.
@@ -1297,6 +1320,13 @@ void forall_segments(omp_taskgraph_segit,
                      const IndexSet& iset,
                      LOOP_BODY loop_body)
 {
+   if ( !iset.dependencyGraphSet() ) {
+      std::cerr << "\n RAJA IndexSet dependency graph not set , "
+                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
+      exit(1);
+   }
+
+
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
    int num_seg = ncis.getNumSegments();
 
@@ -1393,6 +1423,13 @@ void forall_segments(omp_taskgraph_interval_segit,
                      const IndexSet& iset,
                      LOOP_BODY loop_body)
 {
+   if ( !iset.dependencyGraphSet() ) {
+      std::cerr << "\n RAJA IndexSet dependency graph not set , "
+                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
+      exit(1);
+   }
+
+
    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
    int num_seg = ncis.getNumSegments();
 
