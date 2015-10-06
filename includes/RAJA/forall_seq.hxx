@@ -47,6 +47,8 @@ namespace RAJA {
  *
  * \brief  Min reducer class template for use in sequential reduction.
  *
+ *         For usage example, see reducers.hxx. 
+ *
  ******************************************************************************
  */
 template <typename T>
@@ -127,6 +129,8 @@ private:
  ******************************************************************************
  *
  * \brief  Min-loc reducer class template for use in sequential reduction.
+ *
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
@@ -231,6 +235,8 @@ private:
  *
  * \brief  Max reducer class template for use in sequential reduction.
  *
+ *         For usage example, see reducers.hxx. 
+ *
  ******************************************************************************
  */
 template <typename T>
@@ -311,6 +317,8 @@ private:
  ******************************************************************************
  *
  * \brief  Max-loc reducer class template for use in sequential reduction.
+ *
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
@@ -414,6 +422,8 @@ private:
  ******************************************************************************
  *
  * \brief  Sum reducer class template for use in sequential reduction.
+ *
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
@@ -605,7 +615,7 @@ void forall_Icount(seq_exec,
                    LOOP_BODY loop_body)
 {
    Index_type begin = iseg.getBegin();
-   Index_type loop_end = iseg.getEnd() - iseg.getBegin();
+   Index_type loop_end = iseg.getEnd() - begin;
 
    RAJA_FT_BEGIN ;
 
@@ -640,7 +650,6 @@ void forall(seq_exec,
             Index_type stride,
             LOOP_BODY loop_body)
 {  
-
    RAJA_FT_BEGIN ;
 
 #pragma novector

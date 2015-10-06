@@ -6,7 +6,8 @@
  * \brief   Header file containing RAJA index set iteration template
  *          methods for SIMD execution.
  *
- *          These methods should work on any platform.
+ *          These methods should work on any platform. They make no
+ *          asumptions about data alignment.
  *
  * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
  * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
@@ -30,7 +31,18 @@ namespace RAJA {
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets.
+// There are no explicit reduction classes for SIMD execution.
+// 
+// "seq_reduce" policy should be used for reduction operations with
+// the forall() templates in this file.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -39,7 +51,6 @@ namespace RAJA {
  ******************************************************************************
  *
  * \brief  SIMD iteration over index range.
- *         No assumption made on data alignment.
  *
  ******************************************************************************
  */
@@ -62,7 +73,7 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range, including index count.
+ * \brief  SIMD iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -87,10 +98,19 @@ RAJA_SIMD
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range segments. 
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range set object.
+ * \brief  SIMD iteration over range segment object.
  *
  ******************************************************************************
  */
@@ -116,7 +136,7 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range set object, including index count.
+ * \brief  SIMD iteration over index range set object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -155,7 +175,6 @@ RAJA_SIMD
  ******************************************************************************
  *
  * \brief  SIMD iteration over index range with stride.
- *         No assumption made on data alignment.
  *
  ******************************************************************************
  */
@@ -179,7 +198,7 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range with stride, including index count.
+ * \brief  SIMD iteration over index range with stride with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -206,10 +225,19 @@ RAJA_SIMD
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range-stride segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over range index set with stride object.
+ * \brief  SIMD iteration over range segment object with stride.
  *
  ******************************************************************************
  */
@@ -236,8 +264,8 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over range index set with stride object,
- *         including index count.
+ * \brief  SIMD iteration over range index set with stride object
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -269,10 +297,10 @@ RAJA_SIMD
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over list segments.
+// Function templates that iterate over indirection arrays.
 //
-// NOTE: These operations will not vectorize, so we force sequential
-//       execution.  Hence, they are "fake" SIMD operations.
+// NOTE: These operations will not vectorize. We include them here and
+//       force sequential execution for convenience.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -303,8 +331,8 @@ void forall(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over indices in indirection array,
- *         including index count.
+ * \brief  "Fake" SIMD iteration over indices in indirection array
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -327,6 +355,17 @@ void forall_Icount(simd_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+// NOTE: These operations will not vectorize. We include them here and
+//       force sequential execution for convenience.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
 /*!
  ******************************************************************************
@@ -357,8 +396,7 @@ void forall(simd_exec,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over list segment object,
- *         including index count.
+ * \brief  "Fake" SIMD iteration over list segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -389,7 +427,8 @@ void forall_Icount(simd_exec,
 //////////////////////////////////////////////////////////////////////
 //
 // SIMD execution policy does not apply to iteration over index 
-// set segments, only to execution of individual segments.
+// set segments, only to execution of individual segments. So there
+// are no index set traversal methods in this file.
 //
 //////////////////////////////////////////////////////////////////////
 //

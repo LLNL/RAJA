@@ -24,6 +24,11 @@
 #include "RAJAVec.hxx"
 
 #include "execpolicy.hxx"
+#include "reducers.hxx"
+
+#include "fault_tolerance.hxx"
+
+#include "MemUtils.hxx"
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>

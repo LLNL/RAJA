@@ -177,6 +177,8 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
                border_task->depTaskNum(0) = i ;
             }
          }
+
+         iset.dependencyGraphFinalize();
       }
    }
 
