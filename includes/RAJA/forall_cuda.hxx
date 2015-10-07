@@ -22,8 +22,6 @@
 
 #include "int_datatypes.hxx"
 
-#if defined(RAJA_USE_CUDA)
-
 #include "execpolicy.hxx"
 #include "reducers.hxx"
 
@@ -37,7 +35,13 @@
 #include <cfloat>
 
 
+#if defined(RAJA_USE_CUDA)
+
+
 namespace RAJA {
+
+#define USE_ATOMIC_TWO
+//#undef  USE_ATOMIC_TWO
 
 //
 // Operations in this file are parametrized using the following
@@ -69,15 +73,17 @@ double shfl_xor(double var, int laneMask)
     int hi = __shfl_xor( __double2hiint(var), laneMask );
     return __hiloint2double( hi, lo );
 }
- 
+
+#if !defined(USE_ATOMIC_TWO)
 /*!
  ******************************************************************************
  *
- * \brief Atomic min update method used to gather current min reduction value.
+ * \brief Atomic min and max update methods used to gather current 
+ *        min or max reduction value.
  *
  ******************************************************************************
  */
-__device__ inline void atomicMin1(double *address, double value)
+__device__ inline void atomicMin(double *address, double value)
 {
     unsigned long long oldval, newval, readback;
     oldval = __double_as_longlong(*address);
@@ -90,28 +96,8 @@ __device__ inline void atomicMin1(double *address, double value)
                     RAJA_MIN(__longlong_as_double(oldval),value) );
     }
 }
-/// Alternative implementation that appears to be more robust (why? no one knows.)
-__device__ inline void atomicMin2(double *address, double value)
-{
-    unsigned long long int* address_as_ull =
-                            (unsigned long long int*)address;
-    unsigned long long int oldval = *address_as_ull, assumed;
-
-    do {
-       assumed = oldval;
-       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong( 
-                        RAJA_MIN( __longlong_as_double(assumed), value) ) );
-    } while (assumed != oldval);
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Atomic min update method used to gather current min reduction value.
- *
- ******************************************************************************
- */
-__device__ inline void atomicMax1(double *address, double value)
+///
+__device__ inline void atomicMax(double *address, double value)
 {
     unsigned long long oldval, newval, readback;
     oldval = __double_as_longlong(*address);
@@ -124,7 +110,32 @@ __device__ inline void atomicMax1(double *address, double value)
                     RAJA_MAX(__longlong_as_double(oldval),value) );
     }
 }
-/// Alternative implementation that appears to be more robust (why? no one knows.)
+
+#else
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Alternative atomic min and max update methods used to gather current 
+ *        min or max reduction value.
+ *       
+ *        These appear to be more robust than the ones above, not sure why.
+ *
+ ******************************************************************************
+ */
+__device__ inline void atomicMin2(double *address, double value)
+{
+    unsigned long long int* address_as_ull =
+                            (unsigned long long int*)address;
+    unsigned long long int oldval = *address_as_ull, assumed;
+
+    do {
+       assumed = oldval;
+       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong( 
+                        RAJA_MIN( __longlong_as_double(assumed), value) ) );
+    } while (assumed != oldval);
+}
+///
 __device__ inline void atomicMax2(double *address, double value)
 {
     unsigned long long int* address_as_ull =
@@ -137,7 +148,7 @@ __device__ inline void atomicMax2(double *address, double value)
                         RAJA_MAX( __longlong_as_double(assumed), value) ) );
     } while (assumed != oldval);
 }
-
+#endif
 
 
 //
@@ -151,11 +162,9 @@ __device__ inline void atomicMax2(double *address, double value)
 /*!
  ******************************************************************************
  *
- * \brief  Min reduction class template for use in CUDA kernel.
+ * \brief  Min reduction class template for use in CUDA kernels.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -216,7 +225,7 @@ public:
       cudaDeviceSynchronize() ;
 
       size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i<=current_grid_size; ++i) {
+      for (int i=1; i <= current_grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MIN(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -234,7 +243,7 @@ public:
       __shared__ T sd[THREADS_PER_BLOCK];
 
       if (threadIdx.x == 0) {
-         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_reduced_val;
+         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
       }
       __syncthreads();
 
@@ -271,13 +280,13 @@ public:
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x+1]);
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-#if 0
-          atomicMin1( &m_blockdata[m_blockoffset],
-#else
+#if defined(USE_ATOMIC_TWO)
           atomicMin2( &m_blockdata[m_blockoffset],
+#else
+          atomicMin1( &m_blockdata[m_blockoffset],
 #endif
                      RAJA_MIN( m_blockdata[m_blockoffset],
-                              m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+                               m_blockdata[m_blockoffset + blockIdx.x+1] ) );
       }
 
       return *this ;
@@ -303,9 +312,7 @@ private:
  *
  * \brief  Max reduction class template for use in CUDA kernel.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -366,7 +373,7 @@ public:
       cudaDeviceSynchronize() ;
 
       size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i<=current_grid_size; ++i) {
+      for (int i=1; i <= current_grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MAX(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -384,7 +391,7 @@ public:
       __shared__ T sd[THREADS_PER_BLOCK];
 
       if (threadIdx.x == 0) {
-         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = m_reduced_val;
+         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
       }
       __syncthreads();
 
@@ -421,13 +428,13 @@ public:
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-#if 0
-          atomicMax1( &m_blockdata[m_blockoffset],
-#else
+#if defined(USE_ATOMIC_TWO)
           atomicMax2( &m_blockdata[m_blockoffset],
+#else
+          atomicMax1( &m_blockdata[m_blockoffset],
 #endif
                      RAJA_MAX( m_blockdata[m_blockoffset],
-                              m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+                               m_blockdata[m_blockoffset + blockIdx.x+1] ) );
       }
 
       return *this ;
@@ -453,9 +460,7 @@ private:
  *
  * \brief  Sum reduction class template for use in CUDA kernel.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -480,7 +485,8 @@ public:
       m_blockdata = getCudaReductionMemBlock();
       m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
 
-      // Shared memory block must be initialized to zero so sum reduction is correct
+      // Entire shared memory block must be initialized to zero so 
+      // sum reduction is correct.
       size_t len = getCudaReductionMemBlockOffset(m_myID+1) - m_blockoffset;
       cudaMemset(&m_blockdata[m_blockoffset], 0,
                  sizeof(CudaReductionBlockDataType)*len);
@@ -522,7 +528,7 @@ public:
 
       m_blockdata[m_blockoffset] = static_cast<T>(0);
       size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i<=current_grid_size; ++i) {
+      for (int i=1; i <= current_grid_size; ++i) {
          m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
       }
       m_reduced_val = m_init_val + static_cast<T>(m_blockdata[m_blockoffset]);
@@ -539,7 +545,7 @@ public:
       __shared__ T sd[THREADS_PER_BLOCK];
 
       if (threadIdx.x == 0) {
-         for(int i=0;i<THREADS_PER_BLOCK;i++) sd[i] = 0;
+         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = 0;
       }
       __syncthreads();
 
@@ -761,7 +767,7 @@ void forall_Icount(cuda_exec,
 //
 ////////////////////////////////////////////////////////////////////////
 //
-// Function templates for CUDA execution over range index sets.
+// Function templates for CUDA execution over range segments.
 //
 ////////////////////////////////////////////////////////////////////////
 //
@@ -845,6 +851,7 @@ void forall_Icount(cuda_exec,
 
    RAJA_FT_END ;
 }
+
 
 //
 ////////////////////////////////////////////////////////////////////////
