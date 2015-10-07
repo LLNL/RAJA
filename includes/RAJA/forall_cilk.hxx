@@ -49,9 +49,7 @@ namespace RAJA {
  *
  * \brief  Min reducer class template for use in CilkPlus execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -149,9 +147,7 @@ private:
  *
  * \brief  Min-loc reducer class template for use in CilkPlus execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -174,9 +170,8 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
-      int nthreads = omp_get_max_threads();
-#pragma omp parallel for
-      for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = __cilkrts_get_nworkers();
+      cilk_for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
       }
@@ -207,7 +202,7 @@ public:
    //
    operator T()
    {
-      int nthreads = omp_get_max_threads();
+      int nthreads = __cilkrts_get_nworkers();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -223,7 +218,7 @@ public:
    //
    Index_type getMinLoc()
    {
-      int nthreads = omp_get_max_threads();
+      int nthreads = __cilkrts_get_nworkers();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -239,7 +234,7 @@ public:
    //
    ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
    {
-      int tid = omp_get_thread_num();
+      int tid = __cilkrts_get_worker_number();
       if ( val <= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
          m_blockdata[tid*s_block_offset] = val;
          m_idxdata[tid*s_idx_offset] = idx;
@@ -274,9 +269,7 @@ private:
  *
  * \brief  Max reducer class template for use in CilkPlus execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -374,9 +367,7 @@ private:
  *
  * \brief  Max-loc reducer class template for use in CilkPlus execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -399,9 +390,8 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
-      int nthreads = omp_get_max_threads();
-#pragma omp parallel for
-      for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = __cilkrts_get_nworkers();
+      cilk_for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
       }
@@ -432,7 +422,7 @@ public:
    //
    operator T()
    {
-      int nthreads = omp_get_max_threads();
+      int nthreads = __cilkrts_get_nworkers();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -448,7 +438,7 @@ public:
    //
    Index_type getMaxLoc()
    {
-      int nthreads = omp_get_max_threads();
+      int nthreads = __cilkrts_get_nworkers();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -464,7 +454,7 @@ public:
    //
    ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
    {
-      int tid = omp_get_thread_num();
+      int tid = __cilkrts_get_worker_number();
       if ( val >= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
          m_blockdata[tid*s_block_offset] = val;
          m_idxdata[tid*s_idx_offset] = idx;
@@ -499,9 +489,7 @@ private:
  *
  * \brief  Sum reducer class template for use in CilkPlus execution.
  *
- * \verbatim
- *         Fill this in...
- * \endverbatim
+ *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
@@ -523,7 +511,7 @@ public:
 
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
-      int nthreads = omp_get_max_threads();
+      int nthreads = __cilkrts_get_nworkers();
       cilk_for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = 0 ;
       }
@@ -597,7 +585,7 @@ private:
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range index sets.
+// Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -627,7 +615,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range, including index count.
+ * \brief  cilk_for iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -651,10 +639,19 @@ void forall_Icount(cilk_for_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range segments. 
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for  iteration over index range set object.
+ * \brief  cilk_for  iteration over range segment object.
  *
  ******************************************************************************
  */
@@ -676,20 +673,10 @@ void forall(cilk_for_exec,
    RAJA_FT_END ;
 }
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range index sets.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range set object, 
- *         including index count.
+ * \brief  cilk_for iteration over range segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -749,8 +736,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with stride,
- *         including index count.
+ * \brief  cilk_for iteration over index range with stride with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -776,10 +762,19 @@ void forall_Icount(cilk_for_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over range-stride segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range index set with stride object.
+ * \brief  cilk_for iteration over range-stride segment object.
  *
  ******************************************************************************
  */
@@ -805,8 +800,8 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range index set with stride object,
- *         including index count.
+ * \brief  cilk_for iteration over range-stride segment object 
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -837,7 +832,7 @@ void forall_Icount(cilk_for_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over unstructured index sets.
+// Function templates that iterate over indirection arrays.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -845,7 +840,7 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over indices in indirection array.
+ * \brief  cilk_for iteration over indirection array.
  *
  ******************************************************************************
  */
@@ -867,8 +862,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over indirection array,
- *         including index count.
+ * \brief  cilk_for iteration over indirection array with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -890,10 +884,19 @@ void forall_Icount(cilk_for_exec,
    RAJA_FT_END ;
 }
 
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over unstructured index set object.
+ * \brief  cilk_for iteration over list segment object.
  *
  ******************************************************************************
  */
@@ -918,8 +921,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over unstructured index set object,
- *         including index count.
+ * \brief  cilk_for iteration over list segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -949,8 +951,8 @@ void forall_Icount(cilk_for_exec,
 //////////////////////////////////////////////////////////////////////
 //
 // The following function templates iterate over index set
-// segments using cilk_for. Segment execution is defined by segment
-// execution policy template parameter.
+// segments using cilk_for. Segment execution is defined by 
+// segment execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
