@@ -178,7 +178,7 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
             }
          }
 
-         iset.dependencyGraphFinalize();
+         iset.finalizeDependencyGraph();
       }
    }
 

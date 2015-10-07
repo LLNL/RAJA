@@ -317,7 +317,7 @@ public:
    ///
    /// This method should be called after all such data has been set.
    ///
-   void dependencyGraphFinalize() { m_dep_graph_set = true; }
+   void finalizeDependencyGraph() { m_dep_graph_set = true; }
 
 //@}
 
