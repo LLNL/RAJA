@@ -302,16 +302,24 @@ size_t getCurrentGridSize()
 /*
 *************************************************************************
 *
-* Return pointer to shared RAJA-CUDA managed reduction memory block.
-* Allocates block if not alreay allocated.
+* Return pointer into shared RAJA-CUDA managed reduction memory block
+* for reducer object with given id. Allocate block if not already allocated.
 *
 *************************************************************************
 */
-CudaReductionBlockDataType* getCudaReductionMemBlock()
+CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
 {
+   //
+   // For each reducer object, we want a chunk of managed memory that
+   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction 
+   // value for each thread, a single slot for the global reduced value
+   // across grid blocks, and a single slot for the max grid size.  
+   //
+   int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
+
    if (s_cuda_reduction_mem_block == 0) {
-      int len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS +
-                                                RAJA_MAX_REDUCE_VARS;
+      int len = RAJA_MAX_REDUCE_VARS * block_offset;
+
       cudaError_t cudaerr = 
          cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
                            sizeof(CudaReductionBlockDataType)*len,
@@ -328,7 +336,7 @@ CudaReductionBlockDataType* getCudaReductionMemBlock()
       atexit(freeCudaReductionMemBlock);
    }
 
-   return s_cuda_reduction_mem_block;
+   return &(s_cuda_reduction_mem_block[id * block_offset]) ;
 }
 
 /*
@@ -351,21 +359,7 @@ void freeCudaReductionMemBlock()
    }
 }
 
-/*
-*************************************************************************
-*
-* Return offset into shared RAJA-Cuda reduction memory block for
-* reduction object with given id.
-*
-*************************************************************************
-*/
-int getCudaReductionMemBlockOffset(int id)
-{
-   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH + id);
-}
-
-#endif // #if defined(RAJA_USE_CUDA)
-
+#endif  // if defined(RAJA_USE_CUDA)
 
 
 }  // closing brace for RAJA namespace

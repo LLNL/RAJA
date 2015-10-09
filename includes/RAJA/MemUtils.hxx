@@ -185,12 +185,16 @@ size_t getCurrentGridSize();
  * NOTE: Block size will be:
  *
  *          sizeof(CudaReductionBlockDataType) * 
- *            (RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS +
- *                                             RAJA_MAX_REDUCE_VARS)
+ *            RAJA_MAX_REDUCE_VARS * ( RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 )
+ *
+ *       For each reducer object, we want a chunk of managed memory that
+ *       holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
+ *       value for each thread, a single slot for the global reduced value
+ *       across grid blocks, and a single slot for the max grid size
  *
  ******************************************************************************
  */
-CudaReductionBlockDataType* getCudaReductionMemBlock();
+CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
 
 /*!
  ******************************************************************************
@@ -200,17 +204,6 @@ CudaReductionBlockDataType* getCudaReductionMemBlock();
  ******************************************************************************
  */
 void freeCudaReductionMemBlock();
-
-/*!
-*************************************************************************
-*
-* Return offset into shared RAJA-Cuda reduction memory block for
-* reduction object with given id.
-*
-*************************************************************************
-*/
-int getCudaReductionMemBlockOffset(int id);
-
 
 #endif
 
