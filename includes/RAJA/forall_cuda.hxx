@@ -40,8 +40,12 @@
 
 namespace RAJA {
 
-#define USE_ATOMIC_TWO
-//#undef  USE_ATOMIC_TWO
+//
+// ONLY ONE OF THESE SHOULD BE DEFINED!!!!
+//
+//#define RAJA_USE_ATOMIC_ONE
+//#define RAJA_USE_ATOMIC_TWO
+#define RAJA_USE_NO_ATOMICS
 
 //
 // Operations in this file are parametrized using the following
@@ -74,7 +78,7 @@ double shfl_xor(double var, int laneMask)
     return __hiloint2double( hi, lo );
 }
 
-#if !defined(USE_ATOMIC_TWO)
+#if defined(RAJA_USE_ATOMIC_ONE)
 /*!
  ******************************************************************************
  *
@@ -111,7 +115,7 @@ __device__ inline void atomicMax(double *address, double value)
     }
 }
 
-#else
+#elif defined(RAJA_USE_ATOMIC_TWO)
 
 /*!
  ******************************************************************************
@@ -123,7 +127,7 @@ __device__ inline void atomicMax(double *address, double value)
  *
  ******************************************************************************
  */
-__device__ inline void atomicMin2(double *address, double value)
+__device__ inline void atomicMin(double *address, double value)
 {
     unsigned long long int* address_as_ull =
                             (unsigned long long int*)address;
@@ -136,7 +140,7 @@ __device__ inline void atomicMin2(double *address, double value)
     } while (assumed != oldval);
 }
 ///
-__device__ inline void atomicMax2(double *address, double value)
+__device__ inline void atomicMax(double *address, double value)
 {
     unsigned long long int* address_as_ull =
                             (unsigned long long int*)address;
@@ -148,6 +152,15 @@ __device__ inline void atomicMax2(double *address, double value)
                         RAJA_MAX( __longlong_as_double(assumed), value) ) );
     } while (assumed != oldval);
 }
+
+#elif defined(RAJA_USE_NO_ATOMICS)
+
+// Noting to do here...
+
+#else
+
+#error one of the options for using/not using atomics must be specified
+
 #endif
 
 
@@ -185,9 +198,16 @@ public:
       m_myID = getCudaReductionId();
 //    std::cout << "ReduceMin id = " << m_myID << std::endl;
 
-      m_blockdata = getCudaReductionMemBlock() ;
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
+      m_blockdata = getCudaReductionMemBlock(m_myID) ;
+      m_blockoffset = 1;
       m_blockdata[m_blockoffset] = init_val;
+#if defined(RAJA_USE_NO_ATOMICS)
+      for (int j = 1; j <= RAJA_CUDA_REDUCE_BLOCK_LENGTH; ++j) {
+         m_blockdata[m_blockoffset+j] = init_val;
+      }
+      m_max_grid_size = m_blockdata;
+      m_max_grid_size[0] = 0;
+#endif
 
       cudaDeviceSynchronize();
    }
@@ -224,8 +244,12 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i <= current_grid_size; ++i) {
+#if defined(RAJA_USE_NO_ATOMICS)
+      size_t grid_size = m_max_grid_size[0];
+#else
+      size_t grid_size = getCurrentGridSize();
+#endif
+      for (int i=1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MIN(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -241,6 +265,12 @@ public:
    __device__ ReduceMin<cuda_reduce, T> min(T val) const
    {
       __shared__ T sd[THREADS_PER_BLOCK];
+
+#if defined(RAJA_USE_NO_ATOMICS)
+      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
+         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      } 
+#endif
 
       if (threadIdx.x == 0) {
          for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
@@ -279,14 +309,17 @@ public:
 
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x+1]);
-          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-#if defined(USE_ATOMIC_TWO)
-          atomicMin2( &m_blockdata[m_blockoffset],
+#if defined(RAJA_USE_NO_ATOMICS)
+          m_blockdata[m_blockoffset + blockIdx.x+1]  = 
+              RAJA_MIN( sd[threadIdx.x], 
+                        m_blockdata[m_blockoffset + blockIdx.x+1] );
+          
 #else
-          atomicMin1( &m_blockdata[m_blockoffset],
-#endif
+          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
+          atomicMin( &m_blockdata[m_blockoffset],
                      RAJA_MIN( m_blockdata[m_blockoffset],
                                m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+#endif
       }
 
       return *this ;
@@ -305,12 +338,16 @@ private:
 
    CudaReductionBlockDataType* m_blockdata;
    int m_blockoffset;
+
+#if defined(RAJA_USE_NO_ATOMICS)
+   CudaReductionBlockDataType* m_max_grid_size;
+#endif
 } ;
 
 /*!
  ******************************************************************************
  *
- * \brief  Max reduction class template for use in CUDA kernel.
+ * \brief  Max reduction class template for use in CUDA kernels.
  *
  *         For usage example, see reducers.hxx.
  *
@@ -333,9 +370,16 @@ public:
       m_myID = getCudaReductionId();
 //    std::cout << "ReduceMax id = " << m_myID << std::endl;
 
-      m_blockdata = getCudaReductionMemBlock() ;
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
+      m_blockdata = getCudaReductionMemBlock(m_myID) ;
+      m_blockoffset = 1;
       m_blockdata[m_blockoffset] = init_val;
+#if defined(RAJA_USE_NO_ATOMICS)
+      for (int j = 1; j <= RAJA_CUDA_REDUCE_BLOCK_LENGTH; ++j) {
+         m_blockdata[m_blockoffset+j] = init_val;
+      }
+      m_max_grid_size = m_blockdata;
+      m_max_grid_size[0] = 0;
+#endif
 
       cudaDeviceSynchronize();
    }
@@ -372,8 +416,12 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-      size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i <= current_grid_size; ++i) {
+#if defined(RAJA_USE_NO_ATOMICS)
+      size_t grid_size = m_max_grid_size[0];
+#else
+      size_t grid_size = getCurrentGridSize();
+#endif
+      for (int i = 1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MAX(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -389,6 +437,12 @@ public:
    __device__ ReduceMax<cuda_reduce, T> max(T val) const
    {
       __shared__ T sd[THREADS_PER_BLOCK];
+
+#if defined(RAJA_USE_NO_ATOMICS)
+      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
+         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      }
+#endif
 
       if (threadIdx.x == 0) {
          for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
@@ -427,14 +481,17 @@ public:
 
       if (threadIdx.x < 1) {
           sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
-          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-#if defined(USE_ATOMIC_TWO)
-          atomicMax2( &m_blockdata[m_blockoffset],
+#if defined(RAJA_USE_NO_ATOMICS)
+          m_blockdata[m_blockoffset + blockIdx.x+1]  =
+              RAJA_MAX( sd[threadIdx.x],
+                        m_blockdata[m_blockoffset + blockIdx.x+1] );
+
 #else
-          atomicMax1( &m_blockdata[m_blockoffset],
-#endif
+          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
+          atomicMax( &m_blockdata[m_blockoffset],
                      RAJA_MAX( m_blockdata[m_blockoffset],
                                m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+#endif
       }
 
       return *this ;
@@ -453,6 +510,10 @@ private:
 
    CudaReductionBlockDataType* m_blockdata;
    int m_blockoffset;
+
+#if defined(RAJA_USE_NO_ATOMICS)
+   CudaReductionBlockDataType* m_max_grid_size;
+#endif
 } ;
 
 /*!
@@ -482,14 +543,14 @@ public:
       m_myID = getCudaReductionId();
 //    std::cout << "ReduceSum id = " << m_myID << std::endl;
 
-      m_blockdata = getCudaReductionMemBlock();
-      m_blockoffset = getCudaReductionMemBlockOffset(m_myID);
-
-      // Entire shared memory block must be initialized to zero so 
+      m_blockdata = getCudaReductionMemBlock(m_myID) ;
+      m_blockoffset = 1;
+      
+      // Entire shared memory block must be initialized to zero so
       // sum reduction is correct.
-      size_t len = getCudaReductionMemBlockOffset(m_myID+1) - m_blockoffset;
+      size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH;
       cudaMemset(&m_blockdata[m_blockoffset], 0,
-                 sizeof(CudaReductionBlockDataType)*len);
+                 sizeof(CudaReductionBlockDataType)*len); 
 
       cudaDeviceSynchronize();
    }
@@ -708,13 +769,12 @@ void forall(cuda_exec,
    Index_type len = end - begin;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -749,13 +809,12 @@ void forall_Icount(cuda_exec,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                       begin, len,
                                                       icount);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -795,13 +854,12 @@ void forall(cuda_exec,
    Index_type len = end - begin;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -838,13 +896,12 @@ void forall_Icount(cuda_exec,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                       begin, len,
                                                       icount);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -880,13 +937,12 @@ void forall(cuda_exec,
    size_t gridSize = (len + blockSize - 1) / blockSize;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -919,13 +975,12 @@ void forall_Icount(cuda_exec,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -964,13 +1019,12 @@ void forall(cuda_exec,
    size_t gridSize = (len + blockSize - 1) / blockSize;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
@@ -1005,13 +1059,12 @@ void forall_Icount(cuda_exec,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
-#ifdef RAJA_SYNC
+
    if (cudaDeviceSynchronize() != cudaSuccess) {
       std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
                 << __LINE__ << std::endl;
       exit(1);
    }
-#endif
 
    // set current grid size for reductions that may have been done in forall...
    setCurrentGridSize(gridSize);
