@@ -2740,8 +2740,9 @@ void LagrangeLeapFrog(Domain *domain)
     * material states */
    LagrangeElements(domain, domain->numElem);
 
-   CalcTimeConstraintsForElems(domain);
-
+   if (domain->dtfixed <= Real_t(0.0)) {
+      CalcTimeConstraintsForElems(domain);
+   }
 }
 
 int main(int argc, char *argv[])
@@ -3178,7 +3179,8 @@ int main(int argc, char *argv[])
 
    /* initialize material parameters */
    domain->dtfixed = Real_t(lulesh_time_step) ;
-   domain->deltatime = Real_t(1.0e-7) ;
+   domain->deltatime = ((domain->dtfixed < Real_t(0.0)) ?
+                         -domain->dtfixed : domain->dtfixed) ; 
    domain->deltatimemultlb = Real_t(1.1) ;
    domain->deltatimemultub = Real_t(1.2) ;
    domain->stoptime  = Real_t(lulesh_stop_time) ;
