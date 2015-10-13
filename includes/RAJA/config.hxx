@@ -43,6 +43,27 @@ namespace RAJA {
 #define RAJA_VERSION_PATCHLEVEL 0
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Useful macros.
+ *
+ ******************************************************************************
+ */
+
+//
+// Macro used to silence compiler warnings in methods with unused arguments.
+// The intent is to use this macro in the function signature. For example:
+//
+//  void my_function(int x, int RAJA_NOT_USED(y))
+//  {
+//    // my implementation
+//  }
+//
+#define RAJA_NOT_USED(x)
+
+
+
 //
 //  Platform-specific constants for range index set and data alignment:
 //
