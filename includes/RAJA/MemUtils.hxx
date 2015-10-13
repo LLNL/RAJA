@@ -17,6 +17,8 @@
 
 #include "reducers.hxx"
 
+#include "int_datatypes.hxx"
+
 #include <cstdio>
 
 namespace RAJA {

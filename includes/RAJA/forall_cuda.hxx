@@ -41,7 +41,8 @@
 namespace RAJA {
 
 //
-// ONLY ONE OF THESE SHOULD BE DEFINED!!!!
+// Three different variants of min/max reductions can be run by choosing
+// one of these macros. Only one should be defined!!!
 //
 //#define RAJA_USE_ATOMIC_ONE
 //#define RAJA_USE_ATOMIC_TWO
@@ -761,12 +762,12 @@ void forall(cuda_exec,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
-
-   RAJA_FT_BEGIN ;
-
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (end - begin + blockSize - 1) / blockSize;
    Index_type len = end - begin;
+
+   RAJA_FT_BEGIN ;
+
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
 
@@ -776,7 +777,7 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -799,13 +800,13 @@ void forall_Icount(cuda_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-
-   RAJA_FT_BEGIN ;
-
    Index_type len = end - begin;
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
+
+   RAJA_FT_BEGIN ;
+
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                       begin, len,
                                                       icount);
@@ -816,7 +817,7 @@ void forall_Icount(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -846,12 +847,13 @@ void forall(cuda_exec,
 {
    Index_type begin = iseg.getBegin();
    Index_type end   = iseg.getEnd();
+   Index_type len = end - begin;
+
+   size_t blockSize = THREADS_PER_BLOCK;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
 
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
-   Index_type len = end - begin;
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
 
@@ -861,7 +863,7 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -885,13 +887,12 @@ void forall_Icount(cuda_exec,
                    LOOP_BODY loop_body)
 {
    Index_type begin = iseg.getBegin();
-
-   RAJA_FT_BEGIN ;
-
    Index_type len = iseg.getEnd() - begin;
 
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
+
+   RAJA_FT_BEGIN ;
 
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                       begin, len,
@@ -903,7 +904,7 @@ void forall_Icount(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -931,10 +932,11 @@ void forall(cuda_exec,
             const Index_type* idx, Index_type len,
             LOOP_BODY loop_body)
 {
-   RAJA_FT_BEGIN ;
-
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
+
+   RAJA_FT_BEGIN ;
+
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
 
@@ -944,7 +946,7 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -967,11 +969,11 @@ void forall_Icount(cuda_exec,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
+   size_t blockSize = THREADS_PER_BLOCK;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
 
    RAJA_FT_BEGIN ;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
@@ -982,7 +984,7 @@ void forall_Icount(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -1013,10 +1015,11 @@ void forall(cuda_exec,
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
-
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
+
+   RAJA_FT_BEGIN ;
+
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
 
@@ -1026,7 +1029,7 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
@@ -1052,10 +1055,11 @@ void forall_Icount(cuda_exec,
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
-
    size_t blockSize = THREADS_PER_BLOCK;
    size_t gridSize = (len + blockSize - 1) / blockSize;
+
+   RAJA_FT_BEGIN ;
+
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
@@ -1066,7 +1070,7 @@ void forall_Icount(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done in forall...
+   // set current grid size for reductions that may have been done...
    setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
