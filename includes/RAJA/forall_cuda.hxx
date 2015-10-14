@@ -206,9 +206,10 @@ public:
       for (int j = 1; j <= RAJA_CUDA_REDUCE_BLOCK_LENGTH; ++j) {
          m_blockdata[m_blockoffset+j] = init_val;
       }
+#endif
+
       m_max_grid_size = m_blockdata;
       m_max_grid_size[0] = 0;
-#endif
 
       cudaDeviceSynchronize();
    }
@@ -245,12 +246,8 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-#if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
-#else
-      size_t grid_size = getCurrentGridSize();
-#endif
-      for (int i=1; i <= grid_size; ++i) {
+      for (size_t i=1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MIN(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -267,11 +264,9 @@ public:
    {
       __shared__ T sd[THREADS_PER_BLOCK];
 
-#if defined(RAJA_USE_NO_ATOMICS)
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       } 
-#endif
 
       if (threadIdx.x == 0) {
          for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
@@ -340,9 +335,7 @@ private:
    CudaReductionBlockDataType* m_blockdata;
    int m_blockoffset;
 
-#if defined(RAJA_USE_NO_ATOMICS)
    CudaReductionBlockDataType* m_max_grid_size;
-#endif
 } ;
 
 /*!
@@ -378,9 +371,10 @@ public:
       for (int j = 1; j <= RAJA_CUDA_REDUCE_BLOCK_LENGTH; ++j) {
          m_blockdata[m_blockoffset+j] = init_val;
       }
+#endif
+
       m_max_grid_size = m_blockdata;
       m_max_grid_size[0] = 0;
-#endif
 
       cudaDeviceSynchronize();
    }
@@ -417,12 +411,8 @@ public:
    {
       cudaDeviceSynchronize() ;
 
-#if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
-#else
-      size_t grid_size = getCurrentGridSize();
-#endif
-      for (int i = 1; i <= grid_size; ++i) {
+      for (size_t i = 1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MAX(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
@@ -439,11 +429,9 @@ public:
    {
       __shared__ T sd[THREADS_PER_BLOCK];
 
-#if defined(RAJA_USE_NO_ATOMICS)
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
-#endif
 
       if (threadIdx.x == 0) {
          for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
@@ -512,9 +500,7 @@ private:
    CudaReductionBlockDataType* m_blockdata;
    int m_blockoffset;
 
-#if defined(RAJA_USE_NO_ATOMICS)
    CudaReductionBlockDataType* m_max_grid_size;
-#endif
 } ;
 
 /*!
@@ -553,6 +539,9 @@ public:
       cudaMemset(&m_blockdata[m_blockoffset], 0,
                  sizeof(CudaReductionBlockDataType)*len); 
 
+      m_max_grid_size = m_blockdata;
+      m_max_grid_size[0] = 0;
+
       cudaDeviceSynchronize();
    }
 
@@ -589,8 +578,9 @@ public:
       cudaDeviceSynchronize() ;
 
       m_blockdata[m_blockoffset] = static_cast<T>(0);
-      size_t current_grid_size = getCurrentGridSize();
-      for (int i=1; i <= current_grid_size; ++i) {
+
+      size_t grid_size = m_max_grid_size[0];
+      for (size_t i=1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset+i];
       }
       m_reduced_val = m_init_val + static_cast<T>(m_blockdata[m_blockoffset]);
@@ -605,6 +595,10 @@ public:
    __device__ ReduceSum<cuda_reduce, T> operator+=(T val) const
    {
       __shared__ T sd[THREADS_PER_BLOCK];
+
+      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
+         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      }
 
       if (threadIdx.x == 0) {
          for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = 0;
@@ -653,6 +647,8 @@ private:
 
    CudaReductionBlockDataType* m_blockdata ;
    int m_blockoffset;
+
+   CudaReductionBlockDataType* m_max_grid_size;
 } ;
 
 
@@ -762,9 +758,9 @@ void forall(cuda_exec,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (end - begin + blockSize - 1) / blockSize;
    Index_type len = end - begin;
+   size_t blockSize = THREADS_PER_BLOCK;
+   size_t gridSize = (len + blockSize - 1) / blockSize;
 
    RAJA_FT_BEGIN ;
 
@@ -776,9 +772,6 @@ void forall(cuda_exec,
                 << __LINE__ << std::endl;
       exit(1);
    }
-
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -816,9 +809,6 @@ void forall_Icount(cuda_exec,
                 << __LINE__ << std::endl;
       exit(1);
    }
-
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -863,9 +853,6 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
-
    RAJA_FT_END ;
 }
 
@@ -903,9 +890,6 @@ void forall_Icount(cuda_exec,
                 << __LINE__ << std::endl;
       exit(1);
    }
-
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -946,9 +930,6 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
-
    RAJA_FT_END ;
 }
 
@@ -983,9 +964,6 @@ void forall_Icount(cuda_exec,
                 << __LINE__ << std::endl;
       exit(1);
    }
-
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
@@ -1029,9 +1007,6 @@ void forall(cuda_exec,
       exit(1);
    }
 
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
-
    RAJA_FT_END ;
 }
 
@@ -1069,9 +1044,6 @@ void forall_Icount(cuda_exec,
                 << __LINE__ << std::endl;
       exit(1);
    }
-
-   // set current grid size for reductions that may have been done...
-   setCurrentGridSize(gridSize);
 
    RAJA_FT_END ;
 }
