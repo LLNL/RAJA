@@ -158,25 +158,6 @@ int getCudaReductionId();
 void releaseCudaReductionId(int id);
 
 /*!
-*************************************************************************
-*
-* Set current CUDA grid size used in forall methods as given arg value
-* so it can be used in other methods (i.e., reduction finalization).
-*
-*************************************************************************
-*/
-void setCurrentGridSize(size_t s);
-
-/*!
-*************************************************************************
-*
-* Retrieve current CUDA grid size value.
-*
-*************************************************************************
-*/
-size_t getCurrentGridSize();
-
-/*!
  ******************************************************************************
  *
  * \brief  Return pointer into shared memory block for RAJA-Cuda reduction

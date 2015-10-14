@@ -211,13 +211,6 @@ void freeCPUReductionLocBlock()
 static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
 //
-// Used to track current CUDA grid size used in forall methods, so
-// reduction objects can properly finalize reductions in their accesor
-// methods
-//
-size_t s_current_grid_size = 0;
-
-//
 // Pointer to hold shared managed memory block for RAJA-Cuda reductions.
 //
 CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
@@ -272,31 +265,6 @@ void releaseCudaReductionId(int id)
    if ( id < RAJA_MAX_REDUCE_VARS ) {
       cuda_reduction_id_used[id] = false;
    }
-}
-
-/*
-*************************************************************************
-*
-* Set current CUDA grid size used in forall methods as given arg value
-* so it can be used in other methods (i.e., reduction finalization).
-*
-*************************************************************************
-*/
-void setCurrentGridSize(size_t s)
-{
-   s_current_grid_size = s;
-}
-
-/*
-*************************************************************************
-*
-* Retrieve current CUDA grid size value.
-*
-*************************************************************************
-*/
-size_t getCurrentGridSize()
-{
-   return s_current_grid_size;
 }
 
 /*
