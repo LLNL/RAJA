@@ -78,7 +78,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static, 1)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
@@ -178,7 +178,7 @@ public:
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static, 1)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
@@ -300,7 +300,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static, 1)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
@@ -400,7 +400,7 @@ public:
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static, 1)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
@@ -522,7 +522,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static, 1)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = 0 ;
       }
