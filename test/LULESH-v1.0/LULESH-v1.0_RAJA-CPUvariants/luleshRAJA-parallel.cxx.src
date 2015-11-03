@@ -1322,7 +1322,7 @@ void CalcHourglassControlForElems(Domain *domain,
    Real_p z8n  = elemMemPool.allocate(numElem8) ;
 
    // For negative element volume check
-   RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+   RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] RAJA_DEVICE (int idx) {
@@ -1406,7 +1406,7 @@ void CalcVolumeForceForElems(Domain *domain)
                              ) ;
 
       // check for negative element volume
-      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
       RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] RAJA_DEVICE (int k) {
          minvol.min(determ[k]);
        }
@@ -1865,7 +1865,7 @@ void CalcLagrangeElements(Domain *domain)
                              deltatime, domain->domElemList) ;
 
       // check for negative element volume
-      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>( *domain->domElemList, [=] RAJA_DEVICE (int k) {
@@ -2597,7 +2597,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
     ) ;
 
     // check for negative element volume
-    RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+    RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
     RAJA::forall<mat_exec_policy>( *domain->matElemList, [=] RAJA_DEVICE (int zn) {
        Real_t vc = domain->v[zn] ;
@@ -3217,10 +3217,6 @@ int main(int argc, char *argv[])
    domain->refdens =  Real_t(1.0) ;
 
    /* initialize field data */
-   for (Index_t i=0; i<domNodes; ++i) {
-      domain->nodalMass[i] = 0.0 ;
-   }
-
    for (Index_t i=0; i<domElems; ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
       Index_p elemToNode = &domain->nodelist[8*i] ;
