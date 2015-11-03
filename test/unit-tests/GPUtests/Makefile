@@ -44,11 +44,6 @@ RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
 
-#
-# This is needed, or else the code dies with a bus error. Why???
-#
-TEST_OPTS += -DRAJA_SYNC
-
 
 
 #CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep

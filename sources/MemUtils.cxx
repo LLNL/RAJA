@@ -211,13 +211,6 @@ void freeCPUReductionLocBlock()
 static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
 //
-// Used to track current CUDA grid size used in forall methods, so
-// reduction objects can properly finalize reductions in their accesor
-// methods
-//
-size_t s_current_grid_size = 0;
-
-//
 // Pointer to hold shared managed memory block for RAJA-Cuda reductions.
 //
 CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
@@ -277,41 +270,24 @@ void releaseCudaReductionId(int id)
 /*
 *************************************************************************
 *
-* Set current CUDA grid size used in forall methods as given arg value
-* so it can be used in other methods (i.e., reduction finalization).
+* Return pointer into shared RAJA-CUDA managed reduction memory block
+* for reducer object with given id. Allocate block if not already allocated.
 *
 *************************************************************************
 */
-void setCurrentGridSize(size_t s)
+CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
 {
-   s_current_grid_size = s;
-}
+   //
+   // For each reducer object, we want a chunk of managed memory that
+   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction 
+   // value for each thread, a single slot for the global reduced value
+   // across grid blocks, and a single slot for the max grid size.  
+   //
+   int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
 
-/*
-*************************************************************************
-*
-* Retrieve current CUDA grid size value.
-*
-*************************************************************************
-*/
-size_t getCurrentGridSize()
-{
-   return s_current_grid_size;
-}
-
-/*
-*************************************************************************
-*
-* Return pointer to shared RAJA-CUDA managed reduction memory block.
-* Allocates block if not alreay allocated.
-*
-*************************************************************************
-*/
-CudaReductionBlockDataType* getCudaReductionMemBlock()
-{
    if (s_cuda_reduction_mem_block == 0) {
-      int len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * RAJA_MAX_REDUCE_VARS +
-                                                RAJA_MAX_REDUCE_VARS;
+      int len = RAJA_MAX_REDUCE_VARS * block_offset;
+
       cudaError_t cudaerr = 
          cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
                            sizeof(CudaReductionBlockDataType)*len,
@@ -328,7 +304,7 @@ CudaReductionBlockDataType* getCudaReductionMemBlock()
       atexit(freeCudaReductionMemBlock);
    }
 
-   return s_cuda_reduction_mem_block;
+   return &(s_cuda_reduction_mem_block[id * block_offset]) ;
 }
 
 /*
@@ -351,21 +327,7 @@ void freeCudaReductionMemBlock()
    }
 }
 
-/*
-*************************************************************************
-*
-* Return offset into shared RAJA-Cuda reduction memory block for
-* reduction object with given id.
-*
-*************************************************************************
-*/
-int getCudaReductionMemBlockOffset(int id)
-{
-   return (id * RAJA_CUDA_REDUCE_BLOCK_LENGTH + id);
-}
-
-#endif // #if defined(RAJA_USE_CUDA)
-
+#endif  // if defined(RAJA_USE_CUDA)
 
 
 }  // closing brace for RAJA namespace

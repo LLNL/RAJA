@@ -28,6 +28,8 @@
 
 #include "MemUtils.hxx"
 
+#include "segment_exec.hxx"
+
 #include<string>
 #include<iostream> 
 
@@ -910,50 +912,8 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
    int num_seg = iset.getNumSegments();
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
-      const BaseSegment* iseg = iset.getSegment(isi);
-      SegmentType segtype = iseg->getType();
-
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            const RangeSegment* tseg =
-               static_cast<const RangeSegment*>(iseg);
-            forall(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(),
-               loop_body
-            );
-            break;
-         }
-
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
-            const RangeStrideSegment* tseg =
-               static_cast<const RangeStrideSegment*>(iseg);
-            forall(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
-               loop_body
-            );
-            break;
-         }
-#endif
-
-         case _ListSeg_ : {
-            const ListSegment* tseg =
-               static_cast<const ListSegment*>(iseg);
-            forall(
-               SEG_EXEC_POLICY_T(),
-               tseg->getIndex(), tseg->getLength(),
-               loop_body
-            );
-            break;
-         }
-
-         default : {
-         }
-
-      }  // switch on segment type
+      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
+      executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
    } // iterate over segments of index set
 }
@@ -981,56 +941,7 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-
-      const BaseSegment* iseg = seg_info->getSegment();
-      SegmentType segtype = iseg->getType();
-
-      Index_type icount = seg_info->getIcount();
-
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            const RangeSegment* tseg =
-               static_cast<const RangeSegment*>(iseg);
-            forall_Icount(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(),
-               icount,
-               loop_body
-            );
-            break;
-         }
-
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
-            const RangeStrideSegment* tseg =
-               static_cast<const RangeStrideSegment*>(iseg);
-            forall_Icount(
-               SEG_EXEC_POLICY_T(),
-               tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
-               icount,
-               loop_body
-            );
-            break;
-         }
-#endif
-
-         case _ListSeg_ : {
-            const ListSegment* tseg =
-               static_cast<const ListSegment*>(iseg);
-            forall_Icount(
-               SEG_EXEC_POLICY_T(),
-               tseg->getIndex(), tseg->getLength(),
-               icount,
-               loop_body
-            );
-            break;
-         }
-
-         default : {
-         }
-
-      }  // switch on segment type
+      executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
    } // iterate over segments of index set
 }
