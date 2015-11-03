@@ -79,14 +79,6 @@ inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
    return retVal ;
 }
 
-inline void Release(Real_p ptr)
-{
-   if (ptr != NULL) {
-      free(ptr) ;
-      ptr = NULL ;
-   }
-}
-
 template <typename T>
 inline void Release(T **ptr)
 {
