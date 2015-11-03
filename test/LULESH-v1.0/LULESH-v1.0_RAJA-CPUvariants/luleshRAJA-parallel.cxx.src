@@ -2672,14 +2672,13 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
       Real_t dtf = ss[indx] * ss[indx] ;
-      Real_t dtf_cmp ;
 
       if ( vdov[indx] < Real_t(0.) ) {
          dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
-      dtf_cmp = (vdov[indx] != Real_t(0.))
-              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
+      Real_t dtf_cmp = (vdov[indx] != Real_t(0.))
+                     ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
 
       /* determine minimum timestep with its corresponding elem */
       dtcourantLoc.min(dtf_cmp) ;
