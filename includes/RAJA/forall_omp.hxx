@@ -78,7 +78,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
+#pragma omp parallel for schedule(static)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
@@ -178,7 +178,7 @@ public:
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
+#pragma omp parallel for schedule(static)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
@@ -300,7 +300,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
+#pragma omp parallel for schedule(static)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
@@ -400,7 +400,7 @@ public:
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
+#pragma omp parallel for schedule(static)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
@@ -522,7 +522,7 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
       int nthreads = omp_get_max_threads();
-#pragma omp parallel for 
+#pragma omp parallel for schedule(static)
       for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = 0 ;
       }
@@ -614,7 +614,7 @@ void forall(omp_parallel_for_exec,
 {
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
@@ -642,7 +642,7 @@ void forall_Icount(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, ii+begin );
    }
@@ -677,7 +677,7 @@ void forall(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
@@ -707,7 +707,7 @@ void forall_Icount(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, ii+begin );
    }
@@ -740,7 +740,7 @@ void forall(omp_parallel_for_exec,
 {
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
@@ -771,7 +771,7 @@ void forall_Icount(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, begin + ii*stride );
    }
@@ -807,7 +807,7 @@ void forall(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
@@ -839,7 +839,7 @@ void forall_Icount(omp_parallel_for_exec,
 
    RAJA_FT_BEGIN ;
 
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, begin + ii*stride );
    }
@@ -872,7 +872,7 @@ void forall(omp_parallel_for_exec,
    RAJA_FT_BEGIN ;
 
 #pragma novector
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
@@ -900,7 +900,7 @@ void forall_Icount(omp_parallel_for_exec,
    RAJA_FT_BEGIN ;
 
 #pragma novector
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
    }
@@ -936,7 +936,7 @@ void forall(omp_parallel_for_exec,
    RAJA_FT_BEGIN ;
 
 #pragma novector
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
@@ -967,7 +967,7 @@ void forall_Icount(omp_parallel_for_exec,
    RAJA_FT_BEGIN ;
 
 #pragma novector
-#pragma omp parallel for
+#pragma omp parallel for schedule(static)
    for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
    }

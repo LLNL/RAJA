@@ -20,7 +20,6 @@ inline T *Allocate(size_t size)
                 << __LINE__ << std::endl;
      exit(1);
    }
-   cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 
