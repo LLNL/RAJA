@@ -20,7 +20,6 @@ inline T *Allocate(size_t size)
                 << __LINE__ << std::endl;
      exit(1);
    }
-   cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
 
@@ -79,14 +78,6 @@ inline T *AllocateTouch(LULESH_INDEXSET *is, size_t size)
    return retVal ;
 }
 
-inline void Release(Real_p ptr)
-{
-   if (ptr != NULL) {
-      free(ptr) ;
-      ptr = NULL ;
-   }
-}
-
 template <typename T>
 inline void Release(T **ptr)
 {
@@ -106,3 +97,95 @@ inline void Release(T * __restrict__ *ptr)
 }
 
 #endif 
+
+
+/**********************************/
+/* Memory Pool                    */
+/**********************************/
+
+namespace RAJA {
+
+template <typename EXEC_POLICY_T,
+          typename VARTYPE >
+struct MemoryPool {
+public:
+   MemoryPool()
+   {
+      for (int i=0; i<32; ++i) {
+         lenType[i] = 0 ;
+         ptr[i] = 0 ;
+      }
+   }
+
+   VARTYPE *allocate(int len) {
+      VARTYPE *retVal ;
+      int i ;
+      for (i=0; i<32; ++i) {
+         if (lenType[i] == len) {
+            lenType[i] = -lenType[i] ;
+            retVal = ptr[i] ;
+#if 0
+            /* migrate smallest lengths to be first in list */
+            /* since longer lengths can amortize lookup cost */
+            if (i > 0) {
+               if (len < abs(lenType[i-1])) {
+                  lenType[i] = lenType[i-1] ;
+                  ptr[i] = ptr[i-1] ;
+                  lenType[i-1] = -len ;
+                  ptr[i-1] = retVal ;
+               }
+            }
+#endif
+            break ;
+         }
+         else if (lenType[i] == 0) {
+            lenType[i] = -len ;
+            ptr[i] = Allocate<VARTYPE>(len) ;
+            retVal = ptr[i] ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         retVal = 0 ;  /* past max available pointers */
+      }
+      return retVal ;
+   }
+
+   bool release(VARTYPE **oldPtr) {
+      int i ;
+      bool success = true ;
+      for (i=0; i<32; ++i) {
+         if (ptr[i] == *oldPtr) {
+            lenType[i] = -lenType[i] ;
+            *oldPtr = 0 ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         success = false ; /* error -- not found */
+      }
+      return success ;
+   }
+
+   bool release(VARTYPE * __restrict__ *oldPtr) {
+      int i ;
+      bool success = true ;
+      for (i=0; i<32; ++i) {
+         if (ptr[i] == *oldPtr) {
+            lenType[i] = -lenType[i] ;
+            *oldPtr = 0 ;
+            break ;
+         }
+      }
+      if (i == 32) {
+         success = false ; /* error -- not found */
+      }
+      return success ; 
+   }
+
+   VARTYPE *ptr[32] ; 
+   int lenType[32] ;
+} ;
+
+}
+

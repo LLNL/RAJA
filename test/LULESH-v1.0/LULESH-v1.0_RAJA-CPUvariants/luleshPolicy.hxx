@@ -171,6 +171,8 @@ typedef LULESH_INDEXSET::ExecPolicy<RAJA::cilk_for_segit, RAJA::cilk_for_exec> s
 typedef RAJA::cilk_for_segit         Hybrid_Seg_Iter;
 typedef RAJA::cilk_for_exec          Segment_Exec;
 
+typedef RAJA::cilk_reduce            reduce_policy ;
+
 // ----------------------------------------------------
 #elif USE_CASE == 9
 
