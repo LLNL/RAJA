@@ -194,86 +194,8 @@ real10 FABS(real10 arg) { return fabsl(arg) ; }
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
-/**********************************/
-/* Memory Pool                    */
-/**********************************/
-
-namespace RAJA {
-
-template <typename EXEC_POLICY_T,
-          typename VARTYPE >
-struct MemoryPool {
-public:
-   MemoryPool()
-   {
-      for (int i=0; i<32; ++i) {
-         lenType[i] = 0 ;
-         ptr[i] = 0 ;
-      }
-   }
-
-   VARTYPE *allocate(int len) {
-      VARTYPE *retVal ;
-      int i ;
-      for (i=0; i<32; ++i) {
-         if (lenType[i] == len) {
-            lenType[i] = -lenType[i] ;
-            retVal = ptr[i] ;
-            break ;
-         }
-         else if (lenType[i] == 0) {
-            lenType[i] = -len ;
-            ptr[i] = Allocate<VARTYPE>(len) ;
-            retVal = ptr[i] ;
-            break ;
-         }
-      }
-      if (i == 32) {
-         retVal = 0 ;  /* past max available pointers */
-      }
-      return retVal ;
-   }
-
-   bool release(VARTYPE **oldPtr) {
-      int i ;
-      bool success = true ;
-      for (i=0; i<32; ++i) {
-         if (ptr[i] == *oldPtr) {
-            lenType[i] = -lenType[i] ;
-            *oldPtr = 0 ;
-            break ;
-         }
-      }
-      if (i == 32) {
-         success = false ; /* error -- not found */
-      }
-      return success ;
-   }
-
-   bool release(VARTYPE * __restrict__ *oldPtr) {
-      int i ;
-      bool success = true ;
-      for (i=0; i<32; ++i) {
-         if (ptr[i] == *oldPtr) {
-            lenType[i] = -lenType[i] ;
-            *oldPtr = 0 ;
-            break ;
-         }
-      }
-      if (i == 32) {
-         success = false ; /* error -- not found */
-      }
-      return success ; 
-   }
-
-   VARTYPE *ptr[32] ; 
-   int lenType[32] ;
-} ;
-
-}
-
+/* Manage temporary allocations with a pool */
 RAJA::MemoryPool< elem_exec_policy, Real_t > elemMemPool ;
-
 
 /***********************************/
 /* Domain structure implementation */
@@ -1400,7 +1322,7 @@ void CalcHourglassControlForElems(Domain *domain,
    Real_p z8n  = elemMemPool.allocate(numElem8) ;
 
    // For negative element volume check
-   RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+   RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] RAJA_DEVICE (int idx) {
@@ -1484,7 +1406,7 @@ void CalcVolumeForceForElems(Domain *domain)
                              ) ;
 
       // check for negative element volume
-      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
       RAJA::forall<elem_exec_policy>(*domain->domElemList, [=] RAJA_DEVICE (int k) {
          minvol.min(determ[k]);
        }
@@ -1943,7 +1865,7 @@ void CalcLagrangeElements(Domain *domain)
                              deltatime, domain->domElemList) ;
 
       // check for negative element volume
-      RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>( *domain->domElemList, [=] RAJA_DEVICE (int k) {
@@ -2675,7 +2597,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
     ) ;
 
     // check for negative element volume
-    RAJA::ReduceMin<reduce_policy, Real_t> minvol(1.0);
+    RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
 
     RAJA::forall<mat_exec_policy>( *domain->matElemList, [=] RAJA_DEVICE (int zn) {
        Real_t vc = domain->v[zn] ;
@@ -2750,14 +2672,13 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
 
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int indx) {
       Real_t dtf = ss[indx] * ss[indx] ;
-      Real_t dtf_cmp ;
 
       if ( vdov[indx] < Real_t(0.) ) {
          dtf += qqc2 * arealg[indx] * arealg[indx] * vdov[indx] * vdov[indx] ;
       }
 
-      dtf_cmp = (vdov[indx] != Real_t(0.))
-              ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
+      Real_t dtf_cmp = (vdov[indx] != Real_t(0.))
+                     ?  arealg[indx] / SQRT(dtf) : Real_t(1.0e+20) ;
 
       /* determine minimum timestep with its corresponding elem */
       dtcourantLoc.min(dtf_cmp) ;
@@ -2818,8 +2739,9 @@ void LagrangeLeapFrog(Domain *domain)
     * material states */
    LagrangeElements(domain, domain->numElem);
 
-   CalcTimeConstraintsForElems(domain);
-
+   if (domain->dtfixed <= Real_t(0.0)) {
+      CalcTimeConstraintsForElems(domain);
+   }
 }
 
 int main(int argc, char *argv[])
@@ -3256,7 +3178,8 @@ int main(int argc, char *argv[])
 
    /* initialize material parameters */
    domain->dtfixed = Real_t(lulesh_time_step) ;
-   domain->deltatime = Real_t(1.0e-7) ;
+   domain->deltatime = ((domain->dtfixed < Real_t(0.0)) ?
+                         -domain->dtfixed : domain->dtfixed) ; 
    domain->deltatimemultlb = Real_t(1.1) ;
    domain->deltatimemultub = Real_t(1.2) ;
    domain->stoptime  = Real_t(lulesh_stop_time) ;
@@ -3293,10 +3216,6 @@ int main(int argc, char *argv[])
    domain->refdens =  Real_t(1.0) ;
 
    /* initialize field data */
-   for (Index_t i=0; i<domNodes; ++i) {
-      domain->nodalMass[i] = 0.0 ;
-   }
-
    for (Index_t i=0; i<domElems; ++i) {
       Real_t x_local[8], y_local[8], z_local[8] ;
       Index_p elemToNode = &domain->nodelist[8*i] ;
