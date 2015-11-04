@@ -143,6 +143,7 @@ struct omp_reduce {};
 // Segment exec policies
 //
 struct cuda_exec {};
+struct cuda_exec_async {};
 
 //
 // Reduction policies
