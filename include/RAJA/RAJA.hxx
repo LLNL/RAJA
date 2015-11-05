@@ -29,7 +29,6 @@
 #ifndef RAJA_HXX
 #define RAJA_HXX
 
-
 #include "config.hxx"
 
 #include "int_datatypes.hxx"
