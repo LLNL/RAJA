@@ -8,13 +8,13 @@ set(RAJA_VERSION_MINOR 0)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 # Find required packages
-find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  message(STATUS "OpenMP Enabled")
-else()
-  message(WARNING "OpenMP NOT FOUND")
-endif()
+#find_package(OpenMP REQUIRED)
+#if(OPENMP_FOUND)
+#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+#  message(STATUS "OpenMP Enabled")
+#else()
+#  message(WARNING "OpenMP NOT FOUND")
+#endif()
 
 # Set Opt as the default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -36,9 +36,23 @@ set(RAJA_USE_PTR_CLASS OFF)
 set(RAJA_USE_FT OFF)
 set(RAJA_REPORT_FT OFF)
 ## GPUs
-set(RAJA_USE_CUDA OFF)
+set(RAJA_USE_CUDA OFF CACHE BOOL "Doc")
 
-# Add compiler specific flags
+if(RAJA_USE_CUDA)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    message(STATUS "CUDA found")
+    set(RAJA_PLATFORM RAJA_PLATFORM_X86_SSE)
+    set(RAJA_COMPILER RAJA_COMPILER_GNU)
+    set(RAJA_USE_CUDA)
+    set(CUDA_NVCC_FLAGS -O2; --expt-extended-lambda; -restrict; -arch compute_35; -std=c++11; -Xcompiler; -fopenmp)
+    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+    include_directories(${CUDA_INCLUDE_DIRS})
+    #set(CMAKE_CXX_COMPILER nvcc)
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp")
+  endif()
+endif()
+
 if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
   set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
   set(RAJA_COMPILER RAJA_COMPILER_GNU)
@@ -68,8 +82,8 @@ elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x -fopenmp")
   endif()
-
 endif()
+
 
 
 # Configure a header file with all the variables we found.
@@ -87,7 +101,7 @@ add_library(RAJA
   sources/LockFreeIndexSetBuilders.cxx
   sources/MemUtils.cxx
   sources/RangeSegment.cxx
-)
+  )
 
 file(GLOB files "includes/RAJA/*.hxx")
 install(FILES ${files} DESTINATION "include/RAJA")
