@@ -1053,7 +1053,7 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
       // the method call will be changed at the end of the for-loop
       // from another executing thread.
       //
-      volatile int* semVal = &(task->semaphoreValue());
+      volatile int* __restrict__ semVal = &(task->semaphoreValue());
 
       while(*semVal != 0) {
          /* spin or (better) sleep here */ ;
@@ -1221,7 +1221,7 @@ void forall_segments(omp_taskgraph_segit,
          // the method call will be changed at the end of the for-loop
          // from another executing thread.
          //
-         volatile int* semVal = &(task->semaphoreValue());
+         volatile int* __restrict__ semVal = &(task->semaphoreValue());
 
          while (*semVal != 0) {
             /* spin or (better) sleep here */ ;
@@ -1326,7 +1326,7 @@ void forall_segments(omp_taskgraph_interval_segit,
          // the method call will be changed at the end of the for-loop
          // from another executing thread.
          //
-         volatile int* semVal = &(task->semaphoreValue());
+         volatile int* __restrict__ semVal = &(task->semaphoreValue());
 
          while (*semVal != 0) {
             /* spin or (better) sleep here */ ;
