@@ -38,7 +38,7 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = rzmist_xlc
 
 RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/includes/
+RAJA_INC       = $(RAJA_TOPDIR)/include/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
 
@@ -56,7 +56,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
 
 TESTOBJS = buildIndexSet.o
 
