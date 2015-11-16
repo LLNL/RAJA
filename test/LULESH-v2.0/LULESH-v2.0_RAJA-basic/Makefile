@@ -29,7 +29,7 @@ LDTIMER = -lrt
 
 
 #rzalastor
-RAJA_ARCH = x86_sse_icc
+#RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
@@ -45,14 +45,14 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = MIC
 
 #ipa-cuda
-#RAJA_ARCH = ipa_cuda
+RAJA_ARCH = ipa_cuda
 
 #rzmist
 #RAJA_ARCH = rzmist_clang
 #RAJA_ARCH = rzmist_xlc
 
 RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/includes/
+RAJA_INC       = $(RAJA_TOPDIR)/include/
 RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
 
@@ -90,7 +90,9 @@ ifeq ($(RAJA_ARCH),ipa_cuda)
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
 #CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+## To debug
+##CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
 
 LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
@@ -110,7 +112,7 @@ endif
 ##-----------------------------------------------------------
 
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
@@ -137,5 +139,5 @@ default: $(OBJFILES)
 clean-obj: 
 	rm -rf *.o $(RAJA_SRC)/*.o
 
-clean-all: clean-obj
+clean: clean-obj
 	rm -rf *.cpp*.i* *.cuda*.* *.fatbin* *.hash* *.module_id* *.ptx *.reg.c *.s *.lst *.exe 

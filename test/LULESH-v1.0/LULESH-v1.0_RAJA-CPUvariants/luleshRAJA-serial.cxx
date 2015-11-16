@@ -1271,12 +1271,12 @@ void CalcHourglassControlForElems(Domain *domain,
                                     hgcoef, domain->domElemList) ;
    }
 
-   Release(z8n) ;
-   Release(y8n) ;
-   Release(x8n) ;
-   Release(dvdz) ;
-   Release(dvdy) ;
-   Release(dvdx) ;
+   Release(&z8n) ;
+   Release(&y8n) ;
+   Release(&x8n) ;
+   Release(&dvdz) ;
+   Release(&dvdy) ;
+   Release(&dvdx) ;
 
    return ;
 }
@@ -1313,10 +1313,10 @@ void CalcVolumeForceForElems(Domain *domain)
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
-      Release(determ) ;
-      Release(sigzz) ;
-      Release(sigyy) ;
-      Release(sigxx) ;
+      Release(&determ) ;
+      Release(&sigzz) ;
+      Release(&sigyy) ;
+      Release(&sigxx) ;
    }
 }
 
@@ -1772,9 +1772,9 @@ void CalcLagrangeElements(Domain *domain)
        }
       ) ;
 
-      Release(domain->dzz) ;
-      Release(domain->dyy) ;
-      Release(domain->dxx) ;
+      Release(&domain->dzz) ;
+      Release(&domain->dyy) ;
+      Release(&domain->dxx) ;
    }
 }
 
@@ -2149,13 +2149,13 @@ void CalcQForElems(Domain *domain)
 
       /* release domain length arrays */
 
-      Release(domain->delx_zeta) ;
-      Release(domain->delx_eta) ;
-      Release(domain->delx_xi) ;
+      Release(&domain->delx_zeta) ;
+      Release(&domain->delx_eta) ;
+      Release(&domain->delx_xi) ;
 
-      Release(domain->delv_zeta) ;
-      Release(domain->delv_eta) ;
-      Release(domain->delv_xi) ;
+      Release(&domain->delv_zeta) ;
+      Release(&domain->delv_eta) ;
+      Release(&domain->delv_xi) ;
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
@@ -2322,7 +2322,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
     }
    ) ;
 
-   Release(pHalfStep) ;
+   Release(&pHalfStep) ;
 
    return ;
 }
@@ -2434,15 +2434,15 @@ void EvalEOSForElems(Domain *domain, Real_p vnewc, Index_t numElem)
              vnewc, rho0, e_new, p_new,
              pbvc, bvc, ss4o3) ;
 
-   Release(pbvc) ;
-   Release(bvc) ;
-   Release(q_new) ;
-   Release(e_new) ;
-   Release(p_new) ;
-   Release(work) ;
-   Release(compHalfStep) ;
-   Release(compression) ;
-   Release(p_old) ;
+   Release(&pbvc) ;
+   Release(&bvc) ;
+   Release(&q_new) ;
+   Release(&e_new) ;
+   Release(&p_new) ;
+   Release(&work) ;
+   Release(&compHalfStep) ;
+   Release(&compression) ;
+   Release(&p_old) ;
 }
 
 RAJA_STORAGE
@@ -2502,7 +2502,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 
     EvalEOSForElems(domain, vnewc, numElem);
 
-    Release(vnewc) ;
+    Release(&vnewc) ;
 
   }
 }
@@ -2540,7 +2540,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
   UpdateVolumesForElems(domain->domElemList,
                         domain->vnew, domain->v, domain->v_cut) ;
 
-  Release(domain->vnew) ;
+  Release(&domain->vnew) ;
 }
 
 RAJA_STORAGE
