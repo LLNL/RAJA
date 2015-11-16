@@ -29,7 +29,7 @@ LDTIMER = -lrt
 
 
 #rzalastor
-#RAJA_ARCH = x86_sse_icc
+RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
@@ -45,7 +45,7 @@ LDTIMER = -lrt
 #RAJA_ARCH = MIC
 
 #ipa-cuda
-RAJA_ARCH = ipa_cuda
+#RAJA_ARCH = ipa_cuda
 
 #rzmist
 #RAJA_ARCH = rzmist_clang
@@ -53,7 +53,7 @@ RAJA_ARCH = ipa_cuda
 
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/include/
-RAJA_SRC       = $(RAJA_TOPDIR)/sources/
+RAJA_SRC       = $(RAJA_TOPDIR)/src/
 
 
 ##
