@@ -51,7 +51,7 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = rzmist_clang
 #RAJA_ARCH = rzmist_xlc
 
-RAJA_TOPDIR    = ../../..
+RAJA_TOPDIR    = ../../../..
 RAJA_INC       = $(RAJA_TOPDIR)/include/
 RAJA_SRC       = $(RAJA_TOPDIR)/src/
 
@@ -73,7 +73,7 @@ LULESH_OPTS = -DLULESH_HEADER=2 -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 ##
 ## Include file containing compiler version and options.
 ##
-include ../../compilers.mk
+include ../../../compilers.mk
 
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
@@ -106,7 +106,7 @@ LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
 
 LDFLAGS_FINAL = $(LDFLAGS) $(LDTIMER) $(LDPATH)
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 else
 ##
@@ -122,7 +122,7 @@ LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
 LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 endif
 
