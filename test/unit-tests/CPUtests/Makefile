@@ -39,7 +39,7 @@ RAJA_ARCH = x86_sse_icc
 
 RAJA_TOPDIR    = ../../..
 RAJA_INC       = $(RAJA_TOPDIR)/include/
-RAJA_SRC       = $(RAJA_TOPDIR)/sources/
+RAJA_SRC       = $(RAJA_TOPDIR)/src/
 
 
 ##
