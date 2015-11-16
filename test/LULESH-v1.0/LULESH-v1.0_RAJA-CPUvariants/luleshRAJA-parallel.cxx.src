@@ -2686,7 +2686,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
 
    /* Don't try to register a time constraint if none of the elements
     * were active */
-   if (dtcourantLoc < Real_t(1.0e+20)) {
+   if (Real_t(dtcourantLoc) < Real_t(1.0e+20)) {
       *dtcourant = dtcourantLoc ;
    }
 
@@ -2708,7 +2708,7 @@ void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
       dthydroLoc.min(dtvov_cmp) ;
    } ) ;
 
-   if (dthydroLoc < Real_t(1.0e+20)) {
+   if (Real_t(dthydroLoc) < Real_t(1.0e+20)) {
       *dthydro = dthydroLoc ;
    }
 
