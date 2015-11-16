@@ -56,7 +56,7 @@ RAJA_ARCH = x86_sse_icc
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes $(CXXFLAGS) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include $(CXXFLAGS) $(LULESH_OPTS)
 
 OBJFILES_PAR = luleshOMP.o 
 OBJFILES_PAR_NG = luleshOMP_NG.o 

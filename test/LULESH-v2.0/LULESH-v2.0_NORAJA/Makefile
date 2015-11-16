@@ -74,7 +74,7 @@ LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../includes $(CXXFLAGS) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include $(CXXFLAGS) $(LULESH_OPTS)
 
 OBJFILES := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
