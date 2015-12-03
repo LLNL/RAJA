@@ -109,12 +109,6 @@ const int lulesh_xtile = 2;
 const int lulesh_ytile = 2;
 const int lulesh_ztile = 2;
 
-//
-//   RAJA IndexSet type used in LULESH loop traversals.
-//
-typedef RAJA::IndexSet LULESH_INDEXSET;
-
-
 // ########################################################
 // Execution policies for loop patterns in LULESH are
 // defined in this header file. Set USE_CASE for desired
@@ -193,8 +187,8 @@ RAJA::MemoryPool< Real_t > elemMemPool ;
 struct Domain {
    /* Elem-centered */
 
-   LULESH_INDEXSET *domElemList ;   /* elem indexset */
-   LULESH_INDEXSET *matElemList ;   /* material indexset */
+   RAJA::IndexSet *domElemList ;   /* elem indexset */
+   RAJA::IndexSet *matElemList ;   /* material indexset */
    Index_p nodelist ;     /* elemToNode connectivity */
 
    Index_p lxim ;         /* elem connectivity through face */
@@ -244,12 +238,12 @@ struct Domain {
 
    /* Node-centered */
 
-   LULESH_INDEXSET *domNodeList ;   /* node indexset */
+   RAJA::IndexSet *domNodeList ;   /* node indexset */
 
    /* boundary nodesets */
-   LULESH_INDEXSET *symmX ;        /* Nodes on X symmetry plane */
-   LULESH_INDEXSET *symmY ;        /* Nodes on Y symmetry plane */
-   LULESH_INDEXSET *symmZ ;        /* Nodes on Z symmetry plane */
+   RAJA::IndexSet *symmX ;        /* Nodes on X symmetry plane */
+   RAJA::IndexSet *symmY ;        /* Nodes on Y symmetry plane */
+   RAJA::IndexSet *symmZ ;        /* Nodes on Z symmetry plane */
 
 
    Real_p x ;             /* coordinates */
@@ -402,7 +396,7 @@ void TimeIncrement(Domain *domain)
 RAJA_STORAGE
 void InitStressTermsForElems(Real_p p, Real_p q,
                              Real_p sigxx, Real_p sigyy, Real_p sigzz,
-                             LULESH_INDEXSET *domElemList)
+                             RAJA::IndexSet *domElemList)
 {
    //
    // pull in the stresses appropriate to the hydro integration
@@ -660,8 +654,8 @@ void IntegrateStressForElems( Index_p nodelist,
                               Real_p fx, Real_p fy, Real_p fz,
                               Real_p sigxx, Real_p sigyy, Real_p sigzz,
                               Real_p determ,
-                              LULESH_INDEXSET *domElemList,
-                              LULESH_INDEXSET *domNodeList
+                              RAJA::IndexSet *domElemList,
+                              RAJA::IndexSet *domNodeList
 #if defined(OMP_HACK)
                              ,Index_t numElem, Index_p nodeElemStart,
                               Index_p nodeElemCornerList
@@ -1069,8 +1063,8 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
                                    Real_p  x8n, Real_p  y8n, Real_p  z8n,
                                    Real_p  dvdx, Real_p  dvdy, Real_p  dvdz,
                                    Real_t hourg, 
-                                   LULESH_INDEXSET *domElemList,
-                                   LULESH_INDEXSET *domNodeList
+                                   RAJA::IndexSet *domElemList,
+                                   RAJA::IndexSet *domNodeList
 #if defined(OMP_HACK)
                                   ,Index_t numElem, Index_p nodeElemStart,
                                    Index_p nodeElemCornerList
@@ -1432,7 +1426,7 @@ void CalcForceForNodes(Domain *domain)
 RAJA_STORAGE
 void CalcAccelerationForNodes(Real_p xdd, Real_p ydd, Real_p zdd,
                               Real_p fx, Real_p fy, Real_p fz,
-                              Real_p nodalMass, LULESH_INDEXSET *domNodeList)
+                              Real_p nodalMass, RAJA::IndexSet *domNodeList)
 {
    RAJA::forall<node_exec_policy>(*domNodeList, [=] RAJA_DEVICE (int i) {
       xdd[i] = fx[i] / nodalMass[i];
@@ -1445,9 +1439,9 @@ void CalcAccelerationForNodes(Real_p xdd, Real_p ydd, Real_p zdd,
 RAJA_STORAGE
 void ApplyAccelerationBoundaryConditionsForNodes(Real_p xdd, Real_p ydd,
                                                  Real_p zdd,
-                                                 LULESH_INDEXSET *symmX,
-                                                 LULESH_INDEXSET *symmY,
-                                                 LULESH_INDEXSET *symmZ)
+                                                 RAJA::IndexSet *symmX,
+                                                 RAJA::IndexSet *symmY,
+                                                 RAJA::IndexSet *symmZ)
 {
    RAJA::forall<symnode_exec_policy>(*symmX, [=] RAJA_DEVICE (int i) {
       xdd[i] = Real_t(0.0) ;
@@ -1466,7 +1460,7 @@ RAJA_STORAGE
 void CalcVelocityForNodes(Real_p xd,  Real_p yd,  Real_p zd,
                           Real_p xdd, Real_p ydd, Real_p zdd,
                           const Real_t dt, const Real_t u_cut,
-                          LULESH_INDEXSET *domNodeList)
+                          RAJA::IndexSet *domNodeList)
 {
    RAJA::forall<node_exec_policy>( *domNodeList, [=] RAJA_DEVICE (int i) {
 
@@ -1488,7 +1482,7 @@ void CalcVelocityForNodes(Real_p xd,  Real_p yd,  Real_p zd,
 RAJA_STORAGE
 void CalcPositionForNodes(Real_p x,  Real_p y,  Real_p z,
                           Real_p xd, Real_p yd, Real_p zd,
-                          const Real_t dt, LULESH_INDEXSET *domNodeList)
+                          const Real_t dt, RAJA::IndexSet *domNodeList)
 {
    RAJA::forall<node_exec_policy>( *domNodeList, [=] RAJA_DEVICE (int i) {
      x[i] += xd[i] * dt ;
@@ -1762,7 +1756,7 @@ void CalcKinematicsForElems( Index_p nodelist,
                              Real_p dxx, Real_p dyy, Real_p dzz,
                              Real_p v, Real_p volo,
                              Real_p vnew, Real_p delv, Real_p arealg,
-                             Real_t deltaTime, LULESH_INDEXSET *domElemList )
+                             Real_t deltaTime, RAJA::IndexSet *domElemList )
 {
   // loop over all elements
   RAJA::forall<elem_exec_policy>(*domElemList, [=] RAJA_DEVICE (int k) {
@@ -1890,7 +1884,7 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
                                      Real_p delx_eta,
                                      Real_p delx_zeta,
                                      Index_p nodelist,
-                                     LULESH_INDEXSET *domElemList)
+                                     RAJA::IndexSet *domElemList)
 {
 #define SUM4(a,b,c,d) (a + b + c + d)
 
@@ -2039,7 +2033,7 @@ void CalcMonotonicQGradientsForElems(Real_p x,  Real_p y,  Real_p z,
 
 RAJA_STORAGE
 void CalcMonotonicQRegionForElems(
-                           LULESH_INDEXSET *matElemList, Index_p elemBC,
+                           RAJA::IndexSet *matElemList, Index_p elemBC,
                            Index_p lxim,   Index_p lxip,
                            Index_p letam,  Index_p letap,
                            Index_p lzetam, Index_p lzetap,
@@ -2285,7 +2279,7 @@ void CalcPressureForElems(Real_p p_new, Real_p bvc,
                           Real_p compression, Real_p vnewc,
                           Real_t pmin,
                           Real_t p_cut, Real_t eosvmax,
-                          LULESH_INDEXSET *matElemList)
+                          RAJA::IndexSet *matElemList)
 {
    const Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
    RAJA::forall<mat_exec_policy>( *matElemList, [=] RAJA_DEVICE (int i) {
@@ -2319,7 +2313,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
                         Real_p qq_old, Real_p ql_old,
                         Real_t rho0,
                         Real_t eosvmax,
-                        LULESH_INDEXSET *matElemList,
+                        RAJA::IndexSet *matElemList,
                         Index_t length)
 {
    const Real_t sixth = Real_t(1.0) / Real_t(6.0) ;
@@ -2433,7 +2427,7 @@ void CalcEnergyForElems(Real_p p_new, Real_p e_new, Real_p q_new,
 }
 
 RAJA_STORAGE
-void CalcSoundSpeedForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcSoundSpeedForElems(RAJA::IndexSet *matElemList, Real_p ss,
                             Real_p vnewc, Real_t rho0, Real_p enewc,
                             Real_p pnewc, Real_p pbvc,
                             Real_p bvc, Real_t ss4o3)
@@ -2613,7 +2607,7 @@ void ApplyMaterialPropertiesForElems(Domain *domain)
 }
 
 RAJA_STORAGE
-void UpdateVolumesForElems(LULESH_INDEXSET *domElemList,
+void UpdateVolumesForElems(RAJA::IndexSet *domElemList,
                            Real_p vnew, Real_p v, Real_t v_cut)
 {
    RAJA::forall<elem_exec_policy>( *domElemList, [=] RAJA_DEVICE (int i) {
@@ -2649,7 +2643,7 @@ void LagrangeElements(Domain *domain, Index_t numElem)
 }
 
 RAJA_STORAGE
-void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
+void CalcCourantConstraintForElems(RAJA::IndexSet *matElemList, Real_p ss,
                                    Real_p vdov, Real_p arealg,
                                    Real_t qqc, Real_t *dtcourant)
 {
@@ -2680,7 +2674,7 @@ void CalcCourantConstraintForElems(LULESH_INDEXSET *matElemList, Real_p ss,
 }
 
 RAJA_STORAGE
-void CalcHydroConstraintForElems(LULESH_INDEXSET *matElemList, Real_p vdov,
+void CalcHydroConstraintForElems(RAJA::IndexSet *matElemList, Real_p vdov,
                                  Real_t dvovmax, Real_t *dthydro)
 {
    RAJA::ReduceMin<reduce_policy, Real_t> dthydroLoc(Real_t(1.0e+20)) ;
@@ -2892,11 +2886,11 @@ int main(int argc, char *argv[])
    /****************************/
 
    /* always leave the nodes in a canonical ordering */
-   domain->domNodeList = new LULESH_INDEXSET() ;
+   domain->domNodeList = new RAJA::IndexSet() ;
    domain->domNodeList->push_back( RAJA::RangeSegment(0, domNodes) ) ;
 
-   domain->domElemList = new LULESH_INDEXSET() ;
-   domain->matElemList = new LULESH_INDEXSET() ;
+   domain->domElemList = new RAJA::IndexSet() ;
+   domain->matElemList = new RAJA::IndexSet() ;
 
    const Index_t xtile = lulesh_xtile ;
    const Index_t ytile = lulesh_ytile ;
@@ -3034,7 +3028,7 @@ int main(int argc, char *argv[])
 
    /* Boundary nodesets */
 
-   domain->symmX = new LULESH_INDEXSET() ;
+   domain->symmX = new RAJA::IndexSet() ;
    {
      Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
      Index_t nidx = 0 ;
@@ -3048,7 +3042,7 @@ int main(int argc, char *argv[])
      delete [] nset ;
    }
 
-   domain->symmY = new LULESH_INDEXSET() ;
+   domain->symmY = new RAJA::IndexSet() ;
    {
      Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
      Index_t nidx = 0 ;
@@ -3062,7 +3056,7 @@ int main(int argc, char *argv[])
      delete [] nset ;
    }
 
-   domain->symmZ = new LULESH_INDEXSET() ;
+   domain->symmZ = new RAJA::IndexSet() ;
    {
      domain->symmZ->push_back( RAJA::RangeSegment(0, edgeNodes*edgeNodes) );
    }
