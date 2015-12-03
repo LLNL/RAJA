@@ -102,20 +102,6 @@ const double lulesh_time_step = -1.0e-7;
 //
 const int lulesh_edge_elems = 45;
 
-
-//
-//   Tiling modes for different exeuction cases (see luleshPolicy.hxx).
-//
-enum TilingMode
-{
-   Canonical,       // canonical element ordering -- single range segment
-   Tiled_Index,     // canonical ordering, tiled using unstructured segments
-   Tiled_Order,     // elements permuted, tiled using range segments
-   Tiled_LockFree,  // tiled ordering, lock-free
-   Tiled_LockFreeColor,     // tiled ordering, lock-free, unstructured
-   Tiled_LockFreeColorSIMD  // tiled ordering, lock-free, range
-};
-
 //
 // Set number of tiles in each mesh direction for non-canonical oerderings.
 //
@@ -195,7 +181,7 @@ real10 FABS(real10 arg) { return fabsl(arg) ; }
 enum { VolumeError = -1, QStopError = -2 } ;
 
 /* Manage temporary allocations with a pool */
-RAJA::MemoryPool< elem_exec_policy, Real_t > elemMemPool ;
+RAJA::MemoryPool< Real_t > elemMemPool ;
 
 /***********************************/
 /* Domain structure implementation */
@@ -284,7 +270,7 @@ struct Domain {
 
    Real_p nodalMass ;     /* mass */
 
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
    Index_p nodeElemStart ;
    Index_p nodeElemCornerList ;
 #endif
@@ -676,13 +662,13 @@ void IntegrateStressForElems( Index_p nodelist,
                               Real_p determ,
                               LULESH_INDEXSET *domElemList,
                               LULESH_INDEXSET *domNodeList
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
                              ,Index_t numElem, Index_p nodeElemStart,
                               Index_p nodeElemCornerList
 #endif
                             )
 {
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
   Real_p fx_elem = elemMemPool.allocate(numElem*8) ;
   Real_p fy_elem = elemMemPool.allocate(numElem*8) ;
   Real_p fz_elem = elemMemPool.allocate(numElem*8) ;
@@ -694,7 +680,7 @@ void IntegrateStressForElems( Index_p nodelist,
     Real_t x_local[8] ;
     Real_t y_local[8] ;
     Real_t z_local[8] ;
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
     Real_t fx_local[8] ;
     Real_t fy_local[8] ;
     Real_t fz_local[8] ;
@@ -719,14 +705,14 @@ void IntegrateStressForElems( Index_p nodelist,
                          x_local, y_local, z_local );
 
     SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
                                  fx_local, fy_local, fz_local
 #else
                                  &fx_elem[k*8], &fy_elem[k*8], &fz_elem[k*8]
 #endif
                                ) ;
 
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
     for( Index_t lnode=0 ; lnode<8 ; ++lnode )
     {
       Index_t gnode = elemNodes[lnode];
@@ -738,7 +724,7 @@ void IntegrateStressForElems( Index_p nodelist,
    }
   ) ;
 
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
   RAJA::forall<node_exec_policy>(*domNodeList, [=] RAJA_DEVICE (int gnode) {
      Index_t count = nodeElemStart[gnode+1] - nodeElemStart[gnode] ;
      Index_t *cornerList = &nodeElemCornerList[nodeElemStart[gnode]] ;
@@ -1085,7 +1071,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
                                    Real_t hourg, 
                                    LULESH_INDEXSET *domElemList,
                                    LULESH_INDEXSET *domNodeList
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
                                   ,Index_t numElem, Index_p nodeElemStart,
                                    Index_p nodeElemCornerList
 #endif
@@ -1098,7 +1084,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
     *
     *************************************************/
 
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
    Real_p fx_elem = elemMemPool.allocate(numElem*8) ;
    Real_p fy_elem = elemMemPool.allocate(numElem*8) ;
    Real_p fz_elem = elemMemPool.allocate(numElem*8) ;
@@ -1108,7 +1094,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
 /*    compute the hourglass modes */
 
    RAJA::forall<elem_exec_policy>(*domElemList, [=] RAJA_DEVICE (int i2) {
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
       Real_t hgfx[8], hgfy[8], hgfz[8] ;
 #endif
       Real_t coefficient;
@@ -1239,7 +1225,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
       CalcElemFBHourglassForce(xd1,yd1,zd1,
                       hourgam0,hourgam1,hourgam2,hourgam3,
                       hourgam4,hourgam5,hourgam6,hourgam7, coefficient,
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
                       hgfx, hgfy, hgfz
 #else
                       &fx_elem[i3], &fy_elem[i3], &fz_elem[i3]
@@ -1282,7 +1268,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
     }
    ) ;
 
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
    RAJA::forall<node_exec_policy>(*domNodeList, [=] RAJA_DEVICE (int gnode) {
       Index_t count = nodeElemStart[gnode+1] - nodeElemStart[gnode] ;
       Index_t *cornerList = &nodeElemCornerList[nodeElemStart[gnode]] ;
@@ -1355,7 +1341,7 @@ void CalcHourglassControlForElems(Domain *domain,
                                     dvdx, dvdy, dvdz,
                                     hgcoef,
                                     domain->domElemList, domain->domNodeList
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
                                    ,numElem, domain->nodeElemStart,
                                     domain->nodeElemCornerList
 #endif
@@ -1399,7 +1385,7 @@ void CalcVolumeForceForElems(Domain *domain)
                                determ,
                                domain->domElemList, 
                                domain->domNodeList
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
                               ,numElem, domain->nodeElemStart,
                                domain->nodeElemCornerList
 #endif
@@ -2785,7 +2771,7 @@ int main(int argc, char *argv[])
       case Canonical:
       { 
          printf("\t Tiling mode is 'Canonical'\n");
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
 #if USE_CASE == 2
          printf("must have OMP_HACK defined for this tiling mode when running with > 1 threads, at present\n") ;
          exit(-1) ;
@@ -2796,7 +2782,7 @@ int main(int argc, char *argv[])
       case Tiled_Index:
       { 
          printf("\t Tiling mode is 'Tiled_Index'\n");
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
          printf("must have OMP_HACK defined for this tiling mode, at present\n") ;
          exit(-1) ;
 #endif
@@ -2805,7 +2791,7 @@ int main(int argc, char *argv[])
       case Tiled_Order:
       { 
          printf("\t Tiling mode is 'Tiled_Order'\n");
-#ifndef OMP_HACK
+#if !defined(OMP_HACK)
          printf("must have OMP_HACK defined for this tiling mode, at present\n") ;
          exit(-1) ;
 #endif
@@ -3391,7 +3377,7 @@ int main(int argc, char *argv[])
    /* deposit energy -- we know elem zero stays put for all permutations */
    domain->e[0] = Real_t(3.948746e+7) ;
 
-#ifdef OMP_HACK
+#if defined(OMP_HACK)
    // set up node-centered indexing of elements
    {
    Index_p nodeElemCount = Allocate<Index_t>(domNodes) ;
