@@ -47,10 +47,10 @@ TilingMode const lulesh_tiling_mode = Canonical;
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::simd_exec              Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::seq_reduce reduce_policy; 
 
@@ -67,10 +67,10 @@ TilingMode const lulesh_tiling_mode = Canonical;
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy;
 
@@ -88,10 +88,10 @@ TilingMode const lulesh_tiling_mode = Tiled_Index;
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy; 
 
@@ -108,10 +108,10 @@ TilingMode const lulesh_tiling_mode = Tiled_Order;
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::simd_exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy; 
 
@@ -130,10 +130,10 @@ TilingMode const lulesh_tiling_mode = Tiled_LockFree;
 typedef RAJA::omp_parallel_for_segit  Hybrid_Seg_Iter;
 typedef RAJA::simd_exec               Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_taskgraph_segit, RAJA::simd_exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>  symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy; 
 
@@ -149,10 +149,10 @@ TilingMode const lulesh_tiling_mode = Tiled_LockFreeColor;
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, RAJA::omp_parallel_for_exec> symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy; 
 
@@ -168,10 +168,10 @@ TilingMode const lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
 typedef RAJA::seq_segit              Hybrid_Seg_Iter;
 typedef RAJA::omp_parallel_for_exec  Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::omp_reduce reduce_policy; 
 
@@ -188,10 +188,10 @@ TilingMode const lulesh_tiling_mode = Canonical;
 typedef RAJA::cilk_for_segit         Hybrid_Seg_Iter;
 typedef RAJA::cilk_for_exec          Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::cilk_reduce            reduce_policy ;
 
@@ -206,10 +206,10 @@ TilingMode const lulesh_tiling_mode = Canonical;
 typedef RAJA::seq_segit         Hybrid_Seg_Iter;
 typedef RAJA::cuda_exec         Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::cuda_reduce reduce_policy; 
 
@@ -223,10 +223,10 @@ TilingMode const lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
 typedef RAJA::seq_segit         Hybrid_Seg_Iter;
 typedef RAJA::cuda_exec         Segment_Exec;
 
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
-typedef LULESH_INDEXSET::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
+typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::cuda_reduce reduce_policy; 
 
