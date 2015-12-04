@@ -117,13 +117,14 @@ else
 ## (see RAJA_ARCH defn above)
 ##
 
-LULESH_OPTS += -DVIZ_MESH
+# LULESH_OPTS += -DVIZ_MESH
 SILO_INCDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/include
-SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
+# SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
 
 LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
-LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so
+# LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so
+LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH)
 
 CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
