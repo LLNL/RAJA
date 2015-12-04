@@ -36,9 +36,6 @@ typedef RAJA::IndexSet LULESH_ISET;
 // Allow flexibility for arithmetic representations 
 //**************************************************
 
-#define MAX(a, b) ( ((a) > (b)) ? (a) : (b))
-
-
 // Precision specification
 typedef float        real4 ;
 typedef double       real8 ;
