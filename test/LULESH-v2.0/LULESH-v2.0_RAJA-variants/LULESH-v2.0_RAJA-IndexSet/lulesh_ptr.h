@@ -55,17 +55,26 @@ typedef Int_t * __restrict__ Int_p ;
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
-inline real4  SQRT(real4  arg) { return sqrtf(arg) ; }
-inline real8  SQRT(real8  arg) { return sqrt(arg) ; }
-inline real10 SQRT(real10 arg) { return sqrtl(arg) ; }
+inline RAJA_DEVICE
+real4  SQRT(real4  arg) { return sqrtf(arg) ; }
+inline RAJA_DEVICE
+real8  SQRT(real8  arg) { return sqrt(arg) ; }
+inline RAJA_DEVICE
+real10 SQRT(real10 arg) { return sqrtl(arg) ; }
 
-inline real4  CBRT(real4  arg) { return cbrtf(arg) ; }
-inline real8  CBRT(real8  arg) { return cbrt(arg) ; }
-inline real10 CBRT(real10 arg) { return cbrtl(arg) ; }
+inline RAJA_DEVICE
+real4  CBRT(real4  arg) { return cbrtf(arg) ; }
+inline RAJA_DEVICE
+real8  CBRT(real8  arg) { return cbrt(arg) ; }
+inline RAJA_DEVICE
+real10 CBRT(real10 arg) { return cbrtl(arg) ; }
 
-inline real4  FABS(real4  arg) { return fabsf(arg) ; }
-inline real8  FABS(real8  arg) { return fabs(arg) ; }
-inline real10 FABS(real10 arg) { return fabsl(arg) ; }
+inline RAJA_DEVICE
+real4  FABS(real4  arg) { return fabsf(arg) ; }
+inline RAJA_DEVICE
+real8  FABS(real8  arg) { return fabs(arg) ; }
+inline RAJA_DEVICE
+real10 FABS(real10 arg) { return fabsl(arg) ; }
 
 
 // Stuff needed for boundary conditions
@@ -114,36 +123,6 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 #define CACHE_ALIGN_REAL(n) \
    (((n) + (CACHE_COHERENCE_PAD_REAL - 1)) & ~(CACHE_COHERENCE_PAD_REAL-1))
 
-//////////////////////////////////////////////////////
-// Helper functions
-//////////////////////////////////////////////////////
-
-/* might want to add access methods so that memory can be */
-/* better managed, as in luleshFT */
-
-template <typename T>
-inline T *Allocate(size_t size)
-{
-   return static_cast<T *>(malloc(sizeof(T)*size)) ;
-}
-
-template <typename T>
-inline void Release(T **ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
-
-template <typename T>
-inline void Release(T * __restrict__ *ptr)
-{
-   if (*ptr != NULL) {
-      free(*ptr) ;
-      *ptr = NULL ;
-   }
-}
 
 //////////////////////////////////////////////////////
 // Primary data structure
@@ -241,42 +220,44 @@ class Domain {
       m_vnew = Allocate<Real_t>(numElem) ;
    }
 
-   void AllocateGradients(Index_t numElem, Index_t allElem)
+   void AllocateGradients(RAJA::MemoryPool< Real_t> &pool,
+                          Index_t numElem, Index_t allElem)
    {
       // Position gradients
-      m_delx_xi = Allocate<Real_t>(numElem) ;
-      m_delx_eta = Allocate<Real_t>(numElem) ;
-      m_delx_zeta = Allocate<Real_t>(numElem) ;
+      m_delx_xi = pool.allocate(numElem) ;
+      m_delx_eta = pool.allocate(numElem) ;
+      m_delx_zeta = pool.allocate(numElem) ;
 
       // Velocity gradients
-      m_delv_xi = Allocate<Real_t>(allElem) ;
-      m_delv_eta = Allocate<Real_t>(allElem) ;
-      m_delv_zeta = Allocate<Real_t>(allElem) ;
+      m_delv_xi = pool.allocate(allElem) ;
+      m_delv_eta = pool.allocate(allElem) ;
+      m_delv_zeta = pool.allocate(allElem) ;
    }
 
-   void DeallocateGradients()
+   void DeallocateGradients(RAJA::MemoryPool< Real_t> &pool)
    {
-      Release(&m_delv_zeta) ;
-      Release(&m_delv_eta) ;
-      Release(&m_delv_xi) ;
+      pool.release(&m_delv_zeta) ;
+      pool.release(&m_delv_eta) ;
+      pool.release(&m_delv_xi) ;
 
-      Release(&m_delx_zeta) ;
-      Release(&m_delx_eta) ;
-      Release(&m_delx_xi) ;
+      pool.release(&m_delx_zeta) ;
+      pool.release(&m_delx_eta) ;
+      pool.release(&m_delx_xi) ;
    }
 
-   void AllocateStrains(Index_t numElem)
+   void AllocateStrains(RAJA::MemoryPool< Real_t > &pool,
+                        Index_t numElem)
    {
-      m_dxx = Allocate<Real_t>(numElem) ;
-      m_dyy = Allocate<Real_t>(numElem) ;
-      m_dzz = Allocate<Real_t>(numElem) ;
+      m_dxx = pool.allocate(numElem) ;
+      m_dyy = pool.allocate(numElem) ;
+      m_dzz = pool.allocate(numElem) ;
    }
 
-   void DeallocateStrains()
+   void DeallocateStrains(RAJA::MemoryPool< Real_t > &pool)
    {
-      Release(&m_dzz) ;
-      Release(&m_dyy) ;
-      Release(&m_dxx) ;
+      pool.release(&m_dzz) ;
+      pool.release(&m_dyy) ;
+      pool.release(&m_dxx) ;
    }
 
    //
@@ -454,8 +435,9 @@ class Domain {
    //
    // Accessors for index sets
    //
-   LULESH_ISET& getNodeISet()  { return m_domNodeISet ; }
-   LULESH_ISET& getElemISet()  { return m_domElemISet ; }
+   LULESH_ISET& getNodeISet()    { return m_domNodeISet ; }
+   LULESH_ISET& getElemISet()    { return m_domElemISet ; }
+   LULESH_ISET& getElemRegISet() { return m_domElemRegISet ; }
 
    LULESH_ISET& getRegionISet(int r) { return m_domRegISet[r] ; }
 
@@ -496,6 +478,7 @@ class Domain {
    /* mesh-based index sets */
    LULESH_ISET m_domNodeISet ;
    LULESH_ISET m_domElemISet ;
+   LULESH_ISET m_domElemRegISet ;
 
    LULESH_ISET m_domXSymNodeISet ;
    LULESH_ISET m_domYSymNodeISet ;
