@@ -179,23 +179,24 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    // GrindTime2 takes into account speedups from MPI parallelism 
    Real_t grindTime1 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx);
    Real_t grindTime2 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx*numRanks);
+   Real_t   MaxAbsDiff = Real_t(0.0);
+   Real_t TotalAbsDiff = Real_t(0.0);
+   Real_t   MaxRelDiff = Real_t(0.0);
+   Index_t ElemId ;
+   Index_t *iperm = new Index_t[locDom.numElem()] ;
 
-   Index_t ElemId = 0;
+   for (Index_t i=0; i<locDom.numElem(); ++i) {
+      iperm[locDom.perm(i)] = i ;
+   }
+
+   ElemId = iperm[0] ;
+
    printf("Run completed:  \n");
    printf("   Problem size        =  %i \n",    nx);
    printf("   MPI tasks           =  %i \n",    numRanks);
    printf("   Iteration count     =  %i \n",    locDom.cycle());
    printf("   Final Origin Energy = %12.6e \n", locDom.e(ElemId));
 
-   Real_t   MaxAbsDiff = Real_t(0.0);
-   Real_t TotalAbsDiff = Real_t(0.0);
-   Real_t   MaxRelDiff = Real_t(0.0);
-
-   Index_t *iperm = new Index_t[locDom.numElem()] ;
-
-   for (Index_t i=0; i<locDom.numElem(); ++i) {
-      iperm[locDom.perm(i)] = i ;
-   }
 
    for (Index_t j=0; j<nx; ++j) {
       for (Index_t k=j+1; k<nx; ++k) {
