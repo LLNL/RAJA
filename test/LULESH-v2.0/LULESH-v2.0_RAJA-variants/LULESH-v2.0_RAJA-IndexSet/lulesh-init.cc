@@ -511,6 +511,7 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
       regElemSize(0) = numElem();
       m_domRegISet.resize(numReg());
       m_domRegISet[0].push_back( RAJA::RangeSegment(0, regElemSize(0)) ) ;
+      m_domElemRegISet.push_back( RAJA::RangeSegment(0, regElemSize(0)) ) ;
 #if !defined(LULESH_LIST_INDEXSET)
       for (int i=0; i<numElem(); ++i) {
          perm(i) = i ;
@@ -609,9 +610,11 @@ Domain::CreateRegionIndexSets(Int_t nr, Int_t balance)
 #if !defined(LULESH_LIST_INDEXSET)
          memcpy( &perm(elemCount), regElemlist(r), sizeof(Index_t)*regElemSize(r) ) ;
          m_domRegISet[r].push_back( RAJA::RangeSegment(elemCount, elemCount+regElemSize(r)) );
+         m_domElemRegISet.push_back( RAJA::RangeSegment(elemCount, elemCount+regElemSize(r)) ) ;
          elemCount += regElemSize(r) ;
 #else
          m_domRegISet[r].push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) );
+         m_domElemRegISet.push_back( RAJA::ListSegment(regElemlist(r), regElemSize(r)) ) ;
 #endif
       }
 
