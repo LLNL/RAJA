@@ -173,6 +173,8 @@ typedef RAJA::Index_type* Index_p;
 /*                                                  */
 /****************************************************/
 
+#define MAX(a, b) ( ((a) > (b)) ? (a) : (b))
+
 /* Could also support fixed point and interval arithmetic types */
 typedef float        real4 ;
 typedef double       real8 ;
@@ -1643,32 +1645,32 @@ Real_t CalcElemCharacteristicLength( const Real_t x[8],
    a = AreaFace(x[0],x[1],x[2],x[3],
                 y[0],y[1],y[2],y[3],
                 z[0],z[1],z[2],z[3]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    a = AreaFace(x[4],x[5],x[6],x[7],
                 y[4],y[5],y[6],y[7],
                 z[4],z[5],z[6],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    a = AreaFace(x[0],x[1],x[5],x[4],
                 y[0],y[1],y[5],y[4],
                 z[0],z[1],z[5],z[4]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    a = AreaFace(x[1],x[2],x[6],x[5],
                 y[1],y[2],y[6],y[5],
                 z[1],z[2],z[6],z[5]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    a = AreaFace(x[2],x[3],x[7],x[6],
                 y[2],y[3],y[7],y[6],
                 z[2],z[3],z[7],z[6]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    a = AreaFace(x[3],x[0],x[4],x[7],
                 y[3],y[0],y[4],y[7],
                 z[3],z[0],z[4],z[7]) ;
-   charLength = std::max(a,charLength) ;
+   charLength = MAX(a,charLength) ;
 
    charLength = Real_t(4.0) * volume / SQRT(charLength);
 
