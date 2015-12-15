@@ -179,35 +179,35 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
    // GrindTime2 takes into account speedups from MPI parallelism 
    Real_t grindTime1 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx);
    Real_t grindTime2 = ((elapsed_time*1e6)/locDom.cycle())/(nx*nx*nx*numRanks);
-   Real_t   MaxAbsDiff = Real_t(0.0);
-   Real_t TotalAbsDiff = Real_t(0.0);
-   Real_t   MaxRelDiff = Real_t(0.0);
-   Index_t ElemId ;
+   Real_t   maxAbsDiff = Real_t(0.0);
+   Real_t totalAbsDiff = Real_t(0.0);
+   Real_t   maxRelDiff = Real_t(0.0);
+   Index_t elemId ;
    Index_t *iperm = new Index_t[locDom.numElem()] ;
 
    for (Index_t i=0; i<locDom.numElem(); ++i) {
       iperm[locDom.perm(i)] = i ;
    }
 
-   ElemId = iperm[0] ;
+   elemId = iperm[0] ;
 
    printf("Run completed:  \n");
    printf("   Problem size        =  %i \n",    nx);
    printf("   MPI tasks           =  %i \n",    numRanks);
    printf("   Iteration count     =  %i \n",    locDom.cycle());
-   printf("   Final Origin Energy = %12.6e \n", locDom.e(ElemId));
+   printf("   Final Origin Energy = %12.6e \n", locDom.e(elemId));
 
 
    for (Index_t j=0; j<nx; ++j) {
       for (Index_t k=j+1; k<nx; ++k) {
          Real_t AbsDiff = FABS(locDom.e(iperm[j*nx+k])-locDom.e(iperm[k*nx+j]));
-         TotalAbsDiff  += AbsDiff;
+         totalAbsDiff  += AbsDiff;
 
-         if (MaxAbsDiff <AbsDiff) MaxAbsDiff = AbsDiff;
+         if (maxAbsDiff <AbsDiff) maxAbsDiff = AbsDiff;
 
          Real_t RelDiff = AbsDiff / locDom.e(iperm[k*nx+j]);
 
-         if (MaxRelDiff <RelDiff)  MaxRelDiff = RelDiff;
+         if (maxRelDiff <RelDiff)  maxRelDiff = RelDiff;
       }
    }
 
@@ -215,9 +215,9 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
 
    // Quick symmetry check
    printf("   Testing Plane 0 of Energy Array on rank 0:\n");
-   printf("        MaxAbsDiff   = %12.6e\n",   MaxAbsDiff   );
-   printf("        TotalAbsDiff = %12.6e\n",   TotalAbsDiff );
-   printf("        MaxRelDiff   = %12.6e\n\n", MaxRelDiff   );
+   printf("        MaxAbsDiff   = %12.6e\n",   maxAbsDiff   );
+   printf("        TotalAbsDiff = %12.6e\n",   totalAbsDiff );
+   printf("        MaxRelDiff   = %12.6e\n\n", maxRelDiff   );
 
    // Timing information
    printf("\nElapsed time         = %10.2f (s)\n", elapsed_time);
