@@ -36,7 +36,7 @@ enum TilingMode
 //                           permuted to be contiguous chunks, like USE_CASE 4)
 //   8 = Cilk         (cilk_for applied to each loop)
 //   9 = CUDA         (CUDA kernel launch applied to each loop)
-//   10 = CUDA        (Use technique 7 on GPU to avoid OMP_HACK data movement)
+//   10 = CUDA        (technique 7 on GPU to avoid OMP_FINE_SYNC data movement)
 
 
 // ----------------------------------------------------
@@ -58,8 +58,8 @@ typedef RAJA::seq_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 2
 
-// Requires OMP_HACK when run in parallel
-#define OMP_HACK 1
+// Requires OMP_FINE_SYNC when run in parallel
+#define OMP_FINE_SYNC 1
 
 // AllocateTouch should definitely be used
 
@@ -79,8 +79,8 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 3
 
-// Currently requires OMP_HACK when run in parallel
-#define OMP_HACK 1
+// Currently requires OMP_FINE_SYNC when run in parallel
+#define OMP_FINE_SYNC 1
 
 // Only use AllocateTouch if tiling is imposed on top of a block decomposition,
 // and that block decomposition is the indexset used for the first touch (see CreateMaskedIndexSet)
@@ -100,8 +100,8 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 4
 
-// Currently requires OMP_HACK when run in parallel
-#define OMP_HACK 1
+// Currently requires OMP_FINE_SYNC when run in parallel
+#define OMP_FINE_SYNC 1
 
 // AllocateTouch should definitely be used
 
@@ -120,7 +120,7 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 5
 
-// Can be used with or without OMP_HACK; without will have less data movement and memory use
+// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
 
 // AllocateTouch should definitely be used
 
@@ -142,7 +142,7 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 6
 
-// Can be used with or without OMP_HACK; without will have less data movement and memory use
+// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
 
 // AlocateTouch use is very tricky with this lockfree indexset.
 
@@ -161,7 +161,7 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 7
 
-// Can be used with or without OMP_HACK; without will have less data movement and memory use
+// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
 
 // AlocateTouch use is very tricky with this lockfree indexset.
 
@@ -180,8 +180,8 @@ typedef RAJA::omp_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 8
 
-// Requires OMP_HACK when run in parallel
-#define OMP_HACK 1
+// Requires OMP_FINE_SYNC when run in parallel
+#define OMP_FINE_SYNC 1
 
 // AllocateTouch should definitely be used
 
@@ -200,8 +200,8 @@ typedef RAJA::cilk_reduce            reduce_policy ;
 // ----------------------------------------------------
 #elif USE_CASE == 9
 
-// Requires OMP_HACK 
-#define OMP_HACK 1
+// Requires OMP_FINE_SYNC 
+#define OMP_FINE_SYNC 1
 
 TilingMode const lulesh_tiling_mode = Canonical;
 
@@ -218,7 +218,7 @@ typedef RAJA::cuda_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 10
 
-// Can be used with or without OMP_HACK; without will have less data movement and memory use
+// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
 
 TilingMode const lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
 
@@ -235,8 +235,8 @@ typedef RAJA::cuda_reduce reduce_policy;
 // ----------------------------------------------------
 #elif USE_CASE == 11
 
-// Can be used with or without OMP_HACK; without will have less data movement and memory use
-#define OMP_HACK 1
+// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
+#define OMP_FINE_SYNC 1
 
 // AllocateTouch should definitely be used
 
