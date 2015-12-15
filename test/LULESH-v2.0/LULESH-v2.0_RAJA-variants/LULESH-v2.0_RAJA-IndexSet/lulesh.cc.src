@@ -155,10 +155,6 @@ Additional BSD Notice
 #include <iostream>
 #include <unistd.h>
 
-#if USE_OMP
-# include <omp.h>
-#endif
-
 #include "lulesh.h"
 
 #include "Timer.hxx"
@@ -509,42 +505,29 @@ void IntegrateStressForElems( Domain* domain,
                               Real_t *sigxx, Real_t *sigyy, Real_t *sigzz,
                               Real_t *determ, Index_t numElem)
 {
-#if USE_OMP
-   Index_t numthreads = omp_get_max_threads();
-#else
-   Index_t numthreads = 1;
+#if defined(OMP_FINE_SYNC)
+  Real_t *fx_elem = elemMemPool.allocate(numElem*8) ;
+  Real_t *fy_elem = elemMemPool.allocate(numElem*8) ;
+  Real_t *fz_elem = elemMemPool.allocate(numElem*8) ;
 #endif
 
-   Index_t numElem8 = numElem * 8 ;
-   Real_t *fx_elem;
-   Real_t *fy_elem;
-   Real_t *fz_elem;
-   Real_t fx_local[8] ;
-   Real_t fy_local[8] ;
-   Real_t fz_local[8] ;
-
-   Real_t* tfx_local = fx_local;
-   Real_t* tfy_local = fy_local;
-   Real_t* tfz_local = fz_local;
-
-
-  if (numthreads > 1) {
-     fx_elem = elemMemPool.allocate(numElem8) ;
-     fy_elem = elemMemPool.allocate(numElem8) ;
-     fz_elem = elemMemPool.allocate(numElem8) ;
-  }
   // loop over all elements
-
   RAJA::forall<elem_exec_policy>(domain->getElemISet(),
      [=] RAJA_DEVICE (int k) {
     const Index_t* const elemToNode = domain->nodelist(k);
-    Real_t B[3][8] ;// shape function derivatives
-    Real_t x_local[8] ;
-    Real_t y_local[8] ;
-    Real_t z_local[8] ;
+    Real_t B[3][8] __attribute__((aligned(32))) ;// shape function derivatives
+    Real_t x_local[8] __attribute__((aligned(32))) ;
+    Real_t y_local[8] __attribute__((aligned(32))) ;
+    Real_t z_local[8] __attribute__((aligned(32))) ;
+#if !defined(OMP_FINE_SYNC)
+    Real_t fx_local[8] __attribute__((aligned(32))) ;
+    Real_t fy_local[8] __attribute__((aligned(32))) ;
+    Real_t fz_local[8] __attribute__((aligned(32))) ;
+#endif
 
     // get nodal coordinates from global arrays and copy into local arrays.
-    CollectDomainNodesToElemNodes(domain, elemToNode, x_local, y_local, z_local);
+    CollectDomainNodesToElemNodes(domain, elemToNode,
+                                  x_local, y_local, z_local);
 
     // Volume calculation involves extra work for numerical consistency
     CalcElemShapeFunctionDerivatives(x_local, y_local, z_local,
@@ -553,52 +536,48 @@ void IntegrateStressForElems( Domain* domain,
     CalcElemNodeNormals( B[0] , B[1], B[2],
                           x_local, y_local, z_local );
 
-    if (numthreads > 1) {
-       // Eliminate thread writing conflicts at the nodes by giving
-       // each element its own copy to write to
-       SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-                                    &fx_elem[k*8],
-                                    &fy_elem[k*8],
-                                    &fz_elem[k*8] ) ;
-    }
-    else {
-       SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
-                                    tfx_local, tfy_local, tfz_local ) ;
+    SumElemStressesToNodeForces( B, sigxx[k], sigyy[k], sigzz[k],
+#if !defined(OMP_FINE_SYNC)
+                                 fx_local, fy_local, fz_local
+#else
+                                 &fx_elem[k*8], &fy_elem[k*8], &fz_elem[k*8]
+#endif
+                       ) ;
 
-       // copy nodal force contributions to global force arrray.
-       for( Index_t lnode=0 ; lnode<8 ; ++lnode ) {
-          Index_t gnode = elemToNode[lnode];
-          domain->fx(gnode) += tfx_local[lnode];
-          domain->fy(gnode) += tfy_local[lnode];
-          domain->fz(gnode) += tfz_local[lnode];
-       }
+#if !defined(OMP_FINE_SYNC)
+    // copy nodal force contributions to global force arrray.
+    for( Index_t lnode=0 ; lnode<8 ; ++lnode ) {
+       Index_t gnode = elemToNode[lnode];
+       domain->fx(gnode) += fx_local[lnode];
+       domain->fy(gnode) += fy_local[lnode];
+       domain->fz(gnode) += fz_local[lnode];
     }
+#endif
   } );
 
-  if (numthreads > 1) {
-     // If threaded, then we need to copy the data out of the temporary
-     // arrays used above into the final forces field
-     RAJA::forall<node_exec_policy>(domain->getNodeISet(),
-         [=] RAJA_DEVICE (int gnode) {
-        Index_t count = domain->nodeElemCount(gnode) ;
-        Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
-        Real_t fx_tmp = Real_t(0.0) ;
-        Real_t fy_tmp = Real_t(0.0) ;
-        Real_t fz_tmp = Real_t(0.0) ;
-        for (Index_t i=0 ; i < count ; ++i) {
-           Index_t ielem = cornerList[i] ;
-           fx_tmp += fx_elem[ielem] ;
-           fy_tmp += fy_elem[ielem] ;
-           fz_tmp += fz_elem[ielem] ;
-        }
-        domain->fx(gnode) = fx_tmp ;
-        domain->fy(gnode) = fy_tmp ;
-        domain->fz(gnode) = fz_tmp ;
-     } );
-     elemMemPool.release(&fz_elem) ;
-     elemMemPool.release(&fy_elem) ;
-     elemMemPool.release(&fx_elem) ;
-  }
+#if defined(OMP_FINE_SYNC)
+  RAJA::forall<node_exec_policy>(domain->getNodeISet(),
+                                 [=] RAJA_DEVICE (int gnode) {
+     Index_t count = domain->nodeElemCount(gnode) ;
+     Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
+     Real_t fx_sum = Real_t(0.0) ;
+     Real_t fy_sum = Real_t(0.0) ;
+     Real_t fz_sum = Real_t(0.0) ;
+     for (Index_t i=0 ; i < count ; ++i) {
+        Index_t ielem = cornerList[i] ;
+        fx_sum += fx_elem[ielem] ;
+        fy_sum += fy_elem[ielem] ;
+        fz_sum += fz_elem[ielem] ;
+     }
+     domain->fx(gnode) = fx_sum ;
+     domain->fy(gnode) = fy_sum ;
+     domain->fz(gnode) = fz_sum ;
+  } );
+
+  elemMemPool.release(&fz_elem) ;
+  elemMemPool.release(&fy_elem) ;
+  elemMemPool.release(&fx_elem) ;
+#endif
 }
 
 /******************************************/
@@ -732,65 +711,18 @@ void CalcFBHourglassForceForElems( Domain* domain,
                                    Real_t *dvdx, Real_t *dvdy, Real_t *dvdz,
                                    Real_t hourg, Index_t numElem)
 {
-
-#if USE_OMP
-   Index_t numthreads = omp_get_max_threads();
-#else
-   Index_t numthreads = 1;
-#endif
-   /*************************************************
-    *
-    *     FUNCTION: Calculates the Flanagan-Belytschko anti-hourglass
-    *               force.
-    *
-    *************************************************/
+  /*************************************************
+   *
+   *     FUNCTION: Calculates the Flanagan-Belytschko anti-hourglass
+   *               force.
+   *
+   *************************************************/
   
-   Index_t numElem8 = numElem * 8 ;
-
-   Real_t *fx_elem; 
-   Real_t *fy_elem; 
-   Real_t *fz_elem; 
-
-   if(numthreads > 1) {
-      fx_elem = elemMemPool.allocate(numElem8) ;
-      fy_elem = elemMemPool.allocate(numElem8) ;
-      fz_elem = elemMemPool.allocate(numElem8) ;
-   }
-
-   Real_t  gamma[4][8];
-
-   gamma[0][0] = Real_t( 1.);
-   gamma[0][1] = Real_t( 1.);
-   gamma[0][2] = Real_t(-1.);
-   gamma[0][3] = Real_t(-1.);
-   gamma[0][4] = Real_t(-1.);
-   gamma[0][5] = Real_t(-1.);
-   gamma[0][6] = Real_t( 1.);
-   gamma[0][7] = Real_t( 1.);
-   gamma[1][0] = Real_t( 1.);
-   gamma[1][1] = Real_t(-1.);
-   gamma[1][2] = Real_t(-1.);
-   gamma[1][3] = Real_t( 1.);
-   gamma[1][4] = Real_t(-1.);
-   gamma[1][5] = Real_t( 1.);
-   gamma[1][6] = Real_t( 1.);
-   gamma[1][7] = Real_t(-1.);
-   gamma[2][0] = Real_t( 1.);
-   gamma[2][1] = Real_t(-1.);
-   gamma[2][2] = Real_t( 1.);
-   gamma[2][3] = Real_t(-1.);
-   gamma[2][4] = Real_t( 1.);
-   gamma[2][5] = Real_t(-1.);
-   gamma[2][6] = Real_t( 1.);
-   gamma[2][7] = Real_t(-1.);
-   gamma[3][0] = Real_t(-1.);
-   gamma[3][1] = Real_t( 1.);
-   gamma[3][2] = Real_t(-1.);
-   gamma[3][3] = Real_t( 1.);
-   gamma[3][4] = Real_t( 1.);
-   gamma[3][5] = Real_t(-1.);
-   gamma[3][6] = Real_t( 1.);
-   gamma[3][7] = Real_t(-1.);
+#if defined(OMP_FINE_SYNC)
+   Real_t *fx_elem = elemMemPool.allocate(numElem*8) ;
+   Real_t *fy_elem = elemMemPool.allocate(numElem*8) ;
+   Real_t *fz_elem = elemMemPool.allocate(numElem*8) ;
+#endif
 
 /*************************************************/
 /*    compute the hourglass modes */
@@ -798,13 +730,33 @@ void CalcFBHourglassForceForElems( Domain* domain,
 
    RAJA::forall<elem_exec_policy>(domain->getElemISet(),
       [=] RAJA_DEVICE (int i2) {
-      Real_t *fx_local, *fy_local, *fz_local ;
+
+#if !defined(OMP_FINE_SYNC)
       Real_t hgfx[8], hgfy[8], hgfz[8] ;
+#endif
+
+      Real_t *fx_local, *fy_local, *fz_local ;
 
       Real_t coefficient;
 
       Real_t hourgam[8][4];
       Real_t xd1[8], yd1[8], zd1[8] ;
+
+      // Define this here so code works on both host and device
+      const Real_t gamma[4][8] =
+      {
+        { Real_t( 1.), Real_t( 1.), Real_t(-1.), Real_t(-1.),
+          Real_t(-1.), Real_t(-1.), Real_t( 1.), Real_t( 1.) },
+
+        { Real_t( 1.), Real_t(-1.), Real_t(-1.), Real_t( 1.),
+          Real_t(-1.), Real_t( 1.), Real_t( 1.), Real_t(-1.) },
+
+        { Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.),
+          Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) },
+
+        { Real_t(-1.), Real_t( 1.), Real_t(-1.), Real_t( 1.),
+          Real_t( 1.), Real_t(-1.), Real_t( 1.), Real_t(-1.) }
+      } ;
 
       const Index_t *elemToNode = domain->nodelist(i2);
       Index_t i3=8*i2;
@@ -909,101 +861,73 @@ void CalcFBHourglassForceForElems( Domain* domain,
 
       coefficient = - hourg * Real_t(0.01) * ss1 * mass1 / volume13;
 
-      CalcElemFBHourglassForce(xd1,yd1,zd1,
-                      hourgam,
-                      coefficient, hgfx, hgfy, hgfz);
+      CalcElemFBHourglassForce(xd1,yd1,zd1, hourgam, coefficient,
+#if !defined(OMP_FINE_SYNC)
+                               hgfx, hgfy, hgfz
+#else
+                               &fx_elem[i3], &fy_elem[i3], &fz_elem[i3]
+#endif
+                              );
 
-      // With the threaded version, we write into local arrays per elem
-      // so we don't have to worry about race conditions
-      if (numthreads > 1) {
-         fx_local = &fx_elem[i3] ;
-         fx_local[0] = hgfx[0];
-         fx_local[1] = hgfx[1];
-         fx_local[2] = hgfx[2];
-         fx_local[3] = hgfx[3];
-         fx_local[4] = hgfx[4];
-         fx_local[5] = hgfx[5];
-         fx_local[6] = hgfx[6];
-         fx_local[7] = hgfx[7];
+#if !defined(OMP_FINE_SYNC)
+      domain->fx(n0si2) += hgfx[0];
+      domain->fy(n0si2) += hgfy[0];
+      domain->fz(n0si2) += hgfz[0];
 
-         fy_local = &fy_elem[i3] ;
-         fy_local[0] = hgfy[0];
-         fy_local[1] = hgfy[1];
-         fy_local[2] = hgfy[2];
-         fy_local[3] = hgfy[3];
-         fy_local[4] = hgfy[4];
-         fy_local[5] = hgfy[5];
-         fy_local[6] = hgfy[6];
-         fy_local[7] = hgfy[7];
+      domain->fx(n1si2) += hgfx[1];
+      domain->fy(n1si2) += hgfy[1];
+      domain->fz(n1si2) += hgfz[1];
 
-         fz_local = &fz_elem[i3] ;
-         fz_local[0] = hgfz[0];
-         fz_local[1] = hgfz[1];
-         fz_local[2] = hgfz[2];
-         fz_local[3] = hgfz[3];
-         fz_local[4] = hgfz[4];
-         fz_local[5] = hgfz[5];
-         fz_local[6] = hgfz[6];
-         fz_local[7] = hgfz[7];
-      }
-      else {
-         domain->fx(n0si2) += hgfx[0];
-         domain->fy(n0si2) += hgfy[0];
-         domain->fz(n0si2) += hgfz[0];
+      domain->fx(n2si2) += hgfx[2];
+      domain->fy(n2si2) += hgfy[2];
+      domain->fz(n2si2) += hgfz[2];
 
-         domain->fx(n1si2) += hgfx[1];
-         domain->fy(n1si2) += hgfy[1];
-         domain->fz(n1si2) += hgfz[1];
+      domain->fx(n3si2) += hgfx[3];
+      domain->fy(n3si2) += hgfy[3];
+      domain->fz(n3si2) += hgfz[3];
 
-         domain->fx(n2si2) += hgfx[2];
-         domain->fy(n2si2) += hgfy[2];
-         domain->fz(n2si2) += hgfz[2];
+      domain->fx(n4si2) += hgfx[4];
+      domain->fy(n4si2) += hgfy[4];
+      domain->fz(n4si2) += hgfz[4];
 
-         domain->fx(n3si2) += hgfx[3];
-         domain->fy(n3si2) += hgfy[3];
-         domain->fz(n3si2) += hgfz[3];
+      domain->fx(n5si2) += hgfx[5];
+      domain->fy(n5si2) += hgfy[5];
+      domain->fz(n5si2) += hgfz[5];
 
-         domain->fx(n4si2) += hgfx[4];
-         domain->fy(n4si2) += hgfy[4];
-         domain->fz(n4si2) += hgfz[4];
+      domain->fx(n6si2) += hgfx[6];
+      domain->fy(n6si2) += hgfy[6];
+      domain->fz(n6si2) += hgfz[6];
 
-         domain->fx(n5si2) += hgfx[5];
-         domain->fy(n5si2) += hgfy[5];
-         domain->fz(n5si2) += hgfz[5];
-
-         domain->fx(n6si2) += hgfx[6];
-         domain->fy(n6si2) += hgfy[6];
-         domain->fz(n6si2) += hgfz[6];
-
-         domain->fx(n7si2) += hgfx[7];
-         domain->fy(n7si2) += hgfy[7];
-         domain->fz(n7si2) += hgfz[7];
-      }
+      domain->fx(n7si2) += hgfx[7];
+      domain->fy(n7si2) += hgfy[7];
+      domain->fz(n7si2) += hgfz[7];
+#endif
    } );
 
-   if (numthreads > 1) {
-     // Collect the data from the local arrays into the final force arrays
-      RAJA::forall<node_exec_policy>(domain->getNodeISet(),
-          [=] RAJA_DEVICE (int gnode) {
-         Index_t count = domain->nodeElemCount(gnode) ;
-         Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
-         Real_t fx_tmp = Real_t(0.0) ;
-         Real_t fy_tmp = Real_t(0.0) ;
-         Real_t fz_tmp = Real_t(0.0) ;
-         for (Index_t i=0 ; i < count ; ++i) {
-            Index_t ielem = cornerList[i] ;
-            fx_tmp += fx_elem[ielem] ;
-            fy_tmp += fy_elem[ielem] ;
-            fz_tmp += fz_elem[ielem] ;
-         }
-         domain->fx(gnode) += fx_tmp ;
-         domain->fy(gnode) += fy_tmp ;
-         domain->fz(gnode) += fz_tmp ;
-      } );
-      elemMemPool.release(&fz_elem) ;
-      elemMemPool.release(&fy_elem) ;
-      elemMemPool.release(&fx_elem) ;
-   }
+#if defined(OMP_FINE_SYNC)
+   // Collect the data from the local arrays into the final force arrays
+   RAJA::forall<node_exec_policy>(domain->getNodeISet(),
+                                  [=] RAJA_DEVICE (int gnode) {
+      Index_t count = domain->nodeElemCount(gnode) ;
+      Index_t *cornerList = domain->nodeElemCornerList(gnode) ;
+      Real_t fx_sum = Real_t(0.0) ;
+      Real_t fy_sum = Real_t(0.0) ;
+      Real_t fz_sum = Real_t(0.0) ;
+      for (Index_t i=0 ; i < count ; ++i) {
+         Index_t ielem = cornerList[i] ;
+         fx_sum += fx_elem[ielem] ;
+         fy_sum += fy_elem[ielem] ;
+         fz_sum += fz_elem[ielem] ;
+      }
+      domain->fx(gnode) += fx_sum ;
+      domain->fy(gnode) += fy_sum ;
+      domain->fz(gnode) += fz_sum ;
+   } );
+
+   elemMemPool.release(&fz_elem) ;
+   elemMemPool.release(&fy_elem) ;
+   elemMemPool.release(&fx_elem) ;
+#endif
 }
 
 /******************************************/
@@ -2583,7 +2507,7 @@ int main(int argc, char *argv[])
    if ((myRank == 0) && (opts.quiet == 0)) {
       printf("Running problem size %d^3 per domain until completion\n", opts.nx);
       printf("Num processors: %d\n", numRanks);
-#if USE_OMP
+#if defined(_OPENMP)
       printf("Num threads: %d\n", omp_get_max_threads());
 #endif
       printf("Total number of elements: %lld\n\n", (long long int)(numRanks*opts.nx*opts.nx*opts.nx));

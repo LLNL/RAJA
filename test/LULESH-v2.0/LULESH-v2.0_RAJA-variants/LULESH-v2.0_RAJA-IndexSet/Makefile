@@ -67,10 +67,10 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 ##
 ## Options to turn on/off MPI and OpenMP
 ##
-LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS)
+LULESH_OPTS = -DUSE_MPI=0 $(LULESH_TIMER_OPTS)
 ##
 ## revert to original index set implementation...
-#LULESH_OPTS = -DUSE_MPI=0 -DUSE_OMP=1 $(LULESH_TIMER_OPTS) -DLULESH_LIST_INDEXSET
+#LULESH_OPTS = -DUSE_MPI=0 $(LULESH_TIMER_OPTS) -DLULESH_LIST_INDEXSET
 
 
 ##

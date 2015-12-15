@@ -2,9 +2,6 @@
 #if USE_MPI
 # include <mpi.h>
 #endif
-#if USE_OMP
-#include <omp.h>
-#endif
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -42,8 +39,10 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 //
    m_perm(0),
    m_regNumList(0),
+#if defined(OMP_FINE_SYNC)
    m_nodeElemStart(0),
    m_nodeElemCornerList(0),
+#endif
    m_regElemSize(0),
    m_regElemlist(0)
 #if USE_MPI
@@ -201,7 +200,7 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
       nodalMass(i) = Real_t(0.0) ;
    } ) ;
 
-#if USE_OMP
+#if defined(OMP_FINE_SYNC)
    SetupThreadSupportStructures();
 #endif
 
@@ -275,8 +274,10 @@ Domain::Domain(Int_t numRanks, Index_t colLoc,
 Domain::~Domain()
 {
    delete [] m_regNumList;
+#if defined(OMP_FINE_SYNC)
    delete [] m_nodeElemStart;
    delete [] m_nodeElemCornerList;
+#endif
    delete [] m_regElemSize;
    if (numReg() != 1) {
       for (Index_t i=0 ; i<numReg() ; ++i) {
@@ -354,73 +355,67 @@ Domain::BuildMeshCoordinates(Index_t nx, Index_t edgeNodes)
 
 
 ////////////////////////////////////////////////////////////////////////////////
+#if defined(OMP_FINE_SYNC)
 void
 Domain::SetupThreadSupportStructures()
 {
-#if USE_OMP
-   Index_t numthreads = omp_get_max_threads();
-#else
-   Index_t numthreads = 1;
-#endif
+  // set up node-centered indexing of elements 
+  Index_t *nodeElemCount = new Index_t[numNode()] ;
 
-  if (numthreads > 1) {
-    // set up node-centered indexing of elements 
-    Index_t *nodeElemCount = new Index_t[numNode()] ;
-
-    for (Index_t i=0; i<numNode(); ++i) {
-      nodeElemCount[i] = 0 ;
-    }
-
-    for (Index_t i=0; i<numElem(); ++i) {
-      Index_t *nl = nodelist(i) ;
-      for (Index_t j=0; j < 8; ++j) {
-        ++(nodeElemCount[nl[j]] );
-      }
-    }
-
-    m_nodeElemStart = new Index_t[numNode()+1] ;
-
-    m_nodeElemStart[0] = 0;
-
-    for (Index_t i=1; i <= numNode(); ++i) {
-      m_nodeElemStart[i] =
-        m_nodeElemStart[i-1] + nodeElemCount[i-1] ;
-    }
-       
-    m_nodeElemCornerList = new Index_t[m_nodeElemStart[numNode()]];
-
-    for (Index_t i=0; i < numNode(); ++i) {
-      nodeElemCount[i] = 0;
-    }
-
-    for (Index_t i=0; i < numElem(); ++i) {
-      Index_t *nl = nodelist(i) ;
-      for (Index_t j=0; j < 8; ++j) {
-        Index_t m = nl[j];
-        Index_t k = i*8 + j ;
-        Index_t offset = m_nodeElemStart[m] + nodeElemCount[m] ;
-        m_nodeElemCornerList[offset] = k;
-        ++(nodeElemCount[m]) ;
-      }
-    }
-
-    Index_t clSize = m_nodeElemStart[numNode()] ;
-    for (Index_t i=0; i < clSize; ++i) {
-      Index_t clv = m_nodeElemCornerList[i] ;
-      if ((clv < 0) || (clv > numElem()*8)) {
-        fprintf(stderr,
-                "AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
-#if USE_MPI
-        MPI_Abort(MPI_COMM_WORLD, -1);
-#else
-        exit(-1);
-#endif
-      }
-    }
-
-    delete [] nodeElemCount ;
+  for (Index_t i=0; i<numNode(); ++i) {
+    nodeElemCount[i] = 0 ;
   }
+
+  for (Index_t i=0; i<numElem(); ++i) {
+    Index_t *nl = nodelist(i) ;
+    for (Index_t j=0; j < 8; ++j) {
+      ++(nodeElemCount[nl[j]] );
+    }
+  }
+
+  m_nodeElemStart = new Index_t[numNode()+1] ;
+
+  m_nodeElemStart[0] = 0;
+
+  for (Index_t i=1; i <= numNode(); ++i) {
+    m_nodeElemStart[i] =
+      m_nodeElemStart[i-1] + nodeElemCount[i-1] ;
+  }
+       
+  m_nodeElemCornerList = new Index_t[m_nodeElemStart[numNode()]];
+
+  for (Index_t i=0; i < numNode(); ++i) {
+    nodeElemCount[i] = 0;
+  }
+
+  for (Index_t i=0; i < numElem(); ++i) {
+    Index_t *nl = nodelist(i) ;
+    for (Index_t j=0; j < 8; ++j) {
+      Index_t m = nl[j];
+      Index_t k = i*8 + j ;
+      Index_t offset = m_nodeElemStart[m] + nodeElemCount[m] ;
+      m_nodeElemCornerList[offset] = k;
+      ++(nodeElemCount[m]) ;
+    }
+  }
+
+  Index_t clSize = m_nodeElemStart[numNode()] ;
+  for (Index_t i=0; i < clSize; ++i) {
+    Index_t clv = m_nodeElemCornerList[i] ;
+    if ((clv < 0) || (clv > numElem()*8)) {
+      fprintf(stderr,
+              "AllocateNodeElemIndexes(): nodeElemCornerList entry out of range!\n");
+#if USE_MPI
+      MPI_Abort(MPI_COMM_WORLD, -1);
+#else
+      exit(-1);
+#endif
+    }
+  }
+
+  delete [] nodeElemCount ;
 }
+#endif
 
 
 ////////////////////////////////////////////////////////////////////////////////

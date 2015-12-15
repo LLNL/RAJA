@@ -1227,7 +1227,7 @@ void CalcFBHourglassForceForElems( Index_p nodelist,
                       &fx_elem[i3], &fy_elem[i3], &fz_elem[i3]
 #endif
                     );
-#ifndef OMP_FINE_SYNC
+#if !defined(OMP_FINE_SYNC)
       fx[n0si2] += hgfx[0] ;
       fy[n0si2] += hgfy[0] ;
       fz[n0si2] += hgfz[0] ;
