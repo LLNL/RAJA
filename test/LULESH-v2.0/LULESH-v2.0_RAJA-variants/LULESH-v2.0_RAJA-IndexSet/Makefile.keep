@@ -9,7 +9,7 @@ MPI_INC = /opt/local/include/openmpi
 MPI_LIB = /opt/local/lib
 
 #Common defines
-MY_DEFS = -DUSE_MPI=0 -DUSE_OMP=1
+MY_DEFS = -DUSE_MPI=0
 
 #Build with Intel compiler
 CXX  = /usr/local/tools/ic-14.0.144/bin/icpc 

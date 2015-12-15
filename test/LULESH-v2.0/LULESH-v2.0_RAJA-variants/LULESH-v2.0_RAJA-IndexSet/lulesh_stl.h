@@ -2,11 +2,6 @@
 # error "You should specify USE_MPI=0 or USE_MPI=1 on the compile line"
 #endif
 
-
-// OpenMP will be compiled in if this flag is set to 1 AND the compiler beging
-// used supports it (i.e. the _OPENMP symbol is defined)
-//#define USE_OMP 1
-
 #if USE_MPI
 #include <mpi.h>
 
@@ -361,11 +356,13 @@ class Domain {
    // Element mass
    Real_t& elemMass(Index_t idx)  { return m_elemMass[idx] ; }
 
+#if defined(OMP_FINE_SYNC)
    Index_t nodeElemCount(Index_t idx)
    { return m_nodeElemStart[idx+1] - m_nodeElemStart[idx] ; }
 
    Index_t *nodeElemCornerList(Index_t idx)
    { return &m_nodeElemCornerList[m_nodeElemStart[idx]] ; }
+#endif
 
    // Region Centered
 
@@ -373,7 +370,8 @@ class Domain {
    Index_t&  regNumList(Index_t idx) { return m_regNumList[idx] ; }
    Index_t*  regNumList()            { return &m_regNumList[0] ; }
    Index_t*  regElemlist(Int_t r)    { return m_regElemlist[r] ; }
-   Index_t&  regElemlist(Int_t r, Index_t idx) { return m_regElemlist[r][idx] ; }
+   Index_t&  regElemlist(Int_t r, Index_t idx)
+   { return m_regElemlist[r][idx] ; }
 
    // Parameters 
 
@@ -612,9 +610,10 @@ class Domain {
    Index_t m_maxPlaneSize ;
    Index_t m_maxEdgeSize ;
 
-   // OMP hack 
+#if defined(OMP_FINE_SYNC)
    Index_t *m_nodeElemStart ;
    Index_t *m_nodeElemCornerList ;
+#endif
 
    // Used in setup
    Index_t m_rowMin, m_rowMax;
