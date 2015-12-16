@@ -945,6 +945,9 @@ void CalcHourglassControlForElems(Domain* domain,
    Real_t *y8n  = elemMemPool.allocate(numElem8) ;
    Real_t *z8n  = elemMemPool.allocate(numElem8) ;
 
+   // For negative element volume check
+   RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
+
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(domain->getElemISet(),
         [=] RAJA_DEVICE (int i) {
@@ -970,15 +973,18 @@ void CalcHourglassControlForElems(Domain* domain,
 
       determ[i] = domain->volo(i) * domain->v(i);
 
-      /* Do a check for negative volumes */
-      if ( domain->v(i) <= Real_t(0.0) ) {
-#if USE_MPI         
-         MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
-#else
-         exit(VolumeError);
-#endif
-      }
+      minvol.min(domain->v(i));
+
    } );
+
+   /* Do a check for negative volumes */
+   if ( Real_t(minvol) <= Real_t(0.0) ) {
+#if USE_MPI         
+      MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+#else
+      exit(VolumeError);
+#endif
+   }
 
    if ( hgcoef > Real_t(0.) ) {
       CalcFBHourglassForceForElems( domain,
@@ -1018,16 +1024,19 @@ void CalcVolumeForceForElems(Domain* domain)
                                sigxx, sigyy, sigzz, determ, numElem );
 
       // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
       RAJA::forall<elem_exec_policy>(domain->getElemISet(),
            [=] RAJA_DEVICE (int k) {
-         if (determ[k] <= Real_t(0.0)) {
-#if USE_MPI            
-            MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
-#else
-            exit(VolumeError);
-#endif
-         }
+         minvol.min(determ[k]);
       } );
+
+      if (Real_t(minvol) <= Real_t(0.0)) {
+#if USE_MPI            
+         MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+#else
+         exit(VolumeError);
+#endif
+      }
 
       CalcHourglassControlForElems(domain, determ, hgcoef) ;
 
@@ -1509,6 +1518,9 @@ void CalcLagrangeElements(Domain* domain)
 
       CalcKinematicsForElems(domain, deltatime, numElem) ;
 
+      // check for negative element volume
+      RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
+
       // element loop to do some stuff not included in the elemlib function.
       RAJA::forall<elem_exec_policy>(domain->getElemISet(),
            [=] RAJA_DEVICE (int k) {
@@ -1522,16 +1534,17 @@ void CalcLagrangeElements(Domain* domain)
          domain->dyy(k) -= vdovthird ;
          domain->dzz(k) -= vdovthird ;
 
-        // See if any volumes are negative, and take appropriate action.
-         if (domain->vnew(k) <= Real_t(0.0))
-        {
-#if USE_MPI           
-           MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
-#else
-           exit(VolumeError);
-#endif
-        }
+         minvol.min(domain->vnew(k));
       } );
+
+      if (Real_t(minvol) <= Real_t(0.0)) {
+#if USE_MPI           
+         MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+#else
+         exit(VolumeError);
+#endif
+      }
+
       domain->DeallocateStrains(elemMemPool);
    }
 }
@@ -2250,6 +2263,9 @@ void ApplyMaterialPropertiesForElems(Domain* domain)
        } );
     }
 
+    // check for negative element volume
+    RAJA::ReduceMin<reduce_policy, Real_t> minvol(Real_t(1.0e+20));
+
     // This check may not make perfect sense in LULESH, but
     // it's representative of something in the full code -
     // just leave it in, please
@@ -2264,14 +2280,17 @@ void ApplyMaterialPropertiesForElems(Domain* domain)
           if (vc > eosvmax)
              vc = -1.0 ;
        }
-       if (vc <= 0.) {
-#if USE_MPI             
-          MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
-#else
-          exit(VolumeError);
-#endif
-       }
+
+       minvol.min(vc);
     } );
+
+    if (Real_t(minvol) <= 0.) {
+#if USE_MPI             
+       MPI_Abort(MPI_COMM_WORLD, VolumeError) ;
+#else
+       exit(VolumeError);
+#endif
+    }
 
     for (Int_t reg_num=0 ; reg_num < domain->numReg() ; reg_num++) {
        Int_t rep;
