@@ -71,7 +71,7 @@ inline T *AllocateTouch(RAJA::IndexSet *is, size_t size)
    posix_memalign((void **)&retVal, RAJA::DATA_ALIGN, sizeof(T)*size);
 
    /* we should specialize by policy type here */
-   RAJA::forall<EXEC_POLICY_T>( *is, [&] (int i) {
+   RAJA::forall<EXEC_POLICY_T>( *is, [=] RAJA_DEVICE (int i) {
       retVal[i] = 0 ;
    } ) ;
 
