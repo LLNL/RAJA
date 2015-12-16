@@ -200,7 +200,7 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
 
    for (Index_t j=0; j<nx; ++j) {
       for (Index_t k=j+1; k<nx; ++k) {
-         Real_t AbsDiff = FABS(locDom.e(iperm[j*nx+k])-locDom.e(iperm[k*nx+j]));
+         Real_t AbsDiff = fabs(locDom.e(iperm[j*nx+k])-locDom.e(iperm[k*nx+j]));
          totalAbsDiff  += AbsDiff;
 
          if (maxAbsDiff <AbsDiff) maxAbsDiff = AbsDiff;

@@ -641,6 +641,7 @@ struct cmdLineOpts {
 // Function Prototypes
 
 // lulesh-par
+RAJA_HOST_DEVICE
 Real_t CalcElemVolume( const Real_t x[8],
                        const Real_t y[8],
                        const Real_t z[8]);

@@ -5,6 +5,8 @@
 
 #define MAX(a, b) ( ((a) > (b)) ? (a) : (b))
 
+#define LULESH_HEADER 1
+
 #if !defined(LULESH_HEADER)
 #include "lulesh_stl.h"
 #elif (LULESH_HEADER == 1)

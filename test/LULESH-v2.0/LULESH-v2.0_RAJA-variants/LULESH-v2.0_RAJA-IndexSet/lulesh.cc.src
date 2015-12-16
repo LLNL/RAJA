@@ -735,8 +735,6 @@ void CalcFBHourglassForceForElems( Domain* domain,
       Real_t hgfx[8], hgfy[8], hgfz[8] ;
 #endif
 
-      Real_t *fx_local, *fy_local, *fz_local ;
-
       Real_t coefficient;
 
       Real_t hourgam[8][4];
@@ -1723,8 +1721,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:         delvm = domain->delv_xi(domain->lxim(ielem)); break ;
          case XI_M_SYMM: delvm = domain->delv_xi(ielem) ;       break ;
          case XI_M_FREE: delvm = Real_t(0.0) ;      break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:        /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvm = 0; /* ERROR - but quiets the compiler */
             break;
       }
@@ -1733,8 +1731,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:         delvp = domain->delv_xi(domain->lxip(ielem)) ; break ;
          case XI_P_SYMM: delvp = domain->delv_xi(ielem) ;       break ;
          case XI_P_FREE: delvp = Real_t(0.0) ;      break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:        /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvp = 0; /* ERROR - but quiets the compiler */
             break;
       }
@@ -1761,8 +1759,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:          delvm = domain->delv_eta(domain->letam(ielem)) ; break ;
          case ETA_M_SYMM: delvm = domain->delv_eta(ielem) ;        break ;
          case ETA_M_FREE: delvm = Real_t(0.0) ;        break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:         /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvm = 0; /* ERROR - but quiets the compiler */
             break;
       }
@@ -1771,8 +1769,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:          delvp = domain->delv_eta(domain->letap(ielem)) ; break ;
          case ETA_P_SYMM: delvp = domain->delv_eta(ielem) ;        break ;
          case ETA_P_FREE: delvp = Real_t(0.0) ;        break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:         /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvp = 0; /* ERROR - but quiets the compiler */
             break;
       }
@@ -1798,8 +1796,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:           delvm = domain->delv_zeta(domain->lzetam(ielem)) ; break ;
          case ZETA_M_SYMM: delvm = domain->delv_zeta(ielem) ;         break ;
          case ZETA_M_FREE: delvm = Real_t(0.0) ;          break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:          /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvm = 0; /* ERROR - but quiets the compiler */
             break;
       }
@@ -1808,8 +1806,8 @@ void CalcMonotonicQRegionForElems(Domain* domain, Int_t r,
          case 0:           delvp = domain->delv_zeta(domain->lzetap(ielem)) ; break ;
          case ZETA_P_SYMM: delvp = domain->delv_zeta(ielem) ;         break ;
          case ZETA_P_FREE: delvp = Real_t(0.0) ;          break ;
-         default:          fprintf(stderr, "Error in switch at %s line %d\n",
-                                   __FILE__, __LINE__);
+         default:          /* fprintf(stderr, "Error in switch at %s line %d\n",
+                                   __FILE__, __LINE__); */
             delvp = 0; /* ERROR - but quiets the compiler */
             break;
       }
