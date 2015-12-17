@@ -275,13 +275,17 @@ public:
       __shared__ T sd[THREADS_PER_BLOCK];
 
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
-         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       } 
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
+      // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
+
 
       sd[threadIdx.x] = val;
       __syncthreads();
@@ -444,8 +448,11 @@ public:
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
+       // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
 
@@ -611,8 +618,11 @@ public:
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = 0;
+       // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
 
