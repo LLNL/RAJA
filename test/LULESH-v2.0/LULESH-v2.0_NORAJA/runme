@@ -1,3 +1,0 @@
-date ;
-srun -N 1 -p pdebug ./lulesh2.0 ;
-date
