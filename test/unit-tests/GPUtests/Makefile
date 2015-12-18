@@ -27,8 +27,8 @@ LDTIMER = -lrt
 
 
 RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/includes/
-RAJA_SRC       = $(RAJA_TOPDIR)/sources/
+RAJA_INC       = $(RAJA_TOPDIR)/include/
+RAJA_SRC       = $(RAJA_TOPDIR)/src/
 
 ##
 ## The RAJA_rules.mk file defines macro variables that specify RAJA behavior.
@@ -52,7 +52,7 @@ CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcomp
 #CXX_COMPILE = nvcc -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
 #CXX_COMPILE = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 
-CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(TEST_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(TEST_OPTS)
 
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
@@ -79,7 +79,7 @@ traversal: Traversal.o $(RAJAOBJS)
 clean-obj: 
 	rm -rf *.o $(RAJA_SRC)/*.o
 
-clean-all: clean-obj 
+clean: clean-obj 
 	rm -rf *.cpp*.i* *.cuda*.* *.fatbin* *.hash* *.module_id* *.ptx *.reg.c *.exe
 
 

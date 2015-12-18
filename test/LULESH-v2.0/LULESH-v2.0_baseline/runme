@@ -1,0 +1,3 @@
+date ;
+srun -N 1 -p pdebug ./lulesh-v2.0.exe -p ;
+date

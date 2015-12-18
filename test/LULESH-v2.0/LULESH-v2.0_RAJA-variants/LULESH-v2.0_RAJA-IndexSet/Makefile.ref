@@ -1,4 +1,4 @@
-# 
+#  
 # THIS IS NOT OPEN SOURCE OR PUBLIC DOMAIN SOFTWARE
 #
 # See README-RAJA_license.txt for access and distribution restrictions
@@ -10,12 +10,23 @@
 #  Uncomment ONE AND ONLY ONE opt/debug option and "RAJA_ARCH" 
 #  variable line for the platform you want. 
 #
-# IMPORTANT:  The specific compiler version and options are set in 
+# IMPORTANT:  The specific compiler version and options are set in
 #             the file ../compilers.mk.
 #
 
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
+
+##
+## Set option to report basic runtime information.
+##
+##LULESH_TIMER_OPTS = -DRAJA_USE_CYCLE
+#LULESH_TIMER_OPTS = -DRAJA_USE_CLOCK
+LULESH_TIMER_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
 
 #rzalastor
 RAJA_ARCH = x86_sse_icc
@@ -33,13 +44,9 @@ RAJA_ARCH = x86_sse_icc
 #rzmic
 #RAJA_ARCH = MIC
 
-#rzmist
-#RAJA_ARCH = rzmist_clang
-#RAJA_ARCH = rzmist_xlc
-
 RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/include/
-RAJA_SRC       = $(RAJA_TOPDIR)/src/
+RAJA_INC       = $(RAJA_TOPDIR)/includes/
+RAJA_SRC       = $(RAJA_TOPDIR)/sources/
 
 
 ##
@@ -49,6 +56,15 @@ RAJA_SRC       = $(RAJA_TOPDIR)/src/
 ##
 include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 
+SILO_INCDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/include
+SILO_LIBDIR = /usr/gapps/silo/current/chaos_5_x86_64_ib/lib
+
+
+##
+## Options to turn on/off MPI and OpenMP
+##
+LULESH_OPTS = -DUSE_MPI=0 -DVIZ_MESH $(LULESH_TIMER_OPTS)
+
 
 ##
 ## Include file containing compiler version and options.
@@ -56,22 +72,21 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
-
-TESTOBJS = buildIndexSet.o
+#CXXFLAGS_BUILD = -DLULESH_LIST_INDEXSET=1 -I. -I../../includes -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../includes -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
-OBJFILES = $(TESTOBJS) $(RAJAOBJS)
+LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 
-CPUtraversal-test: main-traversal.o $(OBJFILES)
-	$(CXX_COMPILE) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
-CPUreduce-test: main-reduce.o $(OBJFILES)
-	$(CXX_COMPILE) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+default: $(OBJFILES)
+	$(CXX_COMPILE) -I${SILO_INCDIR} -DVIZ_MESH $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so -o lulesh2.0_RAJA-ISet.exe
 
-## Uncomment this line to generate an executable to run...
+## Uncomment these lines to generate an executable to run...
 %.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...

@@ -26,8 +26,8 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = rzmist_xlc
 
 RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/includes/
-RAJA_SRC       = $(RAJA_TOPDIR)/sources/
+RAJA_INC       = $(RAJA_TOPDIR)/include/
+RAJA_SRC       = $(RAJA_TOPDIR)/src/
 
 ##
 ## The RAJA_rules.mk file defines macro variables that specify RAJA behavior.

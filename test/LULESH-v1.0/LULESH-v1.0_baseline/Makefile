@@ -1,4 +1,4 @@
-# 
+#  
 # THIS IS NOT OPEN SOURCE OR PUBLIC DOMAIN SOFTWARE
 #
 # See README-RAJA_license.txt for access and distribution restrictions
@@ -10,12 +10,24 @@
 #  Uncomment ONE AND ONLY ONE opt/debug option and "RAJA_ARCH" 
 #  variable line for the platform you want. 
 #
-# IMPORTANT:  The specific compiler version and options are set in 
-#             the file ../compilers.mk.
+# IMPORTANT:  Make sure CXXFLAGS are what you want. They are used in 
+#             the source code, RAJA header files in particular, to
+#             set code compilation options. 
 #
 
 OPT_DEBUG = opt
 #OPT_DEBUG = debug
+
+##
+## Set option to report basic runtime information.
+##
+##LULESH_OPTS = -DRAJA_USE_CYCLE
+#LULESH_OPTS = -DRAJA_USE_CLOCK
+LULESH_OPTS = -DRAJA_USE_GETTIME
+
+# This is needed for RAJA_USE_GETTIME
+LDTIMER = -lrt
+
 
 #rzalastor
 RAJA_ARCH = x86_sse_icc
@@ -37,18 +49,6 @@ RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = rzmist_clang
 #RAJA_ARCH = rzmist_xlc
 
-RAJA_TOPDIR    = ../../..
-RAJA_INC       = $(RAJA_TOPDIR)/include/
-RAJA_SRC       = $(RAJA_TOPDIR)/src/
-
-
-##
-## The RAJA_rules.mk file defines macro variables that specify RAJA behavior.
-## To change the rules, the file in the RAJA include directory can be edited
-## or it can be replaced with custom version here.
-##
-include $(RAJA_TOPDIR)/build/RAJA_rules.mk
-
 
 ##
 ## Include file containing compiler version and options.
@@ -56,22 +56,27 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
+CXXFLAGS_BUILD = -I. -I../../include $(CXXFLAGS) $(LULESH_OPTS)
 
-TESTOBJS = buildIndexSet.o
+OBJFILES_PAR = luleshOMP.o 
+OBJFILES_PAR_NG = luleshOMP_NG.o 
+OBJFILES_SER = lulesh.o 
 
-RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
+default:
+	echo "Please specify version to build make serial, make parallel, or make parallel-ng"
 
-OBJFILES = $(TESTOBJS) $(RAJAOBJS)
+parallel: $(OBJFILES_PAR)
+	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP.exe
 
-CPUtraversal-test: main-traversal.o $(OBJFILES)
-	$(CXX_COMPILE) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+parallel-ng: $(OBJFILES_PAR_NG)
+	$(CXX_COMPILE) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP_NG.exe
 
-CPUreduce-test: main-reduce.o $(OBJFILES)
-	$(CXX_COMPILE) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+serial: $(OBJFILES_SER)
+	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-serial.exe
+
 
 ## Uncomment this line to generate an executable to run...
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
@@ -86,7 +91,7 @@ CPUreduce-test: main-reduce.o $(OBJFILES)
 
 
 clean-obj: 
-	rm -rf *.o $(RAJA_SRC)/*.o
+	rm -rf *.o 
 
 clean: clean-obj
 	rm -rf *.s *.lst *.exe 
