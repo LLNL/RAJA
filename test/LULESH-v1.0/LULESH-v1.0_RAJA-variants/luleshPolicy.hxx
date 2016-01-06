@@ -18,7 +18,7 @@ enum TilingMode
 
 // Use cases for RAJA execution patterns:
 
-#define USE_CASE 9
+#define USE_CASE 5
 
 //   1 = Sequential   (with possible SIMD vectorization applied)
 //   2 = Canonical    (OMP forall applied to each for loop)
