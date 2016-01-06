@@ -52,7 +52,7 @@ namespace RAJA {
 // Operations in this file are parametrized using the following
 // values.  RDH -- should we move these somewhere else??
 //
-const int THREADS_PER_BLOCK = 32;
+const int THREADS_PER_BLOCK = 256;
 const int WARP_SIZE = 32;
 
 
@@ -263,7 +263,6 @@ public:
       }
 #endif
       m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
-
       return m_reduced_val;
    }
 
