@@ -1,4 +1,4 @@
-include_directories(includes)
+include_directories(include)
 
 #add_subdirectory(CoMD)
 #add_subdirectory(LULESH-v1.0)

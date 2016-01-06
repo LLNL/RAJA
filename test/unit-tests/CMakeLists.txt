@@ -1,1 +1,1 @@
-add_subdirectory(GPUtests)
+add_subdirectory(CPUtests)

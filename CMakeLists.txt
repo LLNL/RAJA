@@ -8,13 +8,13 @@ set(RAJA_VERSION_MINOR 0)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
 # Find required packages
-#find_package(OpenMP REQUIRED)
-#if(OPENMP_FOUND)
-#  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-#  message(STATUS "OpenMP Enabled")
-#else()
-#  message(WARNING "OpenMP NOT FOUND")
-#endif()
+find_package(OpenMP REQUIRED)
+if(OPENMP_FOUND)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  message(STATUS "OpenMP Enabled")
+else()
+  message(WARNING "OpenMP NOT FOUND")
+endif()
 
 # Set Opt as the default build type
 if(NOT CMAKE_BUILD_TYPE)
@@ -25,66 +25,35 @@ endif()
 # Configure all our variables
 set(RAJA_USE_STL OFF)
 ## Floating point options
-set(RAJA_USE_DOUBLE ON)
-set(RAJA_USE_FLOAT OFF)
+set(RAJA_FP "RAJA_USE_DOUBLE")
+
 ## Pointers
-set(RAJA_USE_BARE_PTR ON)
-set(RAJA_USE_RESTRICT_PTR OFF)
-set(RAJA_USE_RESTRICT_ALIGNED_PTR OFF)
-set(RAJA_USE_PTR_CLASS OFF)
+set(RAJA_PTR "RAJA_USE_BARE_PTR")
+#set(RAJA_USE_BARE_PTR ON)
+#set(RAJA_USE_RESTRICT_PTR OFF)
+#set(RAJA_USE_RESTRICT_ALIGNED_PTR OFF)
+#set(RAJA_USE_PTR_CLASS OFF)
+
 ## Fault tolerance
 set(RAJA_USE_FT OFF)
 set(RAJA_REPORT_FT OFF)
-## GPUs
-set(RAJA_USE_CUDA OFF CACHE BOOL "Doc")
 
-if(RAJA_USE_CUDA)
-  find_package(CUDA)
-  if(CUDA_FOUND)
-    message(STATUS "CUDA found")
-    set(RAJA_PLATFORM RAJA_PLATFORM_X86_SSE)
-    set(RAJA_COMPILER RAJA_COMPILER_GNU)
-    set(RAJA_USE_CUDA)
-    set(CUDA_NVCC_FLAGS -O2; --expt-extended-lambda; -restrict; -arch compute_35; -std=c++11; -Xcompiler; -fopenmp)
-    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    include_directories(${CUDA_INCLUDE_DIRS})
-    #set(CMAKE_CXX_COMPILER nvcc)
-    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp")
-  endif()
-endif()
+## Platform-specific Constants
+set(RAJA_RANGE_ALIGN 4)
+set(RAJA_RANGE_MIN_LENGTH 32)
+set(RAJA_DATA_ALIGN 64)
+set(RAJA_COHERENCE_BLOCK_SIZE 64)
 
-if(CMAKE_CXX_COMPILER_ID MATCHES GNU)
-  set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
-  set(RAJA_COMPILER RAJA_COMPILER_GNU)
-
-  if(CMAKE_BUILD_TYPE MATCHES Opt)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Ofast -mavx -finline-functions -finline-limit=20000 -std=c++0x")
-  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fpermissive -std=c++0x")
-  endif()
-
-elseif(CMAKE_CXX_COMPILER_ID MATCHES Intel)
-  set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
-  set(RAJA_COMPILER RAJA_COMPILER_ICC)
-
-  if(CMAKE_BUILD_TYPE MATCHES Opt)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x")
-  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x")
-  endif()
-
-elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-  set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
-  set(RAJA_COMPILER RAJA_COMPILER_CLANG)
-
-  if(CMAKE_BUILD_TYPE MATCHES Opt)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++0x")
-  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x -fopenmp")
-  endif()
-endif()
-
-
+#elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
+#  set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
+#  set(RAJA_COMPILER RAJA_COMPILER_CLANG)
+#
+#  if(CMAKE_BUILD_TYPE MATCHES Opt)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++0x")
+#  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
+#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x -fopenmp")
+#  endif()
+#endif()
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
