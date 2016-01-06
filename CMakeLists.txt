@@ -87,23 +87,23 @@ endif()
 
 
 # Configure a header file with all the variables we found.
-configure_file(${PROJECT_SOURCE_DIR}/includes/RAJA/config.hxx.in
+configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 
-include_directories(includes)
+include_directories(include)
 
 add_library(RAJA
-  sources/AlignedRangeIndexSetBuilders.cxx
-  sources/DepGraphNode.cxx
-  sources/IndexSet.cxx
-  sources/ListSegment.cxx
-  sources/LockFreeIndexSetBuilders.cxx
-  sources/MemUtils.cxx
-  sources/RangeSegment.cxx
+  src/AlignedRangeIndexSetBuilders.cxx
+  src/DepGraphNode.cxx
+  src/IndexSet.cxx
+  src/ListSegment.cxx
+  src/LockFreeIndexSetBuilders.cxx
+  src/MemUtils.cxx
+  src/RangeSegment.cxx
   )
 
-file(GLOB files "includes/RAJA/*.hxx")
+file(GLOB files "include/RAJA/*.hxx")
 install(FILES ${files} DESTINATION "include/RAJA")
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
