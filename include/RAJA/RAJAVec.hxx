@@ -46,7 +46,7 @@ public:
    //
    // Construct empty vector with given capacity.
    //
-   explicit RAJAVec(unsigned init_cap = 0)
+   explicit RAJAVec(size_t init_cap = 0)
    : m_capacity(0), m_size(0), m_data(0)
    {
       grow_cap(init_cap);
@@ -95,21 +95,21 @@ public:
    //
    // Return true if vector has size zero; false otherwise.
    //
-   unsigned empty() const {
+   size_t empty() const {
       return (m_size == 0) ;
    }
 
    //
    // Return current size of vector.
    //
-   unsigned size() const { 
+   size_t size() const { 
       return m_size;
    }
 
    //
    // Const bracket operator.
    //
-   const T& operator [] (unsigned i) const
+   const T& operator [] (size_t i) const
    {
       return m_data[i];
    }
@@ -117,7 +117,7 @@ public:
    //
    // Non-const bracket operator.
    //
-   T& operator [] (unsigned i)
+   T& operator [] (size_t i)
    {
       return m_data[i];
    }
@@ -146,7 +146,7 @@ private:
    void copy(const RAJAVec<T>& other)
    {
       grow_cap(other.m_capacity);
-      for (unsigned i = 0; i < other.m_size; ++i) {
+      for (size_t i = 0; i < other.m_size; ++i) {
          m_data[i] = other[i];
       }
       m_capacity = other.m_capacity;
@@ -159,25 +159,25 @@ private:
    // memory allocation scheme to mimick std::vector behavior without 
    // relying on STL directly.  These are initialized at the end of this file.
    //
-   static const unsigned s_init_cap;
-   static const double   s_grow_fac;
+   static const size_t s_init_cap;
+   static const double s_grow_fac;
 
-   unsigned nextCap(unsigned current_cap) 
+   size_t nextCap(size_t current_cap) 
    {
       if (current_cap == 0) { return s_init_cap; }
-      return static_cast<unsigned>( current_cap * s_grow_fac ); 
+      return static_cast<size_t>( current_cap * s_grow_fac ); 
    }
 
-   void grow_cap(unsigned target_size)
+   void grow_cap(size_t target_size)
    {
-      unsigned target_cap = m_capacity;
+      size_t target_cap = m_capacity;
       while ( target_cap < target_size ) { target_cap = nextCap(target_cap); } 
 
       if ( m_capacity < target_cap ) {
          T* tdata = new T[target_cap];
 
          if ( m_data ) {
-            for (unsigned i = 0; (i < m_size)&&(i < target_cap); ++i) {
+            for (size_t i = 0; (i < m_size)&&(i < target_cap); ++i) {
                tdata[i] = m_data[i];
             } 
             delete[] m_data;
@@ -201,7 +201,7 @@ private:
       size_t old_size = m_size;
       grow_cap( old_size+1 );
 
-      for (unsigned i = old_size; i > 0; --i) {
+      for (size_t i = old_size; i > 0; --i) {
          m_data[i] = m_data[i-1];
       }
       m_data[0] = item;
@@ -209,8 +209,8 @@ private:
    }
    
 
-   unsigned m_capacity;
-   unsigned m_size;
+   size_t m_capacity;
+   size_t m_size;
    T* m_data;
 };
 
@@ -222,9 +222,9 @@ private:
 *************************************************************************
 */
 template< typename T>
-const unsigned RAJAVec<T>::s_init_cap = 8;
+const size_t RAJAVec<T>::s_init_cap = 8;
 template< typename T>
-const double   RAJAVec<T>::s_grow_fac = 1.5;
+const double RAJAVec<T>::s_grow_fac = 1.5;
 
 }  // closing brace for RAJA namespace
 
