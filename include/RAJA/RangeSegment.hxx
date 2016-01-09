@@ -18,6 +18,7 @@
 
 #include "execpolicy.hxx"
 
+#include <algorithm>
 #include <iosfwd>
 
 
@@ -97,20 +98,9 @@ public:
    ///
    void swap(RangeSegment& other)
    {
-#if defined(RAJA_USE_STL)
       using std::swap;
       swap(m_begin, other.m_begin);
       swap(m_end, other.m_end);
-#else
-      Index_type tbegin = m_begin;
-      Index_type tend   = m_end;
-
-      m_begin = other.m_begin;
-      m_end   = other.m_end;
-
-      other.m_begin = tbegin;
-      other.m_end   = tend;
-#endif
    }
 
 
@@ -271,24 +261,10 @@ public:
    ///
    void swap(RangeStrideSegment& other)
    {
-#if defined(RAJA_USE_STL)
       using std::swap;
       swap(m_begin, other.m_begin);
       swap(m_end, other.m_end);
       swap(m_stride, other.m_stride);
-#else
-      Index_type tbegin  = m_begin;
-      Index_type tend    = m_end;
-      Index_type tstride = m_stride;
-
-      m_begin  = other.m_begin;
-      m_end    = other.m_end;
-      m_stride = other.m_stride;
-
-      other.m_begin  = tbegin;
-      other.m_end    = tend;
-      other.m_stride = tstride;
-#endif
    }
 
 
