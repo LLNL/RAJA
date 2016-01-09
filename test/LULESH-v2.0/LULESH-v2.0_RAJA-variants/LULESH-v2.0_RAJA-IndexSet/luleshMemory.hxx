@@ -49,6 +49,19 @@ inline void Release(T **ptr)
    }
 }
 
+template <typename T>
+inline void Release(T * __restrict__ *ptr)
+{
+   if (*ptr != NULL) {
+      if (cudaFree(*ptr) != cudaSuccess) {
+        std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
+                  << __LINE__ << std::endl;
+        exit(1);
+      }
+      *ptr = NULL ;
+   }
+}
+
 
 #else  // Standard CPU memory allocate/release
 
