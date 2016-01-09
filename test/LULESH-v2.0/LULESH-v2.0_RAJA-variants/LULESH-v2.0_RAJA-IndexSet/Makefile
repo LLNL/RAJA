@@ -96,9 +96,11 @@ SILO_LIBDIR =
 
 ### Testing non-GPU build with nvcc...
 CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
 
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+#CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
+
 # to debug
 ##CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
 
