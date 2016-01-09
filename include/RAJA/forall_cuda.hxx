@@ -63,6 +63,15 @@ const int WARP_SIZE = 32;
 //
 //////////////////////////////////////////////////////////////////////
 //
+#define gpuErrchk(ans) { gpuAssert((ans), __FILE__, __LINE__); }
+inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort=true)
+{
+   if (code != cudaSuccess) 
+   {
+      fprintf(stderr,"GPUassert: %s %s %d\n", cudaGetErrorString(code), file, line);
+      if (abort) exit(code);
+   }
+}
 
 /*!
  ******************************************************************************
@@ -245,15 +254,15 @@ public:
    operator T()
    {
       cudaDeviceSynchronize() ;
-
+#if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
       for (size_t i=1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MIN(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
       }
+#endif
       m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
-
       return m_reduced_val;
    }
 
@@ -265,13 +274,17 @@ public:
       __shared__ T sd[THREADS_PER_BLOCK];
 
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
-         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       } 
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
+      // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
+
 
       sd[threadIdx.x] = val;
       __syncthreads();
@@ -410,13 +423,14 @@ public:
    operator T()
    {
       cudaDeviceSynchronize() ;
-
+#if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
       for (size_t i = 1; i <= grid_size; ++i) {
          m_blockdata[m_blockoffset] =
              RAJA_MAX(m_blockdata[m_blockoffset],
                       m_blockdata[m_blockoffset+i]) ;
       }
+#endif
       m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset]);
 
       return m_reduced_val;
@@ -433,8 +447,11 @@ public:
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = m_reduced_val;
+       // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
 
@@ -600,8 +617,11 @@ public:
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
-      if (threadIdx.x == 0) {
-         for (int i = 0; i < THREADS_PER_BLOCK; ++i) sd[i] = 0;
+       // initialize shared memory
+      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
       }
       __syncthreads();
 
@@ -766,12 +786,8 @@ void forall(cuda_exec,
 
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
-
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -798,6 +814,7 @@ void forall(cuda_exec_async,
 
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                begin, len);
+   gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -830,11 +847,8 @@ void forall_Icount(cuda_exec,
                                                       begin, len,
                                                       icount);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -867,6 +881,7 @@ void forall_Icount(cuda_exec_async,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       begin, len,
                                                       icount);
+   gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -905,11 +920,8 @@ void forall(cuda_exec,
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                begin, len);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -939,7 +951,8 @@ void forall(cuda_exec_async,
 
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                begin, len);
-
+   gpuErrchk(cudaPeekAtLastError());
+   
    RAJA_FT_END ;
 }
 
@@ -972,11 +985,8 @@ void forall_Icount(cuda_exec,
                                                       begin, len,
                                                       icount);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -1010,7 +1020,8 @@ void forall_Icount(cuda_exec_async,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       begin, len,
                                                       icount);
-
+   gpuErrchk(cudaPeekAtLastError());
+   
    RAJA_FT_END ;
 }
 
@@ -1044,11 +1055,8 @@ void forall(cuda_exec,
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -1074,6 +1082,7 @@ void forall(cuda_exec_async,
 
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                idx, len);
+   gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -1105,11 +1114,8 @@ void forall_Icount(cuda_exec,
                                                       idx, len,
                                                       icount);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -1140,6 +1146,7 @@ void forall_Icount(cuda_exec_async,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
+   gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -1177,11 +1184,8 @@ void forall(cuda_exec,
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
                                                idx, len);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -1210,7 +1214,8 @@ void forall(cuda_exec_async,
 
    forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                idx, len);
-
+   gpuErrchk(cudaPeekAtLastError());
+   
    RAJA_FT_END ;
 }
 
@@ -1243,11 +1248,8 @@ void forall_Icount(cuda_exec,
                                                       idx, len,
                                                       icount);
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -1281,7 +1283,8 @@ void forall_Icount(cuda_exec_async,
    forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
                                                       idx, len,
                                                       icount);
-
+   gpuErrchk(cudaPeekAtLastError());
+   
    RAJA_FT_END ;
 }
 
@@ -1318,11 +1321,8 @@ void forall( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
 
    } // iterate over segments of index set
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 }
 
 /*!
@@ -1351,11 +1351,8 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
 
    } // iterate over segments of index set
 
-   if (cudaDeviceSynchronize() != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk(cudaPeekAtLastError());
+   gpuErrchk(cudaDeviceSynchronize());
 }
 
 
