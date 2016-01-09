@@ -151,6 +151,20 @@ class Domain {
    // Destructor
    ~Domain();
 
+#if defined(RAJA_USE_CUDA)
+   void *operator new(size_t size)
+   {
+     void *ptr ;
+     cudaMallocManaged((void **)&ptr, size, cudaMemAttachGlobal) ;
+     return ptr ;
+   }
+
+   void operator delete(void *ptr)
+   {
+     cudaFree(ptr) ;
+   }
+#endif
+
    //
    // ALLOCATION
    //
@@ -436,8 +450,13 @@ class Domain {
 
    LULESH_ISET& getRegionISet(int r) { return m_domRegISet[r] ; }
 
+#if defined(RAJA_USE_CUDA)
+   Index_t& XSymNode(Index_t idx) { return m_domXSymNode[idx] ; }
+   Index_t& YSymNode(Index_t idx) { return m_domYSymNode[idx] ; }
+#else
    LULESH_ISET& getXSymNodeISet() { return m_domXSymNodeISet ; }
    LULESH_ISET& getYSymNodeISet() { return m_domYSymNodeISet ; }
+#endif
    LULESH_ISET& getZSymNodeISet() { return m_domZSymNodeISet ; }
 
    //
@@ -475,8 +494,13 @@ class Domain {
    LULESH_ISET m_domElemISet ;
    LULESH_ISET m_domElemRegISet ;
 
+#if defined(RAJA_USE_CUDA)
+   Index_p     m_domXSymNode ;
+   Index_p     m_domYSymNode ;
+#else
    LULESH_ISET m_domXSymNodeISet ;
    LULESH_ISET m_domYSymNodeISet ;
+#endif
    LULESH_ISET m_domZSymNodeISet ;
 
    /* region-based index sets */

@@ -50,7 +50,6 @@ typedef RAJA::simd_exec              Segment_Exec;
 typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> node_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> elem_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> mat_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> min_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> symnode_exec_policy;
 
 typedef RAJA::seq_reduce reduce_policy; 
@@ -75,25 +74,6 @@ typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> symnode_exec_poli
 
 typedef RAJA::omp_reduce reduce_policy;
 
-// ----------------------------------------------------
-#elif USE_CASE == 9
-
-// Requires OMP_FINE_SYNC 
-#define OMP_FINE_SYNC 1
-
-TilingMode const lulesh_tiling_mode = Canonical;
-
-typedef RAJA::seq_segit         Segment_Iter;
-typedef RAJA::cuda_exec         Segment_Exec;
-
-typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> node_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> elem_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> mat_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> symnode_exec_policy;
-
-typedef RAJA::cuda_reduce reduce_policy; 
-
-#if 0
 // ----------------------------------------------------
 #elif USE_CASE == 3
 
@@ -273,7 +253,6 @@ typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec>  mat_exec_p
 typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec>  symnode_exec_policy;
 
 typedef RAJA::cuda_reduce reduce_policy; 
-#endif
 
 #else
 
