@@ -14,11 +14,7 @@
 #include "RAJA/ListSegment.hxx"
 
 #include <iostream>
-
-#if !defined(RAJA_USE_STL)
-#include <cstdio>
-#include <cstring>
-#endif
+#include <string>
 
 #if defined(RAJA_USE_CUDA)
 #include <cuda.h>
@@ -85,24 +81,10 @@ ListSegment::~ListSegment()
 ////
 void ListSegment::swap(ListSegment& other)
 {
-#if defined(RAJA_USE_STL)
    using std::swap;
    swap(m_indx, other.m_indx);
    swap(m_len, other.m_len);
    swap(m_indx_own, other.m_indx_own);
-#else
-   Index_type* tindx        = m_indx;
-   Index_type  tlen         = m_len;
-   IndexOwnership tindx_own = m_indx_own;
-
-   m_indx     = other.m_indx;
-   m_len      = other.m_len;
-   m_indx_own = other.m_indx_own;
-
-   other.m_indx     = tindx;
-   other.m_len      = tlen;
-   other.m_indx_own = tindx_own;
-#endif
 }
 
 ////
