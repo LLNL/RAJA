@@ -69,26 +69,11 @@ IndexSet::~IndexSet()
 
 void IndexSet::swap(IndexSet& other)
 {
-#if defined(RAJA_USE_STL)
    using std::swap;
    swap(m_len, other.m_len);
    swap(m_segments, other.m_segments);
    swap(m_private, other.m_private);
    swap(m_dep_graph_set, other.m_dep_graph_set);
-#else
-   Index_type  tlen = m_len;
-   void* tprivate   = m_private;
-   bool tdep_graph_set = m_dep_graph_set;
-
-   m_len     = other.m_len;
-   m_private = other.m_private;
-   m_dep_graph_set = other.m_dep_graph_set;
-
-   other.m_len     = tlen;
-   m_segments.swap(other.m_segments);
-   other.m_private = tprivate;
-   other.m_dep_graph_set = tdep_graph_set;
-#endif
 }
 
 

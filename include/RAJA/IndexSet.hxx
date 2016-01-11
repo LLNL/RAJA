@@ -24,10 +24,6 @@
 
 #include "RAJAVec.hxx"
 
-#if defined(RAJA_USE_STL)
-#include <utility>
-#endif
-
 #include <iosfwd>
 
 
@@ -430,7 +426,6 @@ IndexSet* IndexSet::createView(const T& segIds) const
 }  // closing brace for RAJA namespace
 
 
-#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -448,6 +443,5 @@ void swap(RAJA::IndexSet& a, RAJA::IndexSet& b)
 }
 
 }
-#endif
 
 #endif  // closing endif for header file include guard
