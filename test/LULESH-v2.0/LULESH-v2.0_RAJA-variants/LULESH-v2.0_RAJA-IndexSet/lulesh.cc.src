@@ -2568,8 +2568,6 @@ int main(int argc, char *argv[])
    locDom = new Domain(numRanks, col, row, plane, opts.nx,
                        side, opts.numReg, opts.balance, opts.cost) ;
 
-   // Change construction process to appease CUDA
-   // locDom = Allocate<Domain>(1) ;
 
 #if USE_MPI   
    fieldData = &Domain::nodalMass ;
@@ -2600,14 +2598,6 @@ int main(int argc, char *argv[])
 //    RAJA::forall<mat_exec_policy>(locDom->getRegionISet(i), [=] (int idx) { printf("%d ", idx) ; }) ;
 //    printf("\n\n") ;
 // }
-
-#if defined(RAJA_USE_CUDA)
-   if (cudaDeviceSynchronize() != cudaSuccess ) {
-      printf("GPU not happy\n") ;
-      exit(-1) ;
-   }
-#endif
-
    while((locDom->time() < locDom->stoptime()) && (locDom->cycle() < opts.its)) {
 
       TimeIncrement(*locDom) ;
