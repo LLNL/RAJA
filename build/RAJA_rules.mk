@@ -9,15 +9,6 @@
 ##
 
 ##
-## RAJA uses some STL features internally.  To turn them off,
-## unset the variable below:
-##
-## -DRAJA_USE_STL
-##
-#RAJA_USING_STL   = -DRAJA_USE_STL
-RAJA_USING_STL   = 
-
-##
 ## Available options for RAJA scalar floating point types are:
 ##
 ## -DRAJA_USE_DOUBLE
@@ -53,4 +44,4 @@ RAJA_FPPTR_TYPE	= -DRAJA_USE_RESTRICT_PTR
 RAJA_FT_OPT	=
 
 
-RAJA_RULES	= $(RAJA_USING_STL) $(RAJA_FP_TYPE) $(RAJA_FPPTR_TYPE) $(RAJA_FT_OPT)
+RAJA_RULES	= $(RAJA_FP_TYPE) $(RAJA_FPPTR_TYPE) $(RAJA_FT_OPT)
