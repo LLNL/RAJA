@@ -18,11 +18,7 @@
 
 #include "execpolicy.hxx"
 
-#if defined(RAJA_USE_STL)
-#include <utility> 
 #include <algorithm> 
-#endif
-
 #include <iosfwd> 
 
 
@@ -63,7 +59,6 @@ public:
    ListSegment(const Index_type* indx, Index_type len,
                IndexOwnership indx_own = Owned);
 
-#if defined(RAJA_USE_STL)
    ///
    /// Construct list segment from arbitrary object holding 
    /// indices using a deep copy of given data.
@@ -71,7 +66,6 @@ public:
    /// The object must provide methods: begin(), end(), size().
    ///
    template< typename T> explicit ListSegment(const T& indx);
-#endif
 
    ///
    /// Copy-constructor for list segment.
@@ -178,7 +172,6 @@ private:
 };
 
 
-#if defined(RAJA_USE_STL)
 /*!
  ******************************************************************************
  *
@@ -197,13 +190,11 @@ ListSegment::ListSegment(const T& indx)
       m_indx_own = Owned;
    } 
 }
-#endif
 
 
 }  // closing brace for RAJA namespace 
 
 
-#if defined(RAJA_USE_STL)
 /*!
  *  Specialization of std swap method.
  */ 
@@ -217,7 +208,6 @@ void swap(RAJA::ListSegment& a, RAJA::ListSegment& b)
 }
 
 }
-#endif
 
 
 #endif  // closing endif for header file include guard
