@@ -651,29 +651,6 @@ Domain::CreateSymmetryIndexSets(Index_t edgeNodes)
   if (m_planeLoc == 0) {
     m_domZSymNodeISet.push_back( RAJA::RangeSegment(0, edgeNodes*edgeNodes) );
   }
-
-#if defined(RAJA_USE_CUDA)
-  if (m_rowLoc == 0) {
-    m_domYSymNode = Allocate<Index_t>(edgeNodes*edgeNodes) ;
-    Index_t nidx = 0 ;
-    for (Index_t i=0; i<edgeNodes; ++i) {
-      Index_t planeInc = i*edgeNodes*edgeNodes ;
-      for (Index_t j=0; j<edgeNodes; ++j) {
-        m_domYSymNode[nidx++] = planeInc + j ;
-      }
-    }
-  }
-  if (m_colLoc == 0) {
-    m_domXSymNode = Allocate<Index_t>(edgeNodes*edgeNodes) ;
-    Index_t nidx = 0 ;
-    for (Index_t i=0; i<edgeNodes; ++i) {
-      Index_t planeInc = i*edgeNodes*edgeNodes ;
-      for (Index_t j=0; j<edgeNodes; ++j) {
-        m_domXSymNode[nidx++] = planeInc + j*edgeNodes ;
-      }
-    }
-  }
-#else
   if (m_rowLoc == 0) {
     Index_t *nset = new Index_t[edgeNodes*edgeNodes] ;
     Index_t nidx = 0 ;
@@ -698,7 +675,6 @@ Domain::CreateSymmetryIndexSets(Index_t edgeNodes)
     m_domXSymNodeISet.push_back( RAJA::ListSegment(nset, edgeNodes*edgeNodes) );
     delete [] nset ;
   }
-#endif
 }
 
 

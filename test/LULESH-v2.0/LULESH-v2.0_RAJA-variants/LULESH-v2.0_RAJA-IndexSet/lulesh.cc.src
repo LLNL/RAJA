@@ -1108,19 +1108,6 @@ void CalcAccelerationForNodes(Domain* domain)
 RAJA_STORAGE
 void ApplyAccelerationBoundaryConditionsForNodes(Domain* domain)
 {
-#if defined(RAJA_USE_CUDA)
-   /* hack until IndexSet data is UVM friendly */
-   /* takes advantage of fact that Z range is 0..edgeNodes^2 */
-   RAJA::forall<symnode_exec_policy>(domain->getZSymNodeISet(),
-        [=] RAJA_DEVICE (int i) {
-      domain->xdd(domain->XSymNode(i)) = Real_t(0.0) ;
-   } );
-   
-   RAJA::forall<symnode_exec_policy>(domain->getZSymNodeISet(),
-        [=] RAJA_DEVICE (int i) {
-      domain->ydd(domain->YSymNode(i)) = Real_t(0.0) ;
-   } );
-#else
    RAJA::forall<symnode_exec_policy>(domain->getXSymNodeISet(),
         [=] RAJA_DEVICE (int i) {
       domain->xdd(i) = Real_t(0.0) ;
@@ -1130,7 +1117,6 @@ void ApplyAccelerationBoundaryConditionsForNodes(Domain* domain)
         [=] RAJA_DEVICE (int i) {
       domain->ydd(i) = Real_t(0.0) ;
    } );
-#endif
 
    RAJA::forall<symnode_exec_policy>(domain->getZSymNodeISet(),
         [=] RAJA_DEVICE (int i) {
