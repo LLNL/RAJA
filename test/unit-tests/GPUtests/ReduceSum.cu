@@ -48,6 +48,12 @@ int main(int argc, char *argv[])
       ivalue[i] = iinit_val ;
    }
 
+
+   ///
+   /// Define thread block size for CUDA exec policy
+   ///
+   const size_t block_size = 256;
+
 ////////////////////////////////////////////////////////////////////////////
 // Run 3 different sum reduction tests in a loop
 ////////////////////////////////////////////////////////////////////////////  
@@ -65,29 +71,30 @@ int main(int argc, char *argv[])
 
          double dtinit = 5.0;
 
-         ReduceSum<cuda_reduce, double> dsum0(0.0);
-         ReduceSum<cuda_reduce, double> dsum1(dtinit * 1.0);
-         ReduceSum<cuda_reduce, double> dsum2(0.0);
-         ReduceSum<cuda_reduce, double> dsum3(dtinit * 3.0);
-         ReduceSum<cuda_reduce, double> dsum4(0.0);
-         ReduceSum<cuda_reduce, double> dsum5(dtinit * 5.0);
-         ReduceSum<cuda_reduce, double> dsum6(0.0);
-         ReduceSum<cuda_reduce, double> dsum7(dtinit * 7.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum0(0.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum1(dtinit * 1.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum2(0.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum3(dtinit * 3.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum4(0.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum5(dtinit * 5.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum6(0.0);
+         ReduceSum< cuda_reduce<block_size>, double> dsum7(dtinit * 7.0);
 
          int loops = 2;
          for (int k=0; k < loops ; k++) {
 
             s_ntests_run++;
 
-            forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
-               dsum0 += dvalue[i] ;
-               dsum1 += dvalue[i] * 2.0;
-               dsum2 += dvalue[i] * 3.0;
-               dsum3 += dvalue[i] * 4.0;
-               dsum4 += dvalue[i] * 5.0;
-               dsum5 += dvalue[i] * 6.0;
-               dsum6 += dvalue[i] * 7.0;
-               dsum7 += dvalue[i] * 8.0;
+            forall< cuda_exec<block_size> >(0, TEST_VEC_LEN, 
+               [=] __device__ (int i) {
+                  dsum0 += dvalue[i] ;
+                  dsum1 += dvalue[i] * 2.0;
+                  dsum2 += dvalue[i] * 3.0;
+                  dsum3 += dvalue[i] * 4.0;
+                  dsum4 += dvalue[i] * 5.0;
+                  dsum5 += dvalue[i] * 6.0;
+                  dsum6 += dvalue[i] * 7.0;
+                  dsum7 += dvalue[i] * 8.0;
             } ) ;
    
             double base_chk_val = dinit_val*double(TEST_VEC_LEN)*(k+1);
@@ -158,12 +165,12 @@ int main(int argc, char *argv[])
          double dtinit = 5.0;
          int    itinit = 4;
 
-         ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
-         ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
-         ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
-         ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
+         ReduceSum< cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
+         ReduceSum< cuda_reduce<block_size>, int>    isum1(itinit * 2);
+         ReduceSum< cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
+         ReduceSum< cuda_reduce<block_size>, int>    isum3(itinit * 4);
 
-         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+         forall< IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(iset,
             [=] __device__ (int i) {
                dsum0 += dvalue[i] ;
                isum1 += 2*ivalue[i] ;
@@ -225,12 +232,12 @@ int main(int argc, char *argv[])
          double dtinit = 5.0;
          int    itinit = 4;
 
-         ReduceSum<cuda_reduce, double> dsum0(dtinit * 1.0);
-         ReduceSum<cuda_reduce, int>    isum1(itinit * 2);
-         ReduceSum<cuda_reduce, double> dsum2(dtinit * 3.0);
-         ReduceSum<cuda_reduce, int>    isum3(itinit * 4);
+         ReduceSum< cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
+         ReduceSum< cuda_reduce<block_size>, int>    isum1(itinit * 2);
+         ReduceSum< cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
+         ReduceSum< cuda_reduce<block_size>, int>    isum3(itinit * 4);
 
-         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+         forall< IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(iset,
             [=] __device__ (int i) {
                dsum0 += dvalue[i] ;
                isum1 += 2*ivalue[i] ;
