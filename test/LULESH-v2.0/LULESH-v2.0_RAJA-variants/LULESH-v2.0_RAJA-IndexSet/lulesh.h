@@ -6,7 +6,7 @@
 #define MAX(a, b) ( ((a) > (b)) ? (a) : (b))
 
 /* if luleshPolicy.hxx USE_CASE >= 9, must use lulesh_ptr.h */
-#if USE_CASE >= 9
+#if USE_CASE >= LULESH_CUDA_CANONICAL
 #if defined(LULESH_HEADER)
 #undef LULESH_HEADER
 #endif
