@@ -42,39 +42,40 @@ RAJA_SRC       = $(RAJA_TOPDIR)/src/
 ##
 #include ../../../compilers.mk
 
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
+PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
 
+CXX = nvcc
 
+#CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+#CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
+#CXXFLAGS = -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
+#CXXFLAGS = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 
-#CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
-#CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
-#CXX_COMPILE = nvcc -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
-#CXX_COMPILE = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(PLATFORM) $(TEST_OPTS)
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(TEST_OPTS)
-
+LDFLAGS = -Xcompiler -fopenmp
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 reducemin: ReduceMin.o $(RAJAOBJS) 
-	$(CXX_COMPILE) ReduceMin.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemin.exe
+	$(CXX) $(LDFLAGS) ReduceMin.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemin.exe
 
 reducemax: ReduceMax.o $(RAJAOBJS) 
-	$(CXX_COMPILE) ReduceMax.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemax.exe
+	$(CXX) $(LDFLAGS) ReduceMax.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducemax.exe
 
 reducesum: ReduceSum.o $(RAJAOBJS) 
-	$(CXX_COMPILE) ReduceSum.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducesum.exe
+	$(CXX) $(LDFLAGS) ReduceSum.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  reducesum.exe
 
 traversal: Traversal.o $(RAJAOBJS) 
-	$(CXX_COMPILE) Traversal.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  traversal.exe
+	$(CXX) $(LDFLAGS) Traversal.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  traversal.exe
 
-%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
+%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
+%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
-#%.o : %.cxx ; $(CXX_COMPILE) -S -o $@ $< 
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< 
 ## The following assembly options are for Intel compiler...
-#%.o : %.cxx ; $(CXX_COMPILE) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS)
 
 clean-obj: 
 	rm -rf *.o $(RAJA_SRC)/*.o
