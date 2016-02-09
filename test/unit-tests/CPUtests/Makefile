@@ -56,7 +56,7 @@ include $(RAJA_TOPDIR)/build/RAJA_rules.mk
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES)
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(PLATFORM) $(RAJA_RULES)
 
 TESTOBJS = buildIndexSet.o
 
@@ -65,24 +65,24 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 OBJFILES = $(TESTOBJS) $(RAJAOBJS)
 
 CPUtraversal-test: main-traversal.o $(OBJFILES)
-	$(CXX_COMPILE) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+	$(CXX) $(LDFLAGS) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
 
 CPUreduce-test: main-reduce.o $(OBJFILES)
-	$(CXX_COMPILE) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+	$(CXX) $(LDFLAGS) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
 
 ## Uncomment this line to generate an executable to run...
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
-#%.o : %.cxx ; $(CXX_COMPILE) -S -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for IBM XLC compilers...
 ## See compiler flag options in the appropriate section above.
-#%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
 
 clean-obj: 
