@@ -1940,7 +1940,6 @@ void CalcQForElems(Domain* domain)
       domain->DeallocateGradients(elemMemPool);
 
       /* Don't allow excessive artificial viscosity */
-#if 1
       RAJA::ReduceMax<reduce_policy, Real_t>
              maxQ(domain->qstop() - Real_t(1.0)) ;
       RAJA::forall<elem_exec_policy>(domain->getElemISet(),
@@ -1949,18 +1948,6 @@ void CalcQForElems(Domain* domain)
       } ) ;
 
       if ( Real_t(maxQ) > domain->qstop() ) {
-#else
-      Index_t idx = -1; 
-      for (Index_t i=0; i<numElem; ++i) {
-         if ( domain->q(i) > domain->qstop() ) {
-            idx = i ;
-            break ;
-         }
-      }
-
-      if(idx >= 0) {
-#endif
-
 #if USE_MPI         
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
