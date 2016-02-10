@@ -35,6 +35,11 @@ int main(int argc, char *argv[])
       dvalue[i] = DBL_MAX ;
    }
 
+   ///
+   /// Define thread block size for CUDA exec policy
+   ///
+   const size_t block_size = 256;
+
 ////////////////////////////////////////////////////////////////////////////
 // Run 3 different min reduction tests in a loop
 ////////////////////////////////////////////////////////////////////////////
@@ -60,9 +65,9 @@ int main(int argc, char *argv[])
       { // begin test 1 
 
          double BIG_MIN = -500.0;
-         ReduceMin<cuda_reduce, double> dmin0(DBL_MAX);
-         ReduceMin<cuda_reduce, double> dmin1(DBL_MAX);
-         ReduceMin<cuda_reduce, double> dmin2(BIG_MIN);
+         ReduceMin< cuda_reduce<block_size>, double> dmin0(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin1(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin2(BIG_MIN);
 
          int loops = 16;
          for(int k=0; k < loops ; k++) {
@@ -74,10 +79,11 @@ int main(int argc, char *argv[])
             dvalue[index] = droll;
             dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]); 
 
-            forall<cuda_exec>(0, TEST_VEC_LEN, [=] __device__ (int i) {
-               dmin0.min(dvalue[i]) ;
-               dmin1.min(2*dvalue[i]) ;
-               dmin2.min(dvalue[i]) ;
+            forall< cuda_exec<block_size> >(0, TEST_VEC_LEN, 
+               [=] __device__ (int i) {
+                 dmin0.min(dvalue[i]) ;
+                 dmin1.min(2*dvalue[i]) ;
+                 dmin2.min(dvalue[i]) ;
             } ) ;
 
             if ( double(dmin0) != dcurrentMin || 
@@ -117,8 +123,8 @@ int main(int argc, char *argv[])
          iset.push_back(seg0);
          iset.push_back(seg1);
 
-         ReduceMin<cuda_reduce, double> dmin0(DBL_MAX);
-         ReduceMin<cuda_reduce, double> dmin1(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin0(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin1(DBL_MAX);
 
          int index = int(dist2(mt));
 
@@ -127,7 +133,7 @@ int main(int argc, char *argv[])
 
          dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
-         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+         forall< IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(iset,
             [=] __device__ (int i) {
                dmin0.min(dvalue[i]) ;
                dmin1.min(2*dvalue[i]) ;
@@ -175,8 +181,8 @@ int main(int argc, char *argv[])
          iset.push_back(seg2);
          iset.push_back(seg3);
 
-         ReduceMin<cuda_reduce, double> dmin0(DBL_MAX);
-         ReduceMin<cuda_reduce, double> dmin1(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin0(DBL_MAX);
+         ReduceMin< cuda_reduce<block_size>, double> dmin1(DBL_MAX);
 
          // pick an index in one of the segments
          int index = 897;                      // seg 0
@@ -189,7 +195,7 @@ int main(int argc, char *argv[])
 
          dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
-         forall< IndexSet::ExecPolicy<seq_segit,cuda_exec> >(iset,
+         forall< IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(iset,
             [=] __device__ (int i) {
                dmin0.min(dvalue[i]) ;
                dmin1.min(2*dvalue[i]) ;

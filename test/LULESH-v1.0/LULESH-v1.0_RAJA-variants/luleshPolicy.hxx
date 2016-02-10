@@ -212,14 +212,17 @@ typedef RAJA::cilk_reduce            reduce_policy ;
 TilingMode const lulesh_tiling_mode = Canonical;
 
 typedef RAJA::seq_segit         Hybrid_Seg_Iter;
-typedef RAJA::cuda_exec         Segment_Exec;
+
+/// Define thread block size for CUDA exec policy
+const size_t thread_block_size = 256;
+typedef RAJA::cuda_exec<thread_block_size>    Segment_Exec;
 
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
-typedef RAJA::cuda_reduce reduce_policy; 
+typedef RAJA::cuda_reduce<thread_block_size> reduce_policy; 
 
 // ----------------------------------------------------
 #elif USE_CASE == LULESH_CUDA_COLOR_SIMD
@@ -229,14 +232,17 @@ typedef RAJA::cuda_reduce reduce_policy;
 TilingMode const lulesh_tiling_mode = Tiled_LockFreeColorSIMD;
 
 typedef RAJA::seq_segit         Hybrid_Seg_Iter;
-typedef RAJA::cuda_exec         Segment_Exec;
+
+/// Define thread block size for CUDA exec policy
+const size_t thread_block_size = 256;
+typedef RAJA::cuda_exec<thread_block_size>    Segment_Exec;
 
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> node_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> elem_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> mat_exec_policy;
 typedef RAJA::IndexSet::ExecPolicy<Hybrid_Seg_Iter, Segment_Exec> symnode_exec_policy;
 
-typedef RAJA::cuda_reduce reduce_policy; 
+typedef RAJA::cuda_reduce<thread_block_size> reduce_policy; 
 
 #else
 

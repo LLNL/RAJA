@@ -142,13 +142,18 @@ struct omp_reduce {};
 //
 // Segment exec policies
 //
+template <size_t BLOCK_SIZE>
 struct cuda_exec {};
+
+template <size_t BLOCK_SIZE>
 struct cuda_exec_async {};
 
 //
 // Reduction policies
 //
+template <size_t BLOCK_SIZE>
 struct cuda_reduce {};
+
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__

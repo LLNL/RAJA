@@ -37,6 +37,9 @@
 
 #if defined(RAJA_USE_CUDA)
 
+#include <cuda.h>
+#include <cuda_runtime.h>
+
 
 namespace RAJA {
 
@@ -52,7 +55,6 @@ namespace RAJA {
 // Operations in this file are parametrized using the following
 // values.  RDH -- should we move these somewhere else??
 //
-const int THREADS_PER_BLOCK = 256;
 const int WARP_SIZE = 32;
 
 
@@ -191,8 +193,8 @@ __device__ inline void atomicMax(double *address, double value)
  *
  ******************************************************************************
  */
-template <typename T>
-class ReduceMin<cuda_reduce, T> 
+template <size_t BLOCK_SIZE, typename T>
+class ReduceMin< cuda_reduce<BLOCK_SIZE>, T > 
 {
 public:
    //
@@ -226,7 +228,8 @@ public:
    //
    // Copy ctor executes on both host and device.
    //
-   __host__ __device__ ReduceMin( const ReduceMin<cuda_reduce, T>& other )
+   __host__ __device__ 
+   ReduceMin( const ReduceMin< cuda_reduce<BLOCK_SIZE> , T >& other )
    {
       *this = other;
       m_is_copy = true;
@@ -236,7 +239,8 @@ public:
    // Destructor executes on both host and device.
    // Destruction on host releases the unique id for others to use. 
    //
-   __host__ __device__ ~ReduceMin<cuda_reduce, T>()
+   __host__ __device__ 
+   ~ReduceMin< cuda_reduce<BLOCK_SIZE> , T >()
    {
       if (!m_is_copy) {
 #if defined( __CUDA_ARCH__ ) 
@@ -269,18 +273,21 @@ public:
    //
    // Updates reduced value in the proper shared memory block locations.
    //
-   __device__ ReduceMin<cuda_reduce, T> min(T val) const
+   __device__ 
+   ReduceMin< cuda_reduce<BLOCK_SIZE>, T > min(T val) const
    {
-      __shared__ T sd[THREADS_PER_BLOCK];
+      __shared__ T sd[BLOCK_SIZE];
 
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
           m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       } 
 
       // initialize shared memory
-      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
-          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
-              sd[threadIdx.x + i] = m_reduced_val;  
+      for ( int i = BLOCK_SIZE / 2; i > 0; i /=2 ) {     
+          // this descends all the way to 1
+          if ( threadIdx.x < i ) {                                
+             // no need for __syncthreads()
+             sd[threadIdx.x + i] = m_reduced_val;  
           } 
       }
       __syncthreads();
@@ -289,7 +296,7 @@ public:
       sd[threadIdx.x] = val;
       __syncthreads();
 
-      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
           if (threadIdx.x < i) {
               sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x + i]);
           }
@@ -338,7 +345,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMin<cuda_reduce, T>();
+   ReduceMin< cuda_reduce<BLOCK_SIZE>, T >();
 
    bool m_is_copy;
    int m_myID;
@@ -351,6 +358,7 @@ private:
    CudaReductionBlockDataType* m_max_grid_size;
 } ;
 
+
 /*!
  ******************************************************************************
  *
@@ -360,8 +368,8 @@ private:
  *
  ******************************************************************************
  */
-template <typename T>
-class ReduceMax<cuda_reduce, T> 
+template <size_t BLOCK_SIZE, typename T>
+class ReduceMax< cuda_reduce<BLOCK_SIZE>, T > 
 {
 public:
    //
@@ -395,7 +403,8 @@ public:
    //
    // Copy ctor executes on both host and device.
    //
-   __host__ __device__ ReduceMax( const ReduceMax<cuda_reduce, T>& other )
+   __host__ __device__ 
+   ReduceMax( const ReduceMax< cuda_reduce<BLOCK_SIZE>, T >& other )
    {
       *this = other;
       m_is_copy = true;
@@ -405,7 +414,8 @@ public:
    // Destructor executes on both host and device.
    // Destruction on host releases the unique id for others to use. 
    //
-   __host__ __device__ ~ReduceMax<cuda_reduce, T>()
+   __host__ __device__ 
+   ~ReduceMax< cuda_reduce<BLOCK_SIZE>, T >()
    {
       if (!m_is_copy) {
 #if defined( __CUDA_ARCH__ )
@@ -439,17 +449,20 @@ public:
    //
    // Updates reduced value in the proper shared memory block locations.
    //
-   __device__ ReduceMax<cuda_reduce, T> max(T val) const
+   __device__ 
+   ReduceMax< cuda_reduce<BLOCK_SIZE>, T > max(T val) const
    {
-      __shared__ T sd[THREADS_PER_BLOCK];
+      __shared__ T sd[BLOCK_SIZE];
 
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
        // initialize shared memory
-      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
-          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+      for ( int i = BLOCK_SIZE / 2; i > 0; i /=2 ) {     
+          // this descends all the way to 1
+          if ( threadIdx.x < i ) {
+              // no need for __syncthreads()
               sd[threadIdx.x + i] = m_reduced_val;  
           } 
       }
@@ -458,7 +471,7 @@ public:
       sd[threadIdx.x] = val;
       __syncthreads();
 
-      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
           if (threadIdx.x < i) {
               sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x + i]);
           }
@@ -507,7 +520,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMax<cuda_reduce, T>();
+   ReduceMax< cuda_reduce<BLOCK_SIZE> , T >();
 
    bool m_is_copy;
    int m_myID;
@@ -520,6 +533,7 @@ private:
    CudaReductionBlockDataType* m_max_grid_size;
 } ;
 
+
 /*!
  ******************************************************************************
  *
@@ -529,8 +543,8 @@ private:
  *
  ******************************************************************************
  */
-template <typename T>
-class ReduceSum<cuda_reduce, T> 
+template <size_t BLOCK_SIZE, typename T>
+class ReduceSum< cuda_reduce<BLOCK_SIZE>, T > 
 {
 public:
    //
@@ -565,7 +579,8 @@ public:
    //
    // Copy ctor executes on both host and device.
    //
-   __host__ __device__ ReduceSum( const ReduceSum<cuda_reduce, T>& other )
+   __host__ __device__ 
+   ReduceSum( const ReduceSum< cuda_reduce<BLOCK_SIZE>, T >& other )
    {
       *this = other;
       m_is_copy = true;
@@ -575,7 +590,8 @@ public:
    // Destructor executes on both host and device.
    // Destruction on host releases the unique id for others to use. 
    //
-   __host__ __device__ ~ReduceSum<cuda_reduce, T>()
+   __host__ __device__ 
+   ~ReduceSum< cuda_reduce<BLOCK_SIZE>, T >()
    {
       if (!m_is_copy) {
 #if defined( __CUDA_ARCH__ )
@@ -609,17 +625,20 @@ public:
    // += operator to accumulate arg value in the proper shared
    // memory block location.
    //
-   __device__ ReduceSum<cuda_reduce, T> operator+=(T val) const
+   __device__ 
+   ReduceSum<  cuda_reduce<BLOCK_SIZE>, T > operator+=(T val) const
    {
-      __shared__ T sd[THREADS_PER_BLOCK];
+      __shared__ T sd[BLOCK_SIZE];
 
       if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
       }
 
        // initialize shared memory
-      for ( int i = THREADS_PER_BLOCK / 2; i > 0; i /=2 ) {     // this descends all the way to 1
-          if ( threadIdx.x < i ) {                                // no need for __syncthreads()
+      for ( int i = BLOCK_SIZE / 2; i > 0; i /=2 ) {     
+          // this descends all the way to 1
+          if ( threadIdx.x < i ) {
+              // no need for __syncthreads()
               sd[threadIdx.x + i] = m_reduced_val;  
           } 
       }
@@ -630,7 +649,7 @@ public:
       T temp = 0;
       __syncthreads();
 
-      for (int i = THREADS_PER_BLOCK / 2; i >= WARP_SIZE; i /= 2) {
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
          if (threadIdx.x < i) {
             sd[threadIdx.x] += sd[threadIdx.x + i];
          }
@@ -657,7 +676,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceSum<cuda_reduce, T>();
+   ReduceSum< cuda_reduce<BLOCK_SIZE>, T >();
 
    bool m_is_copy;
    int m_myID;
@@ -772,20 +791,19 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec,
+void forall(cuda_exec<BLOCK_SIZE>,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
    Index_type len = end - begin;
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               begin, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                begin, len);
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
 
@@ -800,20 +818,19 @@ void forall(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec_async,
+void forall(cuda_exec_async<BLOCK_SIZE>,
             Index_type begin, Index_type end,
             LOOP_BODY loop_body)
 {
    Index_type len = end - begin;
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                begin, len);
    gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
@@ -829,23 +846,22 @@ void forall(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec,
+void forall_Icount(cuda_exec<BLOCK_SIZE>,
                    Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
    Index_type len = end - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                                      begin, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                       begin, len,
+                                                       icount);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -864,23 +880,22 @@ void forall_Icount(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec_async,
+void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
                    Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
    Index_type len = end - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      begin, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       begin, len,
+                                                       icount);
    gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
@@ -902,9 +917,9 @@ void forall_Icount(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec,
+void forall(cuda_exec<BLOCK_SIZE>,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
@@ -912,13 +927,12 @@ void forall(cuda_exec,
    Index_type end   = iseg.getEnd();
    Index_type len = end - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               begin, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                begin, len);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -934,9 +948,9 @@ void forall(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec_async,
+void forall(cuda_exec_async<BLOCK_SIZE>,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
@@ -944,13 +958,12 @@ void forall(cuda_exec_async,
    Index_type end   = iseg.getEnd();
    Index_type len = end - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               begin, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                begin, len);
    gpuErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
@@ -966,9 +979,9 @@ void forall(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec,
+void forall_Icount(cuda_exec<BLOCK_SIZE>,
                    const RangeSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -976,14 +989,13 @@ void forall_Icount(cuda_exec,
    Index_type begin = iseg.getBegin();
    Index_type len = iseg.getEnd() - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                                      begin, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                       begin, len,
+                                                       icount);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -1002,9 +1014,9 @@ void forall_Icount(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec_async,
+void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
                    const RangeSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -1012,14 +1024,13 @@ void forall_Icount(cuda_exec_async,
    Index_type begin = iseg.getBegin();
    Index_type len = iseg.getEnd() - begin;
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      begin, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       begin, len,
+                                                       icount);
    gpuErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
@@ -1041,19 +1052,18 @@ void forall_Icount(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec,
+void forall(cuda_exec<BLOCK_SIZE>,
             const Index_type* idx, Index_type len,
             LOOP_BODY loop_body)
 {
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               idx, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                idx, len);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -1069,19 +1079,18 @@ void forall(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec_async,
+void forall(cuda_exec_async<BLOCK_SIZE>,
             const Index_type* idx, Index_type len,
             LOOP_BODY loop_body)
 {
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                idx, len);
    gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
@@ -1098,21 +1107,20 @@ void forall(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec,
+void forall_Icount(cuda_exec<BLOCK_SIZE>,
                    const Index_type* idx, Index_type len,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      idx, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       idx, len,
+                                                       icount);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -1131,21 +1139,20 @@ void forall_Icount(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec_async,
+void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
                    const Index_type* idx, Index_type len,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      idx, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       idx, len,
+                                                       icount);
    gpuErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
@@ -1167,22 +1174,21 @@ void forall_Icount(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec,
+void forall(cuda_exec<BLOCK_SIZE>,
             const ListSegment& iseg,
             LOOP_BODY loop_body)
 {
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body, 
-                                               idx, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
+                                                idx, len);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -1198,22 +1204,21 @@ void forall(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall(cuda_exec_async,
+void forall(cuda_exec_async<BLOCK_SIZE>,
             const ListSegment& iseg,
             LOOP_BODY loop_body)
 {
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                               idx, len);
+   forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                idx, len);
    gpuErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
@@ -1229,9 +1234,9 @@ void forall(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec,
+void forall_Icount(cuda_exec<BLOCK_SIZE>,
                    const ListSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -1239,14 +1244,13 @@ void forall_Icount(cuda_exec,
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      idx, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       idx, len,
+                                                       icount);
 
    gpuErrchk(cudaPeekAtLastError());
    gpuErrchk(cudaDeviceSynchronize());
@@ -1265,9 +1269,9 @@ void forall_Icount(cuda_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cuda_exec_async,
+void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
                    const ListSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -1275,14 +1279,13 @@ void forall_Icount(cuda_exec_async,
    const Index_type* idx = iseg.getIndex();
    Index_type len = iseg.getLength();
 
-   size_t blockSize = THREADS_PER_BLOCK;
-   size_t gridSize = (len + blockSize - 1) / blockSize;
+   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
    RAJA_FT_BEGIN ;
 
-   forall_Icount_cuda_kernel<<<gridSize, blockSize>>>(loop_body,
-                                                      idx, len,
-                                                      icount);
+   forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                       idx, len,
+                                                       icount);
    gpuErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
@@ -1307,9 +1310,9 @@ void forall_Icount(cuda_exec_async,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
+void forall( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
              const IndexSet& iset,
              LOOP_BODY loop_body )
 {
@@ -1317,7 +1320,8 @@ void forall( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall<cuda_exec_async>(seg_info, loop_body);
+      executeRangeList_forall< cuda_exec_async<BLOCK_SIZE> >(
+                                    seg_info, loop_body );
 
    } // iterate over segments of index set
 
@@ -1337,9 +1341,9 @@ void forall( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
+void forall_Icount( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
                     const IndexSet& iset,
                     LOOP_BODY loop_body )
 {
@@ -1347,7 +1351,8 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, cuda_exec>,
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall_Icount<cuda_exec_async>(seg_info, loop_body);
+      executeRangeList_forall_Icount< cuda_exec_async<BLOCK_SIZE> >(
+                                           seg_info, loop_body );
 
    } // iterate over segments of index set
 
