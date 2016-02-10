@@ -89,19 +89,19 @@ ifeq ($(RAJA_ARCH),ipa_cuda)
 CXX = nvcc
 
 ### Testing non-GPU build with nvcc...
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+#PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
+PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
-CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
 ## To debug
-##CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+##CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu -v -keep
 
 LDFLAGS = -Xcompiler -fopenmp
 
 LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
-LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
+#LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
 
-LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
+LULESHOBJS = $(LULESHOBJS_CC) # $(LULESHOBJS_CU)
 
 else
 ##
@@ -124,7 +124,7 @@ default: $(OBJFILES)
 	$(CXX) $(LDFLAGS) $(OBJFILES) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh2.0_RAJA-basic.exe
 
 ## Uncomment these lines to generate an executable to run...
-%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
+#%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cc ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
