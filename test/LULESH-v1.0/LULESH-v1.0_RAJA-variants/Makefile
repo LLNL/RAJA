@@ -29,7 +29,7 @@ LDTIMER = -lrt
 
 
 #rzalastor
-#RAJA_ARCH = x86_sse_icc
+RAJA_ARCH = x86_sse_icc
 #RAJA_ARCH = x86_sse_gnu
 
 #rzmerl
@@ -45,7 +45,7 @@ LDTIMER = -lrt
 #RAJA_ARCH = MIC
 
 #ipa-nvcc
-RAJA_ARCH = ipa_nvcc
+#RAJA_ARCH = ipa_nvcc
 
 #rzmist
 #RAJA_ARCH = rzmist_clang
