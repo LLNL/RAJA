@@ -10,7 +10,7 @@
 #  Uncomment ONE AND ONLY ONE opt/debug option and "RAJA_ARCH" 
 #  variable line for the platform you want. 
 #
-# IMPORTANT:  Make sure CXXFLAGS are what you want. They are used in 
+# IMPORTANT:  Make sure PLATFORM is what you want. They are used in 
 #             the source code, RAJA header files in particular, to
 #             set code compilation options. 
 #
@@ -56,7 +56,7 @@ RAJA_ARCH = x86_sse_icc
 include ../../compilers.mk
 
 
-CXXFLAGS_BUILD = -I. -I../../include $(CXXFLAGS) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include $(PLATFORM) $(LULESH_OPTS)
 
 OBJFILES_PAR = luleshOMP.o 
 OBJFILES_PAR_NG = luleshOMP_NG.o 
@@ -66,28 +66,28 @@ default:
 	echo "Please specify version to build make serial, make parallel, or make parallel-ng"
 
 parallel: $(OBJFILES_PAR)
-	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP.exe
 
 parallel-ng: $(OBJFILES_PAR_NG)
-	$(CXX_COMPILE) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP_NG.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_PAR_NG) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-OMP_NG.exe
 
 serial: $(OBJFILES_SER)
-	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-serial.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-serial.exe
 
 
 ## Uncomment this line to generate an executable to run...
-%.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cc ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
-#%.o : %.cxx ; $(CXX_COMPILE) -S -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for IBM XLC compilers...
 ## See compiler flag options in the appropriate section above.
-#%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
 
 clean-obj: 

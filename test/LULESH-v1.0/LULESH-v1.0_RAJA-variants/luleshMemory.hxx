@@ -15,11 +15,7 @@ template <typename T>
 inline T *Allocate(size_t size)
 {
    T *retVal ;
-   if (cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-     exit(1);
-   }
+   gpuErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
    return retVal ;
 }
 
@@ -27,11 +23,7 @@ template <typename EXEC_POLICY_T, typename T>
 inline T *AllocateTouch(RAJA::IndexSet *is, size_t size)
 {
    T *retVal ;
-   if (cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) != cudaSuccess) {
-      std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-   }
+   gpuErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
    cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
@@ -40,11 +32,7 @@ template <typename T>
 inline void Release(T **ptr)
 {
    if (*ptr != NULL) {
-      if (cudaFree(*ptr) != cudaSuccess) {
-        std::cerr << "\n ERROR in CUDA Call, FILE: " << __FILE__ << " line "
-                  << __LINE__ << std::endl;
-        exit(1);
-      }
+      gpuErrchk( cudaFree(*ptr) ) ;
       *ptr = NULL ;
    }
 }

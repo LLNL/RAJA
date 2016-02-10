@@ -949,6 +949,8 @@ void CalcHourglassControlForElems(Domain* domain,
    /* start loop over elements */
    RAJA::forall<elem_exec_policy>(domain->getElemISet(),
         [=] RAJA_DEVICE (int i) {
+#if 1
+      /* This variant makes overall runtime 2% faster on CPU */
       Real_t  x1[8],  y1[8],  z1[8] ;
       Real_t pfx[8], pfy[8], pfz[8] ;
 
@@ -968,6 +970,15 @@ void CalcHourglassControlForElems(Domain* domain,
          y8n[jj]  = y1[ii];
          z8n[jj]  = z1[ii];
       }
+#else
+      /* This variant is likely GPU friendly */
+      Index_t* elemToNode = domain->nodelist(i);
+      CollectDomainNodesToElemNodes(domain, elemToNode,
+                                    &x8n[8*i], &y8n[8*i], &z8n[8*i]);
+
+      CalcElemVolumeDerivative(&dvdx[8*i], &dvdy[8*i], &dvdz[8*i],
+                               &x8n[8*i], &y8n[8*i], &z8n[8*i]);
+#endif
 
       determ[i] = domain->volo(i) * domain->v(i);
 
@@ -1929,15 +1940,14 @@ void CalcQForElems(Domain* domain)
       domain->DeallocateGradients(elemMemPool);
 
       /* Don't allow excessive artificial viscosity */
-      Index_t idx = -1; 
-      for (Index_t i=0; i<numElem; ++i) {
-         if ( domain->q(i) > domain->qstop() ) {
-            idx = i ;
-            break ;
-         }
-      }
+      RAJA::ReduceMax<reduce_policy, Real_t>
+             maxQ(domain->qstop() - Real_t(1.0)) ;
+      RAJA::forall<elem_exec_policy>(domain->getElemISet(),
+           [=] RAJA_DEVICE (int ielem) {
+         maxQ.max(domain->q(ielem)) ;
+      } ) ;
 
-      if(idx >= 0) {
+      if ( Real_t(maxQ) > domain->qstop() ) {
 #if USE_MPI         
          MPI_Abort(MPI_COMM_WORLD, QStopError) ;
 #else
@@ -1959,7 +1969,7 @@ void CalcPressureForElems(Real_t* p_new, Real_t* bvc,
 {
    RAJA::forall<mat_exec_policy>(regISet,
         [=] RAJA_DEVICE (int ielem) {
-      Real_t c1s = Real_t(2.0)/Real_t(3.0) ;
+      Real_t const  c1s = Real_t(2.0)/Real_t(3.0) ;
       bvc[ielem] = c1s * (compression[ielem] + Real_t(1.));
       pbvc[ielem] = c1s;
    } );
