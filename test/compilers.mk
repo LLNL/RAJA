@@ -7,10 +7,10 @@
 #
 #  Edit this file to choose compiler versions and options.
 #
-#  Make sure ONE AND ONLY ONE 'CXX' and 'CXX_COMPILE' variable is set 
+#  Make sure ONE AND ONLY ONE 'CXX' and 'CXXFLAGS' variable is set 
 #  in the 'RAJA_ARCH' section for the desired compiler.
 #
-# IMPORTANT:  Make sure CXXFLAGS are what you want. They are used in 
+# IMPORTANT:  Make sure PLATFORM is what you want. It is used in 
 #             the source code, RAJA header files in particular, to
 #             set code compilation options. 
 #
@@ -26,16 +26,16 @@ ifeq ($(RAJA_ARCH),MIC)
 CXX 		= icc
 
 ifeq ($(OPT_DEBUG),opt)
-CXX_COMPILE = $(CXX) -g -O3 -mmic -vec-report3  -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-LDFLAGS	=
+CXXFLAGS = -g -O3 -mmic -vec-report3  -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -mmic  -O0 -std=c++0x -openmp
-LDFLAGS	=
+CXXFLAGS = -g -mmic  -O0 -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_ICC
+PLATFORM	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_ICC
 LDPATH		=
 
 endif 
@@ -60,21 +60,21 @@ ifeq ($(RAJA_ARCH),x86_sse_icc)
 CXX             = /usr/local/tools/ic-15.0.133/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -O2 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -O1 -g -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-##CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
-###CXX_COMPILE = $(CXX) -O3 -msse4.1 -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-LDFLAGS	=
+#CXXFLAGS = -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
+CXXFLAGS = -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+#CXXFLAGS = -O2 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+#CXXFLAGS = -O1 -g -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+##CXXFLAGS = -O3 -msse4.1 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
+###CXXFLAGS = -O3 -msse4.1 -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
-LDFLAGS	=
+CXXFLAGS = -g -O0 -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_ICC
+PLATFORM	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_ICC
 LDPATH		=
 
 endif 
@@ -93,23 +93,23 @@ CXX 		= /usr/apps/gnu/4.9.0/bin/g++
 ifeq ($(OPT_DEBUG),opt)
 #
 # Use this with GNU 4.7X and later
-CXX_COMPILE = $(CXX) -Ofast -msse4.1 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
-#CXX_COMPILE = $(CXX) -O3 -msse4.1 -finline-functions -finline-limit=20000 -std=c++0x -openmp
-##CXX_COMPILE = $(CXX) -O3 -msse4.1  -ansi-alias -std=c++0x
+CXXFLAGS = -Ofast -msse4.1 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
+#CXXFLAGS = -O3 -msse4.1 -finline-functions -finline-limit=20000 -std=c++0x -openmp
+##CXXFLAGS = -O3 -msse4.1  -ansi-alias -std=c++0x
 ## inline flags...
-#CXX_COMPILE = $(CXX) -O3 -msse4.1  -finline-functions -finline-limit=20000 -ansi-alias -std=c++0x
+#CXXFLAGS = -O3 -msse4.1  -finline-functions -finline-limit=20000 -ansi-alias -std=c++0x
 ## inline flags + others...
-##CXX_COMPILE = $(CXX) -O3 -msse4.1  -finline-functions -finline-limit=20000 -fomit-frame-pointer -minline-all-stringops -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x -openmp
-##CXX_COMPILE = $(CXX) -O3 -msse4.1  -finline-functions -finline-limit=20000 -fomit-frame-pointer -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
-LDFLAGS	=
+##CXXFLAGS = -O3 -msse4.1  -finline-functions -finline-limit=20000 -fomit-frame-pointer -minline-all-stringops -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x -openmp
+##CXXFLAGS = -O3 -msse4.1  -finline-functions -finline-limit=20000 -fomit-frame-pointer -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
-LDFLAGS	=
+CXXFLAGS = -g -O0 -std=c++0x -fopenmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
+PLATFORM 	= -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
 LDPATH		=
 
 endif 
@@ -134,19 +134,19 @@ ifeq ($(RAJA_ARCH),x86_avx_icc)
 CXX             = /usr/local/tools/ic-15.0.133/bin/icpc
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
-CXX_COMPILE = $(CXX) -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
-##CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
-###CXX_COMPILE = $(CXX) -O3 -mavx -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
-LDFLAGS	=
+#CXXFLAGS = -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -opt-streaming-stores always -ansi-alias -std=c++0x -openmp
+CXXFLAGS = -g -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp -static-intel
+##CXXFLAGS = -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x 
+###CXXFLAGS = -O3 -mavx -inline-max-size=20000 -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -openmp
-LDFLAGS	=
+CXXFLAGS = -g -O0 -std=c++0x -openmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC
+PLATFORM 	= -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_ICC
 LDPATH		=
 
 endif
@@ -165,22 +165,22 @@ CXX 		= /usr/apps/gnu/4.9.0/bin/g++
 ifeq ($(OPT_DEBUG),opt)
 #
 # Use this with GNU 4.7X and later
-CXX_COMPILE = $(CXX) -Ofast -mavx -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
+CXXFLAGS = -Ofast -mavx -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
 #
 # These should work with older compiler versions...
-#CXX_COMPILE = $(CXX) -O3 -mavx -ansi-alias -std=c++0x -openmp
-#CXX_COMPILE = $(CXX) -O3 -mavx -std=c++0x
-##CXX_COMPILE = $(CXX) -O3 -mavx -ansi-alias -std=c++0x
-##CXX_COMPILE = $(CXX) -O3 -mavx -finline-functions -finline-limit=20000 -fomit-frame-pointer -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
-LDFLAGS	=
+#CXXFLAGS = -O3 -mavx -ansi-alias -std=c++0x -openmp
+#CXXFLAGS = -O3 -mavx -std=c++0x
+##CXXFLAGS = -O3 -mavx -ansi-alias -std=c++0x
+##CXXFLAGS = -O3 -mavx -finline-functions -finline-limit=20000 -fomit-frame-pointer -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
-LDFLAGS	=
+CXXFLAGS = -g -O0 -std=c++0x -fopenmp
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_GNU
+PLATFORM 	= -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_GNU
 LDPATH		=
 
 endif
@@ -194,16 +194,16 @@ CXX             = /usr/global/tools/clang/chaos_5_x86_64_ib/clang-omp-3.5.0/bin/
 
 ifeq ($(OPT_DEBUG),opt)
 #
-CXX_COMPILE = $(CXX) -O3 -std=c++11 -fopenmp
-LDFLAGS =
+CXXFLAGS = -O3 -std=c++11 -fopenmp
+LDFLAGS = $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
+CXXFLAGS = -g -O0 -std=c++0x -fopenmp
 LDFLAGS = -std=c++11 -g -O0 -Wl,--export-dynamic
 endif
 
-CXXFLAGS        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
+PLATFORM        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
 LDPATH          =
 
 endif
@@ -216,16 +216,16 @@ CXX             = clang++
 
 ifeq ($(OPT_DEBUG),opt)
 #
-CXX_COMPILE = $(CXX) -O3 -mllvm -inline-threshold=10000 -std=c++11 -fopenmp
-LDFLAGS =
+CXXFLAGS = -O3 -mllvm -inline-threshold=10000 -std=c++11 -fopenmp
+LDFLAGS = $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
+CXXFLAGS = -g -O0 -std=c++0x -fopenmp
 LDFLAGS = -std=c++11 -g -O0 -Wl,--export-dynamic
 endif
 
-CXXFLAGS        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
+PLATFORM        = -DRAJA_PLATFORM_X86_AVX -DRAJA_COMPILER_CLANG
 LDPATH          =
 
 endif
@@ -239,18 +239,18 @@ ifeq ($(RAJA_ARCH),rzmist_xlc)
 CXX 		=  xlC
 
 ifeq ($(OPT_DEBUG),opt)
-CXX_COMPILE = $(CXX) -O3 -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=auto:level=10 -qsmp=omp
+CXXFLAGS = -O3 -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=auto:level=10 -qsmp=omp
 LDFLAGS	= 
 ## The following is needed for lompbeta1
 #LDFLAGS = -O3 -qsmp=omp -qdebug=lompinterface
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -qlanglvl=extended0x -qsmp=omp
-LDFLAGS	= 
+CXXFLAGS = -g -O0 -qlanglvl=extended0x -qsmp=omp
+LDFLAGS	=  $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_XLC12 -DRAJA_COMPILER_XLC_POWER8
+PLATFORM 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_XLC12 -DRAJA_COMPILER_XLC_POWER8
 LDPATH		=
 
 endif
@@ -270,25 +270,25 @@ CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx_r-lompbeta2-fastmpi
 #CXX 		= /usr/local/tools/compilers/ibm/mpixlcxx_r-lompbeta1-fastmpi
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qstrict -qinline=20000 -qsmp=omp
-#CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=20000 -qsmp=omp
-CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=auto:level=10 -qsmp=omp
+#CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qstrict -qinline=20000 -qsmp=omp
+#CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=20000 -qsmp=omp
+CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=auto:level=10 -qsmp=omp
 ##
 ## USE THESE LINE TO GENERATE VECTORIZATION REPORT INFO...
-#CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qstrict -qinline=20000  -qlist -qsource -qlistopt -qreport
-#CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=20000  -qlist -qsource -qlistopt -qreport
-#CXX_COMPILE = $(CXX) -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qinline=100 -qlistfmt=html=inlines
+#CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qstrict -qinline=20000  -qlist -qsource -qlistopt -qreport
+#CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qnostrict -qinline=20000  -qlist -qsource -qlistopt -qreport
+#CXXFLAGS = -O3 -qarch=qp -qhot=novector -qsimd=auto -qlanglvl=extended0x -qinline=100 -qlistfmt=html=inlines
 LDFLAGS	= 
 ## The following is needed for lompbeta1
 #LDFLAGS = -O3 -qsmp=omp -qdebug=lompinterface
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -qarch=qp -qlanglvl=extended0x -qsmp=omp
-LDFLAGS	= 
+CXXFLAGS = -g -O0 -qarch=qp -qlanglvl=extended0x -qsmp=omp
+LDFLAGS	=  $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_XLC12
+PLATFORM 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_XLC12
 LDPATH		=
 
 endif
@@ -308,24 +308,24 @@ ifeq ($(RAJA_ARCH),bgq_clang)
 CXX             = /usr/apps/gnu/clang/r189357-20130827/bin/bgclang++11
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -fomit-frame-pointer -minline-all-stringops -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
+#CXXFLAGS = -O3 -finline-functions -finline-limit=20000 -fomit-frame-pointer -minline-all-stringops -malign-double -ftree-vectorize -floop-block -ansi-alias -std=c++0x
 #Opt 3
-#CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -malign-double -std=c++0x
+#CXXFLAGS = -O3 -finline-functions -finline-limit=20000 -malign-double -std=c++0x
 #Opt 2
-CXX_COMPILE = $(CXX) -O3 -finline-functions  -ffast-math -std=c++0x
+CXXFLAGS = -O3 -finline-functions  -ffast-math -std=c++0x
 #Opt 1
-#CXX_COMPILE = $(CXX) -O3 -finline-functions  -std=c++0x
+#CXXFLAGS = -O3 -finline-functions  -std=c++0x
 #Opt 0
-#CXX_COMPILE = $(CXX) -O0 -finline-functions  -std=c++0x
-LDFLAGS	=
+#CXXFLAGS = -O0 -finline-functions  -std=c++0x
+LDFLAGS	= $(CXXFLAGS)
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x
-LDFLAGS	=
+CXXFLAGS = -g -O0 -std=c++0x
+LDFLAGS	= $(CXXFLAGS)
 endif
 
-CXXFLAGS 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_CLANG
+PLATFORM 	= -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_CLANG
 LDPATH		=
 
 endif 
@@ -341,9 +341,9 @@ CXX             = /usr/local/tools/compilers/ibm/mpicxx-4.7.2
 #Previous versions
 
 ifeq ($(OPT_DEBUG),opt)
-#CXX_COMPILE = $(CXX) -O3 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
-CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
-#CXX_COMPILE = $(CXX) -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11
+#CXXFLAGS = -O3 -finline-functions -finline-limit=20000 -std=c++0x -fopenmp
+CXXFLAGS = -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11 -fopenmp
+#CXXFLAGS = -O3 -mcpu=a2 -mtune=a2 -finline-functions -finline-limit=20000 -std=c++11
 
 ##LDFLAGS = -lmass
 LDFLAGS = -std=c++11  -O3 -fopenmp 
@@ -351,11 +351,11 @@ LDFLAGS = -std=c++11  -O3 -fopenmp
 endif
 
 ifeq ($(OPT_DEBUG),debug)
-CXX_COMPILE = $(CXX) -g -O0 -std=c++0x -fopenmp
-LDFLAGS =
+CXXFLAGS = -g -O0 -std=c++0x -fopenmp
+LDFLAGS = $(CXXFLAGS)
 endif
 
-CXXFLAGS        = -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_GNU
+PLATFORM        = -DRAJA_PLATFORM_BGQ -DRAJA_COMPILER_GNU
 LDPATH          =
 
 endif

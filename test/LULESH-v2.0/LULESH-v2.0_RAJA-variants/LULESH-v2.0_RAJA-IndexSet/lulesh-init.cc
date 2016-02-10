@@ -287,8 +287,8 @@ Domain::~Domain()
 {
    delete [] m_regNumList;
 #if defined(OMP_FINE_SYNC)
-   delete [] m_nodeElemStart;
-   delete [] m_nodeElemCornerList;
+   Release(&m_nodeElemStart) ;
+   Release(&m_nodeElemCornerList) ;
 #endif
    delete [] m_regElemSize;
    if (numReg() != 1) {
@@ -385,7 +385,7 @@ Domain::SetupThreadSupportStructures()
     }
   }
 
-  m_nodeElemStart = new Index_t[numNode()+1] ;
+  m_nodeElemStart = Allocate<Index_t>(numNode()+1) ;
 
   m_nodeElemStart[0] = 0;
 
@@ -394,7 +394,7 @@ Domain::SetupThreadSupportStructures()
       m_nodeElemStart[i-1] + nodeElemCount[i-1] ;
   }
        
-  m_nodeElemCornerList = new Index_t[m_nodeElemStart[numNode()]];
+  m_nodeElemCornerList = Allocate<Index_t>(m_nodeElemStart[numNode()]);
 
   for (Index_t i=0; i < numNode(); ++i) {
     nodeElemCount[i] = 0;

@@ -151,6 +151,20 @@ class Domain {
    // Destructor
    ~Domain();
 
+#if defined(RAJA_USE_CUDA)
+   void *operator new(size_t size)
+   {
+     void *ptr ;
+     cudaMallocManaged((void **)&ptr, size, cudaMemAttachGlobal) ;
+     return ptr ;
+   }
+
+   void operator delete(void *ptr)
+   {
+     cudaFree(ptr) ;
+   }
+#endif
+
    //
    // ALLOCATION
    //

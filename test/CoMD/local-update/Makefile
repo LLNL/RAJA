@@ -132,23 +132,23 @@ COMD_OBJECTS=$(COMD_SOURCES:.c=.o)
 
 RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard ${RAJA_SRC}/*.cxx))
 
-CXXFLAGS_BUILD = -I. -I${RAJA_INC} ${CFLAGS} ${CXXFLAGS} ${RAJA_RULES}
+CXXFLAGS_BUILD = -I. -I${RAJA_INC} ${CFLAGS} ${PLATFORM} ${RAJA_RULES}
 
 DEFAULT: ${CoMD_EXE}
 
 ##
 ## Rule to build *.cxx RAJA files
-%.o : %.cxx ; ${CXX_COMPILE} -c -o $@ $< ${CXXFLAGS_BUILD}
+%.o : %.cxx ; ${CXX} ${CXXFLAGS} -c -o $@ $< ${CXXFLAGS_BUILD}
 
 ##
 ## Rule to build *.c CoMD files
-%.o : %.c ; ${CXX_COMPILE} -c -o $@ $< ${CXXFLAGS_BUILD}
+%.o : %.c ; ${CXX} ${CXXFLAGS} -c -o $@ $< ${CXXFLAGS_BUILD}
 
 ${CoMD_EXE}: ${BIN_DIR} CoMD_info.h ${COMD_OBJECTS} ${RAJAOBJS}
-	${CXX_COMPILE} ${CFLAGS} -o ${CoMD_EXE} ${COMD_OBJECTS} ${RAJAOBJS} ${LDFLAGS}
+	${CXX} ${LDFLAGS} ${CFLAGS} -o ${CoMD_EXE} ${COMD_OBJECTS} ${RAJAOBJS} ${LDFLAGS}
 
 CoMD_info.h: Makefile
-	./generate_info_header ${CoMD_VARIANT} "$(CXX)" "$(CXX_COMPILE)" "$(LDFLAGS)"
+	./generate_info_header ${CoMD_VARIANT} "$(CXX)" "$(CXX)" "$(CXXFLAGS)" "$(LDFLAGS)"
 
 ${BIN_DIR}:
 	@if [ ! -d ${BIN_DIR} ]; then mkdir -p ${BIN_DIR} ; fi
