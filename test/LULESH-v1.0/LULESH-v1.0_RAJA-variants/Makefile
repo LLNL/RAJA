@@ -87,22 +87,26 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 ##
 ifeq ($(RAJA_ARCH),ipa_nvcc)
 
+CXX = nvcc
+
 ### Test nvcc build and run non-GPU variant...
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
+#PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
 
 ### nvcc build and run GPU variant...
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
 
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
 ## To debug
-##CXX_COMPILE = nvcc -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+##CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+
+LDFLAGS = -Xcompiler -fopenmp
 
 RAJA_RULES = -DRAJA_USE_DOUBLE -DRAJA_USE_BARE_PTR
 
 else
 ##
-## Pull in CXX_COMPILE and CXXFLAGS from ../../compilers.mk
+## Pull in CXX and PLATFORM from ../../compilers.mk
 ## (see RAJA_ARCH defn above)
 ##
 endif
@@ -110,7 +114,7 @@ endif
 ##-----------------------------------------------------------
 
 
-CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(PLATFORM) $(RAJA_RULES) $(LULESH_OPTS)
 
 
 OBJFILES_PAR_FT = luleshRAJA-parallel-FT.o $(RAJAOBJS)
@@ -122,28 +126,28 @@ default:
 
 parallel-FT: CXXFLAGS_BUILD += -DRAJA_USE_FT
 parallel-FT: $(OBJFILES_PAR_FT)
-	$(CXX_COMPILE) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel-FT.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_PAR_FT) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel-FT.exe
 
 parallel: $(OBJFILES_PAR)
-	$(CXX_COMPILE) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_PAR) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-parallel.exe
 
 serial: $(OBJFILES_SER)
-	$(CXX_COMPILE) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-serial.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES_SER) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  lulesh-RAJA-serial.exe
 
 ## Uncomment this line to generate an executable to run...
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
-%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
-#%.o : %.cxx ; $(CXX_COMPILE) -S -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for IBM XLC compilers...
 ## See compiler flag options in the appropriate section above.
-#%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
 
 clean-obj: 
