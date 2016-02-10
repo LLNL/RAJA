@@ -4,7 +4,5 @@
 
 module load cudatoolkit/7.5 ;
 use gcc-4.9.3p ;
-cp lulesh.cc.src lulesh.cu ;
 make ;
-rm -rf lulesh.cu
 
