@@ -2770,7 +2770,7 @@ int main(int argc, char *argv[])
       { 
          printf("\t Tiling mode is 'Canonical'\n");
 #if !defined(OMP_FINE_SYNC)
-#if USE_CASE == 2
+#if USE_CASE == LULESH_CANONICAL
          printf("must have OMP_FINE_SYNC defined for this tiling mode when running with > 1 threads, at present\n") ;
          exit(-1) ;
 #endif

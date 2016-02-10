@@ -94,13 +94,19 @@ ifeq ($(RAJA_ARCH),ipa_cuda)
 SILO_INCDIR =
 SILO_LIBDIR =
 
-### Testing non-GPU build with nvcc...
-CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+CXX = nvcc
 
-CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+### Testing non-GPU build with nvcc...
+#PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
+#CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
+
+PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
+CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
+
 # to debug
-##CXX_COMPILE = nvcc -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+##CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+
+LDFLAGS = -Xcompiler -fopenmp
 
 LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
@@ -109,7 +115,7 @@ LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
 
 LDFLAGS_FINAL = $(LDFLAGS) $(LDTIMER) $(LDPATH)
 
-CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) $(PLATFORM) $(RAJA_RULES) $(LULESH_OPTS)
 
 else
 ##
@@ -126,7 +132,7 @@ LULESHOBJS := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
 # LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH) ${SILO_LIBDIR}/libsiloh5.so
 LDFLAGS_FINAL = $(LDPATH) $(LDTIMER) $(LDPATH)
 
-CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) -I$(SILO_INCDIR) $(CXXFLAGS) $(RAJA_RULES) $(LULESH_OPTS)
+CXXFLAGS_BUILD = -I. -I../../../include -I$(RAJA_INC) -I$(SILO_INCDIR) $(PLATFORM) $(RAJA_RULES) $(LULESH_OPTS)
 
 endif
 
@@ -135,23 +141,23 @@ endif
 OBJFILES = $(LULESHOBJS) $(RAJAOBJS)
 
 default: $(OBJFILES)
-	$(CXX_COMPILE) $(OBJFILES) $(LDFLAGS_FINAL) -o lulesh2.0_RAJA-ISet.exe
+	$(CXX) $(LDFLAGS) $(OBJFILES) $(LDFLAGS_FINAL) -o lulesh2.0_RAJA-ISet.exe
 
 ## Uncomment these lines to generate an executable to run...
-%.o : %.cu ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
-%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
-%.o : %.cc ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
+%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
+%.o : %.cc ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for Intel compilers...
-#%.o : %.cxx ; $(CXX_COMPILE) -S -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
-#%.o : %.cxx ; $(CXX_COMPILE) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -fcode-asm -vec-report3 -o $@ $< $(CXXFLAGS_BUILD)
 
 ## The following can be used to generate vectorization report and 
 ## assmbly code output for IBM XLC compilers...
 ## See compiler flag options in the appropriate section above.
-#%.o : %.cxx ; $(CXX_COMPILE) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
 
 clean-obj: 
