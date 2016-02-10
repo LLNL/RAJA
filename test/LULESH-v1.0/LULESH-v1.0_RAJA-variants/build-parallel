@@ -2,5 +2,4 @@
 ## For non-CUDA compilation
 ##
 
-cp luleshRAJA-parallel.cxx.src luleshRAJA-parallel.cxx ;
 make parallel;
