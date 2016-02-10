@@ -89,7 +89,7 @@ ifeq ($(RAJA_ARCH),ipa_cuda)
 CXX = nvcc
 
 ### Testing non-GPU build with nvcc...
-#CXXFLAGS        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
+#PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU 
 PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
 CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
