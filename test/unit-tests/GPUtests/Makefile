@@ -46,10 +46,10 @@ PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA -D
 
 CXX = nvcc
 
-#CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
-CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp
-#CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp 
-#CXXFLAGS = -O2 --extended-lambda -arch compute_35 -std=c++11 -v -keep
+#CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu -v -keep
+CXXFLAGS = -O2 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
+#CXXFLAGS = -g -G -O0 --expt-extended-lambda -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
+#CXXFLAGS = -O2 --extended-lambda -arch compute_35 -std=c++11 --x cu -v -keep
 #CXXFLAGS = g++ -g -fpermissive -fopenmp -O0 -std=c++11 -fopenmp
 
 CXXFLAGS_BUILD = -I. -I../../include -I$(RAJA_INC) $(PLATFORM) $(TEST_OPTS)
@@ -70,7 +70,7 @@ reducesum: ReduceSum.o $(RAJAOBJS)
 traversal: Traversal.o $(RAJAOBJS) 
 	$(CXX) $(LDFLAGS) Traversal.o $(RAJAOBJS) $(LDFLAGS) $(LDTIMER) $(LDPATH) -o  traversal.exe
 
-%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 %.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 
 #%.o : %.cxx ; $(CXX) $(CXXFLAGS) -S -o $@ $< 

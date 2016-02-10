@@ -97,16 +97,16 @@ CXX = nvcc
 #PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU
 PLATFORM        = -DRAJA_PLATFORM_X86_SSE -DRAJA_COMPILER_GNU -DRAJA_USE_CUDA
 
-CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp
+CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu
 # to debug
-##CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp -v -keep
+##CXXFLAGS = -O2 --expt-extended-lambda -restrict -arch compute_35 -std=c++11 -Xcompiler -fopenmp --x cu -v -keep
 
 LDFLAGS = -Xcompiler -fopenmp
 
 LULESHOBJS_CC := $(patsubst %.cc,%.o,$(wildcard ./*.cc))
-LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
+#LULESHOBJS_CU := $(patsubst %.cu,%.o,$(wildcard ./*.cu))
 
-LULESHOBJS = $(LULESHOBJS_CC) $(LULESHOBJS_CU)
+LULESHOBJS = $(LULESHOBJS_CC) # $(LULESHOBJS_CU)
 
 LDFLAGS_FINAL = $(LDFLAGS) $(LDTIMER) $(LDPATH)
 
@@ -139,7 +139,7 @@ default: $(OBJFILES)
 	$(CXX) $(LDFLAGS) $(OBJFILES) $(LDFLAGS_FINAL) -o lulesh2.0_RAJA-ISet.exe
 
 ## Uncomment these lines to generate an executable to run...
-%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
+#%.o : %.cu ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD)
 %.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 %.o : %.cc ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 
 
