@@ -1,12 +1,19 @@
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
  ******************************************************************************
  *
  * \file
  *
  * \brief   Implementation file for aligned-range index set builder methods.
- *
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
  *
  ******************************************************************************
  */

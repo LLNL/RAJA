@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
  ******************************************************************************
  *
@@ -14,9 +24,6 @@
  *          directly on the compile-line.
  *
  *          Definitions in this file will propagate to all RAJA header files.
- *
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL 
  *
  ******************************************************************************
  */
