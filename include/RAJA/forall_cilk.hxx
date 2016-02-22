@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
  ******************************************************************************
  *
@@ -7,9 +17,6 @@
  *          using for Intel Cilk Plus execution.
  *
  *          These methods work only on platforms that support Cilk Plus. 
- *
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL 
  *
  ******************************************************************************
  */
