@@ -1,5 +1,12 @@
-// This work was performed under the auspices of the U.S. Department of Energy by
-// Lawrence Livermore National Laboratory under Contract DE-AC52-07NA27344.?
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
 
 /*!
  ******************************************************************************
@@ -9,9 +16,6 @@
  * \brief   RAJA header file for simple vector template class that enables 
  *          RAJA to be used with or without the C++ STL.
  *     
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL
- *
  ******************************************************************************
  */
 
