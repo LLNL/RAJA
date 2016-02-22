@@ -1,3 +1,13 @@
+/*
+ * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ * Produced at the Lawrence Livermore National Laboratory.
+ *
+ * All rights reserved.
+ *
+ * This source code cannot be distributed without permission and
+ * further review from Lawrence Livermore National Laboratory.
+ */
+
 /*!
  ******************************************************************************
  *
@@ -6,9 +16,6 @@
  * \brief   Header file defining RAJA loop execution policies.
  * 
  *          Note: availability of some policies depends on compiler choice.
- *
- * \author  Rich Hornung, Center for Applied Scientific Computing, LLNL
- * \author  Jeff Keasler, Applications, Simulations And Quality, LLNL 
  *
  ******************************************************************************
  */
