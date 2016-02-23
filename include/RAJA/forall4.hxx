@@ -592,12 +592,13 @@ RAJA_INLINE void forall4_permute(PERM_LKJI, TI const &is_i, TJ const &is_j, TK c
 
 
 /******************************************************************
- *  forall4_policy() Policy Layer, overloads for policy tags
+ *  forall4_policy() Policy Layer, specializations for policy tags
  ******************************************************************/
 
 
-/**
- * Execute inner loops policy function.
+/*!
+ * \brief Execute inner loops policy function.
+ *
  * This is the default termination case.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
@@ -611,9 +612,8 @@ RAJA_INLINE void forall4_policy(Forall4_Execute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * Permutation policy function.
- * Provides loop interchange.
+/*!
+ * \brief Permutation policy function, providing loop interchange.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE void forall4_policy(Forall4_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
@@ -625,8 +625,8 @@ RAJA_INLINE void forall4_policy(Forall4_Permute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * OpenMP Parallel Region Section policy function.
+/*!
+ * \brief OpenMP Parallel Region Section policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE void forall4_policy(Forall4_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
@@ -644,8 +644,8 @@ RAJA_INLINE void forall4_policy(Forall4_OMP_Parallel_Tag, TI const &is_i, TJ con
 }
 
 
-/**
- * Tiling policy function.
+/*!
+ * \brief Tiling policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE void forall4_policy(Forall4_Tile_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
@@ -671,9 +671,14 @@ RAJA_INLINE void forall4_policy(Forall4_Tile_Tag, TI const &is_i, TJ const &is_j
 
 
 /******************************************************************
- * forall4(), User interface
- * Provides index typing, and initial nested policy unwrapping
+ *  forall4 User API
  ******************************************************************/
+
+/*!
+ * \brief Provides abstraction of a 4-nested loop
+ *
+ * Provides index typing, and initial nested policy unwrapping
+ */
 
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE void forall4(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){

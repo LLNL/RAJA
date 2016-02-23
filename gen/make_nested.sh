@@ -1,4 +1,22 @@
 #!/bin/bash
+#
+# Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+# Produced at the Lawrence Livermore National Laboratory.
+#
+# All rights reserved.
+#
+# This source code cannot be distributed without permission and
+# further review from Lawrence Livermore National Laboratory.
+#
+
+
+
+#
+#
+# This script will regenerate the nested-loop files
+#
+#
+
 
 PREFIX=../include/RAJA
 PYTHON="/usr/bin/env python"

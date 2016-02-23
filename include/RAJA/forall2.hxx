@@ -181,12 +181,13 @@ RAJA_INLINE void forall2_permute(PERM_JI, TI const &is_i, TJ const &is_j, BODY b
 
 
 /******************************************************************
- *  forall2_policy() Policy Layer, overloads for policy tags
+ *  forall2_policy() Policy Layer, specializations for policy tags
  ******************************************************************/
 
 
-/**
- * Execute inner loops policy function.
+/*!
+ * \brief Execute inner loops policy function.
+ *
  * This is the default termination case.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
@@ -200,9 +201,8 @@ RAJA_INLINE void forall2_policy(Forall2_Execute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * Permutation policy function.
- * Provides loop interchange.
+/*!
+ * \brief Permutation policy function, providing loop interchange.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
 RAJA_INLINE void forall2_policy(Forall2_Permute_Tag, TI const &is_i, TJ const &is_j, BODY body){
@@ -214,8 +214,8 @@ RAJA_INLINE void forall2_policy(Forall2_Permute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * OpenMP Parallel Region Section policy function.
+/*!
+ * \brief OpenMP Parallel Region Section policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
 RAJA_INLINE void forall2_policy(Forall2_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, BODY body){
@@ -233,8 +233,8 @@ RAJA_INLINE void forall2_policy(Forall2_OMP_Parallel_Tag, TI const &is_i, TJ con
 }
 
 
-/**
- * Tiling policy function.
+/*!
+ * \brief Tiling policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
 RAJA_INLINE void forall2_policy(Forall2_Tile_Tag, TI const &is_i, TJ const &is_j, BODY body){
@@ -254,9 +254,14 @@ RAJA_INLINE void forall2_policy(Forall2_Tile_Tag, TI const &is_i, TJ const &is_j
 
 
 /******************************************************************
- * forall2(), User interface
- * Provides index typing, and initial nested policy unwrapping
+ *  forall2 User API
  ******************************************************************/
+
+/*!
+ * \brief Provides abstraction of a 2-nested loop
+ *
+ * Provides index typing, and initial nested policy unwrapping
+ */
 
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
 RAJA_INLINE void forall2(TI const &is_i, TJ const &is_j, BODY body){

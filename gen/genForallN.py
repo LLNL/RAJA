@@ -337,7 +337,7 @@ def writeForall_policy(ndims):
   
   print ""
   print "/******************************************************************"
-  print " *  forall%d_policy() Policy Layer, overloads for policy tags" % ndims
+  print " *  forall%d_policy() Policy Layer, specializations for policy tags" % ndims
   print " ******************************************************************/"
   print ""
   
@@ -346,8 +346,9 @@ def writeForall_policy(ndims):
   varstr = ", ".join(map(lambda a: "is_"+a, dim_names))
   
   print ""
-  print "/**"
-  print " * Execute inner loops policy function."
+  print "/*!"
+  print " * \\brief Execute inner loops policy function."
+  print " *"
   print " * This is the default termination case."
   print " */"
   print template_string
@@ -362,9 +363,8 @@ def writeForall_policy(ndims):
   print ""
 
   print ""
-  print "/**"
-  print " * Permutation policy function."
-  print " * Provides loop interchange."
+  print "/*!"
+  print " * \\brief Permutation policy function, providing loop interchange."
   print " */"
   print template_string
   print "RAJA_INLINE void forall%d_policy(Forall%d_Permute_Tag, %s){" % (ndims, ndims, fcnargs_string)
@@ -379,8 +379,8 @@ def writeForall_policy(ndims):
 
   
   print ""
-  print "/**"
-  print " * OpenMP Parallel Region Section policy function."
+  print "/*!"
+  print " * \\brief OpenMP Parallel Region Section policy function."
   print " */"
   print template_string
   print "RAJA_INLINE void forall%d_policy(Forall%d_OMP_Parallel_Tag, %s){" % (ndims, ndims, fcnargs_string)
@@ -400,8 +400,8 @@ def writeForall_policy(ndims):
   
   
   print ""
-  print "/**"
-  print " * Tiling policy function."
+  print "/*!"
+  print " * \\brief Tiling policy function."
   print " */"
   print template_string
   print "RAJA_INLINE void forall%d_policy(Forall%d_Tile_Tag, %s){" % (ndims, ndims, fcnargs_string)
@@ -440,9 +440,14 @@ def writeUserIface(ndims):
   
   print ""
   print "/******************************************************************"
-  print " * forall%d(), User interface" % ndims
-  print " * Provides index typing, and initial nested policy unwrapping"
+  print " *  forall%d User API" % ndims
   print " ******************************************************************/"
+  print ""  
+  print "/*!"
+  print " * \\brief Provides abstraction of a %d-nested loop" % (ndims)
+  print " *"
+  print " * Provides index typing, and initial nested policy unwrapping"
+  print " */"
   print ""
   
   args = map(lambda a: "typename Idx%s=Index_type"%a.upper(), dim_names)
@@ -514,13 +519,10 @@ namespace RAJA {
 """ % (ndims, ndims)
 
 
-
   # Create the policy struct so the user can define loop policies
   writeForallPolicy(ndims)
 
-
-
-
+  # Forward declarations of forall_policy functions
   writeForall_policyForeward(ndims)
 
   # Create the default executor
