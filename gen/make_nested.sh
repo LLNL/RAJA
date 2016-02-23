@@ -1,5 +1,7 @@
-PREFIX=../INCLUDE/RAJA
-PYTHON=/usr/bin/env
+#!/bin/bash
+
+PREFIX=../include/RAJA
+PYTHON="/usr/bin/env python"
 
 $PYTHON ./genForallN.py 2 > $PREFIX/forall2.hxx
 $PYTHON ./genForallN.py 3 > $PREFIX/forall3.hxx
