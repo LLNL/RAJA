@@ -1916,12 +1916,13 @@ RAJA_INLINE void forall5_permute(PERM_MLKJI, TI const &is_i, TJ const &is_j, TK 
 
 
 /******************************************************************
- *  forall5_policy() Policy Layer, overloads for policy tags
+ *  forall5_policy() Policy Layer, specializations for policy tags
  ******************************************************************/
 
 
-/**
- * Execute inner loops policy function.
+/*!
+ * \brief Execute inner loops policy function.
+ *
  * This is the default termination case.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
@@ -1935,9 +1936,8 @@ RAJA_INLINE void forall5_policy(Forall5_Execute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * Permutation policy function.
- * Provides loop interchange.
+/*!
+ * \brief Permutation policy function, providing loop interchange.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE void forall5_policy(Forall5_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
@@ -1949,8 +1949,8 @@ RAJA_INLINE void forall5_policy(Forall5_Permute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * OpenMP Parallel Region Section policy function.
+/*!
+ * \brief OpenMP Parallel Region Section policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE void forall5_policy(Forall5_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
@@ -1968,8 +1968,8 @@ RAJA_INLINE void forall5_policy(Forall5_OMP_Parallel_Tag, TI const &is_i, TJ con
 }
 
 
-/**
- * Tiling policy function.
+/*!
+ * \brief Tiling policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE void forall5_policy(Forall5_Tile_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
@@ -1998,9 +1998,14 @@ RAJA_INLINE void forall5_policy(Forall5_Tile_Tag, TI const &is_i, TJ const &is_j
 
 
 /******************************************************************
- * forall5(), User interface
- * Provides index typing, and initial nested policy unwrapping
+ *  forall5 User API
  ******************************************************************/
+
+/*!
+ * \brief Provides abstraction of a 5-nested loop
+ *
+ * Provides index typing, and initial nested policy unwrapping
+ */
 
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE void forall5(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){

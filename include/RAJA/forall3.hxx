@@ -290,12 +290,13 @@ RAJA_INLINE void forall3_permute(PERM_KJI, TI const &is_i, TJ const &is_j, TK co
 
 
 /******************************************************************
- *  forall3_policy() Policy Layer, overloads for policy tags
+ *  forall3_policy() Policy Layer, specializations for policy tags
  ******************************************************************/
 
 
-/**
- * Execute inner loops policy function.
+/*!
+ * \brief Execute inner loops policy function.
+ *
  * This is the default termination case.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
@@ -309,9 +310,8 @@ RAJA_INLINE void forall3_policy(Forall3_Execute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * Permutation policy function.
- * Provides loop interchange.
+/*!
+ * \brief Permutation policy function, providing loop interchange.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE void forall3_policy(Forall3_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
@@ -323,8 +323,8 @@ RAJA_INLINE void forall3_policy(Forall3_Permute_Tag, TI const &is_i, TJ const &i
 }
 
 
-/**
- * OpenMP Parallel Region Section policy function.
+/*!
+ * \brief OpenMP Parallel Region Section policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE void forall3_policy(Forall3_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
@@ -342,8 +342,8 @@ RAJA_INLINE void forall3_policy(Forall3_OMP_Parallel_Tag, TI const &is_i, TJ con
 }
 
 
-/**
- * Tiling policy function.
+/*!
+ * \brief Tiling policy function.
  */
     template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE void forall3_policy(Forall3_Tile_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
@@ -366,9 +366,14 @@ RAJA_INLINE void forall3_policy(Forall3_Tile_Tag, TI const &is_i, TJ const &is_j
 
 
 /******************************************************************
- * forall3(), User interface
- * Provides index typing, and initial nested policy unwrapping
+ *  forall3 User API
  ******************************************************************/
+
+/*!
+ * \brief Provides abstraction of a 3-nested loop
+ *
+ * Provides index typing, and initial nested policy unwrapping
+ */
 
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE void forall3(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
