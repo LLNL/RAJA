@@ -173,6 +173,8 @@ struct cuda_reduce {};
 
 #endif
 
+#define RAJA_LAMBDA [=]
+
 }  // closing brace for RAJA namespace
 
 

@@ -3,5 +3,6 @@
 ##
 
 make CPUtraversal-test ;
-make CPUreduce-test
+make CPUreduce-test ;
+make CPUnested-test
 
