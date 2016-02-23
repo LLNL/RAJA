@@ -64,11 +64,16 @@ RAJAOBJS := $(patsubst %.cxx,%.o,$(wildcard $(RAJA_SRC)/*.cxx))
 
 OBJFILES = $(TESTOBJS) $(RAJAOBJS)
 
-CPUtraversal-test: main-traversal.o $(OBJFILES)
-	$(CXX) $(LDFLAGS) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+all: CPUtraversal-test.exe CPUreduce-test.exe CPUnested-test.exe
 
-CPUreduce-test: main-reduce.o $(OBJFILES)
-	$(CXX) $(LDFLAGS) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@.exe
+CPUtraversal-test.exe: main-traversal.o $(OBJFILES)
+	$(CXX) $(LDFLAGS) main-traversal.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@
+
+CPUreduce-test.exe: main-reduce.o $(OBJFILES)
+	$(CXX) $(LDFLAGS) main-reduce.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@
+	
+CPUnested-test.exe: main-nested.o $(OBJFILES)
+	$(CXX) $(LDFLAGS) main-nested.o $(OBJFILES) $(LDFLAGS) $(LDPATH) -o  $@
 
 ## Uncomment this line to generate an executable to run...
 %.o : %.cxx ; $(CXX) $(CXXFLAGS) -c -o $@ $< $(CXXFLAGS_BUILD) 

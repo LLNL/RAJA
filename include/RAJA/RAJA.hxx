@@ -110,4 +110,15 @@
 #include "forall_generic.hxx"
 
 
+//
+// Nested-Loop extensions
+//
+#include "IndexValue.hxx"
+#include "Layout.hxx"
+#include "View.hxx"
+#include "forall2.hxx"
+#include "forall3.hxx"
+#include "forall4.hxx"
+#include "forall5.hxx"
+
 #endif  // closing endif for header file include guard
