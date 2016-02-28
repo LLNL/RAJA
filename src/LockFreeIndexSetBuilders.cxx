@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/IndexSet.hxx"
+#include "RAJA/core/IndexSet.hxx"
 
 #include <omp.h>
 #include <cstdio>

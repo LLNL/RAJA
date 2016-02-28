@@ -26,11 +26,11 @@
 
 #include "../config.hxx"
 
-#include "../int_datatypes.hxx"
+#include "../core/int_datatypes.hxx"
 
-#include "../reducers.hxx"
+#include "../core/reducers.hxx"
 
-#include "../MemUtils.hxx"
+#include "../core/MemUtils.hxx"
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>

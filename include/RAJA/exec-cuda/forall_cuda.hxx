@@ -27,14 +27,14 @@
 
 #include "../config.hxx"
 
-#include "../int_datatypes.hxx"
+#include "../core/int_datatypes.hxx"
 
-#include "../execpolicy.hxx"
-#include "../reducers.hxx"
+#include "../core/execpolicy.hxx"
+#include "../core/reducers.hxx"
 
-#include "../fault_tolerance.hxx"
+#include "../core/fault_tolerance.hxx"
 
-#include "../MemUtils.hxx"
+#include "../core/MemUtils.hxx"
 
 #include <iostream>
 #include <cstdlib>

@@ -22,7 +22,7 @@
 #ifndef RAJA_IndexSetUtils_HXX
 #define RAJA_IndexSetUtils_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
 #include "int_datatypes.hxx"
 

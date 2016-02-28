@@ -21,7 +21,7 @@
 #ifndef RAJA_BaseSegment_HXX
 #define RAJA_BaseSegment_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
 #include "int_datatypes.hxx"
 
