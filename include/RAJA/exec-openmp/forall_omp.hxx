@@ -24,20 +24,20 @@
 #ifndef RAJA_forall_omp_HXX
 #define RAJA_forall_omp_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
-#include "int_datatypes.hxx"
+#include "../int_datatypes.hxx"
 
-#include "RAJAVec.hxx"
+#include "../RAJAVec.hxx"
 
-#include "execpolicy.hxx"
-#include "reducers.hxx"
+#include "../execpolicy.hxx"
+#include "../reducers.hxx"
 
-#include "fault_tolerance.hxx"
+#include "../fault_tolerance.hxx"
 
-#include "MemUtils.hxx"
+#include "../MemUtils.hxx"
 
-#include "segment_exec.hxx"
+#include "../segment_exec.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>

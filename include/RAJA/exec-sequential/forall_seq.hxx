@@ -13,34 +13,32 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set iteration template methods 
- *          using for Intel Cilk Plus execution.
+ * \brief   Header file containing RAJA index set iteration template 
+ *          methods for sequential execution. 
  *
- *          These methods work only on platforms that support Cilk Plus. 
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_cilk_HXX
-#define RAJA_forall_cilk_HXX
+#ifndef RAJA_forall_seq_HXX
+#define RAJA_forall_seq_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
-#include "int_datatypes.hxx"
+#include "../int_datatypes.hxx"
 
-#include "RAJAVec.hxx"
+#include "../execpolicy.hxx"
+#include "../reducers.hxx"
 
-#include "execpolicy.hxx"
-#include "reducers.hxx"
+#include "../fault_tolerance.hxx"
 
-#include "fault_tolerance.hxx"
+#include "../MemUtils.hxx"
 
-#include "MemUtils.hxx"
+#include "../segment_exec.hxx"
 
-#include "segment_exec.hxx"
-
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+#include<string>
+#include<iostream> 
 
 
 namespace RAJA {
@@ -56,20 +54,20 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Min reducer class template for use in CilkPlus execution.
+ * \brief  Min reducer class template for use in sequential reduction.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<cilk_reduce, T>
+class ReduceMin<seq_reduce, T> 
 {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMin(T init_val)
+   explicit ReduceMin(T init_val) 
    {
       m_is_copy = false;
 
@@ -77,19 +75,16 @@ public:
 
       m_myID = getCPUReductionId();
 //    std::cout << "ReduceMin id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
 
-      m_blockdata = getCPUReductionMemBlock(m_myID);
-
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
-         m_blockdata[i*s_block_offset] = init_val ;
-      }
+      m_blockdata[0] = init_val; 
    }
 
    //
    // Copy ctor.
    //
-   ReduceMin( const ReduceMin<cilk_reduce, T>& other )
+   ReduceMin( const ReduceMin<seq_reduce, T>& other ) 
    {
       *this = other;
       m_is_copy = true;
@@ -98,11 +93,11 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMin<cilk_reduce, T>()
+   ~ReduceMin<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         // free any data owned by reduction object 
       }
    }
 
@@ -111,26 +106,17 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         m_reduced_val =
-            RAJA_MIN(m_reduced_val,
-                     static_cast<T>(m_blockdata[i*s_block_offset]));
-      }
+      m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
 
       return m_reduced_val;
    }
 
    //
-   // Min function that sets min for current thread.
+   // Min function that sets object min to minimum of current value and arg.
    //
-   ReduceMin<cilk_reduce, T> min(T val) const
+   ReduceMin<seq_reduce, T> min(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
-      int idx = tid*s_block_offset;
-      m_blockdata[idx] =
-         RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
-
+      m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
       return *this ;
    }
 
@@ -138,10 +124,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMin<cilk_reduce, T>();
-
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   ReduceMin<seq_reduce, T>();
 
    bool m_is_copy;
    int m_myID;
@@ -154,20 +137,20 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Min-loc reducer class template for use in CilkPlus execution.
+ * \brief  Min-loc reducer class template for use in sequential reduction.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMinLoc<cilk_reduce, T>
+class ReduceMinLoc<seq_reduce, T> 
 {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMinLoc(T init_val, Index_type init_loc)
+   explicit ReduceMinLoc(T init_val, Index_type init_loc) 
    {
       m_is_copy = false;
 
@@ -175,21 +158,18 @@ public:
 
       m_myID = getCPUReductionId();
 //    std::cout << "ReduceMinLoc id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+      m_blockdata[0] = init_val; 
 
-      m_blockdata = getCPUReductionMemBlock(m_myID);
-      m_idxdata = getCPUReductionLocBlock(m_myID);
-
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
-         m_blockdata[i*s_block_offset] = init_val ;
-         m_idxdata[i*s_idx_offset] = init_loc ;
-      }
+      m_idxdata = getCPUReductionLocBlock(m_myID);  
+      m_idxdata[0] = init_loc; 
    }
 
    //
    // Copy ctor.
    //
-   ReduceMinLoc( const ReduceMinLoc<cilk_reduce, T>& other )
+   ReduceMinLoc( const ReduceMinLoc<seq_reduce, T>& other ) 
    {
       *this = other;
       m_is_copy = true;
@@ -198,11 +178,11 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMinLoc<cilk_reduce, T>()
+   ~ReduceMinLoc<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         // free any data owned by reduction object 
       }
    }
 
@@ -211,14 +191,10 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
-            m_reduced_val = m_blockdata[i*s_block_offset];
-            m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+      if ( static_cast<T>(m_blockdata[0]) <= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
       }
-
       return m_reduced_val;
    }
 
@@ -227,28 +203,23 @@ public:
    //
    Index_type getMinLoc()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
-            m_reduced_val = m_blockdata[i*s_block_offset];
-            m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+      if ( static_cast<T>(m_blockdata[0]) <= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
       }
-
       return m_reduced_idx;
    }
 
    //
-   // Min-loc function that sets min for current thread.
+   // Min-loc function that sets object min to minimum of current value 
+   // and value arg and updates location index accordingly.
    //
-   ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
+   ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const 
    {
-      int tid = __cilkrts_get_worker_number();
-      if ( val <= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
-         m_blockdata[tid*s_block_offset] = val;
-         m_idxdata[tid*s_idx_offset] = idx;
+      if ( val <= static_cast<T>(m_blockdata[0]) ) {
+         m_blockdata[0] = val;
+         m_idxdata[0] = idx;
       }
-
       return *this ;
    }
 
@@ -256,12 +227,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMinLoc<cilk_reduce, T>();
-
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
-   static const int s_idx_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+   ReduceMinLoc<seq_reduce, T>();
 
    bool m_is_copy;
    int m_myID;
@@ -276,20 +242,20 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Max reducer class template for use in CilkPlus execution.
+ * \brief  Max reducer class template for use in sequential reduction.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<cilk_reduce, T>
+class ReduceMax<seq_reduce, T> 
 {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMax(T init_val)
+   explicit ReduceMax(T init_val) 
    {
       m_is_copy = false;
 
@@ -297,19 +263,16 @@ public:
 
       m_myID = getCPUReductionId();
 //    std::cout << "ReduceMax id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
 
-      m_blockdata = getCPUReductionMemBlock(m_myID);
-
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
-         m_blockdata[i*s_block_offset] = init_val ;
-      }
+      m_blockdata[0] = init_val; 
    }
 
    //
    // Copy ctor.
    //
-   ReduceMax( const ReduceMax<cilk_reduce, T>& other )
+   ReduceMax( const ReduceMax<seq_reduce, T>& other ) 
    {
       *this = other;
       m_is_copy = true;
@@ -318,11 +281,11 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMax<cilk_reduce, T>()
+   ~ReduceMax<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         // free any data owned by reduction object 
       }
    }
 
@@ -331,26 +294,17 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         m_reduced_val =
-            RAJA_MAX(m_reduced_val,
-                     static_cast<T>(m_blockdata[i*s_block_offset]));
-      }
+      m_reduced_val = RAJA_MAX(m_reduced_val, static_cast<T>(m_blockdata[0]));
 
       return m_reduced_val;
    }
 
    //
-   // Max function that sets max for current thread.
+   // Max function that sets object max to maximum of current value and arg.
    //
-   ReduceMax<cilk_reduce, T> max(T val) const
+   ReduceMax<seq_reduce, T> max(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
-      int idx = tid*s_block_offset;
-      m_blockdata[idx] =
-         RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
-
+      m_blockdata[0] = RAJA_MAX(static_cast<T>(m_blockdata[0]), val);
       return *this ;
    }
 
@@ -358,10 +312,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMax<cilk_reduce, T>();
-
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   ReduceMax<seq_reduce, T>();
 
    bool m_is_copy;
    int m_myID;
@@ -374,42 +325,39 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Max-loc reducer class template for use in CilkPlus execution.
+ * \brief  Max-loc reducer class template for use in sequential reduction.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<cilk_reduce, T>
+class ReduceMaxLoc<seq_reduce, T> 
 {
 public:
    //
    // Constructor takes default value (default ctor is disabled).
    //
-   explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+   explicit ReduceMaxLoc(T init_val, Index_type init_loc) 
    {
       m_is_copy = false;
 
       m_reduced_val = init_val;
 
       m_myID = getCPUReductionId();
-//    std::cout << "ReduceMaxLoc id = " << m_myID << std::endl;
+//    std::cout << "ReduceMinLoc id = " << m_myID << std::endl;
+     
+      m_blockdata = getCPUReductionMemBlock(m_myID);  
+      m_blockdata[0] = init_val; 
 
-      m_blockdata = getCPUReductionMemBlock(m_myID);
-      m_idxdata = getCPUReductionLocBlock(m_myID);
-
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
-         m_blockdata[i*s_block_offset] = init_val ;
-         m_idxdata[i*s_idx_offset] = init_loc ;
-      }
+      m_idxdata = getCPUReductionLocBlock(m_myID);  
+      m_idxdata[0] = init_loc; 
    }
 
    //
    // Copy ctor.
    //
-   ReduceMaxLoc( const ReduceMaxLoc<cilk_reduce, T>& other )
+   ReduceMaxLoc( const ReduceMaxLoc<seq_reduce, T>& other ) 
    {
       *this = other;
       m_is_copy = true;
@@ -418,11 +366,11 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMaxLoc<cilk_reduce, T>()
+   ~ReduceMaxLoc<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
-         // free any data owned by reduction object
+         // free any data owned by reduction object 
       }
    }
 
@@ -431,44 +379,35 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
-            m_reduced_val = m_blockdata[i*s_block_offset];
-            m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+      if ( static_cast<T>(m_blockdata[0]) >= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
       }
-
       return m_reduced_val;
    }
 
    //
-   // Operator to retrieve index value of max (before object is destroyed).
+   // Operator to retrieve max value (before object is destroyed).
    //
    Index_type getMaxLoc()
    {
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
-            m_reduced_val = m_blockdata[i*s_block_offset];
-            m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+      if ( static_cast<T>(m_blockdata[0]) >= m_reduced_val ) {
+         m_reduced_val = m_blockdata[0];
+         m_reduced_idx = m_idxdata[0];
       }
-
       return m_reduced_idx;
    }
 
    //
-   // Max-loc function that sets max for current thread.
+   // Max-loc function that sets object max to maximum of current value 
+   // and value arg and updates location index accordingly.
    //
-   ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
+   ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const 
    {
-      int tid = __cilkrts_get_worker_number();
-      if ( val >= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
-         m_blockdata[tid*s_block_offset] = val;
-         m_idxdata[tid*s_idx_offset] = idx;
+      if ( val >= static_cast<T>(m_blockdata[0]) ) {
+         m_blockdata[0] = val;
+         m_idxdata[0] = idx;
       }
-
       return *this ;
    }
 
@@ -476,12 +415,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMaxLoc<cilk_reduce, T>();
-
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
-   static const int s_idx_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+   ReduceMaxLoc<seq_reduce, T>();
 
    bool m_is_copy;
    int m_myID;
@@ -496,14 +430,14 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Sum reducer class template for use in CilkPlus execution.
+ * \brief  Sum reducer class template for use in sequential reduction.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hxx. 
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<cilk_reduce, T>
+class ReduceSum<seq_reduce, T> 
 {
 public:
    //
@@ -520,16 +454,13 @@ public:
 
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
-         m_blockdata[i*s_block_offset] = 0 ;
-      }
+      m_blockdata[0] = 0;
    }
 
    //
    // Copy ctor.
    //
-   ReduceSum( const ReduceSum<cilk_reduce, T>& other )
+   ReduceSum( const ReduceSum<seq_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -538,7 +469,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceSum<cilk_reduce, T>()
+   ~ReduceSum<seq_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -551,23 +482,17 @@ public:
    //
    operator T()
    {
-      T tmp_reduced_val = static_cast<T>(0);
-      int nthreads = __cilkrts_get_nworkers();
-      for ( int i = 0; i < nthreads; ++i ) {
-         tmp_reduced_val += static_cast<T>(m_blockdata[i*s_block_offset]);
-      }
-      m_reduced_val = m_init_val + tmp_reduced_val;
+      m_reduced_val = m_init_val + static_cast<T>(m_blockdata[0]);
 
       return m_reduced_val;
    }
 
    //
-   // += operator that performs accumulation for current thread.
+   // += operator that performs accumulation into object min val.
    //
-   ReduceSum<cilk_reduce, T> operator+=(T val) const
+   ReduceSum<seq_reduce, T> operator+=(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
-      m_blockdata[tid*s_block_offset] += val;
+      m_blockdata[0] += val;
       return *this ;
    }
 
@@ -575,10 +500,7 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceSum<cilk_reduce, T>();
-
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   ReduceSum<seq_reduce, T>();
 
    bool m_is_copy;
    int m_myID;
@@ -602,19 +524,20 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range.
+ * \brief  Sequential iteration over index range.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
+void forall(seq_exec,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
@@ -624,7 +547,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with index count.
+ * \brief  Sequential iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -632,7 +555,7 @@ void forall(cilk_for_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -641,7 +564,8 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, ii+begin );
    }
 
@@ -660,13 +584,13 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for  iteration over range segment object.
+ * \brief  Sequential iteration over range segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
+void forall(seq_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {
@@ -675,7 +599,8 @@ void forall(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ++ii ) {
       loop_body( ii );
    }
 
@@ -685,15 +610,15 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range segment object with index count.
+ * \brief  Sequential iteration over range segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
- i/
+ */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    const RangeSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -703,7 +628,8 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, ii+begin );
    }
 
@@ -722,20 +648,21 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with stride.
- *         
+ * \brief  Sequential iteration over index range with stride.
+ *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
-            Index_type begin, Index_type end, 
+void forall(seq_exec,
+            Index_type begin, Index_type end,
             Index_type stride,
             LOOP_BODY loop_body)
-{                    
+{  
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
 
@@ -745,7 +672,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with stride with index count.
+ * \brief  Sequential iteration over index range with stride with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -753,7 +680,7 @@ void forall(cilk_for_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    Index_type begin, Index_type end,
                    Index_type stride,
                    Index_type icount,
@@ -764,7 +691,8 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, begin + ii*stride );
    }
 
@@ -783,13 +711,13 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range-stride segment object.
+ * \brief  Sequential iteration over range-stride segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
+void forall(seq_exec,
             const RangeStrideSegment& iseg,
             LOOP_BODY loop_body)
 {
@@ -799,7 +727,8 @@ void forall(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
+#pragma novector
+   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
       loop_body( ii );
    }
 
@@ -809,7 +738,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range-stride segment object 
+ * \brief  Sequential iteration over range-stride segment object 
  *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -818,7 +747,7 @@ void forall(cilk_for_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    const RangeStrideSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
@@ -830,7 +759,8 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
+#pragma novector
+   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
       loop_body( ii+icount, begin + ii*stride );
    }
 
@@ -849,19 +779,20 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over indirection array.
+ * \brief  Sequential iteration over indices in indirection array.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
+void forall(seq_exec,
             const Index_type* __restrict__ idx, Index_type len,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
 
@@ -871,7 +802,8 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over indirection array with index count.
+ * \brief  Sequential iteration over indices in indirection array 
+ *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -879,14 +811,15 @@ void forall(cilk_for_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    const Index_type* __restrict__ idx, Index_type len,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
    }
 
@@ -905,13 +838,13 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over list segment object.
+ * \brief  Sequential iteration over list segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall(cilk_for_exec,
+void forall(seq_exec,
             const ListSegment& iseg,
             LOOP_BODY loop_body)
 {
@@ -920,7 +853,8 @@ void forall(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( idx[k] );
    }
 
@@ -930,7 +864,7 @@ void forall(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over list segment object with index count.
+ * \brief  Sequential iteration over list segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -938,9 +872,9 @@ void forall(cilk_for_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(cilk_for_exec,
+void forall_Icount(seq_exec,
                    const ListSegment& iseg,
-                   Index_type icount,
+                   Index_type icount, 
                    LOOP_BODY loop_body)
 {
    const Index_type* __restrict__ idx = iseg.getIndex();
@@ -948,7 +882,8 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type k = 0 ; k < len ; ++k ) {
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
       loop_body( k+icount, idx[k] );
    }
 
@@ -959,9 +894,9 @@ void forall_Icount(cilk_for_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// The following function templates iterate over index set
-// segments using cilk_for. Segment execution is defined by 
-// segment execution policy template parameter.
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -969,19 +904,20 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over segments of index set and 
- *         use execution policy template parameter to execute segments.
+ * \brief  Sequential iteration over segments of index set and
+ *         use segment execution policy template parameter for segments.
  *
  ******************************************************************************
  */
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset, LOOP_BODY loop_body )
+void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+             const IndexSet& iset, 
+             LOOP_BODY loop_body )
 {
    int num_seg = iset.getNumSegments();
-   cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+   for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
       executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
@@ -992,10 +928,10 @@ void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over segments of index set and
- *         use execution policy template parameter to execute segments.
+ * \brief  Sequential iteration over segments of index set and
+ *         use segment execution policy template parameter for segments.
  *
- *         This method passes count segment iteration.
+ *         This method passes index count to segment iteration.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -1004,11 +940,12 @@ void forall( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& iset, LOOP_BODY loop_body )
+void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                    const IndexSet& iset, 
+                    LOOP_BODY loop_body )
 {
    int num_seg = iset.getNumSegments();
-   cilk_for ( int isi = 0; isi < num_seg; ++isi ) {
+   for ( int isi = 0; isi < num_seg; ++isi ) {
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
       executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
@@ -1017,7 +954,48 @@ void forall_Icount( IndexSet::ExecPolicy<cilk_for_segit, SEG_EXEC_POLICY_T>,
 }
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Special segment iteration using sequential segment iteration loop 
+ *         (no dependency graph used or needed). Individual segment execution 
+ *         is defined in loop body.
+ *
+ *         NOTE: IndexSet must contain only RangeSegments.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall_segments(seq_segit,
+                     const IndexSet& iset,
+                     LOOP_BODY loop_body)
+{
+   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+   int num_seg = ncis.getNumSegments();
+
+   /* Create a temporary IndexSet with one Segment */
+   IndexSet is_tmp;
+   is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+
+   RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+
+   for ( int isi = 0; isi < num_seg; ++isi ) {
+
+      RangeSegment* isetSeg = 
+         static_cast<RangeSegment*>(ncis.getSegment(isi));
+
+      segTmp->setBegin(isetSeg->getBegin()) ;
+      segTmp->setEnd(isetSeg->getEnd()) ;
+      segTmp->setPrivate(isetSeg->getPrivate()) ;
+
+      loop_body(&is_tmp) ;
+
+   } // loop over index set segments
+}
+
+
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
 
+#endif  // closing endif for header file include guard
