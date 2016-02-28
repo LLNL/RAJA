@@ -32,16 +32,16 @@
 
 #include "config.hxx"
 
-#include "int_datatypes.hxx"
-#include "real_datatypes.hxx"
+#include "core/int_datatypes.hxx"
+#include "core/real_datatypes.hxx"
 
-#include "execpolicy.hxx"
+#include "core/execpolicy.hxx"
 
-#include "reducers.hxx"
+#include "core/reducers.hxx"
 
-#include "RangeSegment.hxx"
-#include "ListSegment.hxx"
-#include "IndexSet.hxx"
+#include "core/RangeSegment.hxx"
+#include "core/ListSegment.hxx"
+#include "core/IndexSet.hxx"
 
 
 //
@@ -106,9 +106,9 @@
 // Generic iteration templates require specializations defined 
 // in the files included above.
 //
-#include "forall_generic.hxx"
+#include "core/forall_generic.hxx"
 
 
-#include "IndexSetUtils.hxx"
+#include "core/IndexSetUtils.hxx"
 
 #endif  // closing endif for header file include guard

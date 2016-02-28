@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/ListSegment.hxx"
+#include "RAJA/core/ListSegment.hxx"
 
 #include <iostream>
 #include <string>

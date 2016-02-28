@@ -18,10 +18,10 @@
  ******************************************************************************
  */
 
-#include "RAJA/IndexSet.hxx"
+#include "RAJA/core/IndexSet.hxx"
 
-#include "RAJA/RangeSegment.hxx"
-#include "RAJA/ListSegment.hxx"
+#include "RAJA/core/RangeSegment.hxx"
+#include "RAJA/core/ListSegment.hxx"
 
 #include <iostream>
 

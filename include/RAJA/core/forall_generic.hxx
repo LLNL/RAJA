@@ -55,7 +55,7 @@
 #ifndef RAJA_forall_generic_HXX
 #define RAJA_forall_generic_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
 #include "int_datatypes.hxx"
 

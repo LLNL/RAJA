@@ -27,11 +27,11 @@
 
 #include "../config.hxx"
 
-#include "../int_datatypes.hxx"
+#include "../core/int_datatypes.hxx"
 
-#include "../execpolicy.hxx"
+#include "../core/execpolicy.hxx"
 
-#include "../fault_tolerance.hxx"
+#include "../core/fault_tolerance.hxx"
 
 namespace RAJA {
 

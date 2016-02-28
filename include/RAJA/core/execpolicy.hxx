@@ -24,7 +24,7 @@
 #define RAJA_execpolicy_HXX
 
 
-#include "config.hxx"
+#include "../config.hxx"
 
 
 namespace RAJA {
