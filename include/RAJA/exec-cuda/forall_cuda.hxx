@@ -25,16 +25,16 @@
 #ifndef RAJA_forall_cuda_HXX
 #define RAJA_forall_cuda_HXX
 
-#include "config.hxx"
+#include "../config.hxx"
 
-#include "int_datatypes.hxx"
+#include "../int_datatypes.hxx"
 
-#include "execpolicy.hxx"
-#include "reducers.hxx"
+#include "../execpolicy.hxx"
+#include "../reducers.hxx"
 
-#include "fault_tolerance.hxx"
+#include "../fault_tolerance.hxx"
 
-#include "MemUtils.hxx"
+#include "../MemUtils.hxx"
 
 #include <iostream>
 #include <cstdlib>

@@ -39,7 +39,6 @@ struct seq_exec {};
 struct simd_exec {};
 struct omp_parallel_for_exec {};
 //struct omp_for_nowait_exec {};
-struct cilk_for_exec {};
 
 //
 // Index set segment iteration policies
@@ -49,14 +48,12 @@ struct omp_parallel_for_segit {};
 struct omp_parallel_segit {};
 struct omp_taskgraph_segit {};
 struct omp_taskgraph_interval_segit {};
-struct cilk_for_segit {};
 
 //
 // Reduction policies
 //
 struct seq_reduce {};
 struct omp_reduce {};
-struct cilk_reduce {};
 
 #endif   // end  Intel compilers.....
 

@@ -43,7 +43,6 @@
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
 
-#include "IndexSetUtils.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -56,28 +55,28 @@
 
 #if defined(RAJA_COMPILER_ICC)
 
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
-#include "forall_cilk.hxx"
+#include "exec-simd/raja_simd.hxx"
+#include "exec-openmp/raja_openmp.hxx"
+#include "exec-cilk/raja_cilk.hxx"
 
 
 #elif defined(RAJA_COMPILER_GNU)
 
 
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
+#include "exec-simd/raja_simd.hxx"
+#include "exec-openmp/raja_openmp.hxx"
 
 
 #elif defined(RAJA_COMPILER_XLC12) 
 
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
+#include "exec-simd/raja_simd.hxx"
+#include "exec-openmp/raja_openmp.hxx"
 
 
 #elif defined(RAJA_COMPILER_CLANG)
 
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
+#include "exec-simd/raja_simd.hxx"
+#include "exec-openmp/raja_openmp.hxx"
 
 
 #else
@@ -88,7 +87,7 @@
 
 #if defined(RAJA_USE_CUDA)
 
-#include "forall_cuda.hxx"
+#include "exec-cuda/raja_cuda.hxx"
 
 #endif
 
@@ -96,18 +95,20 @@
 //
 // All platforms must support sequential execution.  
 //
-// NOTE: This file includes sequential segment iteration over segments in
+// NOTE: These files include sequential segment iteration over segments in
 //       an index set which may require definitions in the above 
 //       headers for segment execution.
 //
-#include "forall_seq.hxx"
+#include "exec-sequential/raja_sequential.hxx"
 
 
 //
-// Generic iteration templates that require specializations defined 
+// Generic iteration templates require specializations defined 
 // in the files included above.
 //
 #include "forall_generic.hxx"
 
+
+#include "IndexSetUtils.hxx"
 
 #endif  // closing endif for header file include guard
