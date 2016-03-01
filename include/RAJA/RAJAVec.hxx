@@ -22,6 +22,8 @@
 #ifndef RAJA_RAJAVec_HXX
 #define RAJA_RAJAVec_HXX
 
+#include "config.hxx"
+
 #include <algorithm>
 
 

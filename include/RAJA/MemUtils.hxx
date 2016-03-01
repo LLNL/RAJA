@@ -22,6 +22,8 @@
 #ifndef RAJA_MemUtils_HXX
 #define RAJA_MemUtils_HXX
 
+#include "config.hxx"
+
 #include "reducers.hxx"
 
 #include "int_datatypes.hxx"

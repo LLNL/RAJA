@@ -23,7 +23,7 @@
 #ifndef RAJA_int_datatypes_HXX
 #define RAJA_int_datatypes_HXX
 
-#include "../config.hxx"
+#include "config.hxx"
 
 namespace RAJA {
 

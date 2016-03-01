@@ -18,9 +18,13 @@
  ******************************************************************************
  */
 
-#include "RAJA/core/IndexSet.hxx"
+#include "RAJA/IndexSet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
+#if defined(_OPENMP)
 #include <omp.h>
+#endif
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>

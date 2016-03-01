@@ -21,9 +21,12 @@
 #ifndef RAJA_IndexSet_HXX
 #define RAJA_IndexSet_HXX
 
+#include "config.hxx"
 
+#if 0
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
+#endif
 
 #include "IndexSetSegInfo.hxx"
 

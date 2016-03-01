@@ -26,11 +26,11 @@
 
 #include "../config.hxx"
 
-#include "../core/int_datatypes.hxx"
+#include "../int_datatypes.hxx"
 
-#include "../core/fault_tolerance.hxx"
+#include "../fault_tolerance.hxx"
 
-#include "../core/segment_exec.hxx"
+#include "../segment_exec.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>
