@@ -27,8 +27,6 @@
 
 #include "IndexSetSegInfo.hxx"
 
-#include "execpolicy.hxx"
-
 #include "RAJAVec.hxx"
 
 #include <iosfwd>
@@ -49,10 +47,6 @@ class IndexSet
 {
 public:
 
-//
-// RDH TO DO: Add COMPILE TIME segment type selection.
-//
-
    ///
    /// Nested class representing index set execution policy. 
    ///
@@ -66,11 +60,6 @@ public:
       typedef SEG_ITER_POLICY_T seg_it;
       typedef SEG_EXEC_POLICY_T seg_exec;
    };
-
-   ///
-   /// Sequential execution policy for index set.
-   ///
-   typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
 
 //@{

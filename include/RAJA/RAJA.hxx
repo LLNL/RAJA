@@ -35,8 +35,6 @@
 #include "core/int_datatypes.hxx"
 #include "core/real_datatypes.hxx"
 
-#include "core/execpolicy.hxx"
-
 #include "core/reducers.hxx"
 
 #include "core/RangeSegment.hxx"
@@ -48,58 +46,52 @@
 //////////////////////////////////////////////////////////////////////
 //
 // These contents of the header files included here define index set 
-// iteration policies whose implementations are compiler-dependent.
+// and segment execution methods whose implementations depend on 
+// programming model choice.
+//
+// The ordering of these file inclusions must be preserved since there
+// are dependencies among them.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#if defined(RAJA_COMPILER_ICC)
-
+//
+// All platforms should support simd execution.  
+//
 #include "exec-simd/raja_simd.hxx"
-#include "exec-openmp/raja_openmp.hxx"
-#include "exec-cilk/raja_cilk.hxx"
-
-
-#elif defined(RAJA_COMPILER_GNU)
-
-
-#include "exec-simd/raja_simd.hxx"
-#include "exec-openmp/raja_openmp.hxx"
-
-
-#elif defined(RAJA_COMPILER_XLC12) 
-
-#include "exec-simd/raja_simd.hxx"
-#include "exec-openmp/raja_openmp.hxx"
-
-
-#elif defined(RAJA_COMPILER_CLANG)
-
-#include "exec-simd/raja_simd.hxx"
-#include "exec-openmp/raja_openmp.hxx"
-
-
-#else
-#error RAJA compiler macro is undefined!
-
-#endif
-
-
-#if defined(RAJA_USE_CUDA)
-
-#include "exec-cuda/raja_cuda.hxx"
-
-#endif
-
 
 //
 // All platforms must support sequential execution.  
 //
-// NOTE: These files include sequential segment iteration over segments in
-//       an index set which may require definitions in the above 
-//       headers for segment execution.
-//
 #include "exec-sequential/raja_sequential.hxx"
+
+
+#if defined(RAJA_USE_CUDA)
+#include "exec-cuda/raja_cuda.hxx"
+#endif
+
+//#if defined(RAJA_USE_OPENMP)
+#include "exec-openmp/raja_openmp.hxx"
+//#endif
+
+#if defined(RAJA_COMPILER_ICC)
+//#if defined(RAJA_USE_CILK)
+#include "exec-cilk/raja_cilk.hxx"
+//#endif
+#endif
+
+//
+// Macros for decorating host/device functions
+//
+#if defined(RAJA_USE_CUDA)
+
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#else
+
+#define RAJA_HOST_DEVICE 
+#define RAJA_DEVICE 
+#endif
 
 
 //

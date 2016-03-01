@@ -23,7 +23,40 @@
 #ifndef RAJA_sequential_HXX
 #define RAJA_sequential_HXX
 
-#include "forall_seq.hxx"
+namespace RAJA {
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+///
+/// Segment execution policies
+///
+struct seq_exec {};
+
+///
+/// Index set segment iteration policies
+///
+struct seq_segit {};
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct seq_reduce {};
+
+}  // closing brace for RAJA namespace
+
+
+#include "reduce_sequential.hxx"
+#include "forall_sequential.hxx"
 
 #endif  // closing endif for header file include guard
 

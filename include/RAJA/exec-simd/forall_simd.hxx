@@ -13,8 +13,8 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set iteration template
- *          methods for SIMD execution.
+ * \brief   Header file containing RAJA segment template methods for
+ *          SIMD execution.
  *
  *          These methods should work on any platform. They make no
  *          asumptions about data alignment.
@@ -29,22 +29,11 @@
 
 #include "../core/int_datatypes.hxx"
 
-#include "../core/execpolicy.hxx"
-
 #include "../core/fault_tolerance.hxx"
+
 
 namespace RAJA {
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// There are no explicit reduction classes for SIMD execution.
-// 
-// "seq_reduce" policy should be used for reduction operations with
-// the forall() templates in this file.
-//
-//////////////////////////////////////////////////////////////////////
-//
 
 //
 //////////////////////////////////////////////////////////////////////

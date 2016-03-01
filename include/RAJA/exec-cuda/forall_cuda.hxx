@@ -13,8 +13,8 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set iteration template 
- *          methods for execution via CUDA kernel launch.
+ * \brief   Header file containing RAJA segment template methods for 
+ *          execution via CUDA kernel launch.
  *
  *          These methods should work on any platform that supports 
  *          CUDA devices.
@@ -670,7 +670,7 @@ void forall( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
       executeRangeList_forall< cuda_exec_async<BLOCK_SIZE> >(
-                                    seg_info, loop_body );
+                               seg_info, loop_body );
 
    } // iterate over segments of index set
 
@@ -701,7 +701,7 @@ void forall_Icount( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
 
       const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
       executeRangeList_forall_Icount< cuda_exec_async<BLOCK_SIZE> >(
-                                           seg_info, loop_body );
+                                      seg_info, loop_body );
 
    } // iterate over segments of index set
 

@@ -23,8 +23,6 @@
 
 #include "BaseSegment.hxx"
 
-#include "execpolicy.hxx"
-
 #include <algorithm> 
 #include <iosfwd> 
 
@@ -49,11 +47,6 @@ namespace RAJA {
 class ListSegment : public BaseSegment
 {
 public:
-
-   ///
-   /// Sequential execution policy for list segment.
-   ///
-   typedef RAJA::seq_exec seq_policy;
 
    ///
    /// Construct list segment from given array with specified length.
