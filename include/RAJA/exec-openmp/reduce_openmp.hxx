@@ -30,7 +30,7 @@
 
 #include "../reducers.hxx"
 
-#include "../MemUtils.hxx"
+#include "../MemUtils_CPU.hxx"
 
 
 #if defined(_OPENMP)
