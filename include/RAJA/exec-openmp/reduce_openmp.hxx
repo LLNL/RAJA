@@ -13,16 +13,16 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA reduction templates for
- *          Intel Cilk Plus execution.
+ * \brief   Header file containing RAJA reduction templates for OpenMP
+ *          OpenMP execution.
  *
- *          These methods work only on platforms that support Cilk Plus. 
+ *          These methods should work on any platform that supports OpenMP.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_reduce_cilk_HXX
-#define RAJA_reduce_cilk_HXX
+#ifndef RAJA_forall_omp_HXX
+#define RAJA_forall_omp_HXX
 
 #include "../config.hxx"
 
@@ -32,8 +32,13 @@
 
 #include "../core/MemUtils.hxx"
 
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
+
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
+
+#include <string>
+#include <iostream>
 
 
 namespace RAJA {
@@ -42,14 +47,14 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Min reduction class template for use in CilkPlus execution.
+ * \brief  Min reducer class template for use in OpenMP execution.
  *
  *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<cilk_reduce, T>
+class ReduceMin<omp_reduce, T> 
 {
 public:
    //
@@ -65,8 +70,9 @@ public:
 
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for schedule(static, 1)
+      for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
    }
@@ -74,7 +80,7 @@ public:
    //
    // Copy ctor.
    //
-   ReduceMin( const ReduceMin<cilk_reduce, T>& other )
+   ReduceMin( const ReduceMin<omp_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -83,7 +89,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMin<cilk_reduce, T>()
+   ~ReduceMin<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -96,10 +102,10 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
-         m_reduced_val =
-            RAJA_MIN(m_reduced_val,
+         m_reduced_val = 
+            RAJA_MIN(m_reduced_val, 
                      static_cast<T>(m_blockdata[i*s_block_offset]));
       }
 
@@ -109,11 +115,11 @@ public:
    //
    // Min function that sets min for current thread.
    //
-   ReduceMin<cilk_reduce, T> min(T val) const
+   ReduceMin<omp_reduce, T> min(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
+      int tid = omp_get_thread_num();
       int idx = tid*s_block_offset;
-      m_blockdata[idx] =
+      m_blockdata[idx] = 
          RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
 
       return *this ;
@@ -123,10 +129,10 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMin<cilk_reduce, T>();
+   ReduceMin<omp_reduce, T>();
 
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
 
    bool m_is_copy;
    int m_myID;
@@ -139,14 +145,14 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Min-loc reduction class template for use in CilkPlus execution.
+ * \brief  Min-loc reducer class template for use in OpenMP execution.
  *
  *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMinLoc<cilk_reduce, T>
+class ReduceMinLoc<omp_reduce, T> 
 {
 public:
    //
@@ -163,8 +169,9 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for schedule(static, 1)
+      for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
       }
@@ -173,7 +180,7 @@ public:
    //
    // Copy ctor.
    //
-   ReduceMinLoc( const ReduceMinLoc<cilk_reduce, T>& other )
+   ReduceMinLoc( const ReduceMinLoc<omp_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -182,7 +189,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMinLoc<cilk_reduce, T>()
+   ~ReduceMinLoc<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -195,12 +202,12 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
             m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+         } 
       }
 
       return m_reduced_val;
@@ -211,7 +218,7 @@ public:
    //
    Index_type getMinLoc()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) <= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -225,9 +232,9 @@ public:
    //
    // Min-loc function that sets min for current thread.
    //
-   ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
+   ReduceMinLoc<omp_reduce, T> minloc(T val, Index_type idx) const 
    {
-      int tid = __cilkrts_get_worker_number();
+      int tid = omp_get_thread_num();
       if ( val <= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
          m_blockdata[tid*s_block_offset] = val;
          m_idxdata[tid*s_idx_offset] = idx;
@@ -240,12 +247,12 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMinLoc<cilk_reduce, T>();
+   ReduceMinLoc<omp_reduce, T>();
 
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
-   static const int s_idx_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
+   static const int s_idx_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(Index_type); 
 
    bool m_is_copy;
    int m_myID;
@@ -260,14 +267,14 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Max reduction class template for use in CilkPlus execution.
+ * \brief  Max reducer class template for use in OpenMP execution.
  *
  *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<cilk_reduce, T>
+class ReduceMax<omp_reduce, T> 
 {
 public:
    //
@@ -283,8 +290,9 @@ public:
 
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for schedule(static, 1)
+      for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
       }
    }
@@ -292,7 +300,7 @@ public:
    //
    // Copy ctor.
    //
-   ReduceMax( const ReduceMax<cilk_reduce, T>& other )
+   ReduceMax( const ReduceMax<omp_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -301,7 +309,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMax<cilk_reduce, T>()
+   ~ReduceMax<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -314,10 +322,10 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
-         m_reduced_val =
-            RAJA_MAX(m_reduced_val,
+         m_reduced_val = 
+            RAJA_MAX(m_reduced_val, 
                      static_cast<T>(m_blockdata[i*s_block_offset]));
       }
 
@@ -327,11 +335,11 @@ public:
    //
    // Max function that sets max for current thread.
    //
-   ReduceMax<cilk_reduce, T> max(T val) const
+   ReduceMax<omp_reduce, T> max(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
+      int tid = omp_get_thread_num();
       int idx = tid*s_block_offset;
-      m_blockdata[idx] =
+      m_blockdata[idx] = 
          RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
 
       return *this ;
@@ -341,10 +349,10 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMax<cilk_reduce, T>();
+   ReduceMax<omp_reduce, T>();
 
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
 
    bool m_is_copy;
    int m_myID;
@@ -357,14 +365,14 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Max-loc reduction class template for use in CilkPlus execution.
+ * \brief  Max-loc reducer class template for use in OpenMP execution.
  *
  *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<cilk_reduce, T>
+class ReduceMaxLoc<omp_reduce, T> 
 {
 public:
    //
@@ -381,8 +389,9 @@ public:
       m_blockdata = getCPUReductionMemBlock(m_myID);
       m_idxdata = getCPUReductionLocBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for schedule(static, 1)
+      for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = init_val ;
          m_idxdata[i*s_idx_offset] = init_loc ;
       }
@@ -391,7 +400,7 @@ public:
    //
    // Copy ctor.
    //
-   ReduceMaxLoc( const ReduceMaxLoc<cilk_reduce, T>& other )
+   ReduceMaxLoc( const ReduceMinLoc<omp_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -400,7 +409,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceMaxLoc<cilk_reduce, T>()
+   ~ReduceMaxLoc<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -413,12 +422,12 @@ public:
    //
    operator T()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
             m_reduced_idx = m_idxdata[i*s_idx_offset];
-         }
+         } 
       }
 
       return m_reduced_val;
@@ -429,7 +438,7 @@ public:
    //
    Index_type getMaxLoc()
    {
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
          if ( static_cast<T>(m_blockdata[i*s_block_offset]) >= m_reduced_val ) {
             m_reduced_val = m_blockdata[i*s_block_offset];
@@ -443,9 +452,9 @@ public:
    //
    // Max-loc function that sets max for current thread.
    //
-   ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
+   ReduceMaxLoc<omp_reduce, T> maxloc(T val, Index_type idx) const 
    {
-      int tid = __cilkrts_get_worker_number();
+      int tid = omp_get_thread_num();
       if ( val >= static_cast<T>(m_blockdata[tid*s_block_offset]) ) {
          m_blockdata[tid*s_block_offset] = val;
          m_idxdata[tid*s_idx_offset] = idx;
@@ -458,12 +467,12 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceMaxLoc<cilk_reduce, T>();
+   ReduceMaxLoc<omp_reduce, T>();
 
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
-   static const int s_idx_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
+   static const int s_idx_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(Index_type); 
 
    bool m_is_copy;
    int m_myID;
@@ -478,14 +487,14 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Sum reduction class template for use in CilkPlus execution.
+ * \brief  Sum reducer class template for use in OpenMP execution.
  *
  *         For usage example, see reducers.hxx.
  *
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<cilk_reduce, T>
+class ReduceSum<omp_reduce, T> 
 {
 public:
    //
@@ -502,8 +511,9 @@ public:
 
       m_blockdata = getCPUReductionMemBlock(m_myID);
 
-      int nthreads = __cilkrts_get_nworkers();
-      cilk_for ( int i = 0; i < nthreads; ++i ) {
+      int nthreads = omp_get_max_threads();
+#pragma omp parallel for schedule(static, 1)
+      for ( int i = 0; i < nthreads; ++i ) {
          m_blockdata[i*s_block_offset] = 0 ;
       }
    }
@@ -511,7 +521,7 @@ public:
    //
    // Copy ctor.
    //
-   ReduceSum( const ReduceSum<cilk_reduce, T>& other )
+   ReduceSum( const ReduceSum<omp_reduce, T>& other )
    {
       *this = other;
       m_is_copy = true;
@@ -520,7 +530,7 @@ public:
    //
    // Destructor.
    //
-   ~ReduceSum<cilk_reduce, T>()
+   ~ReduceSum<omp_reduce, T>() 
    {
       if (!m_is_copy) {
          releaseCPUReductionId(m_myID);
@@ -534,7 +544,7 @@ public:
    operator T()
    {
       T tmp_reduced_val = static_cast<T>(0);
-      int nthreads = __cilkrts_get_nworkers();
+      int nthreads = omp_get_max_threads();
       for ( int i = 0; i < nthreads; ++i ) {
          tmp_reduced_val += static_cast<T>(m_blockdata[i*s_block_offset]);
       }
@@ -546,9 +556,9 @@ public:
    //
    // += operator that performs accumulation for current thread.
    //
-   ReduceSum<cilk_reduce, T> operator+=(T val) const
+   ReduceSum<omp_reduce, T> operator+=(T val) const 
    {
-      int tid = __cilkrts_get_worker_number();
+      int tid = omp_get_thread_num();
       m_blockdata[tid*s_block_offset] += val;
       return *this ;
    }
@@ -557,10 +567,10 @@ private:
    //
    // Default ctor is declared private and not implemented.
    //
-   ReduceSum<cilk_reduce, T>();
+   ReduceSum<omp_reduce, T>();
 
-   static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+   static const int s_block_offset = 
+      COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType); 
 
    bool m_is_copy;
    int m_myID;
@@ -575,4 +585,3 @@ private:
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
-

@@ -23,7 +23,44 @@
 #ifndef RAJA_openmp_HXX
 #define RAJA_openmp_HXX
 
-#include "forall_omp.hxx"
+namespace RAJA {
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+///
+/// Segment execution policies
+///
+struct omp_parallel_for_exec {};
+//struct omp_parallel_for_nowait_exec {};
+
+///
+/// Index set segment iteration policies
+///
+struct omp_parallel_for_segit {};
+struct omp_parallel_segit {};
+struct omp_taskgraph_segit {};
+struct omp_taskgraph_interval_segit {};
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct omp_reduce {};
+
+}  // closing brace for RAJA namespace
+
+
+#include "reduce_openmp.hxx"
+#include "forall_openmp.hxx"
 
 #endif  // closing endif for header file include guard
 

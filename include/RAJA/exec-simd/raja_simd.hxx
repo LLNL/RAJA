@@ -13,7 +13,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for SIMD execution.
+ * \brief   Header file containing RAJA headers for SIMD segment execution.
  *
  *          These methods work on all platforms.
  *
@@ -22,6 +22,36 @@
 
 #ifndef RAJA_simd_HXX
 #define RAJA_simd_HXX
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+///
+/// Segment execution policies
+///
+struct simd_exec {};
+
+//
+// NOTE: There is no Index set segment iteration policy for SIMD
+//
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+//
+// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
+//
 
 #include "forall_simd.hxx"
 
