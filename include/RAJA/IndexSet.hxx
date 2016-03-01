@@ -23,10 +23,6 @@
 
 #include "config.hxx"
 
-#if 0
-#include "RangeSegment.hxx"
-#include "ListSegment.hxx"
-#endif
 
 #include "IndexSetSegInfo.hxx"
 
