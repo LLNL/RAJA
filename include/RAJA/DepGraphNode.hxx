@@ -22,6 +22,8 @@
 #ifndef RAJA_DepGraphNode_HXX
 #define RAJA_DepGraphNode_HXX
 
+#include "config.hxx"
+
 #include "int_datatypes.hxx"
 
 #include <cstdio>

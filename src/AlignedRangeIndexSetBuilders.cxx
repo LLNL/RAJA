@@ -19,6 +19,8 @@
  */
 
 #include "RAJA/IndexSet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
 
 namespace RAJA {

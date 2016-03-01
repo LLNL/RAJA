@@ -26,10 +26,6 @@
 
 #include "int_datatypes.hxx"
 
-#include "forall_seq.hxx"
-
-#include "RAJAVec.hxx"
-
 
 namespace RAJA {
 
@@ -37,19 +33,19 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Get all indices in given index set (or segment) in given container.
+ * \brief  Copy all indices in given index set to given container.
  *         Container must be template on element type, have default and 
  *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-template <typename CONTAINER_T,
-          typename INDEXSET_T>
+template <typename CONTAINER_T>
 RAJA_INLINE
-void getIndices(CONTAINER_T& con, const INDEXSET_T& iset)
+void getIndices(CONTAINER_T& con, const IndexSet& iset)
 {
    CONTAINER_T tcon;
-   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, 
+   [&] (Index_type idx) {
       tcon.push_back(idx);
    } );
    con = tcon;
@@ -58,22 +54,67 @@ void getIndices(CONTAINER_T& con, const INDEXSET_T& iset)
 /*!
  ******************************************************************************
  *
- * \brief  Get all indices in given index set (or segment) that satisy
- *         given conditional in given container. 
+ * \brief  Copy all indices in given segment to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
+ *
+ ******************************************************************************
+ */
+template <typename CONTAINER_T,
+          typename SEGMENT_T>
+RAJA_INLINE
+void getIndices(CONTAINER_T& con, const SEGMENT_T& iset)
+{
+   CONTAINER_T tcon;
+   forall< seq_exec >(iset, [&] (Index_type idx) {
+      tcon.push_back(idx);
+   } );
+   con = tcon;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Copy all indices in given index set that satisfy
+ *         given conditional to given container. 
  *         Container must be template on element type, have default and 
  *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
 template <typename CONTAINER_T,
-          typename INDEXSET_T,
           typename CONDITIONAL>
 RAJA_INLINE
-void getIndicesConditional(CONTAINER_T& con, const INDEXSET_T& iset,
+void getIndicesConditional(CONTAINER_T& con, const IndexSet& iset,
                            CONDITIONAL conditional)
 {
    CONTAINER_T tcon;
-   forall< typename INDEXSET_T::seq_policy >(iset, [&] (Index_type idx) {
+   forall< IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, 
+   [&] (Index_type idx) {
+      if ( conditional( idx ) ) tcon.push_back(idx);
+   } );
+   con = tcon;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Copy all indices in given segment that satisfy
+ *         given conditional to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
+ *
+ ******************************************************************************
+ */
+template <typename CONTAINER_T,
+          typename SEGMENT_T,
+          typename CONDITIONAL>
+RAJA_INLINE
+void getIndicesConditional(CONTAINER_T& con, const SEGMENT_T& iset,
+                           CONDITIONAL conditional)
+{
+   CONTAINER_T tcon;
+   forall< seq_exec >(iset, [&] (Index_type idx) {
       if ( conditional( idx ) ) tcon.push_back(idx);
    } );
    con = tcon;
