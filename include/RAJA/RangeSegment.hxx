@@ -21,9 +21,9 @@
 #ifndef RAJA_RangeSegment_HXX
 #define RAJA_RangeSegment_HXX
 
-#include "BaseSegment.hxx"
+#include "config.hxx"
 
-#include "execpolicy.hxx"
+#include "BaseSegment.hxx"
 
 #include <algorithm>
 #include <iosfwd>
@@ -48,11 +48,6 @@ namespace RAJA {
 class RangeSegment : public BaseSegment
 {
 public:
-
-   ///
-   /// Sequential execution policy for range segment.
-   ///
-   typedef RAJA::seq_exec seq_policy;
 
    ///
    /// Default range segment ctor.
@@ -208,11 +203,6 @@ private:
 class RangeStrideSegment : public BaseSegment
 {
 public:
-
-   ///
-   /// Sequential execution policy for range segment with stride.
-   ///
-   typedef RAJA::seq_exec seq_policy;
 
    ///
    /// Default range segment with stride ctor.
