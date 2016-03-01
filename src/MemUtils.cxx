@@ -19,9 +19,9 @@
  ******************************************************************************
  */
 
-#include "RAJA/core/MemUtils.hxx"
+#include "RAJA/MemUtils.hxx"
 
-#include "RAJA/core/int_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>

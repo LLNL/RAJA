@@ -21,6 +21,8 @@
 #ifndef RAJA_ListSegment_HXX
 #define RAJA_ListSegment_HXX
 
+#include "config.hxx"
+
 #include "BaseSegment.hxx"
 
 #include <algorithm> 

@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/core/DepGraphNode.hxx"
+#include "RAJA/DepGraphNode.hxx"
 
 #include <iostream>
 

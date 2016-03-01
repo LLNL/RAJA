@@ -18,7 +18,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/core/RangeSegment.hxx"
+#include "RAJA/RangeSegment.hxx"
 
 #include <iostream>
 

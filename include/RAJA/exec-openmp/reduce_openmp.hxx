@@ -26,11 +26,11 @@
 
 #include "../config.hxx"
 
-#include "../core/int_datatypes.hxx"
+#include "../int_datatypes.hxx"
 
-#include "../core/reducers.hxx"
+#include "../reducers.hxx"
 
-#include "../core/MemUtils.hxx"
+#include "../MemUtils.hxx"
 
 
 #if defined(_OPENMP)

@@ -31,7 +31,7 @@
 #ifndef RAJA_real_datatypes_HXX
 #define RAJA_real_datatypes_HXX
 
-#include "../config.hxx"
+#include "config.hxx"
 
 #include<complex>
 
