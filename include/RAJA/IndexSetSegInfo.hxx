@@ -21,6 +21,8 @@
 #ifndef RAJA_IndexSetSegInfo_HXX
 #define RAJA_IndexSetSegInfo_HXX
 
+#include "config.hxx"
+
 #include "int_datatypes.hxx"
 
 #include "DepGraphNode.hxx"

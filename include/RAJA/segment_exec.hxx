@@ -24,6 +24,8 @@
 #ifndef RAJA_segment_exec_HXX
 #define RAJA_segment_exec_HXX
 
+#include "config.hxx"
+
 
 namespace RAJA {
 
