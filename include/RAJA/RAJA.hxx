@@ -34,79 +34,72 @@
 #include "int_datatypes.hxx"
 #include "real_datatypes.hxx"
 
-#include "execpolicy.hxx"
-
 #include "reducers.hxx"
 
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
 
-#include "IndexSetUtils.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////
 //
 // These contents of the header files included here define index set 
-// iteration policies whose implementations are compiler-dependent.
+// and segment execution methods whose implementations depend on 
+// programming model choice.
+//
+// The ordering of these file inclusions must be preserved since there
+// are dependencies among them.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#if defined(RAJA_COMPILER_ICC)
-
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
-#include "forall_cilk.hxx"
-
-
-#elif defined(RAJA_COMPILER_GNU)
-
-
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
-
-
-#elif defined(RAJA_COMPILER_XLC12) 
-
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
-
-
-#elif defined(RAJA_COMPILER_CLANG)
-
-#include "forall_simd.hxx"
-#include "forall_omp.hxx"
-
-
-#else
-#error RAJA compiler macro is undefined!
-
-#endif
-
-
-#if defined(RAJA_USE_CUDA)
-
-#include "forall_cuda.hxx"
-
-#endif
-
+//
+// All platforms should support simd execution.  
+//
+#include "exec-simd/raja_simd.hxx"
 
 //
 // All platforms must support sequential execution.  
 //
-// NOTE: This file includes sequential segment iteration over segments in
-//       an index set which may require definitions in the above 
-//       headers for segment execution.
+#include "exec-sequential/raja_sequential.hxx"
+
+
+#if defined(RAJA_USE_CUDA)
+#include "exec-cuda/raja_cuda.hxx"
+#endif
+
+//#if defined(RAJA_USE_OPENMP)
+#include "exec-openmp/raja_openmp.hxx"
+//#endif
+
+#if defined(RAJA_COMPILER_ICC)
+//#if defined(RAJA_USE_CILK)
+#include "exec-cilk/raja_cilk.hxx"
+//#endif
+#endif
+
 //
-#include "forall_seq.hxx"
+// Macros for decorating host/device functions
+//
+#if defined(RAJA_USE_CUDA)
+
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#else
+
+#define RAJA_HOST_DEVICE 
+#define RAJA_DEVICE 
+#endif
 
 
 //
-// Generic iteration templates that require specializations defined 
+// Generic iteration templates require specializations defined 
 // in the files included above.
 //
 #include "forall_generic.hxx"
 
+
+#include "IndexSetUtils.hxx"
 
 #endif  // closing endif for header file include guard
