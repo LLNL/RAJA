@@ -31,10 +31,15 @@
 //////////////////////////////////////////////////////////////////////
 //
 
+
 ///
 /// Segment execution policies
 ///
+namespace RAJA {
+
 struct simd_exec {};
+
+}
 
 //
 // NOTE: There is no Index set segment iteration policy for SIMD
