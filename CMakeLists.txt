@@ -16,6 +16,17 @@ else()
   message(WARNING "OpenMP NOT FOUND")
 endif()
 
+if (RAJA_USE_CUDA)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    message(STATUS "CUDA")
+    #set(CUDA_NVCC_FLAGS -O2; --expt-extended-lambda; -restrict; -arch compute_35; -std=c++11; -Xcompiler; -x cu)
+    set(CUDA_NVCC_FLAGS "-arch compute_35 -std=c++11 --expt-extended-lambda -x=cu")
+    #set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+    include_directories(${CUDA_INCLUDE_DIRS})
+  endif()
+endif()
+
 # Set Opt as the default build type
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Opt' as none was specified.")
@@ -28,7 +39,7 @@ set(RAJA_USE_STL OFF)
 set(RAJA_FP "RAJA_USE_DOUBLE")
 
 ## Pointers
-set(RAJA_PTR "RAJA_USE_BARE_PTR")
+set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
 #set(RAJA_USE_BARE_PTR ON)
 #set(RAJA_USE_RESTRICT_PTR OFF)
 #set(RAJA_USE_RESTRICT_ALIGNED_PTR OFF)
@@ -44,40 +55,46 @@ set(RAJA_RANGE_MIN_LENGTH 32)
 set(RAJA_DATA_ALIGN 64)
 set(RAJA_COHERENCE_BLOCK_SIZE 64)
 
-#elseif(CMAKE_CXX_COMPILER_ID MATCHES Clang)
-#  set(RAJA_PLATFORM RAJA_PLATFORM_X86_AVX)
-#  set(RAJA_COMPILER RAJA_COMPILER_CLANG)
-#
-#  if(CMAKE_BUILD_TYPE MATCHES Opt)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -std=c++0x")
-#  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-#    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x -fopenmp")
-#  endif()
-#endif()
+# Timer
+add_definitions(-DRAJA_USE_GETTIME)
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
+include_directories(${PROJECT_BINARY_DIR}/include)
 
 include_directories(include)
 
-add_library(RAJA
-  src/AlignedRangeIndexSetBuilders.cxx
-  src/DepGraphNode.cxx
-  src/IndexSet.cxx
-  src/ListSegment.cxx
-  src/LockFreeIndexSetBuilders.cxx
-  src/MemUtils.cxx
-  src/RangeSegment.cxx
-  )
-
-file(GLOB files "include/RAJA/*.hxx")
-install(FILES ${files} DESTINATION "include/RAJA")
+install(DIRECTORY include/ DESTINATION include REGEX *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
-install(TARGETS RAJA 
-  ARCHIVE DESTINATION lib)
+
+if (RAJA_USE_CUDA)
+cuda_add_library(RAJA
+    src/AlignedRangeIndexSetBuilders.cxx
+    src/DepGraphNode.cxx
+    src/IndexSet.cxx
+    src/ListSegment.cxx
+    src/LockFreeIndexSetBuilders.cxx
+    src/MemUtils_CPU.cxx
+    src/MemUtils_CUDA.cxx
+    src/RangeSegment.cxx
+  )
+else()
+add_library(RAJA
+    src/AlignedRangeIndexSetBuilders.cxx
+    src/DepGraphNode.cxx
+    src/IndexSet.cxx
+    src/ListSegment.cxx
+    src/LockFreeIndexSetBuilders.cxx
+    src/MemUtils_CPU.cxx
+    src/MemUtils_CUDA.cxx
+    src/RangeSegment.cxx
+  )
+endif()
+
+install(TARGETS RAJA ARCHIVE DESTINATION lib)
 
 set(BUILD_TESTS On CACHE STRING "Build test applications")
 if(BUILD_TESTS)

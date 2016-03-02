@@ -22,7 +22,7 @@
 #ifndef RAJA_MemUtils_CUDA_HXX
 #define RAJA_MemUtils_CUDA_HXX
 
-#include "../config.hxx"
+#include "RAJA/config.hxx"
 
 
 #if defined(RAJA_USE_CUDA)

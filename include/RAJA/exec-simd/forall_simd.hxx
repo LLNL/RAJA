@@ -25,11 +25,11 @@
 #ifndef RAJA_forall_simd_HXX
 #define RAJA_forall_simd_HXX
 
-#include "../config.hxx"
+#include "RAJA/config.hxx"
 
-#include "../int_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
 
-#include "../fault_tolerance.hxx"
+#include "RAJA/fault_tolerance.hxx"
 
 
 namespace RAJA {
