@@ -1,18 +1,20 @@
-add_definitions(-DUSE_MPI=0 -DUSE_OMP=1 -DRAJA_USE_CLOCK)
-
-file(COPY lulesh.cc.src
-  DESTINATION ${PROJECT_BINARY_DIR}/test/LULESH-v2.0/LULESH-v2.0_RAJA-basic)
-
-file(RENAME ${PROJECT_BINARY_DIR}/test/LULESH-v2.0/LULESH-v2.0_RAJA-basic/lulesh.cc.src
-  ${PROJECT_BINARY_DIR}/test/LULESH-v2.0/LULESH-v2.0_RAJA-basic/lulesh.cc)
-
+add_definitions(-DUSE_MPI=0 -DUSE_OMP=1)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-add_executable(lulesh2.0basic
-  ${PROJECT_BINARY_DIR}/test/LULESH-v2.0/LULESH-v2.0_RAJA-basic/lulesh.cc
-  lulesh-comm.cc
-  lulesh-init.cc
-  lulesh-util.cc
-  lulesh-viz.cc)
+if (RAJA_USE_CUDA)
+  cuda_add_executable(lulesh2.0basic
+    lulesh.cc
+    lulesh-comm.cc
+    lulesh-init.cc
+    lulesh-util.cc
+    lulesh-viz.cc)
+else ()
+  add_executable(lulesh2.0basic
+    lulesh.cc
+    lulesh-comm.cc
+    lulesh-init.cc
+    lulesh-util.cc
+    lulesh-viz.cc)
+endif()
 
 target_link_libraries(lulesh2.0basic RAJA)

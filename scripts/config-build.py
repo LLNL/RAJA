@@ -134,6 +134,8 @@ cmakeline += " -C %s" % cachefile
 if args.cmakeoption:
     cmakeline += " -D" + args.cmakeoption
 
+cmakeline += ' -D CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS=" "'
+
 cmakeline += " %s/.." % scriptsdir
 
 ############################

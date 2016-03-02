@@ -24,13 +24,13 @@
 #ifndef RAJA_forall_omp_HXX
 #define RAJA_forall_omp_HXX
 
-#include "../config.hxx"
+#include "RAJA/config.hxx"
 
-#include "../int_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
 
-#include "../reducers.hxx"
+#include "RAJA/reducers.hxx"
 
-#include "../MemUtils_CPU.hxx"
+#include "RAJA/MemUtils_CPU.hxx"
 
 
 #if defined(_OPENMP)
