@@ -69,14 +69,12 @@
 #include "exec-cuda/raja_cuda.hxx"
 #endif
 
-//#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_USE_OPENMP)
 #include "exec-openmp/raja_openmp.hxx"
-//#endif
+#endif
 
-#if defined(RAJA_COMPILER_ICC)
-//#if defined(RAJA_USE_CILK)
+#if defined(RAJA_USE_CILK)
 #include "exec-cilk/raja_cilk.hxx"
-//#endif
 #endif
 
 //

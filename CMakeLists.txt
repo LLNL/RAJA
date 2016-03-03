@@ -2,6 +2,10 @@ cmake_minimum_required (VERSION 3.1)
 
 project(RAJA LANGUAGES CXX)
 
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
+enable_testing()
+
 # Set version number
 set(RAJA_VERSION_MAJOR 1)
 set(RAJA_VERSION_MINOR 0)
