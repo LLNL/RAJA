@@ -13,3 +13,5 @@ elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
 elseif(CMAKE_BUILD_TYPE MATCHES Debug)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -fpermissive -std=c++0x" CACHE STRING "")
 endif()
+
+set(RAJA_USE_OPENMP On CACHE BOOL "")

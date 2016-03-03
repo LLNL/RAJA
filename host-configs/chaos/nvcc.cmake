@@ -3,8 +3,6 @@ set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
 
 #set(CMAKE_SYSTEM_NAME "CUDA" CACHE STRING "")
 
-#set(CMAKE_C_COMPILER "nvcc" CACHE PATH "")
-#set(CMAKE_CXX_COMPILER "nvcc" CACHE PATH "")
 set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/gcc" CACHE PATH "")
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/g++" CACHE PATH "")
 
@@ -27,4 +25,4 @@ elseif(CMAKE_BUILD_TYPE MATCHES Debug)
 endif()
 
 set(RAJA_USE_CUDA On CACHE BOOL "")
-
+set(RAJA_USE_OPENMP On CACHE BOOL "")
