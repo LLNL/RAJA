@@ -23,6 +23,9 @@
 #ifndef RAJA_openmp_HXX
 #define RAJA_openmp_HXX
 
+
+#if defined(RAJA_USE_OPENMP)
+
 namespace RAJA {
 
 //
@@ -61,6 +64,9 @@ struct omp_reduce {};
 
 #include "reduce_openmp.hxx"
 #include "forall_openmp.hxx"
+
+
+#endif  // closing endif for if defined(RAJA_USE_OPENMP)
 
 #endif  // closing endif for header file include guard
 
