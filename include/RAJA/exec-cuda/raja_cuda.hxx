@@ -99,7 +99,7 @@ inline void gpuAssert(cudaError_t code, const char *file, int line,
 #include "forall_cuda.hxx"
 
 
-#endif  // if defined(RAJA_USE_CUDA)
+#endif  // closing endif for if defined(RAJA_USE_CUDA)
 
 #endif  // closing endif for header file include guard
 
