@@ -23,6 +23,8 @@
 #ifndef RAJA_cilk_HXX
 #define RAJA_cilk_HXX
 
+#if defined(RAJA_USE_CILK)
+
 namespace RAJA {
 
 //
@@ -57,6 +59,9 @@ struct cilk_reduce {};
 
 #include "reduce_cilk.hxx"
 #include "forall_cilk.hxx"
+
+
+#endif  // closing endif for if defined(RAJA_USE_CILK)
 
 #endif  // closing endif for header file include guard
 

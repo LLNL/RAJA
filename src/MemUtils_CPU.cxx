@@ -25,11 +25,10 @@
 
 #include "RAJA/reducers.hxx"
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
+#include "RAJA/ThreadUtils_CPU.hxx"
 
 
+#include<algorithm>
 #include<string>
 #include<iostream>
 
@@ -114,10 +113,7 @@ void releaseCPUReductionId(int id)
 */
 CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 {
-   int nthreads = 1;
-#if defined(_OPENMP)
-   nthreads = omp_get_max_threads();
-#endif
+   int nthreads = getMaxThreadsCPU();
 
    int block_offset = COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
 
@@ -158,10 +154,7 @@ void freeCPUReductionMemBlock()
 */
 Index_type* getCPUReductionLocBlock(int id)
 {
-   int nthreads = 1;
-#if defined(_OPENMP)
-   nthreads = omp_get_max_threads();
-#endif
+   int nthreads = getMaxThreadsCPU();
 
    int block_offset = COHERENCE_BLOCK_SIZE/sizeof(Index_type);
 
