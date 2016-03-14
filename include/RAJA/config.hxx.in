@@ -10,8 +10,8 @@
  *          parameters specify: SIMD unit width, data alignment information,
  *          inline directives, etc. 
  *
- *          IMPORTANT: Exactly one RAJA_PLATFORM_* and one RAJA_COMPILER_* 
- *                     option must be defined to ensure correct behavior.
+ *          IMPORTANT: Exactly one e RAJA_COMPILER_* option must be defined to
+ *          ensure correct behavior.
  *
  *          Definitions in this file will propagate to all RAJA header files.
  *
@@ -32,7 +32,6 @@
 
 #define @RAJA_PTR@
 
-#define @RAJA_PLATFORM@
 #define @RAJA_COMPILER@
 
 /*
