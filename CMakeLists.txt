@@ -31,6 +31,10 @@ if (RAJA_USE_CUDA)
   endif()
 endif()
 
+# Used for timing
+find_library(RT_LIBRARIES rt)
+
+
 # Set Opt as the default build type
 if(NOT CMAKE_BUILD_TYPE)
   message(STATUS "Setting build type to 'Opt' as none was specified.")
@@ -43,7 +47,11 @@ set(RAJA_USE_STL OFF)
 set(RAJA_FP "RAJA_USE_DOUBLE")
 
 ## Pointers
-set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
+if (RAJA_USE_CUDA)
+  set(RAJA_PTR "RAJA_USE_BARE_PTR")
+else ()
+  set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
+endif()
 #set(RAJA_USE_BARE_PTR ON)
 #set(RAJA_USE_RESTRICT_PTR OFF)
 #set(RAJA_USE_RESTRICT_ALIGNED_PTR OFF)
