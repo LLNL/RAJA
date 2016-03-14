@@ -78,7 +78,9 @@
 #endif
 
 //
-// Macros for decorating host/device functions
+// Macros for decorating host/device functions for CUDA kernels.
+// We need a better solution than this as it is a pain to manage
+// this stuff in an application. 
 //
 #if defined(RAJA_USE_CUDA)
 
