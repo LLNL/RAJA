@@ -92,6 +92,7 @@ cuda_add_library(RAJA
     src/MemUtils_CPU.cxx
     src/MemUtils_CUDA.cxx
     src/RangeSegment.cxx
+    src/ThreadUtils_CPU.cxx
   )
 else()
 add_library(RAJA
@@ -103,6 +104,7 @@ add_library(RAJA
     src/MemUtils_CPU.cxx
     src/MemUtils_CUDA.cxx
     src/RangeSegment.cxx
+    src/ThreadUtils_CPU.cxx
   )
 endif()
 
