@@ -1,0 +1,337 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Configuring and building the code &mdash; RAJA 1.0.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="RAJA 1.0.0 documentation" href="index.html"/>
+        <link rel="next" title="Examples" href="test_examples.html"/>
+        <link rel="prev" title="RAJA User Documentation" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> RAJA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                1.0
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">Configuring and building the code</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#raja-cmake-system">RAJA CMake System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#raja-configuration-options">RAJA configuration options</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="test_examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">RAJA</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Configuring and building the code</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/config_build.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="configuring-and-building-the-code">
+<h1>Configuring and building the code<a class="headerlink" href="#configuring-and-building-the-code" title="Permalink to this headline">¶</a></h1>
+<p>This section provides a brief discussion of how to configure and build
+the RAJA code.</p>
+<div class="section" id="raja-cmake-system">
+<h2>RAJA CMake System<a class="headerlink" href="#raja-cmake-system" title="Permalink to this headline">¶</a></h2>
+<p>RAJA uses a simple CMake-based system, but you don&#8217;t need to know much
+about CMake to build RAJA. It does require that you use a CMake version
+greater than 3.1. If needed, you can learn more about CMake and download
+it at <a class="reference external" href="http://www.cmake.org">http://www.cmake.org</a></p>
+<p>An important thing to note is that our CMake setup does not allow
+in-source builds so that you can easily configure and build for various
+systems and compilers from the same source code.</p>
+<p>Configuring the code can be done in a couple of ways depending on your needs.</p>
+<p><strong>Use the provided configuration script.</strong></p>
+<blockquote>
+<div><p>If you have python installed on your system, you can execute a
+python helper script from the root directory of the RAJA source code
+to configure a build</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./scripts/config-build.py
+</pre></div>
+</div>
+<p>This script will find and use a configuration file to initialize the
+CMake cache and create build and install directories in the RAJA root
+directory whose names contain the system type, compiler, and built type.
+For example</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ls
+build-chaos-gnu-debug
+install-chaos-gnu-debug
+</pre></div>
+</div>
+<p>The configuration files are located in the &#8216;host-config&#8217; directory.
+The &#8216;host-configs&#8217; directory contains configuration files for platforms
+and compilers most commonly used on Livermore Computing platforms at
+Lawrence Livermore National Laboratory. The contents of these files and
+how they are used in RAJA are described below. Note that new host
+configuration cache files can be created by copying an exisiting one
+to a new file and modifying the contents for your needs.</p>
+<p>If you run the python script with no arguments, it will configure the
+code using a default compiler and options for the platform you are on.
+The script accepts several options for</p>
+<blockquote>
+<div><ul class="simple">
+<li>specifying the build and install directory paths and names</li>
+<li>specifying the compiler</li>
+<li>specifying the build type (Release, Debug, RelWithDebInfo)</li>
+<li>specifying CMake options</li>
+<li>selecting the host configuration file to initialize the CMake cache</li>
+</ul>
+</div></blockquote>
+<p>Script options can be displayed by running</p>
+<div class="highlight-python"><div class="highlight"><pre>$ ./scripts/config-build.py --help
+</pre></div>
+</div>
+</div></blockquote>
+<p><strong>Run CMake directly.</strong></p>
+<blockquote>
+<div><p>You can also run CMake directly. To configure the code using this method,
+create a build directory in the root directory and go into it</p>
+<div class="highlight-python"><div class="highlight"><pre>$ my-awesome-build
+$ cd my-awesome-build
+</pre></div>
+</div>
+<p>Then, invoke CMake and specify the build type and cache file you want and
+the location of the top-level RAJA CMakeLists.txt file; for example</p>
+<div class="highlight-python"><div class="highlight"><pre>$ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
+</pre></div>
+</div>
+</div></blockquote>
+<p>Regardless of how you configure your build, you build the code by going into
+the build directory and typing</p>
+<div class="highlight-python"><div class="highlight"><pre>$ make
+</pre></div>
+</div>
+<p>If you want to also create an installation of the code, you can type</p>
+<div class="highlight-python"><div class="highlight"><pre>$ make install
+</pre></div>
+</div>
+<p>This will create &#8216;include&#8217; and &#8216;lib&#8217; directories in the install directory.</p>
+</div>
+<div class="section" id="raja-configuration-options">
+<h2>RAJA configuration options<a class="headerlink" href="#raja-configuration-options" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA include directory &#8216;include/RAJA&#8217; contains a header file
+called &#8216;config.hxx.in&#8217; that contains definitions for all the configuraton
+options that RAJA supports. These definitions are set when the code is
+configured according to the settings in the selected host configuration
+file and the top-level RAJA CMakeLists.txt file. For example, the file
+associated with the Intel compiler on LLNL Linux platforms is:</p>
+<div class="highlight-python"><div class="highlight"><pre>set(RAJA_COMPILER &quot;RAJA_COMPILER_ICC&quot; CACHE STRING &quot;&quot;)
+
+set(CMAKE_C_COMPILER &quot;/usr/local/bin/icc-16.0.109&quot; CACHE PATH &quot;&quot;)
+set(CMAKE_CXX_COMPILER &quot;/usr/local/bin/icpc-16.0.109&quot; CACHE PATH &quot;&quot;)
+
+if(CMAKE_BUILD_TYPE MATCHES Release)
+  set(CMAKE_CXX_FLAGS &quot;${CMAKE_CXX_FLAGS} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x&quot; CACHE STRING &quot;&quot;)
+elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+  set(CMAKE_CXX_FLAGS &quot;${CMAKE_CXX_FLAGS} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x&quot; CACHE STRING &quot;&quot;)
+elseif(CMAKE_BUILD_TYPE MATCHES Debug)
+  set(CMAKE_CXX_FLAGS &quot;${CMAKE_CXX_FLAGS} -O0 -std=c++0x&quot; CACHE STRING &quot;&quot;)
+endif()
+
+set(RAJA_USE_OPENMP On CACHE BOOL &quot;&quot;)
+set(RAJA_USE_CILK On CACHE BOOL &quot;&quot;)
+
+set(RAJA_RANGE_ALIGN 4 CACHE INT &quot;&quot;)
+set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT &quot;&quot;)
+set(RAJA_DATA_ALIGN 64 CACHE INT &quot;&quot;)
+set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT &quot;&quot;)
+</pre></div>
+</div>
+<p>The first line sets a RAJA compiler variable that is used to control
+compiler-specific syntax for certain RAJA features. The next several
+commands in the file set the compiler (including version), and options
+for each build type. Next, programming model options are set to turn on or off
+things such as OpenMP, CilkPlus, CUDA, etc. For example, the Intel compiler
+supports both OpenMP and CilkPlus; so those are turned on here. Finally,
+options for data alignment and index set range segments are set.</p>
+<p>RAJA constructs are parametrized to make it easy to try alternative
+implementation choices. The CMakeLists.txt file in the top-level RAJA directory
+contains settings for these items, which are not specific to a compiler.
+In that file, you will find variables to set RAJA options for:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Floating-point type (e.g., double or float)</li>
+<li>Pointer types (e.g., bare ptr, ptr with restrict, ptr classes, etc.)</li>
+<li>Loop-level fault tolerance options</li>
+<li>Timer options for examples</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="test_examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="RAJA User Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, LLNS.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'1.0.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
