@@ -41,12 +41,15 @@ if(NOT CMAKE_BUILD_TYPE)
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
-# Configure all our variables
-set(RAJA_USE_STL OFF)
+#
+# Configure all variables in the code 
+#
+
 ## Floating point options
 set(RAJA_FP "RAJA_USE_DOUBLE")
+#set(RAJA_FP "RAJA_USE_FLOAT")
 
-## Pointers
+## Pointer options
 if (RAJA_USE_CUDA)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
@@ -57,18 +60,15 @@ endif()
 #set(RAJA_USE_RESTRICT_ALIGNED_PTR OFF)
 #set(RAJA_USE_PTR_CLASS OFF)
 
-## Fault tolerance
+## Fault tolerance options
 set(RAJA_USE_FT OFF)
 set(RAJA_REPORT_FT OFF)
 
-## Platform-specific Constants
-set(RAJA_RANGE_ALIGN 4)
-set(RAJA_RANGE_MIN_LENGTH 32)
-set(RAJA_DATA_ALIGN 64)
-set(RAJA_COHERENCE_BLOCK_SIZE 64)
-
-# Timer
+## Timer options
 add_definitions(-DRAJA_USE_GETTIME)
+#add_definitions(-DRAJA_USE_CLOCK)
+#add_definitions(-DRAJA_USE_CYCLE)
+
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
