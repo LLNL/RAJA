@@ -33,7 +33,7 @@ parser.add_argument("-bt",
                     "--buildtype",
                     type=str,
                     choices=["Release", "Debug", "RelWithDebInfo", "MinSizeRel"],
-                    default="Debug",
+                    default="Release",
                     help="build type.")
 
 parser.add_argument("-co",
