@@ -1,5 +1,4 @@
 cmake_minimum_required (VERSION 3.1)
-
 project(RAJA LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
@@ -11,10 +10,12 @@ set(RAJA_VERSION_MAJOR 1)
 set(RAJA_VERSION_MINOR 0)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
-# Find required packages
+# We need to find the packages _after_ the CMake starts up, so this isn't in
+# a host-config file.
 find_package(OpenMP REQUIRED)
 if(OPENMP_FOUND)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+  list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
   message(STATUS "OpenMP Enabled")
 else()
   message(WARNING "OpenMP NOT FOUND")
@@ -24,9 +25,8 @@ if (RAJA_USE_CUDA)
   find_package(CUDA)
   if(CUDA_FOUND)
     message(STATUS "CUDA")
-    #set(CUDA_NVCC_FLAGS -O2; --expt-extended-lambda; -restrict; -arch compute_35; -std=c++11; -Xcompiler; -x cu)
-    set(CUDA_NVCC_FLAGS "-arch compute_35 -std=c++11 --expt-extended-lambda -x=cu")
-    #set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+    set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
+    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
     include_directories(${CUDA_INCLUDE_DIRS})
   endif()
 endif()
@@ -68,7 +68,6 @@ set(RAJA_REPORT_FT OFF)
 add_definitions(-DRAJA_USE_GETTIME)
 #add_definitions(-DRAJA_USE_CLOCK)
 #add_definitions(-DRAJA_USE_CYCLE)
-
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
