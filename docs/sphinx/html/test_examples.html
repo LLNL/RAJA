@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="RAJA 1.0.0 documentation" href="index.html"/>
-        <link rel="next" title="Features to look for in the future" href="future.html"/>
+        <link rel="next" title="Future development" href="future.html"/>
         <link rel="prev" title="Configuring and building the code" href="config_build.html"/> 
 
   
@@ -88,7 +88,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#example-applications">Example applications</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 
             
@@ -135,11 +135,76 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>The RAJA code comes with several simple test codes and proxy-app examples
+that illustrate various usage scenarios. When RAJA is compiled, these
+executables are built in their default configurations. They can be run by
+invoking the executables in the build space &#8216;raja/test&#8217; subdirectories whose
+names are descriptive of their contents. These codes can be modified to
+experiment with them and run using various options that we describe later
+in this section. <strong>Note that the source code is modified in the &#8216;raja/test&#8217;
+subdirectories in the actual source code, not in the build space.</strong></p>
 <div class="section" id="basic-tests">
 <h2>Basic tests<a class="headerlink" href="#basic-tests" title="Permalink to this headline">¶</a></h2>
+<p>The directory &#8216;raja/test/unit-tests&#8217; has two subdirectories, each of which
+contains files that run various traversal and reduction operations for RAJA
+IndexSets and Segments. All RAJA &#8220;forall&#8221; template and execution poilicy
+options that are available for a given compiler are included. Running these
+tests is a good sanity check that the code is built correctly and works. The
+two subdirectories are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>CPUtests. It contains codes to run traversl and reduction tests for
+sequential, OpenMP, and CilkPlus (if available) execution policies.</li>
+<li>GPUtests. It contains codes to run traversl and reduction tests for
+GPU CUDA execution policies. Note that these tests use Unified Memory
+to simplify host-device memory transfers.</li>
+</ul>
+</div></blockquote>
 </div>
 <div class="section" id="example-applications">
 <h2>Example applications<a class="headerlink" href="#example-applications" title="Permalink to this headline">¶</a></h2>
+<p>The directory &#8216;raja/test&#8217; has subdirectories containing examples of RAJA
+used in proxy apps, such as <a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a> (versions 1.0 and 2.0), <a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a>, and
+<a class="reference external" href="https://github.com/exmatex/CoMD">CoMD</a>. Reference versions of these
+applications, that can be downloaded by clicking the links above, are also
+included so that it is easy to compare them to the RAJA variants, both in
+terms of source code differences and runtimes. Here is a brief explanation
+of the RAJA variant of each of these proxy apps:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><strong>LULESH 1.0.</strong> The RAJA version of this code is parameterized to
+illustrate ten different execution patterns that can be enabled using
+RAJA. These patterns include sequential execution, six variants
+using OpenMP (using RAJA IndexSets for tiling, permuting elements,
+coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants
+that use CUDA. Some of these require specific initialization code
+for data and RAJA IndexSets. However, all variations are enabled by
+RAJA using the same algorithmic source code and switching the RAJA
+execution policies. To try different variants, simply change the
+definition of the macro constant</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#define USE_CASE</span>
+</pre></div>
+</div>
+<p>in the header file called &#8216;luleshPolicy.hxx&#8217;. There you will find a listing
+of available options and the RAJA policies used for each.</p>
+</li>
+<li><p class="first"><strong>LULESH 2.0.</strong> This example contains three different RAJA implementations:
+&#8220;basic&#8221; (uses only RAJA forall traversals that take begin-end args or
+arrays of indirection indices), &#8220;IndexSet&#8221; (uses RAJA IndexSets similarly
+to LULESH 1.0), and &#8220;MICfriendly&#8221; (uses RAJA IndexSets to permute data
+and loop iteration ordering which can be beneficial in a manycore
+environment. The &#8220;IndexSet&#8221; variant is parameterized to run with
+different execution patterns, similar to the RAJA version of LULESH 1.0.
+However, only three variants are enabled for LULESH 2.0 (we got tired...).
+As in the case of LULESH 1.0, change the definition of the &#8216;USE_CASE&#8217;
+macro constant in the &#8216;luleshPolicy.hxx&#8217; header file.</p>
+</li>
+<li><p class="first"><strong>Kripke.</strong> Fill this in...</p>
+</li>
+<li><p class="first"><strong>CoMD.</strong> Fill this in...</p>
+</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 
@@ -150,7 +215,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="future.html" class="btn btn-neutral float-right" title="Features to look for in the future" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="future.html" class="btn btn-neutral float-right" title="Future development" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="config_build.html" class="btn btn-neutral" title="Configuring and building the code" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

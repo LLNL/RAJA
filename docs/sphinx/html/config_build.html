@@ -88,7 +88,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="test_examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 
             
@@ -216,9 +216,13 @@ the build directory and typing</p>
 <div class="section" id="raja-configuration-options">
 <h2>RAJA configuration options<a class="headerlink" href="#raja-configuration-options" title="Permalink to this headline">¶</a></h2>
 <p>The RAJA include directory &#8216;include/RAJA&#8217; contains a header file
-called &#8216;config.hxx.in&#8217; that contains definitions for all the configuraton
-options that RAJA supports. These definitions are set when the code is
-configured according to the settings in the selected host configuration
+called &#8216;config.hxx.in&#8217; that is used to centralize all the configuraton
+options that RAJA supports in one location. Most RAJA constructs are
+parametrized to make it easy to try alternative implementation choices.</p>
+<p>The items in the configuration header file are set when the code is
+configured. The results appear in the &#8216;config.hxx&#8217; file which lives in
+the &#8216;include/RAJA&#8217; directory in the build space. The settings are
+controlled by the contents of the selected host configuration
 file and the top-level RAJA CMakeLists.txt file. For example, the file
 associated with the Intel compiler on LLNL Linux platforms is:</p>
 <div class="highlight-python"><div class="highlight"><pre>set(RAJA_COMPILER &quot;RAJA_COMPILER_ICC&quot; CACHE STRING &quot;&quot;)
@@ -245,15 +249,14 @@ set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT &quot;&quot;)
 </div>
 <p>The first line sets a RAJA compiler variable that is used to control
 compiler-specific syntax for certain RAJA features. The next several
-commands in the file set the compiler (including version), and options
-for each build type. Next, programming model options are set to turn on or off
-things such as OpenMP, CilkPlus, CUDA, etc. For example, the Intel compiler
-supports both OpenMP and CilkPlus; so those are turned on here. Finally,
-options for data alignment and index set range segments are set.</p>
-<p>RAJA constructs are parametrized to make it easy to try alternative
-implementation choices. The CMakeLists.txt file in the top-level RAJA directory
-contains settings for these items, which are not specific to a compiler.
-In that file, you will find variables to set RAJA options for:</p>
+commands in the file set the compiler and options for each build type.
+Next, programming model options, such as OpenMP, CilkPlus, CUDA, etc. are
+turned on or off. For example, the Intel compiler supports both OpenMP and
+CilkPlus; so those are turned on here. Finally, options for data alignment,
+index set range segments, and other things are set.</p>
+<p>The CMakeLists.txt file in the top-level RAJA directory controls settings
+for other items that are not specific to a compiler. In that file, you will
+find variables to set RAJA options for:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Floating-point type (e.g., double or float)</li>
