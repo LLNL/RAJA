@@ -43,8 +43,11 @@ included so that it is easy to compare them to the RAJA variants, both in
 terms of source code differences and runtimes. Here is a brief explanation 
 of the RAJA variant of each of these proxy apps:
 
-  * **LULESH 1.0.** The RAJA version of this code is parameterized to 
-    illustrate ten different execution patterns that can be enabled using
+  * **LULESH 1.0.** This example contains three different RAJA implementations:
+    serial-only, a highly-parameterized version that can be run using various 
+    execution patterns, and a version that shows a RAJA-based transient fault
+    recovery capability. The parameterized RAJA version of this code  
+    illustrates ten different execution patterns that can be enabled using
     RAJA. These patterns include sequential execution, six variants
     using OpenMP (using RAJA IndexSets for tiling, permuting elements, 
     coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants

@@ -72,6 +72,16 @@ Configuring the code can be done in a couple of ways depending on your needs.
 
     $ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
 
+**Note that compiling with 'nvcc' on LC machines that have GPUs that support 
+CUDA, you will have to load the CUDA module and set the host compiler.** This
+is most easily done by typing ::
+
+  $ module load cudatoolkit/7.5
+  $ gcc-4.9.3p
+
+At least, we know things work if you use this CUDA and host compiler 
+combination.
+
 Regardless of how you configure your build, you build the code by going into 
 the build directory and typing ::
 
