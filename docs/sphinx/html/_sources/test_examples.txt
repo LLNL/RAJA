@@ -23,10 +23,10 @@ options that are available for a given compiler are included. Running these
 tests is a good sanity check that the code is built correctly and works. The
 two subdirectories are:
 
-  * CPUtests. It contains codes to run traversl and reduction tests for 
+  * **CPUtests.** It contains codes to run traversl and reduction tests for 
     sequential, OpenMP, and CilkPlus (if available) execution policies.
 
-  * GPUtests. It contains codes to run traversl and reduction tests for 
+  * **GPUtests.** It contains codes to run traversl and reduction tests for 
     GPU CUDA execution policies. Note that these tests use Unified Memory 
     to simplify host-device memory transfers.
 
@@ -46,14 +46,14 @@ of the RAJA variant of each of these proxy apps:
   * **LULESH 1.0.** This example contains three different RAJA implementations:
     serial-only, a highly-parameterized version that can be run using various 
     execution patterns, and a version that shows a RAJA-based transient fault
-    recovery capability. The parameterized RAJA version of this code  
+    recovery capability. The parameterized version of this code  
     illustrates ten different execution patterns that can be enabled using
     RAJA. These patterns include sequential execution, six variants
     using OpenMP (using RAJA IndexSets for tiling, permuting elements, 
     coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants
     that use CUDA. Some of these require specific initialization code 
-    for data and RAJA IndexSets. However, all variations are enabled by 
-    RAJA using the same algorithmic source code and switching the RAJA
+    for data and RAJA IndexSets. However, all variations use the same 
+    algorithm source code; different variations use different RAJA
     execution policies. To try different variants, simply change the 
     definition of the macro constant ::
 

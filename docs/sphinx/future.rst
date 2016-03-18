@@ -46,4 +46,4 @@ Items currently in development or planned include:
  
   * Additional tests and example codes.
 
-**So stay tuned...**
+**Stay tuned...**
