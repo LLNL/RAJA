@@ -1,3 +1,16 @@
+.. #######################################################################
+.. #
+.. # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. #
+.. # Produced at the Lawrence Livermore National Laboratory.
+.. #
+.. # All rights reserved.
+.. #
+.. # This source code cannot be distributed without permission and
+.. # further review from Lawrence Livermore National Laboratory.
+.. #
+.. #######################################################################
+
 
 ===================================
 Configuring and building the code
@@ -101,13 +114,14 @@ RAJA configuration options
 The RAJA include directory 'include/RAJA' contains a header file 
 called 'config.hxx.in' that is used to centralize all the configuraton
 options that RAJA supports in one location. Most RAJA constructs are 
-parametrized to make it easy to try alternative implementation choices.
+parameterized to make it easy to try alternative implementation choices.
 
 The items in the configuration header file are set when the code is 
 configured. The results appear in the 'config.hxx' file which lives in 
-the 'include/RAJA' directory in the build space. The settings are 
+the 'include/RAJA' directory in the build space. This file gets pulled into
+all other RAJA header files so everything is consistent. The settings are 
 controlled by the contents of the selected host configuration
-file and the top-level RAJA CMakeLists.txt file. For example, the file
+file and the top-level RAJA 'CMakeLists.txt file'. For example, the file
 associated with the Intel compiler on LLNL Linux platforms is: ::
 
   set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")

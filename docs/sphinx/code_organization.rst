@@ -1,3 +1,17 @@
+.. #######################################################################
+.. #
+.. # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. #
+.. # Produced at the Lawrence Livermore National Laboratory.
+.. #
+.. # All rights reserved.
+.. #
+.. # This source code cannot be distributed without permission and
+.. # further review from Lawrence Livermore National Laboratory.
+.. #
+.. #######################################################################
+
+
 
 ===================================
 RAJA source code organization
@@ -22,11 +36,13 @@ RAJA is largely a header file library; the 'include/RAJA' directory
 contains most of what you need to understand to start using RAJA in an
 application. We discuss the contents of the 'test' directory in a later section.
 
-The 'include/RAJA' directory contains the header files defining interfaces for
-key RAJA classes, such as IndexSet and Segment types, and methods that are
-largely independent of different RAJA programming model backends. The main 
-RAJA header is 'RAJA.hxx', which is all that needs to be included in an
-application that uses RAJA. That is, the line ::
+Generic RAJA traversals, which work for any IndexSet, Segment or execution 
+policy type, are defined in the file 'forall_generic.hxx' in the 
+'include/RAJA' directory. That directory also contains the header files 
+that define interfaces for key RAJA classes, such as IndexSet and Segment 
+types, and other methods that are independent of specific parallel programming 
+model choices. The main RAJA header 'RAJA.hxx' is all that needs to be 
+included in an application that uses RAJA. That is, the line ::
 
   #include "RAJA/RAJA.hxx"
 
@@ -34,8 +50,10 @@ in your application code will include all other RAJA header files that are
 needed for a particular configuration and build of the RAJA code.
 
 RAJA traversals, reductions, and execution policies for individual programming
-model backends are defined in header files that live in subdirectories of
-the 'include/RAJA' directory. Currently, these directories are:
+models are defined in header files that live in subdirectories of
+the 'include/RAJA' directory. Currently, these directories are as follows
+(their names are descriptive of the programming model supported by their
+contents):
 
   * exec-cilk
   * exec-cuda
@@ -43,4 +61,16 @@ the 'include/RAJA' directory. Currently, these directories are:
   * exec-sequential
   * exec-simd
 
-The directory names are descriptive of their contents.
+Each of these directories contains files that defines traversal and
+reduction execution policies, *forall* traversal template specializations 
+based on the execution policies, and *reduction operation* template 
+specializations based on the reduction policies. For example, the OpenMP 
+directory has the header files:
+
+  * raja_openmp.hxx
+  * forall_openmp.hxx
+  * reduce_openmp.hxx 
+
+Note that SIMD execution shares reduction types with sequential execution, 
+so the 'exec-simd' directory does not contain a reduction header file. 
+
