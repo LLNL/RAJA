@@ -6,7 +6,8 @@
 namespace RAJA {
 
 /*!
- ***************************************************************************** *
+ ***************************************************************************** 
+ *
  * \brief  Traverse contiguous range of indices using OpenMP for with
  *         nowait clause (assumes loop appears in a parallel region).
  *
