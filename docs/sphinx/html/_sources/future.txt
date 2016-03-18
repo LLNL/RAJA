@@ -4,11 +4,8 @@ Future development
 ===================================
 
 As noted in the introduction, RAJA is very much a work-in-progress.
-The community of researchers and application developers at LLNL that are 
-actively contributing to it and developing new capabilities is growing.
-The publically-released version contains only the core RAJA 
-functionality. Additional features will appear in future releases.
-Items currently in development or planned include:
+Additional features will appear in future releases. Items currently in 
+development or planned include:
 
   * To complement RAJA, we are developing a resource manager runtime layer 
     that moves data automatically to desired memory locations based on 
@@ -46,4 +43,4 @@ Items currently in development or planned include:
  
   * Additional tests and example codes.
 
-**So stay tuned...**
+**Stay tuned...**

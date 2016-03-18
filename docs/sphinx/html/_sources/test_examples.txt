@@ -57,7 +57,7 @@ of the RAJA variant of each of these proxy apps:
     execution policies. To try different variants, simply change the 
     definition of the macro constant ::
 
-      #define USE_CASE
+      #define USE_CASE ....
 
     in the header file called 'luleshPolicy.hxx'. There you will find a listing
     of available options and the RAJA policies used for each.

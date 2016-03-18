@@ -39,7 +39,7 @@ Configuring the code can be done in a couple of ways depending on your needs.
 
   The configuration files are located in the 'host-config' directory. 
   The 'host-configs' directory contains configuration files for platforms
-  and compilers most commonly used on Livermore Computing platforms at
+  and compilers most commonly used in the Livermore Computing Center at
   Lawrence Livermore National Laboratory. The contents of these files and
   how they are used in RAJA are described below. Note that new host 
   configuration cache files can be created by copying an exisiting one 
