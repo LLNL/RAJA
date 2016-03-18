@@ -82,6 +82,7 @@
             
             
                 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and building the code</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-tests">Basic tests</a></li>
@@ -185,7 +186,7 @@ for data and RAJA IndexSets. However, all variations use the same
 algorithm source code; different variations use different RAJA
 execution policies. To try different variants, simply change the
 definition of the macro constant</p>
-<div class="highlight-python"><div class="highlight"><pre><span class="c">#define USE_CASE</span>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#define USE_CASE ....</span>
 </pre></div>
 </div>
 <p>in the header file called &#8216;luleshPolicy.hxx&#8217;. There you will find a listing

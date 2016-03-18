@@ -23,6 +23,14 @@ another goal of RAJA is enable application developers to adapt RAJA concepts
 and specialize them for different code implementation patterns and C++ usage, 
 since data structures and algorithms vary widely across applications.
 
+It is important to note that RAJA is very much a work-in-progress.
+The community of researchers and application developers at LLNL that are
+actively contributing to it and developing new capabilities is growing.
+The publically-released version contains only core pieces of RAJA as they
+exist today. While the basic interfaces are fairly stable, the implementation
+of the underlying concepts is being refined. Additional features will appear 
+in future releases.
+
 The core developers of RAJA are:
 
   * Rich Hornung (hornung1@llnl.gov)
@@ -142,6 +150,7 @@ RAJA contains several cooperating encapsulation features, which include:
 .. toctree::
    :maxdepth: 2
 
+   code_organization
    config_build
    test_examples
    future
