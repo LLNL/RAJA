@@ -204,13 +204,13 @@ the location of the top-level RAJA CMakeLists.txt file; for example</p>
 </div>
 </div></blockquote>
 <p><strong>Note that compiling with &#8216;nvcc&#8217; on LC machines that have GPUs that support
-CUDA, you will have to load the CUDA module and set the host compiler.</strong> This
-is most easily done by typing</p>
+CUDA, you will have to load the CUDA module and set the host compiler.</strong> For
+example, type these lines</p>
 <div class="highlight-python"><div class="highlight"><pre>$ module load cudatoolkit/7.5
-$ gcc-4.9.3p
+$ use gcc-4.9.3p
 </pre></div>
 </div>
-<p>At least, we know things work if you use this CUDA and host compiler
+<p>At least we know things work if you use this CUDA and host compiler
 combination.</p>
 <p>Regardless of how you configure your build, you build the code by going into
 the build directory and typing</p>
