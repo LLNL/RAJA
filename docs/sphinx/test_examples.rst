@@ -49,17 +49,23 @@ Example applications
 -----------------------
 
 The directory 'raja/test' has subdirectories containing examples of RAJA 
-used in proxy apps, such as `LULESH <https://codesign.llnl.gov/lulesh.php>`_ (versions 1.0 and 2.0), `Kripke <https://codesign.llnl.gov/kripke.php>`_, and 
-`CoMD <https://github.com/exmatex/CoMD>`_. Reference versions of these 
-applications, that can be downloaded by clicking the links above, are also
-included so that it is easy to compare them to the RAJA variants, both in
-terms of source code differences and runtimes. Here is a brief explanation 
-of the RAJA variant of each of these proxy apps:
+used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
+Reference versions of these applications are also included so that it is 
+easy to compare them to the RAJA variants, in terms of source code 
+differences and runtimes. Here is a brief explanation of the contents of 
+the directories containing the proxy app examples.
 
-  * **LULESH 1.0.** This example contains three different RAJA implementations:
-    serial-only, a highly-parameterized version that can be run using various 
-    execution patterns, and a version that shows a RAJA-based transient fault
-    recovery capability. The parameterized version of this code  
+  * **LULESH 1.0.** 
+
+    The directory 'LULESH-v1.0_baseline' contains the reference version of 
+    LULESH 1.0 that is available at 
+    `LULESH <https://codesign.llnl.gov/lulesh.php>`_
+
+    The directory 'LULESH-v1.0_RAJA-variants' contains three RAJA variants of 
+    LULESH 1.0: serial-only, a highly-parameterized version that can be run 
+    using various execution patterns, and a version that shows a RAJA-based 
+    transient fault recovery capability. The names of the files indicate which
+    version is which. The parameterized version of this code  
     illustrates ten different execution patterns that can be enabled using
     RAJA. These patterns include sequential execution, six variants
     using OpenMP (using RAJA IndexSets for tiling, permuting elements, 
@@ -75,18 +81,33 @@ of the RAJA variant of each of these proxy apps:
     in the header file called 'luleshPolicy.hxx'. There you will find a listing
     of available options and the RAJA policies used for each.
 
-  * **LULESH 2.0.** This example contains three different RAJA implementations:
-    "basic" (uses only RAJA forall traversals that take begin-end args or 
-    arrays of indirection indices), "IndexSet" (uses RAJA IndexSets similarly
-    to LULESH 1.0), and "MICfriendly" (uses RAJA IndexSets to permute data
-    and loop iteration ordering which can be beneficial in a manycore 
-    environment. The "IndexSet" variant is parameterized to run with 
-    different execution patterns, similar to the RAJA version of LULESH 1.0.
-    However, only three variants are enabled for LULESH 2.0 (we got tired...).
-    As in the case of LULESH 1.0, change the definition of the 'USE_CASE'
-    macro constant in the 'luleshPolicy.hxx' header file. 
+  * **LULESH 2.0.** 
+
+    The directory 'LULESH-v2.0_baseline' contains the reference version of
+    LULESH 2.0 that is available at 
+    `LULESH <https://codesign.llnl.gov/lulesh.php>`_
+
+    The directory 'LULESH-v2.0_RAJA-basic' contains a basic translation to 
+    RAJA that uses only RAJA forall traversals that take begin-end args or 
+    arrays of indirection indices.
+
+    The directory 'LULESH-v2.0_RAJA-IndexSet' contains a version that uses 
+    RAJA IndexSets similarly to the parallel RAJA variant of LULESH 1.0.
+    Similar to the RAJA version of LULESH 1.0, this variant is parameterized 
+    to run with different execution patterns. However, only three variants
+    are available (we got tired...). As in the case of LULESH 1.0, change 
+    the definition of the 'USE_CASE' macro constant in the 'luleshPolicy.hxx' 
+    header file to change the variant.
+
+    The directory 'LULESH-v2.0_RAJA-MICfriendly' contains a version that
+    uses RAJA IndexSets to permute data and loop iteration ordering in ways 
+    that can be beneficial in a manycore environment. 
 
   * **Kripke.** Fill this in...
 
+    `Kripke <https://codesign.llnl.gov/kripke.php>`_
+
   * **CoMD.** Fill this in...
+
+    `CoMD <https://github.com/exmatex/CoMD>`_
 

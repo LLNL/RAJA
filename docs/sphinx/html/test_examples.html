@@ -165,18 +165,22 @@ to simplify host-device memory transfers.</li>
 <div class="section" id="example-applications">
 <h2>Example applications<a class="headerlink" href="#example-applications" title="Permalink to this headline">¶</a></h2>
 <p>The directory &#8216;raja/test&#8217; has subdirectories containing examples of RAJA
-used in proxy apps, such as <a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a> (versions 1.0 and 2.0), <a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a>, and
-<a class="reference external" href="https://github.com/exmatex/CoMD">CoMD</a>. Reference versions of these
-applications, that can be downloaded by clicking the links above, are also
-included so that it is easy to compare them to the RAJA variants, both in
-terms of source code differences and runtimes. Here is a brief explanation
-of the RAJA variant of each of these proxy apps:</p>
+used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
+Reference versions of these applications are also included so that it is
+easy to compare them to the RAJA variants, in terms of source code
+differences and runtimes. Here is a brief explanation of the contents of
+the directories containing the proxy app examples.</p>
 <blockquote>
 <div><ul>
-<li><p class="first"><strong>LULESH 1.0.</strong> This example contains three different RAJA implementations:
-serial-only, a highly-parameterized version that can be run using various
-execution patterns, and a version that shows a RAJA-based transient fault
-recovery capability. The parameterized version of this code
+<li><p class="first"><strong>LULESH 1.0.</strong></p>
+<p>The directory &#8216;LULESH-v1.0_baseline&#8217; contains the reference version of
+LULESH 1.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v1.0_RAJA-variants&#8217; contains three RAJA variants of
+LULESH 1.0: serial-only, a highly-parameterized version that can be run
+using various execution patterns, and a version that shows a RAJA-based
+transient fault recovery capability. The names of the files indicate which
+version is which. The parameterized version of this code
 illustrates ten different execution patterns that can be enabled using
 RAJA. These patterns include sequential execution, six variants
 using OpenMP (using RAJA IndexSets for tiling, permuting elements,
@@ -192,20 +196,29 @@ definition of the macro constant</p>
 <p>in the header file called &#8216;luleshPolicy.hxx&#8217;. There you will find a listing
 of available options and the RAJA policies used for each.</p>
 </li>
-<li><p class="first"><strong>LULESH 2.0.</strong> This example contains three different RAJA implementations:
-&#8220;basic&#8221; (uses only RAJA forall traversals that take begin-end args or
-arrays of indirection indices), &#8220;IndexSet&#8221; (uses RAJA IndexSets similarly
-to LULESH 1.0), and &#8220;MICfriendly&#8221; (uses RAJA IndexSets to permute data
-and loop iteration ordering which can be beneficial in a manycore
-environment. The &#8220;IndexSet&#8221; variant is parameterized to run with
-different execution patterns, similar to the RAJA version of LULESH 1.0.
-However, only three variants are enabled for LULESH 2.0 (we got tired...).
-As in the case of LULESH 1.0, change the definition of the &#8216;USE_CASE&#8217;
-macro constant in the &#8216;luleshPolicy.hxx&#8217; header file.</p>
+<li><p class="first"><strong>LULESH 2.0.</strong></p>
+<p>The directory &#8216;LULESH-v2.0_baseline&#8217; contains the reference version of
+LULESH 2.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-basic&#8217; contains a basic translation to
+RAJA that uses only RAJA forall traversals that take begin-end args or
+arrays of indirection indices.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-IndexSet&#8217; contains a version that uses
+RAJA IndexSets similarly to the parallel RAJA variant of LULESH 1.0.
+Similar to the RAJA version of LULESH 1.0, this variant is parameterized
+to run with different execution patterns. However, only three variants
+are available (we got tired...). As in the case of LULESH 1.0, change
+the definition of the &#8216;USE_CASE&#8217; macro constant in the &#8216;luleshPolicy.hxx&#8217;
+header file to change the variant.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-MICfriendly&#8217; contains a version that
+uses RAJA IndexSets to permute data and loop iteration ordering in ways
+that can be beneficial in a manycore environment.</p>
 </li>
 <li><p class="first"><strong>Kripke.</strong> Fill this in...</p>
+<p><a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a></p>
 </li>
 <li><p class="first"><strong>CoMD.</strong> Fill this in...</p>
+<p><a class="reference external" href="https://github.com/exmatex/CoMD">CoMD</a></p>
 </li>
 </ul>
 </div></blockquote>
