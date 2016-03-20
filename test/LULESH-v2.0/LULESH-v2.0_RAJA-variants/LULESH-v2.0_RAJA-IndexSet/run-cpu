@@ -1,4 +1,0 @@
-date ;
-#setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/usr/gapps/silo/current/chaos_5_x86_64_ib/lib/libsiloh5.so
-srun -N 1 -p pdebug --exclusive time ./lulesh2.0_RAJA-ISet.exe -p ;
-date
