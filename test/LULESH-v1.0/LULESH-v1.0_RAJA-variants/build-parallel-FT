@@ -1,5 +1,0 @@
-##
-## For non-CUDA compilation
-##
-
-make parallel-FT;

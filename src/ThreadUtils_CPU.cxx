@@ -30,6 +30,8 @@
 #include <cilk/cilk_api.h>
 #endif
 
+#include <algorithm>
+
 namespace RAJA {
 
 /*

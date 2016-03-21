@@ -49,18 +49,18 @@ template< typename T>
 class RAJAVec
 {
 public:
-   //
-   // Construct empty vector with given capacity.
-   //
+   ///
+   /// Construct empty vector with given capacity.
+   ///
    explicit RAJAVec(size_t init_cap = 0)
    : m_capacity(0), m_size(0), m_data(0)
    {
       grow_cap(init_cap);
    }
 
-   //
-   // Copy ctor for vector.
-   //
+   ///
+   /// Copy ctor for vector.
+   ///
    RAJAVec(const RAJAVec<T>& other) 
    : m_capacity(0), m_size(0), m_data(0)
    {
@@ -78,9 +78,9 @@ public:
       swap(m_data, other.m_data);
    }
 
-   //
-   // Copy-assignment operator for vector.
-   //
+   ///
+   /// Copy-assignment operator for vector.
+   ///
    RAJAVec<T>& operator=(const RAJAVec<T>& rhs) 
    {
       if ( &rhs != this ) {
@@ -90,55 +90,56 @@ public:
       return *this;
    }
 
-   //
-   // Destroy vector and its data.
-   //
+   ///
+   /// Destroy vector and its data.
+   ///
    ~RAJAVec()
    {
       if (m_capacity > 0) delete [] m_data;  
    }
 
-   //
-   // Return true if vector has size zero; false otherwise.
-   //
+   ///
+   /// Return true if vector has size zero; false otherwise.
+   ///
    size_t empty() const {
       return (m_size == 0) ;
    }
 
-   //
-   // Return current size of vector.
-   //
+   ///
+   /// Return current size of vector.
+   ///
    size_t size() const { 
       return m_size;
    }
 
-   //
-   // Const bracket operator.
-   //
+   ///
+   /// Const bracket operator.
+   ///
    const T& operator [] (size_t i) const
    {
       return m_data[i];
    }
 
-   //
-   // Non-const bracket operator.
-   //
+   ///
+   /// Non-const bracket operator.
+   ///
    T& operator [] (size_t i)
    {
       return m_data[i];
    }
 
-   //
-   // Add item to back end of vector.
-   //
+   ///
+   /// Add item to back end of vector.
+   ///
    void push_back(const T& item) 
    {
       push_back_private(item);
    }
 
-   //
-   // Add item to front end of vector.
-   //
+   ///
+   /// Add item to front end of vector. Note that this operation is unique to
+   /// this class; it is not part of the C++ standard library vector interface.
+   ///
    void push_front(const T& item)
    {
       push_front_private(item);

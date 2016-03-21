@@ -32,7 +32,7 @@
   
     <link rel="top" title="RAJA 1.0.0 documentation" href="index.html"/>
         <link rel="next" title="Examples" href="test_examples.html"/>
-        <link rel="prev" title="RAJA User Documentation" href="index.html"/> 
+        <link rel="prev" title="RAJA source code organization" href="code_organization.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -82,13 +82,14 @@
             
             
                 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Configuring and building the code</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#raja-cmake-system">RAJA CMake System</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#raja-configuration-options">RAJA configuration options</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="test_examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 
             
@@ -166,7 +167,7 @@ install-chaos-gnu-debug
 </div>
 <p>The configuration files are located in the &#8216;host-config&#8217; directory.
 The &#8216;host-configs&#8217; directory contains configuration files for platforms
-and compilers most commonly used on Livermore Computing platforms at
+and compilers most commonly used in the Livermore Computing Center at
 Lawrence Livermore National Laboratory. The contents of these files and
 how they are used in RAJA are described below. Note that new host
 configuration cache files can be created by copying an exisiting one
@@ -202,6 +203,15 @@ the location of the top-level RAJA CMakeLists.txt file; for example</p>
 </pre></div>
 </div>
 </div></blockquote>
+<p><strong>Note that compiling with &#8216;nvcc&#8217; on LC machines that have GPUs that support
+CUDA, you will have to load the CUDA module and set the host compiler.</strong> For
+example, type these lines</p>
+<div class="highlight-python"><div class="highlight"><pre>$ module load cudatoolkit/7.5
+$ use gcc-4.9.3p
+</pre></div>
+</div>
+<p>At least we know things work if you use this CUDA and host compiler
+combination.</p>
 <p>Regardless of how you configure your build, you build the code by going into
 the build directory and typing</p>
 <div class="highlight-python"><div class="highlight"><pre>$ make
@@ -216,10 +226,15 @@ the build directory and typing</p>
 <div class="section" id="raja-configuration-options">
 <h2>RAJA configuration options<a class="headerlink" href="#raja-configuration-options" title="Permalink to this headline">¶</a></h2>
 <p>The RAJA include directory &#8216;include/RAJA&#8217; contains a header file
-called &#8216;config.hxx.in&#8217; that contains definitions for all the configuraton
-options that RAJA supports. These definitions are set when the code is
-configured according to the settings in the selected host configuration
-file and the top-level RAJA CMakeLists.txt file. For example, the file
+called &#8216;config.hxx.in&#8217; that is used to centralize all the configuraton
+options that RAJA supports in one location. Most RAJA constructs are
+parameterized to make it easy to try alternative implementation choices.</p>
+<p>The items in the configuration header file are set when the code is
+configured. The results appear in the &#8216;config.hxx&#8217; file which lives in
+the &#8216;include/RAJA&#8217; directory in the build space. This file gets pulled into
+all other RAJA header files so everything is consistent. The settings are
+controlled by the contents of the selected host configuration
+file and the top-level RAJA &#8216;CMakeLists.txt file&#8217;. For example, the file
 associated with the Intel compiler on LLNL Linux platforms is:</p>
 <div class="highlight-python"><div class="highlight"><pre>set(RAJA_COMPILER &quot;RAJA_COMPILER_ICC&quot; CACHE STRING &quot;&quot;)
 
@@ -245,15 +260,14 @@ set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT &quot;&quot;)
 </div>
 <p>The first line sets a RAJA compiler variable that is used to control
 compiler-specific syntax for certain RAJA features. The next several
-commands in the file set the compiler (including version), and options
-for each build type. Next, programming model options are set to turn on or off
-things such as OpenMP, CilkPlus, CUDA, etc. For example, the Intel compiler
-supports both OpenMP and CilkPlus; so those are turned on here. Finally,
-options for data alignment and index set range segments are set.</p>
-<p>RAJA constructs are parametrized to make it easy to try alternative
-implementation choices. The CMakeLists.txt file in the top-level RAJA directory
-contains settings for these items, which are not specific to a compiler.
-In that file, you will find variables to set RAJA options for:</p>
+commands in the file set the compiler and options for each build type.
+Next, programming model options, such as OpenMP, CilkPlus, CUDA, etc. are
+turned on or off. For example, the Intel compiler supports both OpenMP and
+CilkPlus; so those are turned on here. Finally, options for data alignment,
+index set range segments, and other things are set.</p>
+<p>The CMakeLists.txt file in the top-level RAJA directory controls settings
+for other items that are not specific to a compiler. In that file, you will
+find variables to set RAJA options for:</p>
 <blockquote>
 <div><ul class="simple">
 <li>Floating-point type (e.g., double or float)</li>
@@ -275,7 +289,7 @@ In that file, you will find variables to set RAJA options for:</p>
         <a href="test_examples.html" class="btn btn-neutral float-right" title="Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="index.html" class="btn btn-neutral" title="RAJA User Documentation" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="code_organization.html" class="btn btn-neutral" title="RAJA source code organization" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   
