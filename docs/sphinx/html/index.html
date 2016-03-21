@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>RAJA User Documentation &mdash; RAJA 1.0.0 documentation</title>
+  <title>What is RAJA? &mdash; RAJA 1.0.0 documentation</title>
   
 
   
@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="RAJA 1.0.0 documentation" href="#"/>
-        <link rel="next" title="Configuring and building the code" href="config_build.html"/> 
+        <link rel="next" title="RAJA source code organization" href="code_organization.html"/> 
 
   
   <script src="_static/js/modernizr.min.js"></script>
@@ -81,9 +81,10 @@
             
             
                 <ul>
+<li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and building the code</a></li>
 <li class="toctree-l1"><a class="reference internal" href="test_examples.html">Examples</a></li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 
             
@@ -114,7 +115,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="#">Docs</a> &raquo;</li>
       
-    <li>RAJA User Documentation</li>
+    <li>What is RAJA?</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -128,22 +129,147 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="raja-user-documentation">
-<h1>RAJA User Documentation<a class="headerlink" href="#raja-user-documentation" title="Permalink to this headline">¶</a></h1>
-<p>RAJA is (fill in a brief explanation of what RAJA is).</p>
+  <div class="section" id="what-is-raja">
+<h1>What is RAJA?<a class="headerlink" href="#what-is-raja" title="Permalink to this headline">¶</a></h1>
+<p>RAJA is a collection of C++ software abstractions, being developed at
+Lawrence Livermore National Laboratory (LLNL), that enable architecture
+portability for HPC applications. The overarching goals of RAJA are to:</p>
+<blockquote>
+<div><ul class="simple">
+<li>make existing (production) applications <em>portable with minimal disruption</em></li>
+<li>provide a model for new applications so that they are portable from
+inception.</li>
+</ul>
+</div></blockquote>
+<p>RAJA uses standard C++11 &#8211; C++ is the predominant programming language in
+which many LLNL codes are written. RAJA shares goals and concepts found in
+other C++ portability abstraction approaches, such as
+<a class="reference external" href="https://github.com/kokkos/kokkos">Kokkos</a>
+and <a class="reference external" href="https://developer.nvidia.com/thrust">Thrust</a>. RAJA is rooted in
+a perspective based on substantial experience working on production
+mesh-based multiphysics applications at LLNL. It provides constructs that
+are absent in other models and which are fundamental in those codes. Also,
+another goal of RAJA is enable application developers to adapt RAJA concepts
+and specialize them for different code implementation patterns and C++ usage,
+since data structures and algorithms vary widely across applications.</p>
+<p>It is important to note that RAJA is very much a work-in-progress.
+The community of researchers and application developers at LLNL that are
+actively contributing to it and developing new capabilities is growing.
+The publically-released version contains only core pieces of RAJA as they
+exist today. While the basic interfaces are fairly stable, the implementation
+of the underlying concepts is being refined. Additional features will appear
+in future releases.</p>
+<p>The core developers of RAJA are:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Rich Hornung (<a class="reference external" href="mailto:hornung1&#37;&#52;&#48;llnl&#46;gov">hornung1<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+<li>Jeff Keasler (<a class="reference external" href="mailto:keasler1&#37;&#52;&#48;llnl&#46;gov">keasler1<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+</ul>
+</div></blockquote>
+<p>If you have questions, or have ideas about expanding the applicability of
+RAJA and are interested in contributing to its development, please do not
+hesitate to contact us. We are always interested in exploring new ways to
+use RAJA.</p>
+<p>Other contributors include:</p>
+<blockquote>
+<div><ul class="simple">
+<li>David Beckingsale (<a class="reference external" href="mailto:beckingsale1&#37;&#52;&#48;llnl&#46;gov">beckingsale1<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+<li>Holger Jones (<a class="reference external" href="mailto:jones19&#37;&#52;&#48;llnl&#46;gov">jones19<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+<li>Adam Kunen (<a class="reference external" href="mailto:kunen1&#37;&#52;&#48;llnl&#46;gov">kunen1<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+<li>Olga Pearce (<a class="reference external" href="mailto:pearce8&#37;&#52;&#48;llnl&#46;gov">pearce8<span>&#64;</span>llnl<span>&#46;</span>gov</a>)</li>
+</ul>
+</div></blockquote>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<p>Add brief overview of RAJA concepts and what it does.</p>
+<p>The main conceptual abstraction in RAJA is a loop. A typical large
+multiphysics code may contain O(10K) loops and these are where most
+computational work is performed and where most fine-grained parallelism is
+available. RAJA defines a systematic loop encapsulation paradigm that helps
+insulate application developers from implementation details associated with
+software and hardware platform choices. Such details include: non-portable
+compiler and platform-specific directives, parallel programming model usage
+and constraints, and hardware-specific data management. RAJA can be used
+incrementally and selectively in an application and usually works
+seamlessly with native data structures and loop traversal patterns in a code.</p>
+<p>Typically, RAJA integration is a multi-step process involving steps of
+increasing complexity. First, basic transformation of loops to the &#8220;RAJA form&#8221;
+is reasonably straightforward and can be even mundane in many cases. The
+initial transformation makes the code portable by enabling it to execute
+on both CPU and GPU hardware by choosing an appropriate parallel programming
+model back-end at compile-time. Next, loop and performance analysis leads to
+refinement of <em>execution policy</em> choices. Careful categorization of loop
+patterns and workloads is key to selecting the best choices for mapping
+loop execution to hardware resources for high performance. Important
+considerations include: the relationship between data movement and
+computation (e.g., operations performed per byte moved), control flow
+branching intensity, and available parallelism in an algorithm. Earlier,
+we stated that large multiphysics codes contains O(10K) loops. However,
+such codes often contain only O(10) <em>loop patterns</em>. Thus, a goal of
+transforming a code to RAJA should be to assign loops to execution
+equivalence classes so that similar loops may be mapped to particular
+parallel execution choices or hardware resources in a consistent fashion.</p>
+<p>Like other C++-based portability abstraction approaches, RAJA relies
+on decoupling the body of a loop from the mechanism that executes the loop;
+i.e., its <em>traversal</em>. The decoupling allows a traversal method to be applied
+to many different loop bodies and different traversals to be explored for a
+given loop body for different execution scenarios. In RAJA, the decoupling is
+achieved by re-casting a loop into the generally-accepted &#8220;parallel for&#8221; idiom.
+For example, a traditional C-style for-loop construct is replaced by a call
+to a C++ traversal template method and the loop body is passed as a C++
+lambda function.</p>
+<p>RAJA contains several cooperating encapsulation features, which include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Traversals and execution policies.</strong> A traversal method specialized
+with an execution policy template parameter defines how a loop will
+execute; e.g., sequentially, multi-threaded using OpenMP, or run on
+a GPU as a CUDA kernel.</li>
+<li><strong>IndexSets.</strong>  IndexSets enable much more flexible and powerful ways
+to control loop iterations than simple for-loops. IndexSets allow
+iteration order to be changed in ways which can, for example, enable
+parallel execution of a non-data-parallel loop without rewriting the
+loop body. Typically, an IndexSet is used to partition an iteration
+space into <em>Segments</em>, or &#8220;chunks&#8221; of iterations. Then, different
+iteration subsets may be launched in parallel and dependencies among
+them can be managed. IndexSets also enable coordination between iteration
+and data placement; specifically, chunks of data and iterations can be
+mapped to hardware resources in an architecture-specific way. While
+IndexSets are defined at runtime, code that executes the <em>Segment types</em>
+they contain is generated at compile-time. This allows compilers to
+optimize execution of kernels for different <em>Segment type</em> implementations.
+For example, a Segment type that processes a contiguous (stride-1) index
+range can be optimized in ways that an indirection Segment type cannot.</li>
+<li><strong>Data type encapsulation.</strong> RAJA provides simple data and pointer types
+that can be used to hide non-portable compiler directives and data
+attributes, such as alignment, restrict, etc. These compiler-specific
+code decorations often enhance the ability of a compiler to optimize.
+While use of these types are not required to use RAJA, they are a good
+idea for HPC codes, in general. Using a centralized collection of
+types eliminates the need to litter application source code with detailed,
+non-portable syntax and enables architecture or compiler-specific
+information to be propagated easily the source code by making local
+changes in a header file. For any parallel reduction operation, RAJA
+requires a <em>reduction class template</em> to be used. Template specialization
+of a reduction in a manner similar to the way a traversal method is
+specialized on an execution policy type enables a portable reduction
+operation while hiding programming model-specific reduction constructs,
+such as OpenMP vs. CUDA, from application code.</li>
+</ul>
+</div></blockquote>
 <div class="admonition seealso">
 <p class="first admonition-title">See also</p>
-<p>More detailed discussion of RAJA can be found at these links:</p>
-<p>Example link: Sphinx Documentation Project
-<a class="reference external" href="http://www.sphinx-doc.org/en/stable/tutorial.html">http://www.sphinx-doc.org/en/stable/tutorial.html</a>.</p>
-<p class="last">Other docs and presentations that may be useful...</p>
+<p>More detailed discussion of RAJA, including its use in proxy apps included
+in the RAJA source distribution can be found in these reports:</p>
+<p><a class="reference external" href="file:../RAJAStatus-09.2014_LLNL-TR-661403.pdf">The RAJA Portability Layer: Overview and Status (2014)</a></p>
+<p><a class="reference external" href="file:../RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf">RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)</a></p>
+<blockquote class="last">
+<div>Include a recent presentation that shows additional progress after the
+last L2.</div></blockquote>
 </div>
 <p><strong>Contents:</strong></p>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and building the code</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="config_build.html#raja-cmake-system">RAJA CMake System</a></li>
 <li class="toctree-l2"><a class="reference internal" href="config_build.html#raja-configuration-options">RAJA configuration options</a></li>
@@ -154,7 +280,7 @@
 <li class="toctree-l2"><a class="reference internal" href="test_examples.html#example-applications">Example applications</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 </div>
 </div>
@@ -167,7 +293,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="config_build.html" class="btn btn-neutral float-right" title="Configuring and building the code" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="code_organization.html" class="btn btn-neutral float-right" title="RAJA source code organization" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
     </div>

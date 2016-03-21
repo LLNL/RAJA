@@ -31,7 +31,7 @@
 
   
     <link rel="top" title="RAJA 1.0.0 documentation" href="index.html"/>
-        <link rel="next" title="Features to look for in the future" href="future.html"/>
+        <link rel="next" title="Future development" href="future.html"/>
         <link rel="prev" title="Configuring and building the code" href="config_build.html"/> 
 
   
@@ -82,13 +82,14 @@
             
             
                 <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and building the code</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-tests">Basic tests</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-applications">Example applications</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="future.html">Features to look for in the future</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future development</a></li>
 </ul>
 
             
@@ -135,11 +136,92 @@
             
   <div class="section" id="examples">
 <h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+<p>The RAJA code comes with several simple test codes and proxy-app examples
+that illustrate various usage scenarios. When RAJA is compiled, these
+executables are built in their default configurations. They can be run by
+invoking the executables in the build space &#8216;raja/test&#8217; subdirectories whose
+names are descriptive of their contents. These codes can be modified to
+experiment with them and run using various options that we describe later
+in this section. <strong>Note that the source code is modified in the &#8216;raja/test&#8217;
+subdirectories in the actual source code, not in the build space.</strong></p>
 <div class="section" id="basic-tests">
 <h2>Basic tests<a class="headerlink" href="#basic-tests" title="Permalink to this headline">¶</a></h2>
+<p>The directory &#8216;raja/test/unit-tests&#8217; has two subdirectories, each of which
+contains files that run various traversal and reduction operations for RAJA
+IndexSets and Segments. All RAJA &#8220;forall&#8221; template and execution poilicy
+options that are available for a given compiler are included. Running these
+tests is a good sanity check that the code is built correctly and works. The
+two subdirectories are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>CPUtests.</strong> It contains codes to run traversl and reduction tests for
+sequential, OpenMP, and CilkPlus (if available) execution policies.</li>
+<li><strong>GPUtests.</strong> It contains codes to run traversl and reduction tests for
+GPU CUDA execution policies. Note that these tests use Unified Memory
+to simplify host-device memory transfers.</li>
+</ul>
+</div></blockquote>
 </div>
 <div class="section" id="example-applications">
 <h2>Example applications<a class="headerlink" href="#example-applications" title="Permalink to this headline">¶</a></h2>
+<p>The directory &#8216;raja/test&#8217; has subdirectories containing examples of RAJA
+used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
+Reference versions of these applications are also included so that it is
+easy to compare them to the RAJA variants, in terms of source code
+differences and runtimes. Here is a brief explanation of the contents of
+the directories containing the proxy app examples.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><strong>LULESH 1.0.</strong></p>
+<p>The directory &#8216;LULESH-v1.0_baseline&#8217; contains the reference version of
+LULESH 1.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v1.0_RAJA-variants&#8217; contains three RAJA variants of
+LULESH 1.0: serial-only, a highly-parameterized version that can be run
+using various execution patterns, and a version that shows a RAJA-based
+transient fault recovery capability. The names of the files indicate which
+version is which. The parameterized version of this code
+illustrates ten different execution patterns that can be enabled using
+RAJA. These patterns include sequential execution, six variants
+using OpenMP (using RAJA IndexSets for tiling, permuting elements,
+coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants
+that use CUDA. Some of these require specific initialization code
+for data and RAJA IndexSets. However, all variations use the same
+algorithm source code; different variations use different RAJA
+execution policies. To try different variants, simply change the
+definition of the macro constant</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c">#define USE_CASE ....</span>
+</pre></div>
+</div>
+<p>in the header file called &#8216;luleshPolicy.hxx&#8217;. There you will find a listing
+of available options and the RAJA policies used for each.</p>
+</li>
+<li><p class="first"><strong>LULESH 2.0.</strong></p>
+<p>The directory &#8216;LULESH-v2.0_baseline&#8217; contains the reference version of
+LULESH 2.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-basic&#8217; contains a basic translation to
+RAJA that uses only RAJA forall traversals that take begin-end args or
+arrays of indirection indices.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-IndexSet&#8217; contains a version that uses
+RAJA IndexSets similarly to the parallel RAJA variant of LULESH 1.0.
+Similar to the RAJA version of LULESH 1.0, this variant is parameterized
+to run with different execution patterns. However, only three variants
+are available (we got tired...). As in the case of LULESH 1.0, change
+the definition of the &#8216;USE_CASE&#8217; macro constant in the &#8216;luleshPolicy.hxx&#8217;
+header file to change the variant.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-MICfriendly&#8217; contains a version that
+uses RAJA IndexSets to permute data and loop iteration ordering in ways
+that can be beneficial in a manycore environment.</p>
+</li>
+<li><p class="first"><strong>Kripke.</strong> Fill this in...</p>
+<p><a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a></p>
+</li>
+<li><p class="first"><strong>CoMD.</strong> Fill this in...</p>
+<p><a class="reference external" href="https://github.com/exmatex/CoMD">CoMD</a></p>
+</li>
+</ul>
+</div></blockquote>
 </div>
 </div>
 
@@ -150,7 +232,7 @@
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="future.html" class="btn btn-neutral float-right" title="Features to look for in the future" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="future.html" class="btn btn-neutral float-right" title="Future development" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="config_build.html" class="btn btn-neutral" title="Configuring and building the code" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>

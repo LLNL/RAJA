@@ -1,3 +1,16 @@
+.. #######################################################################
+.. #
+.. # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+.. #
+.. # Produced at the Lawrence Livermore National Laboratory.
+.. #
+.. # All rights reserved.
+.. #
+.. # This source code cannot be distributed without permission and
+.. # further review from Lawrence Livermore National Laboratory.
+.. #
+.. #######################################################################
+
 
 ===================================
 Configuring and building the code
@@ -39,7 +52,7 @@ Configuring the code can be done in a couple of ways depending on your needs.
 
   The configuration files are located in the 'host-config' directory. 
   The 'host-configs' directory contains configuration files for platforms
-  and compilers most commonly used on Livermore Computing platforms at
+  and compilers most commonly used in the Livermore Computing Center at
   Lawrence Livermore National Laboratory. The contents of these files and
   how they are used in RAJA are described below. Note that new host 
   configuration cache files can be created by copying an exisiting one 
@@ -72,6 +85,16 @@ Configuring the code can be done in a couple of ways depending on your needs.
 
     $ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
 
+**Note that compiling with 'nvcc' on LC machines that have GPUs that support 
+CUDA, you will have to load the CUDA module and set the host compiler.** For 
+example, type these lines :: 
+
+  $ module load cudatoolkit/7.5
+  $ use gcc-4.9.3p
+
+At least we know things work if you use this CUDA and host compiler 
+combination.
+
 Regardless of how you configure your build, you build the code by going into 
 the build directory and typing ::
 
@@ -89,10 +112,16 @@ RAJA configuration options
 ---------------------------
 
 The RAJA include directory 'include/RAJA' contains a header file 
-called 'config.hxx.in' that contains definitions for all the configuraton
-options that RAJA supports. These definitions are set when the code is 
-configured according to the settings in the selected host configuration
-file and the top-level RAJA CMakeLists.txt file. For example, the file
+called 'config.hxx.in' that is used to centralize all the configuraton
+options that RAJA supports in one location. Most RAJA constructs are 
+parameterized to make it easy to try alternative implementation choices.
+
+The items in the configuration header file are set when the code is 
+configured. The results appear in the 'config.hxx' file which lives in 
+the 'include/RAJA' directory in the build space. This file gets pulled into
+all other RAJA header files so everything is consistent. The settings are 
+controlled by the contents of the selected host configuration
+file and the top-level RAJA 'CMakeLists.txt file'. For example, the file
 associated with the Intel compiler on LLNL Linux platforms is: ::
 
   set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
@@ -118,16 +147,15 @@ associated with the Intel compiler on LLNL Linux platforms is: ::
 
 The first line sets a RAJA compiler variable that is used to control 
 compiler-specific syntax for certain RAJA features. The next several 
-commands in the file set the compiler (including version), and options 
-for each build type. Next, programming model options are set to turn on or off 
-things such as OpenMP, CilkPlus, CUDA, etc. For example, the Intel compiler 
-supports both OpenMP and CilkPlus; so those are turned on here. Finally,
-options for data alignment and index set range segments are set.
+commands in the file set the compiler and options for each build type. 
+Next, programming model options, such as OpenMP, CilkPlus, CUDA, etc. are 
+turned on or off. For example, the Intel compiler supports both OpenMP and 
+CilkPlus; so those are turned on here. Finally, options for data alignment, 
+index set range segments, and other things are set.
 
-RAJA constructs are parametrized to make it easy to try alternative 
-implementation choices. The CMakeLists.txt file in the top-level RAJA directory
-contains settings for these items, which are not specific to a compiler.
-In that file, you will find variables to set RAJA options for: 
+The CMakeLists.txt file in the top-level RAJA directory controls settings 
+for other items that are not specific to a compiler. In that file, you will 
+find variables to set RAJA options for: 
 
   * Floating-point type (e.g., double or float)
   * Pointer types (e.g., bare ptr, ptr with restrict, ptr classes, etc.)
