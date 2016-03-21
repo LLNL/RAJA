@@ -1,4 +1,4 @@
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.0)
 project(RAJA LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
@@ -12,13 +12,15 @@ set(RAJA_VERSION_PATCHLEVEL 0)
 
 # We need to find the packages _after_ the CMake starts up, so this isn't in
 # a host-config file.
-find_package(OpenMP REQUIRED)
-if(OPENMP_FOUND)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-  list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
-  message(STATUS "OpenMP Enabled")
-else()
-  message(WARNING "OpenMP NOT FOUND")
+if (RAJA_USE_OPENMP)
+  find_package(OpenMP REQUIRED)
+  if(OPENMP_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
+    message(STATUS "OpenMP Enabled")
+  else()
+    message(WARNING "OpenMP NOT FOUND")
+  endif()
 endif()
 
 if (RAJA_USE_CUDA)
