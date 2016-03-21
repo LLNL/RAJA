@@ -185,11 +185,11 @@ use RAJA.</p>
 multiphysics code may contain O(10K) loops and these are where most
 computational work is performed and where most fine-grained parallelism is
 available. RAJA defines a systematic loop encapsulation paradigm that helps
-insulate application developers from implementation details associated with
-software and hardware platform choices. Such details include: non-portable
-compiler and platform-specific directives, parallel programming model usage
-and constraints, and hardware-specific data management. RAJA can be used
-incrementally and selectively in an application and usually works
+insulate application source code from implementation details associated with
+platform-specific software and hardware choices. Such details include:
+non-portable compiler and platform-specific directives, parallel programming
+model usage and constraints, and hardware-specific data management. RAJA can
+be used incrementally and selectively in an application and usually works
 seamlessly with native data structures and loop traversal patterns in a code.</p>
 <p>Typically, RAJA integration is a multi-step process involving steps of
 increasing complexity. First, basic transformation of loops to the &#8220;RAJA form&#8221;
