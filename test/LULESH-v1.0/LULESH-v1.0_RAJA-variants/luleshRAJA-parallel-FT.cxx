@@ -79,7 +79,7 @@ Additional BSD Notice
 //
 // Display simulation time and timestep during run.
 //
-const bool show_run_progress = true;
+const bool show_run_progress = false;
 
 //
 // Set stop time and time increment for run.
