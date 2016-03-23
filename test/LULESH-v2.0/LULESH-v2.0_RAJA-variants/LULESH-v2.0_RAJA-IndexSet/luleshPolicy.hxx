@@ -86,33 +86,6 @@ typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> symnode_exec_poli
 typedef RAJA::cuda_reduce<thread_block_size> reduce_policy;
 
 // ----------------------------------------------------
-#elif USE_CASE == LULESH_STREAM_EXPERIMENTAL
-
-// Can be used with or without OMP_FINE_SYNC; without will have less data movement and memory use
-#define OMP_FINE_SYNC 1
-
-// AllocateTouch should definitely be used
-
-// In reality, only the "lock-free" operations need to use the dependence graph embedded in the
-// lock-free indexset, and the dependence-graph should likely be deactivated for other operations.
-
-TilingMode const lulesh_tiling_mode = Tiled_LockFree;
-
-typedef RAJA::omp_parallel_for_segit  Segment_Iter;
-typedef RAJA::simd_exec               Segment_Exec;
-
-/// Define thread block size for CUDA exec policy
-const size_t thread_block_size = 256;
-typedef RAJA::cuda_exec<thread_block_size>    Segment_CUDA_Exec;
-
-typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, Segment_CUDA_Exec>  node_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_cuda_taskgraph_segit, Segment_CUDA_Exec> elem_exec_policy;
-// typedef RAJA::IndexSet::ExecPolicy<RAJA::omp_cuda_taskgraph_segit, Segment_CUDA_Exec> mat_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, Segment_CUDA_Exec>  mat_exec_policy;
-typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, Segment_CUDA_Exec>  symnode_exec_policy;
-
-typedef RAJA::cuda_reduce<thread_block_size> reduce_policy;
-
 #else
 
 #error "You must define a use case in luleshPolicy.cxx"
