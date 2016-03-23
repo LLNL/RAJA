@@ -407,7 +407,7 @@ IndexSet* IndexSet::createView(const T& segIds) const
    IndexSet *retVal = new IndexSet() ;
 
    int numSeg = m_segments.size() ;
-   for (auto it = segIds.begin(); it != segIds.end(); ++it) {
+   for (typename T::iterator it = segIds.begin(); it != segIds.end(); ++it) {
       if (*it >= 0 && *it < numSeg) {
          retVal->push_back_nocopy( 
             const_cast<BaseSegment*>( m_segments[ *it ].getSegment() ) ) ;
