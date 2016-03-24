@@ -32,6 +32,8 @@
 
 #include "MemUtils_CUDA.hxx"
 
+#include "raja_cudaerrchk.hxx"
+
 #include <iostream>
 #include <cstdlib>
 
@@ -195,7 +197,7 @@ public:
       m_max_grid_size = m_blockdata;
       m_max_grid_size[0] = 0;
 
-      cudaDeviceSynchronize();
+      cudaErrchk(cudaDeviceSynchronize());
    }
 
    //
@@ -230,7 +232,7 @@ public:
    //
    operator T()
    {
-      cudaDeviceSynchronize() ;
+      cudaErrchk(cudaDeviceSynchronize()) ;
 #if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
       for (size_t i=1; i <= grid_size; ++i) {
@@ -370,7 +372,7 @@ public:
       m_max_grid_size = m_blockdata;
       m_max_grid_size[0] = 0;
 
-      cudaDeviceSynchronize();
+      cudaErrchk(cudaDeviceSynchronize());
    }
 
    //
@@ -405,7 +407,7 @@ public:
    //
    operator T()
    {
-      cudaDeviceSynchronize() ;
+      cudaErrchk(cudaDeviceSynchronize()) ;
 #if defined(RAJA_USE_NO_ATOMICS)
       size_t grid_size = m_max_grid_size[0];
       for (size_t i = 1; i <= grid_size; ++i) {
@@ -540,13 +542,13 @@ public:
       // Entire shared memory block must be initialized to zero so
       // sum reduction is correct.
       size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH;
-      cudaMemset(&m_blockdata[m_blockoffset], 0,
-                 sizeof(CudaReductionBlockDataType)*len); 
+      cudaErrchk(cudaMemset(&m_blockdata[m_blockoffset], 0,
+                           sizeof(CudaReductionBlockDataType)*len)); 
 
       m_max_grid_size = m_blockdata;
       m_max_grid_size[0] = 0;
 
-      cudaDeviceSynchronize();
+      cudaErrchk(cudaDeviceSynchronize());
    }
 
    //
@@ -581,7 +583,7 @@ public:
    //
    operator T()
    {
-      cudaDeviceSynchronize() ;
+      cudaErrchk(cudaDeviceSynchronize()) ;
 
       m_blockdata[m_blockoffset] = static_cast<T>(0);
 

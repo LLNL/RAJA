@@ -31,6 +31,8 @@
 
 #include "RAJA/fault_tolerance.hxx"
 
+#include "raja_cudaerrchk.hxx"
+
 #include <iostream>
 #include <cstdlib>
 
@@ -153,8 +155,8 @@ void forall(cuda_exec<BLOCK_SIZE>,
 
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
                                                 begin, len);
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -180,7 +182,7 @@ void forall(cuda_exec_async<BLOCK_SIZE>,
 
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                 begin, len);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -212,8 +214,8 @@ void forall_Icount(cuda_exec<BLOCK_SIZE>,
                                                        begin, len,
                                                        icount);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -245,7 +247,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                        begin, len,
                                                        icount);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -283,8 +285,8 @@ void forall(cuda_exec<BLOCK_SIZE>,
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
                                                 begin, len);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -313,7 +315,7 @@ void forall(cuda_exec_async<BLOCK_SIZE>,
 
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                 begin, len);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
 }
@@ -346,8 +348,8 @@ void forall_Icount(cuda_exec<BLOCK_SIZE>,
                                                        begin, len,
                                                        icount);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -380,7 +382,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                        begin, len,
                                                        icount);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
 }
@@ -414,8 +416,8 @@ void forall(cuda_exec<BLOCK_SIZE>,
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
                                                 idx, len);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -440,7 +442,7 @@ void forall(cuda_exec_async<BLOCK_SIZE>,
 
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                 idx, len);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -471,8 +473,8 @@ void forall_Icount(cuda_exec<BLOCK_SIZE>,
                                                        idx, len,
                                                        icount);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -502,7 +504,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                        idx, len,
                                                        icount);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
 
    RAJA_FT_END ;
 }
@@ -539,8 +541,8 @@ void forall(cuda_exec<BLOCK_SIZE>,
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, 
                                                 idx, len);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -568,7 +570,7 @@ void forall(cuda_exec_async<BLOCK_SIZE>,
 
    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                 idx, len);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
 }
@@ -601,8 +603,8 @@ void forall_Icount(cuda_exec<BLOCK_SIZE>,
                                                        idx, len,
                                                        icount);
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 
    RAJA_FT_END ;
 }
@@ -635,7 +637,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
                                                        idx, len,
                                                        icount);
-   gpuErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaPeekAtLastError());
    
    RAJA_FT_END ;
 }
@@ -674,8 +676,8 @@ void forall( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
 
    } // iterate over segments of index set
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 }
 
 /*!
@@ -705,8 +707,8 @@ void forall_Icount( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
 
    } // iterate over segments of index set
 
-   gpuErrchk(cudaPeekAtLastError());
-   gpuErrchk(cudaDeviceSynchronize());
+   cudaErrchk(cudaPeekAtLastError());
+   cudaErrchk(cudaDeviceSynchronize());
 }
 
 

@@ -15,7 +15,7 @@ template <typename T>
 inline T *Allocate(size_t size)
 {
    T *retVal ;
-   gpuErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
+   cudaErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
    return retVal ;
 }
 
@@ -23,7 +23,7 @@ template <typename EXEC_POLICY_T, typename T>
 inline T *AllocateTouch(RAJA::IndexSet *is, size_t size)
 {
    T *retVal ;
-   gpuErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
+   cudaErrchk( cudaMallocManaged((void **)&retVal, sizeof(T)*size, cudaMemAttachGlobal) ) ;
    cudaMemset(retVal,0,sizeof(T)*size);
    return retVal ;
 }
@@ -32,7 +32,7 @@ template <typename T>
 inline void Release(T **ptr)
 {
    if (*ptr != NULL) {
-      gpuErrchk( cudaFree(*ptr) ) ;
+      cudaErrchk( cudaFree(*ptr) ) ;
       *ptr = NULL ;
    }
 }
