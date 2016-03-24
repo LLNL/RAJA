@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
-project(RAJA LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
+project(RAJA LANGUAGES CXX)
 
 enable_testing()
 
