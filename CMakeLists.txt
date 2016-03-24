@@ -1,7 +1,8 @@
 cmake_minimum_required (VERSION 3.0)
-project(RAJA LANGUAGES CXX)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+
+project(RAJA LANGUAGES CXX)
 
 enable_testing()
 
@@ -39,7 +40,7 @@ find_library(RT_LIBRARIES rt)
 
 # Set Opt as the default build type
 if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "Setting build type to 'Opt' as none was specified.")
+  message(STATUS "Setting build type to 'Debug' as none was specified.")
   set(CMAKE_BUILD_TYPE Debug CACHE STRING "Choose the type of build." FORCE)
 endif()
 
