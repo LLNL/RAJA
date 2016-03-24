@@ -55,7 +55,7 @@ Configuring the code can be done in a couple of ways depending on your needs.
   and compilers most commonly used in the Livermore Computing Center at
   Lawrence Livermore National Laboratory. The contents of these files and
   how they are used in RAJA are described below. Note that new host 
-  configuration cache files can be created by copying an exisiting one 
+  configuration cache files can be created by copying an existing one 
   to a new file and modifying the contents for your needs.
 
   If you run the python script with no arguments, it will configure the
@@ -112,9 +112,9 @@ RAJA configuration options
 ---------------------------
 
 The RAJA include directory 'include/RAJA' contains a header file 
-called 'config.hxx.in' that is used to centralize all the configuraton
+called 'config.hxx.in' that is used to centralize all the configuration
 options that RAJA supports in one location. Most RAJA constructs are 
-parameterized to make it easy to try alternative implementation choices.
+parametrized to make it easy to try alternative implementation choices.
 
 The items in the configuration header file are set when the code is 
 configured. The results appear in the 'config.hxx' file which lives in 

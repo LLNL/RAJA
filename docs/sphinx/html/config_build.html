@@ -145,8 +145,8 @@ about CMake to build RAJA. It does require that you use a CMake version
 greater than 3.1. If needed, you can learn more about CMake and download
 it at <a class="reference external" href="http://www.cmake.org">http://www.cmake.org</a></p>
 <p>An important thing to note is that our CMake setup does not allow
-in-source builds. This decision makes it easier to configure and build for
-various systems and compilers from the same source code.</p>
+in-source builds so that you can easily configure and build for various
+systems and compilers from the same source code.</p>
 <p>Configuring the code can be done in a couple of ways depending on your needs.</p>
 <p><strong>Use the provided configuration script.</strong></p>
 <blockquote>
@@ -170,7 +170,7 @@ The &#8216;host-configs&#8217; directory contains configuration files for platfo
 and compilers most commonly used in the Livermore Computing Center at
 Lawrence Livermore National Laboratory. The contents of these files and
 how they are used in RAJA are described below. Note that new host
-configuration cache files can be created by copying an exisiting one
+configuration cache files can be created by copying an existing one
 to a new file and modifying the contents for your needs.</p>
 <p>If you run the python script with no arguments, it will configure the
 code using a default compiler and options for the platform you are on.
@@ -193,8 +193,8 @@ The script accepts several options for</p>
 <blockquote>
 <div><p>You can also run CMake directly. To configure the code using this method,
 create a build directory in the root directory and go into it</p>
-<div class="highlight-python"><div class="highlight"><pre>$ my-platform-build
-$ cd my-platform-build
+<div class="highlight-python"><div class="highlight"><pre>$ my-awesome-build
+$ cd my-awesome-build
 </pre></div>
 </div>
 <p>Then, invoke CMake and specify the build type and cache file you want and
@@ -226,9 +226,9 @@ the build directory and typing</p>
 <div class="section" id="raja-configuration-options">
 <h2>RAJA configuration options<a class="headerlink" href="#raja-configuration-options" title="Permalink to this headline">¶</a></h2>
 <p>The RAJA include directory &#8216;include/RAJA&#8217; contains a header file
-called &#8216;config.hxx.in&#8217; that is used to centralize all the configuraton
+called &#8216;config.hxx.in&#8217; that is used to centralize all the configuration
 options that RAJA supports in one location. Most RAJA constructs are
-parameterized to make it easy to try alternative implementation choices.</p>
+parametrized to make it easy to try alternative implementation choices.</p>
 <p>The items in the configuration header file are set when the code is
 configured. The results appear in the &#8216;config.hxx&#8217; file which lives in
 the &#8216;include/RAJA&#8217; directory in the build space. This file gets pulled into
@@ -264,7 +264,7 @@ commands in the file set the compiler and options for each build type.
 Next, programming model options, such as OpenMP, CilkPlus, CUDA, etc. are
 turned on or off. For example, the Intel compiler supports both OpenMP and
 CilkPlus; so those are turned on here. Finally, options for data alignment,
-IndexSet range segment rules, and other things are set.</p>
+index set range segments, and other things are set.</p>
 <p>The CMakeLists.txt file in the top-level RAJA directory controls settings
 for other items that are not specific to a compiler. In that file, you will
 find variables to set RAJA options for:</p>

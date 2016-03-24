@@ -39,7 +39,7 @@ since data structures and algorithms vary widely across applications.
 It is important to note that RAJA is very much a work-in-progress.
 The community of researchers and application developers at LLNL that are
 actively contributing to it and developing new capabilities is growing.
-The publically-released version contains only core pieces of RAJA as they
+The publicly-released version contains only core pieces of RAJA as they
 exist today. While the basic interfaces are fairly stable, the implementation
 of the underlying concepts is being refined. Additional features will appear 
 in future releases.
@@ -154,8 +154,7 @@ RAJA contains several cooperating encapsulation features, which include:
 
    `RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015) <file:../RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf>`_
 
-    Include a recent presentation that shows additional progress after the 
-    last L2.
+   Newer reports and other material will appear here over time.
 
 
 **Contents:**
