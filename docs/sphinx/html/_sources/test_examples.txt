@@ -22,8 +22,20 @@ executables are built in their default configurations. They can be run by
 invoking the executables in the build space 'raja/test' subdirectories whose 
 names are descriptive of their contents. These codes can be modified to 
 experiment with them and run using various options that we describe later 
-in this section. **Note that the source code is modified in the 'raja/test'
+in this section. **Note that the modifications must be made in the 'raja/test' 
 subdirectories in the actual source code, not in the build space.**
+
+**NOTE:** RAJA must be built with CUDA enabled to generate GPU variants.
+When running CUDA variants of the tests and examples, we advise you to set the
+environment variable CUDA_VISIBLE_DEVICES to zero before running. 
+
+For example, for C-shell users ::
+
+   $ setenv CUDA_VISIBLE_DEVICES 0
+
+We are using CUDA Unified Memory and we find that this environment setting 
+greatly improves performance.
+
 
 --------------
 Basic tests
@@ -31,7 +43,7 @@ Basic tests
 
 The directory 'raja/test/unit-tests' has two subdirectories, each of which
 contains files that run various traversal and reduction operations for RAJA 
-IndexSets and Segments. All RAJA "forall" template and execution poilicy 
+IndexSets and Segments. All RAJA "forall" template and execution policy 
 options that are available for a given compiler are included. Running these
 tests is a good sanity check that the code is built correctly and works. The
 two subdirectories are:
@@ -49,7 +61,7 @@ Example applications
 -----------------------
 
 The directory 'raja/test' has subdirectories containing examples of RAJA 
-used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
+used in the proxy apps LULLED (versions 1.0 and 2.0), Kripke, and CoMD.
 Reference versions of these applications are also included so that it is 
 easy to compare them to the RAJA variants, in terms of source code 
 differences and runtimes. Here is a brief explanation of the contents of 
@@ -62,10 +74,10 @@ the directories containing the proxy app examples.
     `LULESH <https://codesign.llnl.gov/lulesh.php>`_
 
     The directory 'LULESH-v1.0_RAJA-variants' contains three RAJA variants of 
-    LULESH 1.0: serial-only, a highly-parameterized version that can be run 
+    LULESH 1.0: serial-only, a highly-parametrized version that can be run 
     using various execution patterns, and a version that shows a RAJA-based 
     transient fault recovery capability. The names of the files indicate which
-    version is which. The parameterized version of this code  
+    version is which. The parametrized version of this code  
     illustrates ten different execution patterns that can be enabled using
     RAJA. These patterns include sequential execution, six variants
     using OpenMP (using RAJA IndexSets for tiling, permuting elements, 
@@ -88,12 +100,12 @@ the directories containing the proxy app examples.
     `LULESH <https://codesign.llnl.gov/lulesh.php>`_
 
     The directory 'LULESH-v2.0_RAJA-basic' contains a basic translation to 
-    RAJA that uses only RAJA forall traversals that take begin-end args or 
+    RAJA that uses only RAJA forall traversals that take begin-end arguments or 
     arrays of indirection indices.
 
     The directory 'LULESH-v2.0_RAJA-IndexSet' contains a version that uses 
     RAJA IndexSets similarly to the parallel RAJA variant of LULESH 1.0.
-    Similar to the RAJA version of LULESH 1.0, this variant is parameterized 
+    Similar to the RAJA version of LULESH 1.0, this variant is parametrized 
     to run with different execution patterns. However, only three variants
     are available (we got tired...). As in the case of LULESH 1.0, change 
     the definition of the 'USE_CASE' macro constant in the 'luleshPolicy.hxx' 

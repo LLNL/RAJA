@@ -155,7 +155,7 @@ since data structures and algorithms vary widely across applications.</p>
 <p>It is important to note that RAJA is very much a work-in-progress.
 The community of researchers and application developers at LLNL that are
 actively contributing to it and developing new capabilities is growing.
-The publically-released version contains only core pieces of RAJA as they
+The publicly-released version contains only core pieces of RAJA as they
 exist today. While the basic interfaces are fairly stable, the implementation
 of the underlying concepts is being refined. Additional features will appear
 in future releases.</p>
@@ -185,11 +185,11 @@ use RAJA.</p>
 multiphysics code may contain O(10K) loops and these are where most
 computational work is performed and where most fine-grained parallelism is
 available. RAJA defines a systematic loop encapsulation paradigm that helps
-insulate application source code from implementation details associated with
-platform-specific software and hardware choices. Such details include:
-non-portable compiler and platform-specific directives, parallel programming
-model usage and constraints, and hardware-specific data management. RAJA can
-be used incrementally and selectively in an application and usually works
+insulate application developers from implementation details associated with
+software and hardware platform choices. Such details include: non-portable
+compiler and platform-specific directives, parallel programming model usage
+and constraints, and hardware-specific data management. RAJA can be used
+incrementally and selectively in an application and usually works
 seamlessly with native data structures and loop traversal patterns in a code.</p>
 <p>Typically, RAJA integration is a multi-step process involving steps of
 increasing complexity. First, basic transformation of loops to the &#8220;RAJA form&#8221;
@@ -262,9 +262,7 @@ such as OpenMP vs. CUDA, from application code.</li>
 in the RAJA source distribution can be found in these reports:</p>
 <p><a class="reference external" href="file:../RAJAStatus-09.2014_LLNL-TR-661403.pdf">The RAJA Portability Layer: Overview and Status (2014)</a></p>
 <p><a class="reference external" href="file:../RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf">RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)</a></p>
-<blockquote class="last">
-<div>Include a recent presentation that shows additional progress after the
-last L2.</div></blockquote>
+<p class="last">Newer reports and other material will appear here over time.</p>
 </div>
 <p><strong>Contents:</strong></p>
 <div class="toctree-wrapper compound">
