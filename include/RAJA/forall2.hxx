@@ -90,8 +90,8 @@ template<typename POLICY_I, typename POLICY_J, typename TI, typename TJ>
 struct Forall2Executor {
   template<typename BODY>
   inline void operator()(TI const &is_i, TJ const &is_j, BODY body) const {
-    RAJA::forall<POLICY_I>(is_i, RAJA_LAMBDA(Index_type i){
-      RAJA::forall<POLICY_J>(is_j, RAJA_LAMBDA(Index_type j){
+    RAJA::forall<POLICY_I>(is_i, [=](Index_type i){
+      RAJA::forall<POLICY_J>(is_j, [=](Index_type j){
         body(i, j);
       });
     });
@@ -160,7 +160,7 @@ RAJA_INLINE void forall2_permute(PERM_IJ, TI const &is_i, TJ const &is_j, BODY b
 
   // Call next policy with permuted indices and policies
   forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type j){
+    [=](Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j);
     });
@@ -173,7 +173,7 @@ RAJA_INLINE void forall2_permute(PERM_JI, TI const &is_i, TJ const &is_j, BODY b
 
   // Call next policy with permuted indices and policies
   forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_j, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type i){
+    [=](Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j);
     });

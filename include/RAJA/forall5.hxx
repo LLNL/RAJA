@@ -96,8 +96,8 @@ template<typename POLICY_I, typename POLICY_J, typename POLICY_K, typename POLIC
 struct Forall5Executor {
   template<typename BODY>
   inline void operator()(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body) const {
-    RAJA::forall<POLICY_I>(is_i, RAJA_LAMBDA(Index_type i){
-      exec(is_j, is_k, is_l, is_m, RAJA_LAMBDA(Index_type j, Index_type k, Index_type l, Index_type m){
+    RAJA::forall<POLICY_I>(is_i, [=](Index_type i){
+      exec(is_j, is_k, is_l, is_m, [=](Index_type j, Index_type k, Index_type l, Index_type m){
         body(i, j, k, l, m);
       });
     });
@@ -129,7 +129,7 @@ class Forall5Executor<RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec, 
 #pragma omp parallel for schedule(static) collapse(2)
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
-          exec(is_k, is_l, is_m, RAJA_LAMBDA(Index_type k, Index_type l, Index_type m){
+          exec(is_k, is_l, is_m, [=](Index_type k, Index_type l, Index_type m){
             body(i, j, k, l, m);
           });
       } } 
@@ -158,7 +158,7 @@ class Forall5Executor<RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec, 
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
           for(Index_type k = k_start;k < k_end;++ k){
-            exec(is_l, is_m, RAJA_LAMBDA(Index_type l, Index_type m){
+            exec(is_l, is_m, [=](Index_type l, Index_type m){
               body(i, j, k, l, m);
             });
       } } } 
@@ -191,7 +191,7 @@ class Forall5Executor<RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec, 
         for(Index_type j = j_start;j < j_end;++ j){
           for(Index_type k = k_start;k < k_end;++ k){
             for(Index_type l = l_start;l < l_end;++ l){
-              RAJA::forall<POLICY_M>(is_m, RAJA_LAMBDA(Index_type m){
+              RAJA::forall<POLICY_M>(is_m, [=](Index_type m){
                 body(i, j, k, l, m);
               });
       } } } } 
@@ -245,7 +245,7 @@ class Forall5Executor<RAJA::omp_for_nowait_exec, RAJA::omp_for_nowait_exec, POLI
 #pragma omp for schedule(static) collapse(2) nowait
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
-          exec(is_k, is_l, is_m, RAJA_LAMBDA(Index_type k, Index_type l, Index_type m){
+          exec(is_k, is_l, is_m, [=](Index_type k, Index_type l, Index_type m){
             body(i, j, k, l, m);
           });
       } } 
@@ -274,7 +274,7 @@ class Forall5Executor<RAJA::omp_for_nowait_exec, RAJA::omp_for_nowait_exec, RAJA
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
           for(Index_type k = k_start;k < k_end;++ k){
-            exec(is_l, is_m, RAJA_LAMBDA(Index_type l, Index_type m){
+            exec(is_l, is_m, [=](Index_type l, Index_type m){
               body(i, j, k, l, m);
             });
       } } } 
@@ -307,7 +307,7 @@ class Forall5Executor<RAJA::omp_for_nowait_exec, RAJA::omp_for_nowait_exec, RAJA
         for(Index_type j = j_start;j < j_end;++ j){
           for(Index_type k = k_start;k < k_end;++ k){
             for(Index_type l = l_start;l < l_end;++ l){
-              RAJA::forall<POLICY_M>(is_m, RAJA_LAMBDA(Index_type m){
+              RAJA::forall<POLICY_M>(is_m, [=](Index_type m){
                 body(i, j, k, l, m);
               });
       } } } } 
@@ -361,7 +361,7 @@ RAJA_INLINE void forall5_permute(PERM_IJKLM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL, PolicyM>(NextPolicyTag(), is_i, is_j, is_k, is_l, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m){
+    [=](Index_type i, Index_type j, Index_type k, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -374,7 +374,7 @@ RAJA_INLINE void forall5_permute(PERM_IJKML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyM, PolicyL>(NextPolicyTag(), is_i, is_j, is_k, is_m, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type k, Index_type m, Index_type l){
+    [=](Index_type i, Index_type j, Index_type k, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -387,7 +387,7 @@ RAJA_INLINE void forall5_permute(PERM_IJLKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyL, PolicyK, PolicyM>(NextPolicyTag(), is_i, is_j, is_l, is_k, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type l, Index_type k, Index_type m){
+    [=](Index_type i, Index_type j, Index_type l, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -400,7 +400,7 @@ RAJA_INLINE void forall5_permute(PERM_IJLMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyL, PolicyM, PolicyK>(NextPolicyTag(), is_i, is_j, is_l, is_m, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type l, Index_type m, Index_type k){
+    [=](Index_type i, Index_type j, Index_type l, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -413,7 +413,7 @@ RAJA_INLINE void forall5_permute(PERM_IJMKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyM, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_j, is_m, is_k, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type m, Index_type k, Index_type l){
+    [=](Index_type i, Index_type j, Index_type m, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -426,7 +426,7 @@ RAJA_INLINE void forall5_permute(PERM_IJMLK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyM, PolicyL, PolicyK>(NextPolicyTag(), is_i, is_j, is_m, is_l, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type m, Index_type l, Index_type k){
+    [=](Index_type i, Index_type j, Index_type m, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -439,7 +439,7 @@ RAJA_INLINE void forall5_permute(PERM_IKJLM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyJ, PolicyL, PolicyM>(NextPolicyTag(), is_i, is_k, is_j, is_l, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type j, Index_type l, Index_type m){
+    [=](Index_type i, Index_type k, Index_type j, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -452,7 +452,7 @@ RAJA_INLINE void forall5_permute(PERM_IKJML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyJ, PolicyM, PolicyL>(NextPolicyTag(), is_i, is_k, is_j, is_m, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type j, Index_type m, Index_type l){
+    [=](Index_type i, Index_type k, Index_type j, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -465,7 +465,7 @@ RAJA_INLINE void forall5_permute(PERM_IKLJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyL, PolicyJ, PolicyM>(NextPolicyTag(), is_i, is_k, is_l, is_j, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type l, Index_type j, Index_type m){
+    [=](Index_type i, Index_type k, Index_type l, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -478,7 +478,7 @@ RAJA_INLINE void forall5_permute(PERM_IKLMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyL, PolicyM, PolicyJ>(NextPolicyTag(), is_i, is_k, is_l, is_m, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type l, Index_type m, Index_type j){
+    [=](Index_type i, Index_type k, Index_type l, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -491,7 +491,7 @@ RAJA_INLINE void forall5_permute(PERM_IKMJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyM, PolicyJ, PolicyL>(NextPolicyTag(), is_i, is_k, is_m, is_j, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type m, Index_type j, Index_type l){
+    [=](Index_type i, Index_type k, Index_type m, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -504,7 +504,7 @@ RAJA_INLINE void forall5_permute(PERM_IKMLJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyM, PolicyL, PolicyJ>(NextPolicyTag(), is_i, is_k, is_m, is_l, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type m, Index_type l, Index_type j){
+    [=](Index_type i, Index_type k, Index_type m, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -517,7 +517,7 @@ RAJA_INLINE void forall5_permute(PERM_ILJKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyJ, PolicyK, PolicyM>(NextPolicyTag(), is_i, is_l, is_j, is_k, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type j, Index_type k, Index_type m){
+    [=](Index_type i, Index_type l, Index_type j, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -530,7 +530,7 @@ RAJA_INLINE void forall5_permute(PERM_ILJMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyJ, PolicyM, PolicyK>(NextPolicyTag(), is_i, is_l, is_j, is_m, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type j, Index_type m, Index_type k){
+    [=](Index_type i, Index_type l, Index_type j, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -543,7 +543,7 @@ RAJA_INLINE void forall5_permute(PERM_ILKJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyK, PolicyJ, PolicyM>(NextPolicyTag(), is_i, is_l, is_k, is_j, is_m,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type k, Index_type j, Index_type m){
+    [=](Index_type i, Index_type l, Index_type k, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -556,7 +556,7 @@ RAJA_INLINE void forall5_permute(PERM_ILKMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyK, PolicyM, PolicyJ>(NextPolicyTag(), is_i, is_l, is_k, is_m, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type k, Index_type m, Index_type j){
+    [=](Index_type i, Index_type l, Index_type k, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -569,7 +569,7 @@ RAJA_INLINE void forall5_permute(PERM_ILMJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyM, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_l, is_m, is_j, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type m, Index_type j, Index_type k){
+    [=](Index_type i, Index_type l, Index_type m, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -582,7 +582,7 @@ RAJA_INLINE void forall5_permute(PERM_ILMKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyM, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_l, is_m, is_k, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type l, Index_type m, Index_type k, Index_type j){
+    [=](Index_type i, Index_type l, Index_type m, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -595,7 +595,7 @@ RAJA_INLINE void forall5_permute(PERM_IMJKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_m, is_j, is_k, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type j, Index_type k, Index_type l){
+    [=](Index_type i, Index_type m, Index_type j, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -608,7 +608,7 @@ RAJA_INLINE void forall5_permute(PERM_IMJLK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyJ, PolicyL, PolicyK>(NextPolicyTag(), is_i, is_m, is_j, is_l, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type j, Index_type l, Index_type k){
+    [=](Index_type i, Index_type m, Index_type j, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -621,7 +621,7 @@ RAJA_INLINE void forall5_permute(PERM_IMKJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyK, PolicyJ, PolicyL>(NextPolicyTag(), is_i, is_m, is_k, is_j, is_l,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type k, Index_type j, Index_type l){
+    [=](Index_type i, Index_type m, Index_type k, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -634,7 +634,7 @@ RAJA_INLINE void forall5_permute(PERM_IMKLJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyK, PolicyL, PolicyJ>(NextPolicyTag(), is_i, is_m, is_k, is_l, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type k, Index_type l, Index_type j){
+    [=](Index_type i, Index_type m, Index_type k, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -647,7 +647,7 @@ RAJA_INLINE void forall5_permute(PERM_IMLJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyL, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_m, is_l, is_j, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type l, Index_type j, Index_type k){
+    [=](Index_type i, Index_type m, Index_type l, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -660,7 +660,7 @@ RAJA_INLINE void forall5_permute(PERM_IMLKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyL, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_m, is_l, is_k, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type m, Index_type l, Index_type k, Index_type j){
+    [=](Index_type i, Index_type m, Index_type l, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -673,7 +673,7 @@ RAJA_INLINE void forall5_permute(PERM_JIKLM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyK, PolicyL, PolicyM>(NextPolicyTag(), is_j, is_i, is_k, is_l, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type k, Index_type l, Index_type m){
+    [=](Index_type j, Index_type i, Index_type k, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -686,7 +686,7 @@ RAJA_INLINE void forall5_permute(PERM_JIKML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyK, PolicyM, PolicyL>(NextPolicyTag(), is_j, is_i, is_k, is_m, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type k, Index_type m, Index_type l){
+    [=](Index_type j, Index_type i, Index_type k, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -699,7 +699,7 @@ RAJA_INLINE void forall5_permute(PERM_JILKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyL, PolicyK, PolicyM>(NextPolicyTag(), is_j, is_i, is_l, is_k, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type l, Index_type k, Index_type m){
+    [=](Index_type j, Index_type i, Index_type l, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -712,7 +712,7 @@ RAJA_INLINE void forall5_permute(PERM_JILMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyL, PolicyM, PolicyK>(NextPolicyTag(), is_j, is_i, is_l, is_m, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type l, Index_type m, Index_type k){
+    [=](Index_type j, Index_type i, Index_type l, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -725,7 +725,7 @@ RAJA_INLINE void forall5_permute(PERM_JIMKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyM, PolicyK, PolicyL>(NextPolicyTag(), is_j, is_i, is_m, is_k, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type m, Index_type k, Index_type l){
+    [=](Index_type j, Index_type i, Index_type m, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -738,7 +738,7 @@ RAJA_INLINE void forall5_permute(PERM_JIMLK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyM, PolicyL, PolicyK>(NextPolicyTag(), is_j, is_i, is_m, is_l, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type m, Index_type l, Index_type k){
+    [=](Index_type j, Index_type i, Index_type m, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -751,7 +751,7 @@ RAJA_INLINE void forall5_permute(PERM_JKILM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyI, PolicyL, PolicyM>(NextPolicyTag(), is_j, is_k, is_i, is_l, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type i, Index_type l, Index_type m){
+    [=](Index_type j, Index_type k, Index_type i, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -764,7 +764,7 @@ RAJA_INLINE void forall5_permute(PERM_JKIML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyI, PolicyM, PolicyL>(NextPolicyTag(), is_j, is_k, is_i, is_m, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type i, Index_type m, Index_type l){
+    [=](Index_type j, Index_type k, Index_type i, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -777,7 +777,7 @@ RAJA_INLINE void forall5_permute(PERM_JKLIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyL, PolicyI, PolicyM>(NextPolicyTag(), is_j, is_k, is_l, is_i, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type l, Index_type i, Index_type m){
+    [=](Index_type j, Index_type k, Index_type l, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -790,7 +790,7 @@ RAJA_INLINE void forall5_permute(PERM_JKLMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyL, PolicyM, PolicyI>(NextPolicyTag(), is_j, is_k, is_l, is_m, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type l, Index_type m, Index_type i){
+    [=](Index_type j, Index_type k, Index_type l, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -803,7 +803,7 @@ RAJA_INLINE void forall5_permute(PERM_JKMIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyM, PolicyI, PolicyL>(NextPolicyTag(), is_j, is_k, is_m, is_i, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type m, Index_type i, Index_type l){
+    [=](Index_type j, Index_type k, Index_type m, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -816,7 +816,7 @@ RAJA_INLINE void forall5_permute(PERM_JKMLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyM, PolicyL, PolicyI>(NextPolicyTag(), is_j, is_k, is_m, is_l, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type m, Index_type l, Index_type i){
+    [=](Index_type j, Index_type k, Index_type m, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -829,7 +829,7 @@ RAJA_INLINE void forall5_permute(PERM_JLIKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyI, PolicyK, PolicyM>(NextPolicyTag(), is_j, is_l, is_i, is_k, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type i, Index_type k, Index_type m){
+    [=](Index_type j, Index_type l, Index_type i, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -842,7 +842,7 @@ RAJA_INLINE void forall5_permute(PERM_JLIMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyI, PolicyM, PolicyK>(NextPolicyTag(), is_j, is_l, is_i, is_m, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type i, Index_type m, Index_type k){
+    [=](Index_type j, Index_type l, Index_type i, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -855,7 +855,7 @@ RAJA_INLINE void forall5_permute(PERM_JLKIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyK, PolicyI, PolicyM>(NextPolicyTag(), is_j, is_l, is_k, is_i, is_m,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type k, Index_type i, Index_type m){
+    [=](Index_type j, Index_type l, Index_type k, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -868,7 +868,7 @@ RAJA_INLINE void forall5_permute(PERM_JLKMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyK, PolicyM, PolicyI>(NextPolicyTag(), is_j, is_l, is_k, is_m, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type k, Index_type m, Index_type i){
+    [=](Index_type j, Index_type l, Index_type k, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -881,7 +881,7 @@ RAJA_INLINE void forall5_permute(PERM_JLMIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyM, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_l, is_m, is_i, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type m, Index_type i, Index_type k){
+    [=](Index_type j, Index_type l, Index_type m, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -894,7 +894,7 @@ RAJA_INLINE void forall5_permute(PERM_JLMKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyM, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_l, is_m, is_k, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type l, Index_type m, Index_type k, Index_type i){
+    [=](Index_type j, Index_type l, Index_type m, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -907,7 +907,7 @@ RAJA_INLINE void forall5_permute(PERM_JMIKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyI, PolicyK, PolicyL>(NextPolicyTag(), is_j, is_m, is_i, is_k, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type i, Index_type k, Index_type l){
+    [=](Index_type j, Index_type m, Index_type i, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -920,7 +920,7 @@ RAJA_INLINE void forall5_permute(PERM_JMILK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyI, PolicyL, PolicyK>(NextPolicyTag(), is_j, is_m, is_i, is_l, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type i, Index_type l, Index_type k){
+    [=](Index_type j, Index_type m, Index_type i, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -933,7 +933,7 @@ RAJA_INLINE void forall5_permute(PERM_JMKIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyK, PolicyI, PolicyL>(NextPolicyTag(), is_j, is_m, is_k, is_i, is_l,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type k, Index_type i, Index_type l){
+    [=](Index_type j, Index_type m, Index_type k, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -946,7 +946,7 @@ RAJA_INLINE void forall5_permute(PERM_JMKLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyK, PolicyL, PolicyI>(NextPolicyTag(), is_j, is_m, is_k, is_l, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type k, Index_type l, Index_type i){
+    [=](Index_type j, Index_type m, Index_type k, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -959,7 +959,7 @@ RAJA_INLINE void forall5_permute(PERM_JMLIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyL, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_m, is_l, is_i, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type l, Index_type i, Index_type k){
+    [=](Index_type j, Index_type m, Index_type l, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -972,7 +972,7 @@ RAJA_INLINE void forall5_permute(PERM_JMLKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyL, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_m, is_l, is_k, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type m, Index_type l, Index_type k, Index_type i){
+    [=](Index_type j, Index_type m, Index_type l, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -985,7 +985,7 @@ RAJA_INLINE void forall5_permute(PERM_KIJLM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyJ, PolicyL, PolicyM>(NextPolicyTag(), is_k, is_i, is_j, is_l, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type j, Index_type l, Index_type m){
+    [=](Index_type k, Index_type i, Index_type j, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -998,7 +998,7 @@ RAJA_INLINE void forall5_permute(PERM_KIJML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyJ, PolicyM, PolicyL>(NextPolicyTag(), is_k, is_i, is_j, is_m, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type j, Index_type m, Index_type l){
+    [=](Index_type k, Index_type i, Index_type j, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1011,7 +1011,7 @@ RAJA_INLINE void forall5_permute(PERM_KILJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyL, PolicyJ, PolicyM>(NextPolicyTag(), is_k, is_i, is_l, is_j, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type l, Index_type j, Index_type m){
+    [=](Index_type k, Index_type i, Index_type l, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1024,7 +1024,7 @@ RAJA_INLINE void forall5_permute(PERM_KILMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyL, PolicyM, PolicyJ>(NextPolicyTag(), is_k, is_i, is_l, is_m, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type l, Index_type m, Index_type j){
+    [=](Index_type k, Index_type i, Index_type l, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1037,7 +1037,7 @@ RAJA_INLINE void forall5_permute(PERM_KIMJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyM, PolicyJ, PolicyL>(NextPolicyTag(), is_k, is_i, is_m, is_j, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type m, Index_type j, Index_type l){
+    [=](Index_type k, Index_type i, Index_type m, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1050,7 +1050,7 @@ RAJA_INLINE void forall5_permute(PERM_KIMLJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyM, PolicyL, PolicyJ>(NextPolicyTag(), is_k, is_i, is_m, is_l, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type m, Index_type l, Index_type j){
+    [=](Index_type k, Index_type i, Index_type m, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1063,7 +1063,7 @@ RAJA_INLINE void forall5_permute(PERM_KJILM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyI, PolicyL, PolicyM>(NextPolicyTag(), is_k, is_j, is_i, is_l, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type i, Index_type l, Index_type m){
+    [=](Index_type k, Index_type j, Index_type i, Index_type l, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1076,7 +1076,7 @@ RAJA_INLINE void forall5_permute(PERM_KJIML, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyI, PolicyM, PolicyL>(NextPolicyTag(), is_k, is_j, is_i, is_m, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type i, Index_type m, Index_type l){
+    [=](Index_type k, Index_type j, Index_type i, Index_type m, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1089,7 +1089,7 @@ RAJA_INLINE void forall5_permute(PERM_KJLIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyL, PolicyI, PolicyM>(NextPolicyTag(), is_k, is_j, is_l, is_i, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type l, Index_type i, Index_type m){
+    [=](Index_type k, Index_type j, Index_type l, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1102,7 +1102,7 @@ RAJA_INLINE void forall5_permute(PERM_KJLMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyL, PolicyM, PolicyI>(NextPolicyTag(), is_k, is_j, is_l, is_m, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type l, Index_type m, Index_type i){
+    [=](Index_type k, Index_type j, Index_type l, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1115,7 +1115,7 @@ RAJA_INLINE void forall5_permute(PERM_KJMIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyM, PolicyI, PolicyL>(NextPolicyTag(), is_k, is_j, is_m, is_i, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type m, Index_type i, Index_type l){
+    [=](Index_type k, Index_type j, Index_type m, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1128,7 +1128,7 @@ RAJA_INLINE void forall5_permute(PERM_KJMLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyM, PolicyL, PolicyI>(NextPolicyTag(), is_k, is_j, is_m, is_l, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type m, Index_type l, Index_type i){
+    [=](Index_type k, Index_type j, Index_type m, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1141,7 +1141,7 @@ RAJA_INLINE void forall5_permute(PERM_KLIJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyI, PolicyJ, PolicyM>(NextPolicyTag(), is_k, is_l, is_i, is_j, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type i, Index_type j, Index_type m){
+    [=](Index_type k, Index_type l, Index_type i, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1154,7 +1154,7 @@ RAJA_INLINE void forall5_permute(PERM_KLIMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyI, PolicyM, PolicyJ>(NextPolicyTag(), is_k, is_l, is_i, is_m, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type i, Index_type m, Index_type j){
+    [=](Index_type k, Index_type l, Index_type i, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1167,7 +1167,7 @@ RAJA_INLINE void forall5_permute(PERM_KLJIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyJ, PolicyI, PolicyM>(NextPolicyTag(), is_k, is_l, is_j, is_i, is_m,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type j, Index_type i, Index_type m){
+    [=](Index_type k, Index_type l, Index_type j, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1180,7 +1180,7 @@ RAJA_INLINE void forall5_permute(PERM_KLJMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyJ, PolicyM, PolicyI>(NextPolicyTag(), is_k, is_l, is_j, is_m, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type j, Index_type m, Index_type i){
+    [=](Index_type k, Index_type l, Index_type j, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1193,7 +1193,7 @@ RAJA_INLINE void forall5_permute(PERM_KLMIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyM, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_l, is_m, is_i, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type m, Index_type i, Index_type j){
+    [=](Index_type k, Index_type l, Index_type m, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1206,7 +1206,7 @@ RAJA_INLINE void forall5_permute(PERM_KLMJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyM, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_l, is_m, is_j, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type l, Index_type m, Index_type j, Index_type i){
+    [=](Index_type k, Index_type l, Index_type m, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1219,7 +1219,7 @@ RAJA_INLINE void forall5_permute(PERM_KMIJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyI, PolicyJ, PolicyL>(NextPolicyTag(), is_k, is_m, is_i, is_j, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type i, Index_type j, Index_type l){
+    [=](Index_type k, Index_type m, Index_type i, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1232,7 +1232,7 @@ RAJA_INLINE void forall5_permute(PERM_KMILJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyI, PolicyL, PolicyJ>(NextPolicyTag(), is_k, is_m, is_i, is_l, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type i, Index_type l, Index_type j){
+    [=](Index_type k, Index_type m, Index_type i, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1245,7 +1245,7 @@ RAJA_INLINE void forall5_permute(PERM_KMJIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyJ, PolicyI, PolicyL>(NextPolicyTag(), is_k, is_m, is_j, is_i, is_l,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type j, Index_type i, Index_type l){
+    [=](Index_type k, Index_type m, Index_type j, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1258,7 +1258,7 @@ RAJA_INLINE void forall5_permute(PERM_KMJLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyJ, PolicyL, PolicyI>(NextPolicyTag(), is_k, is_m, is_j, is_l, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type j, Index_type l, Index_type i){
+    [=](Index_type k, Index_type m, Index_type j, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1271,7 +1271,7 @@ RAJA_INLINE void forall5_permute(PERM_KMLIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyL, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_m, is_l, is_i, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type l, Index_type i, Index_type j){
+    [=](Index_type k, Index_type m, Index_type l, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1284,7 +1284,7 @@ RAJA_INLINE void forall5_permute(PERM_KMLJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyL, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_m, is_l, is_j, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type m, Index_type l, Index_type j, Index_type i){
+    [=](Index_type k, Index_type m, Index_type l, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1297,7 +1297,7 @@ RAJA_INLINE void forall5_permute(PERM_LIJKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyJ, PolicyK, PolicyM>(NextPolicyTag(), is_l, is_i, is_j, is_k, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type j, Index_type k, Index_type m){
+    [=](Index_type l, Index_type i, Index_type j, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1310,7 +1310,7 @@ RAJA_INLINE void forall5_permute(PERM_LIJMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyJ, PolicyM, PolicyK>(NextPolicyTag(), is_l, is_i, is_j, is_m, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type j, Index_type m, Index_type k){
+    [=](Index_type l, Index_type i, Index_type j, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1323,7 +1323,7 @@ RAJA_INLINE void forall5_permute(PERM_LIKJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyK, PolicyJ, PolicyM>(NextPolicyTag(), is_l, is_i, is_k, is_j, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type k, Index_type j, Index_type m){
+    [=](Index_type l, Index_type i, Index_type k, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1336,7 +1336,7 @@ RAJA_INLINE void forall5_permute(PERM_LIKMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyK, PolicyM, PolicyJ>(NextPolicyTag(), is_l, is_i, is_k, is_m, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type k, Index_type m, Index_type j){
+    [=](Index_type l, Index_type i, Index_type k, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1349,7 +1349,7 @@ RAJA_INLINE void forall5_permute(PERM_LIMJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyM, PolicyJ, PolicyK>(NextPolicyTag(), is_l, is_i, is_m, is_j, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type m, Index_type j, Index_type k){
+    [=](Index_type l, Index_type i, Index_type m, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1362,7 +1362,7 @@ RAJA_INLINE void forall5_permute(PERM_LIMKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyM, PolicyK, PolicyJ>(NextPolicyTag(), is_l, is_i, is_m, is_k, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type i, Index_type m, Index_type k, Index_type j){
+    [=](Index_type l, Index_type i, Index_type m, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1375,7 +1375,7 @@ RAJA_INLINE void forall5_permute(PERM_LJIKM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyI, PolicyK, PolicyM>(NextPolicyTag(), is_l, is_j, is_i, is_k, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type i, Index_type k, Index_type m){
+    [=](Index_type l, Index_type j, Index_type i, Index_type k, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1388,7 +1388,7 @@ RAJA_INLINE void forall5_permute(PERM_LJIMK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyI, PolicyM, PolicyK>(NextPolicyTag(), is_l, is_j, is_i, is_m, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type i, Index_type m, Index_type k){
+    [=](Index_type l, Index_type j, Index_type i, Index_type m, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1401,7 +1401,7 @@ RAJA_INLINE void forall5_permute(PERM_LJKIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyK, PolicyI, PolicyM>(NextPolicyTag(), is_l, is_j, is_k, is_i, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type k, Index_type i, Index_type m){
+    [=](Index_type l, Index_type j, Index_type k, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1414,7 +1414,7 @@ RAJA_INLINE void forall5_permute(PERM_LJKMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyK, PolicyM, PolicyI>(NextPolicyTag(), is_l, is_j, is_k, is_m, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type k, Index_type m, Index_type i){
+    [=](Index_type l, Index_type j, Index_type k, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1427,7 +1427,7 @@ RAJA_INLINE void forall5_permute(PERM_LJMIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyM, PolicyI, PolicyK>(NextPolicyTag(), is_l, is_j, is_m, is_i, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type m, Index_type i, Index_type k){
+    [=](Index_type l, Index_type j, Index_type m, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1440,7 +1440,7 @@ RAJA_INLINE void forall5_permute(PERM_LJMKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyM, PolicyK, PolicyI>(NextPolicyTag(), is_l, is_j, is_m, is_k, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type j, Index_type m, Index_type k, Index_type i){
+    [=](Index_type l, Index_type j, Index_type m, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1453,7 +1453,7 @@ RAJA_INLINE void forall5_permute(PERM_LKIJM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyI, PolicyJ, PolicyM>(NextPolicyTag(), is_l, is_k, is_i, is_j, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type i, Index_type j, Index_type m){
+    [=](Index_type l, Index_type k, Index_type i, Index_type j, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1466,7 +1466,7 @@ RAJA_INLINE void forall5_permute(PERM_LKIMJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyI, PolicyM, PolicyJ>(NextPolicyTag(), is_l, is_k, is_i, is_m, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type i, Index_type m, Index_type j){
+    [=](Index_type l, Index_type k, Index_type i, Index_type m, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1479,7 +1479,7 @@ RAJA_INLINE void forall5_permute(PERM_LKJIM, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyJ, PolicyI, PolicyM>(NextPolicyTag(), is_l, is_k, is_j, is_i, is_m,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type j, Index_type i, Index_type m){
+    [=](Index_type l, Index_type k, Index_type j, Index_type i, Index_type m){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1492,7 +1492,7 @@ RAJA_INLINE void forall5_permute(PERM_LKJMI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyJ, PolicyM, PolicyI>(NextPolicyTag(), is_l, is_k, is_j, is_m, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type j, Index_type m, Index_type i){
+    [=](Index_type l, Index_type k, Index_type j, Index_type m, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1505,7 +1505,7 @@ RAJA_INLINE void forall5_permute(PERM_LKMIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyM, PolicyI, PolicyJ>(NextPolicyTag(), is_l, is_k, is_m, is_i, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type m, Index_type i, Index_type j){
+    [=](Index_type l, Index_type k, Index_type m, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1518,7 +1518,7 @@ RAJA_INLINE void forall5_permute(PERM_LKMJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyM, PolicyJ, PolicyI>(NextPolicyTag(), is_l, is_k, is_m, is_j, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type k, Index_type m, Index_type j, Index_type i){
+    [=](Index_type l, Index_type k, Index_type m, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1531,7 +1531,7 @@ RAJA_INLINE void forall5_permute(PERM_LMIJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_l, is_m, is_i, is_j, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type i, Index_type j, Index_type k){
+    [=](Index_type l, Index_type m, Index_type i, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1544,7 +1544,7 @@ RAJA_INLINE void forall5_permute(PERM_LMIKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_l, is_m, is_i, is_k, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type i, Index_type k, Index_type j){
+    [=](Index_type l, Index_type m, Index_type i, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1557,7 +1557,7 @@ RAJA_INLINE void forall5_permute(PERM_LMJIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_l, is_m, is_j, is_i, is_k,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type j, Index_type i, Index_type k){
+    [=](Index_type l, Index_type m, Index_type j, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1570,7 +1570,7 @@ RAJA_INLINE void forall5_permute(PERM_LMJKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_l, is_m, is_j, is_k, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type j, Index_type k, Index_type i){
+    [=](Index_type l, Index_type m, Index_type j, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1583,7 +1583,7 @@ RAJA_INLINE void forall5_permute(PERM_LMKIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_l, is_m, is_k, is_i, is_j,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type k, Index_type i, Index_type j){
+    [=](Index_type l, Index_type m, Index_type k, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1596,7 +1596,7 @@ RAJA_INLINE void forall5_permute(PERM_LMKJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_l, is_m, is_k, is_j, is_i,
-    RAJA_LAMBDA(Index_type l, Index_type m, Index_type k, Index_type j, Index_type i){
+    [=](Index_type l, Index_type m, Index_type k, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1609,7 +1609,7 @@ RAJA_INLINE void forall5_permute(PERM_MIJKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_m, is_i, is_j, is_k, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type j, Index_type k, Index_type l){
+    [=](Index_type m, Index_type i, Index_type j, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1622,7 +1622,7 @@ RAJA_INLINE void forall5_permute(PERM_MIJLK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyJ, PolicyL, PolicyK>(NextPolicyTag(), is_m, is_i, is_j, is_l, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type j, Index_type l, Index_type k){
+    [=](Index_type m, Index_type i, Index_type j, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1635,7 +1635,7 @@ RAJA_INLINE void forall5_permute(PERM_MIKJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyK, PolicyJ, PolicyL>(NextPolicyTag(), is_m, is_i, is_k, is_j, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type k, Index_type j, Index_type l){
+    [=](Index_type m, Index_type i, Index_type k, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1648,7 +1648,7 @@ RAJA_INLINE void forall5_permute(PERM_MIKLJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyK, PolicyL, PolicyJ>(NextPolicyTag(), is_m, is_i, is_k, is_l, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type k, Index_type l, Index_type j){
+    [=](Index_type m, Index_type i, Index_type k, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1661,7 +1661,7 @@ RAJA_INLINE void forall5_permute(PERM_MILJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyL, PolicyJ, PolicyK>(NextPolicyTag(), is_m, is_i, is_l, is_j, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type l, Index_type j, Index_type k){
+    [=](Index_type m, Index_type i, Index_type l, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1674,7 +1674,7 @@ RAJA_INLINE void forall5_permute(PERM_MILKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyL, PolicyK, PolicyJ>(NextPolicyTag(), is_m, is_i, is_l, is_k, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type i, Index_type l, Index_type k, Index_type j){
+    [=](Index_type m, Index_type i, Index_type l, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1687,7 +1687,7 @@ RAJA_INLINE void forall5_permute(PERM_MJIKL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyI, PolicyK, PolicyL>(NextPolicyTag(), is_m, is_j, is_i, is_k, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type i, Index_type k, Index_type l){
+    [=](Index_type m, Index_type j, Index_type i, Index_type k, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1700,7 +1700,7 @@ RAJA_INLINE void forall5_permute(PERM_MJILK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyI, PolicyL, PolicyK>(NextPolicyTag(), is_m, is_j, is_i, is_l, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type i, Index_type l, Index_type k){
+    [=](Index_type m, Index_type j, Index_type i, Index_type l, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1713,7 +1713,7 @@ RAJA_INLINE void forall5_permute(PERM_MJKIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyK, PolicyI, PolicyL>(NextPolicyTag(), is_m, is_j, is_k, is_i, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type k, Index_type i, Index_type l){
+    [=](Index_type m, Index_type j, Index_type k, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1726,7 +1726,7 @@ RAJA_INLINE void forall5_permute(PERM_MJKLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyK, PolicyL, PolicyI>(NextPolicyTag(), is_m, is_j, is_k, is_l, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type k, Index_type l, Index_type i){
+    [=](Index_type m, Index_type j, Index_type k, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1739,7 +1739,7 @@ RAJA_INLINE void forall5_permute(PERM_MJLIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyL, PolicyI, PolicyK>(NextPolicyTag(), is_m, is_j, is_l, is_i, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type l, Index_type i, Index_type k){
+    [=](Index_type m, Index_type j, Index_type l, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1752,7 +1752,7 @@ RAJA_INLINE void forall5_permute(PERM_MJLKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyL, PolicyK, PolicyI>(NextPolicyTag(), is_m, is_j, is_l, is_k, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type j, Index_type l, Index_type k, Index_type i){
+    [=](Index_type m, Index_type j, Index_type l, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1765,7 +1765,7 @@ RAJA_INLINE void forall5_permute(PERM_MKIJL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyI, PolicyJ, PolicyL>(NextPolicyTag(), is_m, is_k, is_i, is_j, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type i, Index_type j, Index_type l){
+    [=](Index_type m, Index_type k, Index_type i, Index_type j, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1778,7 +1778,7 @@ RAJA_INLINE void forall5_permute(PERM_MKILJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyI, PolicyL, PolicyJ>(NextPolicyTag(), is_m, is_k, is_i, is_l, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type i, Index_type l, Index_type j){
+    [=](Index_type m, Index_type k, Index_type i, Index_type l, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1791,7 +1791,7 @@ RAJA_INLINE void forall5_permute(PERM_MKJIL, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyJ, PolicyI, PolicyL>(NextPolicyTag(), is_m, is_k, is_j, is_i, is_l,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type j, Index_type i, Index_type l){
+    [=](Index_type m, Index_type k, Index_type j, Index_type i, Index_type l){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1804,7 +1804,7 @@ RAJA_INLINE void forall5_permute(PERM_MKJLI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyJ, PolicyL, PolicyI>(NextPolicyTag(), is_m, is_k, is_j, is_l, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type j, Index_type l, Index_type i){
+    [=](Index_type m, Index_type k, Index_type j, Index_type l, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1817,7 +1817,7 @@ RAJA_INLINE void forall5_permute(PERM_MKLIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyL, PolicyI, PolicyJ>(NextPolicyTag(), is_m, is_k, is_l, is_i, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type l, Index_type i, Index_type j){
+    [=](Index_type m, Index_type k, Index_type l, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1830,7 +1830,7 @@ RAJA_INLINE void forall5_permute(PERM_MKLJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyL, PolicyJ, PolicyI>(NextPolicyTag(), is_m, is_k, is_l, is_j, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type k, Index_type l, Index_type j, Index_type i){
+    [=](Index_type m, Index_type k, Index_type l, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1843,7 +1843,7 @@ RAJA_INLINE void forall5_permute(PERM_MLIJK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_m, is_l, is_i, is_j, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type i, Index_type j, Index_type k){
+    [=](Index_type m, Index_type l, Index_type i, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1856,7 +1856,7 @@ RAJA_INLINE void forall5_permute(PERM_MLIKJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_m, is_l, is_i, is_k, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type i, Index_type k, Index_type j){
+    [=](Index_type m, Index_type l, Index_type i, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1869,7 +1869,7 @@ RAJA_INLINE void forall5_permute(PERM_MLJIK, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_m, is_l, is_j, is_i, is_k,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type j, Index_type i, Index_type k){
+    [=](Index_type m, Index_type l, Index_type j, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1882,7 +1882,7 @@ RAJA_INLINE void forall5_permute(PERM_MLJKI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_m, is_l, is_j, is_k, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type j, Index_type k, Index_type i){
+    [=](Index_type m, Index_type l, Index_type j, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1895,7 +1895,7 @@ RAJA_INLINE void forall5_permute(PERM_MLKIJ, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_m, is_l, is_k, is_i, is_j,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type k, Index_type i, Index_type j){
+    [=](Index_type m, Index_type l, Index_type k, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });
@@ -1908,7 +1908,7 @@ RAJA_INLINE void forall5_permute(PERM_MLKJI, TI const &is_i, TJ const &is_j, TK 
 
   // Call next policy with permuted indices and policies
   forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_m, is_l, is_k, is_j, is_i,
-    RAJA_LAMBDA(Index_type m, Index_type l, Index_type k, Index_type j, Index_type i){
+    [=](Index_type m, Index_type l, Index_type k, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k, l, m);
     });

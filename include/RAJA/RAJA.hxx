@@ -102,4 +102,26 @@
 
 #include "IndexSetUtils.hxx"
 
+
+
+//
+// Strongly typed index class.
+//
+#include "IndexValue.hxx"
+
+
+//
+// Multidimensional array layouts and views.
+//
+#include "Layout.hxx"
+#include "View.hxx"
+
+
+//
+// Perfectly nested loop execution.
+//
+#include "forallN.hxx"
+
+
+
 #endif  // closing endif for header file include guard

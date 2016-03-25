@@ -98,15 +98,15 @@ def writeForallExecutor(ndims):
   argstr = ", ".join(args)  
   print "  template<typename BODY>"
   print "  inline void operator()(%s, BODY body) const {" % argstr
-  print "    RAJA::forall<POLICY_I>(is_i, RAJA_LAMBDA(Index_type i){"
+  print "    RAJA::forall<POLICY_I>(is_i, [=](Index_type i){"
   if ndims == 2:  # 2 dimension termination case:
-    print "      RAJA::forall<POLICY_J>(is_j, RAJA_LAMBDA(Index_type j){"
+    print "      RAJA::forall<POLICY_J>(is_j, [=](Index_type j){"
   else: # more than 2 dimensions, we just peel off the outer loop, and call an N-1 executor
     args = map(lambda a: "is_"+a, dim_names[1:])
     setstr = ", ".join(args)
     args = map(lambda a: "Index_type "+a, dim_names[1:])
     idxstr = ", ".join(args)  
-    print "      exec(%s, RAJA_LAMBDA(%s){" % (setstr, idxstr)
+    print "      exec(%s, [=](%s){" % (setstr, idxstr)
   
   argstr = ", ".join(dim_names)  
   print "        body(%s);" % argstr
@@ -193,7 +193,7 @@ def writeForallExecuteOMP(ndims):
       # Just one inner loop, so issue a RAJA::forall
       elif remainder_ndims == 1:      
         d = dim_names[depth]
-        print "      %sRAJA::forall<POLICY_%s>(is_%s, RAJA_LAMBDA(Index_type %s){" % (indent, d.upper(), d, d)
+        print "      %sRAJA::forall<POLICY_%s>(is_%s, [=](Index_type %s){" % (indent, d.upper(), d, d)
         argstr = argstr = ", ".join(dim_names)
         print "      %s  body(%s);" % (indent, argstr)
         print "      %s});" % (indent)
@@ -204,7 +204,7 @@ def writeForallExecuteOMP(ndims):
         setstr = ", ".join(args)
         args = map(lambda a: "Index_type "+a, dim_names[depth:])
         argstr = ", ".join(args)      
-        print "      %sexec(%s, RAJA_LAMBDA(%s){" % (indent, setstr, argstr)
+        print "      %sexec(%s, [=](%s){" % (indent, setstr, argstr)
         argstr = argstr = ", ".join(dim_names)
         print "      %s  body(%s);" % (indent, argstr)
         print "      %s});" % (indent)
@@ -275,7 +275,7 @@ def writeForallPermutations(ndims):
     print ""
     print "  // Call next policy with permuted indices and policies"
     print "  forall%d_policy<NextPolicy, %s>(NextPolicyTag(), %s," % (ndims, p_polstr, p_varstr)
-    print "    RAJA_LAMBDA(%s){" % (p_argstr)
+    print "    [=](%s){" % (p_argstr)
     print "      // Call body with non-permuted indices"
     print "      body(%s);" % (argstr)
     print "    });"
