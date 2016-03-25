@@ -21,13 +21,10 @@
 #ifndef RAJA_IndexSet_HXX
 #define RAJA_IndexSet_HXX
 
+#include "config.hxx"
 
-#include "RangeSegment.hxx"
-#include "ListSegment.hxx"
 
 #include "IndexSetSegInfo.hxx"
-
-#include "execpolicy.hxx"
 
 #include "RAJAVec.hxx"
 
@@ -49,10 +46,6 @@ class IndexSet
 {
 public:
 
-//
-// RDH TO DO: Add COMPILE TIME segment type selection.
-//
-
    ///
    /// Nested class representing index set execution policy. 
    ///
@@ -66,11 +59,6 @@ public:
       typedef SEG_ITER_POLICY_T seg_it;
       typedef SEG_EXEC_POLICY_T seg_exec;
    };
-
-   ///
-   /// Sequential execution policy for index set.
-   ///
-   typedef ExecPolicy<RAJA::seq_segit, RAJA::seq_exec> seq_policy;
 
 
 //@{
@@ -419,7 +407,7 @@ IndexSet* IndexSet::createView(const T& segIds) const
    IndexSet *retVal = new IndexSet() ;
 
    int numSeg = m_segments.size() ;
-   for (auto it = segIds.begin(); it != segIds.end(); ++it) {
+   for (typename T::iterator it = segIds.begin(); it != segIds.end(); ++it) {
       if (*it >= 0 && *it < numSeg) {
          retVal->push_back_nocopy( 
             const_cast<BaseSegment*>( m_segments[ *it ].getSegment() ) ) ;

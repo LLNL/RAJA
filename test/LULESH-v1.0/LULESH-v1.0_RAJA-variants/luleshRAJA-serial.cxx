@@ -82,7 +82,7 @@ Additional BSD Notice
 //
 // Display simulation time and timestep during run.
 //
-const bool show_run_progress = true;
+const bool show_run_progress = false;
 
 //
 // Set stop time and time increment for run.
@@ -2153,16 +2153,17 @@ void CalcQForElems(Domain *domain)
 
       /* Don't allow excessive artificial viscosity */
       Real_t qstop = domain->qstop ;
-      Index_t idx = -1; 
-      RAJA::forall<elem_exec_policy>( *domain->domElemList, [=] (int i) {
-         if ( domain->q[i] > qstop ) {
-            idx = i ;
-            // break ;
-         }
-       }
-      ) ;
+      int id = -1; 
 
-      if(idx >= 0) {
+      // RAJA::forall<elem_exec_policy>( *domain->domElemList, [=] (int i) {
+      //    if ( domain->q[i] > qstop ) {
+      //       id = i ;
+      //       // break ;
+      //    }
+      //  }
+      // ) ;
+
+      if(id >= 0) {
          exit(QStopError) ;
       }
    }
