@@ -41,6 +41,7 @@ namespace RAJA {
 ///
 struct omp_parallel_for_exec {};
 //struct omp_parallel_for_nowait_exec {};
+struct omp_for_nowait_exec {};
 
 ///
 /// Index set segment iteration policies

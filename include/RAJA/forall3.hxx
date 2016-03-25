@@ -92,8 +92,8 @@ template<typename POLICY_I, typename POLICY_J, typename POLICY_K, typename TI, t
 struct Forall3Executor {
   template<typename BODY>
   inline void operator()(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body) const {
-    RAJA::forall<POLICY_I>(is_i, RAJA_LAMBDA(Index_type i){
-      exec(is_j, is_k, RAJA_LAMBDA(Index_type j, Index_type k){
+    RAJA::forall<POLICY_I>(is_i, [=](Index_type i){
+      exec(is_j, is_k, [=](Index_type j, Index_type k){
         body(i, j, k);
       });
     });
@@ -125,7 +125,7 @@ class Forall3Executor<RAJA::omp_parallel_for_exec, RAJA::omp_parallel_for_exec, 
 #pragma omp parallel for schedule(static) collapse(2)
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
-          RAJA::forall<POLICY_K>(is_k, RAJA_LAMBDA(Index_type k){
+          RAJA::forall<POLICY_K>(is_k, [=](Index_type k){
             body(i, j, k);
           });
       } } 
@@ -171,7 +171,7 @@ class Forall3Executor<RAJA::omp_for_nowait_exec, RAJA::omp_for_nowait_exec, POLI
 #pragma omp for schedule(static) collapse(2) nowait
       for(Index_type i = i_start;i < i_end;++ i){
         for(Index_type j = j_start;j < j_end;++ j){
-          RAJA::forall<POLICY_K>(is_k, RAJA_LAMBDA(Index_type k){
+          RAJA::forall<POLICY_K>(is_k, [=](Index_type k){
             body(i, j, k);
           });
       } } 
@@ -217,7 +217,7 @@ RAJA_INLINE void forall3_permute(PERM_IJK, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_j, is_k,
-    RAJA_LAMBDA(Index_type i, Index_type j, Index_type k){
+    [=](Index_type i, Index_type j, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k);
     });
@@ -230,7 +230,7 @@ RAJA_INLINE void forall3_permute(PERM_IKJ, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_k, is_j,
-    RAJA_LAMBDA(Index_type i, Index_type k, Index_type j){
+    [=](Index_type i, Index_type k, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k);
     });
@@ -243,7 +243,7 @@ RAJA_INLINE void forall3_permute(PERM_JIK, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_i, is_k,
-    RAJA_LAMBDA(Index_type j, Index_type i, Index_type k){
+    [=](Index_type j, Index_type i, Index_type k){
       // Call body with non-permuted indices
       body(i, j, k);
     });
@@ -256,7 +256,7 @@ RAJA_INLINE void forall3_permute(PERM_JKI, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_k, is_i,
-    RAJA_LAMBDA(Index_type j, Index_type k, Index_type i){
+    [=](Index_type j, Index_type k, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k);
     });
@@ -269,7 +269,7 @@ RAJA_INLINE void forall3_permute(PERM_KIJ, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_i, is_j,
-    RAJA_LAMBDA(Index_type k, Index_type i, Index_type j){
+    [=](Index_type k, Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j, k);
     });
@@ -282,7 +282,7 @@ RAJA_INLINE void forall3_permute(PERM_KJI, TI const &is_i, TJ const &is_j, TK co
 
   // Call next policy with permuted indices and policies
   forall3_policy<NextPolicy, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_j, is_i,
-    RAJA_LAMBDA(Index_type k, Index_type j, Index_type i){
+    [=](Index_type k, Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j, k);
     });
