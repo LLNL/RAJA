@@ -19,8 +19,11 @@
  */
 
 #include "RAJA/IndexSet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
-#include <omp.h>
+#include "RAJA/ThreadUtils_CPU.hxx"
+
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -47,7 +50,7 @@ namespace RAJA {
 void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
                                 int fastDim, int midDim, int slowDim)
 {
-   int numThreads = omp_get_max_threads() ;
+   int numThreads = getMaxThreadsCPU();
 
    // printf("Lock-free created\n") ;
 

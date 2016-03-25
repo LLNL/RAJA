@@ -1,0 +1,23 @@
+#
+# The subdirectories in this directory contain simple tests of RAJA
+# traversal and reduction operations. These codes illustrate basic 
+# RAJA usage and are also a good sanity check to make sure that the
+# cod is built correctly and works properly.
+#
+# The subdirectory CPUtests contains two files for testing CPU execution, 
+# one for traversals and one for traversals with reductions. The tests 
+# use RAJA IndexSets with multiple Range and List Segments. When RAJA
+# is compiled, all execution policy variants available for the compiler
+# used will be generated. 
+#
+# The subdirectory GPUtests contains four files for testing CUDA GPU 
+# execution, one for traversals and three for traversals with reductions 
+# (min, max, and sum). The tests use raw index ranges and RAJA IndexSets 
+# with multiple Range Segments. RAJA must be built with CUDA enabled to
+# generate executables for these tests.
+#
+# NOTE: When running the CUDA tests, we advise you to set the
+#       environment variable CUDA_VISIBLE_DEVICES to zero before running.
+#       We are using CUDA Unified Memory and we find that this setting 
+#       greatly improves performance.
+#

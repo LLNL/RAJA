@@ -1,9 +1,0 @@
-##
-## For nvcc on ipa..
-##
-## IMPORTANT: Need to set proper RAJA_ARCH value in Makefile
-##
-
-module load cudatoolkit/7.5 ;
-use gcc-4.9.3p ;
-make parallel;

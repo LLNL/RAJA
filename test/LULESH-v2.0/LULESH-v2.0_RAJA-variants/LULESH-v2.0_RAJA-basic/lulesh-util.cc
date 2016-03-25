@@ -196,11 +196,16 @@ void VerifyAndWriteFinalOutput(Real_t elapsed_time,
          Real_t AbsDiff = FABS(locDom.e(j*nx+k)-locDom.e(k*nx+j));
          TotalAbsDiff  += AbsDiff;
 
-         if (MaxAbsDiff <AbsDiff) MaxAbsDiff = AbsDiff;
+         if (MaxAbsDiff <AbsDiff) {
+            MaxAbsDiff = AbsDiff;
+         }
 
-         Real_t RelDiff = AbsDiff / locDom.e(k*nx+j);
-
-         if (MaxRelDiff <RelDiff)  MaxRelDiff = RelDiff;
+         if (locDom.e(k*nx+j) != 0.0) {
+            Real_t RelDiff = AbsDiff / locDom.e(k*nx+j);
+            if (MaxRelDiff <RelDiff) {
+               MaxRelDiff = RelDiff;
+            }
+         }
       }
    }
 
