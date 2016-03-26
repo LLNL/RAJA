@@ -23,8 +23,9 @@
 #ifndef RAJA_FORALLN_HXX
 #define RAJA_FORALLN_HXX
 
-#include"forall2.hxx"
+//#include"forall2.hxx"
 #include"forall3.hxx"
 #include"forall4.hxx"
+#include"forall5.hxx"
 
 #endif  // closing endif for header file include guard

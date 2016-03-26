@@ -108,12 +108,12 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
 
 // Sequentail, IJ ordering
 struct Pol2dA {
-  typedef RAJA::Forall2_Policy<seq_exec, seq_exec,
-                                 Forall2_Permute<PERM_IJ>
-                              > Exec; 
+  typedef Forall2_Policy<seq_exec, seq_exec,
+                           Forall2_Permute<PERM_IJ>
+                        > Exec; 
   typedef RAJA::View2d<int, RAJA::Layout2d<PERM_IJ>> View;  
 };
-
+#ifdef _OPENMP2
 // Sequentail, JI ordering
 struct Pol2dB {
   typedef RAJA::Forall2_Policy<seq_exec, seq_exec, 
@@ -123,7 +123,7 @@ struct Pol2dB {
 };
 
 // OpenMP, IJ ordering
-#ifdef _OPENMP
+
 struct Pol2dC {
   typedef RAJA::Forall2_Policy<seq_exec, omp_for_nowait_exec, 
                                  Forall2_OMP_Parallel<
@@ -148,9 +148,10 @@ struct Pol2dD {
 void run2dTests(Index_type size_i, Index_type size_j){
 
   run2dTest<Pol2dA>("Pol2dA", size_i, size_j);
+#ifdef _OPENMP2
+
   run2dTest<Pol2dB>("Pol2dB", size_i, size_j);
 
-#ifdef _OPENMP
   run2dTest<Pol2dC>("Pol2dC", size_i, size_j);
   run2dTest<Pol2dD>("Pol2dD", size_i, size_j);
 #endif // _OPENMP
@@ -175,8 +176,8 @@ int main(int argc, char *argv[])
 
 
    run2dTests(128,1024);
-   run2dTests(37,1);
-   run2dTests(1,192);
+//   run2dTests(37,1);
+//   run2dTests(1,192);
 
    ///
    /// Print total number of tests passed/run.
