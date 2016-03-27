@@ -47,7 +47,7 @@
 
 
 //
-// Multidimensional array layouts and views.
+// Multidimensional layouts and views.
 //
 #include "Layout.hxx"
 #include "View.hxx"
@@ -58,6 +58,10 @@
 // in the files included below.
 //
 #include "forall_generic.hxx"
+
+//
+// Generic iteration templates for perfectly nested loops
+//
 #include "forallN_generic.hxx"
 
 //
@@ -116,9 +120,8 @@
 
 
 //
-// Perfectly nested loop execution.
+// Perfectly nested loop transformations
 //
-#include "forallN.hxx"
 
 // Tiling policies
 #include "forallN_tile.hxx"

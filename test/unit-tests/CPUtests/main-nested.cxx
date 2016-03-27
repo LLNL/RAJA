@@ -113,7 +113,7 @@ struct Pol2dA {
                         > Exec; 
   typedef RAJA::View2d<int, RAJA::Layout2d<PERM_IJ>> View;  
 };
-#ifdef _OPENMP2
+#ifdef _OPENMP
 // Sequentail, JI ordering
 struct Pol2dB {
   typedef RAJA::Forall2_Policy<seq_exec, seq_exec, 
@@ -148,7 +148,7 @@ struct Pol2dD {
 void run2dTests(Index_type size_i, Index_type size_j){
 
   run2dTest<Pol2dA>("Pol2dA", size_i, size_j);
-#ifdef _OPENMP2
+#ifdef _OPENMP
 
   run2dTest<Pol2dB>("Pol2dB", size_i, size_j);
 
@@ -176,8 +176,8 @@ int main(int argc, char *argv[])
 
 
    run2dTests(128,1024);
-//   run2dTests(37,1);
-//   run2dTests(1,192);
+   run2dTests(37,1);
+   run2dTests(1,192);
 
    ///
    /// Print total number of tests passed/run.
