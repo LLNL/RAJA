@@ -47,7 +47,7 @@ template <typename POL>
 void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
 {
 
-   cout << "\n Test " << size_i << "x" << size_j << 
+   cout << "\n Test2d " << size_i << "x" << size_j << 
        " array reduction for policy " << policy << "\n";
    
    std::vector<int> values(size_i*size_j, 1);
@@ -148,10 +148,9 @@ struct Pol2dD {
 void run2dTests(Index_type size_i, Index_type size_j){
 
   run2dTest<Pol2dA>("Pol2dA", size_i, size_j);
-#ifdef _OPENMP
-
   run2dTest<Pol2dB>("Pol2dB", size_i, size_j);
 
+#ifdef _OPENMP
   run2dTest<Pol2dC>("Pol2dC", size_i, size_j);
   run2dTest<Pol2dD>("Pol2dD", size_i, size_j);
 #endif // _OPENMP
