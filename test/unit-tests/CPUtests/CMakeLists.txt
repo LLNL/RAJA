@@ -14,7 +14,11 @@ else()
   add_executable(CPUreduce-test.exe
     main-reduce.cxx
     buildIndexSet.cxx)
+
+  add_executable(nested-reduce.exe
+    main-nested-reduce.cxx)
 endif()
 
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)
+target_link_libraries(nested-reduce.exe RAJA)
