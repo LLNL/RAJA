@@ -1,8 +1,0 @@
-##
-## To build all test codes...
-##
-
-make CPUtraversal-test ;
-make CPUreduce-test ;
-make CPUnested-test
-
