@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## All rights reserved.
+##
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
 
 set(CMAKE_C_COMPILER "/usr/apps/gnu/4.9.3/bin/gcc" CACHE PATH "")

@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## All rights reserved.
+##
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "/usr/local/bin/icpc-16.0.109" CACHE PATH "")
