@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+## 
+## Produced at the Lawrence Livermore National Laboratory.
+## 
+## All rights reserved.
+## 
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 if (RAJA_USE_CUDA)
   cuda_add_executable(CPUtraversal-test.exe
     main-traversal.cxx
