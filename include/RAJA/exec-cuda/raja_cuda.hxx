@@ -31,6 +31,48 @@
 
 namespace RAJA {
 
+
+//
+/////////////////////////////////////////////////////////////////////
+//
+// Generalization of CUDA dim3 x, y and z used to describe
+// sizes and indices for threads and blocks.
+//
+/////////////////////////////////////////////////////////////////////
+//
+#if 0
+struct Dim3x {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+    return dim.x;
+  }
+
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+    return dim.x;
+  }
+};
+
+
+struct Dim3y {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+    return dim.y;
+  }
+
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+    return dim.y;
+  }
+};
+
+struct Dim3z {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+    return dim.z;
+  }
+
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+    return dim.z;
+  }
+};
+#endif
+
 //
 /////////////////////////////////////////////////////////////////////
 //
@@ -47,6 +89,11 @@ struct cuda_exec {};
 ///
 template <size_t BLOCK_SIZE>
 struct cuda_exec_async {};
+
+
+//
+//
+//
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
