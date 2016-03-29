@@ -32,18 +32,20 @@ RAJA is largely a header file library; the 'include/RAJA' directory
 contains most of what you need to understand to start using RAJA in an
 application. We discuss the contents of the 'test' directory in a later section.
 
-Generic RAJA traversals, which work for any IndexSet, Segment or execution 
-policy type, are defined in the file 'forall_generic.hxx' in the 
-'include/RAJA' directory. That directory also contains the header files 
-that define interfaces for key RAJA classes, such as IndexSet and Segment 
-types, and other methods that are independent of specific parallel programming 
-model choices. The main RAJA header 'RAJA.hxx' is all that needs to be 
+The main RAJA header 'RAJA.hxx' is all that needs to be 
 included in an application that uses RAJA. That is, the line ::
 
   #include "RAJA/RAJA.hxx"
 
 in your application code will include all other RAJA header files that are 
 needed for a particular configuration and build of the RAJA code.
+
+Header files that define general RAJA capabilities that don't depend on the 
+underlying programming model choice live in the 'include/RAJA' directory.
+The directory contains header files for key RAJA classes, such as IndexSet and 
+Segment types. Files that define generic RAJA traversals, which work for any 
+IndexSet, Segment or execution policy type, also reside there; e.g., 
+'forall_generic.hxx'.
 
 RAJA traversals, reductions, and execution policies for individual programming
 models are defined in header files that live in subdirectories of
@@ -65,6 +67,7 @@ directory has the header files:
 
   * raja_openmp.hxx
   * forall_openmp.hxx
+  * forallN_openmp.hxx
   * reduce_openmp.hxx 
 
 Note that SIMD execution shares reduction types with sequential execution, 
