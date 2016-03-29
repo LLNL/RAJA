@@ -1,12 +1,13 @@
 #!/usr/bin/env python
+
 #
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+#
 # Produced at the Lawrence Livermore National Laboratory.
 #
 # All rights reserved.
 #
-# This source code cannot be distributed without permission and
-# further review from Lawrence Livermore National Laboratory.
+# For release details and restrictions, please see raja/README-license.txt
 #
 
 
