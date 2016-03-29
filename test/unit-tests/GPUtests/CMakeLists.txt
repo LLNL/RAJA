@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+## 
+## Produced at the Lawrence Livermore National Laboratory.
+## 
+## All rights reserved.
+## 
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 add_definitions(-DRAJA_USE_CLOCK)
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 

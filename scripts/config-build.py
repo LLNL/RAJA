@@ -1,4 +1,15 @@
 #!/usr/bin/env python
+
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+## 
+## Produced at the Lawrence Livermore National Laboratory.
+## 
+## All rights reserved.
+## 
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 # Python wrapper script for generating the correct cmake line with the options specified by the user.
 #
 # Please keep parser option names as close to possible as the names of the cmake options they are wrapping.
