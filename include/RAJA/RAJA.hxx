@@ -40,6 +40,29 @@
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
 
+//
+// Strongly typed index class.
+//
+#include "IndexValue.hxx"
+
+
+//
+// Multidimensional layouts and views.
+//
+#include "Layout.hxx"
+#include "View.hxx"
+
+
+//
+// Generic iteration templates require specializations defined 
+// in the files included below.
+//
+#include "forall_generic.hxx"
+
+//
+// Generic iteration templates for perfectly nested loops
+//
+#include "forallN_generic.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -93,13 +116,18 @@
 #endif
 
 
-//
-// Generic iteration templates require specializations defined 
-// in the files included above.
-//
-#include "forall_generic.hxx"
-
-
 #include "IndexSetUtils.hxx"
+
+
+//
+// Perfectly nested loop transformations
+//
+
+// Tiling policies
+#include "forallN_tile.hxx"
+
+// Loop interchange policies
+#include "forallN_permute.hxx"
+
 
 #endif  // closing endif for header file include guard

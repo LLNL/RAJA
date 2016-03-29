@@ -41,6 +41,7 @@ namespace RAJA {
 ///
 struct omp_parallel_for_exec {};
 //struct omp_parallel_for_nowait_exec {};
+struct omp_for_nowait_exec {};
 
 ///
 /// Index set segment iteration policies
@@ -64,7 +65,7 @@ struct omp_reduce {};
 
 #include "reduce_openmp.hxx"
 #include "forall_openmp.hxx"
-
+#include "forallN_openmp.hxx"
 
 #endif  // closing endif for if defined(RAJA_USE_OPENMP)
 
