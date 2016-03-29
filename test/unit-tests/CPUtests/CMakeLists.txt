@@ -18,6 +18,9 @@ if (RAJA_USE_CUDA)
     buildIndexSet.cxx)
     
   cuda_add_executable(CPUnested-test.exe
+    main-nested.cxx)
+    
+  cuda_add_executable(CPUnested_reduce-test.exe
     main-nested-reduce.cxx)
 else()
   add_executable(CPUtraversal-test.exe
@@ -27,11 +30,15 @@ else()
   add_executable(CPUreduce-test.exe
     main-reduce.cxx
     buildIndexSet.cxx)
-
+  
   add_executable(CPUnested-test.exe
+    main-nested.cxx)
+    
+  cuda_add_executable(CPUnested_reduce-test.exe
     main-nested-reduce.cxx)
 endif()
 
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)
 target_link_libraries(CPUnested-test.exe RAJA)
+target_link_libraries(CPUnested_reduce-test.exe RAJA)
