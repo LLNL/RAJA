@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## All rights reserved.
+##
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 set(RAJA_COMPILER "RAJA_COMPILER_XLC12" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpixlcxx_r-lompbeta2-fastmpi" CACHE PATH "")
