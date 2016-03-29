@@ -40,7 +40,7 @@ namespace RAJA {
 //
 /////////////////////////////////////////////////////////////////////
 //
-#if 0
+
 struct Dim3x {
   __host__ __device__ inline unsigned int &operator()(dim3 &dim){
     return dim.x;
@@ -71,7 +71,6 @@ struct Dim3z {
     return dim.z;
   }
 };
-#endif
 
 //
 /////////////////////////////////////////////////////////////////////
