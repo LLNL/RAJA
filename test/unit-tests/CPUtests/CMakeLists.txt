@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+## 
+## Produced at the Lawrence Livermore National Laboratory.
+## 
+## All rights reserved.
+## 
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 if (RAJA_USE_CUDA)
   cuda_add_executable(CPUtraversal-test.exe
     main-traversal.cxx
@@ -20,8 +30,12 @@ else()
   
   add_executable(CPUnested-test.exe
     main-nested.cxx)
+
+  add_executable(nested-reduce.exe
+    main-nested-reduce.cxx)
 endif()
 
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)
 target_link_libraries(CPUnested-test.exe RAJA)
+target_link_libraries(nested-reduce.exe RAJA)

@@ -1,3 +1,13 @@
+##
+## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+## 
+## Produced at the Lawrence Livermore National Laboratory.
+## 
+## All rights reserved.
+## 
+## For release details and restrictions, please see raja/README-license.txt
+##
+
 cmake_minimum_required (VERSION 3.0)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
