@@ -25,9 +25,6 @@ development or planned include:
     forms of high-bandwidth memory on other architectures. This can be done 
     in a manner that is larger transparent to application code. Cool, huh?
 
-  * Support for CUDA streams, which can yield a significant performance
-    boost on GPU systems.
-
   * A cleaner implementation of IndexSet that will allow compile-time 
     selection of Segment types.  This will make it easier to add new
     Segment types by avoiding the need for switch statements in the 
@@ -42,17 +39,21 @@ development or planned include:
     of this in the code now (forallN stuff), but there are other ways that 
     may be easier for different applications to use.
 
+  * Support for CUDA streams, which can yield a significant performance
+    boost on GPU systems.
+
   * Removal of virtual inheritance in the IndexSet Segment types. This 
     prevents Segment objects from being created in host code and then
     passing them as arguments to '__global__' CUDA functions to be used
     in GPU device code. This is the main reason why we do not have a 
     fully-functional GPU version of the CoMD proxy app.
 
-  * CUDA versions of the nested loop (forallN) functionality. Currently, the
-    fact that CUDA requires the '__device__' decoration on a lambda definition,
-    when the lambda will execute on the device makes it difficult to write
-    generic code that will run on either a CPU or GPU. So, rather than confuse
-    others, we left this out for now. 
+  * CUDA versions of the nested loop (forallN) functionality. Currently, we
+    are exploring ways to make it easier to manage the fact that CUDA 
+    requires the '__device__' decoration on a C++ lambda when it will 
+    execute in a device kernel. This makes it difficult to write generic 
+    code that will run on either a CPU or GPU. So, rather than confuse
+    folks, we left this out for now. 
 
   * A faster implementation of the CUDA reductions. We've been incrementally
     improving performance for a while and we think there is still more
