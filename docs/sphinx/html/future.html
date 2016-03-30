@@ -143,8 +143,6 @@ have option to use either Unified Memory or explicit host-to-device and
 device-to-host data transfers when using CUDA. Similarly, for using other
 forms of high-bandwidth memory on other architectures. This can be done
 in a manner that is larger transparent to application code. Cool, huh?</li>
-<li>Support for CUDA streams, which can yield a significant performance
-boost on GPU systems.</li>
 <li>A cleaner implementation of IndexSet that will allow compile-time
 selection of Segment types.  This will make it easier to add new
 Segment types by avoiding the need for switch statements in the
@@ -156,16 +154,19 @@ forall templates, etc.</li>
 <li>Additional Segment and IndexSet support for nested-loops. We have some
 of this in the code now (forallN stuff), but there are other ways that
 may be easier for different applications to use.</li>
+<li>Support for CUDA streams, which can yield a significant performance
+boost on GPU systems.</li>
 <li>Removal of virtual inheritance in the IndexSet Segment types. This
 prevents Segment objects from being created in host code and then
 passing them as arguments to &#8216;__global__&#8217; CUDA functions to be used
 in GPU device code. This is the main reason why we do not have a
 fully-functional GPU version of the CoMD proxy app.</li>
-<li>CUDA versions of the nested loop (forallN) functionality. Currently, the
-fact that CUDA requires the &#8216;__device__&#8217; decoration on a lambda definition,
-when the lambda will execute on the device makes it difficult to write
-generic code that will run on either a CPU or GPU. So, rather than confuse
-others, we left this out for now.</li>
+<li>CUDA versions of the nested loop (forallN) functionality. Currently, we
+are exploring ways to make it easier to manage the fact that CUDA
+requires the &#8216;__device__&#8217; decoration on a C++ lambda when it will
+execute in a device kernel. This makes it difficult to write generic
+code that will run on either a CPU or GPU. So, rather than confuse
+folks, we left this out for now.</li>
 <li>A faster implementation of the CUDA reductions. We&#8217;ve been incrementally
 improving performance for a while and we think there is still more
 to be gained.</li>
