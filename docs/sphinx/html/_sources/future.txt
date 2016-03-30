@@ -56,8 +56,7 @@ development or planned include:
     folks, we left this out for now. 
 
   * A faster implementation of the CUDA reductions. We've been incrementally
-    improving performance for a while and we think there is still more
-    to be gained.
+    improving performance for a while and we think we can do better.
 
   * "Min-loc" and "max-loc" reduction classes for CUDA. Just haven't gotten 
     around to these yet.
