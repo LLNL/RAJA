@@ -66,10 +66,12 @@ Additional BSD Notice
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
 
 #include "Timer.hxx"
 
-#define LULESH_SHOW_PROGRESS 0
+int show_run_progress = 0 ;
 
 enum { VolumeError = -1, QStopError = -2 } ;
 
@@ -2900,8 +2902,34 @@ int main(int argc, char *argv[])
 
    timer_main.start();
 
-
+   int maxIter = 1024*1024 ;
    Index_t edgeElems = 45 ;
+
+   for (int i=1; i<argc; ++i) {
+      if (strcmp(argv[i], "-p") == 0) {
+         show_run_progress = 1 ;
+      }
+      else if (strcmp(argv[i], "-i") == 0) {
+         if ((i+1 < argc) && isdigit(argv[i+1][0])) {
+            maxIter = atoi(argv[i+1]) ;
+            ++i;
+         }
+         else  {
+            printf("Iteration (-i) option has bad argument -- ignoring\n") ;
+         }
+      }
+      else if (strcmp(argv[i], "-s") == 0) {
+         if ((i+1 < argc) && isdigit(argv[i+1][0])) {
+            edgeElems = atoi(argv[i+1]) ;
+            ++i;
+         }
+         else  {
+            printf("Size (-s) option has bad argument -- ignoring\n") ;
+         }
+      }
+   }
+
+
    Index_t edgeNodes = edgeElems+1 ;
    // Real_t ds = Real_t(1.125)/Real_t(edgeElems) ; /* may accumulate roundoff */
    Real_t tx, ty, tz ;
@@ -3140,14 +3168,14 @@ int main(int argc, char *argv[])
 
    /* timestep to solution */
    timer_cycle.start();
-   while(domain.time() < domain.stoptime() ) {
+   while((domain.time() < domain.stoptime()) && (domain.cycle() < maxIter)) {
       TimeIncrement() ;
       LagrangeLeapFrog() ;
       /* problem->commNodes->Transfer(CommNodes::syncposvel) ; */
-#if LULESH_SHOW_PROGRESS
-      printf("time = %e, dt=%e\n",
-             double(domain.time()), double(domain.deltatime()) ) ;
-#endif
+      if (show_run_progress != 0) {
+         printf("time = %e, dt=%e\n",
+                double(domain.time()), double(domain.deltatime()) ) ;
+      }
    }
    timer_cycle.stop();
 
