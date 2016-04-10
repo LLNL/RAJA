@@ -64,17 +64,43 @@ struct Forall5_Permute {
  *  ForallN loop interchange policies
  ******************************************************************/
 
+template<typename PERM, typename BODY>
+struct Forall2_Permute_Functor;
+
+template<typename BODY>
+struct Forall2_Permute_Functor<PERM_IJ, BODY>{
+  explicit Forall2_Permute_Functor(BODY const &b) : body(b) {}
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
+    body(i,j);
+  }
+  BODY body;
+};
+
+template<typename BODY>
+struct Forall2_Permute_Functor<PERM_JI, BODY>{
+  explicit Forall2_Permute_Functor(BODY const &b) : body(b) {}
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
+    body(j,i);
+  }
+  BODY body;
+};
+
+
 template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
 RAJA_INLINE void forall2_permute(PERM_IJ, TI const &is_i, TJ const &is_j, BODY body){
   typedef typename POLICY::NextPolicy            NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
   // Call next policy with permuted indices and policies
+  /*
   forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j,
     [=](Index_type i, Index_type j){
       // Call body with non-permuted indices
       body(i, j);
     });
+  */
+  Forall2_Permute_Functor<PERM_IJ, BODY> lamb(body);
+  forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j, lamb);
 }
 
 template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
@@ -83,11 +109,14 @@ RAJA_INLINE void forall2_permute(PERM_JI, TI const &is_i, TJ const &is_j, BODY b
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
   // Call next policy with permuted indices and policies
-  forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_j, is_i,
+  /*forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_j, is_i,
     [=](Index_type j, Index_type i){
       // Call body with non-permuted indices
       body(i, j);
-    });
+    });*/
+
+  Forall2_Permute_Functor<PERM_JI, BODY> lamb(body);
+  forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_i, is_j, lamb);
 }
 
 template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>

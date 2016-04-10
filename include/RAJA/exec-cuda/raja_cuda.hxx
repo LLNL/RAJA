@@ -51,7 +51,6 @@ struct Dim3x {
   }
 };
 
-
 struct Dim3y {
   __host__ __device__ inline unsigned int &operator()(dim3 &dim){
     return dim.y;

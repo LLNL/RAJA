@@ -37,7 +37,7 @@ unsigned s_ntests_passed = 0;
 
 
 
-
+#if 0
 ///////////////////////////////////////////////////////////////////////////
 //
 // Method that defines and runs a basic RAJA 2d kernel test
@@ -157,11 +157,47 @@ void run2dTests(Index_type size_i, Index_type size_j){
 }
 
 
+#endif
+
+typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_IJ> > cudapol;
+typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
+
+typedef Forall3_Policy<seq_exec , seq_exec, seq_exec, Forall3_Permute<PERM_JIK> > cudapol3;
+
+typedef Forall4_Policy<seq_exec , seq_exec, seq_exec, seq_exec, Forall4_Permute<PERM_JLIK> > cudapol4;
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
+
+struct fcn {
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
+    printf("(%d, %d)\n", (int)i, (int)j);
+  }
+};
+
+struct fcn1 {
+  inline void RAJA_HOST_DEVICE operator()(Index_type i) const{
+    printf("(%d)\n", (int)i);
+  }
+};
+
+struct fcn3 {
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j, Index_type k) const{
+    printf("(%d, %d, %d)\n", (int)i, (int)j, (int)k);
+  }
+};
+
+
+struct fcn4 {
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j, Index_type k, Index_type l) const{
+    printf("(%d, %d, %d, %d)\n", (int)i, (int)j, (int)k, (int)l);
+  }
+};
+
+
 int main(int argc, char *argv[])
 {
 
@@ -174,17 +210,51 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 
 
-   run2dTests(128,1024);
-   run2dTests(37,1);
-   run2dTests(1,192);
+   //run2dTests(128,1024);
+   //run2dTests(37,1);
+   //run2dTests(1,192);
 
    ///
    /// Print total number of tests passed/run.
    ///
+
+  cudaDeviceSynchronize();
    cout << "\n All Tests : # run / # passed = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
+  /* forall<cuda_exec<1> >(
+       RangeSegment(0,4),
+       [=] __device__ (int i){printf("%d\n", i);});
+*/
+
+   printf("IJ:\n");
+   forall2<cudapol>(
+       RangeSegment(0, 4),
+       RangeSegment(0, 4),
+      fcn() );
+
+   printf("JI:\n");
+   forall2<cudapol2>(
+      RangeSegment(0, 4),
+      RangeSegment(0, 4),
+     fcn() );
+
+
+   printf("JIK:\n");
+   forall3<cudapol3>(
+      RangeSegment(0, 2),
+      RangeSegment(0, 2),
+      RangeSegment(0, 2),
+     fcn3() );
+
+   printf("JLIK:\n");
+   forall4<cudapol4>(
+      RangeSegment(0, 2),
+      RangeSegment(0, 2),
+      RangeSegment(0, 2),
+      RangeSegment(0, 2),
+     fcn4() );
 
 //
 // Clean up....
