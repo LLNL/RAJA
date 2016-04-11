@@ -78,15 +78,14 @@
 //
 
 //
-// All platforms should support simd execution.  
-//
-#include "exec-simd/raja_simd.hxx"
-
-//
 // All platforms must support sequential execution.  
 //
 #include "exec-sequential/raja_sequential.hxx"
 
+//
+// All platforms should support simd execution.  
+//
+#include "exec-simd/raja_simd.hxx"
 
 #if defined(RAJA_USE_CUDA)
 #include "exec-cuda/raja_cuda.hxx"

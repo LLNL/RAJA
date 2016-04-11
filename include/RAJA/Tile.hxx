@@ -12,7 +12,8 @@
 #define RAJA_TILE_HXX__
 
 #include<RAJA/RAJA.hxx>
-#include<algorithm>
+
+#define TILE_MIN(a, b) ((a) <= (b) ? (a) : (b))
 
 namespace RAJA {
 
@@ -38,7 +39,7 @@ void forall_tile(tile_fixed<TileSize>, RAJA::RangeSegment const &is, BODY body){
   for(Index_type i0 = i_begin;i0 < i_end;i0 += TileSize){
   
     // Create a new tile
-    Index_type i1 = std::min(i0+TileSize, i_end);
+    Index_type i1 = TILE_MIN(i0+TileSize, i_end);
     RAJA::RangeSegment is_tile(i0, i1);
       
     // Pass tile index set to body        
