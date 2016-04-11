@@ -33,7 +33,9 @@
 
 #include "config.hxx"
 
+#if defined(RAJA_USE_COMPLEX)
 #include<complex>
+#endif
 
 namespace RAJA {
 
@@ -61,8 +63,10 @@ typedef float  Real_type;
 
 #endif  
 
+#if defined(RAJA_USE_COMPLEX)
 ///
 typedef std::complex<Real_type> Complex_type;
+#endif
 
 
 /*
@@ -511,6 +515,7 @@ private:
 };
 
 
+#if defined(RAJA_USE_COMPLEX)
 /*!
  ******************************************************************************
  *
@@ -654,6 +659,8 @@ public:
 private:
    Complex_type* dptr;
 };
+#endif  // defined(RAJA_USE_COMPLEX)
+
 #endif  // defined(RAJA_USE_PTR_CLASS)
 
 
@@ -668,8 +675,11 @@ private:
 #if defined(RAJA_USE_BARE_PTR)
 typedef Real_type* Real_ptr;
 typedef const Real_type* const_Real_ptr;
+
+#if defined(RAJA_USE_COMPLEX)
 typedef Complex_type* Complex_ptr;
 typedef const Complex_type* const_Complex_ptr;
+#endif
 
 typedef Real_type* UnalignedReal_ptr;
 typedef const Real_type* const_UnalignedReal_ptr;
@@ -678,8 +688,11 @@ typedef const Real_type* const_UnalignedReal_ptr;
 #elif defined(RAJA_USE_RESTRICT_PTR)
 typedef Real_type* __restrict__ Real_ptr;
 typedef const Real_type* __restrict__ const_Real_ptr;
+
+#if defined(RAJA_USE_COMPLEX)
 typedef Complex_type* __restrict__ Complex_ptr;
 typedef const Complex_type* __restrict__ const_Complex_ptr;
+#endif
 
 typedef Real_type* __restrict__ UnalignedReal_ptr;
 typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
@@ -688,8 +701,11 @@ typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
 typedef TDRAReal_ptr Real_ptr;
 typedef const_TDRAReal_ptr const_Real_ptr;
+
+#if defined(RAJA_USE_COMPLEX)
 typedef Complex_type* __restrict__ Complex_ptr;
 typedef const Complex_type* __restrict__ const_Complex_ptr;
+#endif
 
 typedef Real_type* __restrict__ UnalignedReal_ptr;
 typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
@@ -698,8 +714,11 @@ typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
 #elif defined(RAJA_USE_PTR_CLASS)
 typedef RestrictAlignedRealPtr Real_ptr;
 typedef ConstRestrictAlignedRealPtr const_Real_ptr;
+
+#if defined(RAJA_USE_COMPLEX)
 typedef RestrictComplexPtr Complex_ptr;
 typedef ConstRestrictComplexPtr const_Complex_ptr;
+#endif
 
 typedef RestrictRealPtr UnalignedReal_ptr;
 typedef ConstRestrictRealPtr const_UnalignedReal_ptr;

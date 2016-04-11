@@ -34,7 +34,6 @@
 
 #include "raja_cudaerrchk.hxx"
 
-#include <iostream>
 #include <cstdlib>
 
 #include <cfloat>
