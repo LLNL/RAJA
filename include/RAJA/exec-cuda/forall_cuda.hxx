@@ -33,10 +33,6 @@
 
 #include "raja_cudaerrchk.hxx"
 
-#include <cstdlib>
-
-#include <cfloat>
-
 
 namespace RAJA {
 
