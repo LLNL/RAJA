@@ -129,6 +129,7 @@ void forall_Icount(Index_type begin, Index_type end,
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
+RAJA_HOST_DEVICE
 void forall(const RangeSegment& iseg,
             LOOP_BODY loop_body)
 {

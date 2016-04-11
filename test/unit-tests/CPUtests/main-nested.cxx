@@ -159,7 +159,7 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 #endif
 
-typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_IJ> > cudapol;
+typedef Forall2_Policy<cuda_exec<16>, seq_exec > cudapol;
 typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
 
 typedef Forall3_Policy<seq_exec , seq_exec, seq_exec, Forall3_Permute<PERM_JIK> > cudapol3;
@@ -174,7 +174,11 @@ typedef Forall4_Policy<seq_exec , seq_exec, seq_exec, seq_exec, Forall4_Permute<
 
 struct fcn {
   inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
-    printf("(%d, %d)\n", (int)i, (int)j);
+#ifdef __CUDA_ARCH__
+    printf("(%d, %d) FROM GPU\n", (int)i, (int)j);
+#else
+    printf("(%d, %d) FROM CPU\n", (int)i, (int)j);
+#endif
   }
 };
 
@@ -227,19 +231,19 @@ int main(int argc, char *argv[])
        RangeSegment(0,4),
        [=] __device__ (int i){printf("%d\n", i);});
 */
-
+  auto fcn_obj = fcn();
    printf("IJ:\n");
    forall2<cudapol>(
        RangeSegment(0, 4),
        RangeSegment(0, 4),
-      fcn() );
+      fcn_obj );
 
    printf("JI:\n");
    forall2<cudapol2>(
       RangeSegment(0, 4),
       RangeSegment(0, 4),
-     fcn() );
-
+     fcn_obj );
+/*
 
    printf("JIK:\n");
    forall3<cudapol3>(
@@ -254,7 +258,7 @@ int main(int argc, char *argv[])
       RangeSegment(0, 2),
       RangeSegment(0, 2),
       RangeSegment(0, 2),
-     fcn4() );
+     fcn4() );*/
 
 //
 // Clean up....
