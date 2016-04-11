@@ -37,8 +37,6 @@
 #include <omp.h>
 #endif
 
-#include <string>
-
 
 namespace RAJA {
 
