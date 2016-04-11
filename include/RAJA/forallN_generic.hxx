@@ -92,7 +92,6 @@ struct Forall5_Policy {
  *  forallN_policy() Foreward declarations
  ******************************************************************/
 
-
 template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY, typename TAG>
 RAJA_INLINE void forall2_policy(TAG, TI const &is_i, TJ const &is_j, BODY body);
 
@@ -106,127 +105,108 @@ template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, 
 RAJA_INLINE void forall5_policy(TAG, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body);
 
 /******************************************************************
- *  ForallNExecutor(): Default Executors for loops
+ *  ForallN_Executor(): Default Executor for loops
  ******************************************************************/
 
-template<typename BODY>
-struct Forall2Inner {
 
-	BODY const body;
+template<typename BODY>
+struct ForallN_BindFirstArg {
+
+  BODY const body;
   Index_type const i;
 
-	RAJA_HOST_DEVICE Forall2Inner(BODY const &b, Index_type i0) : body(b), i(i0) {}
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ForallN_BindFirstArg(BODY const &b, Index_type i0) : body(b), i(i0) {}
 
-	inline void RAJA_HOST_DEVICE operator()(Index_type j) const {
-		body(i,j);
-	}
-};
-
-template<typename POLICY_J, typename IS_J, typename BODY>
-struct Forall2Outer {
-
-	BODY const body;
-	IS_J const is_j;
-
-	Forall2Outer(BODY const &b, IS_J const &is_j0) : body(b), is_j(is_j0) {}
-
-	inline void RAJA_HOST_DEVICE operator()(Index_type i) const {	
-	  Forall2Inner<BODY> inner(body, i);
-		RAJA::forall<POLICY_J>(is_j, inner);
-	}
-};
-
-template<typename POLICY_I, typename POLICY_J, typename TI, typename TJ>
-struct Forall2Executor {
-  TI const &is_i;
-  TJ const &is_j;
-  
-  Forall2Executor(TI const &is_i0, TJ const &is_j0) : is_i(is_i0), is_j(is_j0) {}
-
-  template<typename BODY>
-  inline void RAJA_HOST_DEVICE operator()(BODY body) const {
-
-    Forall2Outer<POLICY_J, TJ, BODY> outer(body, is_j);
-      
-    RAJA::forall<POLICY_I>(is_i, outer);
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(ARGS ... args) const {
+    body(i, args...);
   }
-};
-
-
-
-
-template<typename BODY>
-struct ForallN_BindOuter {
-
-	BODY const &body;
-  Index_type const i;
-
-	ForallN_BindOuter(BODY const &b, Index_type i0) : body(b), i(i0) {}
-
-	template<typename ... ARGS>
-	inline void operator()(ARGS ... args) const {
-	  body(i, args...);
-	}
 };
 
 template<typename NextExec, typename BODY>
-struct ForallN_Outer {
+struct ForallN_PeelOuter {
 
-	NextExec const &next_exec;
-	BODY const &body;
+  NextExec const next_exec;
+  BODY const body;
 
-	explicit ForallN_Outer(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ForallN_PeelOuter(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
 
-	inline void operator()(Index_type i) const {
-	  ForallN_BindOuter<BODY> inner(body, i);
-	  next_exec(inner);
-	}
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(Index_type i) const {
+    ForallN_BindFirstArg<BODY> inner(body, i);
+    next_exec(inner);
+  }
 };
 
 
+template<typename P, typename I>
+struct ForallN_PolicyPair{
+  typedef P POLICY;
+  typedef I ISET;
+};
 
-template<typename POLICY_I, typename POLICY_J, typename POLICY_K, typename TI, typename TJ, typename TK>
-struct Forall3Executor {  
+template<typename PI>
+struct Forall1Executor {
+  typedef typename PI::ISET TI;
+  typedef typename PI::POLICY POLICY_I;
 
-  typedef Forall2Executor<POLICY_J, POLICY_K, TJ, TK> NextExec;
-  
-  TI const &is_i;
+  TI const is_i;
+
+  explicit Forall1Executor(TI const &is_i0) : is_i(is_i0) {}
+
+  template<typename BODY>
+  inline void RAJA_HOST_DEVICE operator()(BODY body) const {
+    RAJA::forall<POLICY_I>(is_i, body);
+  }
+};
+
+template<typename PI, typename ... PREST>
+struct ForallN_Executor {
+  typedef typename PI::ISET TI;
+  typedef typename PI::POLICY POLICY_I;
+
+  typedef ForallN_Executor<PREST...> NextExec;
+
+  TI const is_i;
   NextExec next_exec;
-    
-  Forall3Executor(TI const &is_i0, TJ const &is_j0, TK const &is_k0) : is_i(is_i0), next_exec(is_j0, is_k0) {}
+
+  template<typename ... TREST>
+  ForallN_Executor(TI const &is_i0, TREST ... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
 
   template<typename BODY>
   inline void operator()(BODY body) const {
-    ForallN_Outer<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
     RAJA::forall<POLICY_I>(is_i, outer);
   }
 };
 
 
+template<typename PI>
+struct ForallN_Executor<PI> {
+  typedef typename PI::ISET TI;
+  typedef typename PI::POLICY POLICY_I;
 
-
-template<typename POLICY_I, typename POLICY_J, typename POLICY_K, typename POLICY_L, typename TI, typename TJ, typename TK, typename TL>
-struct Forall4Executor {
-
-  typedef Forall3Executor<POLICY_J, POLICY_K, POLICY_L, TJ, TK, TL> NextExec;
-  
   TI const &is_i;
-  NextExec next_exec;
-    
-  Forall4Executor(TI const &is_i0, TJ const &is_j0, TK const &is_k0, TL const &is_l0) : is_i(is_i0), next_exec(is_j0, is_k0, is_l0) {}
 
+  explicit ForallN_Executor(TI const &is_i0) : is_i(is_i0) {}
 
   template<typename BODY>
-  inline void operator()(BODY body) const {
-    ForallN_Outer<NextExec, BODY> outer(next_exec, body);
-    RAJA::forall<POLICY_I>(is_i, outer);
+  inline void RAJA_HOST_DEVICE operator()(BODY body) const {
+    RAJA::forall<POLICY_I>(is_i, body);
   }
-  
 };
+
 
 
 /******************************************************************
- *  forallN_policy(), base execution policiess
+ *  forallN_policy(), base execution policies
  ******************************************************************/
 
 
@@ -240,7 +220,7 @@ RAJA_INLINE
 void forall2_policy(Forall2_Execute_Tag, TI const &is_i, TJ const &is_j, BODY body){
 
   // Create executor object to launch loops
-  Forall2Executor<PolicyI, PolicyJ, TI, TJ> exec(is_i, is_j);
+  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>> exec(is_i, is_j);
 
   // Launch loop body
   exec(body);
@@ -258,7 +238,7 @@ template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, 
 RAJA_INLINE void forall3_policy(Forall3_Execute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
 
   // Create executor object to launch loops
-  Forall3Executor<PolicyI, PolicyJ, PolicyK, TI, TJ, TK> exec(is_i, is_j, is_k);
+  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>,ForallN_PolicyPair<PolicyK, TK>> exec(is_i, is_j, is_k);
 
   // Launch loop body
   exec(body);
@@ -276,7 +256,7 @@ template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, 
 RAJA_INLINE void forall4_policy(Forall4_Execute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
 
   // Create executor object to launch loops
-  Forall4Executor<PolicyI, PolicyJ, PolicyK, PolicyL, TI, TJ, TK, TL> exec(is_i, is_j, is_k, is_l);
+  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>,ForallN_PolicyPair<PolicyK, TK>,ForallN_PolicyPair<PolicyL, TL>> exec(is_i, is_j, is_k, is_l);
 
   // Launch loop body
   exec(body);
