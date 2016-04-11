@@ -32,6 +32,8 @@
 
 #include "RAJA/segment_exec.hxx"
 
+#include <iostream>
+
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
