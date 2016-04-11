@@ -109,15 +109,15 @@ RAJA_INLINE void forall5_policy(TAG, TI const &is_i, TJ const &is_j, TK const &i
  ******************************************************************/
 
 
-template<typename BODY>
+template<typename BODY, typename INDEX_TYPE=Index_type>
 struct ForallN_BindFirstArg {
 
   BODY const body;
-  Index_type const i;
+  INDEX_TYPE const i;
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  ForallN_BindFirstArg(BODY const &b, Index_type i0) : body(b), i(i0) {}
+  ForallN_BindFirstArg(BODY const &b, INDEX_TYPE i0) : body(b), i(i0) {}
 
   template<typename ... ARGS>
   RAJA_INLINE
@@ -265,55 +265,51 @@ RAJA_INLINE void forall4_policy(Forall4_Execute_Tag, TI const &is_i, TJ const &i
 
 
 
+/******************************************************************
+ *  Index type conversion, wraps lambda given by user with an outer
+ *  callable object where all variables are Index_type
+ ******************************************************************/
+
+
+
+template<typename BODY, typename IdxI, typename ... IdxRest>
+struct ForallN_IndexTypeConverter {
+
+  explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+
+  // call 'policy' layer with next policy
+  template<typename ... ARGS>
+  inline void RAJA_HOST_DEVICE operator()(Index_type i, ARGS ... args) const {
+    // Bind the first argument
+    ForallN_BindFirstArg<BODY, IdxI> bound(body, IdxI(i));
+
+    // Peel a wrapper
+    ForallN_IndexTypeConverter<ForallN_BindFirstArg<BODY, IdxI>, IdxRest...> inner(bound);
+    inner(args...);
+  }
+
+  // Copy of loop body
+  BODY const &body;
+};
+
+template<typename BODY, typename IdxI>
+struct ForallN_IndexTypeConverter<BODY, IdxI> {
+
+  explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+
+  // call 'policy' layer with next policy
+  inline void RAJA_HOST_DEVICE operator()(Index_type i) const {
+    body(IdxI(i));
+  }
+
+  // Copy of loop body
+  BODY const &body;
+};
+
 
 /******************************************************************
  *  forallN User API
  ******************************************************************/
-
-
-template<typename IdxI, typename IdxJ, typename BODY>
-struct Lambda2_Functor {
-
-  Lambda2_Functor(BODY const &b) : body(b) {}
-
-  // call 'policy' layer with next policy
-  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
-    body(IdxI(i), IdxJ(j));
-  }
-
-  // Copy of loop body
-  BODY const &body;
-};
-
-
-template<typename IdxI, typename IdxJ, typename IdxK, typename BODY>
-struct Lambda3_Functor {
-
-  Lambda3_Functor(BODY const &b) : body(b) {}
-
-  // call 'policy' layer with next policy
-  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j, Index_type k) const {
-    body(IdxI(i), IdxJ(j), IdxK(k));
-  }
-
-  // Copy of loop body
-  BODY const &body;
-};
-
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename BODY>
-struct Lambda4_Functor {
-
-  Lambda4_Functor(BODY const &b) : body(b) {}
-
-  // call 'policy' layer with next policy
-  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(IdxI(i), IdxJ(j), IdxK(k), IdxL(l));
-  }
-
-  // Copy of loop body
-  BODY const &body;
-};
-
 
 
 /*!
@@ -322,7 +318,7 @@ struct Lambda4_Functor {
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2(TI const &is_i, TJ const &is_j, BODY body){
+RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, BODY body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -332,7 +328,7 @@ RAJA_INLINE void forall2(TI const &is_i, TJ const &is_j, BODY body){
   typedef typename POLICY::PolicyJ                PolicyJ;
 
   // call 'policy' layer with next policy
-  Lambda2_Functor<IdxI, IdxJ, BODY> lamb(body);
+  ForallN_IndexTypeConverter<BODY, IdxI, IdxJ> lamb(body);
   forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j, lamb);
 }
 
@@ -342,7 +338,7 @@ RAJA_INLINE void forall2(TI const &is_i, TJ const &is_j, BODY body){
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
+RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -353,7 +349,7 @@ RAJA_INLINE void forall3(TI const &is_i, TJ const &is_j, TK const &is_k, BODY bo
   typedef typename POLICY::PolicyK                PolicyK;
 
   // call 'policy' layer with next policy
-  Lambda3_Functor<IdxI, IdxJ, IdxK, BODY> lamb(body);
+  ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK> lamb(body);
   forall3_policy<NextPolicy, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_j, is_k, lamb);
 }
 
@@ -363,7 +359,7 @@ RAJA_INLINE void forall3(TI const &is_i, TJ const &is_j, TK const &is_k, BODY bo
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
+RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -375,7 +371,7 @@ RAJA_INLINE void forall4(TI const &is_i, TJ const &is_j, TK const &is_k, TL cons
   typedef typename POLICY::PolicyL                PolicyL;
 
   // call 'policy' layer with next policy
-  Lambda4_Functor<IdxI, IdxJ, IdxK, IdxL, BODY> lamb(body);
+  ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL> lamb(body);
   forall4_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_j, is_k, is_l, lamb);
 }
 

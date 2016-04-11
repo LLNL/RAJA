@@ -233,13 +233,13 @@ int main(int argc, char *argv[])
 */
   auto fcn_obj = fcn();
    printf("IJ:\n");
-   forall2<cudapol>(
+   forallN<cudapol>(
        RangeSegment(0, 4),
        RangeSegment(0, 4),
       fcn_obj );
 
    printf("JI:\n");
-   forall2<cudapol2>(
+   forallN<cudapol2>(
       RangeSegment(0, 4),
       RangeSegment(0, 4),
      fcn_obj );
