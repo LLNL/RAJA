@@ -159,7 +159,7 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 #endif
 
-typedef Forall2_Policy<cuda_exec<16>, seq_exec > cudapol;
+typedef Forall2_Policy<seq_exec, seq_exec > cudapol;
 typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
 
 typedef Forall3_Policy<seq_exec , seq_exec, seq_exec, Forall3_Permute<PERM_JIK> > cudapol3;
