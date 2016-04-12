@@ -86,38 +86,6 @@ struct Forall2_Permute_Functor<PERM_JI, BODY>{
 };
 
 
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_permute(PERM_IJ, TI const &is_i, TJ const &is_j, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  /*
-  forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j,
-    [=](Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j);
-    });
-  */
-  Forall2_Permute_Functor<PERM_IJ, BODY> lamb(body);
-  forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j, lamb);
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_permute(PERM_JI, TI const &is_i, TJ const &is_j, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  /*forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_j, is_i,
-    [=](Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j);
-    });*/
-
-  Forall2_Permute_Functor<PERM_JI, BODY> lamb(body);
-  forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_i, is_j, lamb);
-}
 
 template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE void forall3_permute(PERM_IJK, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
@@ -2078,13 +2046,22 @@ RAJA_INLINE void forall5_permute(PERM_MLKJI, TI const &is_i, TJ const &is_j, TK 
 /*!
  * \brief Permutation policy function, providing loop interchange.
  */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_policy(Forall2_Permute_Tag, TI const &is_i, TJ const &is_j, BODY body){
+template<typename POLICY, typename BODY, typename PolicyI, typename PolicyJ, typename TI, typename TJ>
+RAJA_INLINE void forall2_policy(Forall2_Permute_Tag, BODY body, TI const &is_i, TJ const &is_j){
   // Get the loop permutation
   typedef typename POLICY::LoopOrder LoopOrder;
 
-  // Call loop interchange overload to re-wrire indicies and policies
-  forall2_permute<POLICY, PolicyI, PolicyJ>(LoopOrder(), is_i, is_j, body);
+  // Get next policy  
+  typedef typename POLICY::NextPolicy            NextPolicy;
+  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
+
+  // Create wrapper functor that permutes indices and policies
+  typedef Forall2_Permute_Functor<LoopOrder, BODY> PERM_FUNC;
+  PERM_FUNC lamb(body);
+  
+  // Call next policy with permuted indices and policies
+  forall2_policy<NextPolicy, PERM_FUNC, PolicyI, PolicyJ>(NextPolicyTag(), lamb, is_i, is_j);
+
 }
 
 
