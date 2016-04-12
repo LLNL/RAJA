@@ -24,90 +24,42 @@ namespace RAJA {
  ******************************************************************/
 
 template<typename P, typename I>
-struct ForallN_PolicyPair{
+struct ForallN_PolicyPair : public I {
+  
   typedef P POLICY;
   typedef I ISET;
+
+  RAJA_INLINE
+  ForallN_PolicyPair(ISET const &i) : ISET(i) {}  
+  
+  RAJA_INLINE
+  ISET const &operator*() const { return static_cast<ISET const &>(*this); }
 };
+
+
+template<typename ... PLIST>
+struct ExecList{
+  constexpr const static size_t num_loops = sizeof...(PLIST);
+  typedef std::tuple<PLIST...> tuple;
+};
+
+
 
 // Execute (Termination default)
 struct ForallN_Execute_Tag {};
 
 
-struct Forall2_Execute {
+struct ForallN_Execute {
   typedef ForallN_Execute_Tag PolicyTag;
 };
 
-// Starting (outer) policy for all forall2 policies
-template<typename POL_I, typename POL_J, typename NEXT=Forall2_Execute>
-struct Forall2_Policy {
+template<typename EXEC, typename NEXT=ForallN_Execute>
+struct ForallN_Policy {
   typedef NEXT NextPolicy;
-  typedef POL_I PolicyI;
-  typedef POL_J PolicyJ;
-};
-
-// Execute (Termination default)
-struct Forall3_Execute {
-  typedef ForallN_Execute_Tag PolicyTag;
-};
-
-// Starting (outer) policy for all forall3 policies
-template<typename POL_I, typename POL_J, typename POL_K, typename NEXT=Forall3_Execute>
-struct Forall3_Policy {
-  typedef NEXT NextPolicy;
-  typedef POL_I PolicyI;
-  typedef POL_J PolicyJ;
-  typedef POL_K PolicyK;
-};
-
-// Execute (Termination default)
-struct Forall4_Execute {
-  typedef ForallN_Execute_Tag PolicyTag;
-};
-
-// Starting (outer) policy for all forall4 policies
-template<typename POL_I, typename POL_J, typename POL_K, typename POL_L, typename NEXT=Forall4_Execute>
-struct Forall4_Policy {
-  typedef NEXT NextPolicy;
-  typedef POL_I PolicyI;
-  typedef POL_J PolicyJ;
-  typedef POL_K PolicyK;
-  typedef POL_L PolicyL;
+  typedef EXEC ExecPolicies;
 };
 
 
-// Execute (Termination default)
-struct Forall5_Execute {
-  typedef ForallN_Execute_Tag PolicyTag;
-};
-
-// Starting (outer) policy for all forall4 policies
-template<typename POL_I, typename POL_J, typename POL_K, typename POL_L, typename POL_M, typename NEXT=Forall5_Execute>
-struct Forall5_Policy {
-  typedef NEXT NextPolicy;
-  typedef POL_I PolicyI;
-  typedef POL_J PolicyJ;
-  typedef POL_K PolicyK;
-  typedef POL_L PolicyL;
-  typedef POL_M PolicyM;
-};
-
-
-
-/******************************************************************
- *  forallN_policy() Foreward declarations
- ******************************************************************/
-
-template<typename POLICY, typename TAG, typename BODY, typename PolicyI, typename PolicyJ, typename TI, typename TJ>
-RAJA_INLINE void forall2_policy(TAG, BODY body, TI const &is_i, TJ const &is_j);
-
-template<typename POLICY, typename TAG, typename BODY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK>
-RAJA_INLINE void forall3_policy(TAG, BODY body, TI const &is_i, TJ const &is_j, TK const &is_k);
-
-template<typename POLICY, typename TAG, typename BODY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL>
-RAJA_INLINE void forall4_policy(TAG, BODY body, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l);
-
-template<typename POLICY, typename TAG, typename BODY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM>
-RAJA_INLINE void forall5_policy(TAG, BODY body, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m);
 
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
@@ -216,64 +168,17 @@ struct ForallN_Executor<PI> {
  *
  * This is the default termination case.
  */
-template<typename POLICY, typename BODY, typename PolicyI, typename PolicyJ, typename TI, typename TJ>
-RAJA_INLINE
-void forall2_policy(ForallN_Execute_Tag, BODY body, TI const &is_i, TJ const &is_j){
-
-  // Create executor object to launch loops
-  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>> exec(is_i, is_j);
-
-  // Launch loop body
-  exec(body);
-}
-
-/*
+ 
 template<typename POLICY, typename BODY, typename ... ARGS>
 RAJA_INLINE
 void forallN_policy(ForallN_Execute_Tag, BODY body, ARGS ... args){
 
   // Create executor object to launch loops
-  ForallN_Executor<ARGS> exec(args);
-
-  // Launch loop body
-  exec(body);
-}*/
-
-
-
-/*!
- * \brief Execute inner loops policy function.
- *
- * This is the default termination case.
- */
-template<typename POLICY, typename BODY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK>
-RAJA_INLINE void forall3_policy(ForallN_Execute_Tag, BODY body, TI const &is_i, TJ const &is_j, TK const &is_k){
-
-  // Create executor object to launch loops
-  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>,ForallN_PolicyPair<PolicyK, TK>> exec(is_i, is_j, is_k);
+  ForallN_Executor<ARGS...> exec(args...);
 
   // Launch loop body
   exec(body);
 }
-
-
-
-
-/*!
- * \brief Execute inner loops policy function.
- *
- * This is the default termination case.
- */
-template<typename POLICY, typename BODY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL>
-RAJA_INLINE void forall4_policy(ForallN_Execute_Tag, BODY body, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l){
-
-  // Create executor object to launch loops
-  ForallN_Executor<ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>,ForallN_PolicyPair<PolicyK, TK>,ForallN_PolicyPair<PolicyL, TL>> exec(is_i, is_j, is_k, is_l);
-
-  // Launch loop body
-  exec(body);
-}
-
 
 
 
@@ -329,65 +234,34 @@ struct ForallN_IndexTypeConverter<BODY, IdxI> {
  *
  * Provides index typing, and initial nested policy unwrapping
  */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, BODY body){
+ 
+template<typename POLICY, typename BODY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ>
+RAJA_INLINE void forallN_reordered(BODY body, TI const &is_i, TJ const &is_j){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
 
   // extract each loop's execution policy
-  typedef typename POLICY::PolicyI                PolicyI;
-  typedef typename POLICY::PolicyJ                PolicyJ;
-
-  // call 'policy' layer with next policy
+  using ExecPolicies = typename POLICY::ExecPolicies;
+  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
+  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
+  
+  // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ> IDX_CONV;
   IDX_CONV lamb(body);
-  forall2_policy<NextPolicy, IDX_CONV, PolicyI, PolicyJ>(NextPolicyTag(), lamb, is_i, is_j);
-  //forallN_policy<NextPolicy, IDX_CONV, ForallN_PolicyPair<PolicyI, TI>,ForallN_PolicyPair<PolicyJ, TJ>>(NextPolicyTag(), lamb, is_i, is_j);
-}
-
-/*!
- * \brief Provides abstraction of a 3-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  typedef typename POLICY::PolicyI                PolicyI;
-  typedef typename POLICY::PolicyJ                PolicyJ;
-  typedef typename POLICY::PolicyK                PolicyK;
-
+  
   // call 'policy' layer with next policy
-  ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK> lamb(body);
-  forall3_policy<NextPolicy, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), lamb, is_i, is_j, is_k);
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+    ForallN_PolicyPair<PolicyI, TI>(is_i),
+    ForallN_PolicyPair<PolicyJ, TJ>(is_j)); 
 }
 
-/*!
- * \brief Provides abstraction of a 4-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
 
-  // extract each loop's execution policy
-  typedef typename POLICY::PolicyI                PolicyI;
-  typedef typename POLICY::PolicyJ                PolicyJ;
-  typedef typename POLICY::PolicyK                PolicyK;
-  typedef typename POLICY::PolicyL                PolicyL;
-
-  // call 'policy' layer with next policy
-  ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL> lamb(body);
-  forall4_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), lamb, is_i, is_j, is_k, is_l);
+template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
+RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, BODY body){
+  forallN_reordered<POLICY, BODY, IdxI, IdxJ, TI, TJ>(body, is_i, is_j);
 }
+
 
 
 

@@ -25,7 +25,7 @@ namespace RAJA {
 
 // Begin OpenMP Parallel Region
 struct Forall2_OMP_Parallel_Tag {};
-template<typename NEXT=Forall2_Execute>
+template<typename NEXT=ForallN_Execute>
 struct Forall2_OMP_Parallel {
   typedef Forall2_OMP_Parallel_Tag PolicyTag;
   typedef NEXT NextPolicy;
@@ -33,7 +33,7 @@ struct Forall2_OMP_Parallel {
 
 // Begin OpenMP Parallel Region
 struct Forall3_OMP_Parallel_Tag {};
-template<typename NEXT=Forall3_Execute>
+template<typename NEXT=ForallN_Execute>
 struct Forall3_OMP_Parallel {
   typedef Forall3_OMP_Parallel_Tag PolicyTag;
   typedef NEXT NextPolicy;
@@ -41,7 +41,7 @@ struct Forall3_OMP_Parallel {
 
 // Begin OpenMP Parallel Region
 struct Forall4_OMP_Parallel_Tag {};
-template<typename NEXT=Forall4_Execute>
+template<typename NEXT=ForallN_Execute>
 struct Forall4_OMP_Parallel {
   typedef Forall4_OMP_Parallel_Tag PolicyTag;
   typedef NEXT NextPolicy;
