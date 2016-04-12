@@ -40,6 +40,8 @@
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
 
+#if defined(RAJA_USE_TILE)
+
 //
 // Strongly typed index class.
 //
@@ -52,6 +54,8 @@
 #include "Layout.hxx"
 #include "View.hxx"
 
+#endif // defined(RAJA_USE_TILE)
+
 
 //
 // Generic iteration templates require specializations defined 
@@ -59,10 +63,15 @@
 //
 #include "forall_generic.hxx"
 
+
+#if defined(RAJA_USE_TILE)
+
 //
 // Generic iteration templates for perfectly nested loops
 //
 #include "forallN_generic.hxx"
+
+#endif // defined(RAJA_USE_TILE)
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -118,6 +127,8 @@
 #include "IndexSetUtils.hxx"
 
 
+#if defined(RAJA_USE_TILE)
+
 //
 // Perfectly nested loop transformations
 //
@@ -127,6 +138,8 @@
 
 // Loop interchange policies
 #include "forallN_permute.hxx"
+
+#endif // defined(RAJA_USE_TILE)
 
 
 #endif  // closing endif for header file include guard

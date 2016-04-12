@@ -65,7 +65,10 @@ struct omp_reduce {};
 
 #include "reduce_openmp.hxx"
 #include "forall_openmp.hxx"
+
+#if defined(RAJA_USE_TILE)
 #include "forallN_openmp.hxx"
+#endif
 
 #endif  // closing endif for if defined(RAJA_USE_OPENMP)
 

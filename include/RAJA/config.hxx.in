@@ -51,6 +51,7 @@
 #cmakedefine RAJA_USE_OPENMP
 #cmakedefine RAJA_USE_CILK
 #cmakedefine RAJA_USE_CUDA
+#cmakedefine RAJA_USE_TILE
 
 
 namespace RAJA {
