@@ -159,12 +159,18 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 #endif
 
-typedef Forall2_Policy<seq_exec, seq_exec > cudapol;
+//typedef Forall2_Policy<seq_exec, seq_exec, ForallN_Permute<PERM_JI> > cudapol;
+
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec> > npol;
+
+
+/*
 typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
 
 typedef Forall3_Policy<seq_exec , seq_exec, seq_exec, Forall3_Permute<PERM_JIK> > cudapol3;
 
 typedef Forall4_Policy<seq_exec , seq_exec, seq_exec, seq_exec, Forall4_Permute<PERM_JLIK> > cudapol4;
+*/
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -222,7 +228,7 @@ int main(int argc, char *argv[])
    /// Print total number of tests passed/run.
    ///
 
-  cudaDeviceSynchronize();
+  //cudaDeviceSynchronize();
    cout << "\n All Tests : # run / # passed = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
@@ -233,17 +239,20 @@ int main(int argc, char *argv[])
 */
   auto fcn_obj = fcn();
    printf("IJ:\n");
-   forallN<cudapol>(
+   forallN<npol>(
        RangeSegment(0, 4),
        RangeSegment(0, 4),
       fcn_obj );
 
+  using type = typename std::tuple_element<0, npol::ExecPolicies::tuple>::type;
+  std::cout << "num pol:" << npol::ExecPolicies::num_loops << std::endl;
+/*
    printf("JI:\n");
    forallN<cudapol2>(
       RangeSegment(0, 4),
       RangeSegment(0, 4),
      fcn_obj );
-/*
+
 
    printf("JIK:\n");
    forall3<cudapol3>(
