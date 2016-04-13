@@ -63,7 +63,7 @@ struct Execute {
 };
 
 template<typename EXEC, typename NEXT=Execute>
-struct ForallN_Policy {
+struct NestedPolicy {
   typedef NEXT NextPolicy;
   typedef EXEC ExecPolicies;
 };
