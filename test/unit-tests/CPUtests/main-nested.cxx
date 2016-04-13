@@ -161,12 +161,19 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 //typedef Forall2_Policy<seq_exec, seq_exec, ForallN_Permute<PERM_JI> > cudapol;
 
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec>,
-                         Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
+#ifdef RAJA_USE_CUDA
+typedef ForallN_Policy<ExecList<seq_exec, cuda_exec<1> >,
+                         //Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
                            ForallN_Execute
-                         >
+                         //>
                       > npol;
-
+#else
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec >,
+                         //Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
+                           ForallN_Execute
+                         //>
+                      > npol;
+#endif
 
 /*
 typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
@@ -183,7 +190,8 @@ typedef Forall4_Policy<seq_exec , seq_exec, seq_exec, seq_exec, Forall4_Permute<
 ///////////////////////////////////////////////////////////////////////////
 
 struct fcn {
-  inline void RAJA_HOST_DEVICE operator()(Index_type i, Index_type j) const {
+  inline void RAJA_HOST_DEVICE
+  operator()(Index_type i, Index_type j) const {
 #ifdef __CUDA_ARCH__
     printf("(%d, %d) FROM GPU\n", (int)i, (int)j);
 #else
@@ -256,15 +264,14 @@ int main(int argc, char *argv[])
      printf("data[%d]=%.0f\n", i, data[i]);
    }
 
-  auto fcn_obj = fcn();
+
    printf("IJ:\n");
    forallN<npol>(
        RangeSegment(0, 4),
        RangeSegment(0, 4),
-      fcn_obj );
+      fcn() );
 
-  using type = typename std::tuple_element<0, npol::ExecPolicies::tuple>::type;
-  std::cout << "num pol:" << npol::ExecPolicies::num_loops << std::endl;
+
 /*
    printf("JI:\n");
    forallN<cudapol2>(
