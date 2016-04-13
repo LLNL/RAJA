@@ -165,7 +165,7 @@ void run2dTests(Index_type size_i, Index_type size_j){
 typedef ForallN_Policy<ExecList<cuda_exec<1>, seq_exec >,
                          //Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
                            Permute<PERM_JI,
-                             ForallN_Execute
+                           Execute
                            >
                          //>
                       > npol;
@@ -173,7 +173,7 @@ typedef ForallN_Policy<ExecList<cuda_exec<1>, seq_exec >,
 typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
                        OMP_Parallel<
                          Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
-                           ForallN_Execute
+                         Execute
                          >
                        >
                       > npol;
@@ -181,11 +181,11 @@ typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
 
 
 typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec>,
-                         ForallN_Execute > cudapol3;
+    Execute > cudapol3;
 
 
 typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-                         ForallN_Execute > cudapol4;
+    Execute > cudapol4;
 
 
 

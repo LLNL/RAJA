@@ -40,7 +40,7 @@ struct TileList{
 
 // Tiling Policy
 struct ForallN_Tile_Tag {};
-template<typename TILE_LIST, typename NEXT=ForallN_Execute>
+template<typename TILE_LIST, typename NEXT=Execute>
 struct Tile {
   // Identify this policy
   typedef ForallN_Tile_Tag PolicyTag;
