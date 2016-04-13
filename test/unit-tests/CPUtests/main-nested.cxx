@@ -170,10 +170,12 @@ typedef ForallN_Policy<ExecList<cuda_exec<1>, seq_exec >,
                          //>
                       > npol;
 #else
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec >,
-                         //Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
+typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
+                       OMP_Parallel<
+                         Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
                            ForallN_Execute
-                         //>
+                         >
+                       >
                       > npol;
 #endif
 

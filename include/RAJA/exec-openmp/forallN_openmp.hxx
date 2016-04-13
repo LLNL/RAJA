@@ -23,31 +23,16 @@ namespace RAJA {
  *  ForallN OpenMP Parallel Region policies
  ******************************************************************/
 
-// Begin OpenMP Parallel Region
-struct Forall2_OMP_Parallel_Tag {};
+// Tiling Policy
+struct ForallN_OMP_Parallel_Tag {};
 template<typename NEXT=ForallN_Execute>
-struct Forall2_OMP_Parallel {
-  typedef Forall2_OMP_Parallel_Tag PolicyTag;
+struct OMP_Parallel {
+  // Identify this policy
+  typedef ForallN_OMP_Parallel_Tag PolicyTag;
+
+  // The next nested-loop execution policy
   typedef NEXT NextPolicy;
 };
-
-// Begin OpenMP Parallel Region
-struct Forall3_OMP_Parallel_Tag {};
-template<typename NEXT=ForallN_Execute>
-struct Forall3_OMP_Parallel {
-  typedef Forall3_OMP_Parallel_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-};
-
-// Begin OpenMP Parallel Region
-struct Forall4_OMP_Parallel_Tag {};
-template<typename NEXT=ForallN_Execute>
-struct Forall4_OMP_Parallel {
-  typedef Forall4_OMP_Parallel_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-};
-
-
 
 
 
@@ -55,63 +40,19 @@ struct Forall4_OMP_Parallel {
  *  forallN_policy(), OpenMP Parallel Region execution
  ******************************************************************/
 
-
 /*!
- * \brief OpenMP Parallel Region Section policy function.
+ * \brief Tiling policy front-end function.
  */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_policy(Forall2_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, BODY body){
+template<typename POLICY, typename BODY, typename ... PARGS>
+RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag, BODY body, PARGS ... pargs){
   typedef typename POLICY::NextPolicy            NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
-  // create OpenMP Parallel Region
-#ifdef _OPENMP
 #pragma omp parallel
-#endif
   {
-    // execute the next policy
-    forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j, body);
+    forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }
 }
-
-
-/*!
- * \brief OpenMP Parallel Region Section policy function.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_policy(Forall3_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // create OpenMP Parallel Region
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-  {
-    // execute the next policy
-    forall3_policy<NextPolicy, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_j, is_k, body);
-  }
-}
-
-
-/*!
- * \brief OpenMP Parallel Region Section policy function.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_policy(Forall4_OMP_Parallel_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // create OpenMP Parallel Region
-#ifdef _OPENMP
-#pragma omp parallel
-#endif
-  {
-    // execute the next policy
-    forall4_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_j, is_k, is_l, body);
-  }
-}
-
 
 
 
