@@ -28,8 +28,10 @@ struct ForallN_Permute_Tag {};
 template<typename LOOP_ORDER, typename NEXT=ForallN_Execute>
 struct ForallN_Permute {
   typedef ForallN_Permute_Tag PolicyTag;
-  typedef NEXT NextPolicy;
+
   typedef LOOP_ORDER LoopOrder;
+
+  typedef NEXT NextPolicy;
 };
 
 

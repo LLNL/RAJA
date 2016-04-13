@@ -161,7 +161,11 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 //typedef Forall2_Policy<seq_exec, seq_exec, ForallN_Permute<PERM_JI> > cudapol;
 
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec>, Tile<TileList<tile_fixed<2>, tile_fixed<2> > > > npol;
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec>,
+                         Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
+                           ForallN_Execute
+                         >
+                      > npol;
 
 
 /*
@@ -215,7 +219,7 @@ int main(int argc, char *argv[])
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run RAJA::forall reduction tests...
+// Run RAJA::forall nested loop tests...
 //
 ///////////////////////////////////////////////////////////////////////////
 
@@ -237,6 +241,21 @@ int main(int argc, char *argv[])
        RangeSegment(0,4),
        [=] __device__ (int i){printf("%d\n", i);});
 */
+
+   typedef RAJA::View<double, RAJA::Layout2d<PERM_IJ>> View;
+
+   double data[16];
+   View v(data, 4,4);
+
+   for(int i = 0;i < 4;++ i){
+     for(int j = 0;j < 4;++ j){
+       v(i,j) = i*10+j;
+     }
+   }
+   for(int i = 0;i < 16;++ i){
+     printf("data[%d]=%.0f\n", i, data[i]);
+   }
+
   auto fcn_obj = fcn();
    printf("IJ:\n");
    forallN<npol>(
