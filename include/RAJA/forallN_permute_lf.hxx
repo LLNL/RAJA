@@ -28,7 +28,7 @@ namespace RAJA {
 // Interchange loop order given permutation
 struct ForallN_Permute_Tag {};
 template<typename LOOP_ORDER, typename NEXT=ForallN_Execute>
-struct ForallN_Permute {
+struct Permute {
   typedef ForallN_Permute_Tag PolicyTag;
 
   typedef LOOP_ORDER LoopOrder;
