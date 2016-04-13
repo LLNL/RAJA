@@ -162,7 +162,7 @@ void run2dTests(Index_type size_i, Index_type size_j){
 //typedef Forall2_Policy<seq_exec, seq_exec, ForallN_Permute<PERM_JI> > cudapol;
 
 #ifdef RAJA_USE_CUDA
-typedef ForallN_Policy<ExecList<cuda_exec<1>, seq_exec >,
+typedef NestedPolicy<ExecList<cuda_exec<1>, seq_exec >,
                          //Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
                            Permute<PERM_JI,
                            Execute
@@ -170,7 +170,7 @@ typedef ForallN_Policy<ExecList<cuda_exec<1>, seq_exec >,
                          //>
                       > npol;
 #else
-typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
+typedef NestedPolicy<ExecList<seq_exec, omp_for_nowait_exec >,
                        OMP_Parallel<
                          Tile<TileList<tile_fixed<2>, tile_fixed<2>>,
                          Execute
@@ -180,11 +180,11 @@ typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
 #endif
 
 
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec>,
+typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec>,
     Execute > cudapol3;
 
 
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
     Execute > cudapol4;
 
 
