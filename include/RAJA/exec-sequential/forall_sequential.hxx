@@ -53,7 +53,6 @@ namespace RAJA {
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-RAJA_HOST_DEVICE
 void forall(seq_exec,
             Index_type begin, Index_type end, 
             LOOP_BODY loop_body)
@@ -114,7 +113,6 @@ void forall_Icount(seq_exec,
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
-RAJA_HOST_DEVICE
 void forall(seq_exec,
             const RangeSegment& iseg,
             LOOP_BODY loop_body)

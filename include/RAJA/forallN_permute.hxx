@@ -12,8 +12,7 @@
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
+#include "forallN_permute_lf.hxx"
 
 namespace RAJA {
 
@@ -23,25 +22,7 @@ namespace RAJA {
  *  ForallN loop interchange policies
  ******************************************************************/
 
-// Interchange loop order given permutation
-struct ForallN_Permute_Tag {};
-template<typename LOOP_ORDER, typename NEXT=ForallN_Execute>
-struct ForallN_Permute {
-  typedef ForallN_Permute_Tag PolicyTag;
 
-  typedef LOOP_ORDER LoopOrder;
-
-  typedef NEXT NextPolicy;
-};
-
-
-
-/******************************************************************
- *  ForallN loop interchange policies
- ******************************************************************/
-
-template<typename PERM, typename BODY>
-struct ForallN_Permute_Functor;
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJ, BODY>{
@@ -75,35 +56,6 @@ struct ForallN_Permute_Functor<PERM_JI, BODY>{
   
   BODY body;
 };
-
-
-
-/******************************************************************
- *  forallN_policy(), loop interchange policies
- ******************************************************************/
-
-
-/*!
- * \brief Permutation policy function, providing loop interchange.
- */
-template<typename POLICY, typename BODY, typename ... ARGS>
-RAJA_INLINE void forallN_policy(ForallN_Permute_Tag, BODY body, ARGS ... args){
-  // Get the loop permutation
-  typedef typename POLICY::LoopOrder LoopOrder;
-
-  // Get next policy  
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Create wrapper functor that permutes indices and policies
-  typedef ForallN_Permute_Functor<LoopOrder, BODY> PERM_FUNC;
-  PERM_FUNC perm_func(body);
-
-  // Use the wrapper to call the next policy
-  perm_func.template callNextPolicy<NextPolicy, NextPolicyTag>(args...);
-}
-
-
 
 
 

@@ -91,7 +91,7 @@ struct ForallN_BindFirstArg {
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  void operator()(ARGS ... args) const {
+  void  operator()(ARGS ... args) const {
     body(i, args...);
   }
 };
@@ -103,11 +103,9 @@ struct ForallN_PeelOuter {
   BODY const body;
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
   ForallN_PeelOuter(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
   void operator()(Index_type i) const {
     ForallN_BindFirstArg<BODY> inner(body, i);
     next_exec(inner);
@@ -116,21 +114,6 @@ struct ForallN_PeelOuter {
 
 
 
-
-template<typename PI>
-struct Forall1Executor {
-  typedef typename PI::ISET TI;
-  typedef typename PI::POLICY POLICY_I;
-
-  TI const is_i;
-
-  explicit Forall1Executor(TI const &is_i0) : is_i(is_i0) {}
-
-  template<typename BODY>
-  inline void RAJA_HOST_DEVICE operator()(BODY body) const {
-    RAJA::forall<POLICY_I>(is_i, body);
-  }
-};
 
 template<typename PI, typename ... PREST>
 struct ForallN_Executor {
@@ -146,7 +129,8 @@ struct ForallN_Executor {
   ForallN_Executor(TI const &is_i0, TREST ... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
 
   template<typename BODY>
-  inline void operator()(BODY body) const {
+  RAJA_INLINE
+  void operator()(BODY body) const {
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
     RAJA::forall<POLICY_I>(is_i, outer);
   }
@@ -163,7 +147,7 @@ struct ForallN_Executor<PI> {
   explicit ForallN_Executor(TI const &is_i0) : is_i(is_i0) {}
 
   template<typename BODY>
-  inline void RAJA_HOST_DEVICE operator()(BODY body) const {
+  RAJA_INLINE void operator()(BODY body) const {
     RAJA::forall<POLICY_I>(is_i, body);
   }
 };
@@ -204,11 +188,15 @@ void forallN_policy(ForallN_Execute_Tag, BODY body, ARGS ... args){
 template<typename BODY, typename IdxI, typename ... IdxRest>
 struct ForallN_IndexTypeConverter {
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
   explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
   // call 'policy' layer with next policy
   template<typename ... ARGS>
-  inline void RAJA_HOST_DEVICE operator()(Index_type i, ARGS ... args) const {
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(Index_type i, ARGS ... args) const {
     // Bind the first argument
     ForallN_BindFirstArg<BODY, IdxI> bound(body, IdxI(i));
 
@@ -224,10 +212,14 @@ struct ForallN_IndexTypeConverter {
 template<typename BODY, typename IdxI>
 struct ForallN_IndexTypeConverter<BODY, IdxI> {
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
   explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
   // call 'policy' layer with next policy
-  inline void RAJA_HOST_DEVICE operator()(Index_type i) const {
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(Index_type i) const {
     body(IdxI(i));
   }
 
