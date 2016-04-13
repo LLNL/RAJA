@@ -162,6 +162,34 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL cons
 }
 
 
+template<typename POLICY, typename ... EXECS, typename ... ISETS, typename BODY>
+RAJA_INLINE void forallM_inner(BODY body, ExecList<EXECS...>, ISETS const &... isets){
+
+  // extract next policy
+  typedef typename POLICY::NextPolicy             NextPolicy;
+  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
+
+  // call policy layer with next policy
+  forallN_policy<NextPolicy>(NextPolicyTag(), body,
+    ForallN_PolicyPair<EXECS, ISETS>(isets)... );
+}
+
+
+
+template<typename POLICY, typename ... IDXS, typename ... ISETS, typename BODY>
+RAJA_INLINE void forallM(BODY body, ISETS const &... isets){
+
+  // extract each loop's execution policy
+  using ExecPolicies = typename POLICY::ExecPolicies;
+
+  // Create index type conversion layer
+  typedef ForallN_IndexTypeConverter<BODY, IDXS...> IDX_CONV;
+  IDX_CONV lamb(body);
+
+  // call policy layer with next policy
+  forallM_inner<POLICY>(lamb, ExecPolicies(), isets...);
+}
+
 
 
 } // namespace RAJA
