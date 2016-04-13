@@ -42,10 +42,7 @@ struct ForallN_PolicyPair : public I {
   typedef I ISET;
 
   RAJA_INLINE
-  ForallN_PolicyPair(ISET const &i) : ISET(i) {}  
-  
-  RAJA_INLINE
-  ISET const &operator*() const { return static_cast<ISET const &>(*this); }
+  ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
 
@@ -142,7 +139,7 @@ struct ForallN_Executor<PI> {
   typedef typename PI::ISET TI;
   typedef typename PI::POLICY POLICY_I;
 
-  TI const &is_i;
+  TI const is_i;
 
   explicit ForallN_Executor(TI const &is_i0) : is_i(is_i0) {}
 
@@ -206,7 +203,7 @@ struct ForallN_IndexTypeConverter {
   }
 
   // Copy of loop body
-  BODY const &body;
+  BODY const body;
 };
 
 template<typename BODY, typename IdxI>
@@ -224,7 +221,7 @@ struct ForallN_IndexTypeConverter<BODY, IdxI> {
   }
 
   // Copy of loop body
-  BODY const &body;
+  BODY const body;
 };
 
 

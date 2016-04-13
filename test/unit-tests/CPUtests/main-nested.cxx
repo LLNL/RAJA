@@ -179,13 +179,16 @@ typedef ForallN_Policy<ExecList<seq_exec, omp_for_nowait_exec >,
                       > npol;
 #endif
 
-/*
-typedef Forall2_Policy<seq_exec , seq_exec, Forall2_Permute<PERM_JI> > cudapol2;
 
-typedef Forall3_Policy<seq_exec , seq_exec, seq_exec, Forall3_Permute<PERM_JIK> > cudapol3;
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec>,
+                         ForallN_Execute > cudapol3;
 
-typedef Forall4_Policy<seq_exec , seq_exec, seq_exec, seq_exec, Forall4_Permute<PERM_JLIK> > cudapol4;
-*/
+
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+                         ForallN_Execute > cudapol4;
+
+
+
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -253,7 +256,7 @@ int main(int argc, char *argv[])
        RangeSegment(0,4),
        [=] __device__ (int i){printf("%d\n", i);});
 */
-
+/*
    typedef RAJA::View<double, RAJA::Layout<int, PERM_IJ, int, int>> View;
 
    double data[16];
@@ -275,7 +278,7 @@ int main(int argc, char *argv[])
        RangeSegment(0, 4),
       fcn() );
 
-
+*/
 /*
    printf("JI:\n");
    forallN<cudapol2>(
@@ -283,21 +286,22 @@ int main(int argc, char *argv[])
       RangeSegment(0, 4),
      fcn_obj );
 
+*/
 
    printf("JIK:\n");
-   forall3<cudapol3>(
+   forallN<cudapol3>(
       RangeSegment(0, 2),
       RangeSegment(0, 2),
       RangeSegment(0, 2),
      fcn3() );
 
    printf("JLIK:\n");
-   forall4<cudapol4>(
+   forallN<cudapol4>(
       RangeSegment(0, 2),
       RangeSegment(0, 2),
       RangeSegment(0, 2),
       RangeSegment(0, 2),
-     fcn4() );*/
+     fcn4() );
 
 //
 // Clean up....
