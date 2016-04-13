@@ -15,34 +15,15 @@ from itertools import permutations
 from lperm import *
 
 
-def writeForallPolicy(ndims):
-
-  dim_names = getDimNames(ndims)
-
-  print "// Interchange loop order given permutation"
-  print "struct Forall%d_Permute_Tag {};" % ndims
-  print "template<typename LOOP_ORDER, typename NEXT=Forall%d_Execute>" % (ndims)
-  print "struct Forall%d_Permute {" % (ndims)
-  print "  typedef Forall%d_Permute_Tag PolicyTag;" % ndims
-  print "  typedef NEXT NextPolicy;"
-  print "  typedef LOOP_ORDER LoopOrder;"
-  print "};"
-  print ""
-  
-
 
 def writeForallPermutations(ndims):
   
   dim_names = getDimNames(ndims)
-
-  # Create boiler-plate used for all _policy() fcns
-  polstr = ", ".join(map(lambda a: "typename Policy"+a.upper(), dim_names))
-  setstr = ", ".join(map(lambda a: "typename T"+a.upper(), dim_names))
-  isstr = ", ".join(map(lambda a: "T%s const &is_%s"%(a.upper(), a) , dim_names))
   
-  template_string = "template<typename POLICY, %s, %s, typename BODY>" % (polstr, setstr)
-  fcnargs_string = "%s, BODY body" % isstr
-
+  # Create common strings to all perms
+  func_param   = ", ".join(map(lambda a: "Index_type %s"%a , dim_names))  
+  next_template = ", ".join(map(lambda a: "typename P%s"%a.upper() , dim_names))
+  next_param    = ", ".join(map(lambda a: "P%s const &p%s"%(a.upper(), a) , dim_names))
   
   # Loop over each permutation specialization
   perms = getDimPerms(dim_names)
@@ -50,60 +31,35 @@ def writeForallPermutations(ndims):
     # get enumeration name
     enum_name = getEnumName(perm)
     
-    # print function declaration
-    print template_string
-    print "RAJA_INLINE void forall%d_permute(%s, %s){" % (ndims, enum_name, fcnargs_string)
-    print "  typedef typename POLICY::NextPolicy            NextPolicy;"
-    print "  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;"
+    # Compute permuted arguments
+    body_args     = ", ".join(perm)
+    policy_args   = ", ".join(map(lambda a: "p%s"%a , perm))
     
+    # Print header for functor
+    print """
+template<typename BODY>
+struct ForallN_Permute_Functor<%s, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(%s) const {
+    body(%s);
+  }
+  
+  template<typename NextPolicy, typename TAG, %s>
+  RAJA_INLINE
+  void callNextPolicy(%s) const {
+    forallN_policy<NextPolicy>(TAG(), *this, %s);
+  }
+  
+  BODY body;
+};
+
+    """ % (enum_name, func_param, body_args, next_template, next_param, policy_args)
     
-    # Call next policy with permuted indices and policies
-    p_polstr  = ", ".join(map(lambda a: "Policy"+a.upper(), perm))
-    p_varstr  = ", ".join(map(lambda a: "is_"+a, perm))
-    p_argstr  = ", ".join(map(lambda a: "Index_type "+a, perm))
-    argstr    = ", ".join(dim_names)
-
-    print ""
-    print "  // Call next policy with permuted indices and policies"
-    print "  forall%d_policy<NextPolicy, %s>(NextPolicyTag(), %s," % (ndims, p_polstr, p_varstr)
-    print "    [=](%s){" % (p_argstr)
-    print "      // Call body with non-permuted indices"
-    print "      body(%s);" % (argstr)
-    print "    });"
-    print "}"
-    print ""
-
-
-def writeForall_policy(ndims):
-  
-  dim_names = getDimNames(ndims)
-  
-  # Create boiler-plate used for all _policy() fcns
-  polstr = ", ".join(map(lambda a: "typename Policy"+a.upper(), dim_names))
-  setstr = ", ".join(map(lambda a: "typename T"+a.upper(), dim_names))
-  isstr = ", ".join(map(lambda a: "T%s const &is_%s"%(a.upper(), a) , dim_names))
-
-  template_string = "template<typename POLICY, %s, %s, typename BODY>" % (polstr, setstr)
-  fcnargs_string = "%s, BODY body" % isstr
-   
-  polstr  = ", ".join(map(lambda a: "Policy"+a.upper(), dim_names))
-  typestr = ", ".join(map(lambda a: "T"+a.upper(), dim_names))
-  varstr = ", ".join(map(lambda a: "is_"+a, dim_names))
-  
-  print ""
-  print "/*!"
-  print " * \\brief Permutation policy function, providing loop interchange."
-  print " */"
-  print template_string
-  print "RAJA_INLINE void forall%d_policy(Forall%d_Permute_Tag, %s){" % (ndims, ndims, fcnargs_string)
-  
-  print "  // Get the loop permutation"
-  print "  typedef typename POLICY::LoopOrder LoopOrder;"
-  print ""
-  print "  // Call loop interchange overload to re-wrire indicies and policies"
-  print "  forall%d_permute<POLICY, %s>(LoopOrder(), %s, body);" % (ndims, polstr, varstr)
-  print "}"
-  print ""
 
 
 def main(ndims):
@@ -122,44 +78,16 @@ def main(ndims):
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
+#include "forallN_permute_lf.hxx"
 
 namespace RAJA {
 
 """ 
   ndims_list = range(2,ndims+1)
-  
-  # Create the policy struct so the user can define loop policies
-  print ""
-  print "/******************************************************************"
-  print " *  ForallN loop interchange policies"
-  print " ******************************************************************/"
-  print ""
-  for n in ndims_list:
-    writeForallPolicy(n)
-
 
   # Create the loop interchange specializations for each permutation
-  print ""
-  print "/******************************************************************"
-  print " *  ForallN loop interchange policies"
-  print " ******************************************************************/"
-  print ""
   for n in ndims_list:
     writeForallPermutations(n)
-
-
-  # Create _policy functions
-  print ""
-  print "/******************************************************************"
-  print " *  forallN_policy(), loop interchange policies"
-  print " ******************************************************************/"
-  print ""
-  for n in ndims_list:
-    writeForall_policy(n)
-
-
 
   print """
 
