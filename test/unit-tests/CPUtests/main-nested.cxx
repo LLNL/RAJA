@@ -161,7 +161,7 @@ void run2dTests(Index_type size_i, Index_type size_j){
 
 //typedef Forall2_Policy<seq_exec, seq_exec, ForallN_Permute<PERM_JI> > cudapol;
 
-typedef ForallN_Policy<ExecList<seq_exec, seq_exec>, Tile<TileList<tile_none, tile_fixed<2> > > > npol;
+typedef ForallN_Policy<ExecList<seq_exec, seq_exec>, Tile<TileList<tile_fixed<2>, tile_fixed<2> > > > npol;
 
 
 /*
