@@ -58,11 +58,11 @@ struct ExecList{
 struct ForallN_Execute_Tag {};
 
 
-struct ForallN_Execute {
+struct Execute {
   typedef ForallN_Execute_Tag PolicyTag;
 };
 
-template<typename EXEC, typename NEXT=ForallN_Execute>
+template<typename EXEC, typename NEXT=Execute>
 struct ForallN_Policy {
   typedef NEXT NextPolicy;
   typedef EXEC ExecPolicies;

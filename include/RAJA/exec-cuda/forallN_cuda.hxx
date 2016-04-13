@@ -24,7 +24,7 @@ namespace RAJA {
 
 // Tiling Policy
 struct ForallN_OMP_Parallel_Tag {};
-template<typename NEXT=ForallN_Execute>
+template<typename NEXT=Execute>
 struct OMP_Parallel {
   // Identify this policy
   typedef ForallN_OMP_Parallel_Tag PolicyTag;
