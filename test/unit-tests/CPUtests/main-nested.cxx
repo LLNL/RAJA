@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
        [=] __device__ (int i){printf("%d\n", i);});
 */
 
-   typedef RAJA::View<double, RAJA::Layout2d<PERM_IJ>> View;
+   typedef RAJA::View<double, RAJA::Layout<int, PERM_IJ, int, int>> View;
 
    double data[16];
    View v(data, 4,4);

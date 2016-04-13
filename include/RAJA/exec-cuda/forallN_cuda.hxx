@@ -7,9 +7,9 @@
  * This source code cannot be distributed without permission and
  * further review from Lawrence Livermore National Laboratory.
  */
-  
-#ifndef RAJA_forallN_openmp_HXX__
-#define RAJA_forallN_openmp_HXX__
+#if 0
+#ifndef RAJA_forallN_cuda_HXX__
+#define RAJA_forallN_cuda_HXX__
 
 #include<RAJA/config.hxx>
 #include<RAJA/int_datatypes.hxx>
@@ -19,9 +19,10 @@ namespace RAJA {
 
 
 /******************************************************************
- *  ForallN CUDA policies
+ *  ForallN OpenMP Parallel Region policies
  ******************************************************************/
 
+// Tiling Policy
 struct ForallN_OMP_Parallel_Tag {};
 template<typename NEXT=ForallN_Execute>
 struct OMP_Parallel {
@@ -58,3 +59,4 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag, BODY body, PARGS ... p
   
 #endif
 
+#endif
