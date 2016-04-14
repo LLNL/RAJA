@@ -36,6 +36,8 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 
+#if 0
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Method that defines and runs a basic RAJA 2d kernel test
@@ -373,7 +375,7 @@ void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_typ
 #endif
 }
 
-
+#endif
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -381,6 +383,23 @@ void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_typ
 //
 ///////////////////////////////////////////////////////////////////////////
 
+
+struct fcn{
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(int i) const {
+    printf("i=%d\n", i);
+  }
+  
+  
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(int i, int j) const {
+    printf("ij=%d,%d\n", i, j);
+  }
+  
+  
+};
 
 int main(int argc, char *argv[])
 {
@@ -394,11 +413,11 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 
    // Run some 2d -> 1d reduction tests
-   run2dTests(128,1024);
-   run2dTests(37,1);
+   //run2dTests(128,1024);
+   //run2dTests(37,1);
 
    // Run some LTimes example tests (directions, groups, zones)
-   runLTimesTests(25, 96, 48, 128);
+   //runLTimesTests(25, 96, 48, 128);
    //runLTimesTests(100, 100, 16, 16);
 
    ///
@@ -409,7 +428,19 @@ int main(int argc, char *argv[])
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
+typedef NestedPolicy<ExecList<cuda_threadblock_exec<Dim3x, 4>>> PP;
+  
+  
+  forallN<PP>(RangeSegment(0,9), fcn());
 
+/*
+  typedef NestedPolicy<ExecList<seq_exec, cuda_threadblock_exec<Dim3x, 16>>> PPP;
+  
+  
+  forallN<PPP>(RangeSegment(0, 4), RangeSegment(0,5), 
+  //[=](int i, int j){});
+  fcn());
+*/
 //
 // Clean up....
 //  

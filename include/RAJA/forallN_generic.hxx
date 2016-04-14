@@ -161,7 +161,6 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL cons
     ForallN_PolicyPair<PolicyM, TM>(is_m));
 }
 
-
 template<typename POLICY, typename ... EXECS, typename ... ISETS, typename BODY>
 RAJA_INLINE void forallM_inner(BODY body, ExecList<EXECS...>, ISETS const &... isets){
 
