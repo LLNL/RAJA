@@ -26,7 +26,6 @@
 
 #include "int_datatypes.hxx"
 
-#include <cstdio>
 #include <cstdlib>
 
 #include <iosfwd>

@@ -46,10 +46,10 @@ The core developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-If you have questions, or have ideas about expanding the applicability of
-RAJA and are interested in contributing to its development, please do not
-hesitate to contact us. We are always interested in exploring new ways to
-use RAJA. 
+If you have questions, find a bug, or have ideas about expanding the 
+functionality or applicability of RAJA and are interested in contributing 
+to its development, please do not hesitate to contact us. We are always 
+interested in exploring new ways to use RAJA. 
  
 Other contributors include:
 
