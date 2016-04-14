@@ -430,7 +430,7 @@ int main(int argc, char *argv[])
 
   //typedef NestedPolicy<ExecList<seq_exec>> PP;
   typedef NestedPolicy<ExecList<cuda_threadblock_exec<Dim3x, 4>>> PP;
-  //forallN<PP>(RangeSegment(0,9), fcn());
+  forallN<PP>(RangeSegment(0,9), fcn());
 
 
   typedef NestedPolicy<ExecList<
