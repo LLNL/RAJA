@@ -21,7 +21,7 @@ def writeForallPermutations(ndims):
   dim_names = getDimNames(ndims)
   
   # Create common strings to all perms
-  func_param   = ", ".join(map(lambda a: "Index_type %s"%a , dim_names))  
+  body_args     = ", ".join(dim_names)  
   next_template = ", ".join(map(lambda a: "typename P%s"%a.upper() , dim_names))
   next_param    = ", ".join(map(lambda a: "P%s const &p%s"%(a.upper(), a) , dim_names))
   
@@ -32,7 +32,7 @@ def writeForallPermutations(ndims):
     enum_name = getEnumName(perm)
     
     # Compute permuted arguments
-    body_args     = ", ".join(perm)
+    func_param   = ", ".join(map(lambda a: "Index_type %s"%a , perm))  
     policy_args   = ", ".join(map(lambda a: "p%s"%a , perm))
     
     # Print header for functor

@@ -36,7 +36,7 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 
-#if 0
+#if 1
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -267,14 +267,13 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     using EXEC = typename POL::EXEC;
 
     // do calculation
-    forallM<EXEC, int, int, int, int>(
-        [=](int m, int d, int g, int z){phi(m,g,z) += ell(m,d) * psi(d,g,z);},
+    forallN<EXEC, int, int, int, int>(
         RangeSegment(0, num_moments),
         RangeSegment(0, num_directions),
         RangeSegment(0, num_groups),
-        RangeSegment(0, num_zones)
+        RangeSegment(0, num_zones),
+        [=](int m, int d, int g, int z){phi(m,g,z) += ell(m,d) * psi(d,g,z);}
     );
-
 
     ////
     //// CHECK ANSWER against the hand-written sequential kernel
@@ -368,7 +367,7 @@ struct PolLTimesC {
 void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_type num_groups, Index_type num_zones){
   runLTimesTest<PolLTimesA>("PolLTimesA", num_moments, num_directions, num_groups, num_zones);
   runLTimesTest<PolLTimesB>("PolLTimesB", num_moments, num_directions, num_groups, num_zones);
-  //runLTimesTest<PolLTimesC>("PolLTimesC", num_moments, num_directions, num_groups, num_zones);
+  runLTimesTest<PolLTimesC>("PolLTimesC", num_moments, num_directions, num_groups, num_zones);
 
 #ifdef RAJA_USE_OPENMP
 
@@ -413,12 +412,12 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 
    // Run some 2d -> 1d reduction tests
-   //run2dTests(128,1024);
-   //run2dTests(37,1);
+   run2dTests(128,1024);
+   run2dTests(37,1);
 
    // Run some LTimes example tests (directions, groups, zones)
-   //runLTimesTests(25, 96, 48, 128);
-   //runLTimesTests(100, 100, 16, 16);
+   runLTimesTests(25, 96, 8, 32);
+   runLTimesTests(100, 15, 7, 13);
 
    ///
    /// Print total number of tests passed/run.
@@ -429,6 +428,7 @@ int main(int argc, char *argv[])
              << s_ntests_run_total << endl;
 
   //typedef NestedPolicy<ExecList<seq_exec>> PP;
+  /*
   typedef NestedPolicy<ExecList<cuda_threadblock_x_exec<4>>> PP;
   forallN<PP>(RangeSegment(0,9), fcn());
 
@@ -438,7 +438,7 @@ int main(int argc, char *argv[])
     cuda_thread_z_exec
     >> PPP;
   forallN<PPP>(RangeSegment(0, 3), RangeSegment(0,4), fcn());
-
+*/
 //
 // Clean up....
 //  
