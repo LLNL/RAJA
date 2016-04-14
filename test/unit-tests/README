@@ -6,9 +6,9 @@
 #
 # The subdirectory CPUtests contains two files for testing CPU execution, 
 # one for traversals and one for traversals with reductions. The tests 
-# use RAJA IndexSets with multiple Range and List Segments. When RAJA
-# is compiled, all execution policy variants available for the compiler
-# used will be generated. 
+# use RAJA IndexSets with multiple Range and List Segments. Tests for the
+# nested loop RAJA constructs are also included. When RAJA is compiled, 
+# all execution policy variants available for the compiler are generated. 
 #
 # The subdirectory GPUtests contains four files for testing CUDA GPU 
 # execution, one for traversals and three for traversals with reductions 
