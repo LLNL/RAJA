@@ -49,8 +49,8 @@ struct ForallN_Permute_Functor<PERM_JI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j) const {
-    body(j, i);
+  void operator()(Index_type j, Index_type i) const {
+    body(i, j);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ>
@@ -95,8 +95,8 @@ struct ForallN_Permute_Functor<PERM_IKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    body(i, k, j);
+  void operator()(Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
@@ -118,8 +118,8 @@ struct ForallN_Permute_Functor<PERM_JIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    body(j, i, k);
+  void operator()(Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
@@ -141,8 +141,8 @@ struct ForallN_Permute_Functor<PERM_JKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    body(j, k, i);
+  void operator()(Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
@@ -164,8 +164,8 @@ struct ForallN_Permute_Functor<PERM_KIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    body(k, i, j);
+  void operator()(Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
@@ -187,8 +187,8 @@ struct ForallN_Permute_Functor<PERM_KJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    body(k, j, i);
+  void operator()(Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
@@ -233,8 +233,8 @@ struct ForallN_Permute_Functor<PERM_IJLK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(i, j, l, k);
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -256,8 +256,8 @@ struct ForallN_Permute_Functor<PERM_IKJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(i, k, j, l);
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -279,8 +279,8 @@ struct ForallN_Permute_Functor<PERM_IKLJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(i, k, l, j);
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -302,8 +302,8 @@ struct ForallN_Permute_Functor<PERM_ILJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(i, l, j, k);
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -325,8 +325,8 @@ struct ForallN_Permute_Functor<PERM_ILKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(i, l, k, j);
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -348,8 +348,8 @@ struct ForallN_Permute_Functor<PERM_JIKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, i, k, l);
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -371,8 +371,8 @@ struct ForallN_Permute_Functor<PERM_JILK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, i, l, k);
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -394,8 +394,8 @@ struct ForallN_Permute_Functor<PERM_JKIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, k, i, l);
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -417,8 +417,8 @@ struct ForallN_Permute_Functor<PERM_JKLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, k, l, i);
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -440,8 +440,8 @@ struct ForallN_Permute_Functor<PERM_JLIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, l, i, k);
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -463,8 +463,8 @@ struct ForallN_Permute_Functor<PERM_JLKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(j, l, k, i);
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -486,8 +486,8 @@ struct ForallN_Permute_Functor<PERM_KIJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, i, j, l);
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -509,8 +509,8 @@ struct ForallN_Permute_Functor<PERM_KILJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, i, l, j);
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -532,8 +532,8 @@ struct ForallN_Permute_Functor<PERM_KJIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, j, i, l);
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -555,8 +555,8 @@ struct ForallN_Permute_Functor<PERM_KJLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, j, l, i);
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -578,8 +578,8 @@ struct ForallN_Permute_Functor<PERM_KLIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, l, i, j);
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -601,8 +601,8 @@ struct ForallN_Permute_Functor<PERM_KLJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(k, l, j, i);
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -624,8 +624,8 @@ struct ForallN_Permute_Functor<PERM_LIJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, i, j, k);
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -647,8 +647,8 @@ struct ForallN_Permute_Functor<PERM_LIKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, i, k, j);
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -670,8 +670,8 @@ struct ForallN_Permute_Functor<PERM_LJIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, j, i, k);
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -693,8 +693,8 @@ struct ForallN_Permute_Functor<PERM_LJKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, j, k, i);
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -716,8 +716,8 @@ struct ForallN_Permute_Functor<PERM_LKIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, k, i, j);
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -739,8 +739,8 @@ struct ForallN_Permute_Functor<PERM_LKJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
-    body(l, k, j, i);
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
@@ -785,8 +785,8 @@ struct ForallN_Permute_Functor<PERM_IJKML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, j, k, m, l);
+  void operator()(Index_type i, Index_type j, Index_type k, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -808,8 +808,8 @@ struct ForallN_Permute_Functor<PERM_IJLKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, j, l, k, m);
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -831,8 +831,8 @@ struct ForallN_Permute_Functor<PERM_IJLMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, j, l, m, k);
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -854,8 +854,8 @@ struct ForallN_Permute_Functor<PERM_IJMKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, j, m, k, l);
+  void operator()(Index_type i, Index_type j, Index_type m, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -877,8 +877,8 @@ struct ForallN_Permute_Functor<PERM_IJMLK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, j, m, l, k);
+  void operator()(Index_type i, Index_type j, Index_type m, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -900,8 +900,8 @@ struct ForallN_Permute_Functor<PERM_IKJLM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, j, l, m);
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -923,8 +923,8 @@ struct ForallN_Permute_Functor<PERM_IKJML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, j, m, l);
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -946,8 +946,8 @@ struct ForallN_Permute_Functor<PERM_IKLJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, l, j, m);
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -969,8 +969,8 @@ struct ForallN_Permute_Functor<PERM_IKLMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, l, m, j);
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -992,8 +992,8 @@ struct ForallN_Permute_Functor<PERM_IKMJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, m, j, l);
+  void operator()(Index_type i, Index_type k, Index_type m, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1015,8 +1015,8 @@ struct ForallN_Permute_Functor<PERM_IKMLJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, k, m, l, j);
+  void operator()(Index_type i, Index_type k, Index_type m, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1038,8 +1038,8 @@ struct ForallN_Permute_Functor<PERM_ILJKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, j, k, m);
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1061,8 +1061,8 @@ struct ForallN_Permute_Functor<PERM_ILJMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, j, m, k);
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1084,8 +1084,8 @@ struct ForallN_Permute_Functor<PERM_ILKJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, k, j, m);
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1107,8 +1107,8 @@ struct ForallN_Permute_Functor<PERM_ILKMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, k, m, j);
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1130,8 +1130,8 @@ struct ForallN_Permute_Functor<PERM_ILMJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, m, j, k);
+  void operator()(Index_type i, Index_type l, Index_type m, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1153,8 +1153,8 @@ struct ForallN_Permute_Functor<PERM_ILMKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, l, m, k, j);
+  void operator()(Index_type i, Index_type l, Index_type m, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1176,8 +1176,8 @@ struct ForallN_Permute_Functor<PERM_IMJKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, j, k, l);
+  void operator()(Index_type i, Index_type m, Index_type j, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1199,8 +1199,8 @@ struct ForallN_Permute_Functor<PERM_IMJLK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, j, l, k);
+  void operator()(Index_type i, Index_type m, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1222,8 +1222,8 @@ struct ForallN_Permute_Functor<PERM_IMKJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, k, j, l);
+  void operator()(Index_type i, Index_type m, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1245,8 +1245,8 @@ struct ForallN_Permute_Functor<PERM_IMKLJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, k, l, j);
+  void operator()(Index_type i, Index_type m, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1268,8 +1268,8 @@ struct ForallN_Permute_Functor<PERM_IMLJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, l, j, k);
+  void operator()(Index_type i, Index_type m, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1291,8 +1291,8 @@ struct ForallN_Permute_Functor<PERM_IMLKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(i, m, l, k, j);
+  void operator()(Index_type i, Index_type m, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1314,8 +1314,8 @@ struct ForallN_Permute_Functor<PERM_JIKLM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, k, l, m);
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1337,8 +1337,8 @@ struct ForallN_Permute_Functor<PERM_JIKML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, k, m, l);
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1360,8 +1360,8 @@ struct ForallN_Permute_Functor<PERM_JILKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, l, k, m);
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1383,8 +1383,8 @@ struct ForallN_Permute_Functor<PERM_JILMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, l, m, k);
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1406,8 +1406,8 @@ struct ForallN_Permute_Functor<PERM_JIMKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, m, k, l);
+  void operator()(Index_type j, Index_type i, Index_type m, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1429,8 +1429,8 @@ struct ForallN_Permute_Functor<PERM_JIMLK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, i, m, l, k);
+  void operator()(Index_type j, Index_type i, Index_type m, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1452,8 +1452,8 @@ struct ForallN_Permute_Functor<PERM_JKILM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, i, l, m);
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1475,8 +1475,8 @@ struct ForallN_Permute_Functor<PERM_JKIML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, i, m, l);
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1498,8 +1498,8 @@ struct ForallN_Permute_Functor<PERM_JKLIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, l, i, m);
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1521,8 +1521,8 @@ struct ForallN_Permute_Functor<PERM_JKLMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, l, m, i);
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1544,8 +1544,8 @@ struct ForallN_Permute_Functor<PERM_JKMIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, m, i, l);
+  void operator()(Index_type j, Index_type k, Index_type m, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1567,8 +1567,8 @@ struct ForallN_Permute_Functor<PERM_JKMLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, k, m, l, i);
+  void operator()(Index_type j, Index_type k, Index_type m, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1590,8 +1590,8 @@ struct ForallN_Permute_Functor<PERM_JLIKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, i, k, m);
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1613,8 +1613,8 @@ struct ForallN_Permute_Functor<PERM_JLIMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, i, m, k);
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1636,8 +1636,8 @@ struct ForallN_Permute_Functor<PERM_JLKIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, k, i, m);
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1659,8 +1659,8 @@ struct ForallN_Permute_Functor<PERM_JLKMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, k, m, i);
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1682,8 +1682,8 @@ struct ForallN_Permute_Functor<PERM_JLMIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, m, i, k);
+  void operator()(Index_type j, Index_type l, Index_type m, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1705,8 +1705,8 @@ struct ForallN_Permute_Functor<PERM_JLMKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, l, m, k, i);
+  void operator()(Index_type j, Index_type l, Index_type m, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1728,8 +1728,8 @@ struct ForallN_Permute_Functor<PERM_JMIKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, i, k, l);
+  void operator()(Index_type j, Index_type m, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1751,8 +1751,8 @@ struct ForallN_Permute_Functor<PERM_JMILK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, i, l, k);
+  void operator()(Index_type j, Index_type m, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1774,8 +1774,8 @@ struct ForallN_Permute_Functor<PERM_JMKIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, k, i, l);
+  void operator()(Index_type j, Index_type m, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1797,8 +1797,8 @@ struct ForallN_Permute_Functor<PERM_JMKLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, k, l, i);
+  void operator()(Index_type j, Index_type m, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1820,8 +1820,8 @@ struct ForallN_Permute_Functor<PERM_JMLIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, l, i, k);
+  void operator()(Index_type j, Index_type m, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1843,8 +1843,8 @@ struct ForallN_Permute_Functor<PERM_JMLKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(j, m, l, k, i);
+  void operator()(Index_type j, Index_type m, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1866,8 +1866,8 @@ struct ForallN_Permute_Functor<PERM_KIJLM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, j, l, m);
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1889,8 +1889,8 @@ struct ForallN_Permute_Functor<PERM_KIJML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, j, m, l);
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1912,8 +1912,8 @@ struct ForallN_Permute_Functor<PERM_KILJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, l, j, m);
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1935,8 +1935,8 @@ struct ForallN_Permute_Functor<PERM_KILMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, l, m, j);
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1958,8 +1958,8 @@ struct ForallN_Permute_Functor<PERM_KIMJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, m, j, l);
+  void operator()(Index_type k, Index_type i, Index_type m, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -1981,8 +1981,8 @@ struct ForallN_Permute_Functor<PERM_KIMLJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, i, m, l, j);
+  void operator()(Index_type k, Index_type i, Index_type m, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2004,8 +2004,8 @@ struct ForallN_Permute_Functor<PERM_KJILM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, i, l, m);
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2027,8 +2027,8 @@ struct ForallN_Permute_Functor<PERM_KJIML, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, i, m, l);
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2050,8 +2050,8 @@ struct ForallN_Permute_Functor<PERM_KJLIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, l, i, m);
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2073,8 +2073,8 @@ struct ForallN_Permute_Functor<PERM_KJLMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, l, m, i);
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2096,8 +2096,8 @@ struct ForallN_Permute_Functor<PERM_KJMIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, m, i, l);
+  void operator()(Index_type k, Index_type j, Index_type m, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2119,8 +2119,8 @@ struct ForallN_Permute_Functor<PERM_KJMLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, j, m, l, i);
+  void operator()(Index_type k, Index_type j, Index_type m, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2142,8 +2142,8 @@ struct ForallN_Permute_Functor<PERM_KLIJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, i, j, m);
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2165,8 +2165,8 @@ struct ForallN_Permute_Functor<PERM_KLIMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, i, m, j);
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2188,8 +2188,8 @@ struct ForallN_Permute_Functor<PERM_KLJIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, j, i, m);
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2211,8 +2211,8 @@ struct ForallN_Permute_Functor<PERM_KLJMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, j, m, i);
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2234,8 +2234,8 @@ struct ForallN_Permute_Functor<PERM_KLMIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, m, i, j);
+  void operator()(Index_type k, Index_type l, Index_type m, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2257,8 +2257,8 @@ struct ForallN_Permute_Functor<PERM_KLMJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, l, m, j, i);
+  void operator()(Index_type k, Index_type l, Index_type m, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2280,8 +2280,8 @@ struct ForallN_Permute_Functor<PERM_KMIJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, i, j, l);
+  void operator()(Index_type k, Index_type m, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2303,8 +2303,8 @@ struct ForallN_Permute_Functor<PERM_KMILJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, i, l, j);
+  void operator()(Index_type k, Index_type m, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2326,8 +2326,8 @@ struct ForallN_Permute_Functor<PERM_KMJIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, j, i, l);
+  void operator()(Index_type k, Index_type m, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2349,8 +2349,8 @@ struct ForallN_Permute_Functor<PERM_KMJLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, j, l, i);
+  void operator()(Index_type k, Index_type m, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2372,8 +2372,8 @@ struct ForallN_Permute_Functor<PERM_KMLIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, l, i, j);
+  void operator()(Index_type k, Index_type m, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2395,8 +2395,8 @@ struct ForallN_Permute_Functor<PERM_KMLJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(k, m, l, j, i);
+  void operator()(Index_type k, Index_type m, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2418,8 +2418,8 @@ struct ForallN_Permute_Functor<PERM_LIJKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, j, k, m);
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2441,8 +2441,8 @@ struct ForallN_Permute_Functor<PERM_LIJMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, j, m, k);
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2464,8 +2464,8 @@ struct ForallN_Permute_Functor<PERM_LIKJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, k, j, m);
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2487,8 +2487,8 @@ struct ForallN_Permute_Functor<PERM_LIKMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, k, m, j);
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2510,8 +2510,8 @@ struct ForallN_Permute_Functor<PERM_LIMJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, m, j, k);
+  void operator()(Index_type l, Index_type i, Index_type m, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2533,8 +2533,8 @@ struct ForallN_Permute_Functor<PERM_LIMKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, i, m, k, j);
+  void operator()(Index_type l, Index_type i, Index_type m, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2556,8 +2556,8 @@ struct ForallN_Permute_Functor<PERM_LJIKM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, i, k, m);
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2579,8 +2579,8 @@ struct ForallN_Permute_Functor<PERM_LJIMK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, i, m, k);
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2602,8 +2602,8 @@ struct ForallN_Permute_Functor<PERM_LJKIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, k, i, m);
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2625,8 +2625,8 @@ struct ForallN_Permute_Functor<PERM_LJKMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, k, m, i);
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2648,8 +2648,8 @@ struct ForallN_Permute_Functor<PERM_LJMIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, m, i, k);
+  void operator()(Index_type l, Index_type j, Index_type m, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2671,8 +2671,8 @@ struct ForallN_Permute_Functor<PERM_LJMKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, j, m, k, i);
+  void operator()(Index_type l, Index_type j, Index_type m, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2694,8 +2694,8 @@ struct ForallN_Permute_Functor<PERM_LKIJM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, i, j, m);
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2717,8 +2717,8 @@ struct ForallN_Permute_Functor<PERM_LKIMJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, i, m, j);
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2740,8 +2740,8 @@ struct ForallN_Permute_Functor<PERM_LKJIM, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, j, i, m);
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2763,8 +2763,8 @@ struct ForallN_Permute_Functor<PERM_LKJMI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, j, m, i);
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2786,8 +2786,8 @@ struct ForallN_Permute_Functor<PERM_LKMIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, m, i, j);
+  void operator()(Index_type l, Index_type k, Index_type m, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2809,8 +2809,8 @@ struct ForallN_Permute_Functor<PERM_LKMJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, k, m, j, i);
+  void operator()(Index_type l, Index_type k, Index_type m, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2832,8 +2832,8 @@ struct ForallN_Permute_Functor<PERM_LMIJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, i, j, k);
+  void operator()(Index_type l, Index_type m, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2855,8 +2855,8 @@ struct ForallN_Permute_Functor<PERM_LMIKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, i, k, j);
+  void operator()(Index_type l, Index_type m, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2878,8 +2878,8 @@ struct ForallN_Permute_Functor<PERM_LMJIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, j, i, k);
+  void operator()(Index_type l, Index_type m, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2901,8 +2901,8 @@ struct ForallN_Permute_Functor<PERM_LMJKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, j, k, i);
+  void operator()(Index_type l, Index_type m, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2924,8 +2924,8 @@ struct ForallN_Permute_Functor<PERM_LMKIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, k, i, j);
+  void operator()(Index_type l, Index_type m, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2947,8 +2947,8 @@ struct ForallN_Permute_Functor<PERM_LMKJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(l, m, k, j, i);
+  void operator()(Index_type l, Index_type m, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2970,8 +2970,8 @@ struct ForallN_Permute_Functor<PERM_MIJKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, j, k, l);
+  void operator()(Index_type m, Index_type i, Index_type j, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -2993,8 +2993,8 @@ struct ForallN_Permute_Functor<PERM_MIJLK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, j, l, k);
+  void operator()(Index_type m, Index_type i, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3016,8 +3016,8 @@ struct ForallN_Permute_Functor<PERM_MIKJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, k, j, l);
+  void operator()(Index_type m, Index_type i, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3039,8 +3039,8 @@ struct ForallN_Permute_Functor<PERM_MIKLJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, k, l, j);
+  void operator()(Index_type m, Index_type i, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3062,8 +3062,8 @@ struct ForallN_Permute_Functor<PERM_MILJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, l, j, k);
+  void operator()(Index_type m, Index_type i, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3085,8 +3085,8 @@ struct ForallN_Permute_Functor<PERM_MILKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, i, l, k, j);
+  void operator()(Index_type m, Index_type i, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3108,8 +3108,8 @@ struct ForallN_Permute_Functor<PERM_MJIKL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, i, k, l);
+  void operator()(Index_type m, Index_type j, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3131,8 +3131,8 @@ struct ForallN_Permute_Functor<PERM_MJILK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, i, l, k);
+  void operator()(Index_type m, Index_type j, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3154,8 +3154,8 @@ struct ForallN_Permute_Functor<PERM_MJKIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, k, i, l);
+  void operator()(Index_type m, Index_type j, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3177,8 +3177,8 @@ struct ForallN_Permute_Functor<PERM_MJKLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, k, l, i);
+  void operator()(Index_type m, Index_type j, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3200,8 +3200,8 @@ struct ForallN_Permute_Functor<PERM_MJLIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, l, i, k);
+  void operator()(Index_type m, Index_type j, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3223,8 +3223,8 @@ struct ForallN_Permute_Functor<PERM_MJLKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, j, l, k, i);
+  void operator()(Index_type m, Index_type j, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3246,8 +3246,8 @@ struct ForallN_Permute_Functor<PERM_MKIJL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, i, j, l);
+  void operator()(Index_type m, Index_type k, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3269,8 +3269,8 @@ struct ForallN_Permute_Functor<PERM_MKILJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, i, l, j);
+  void operator()(Index_type m, Index_type k, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3292,8 +3292,8 @@ struct ForallN_Permute_Functor<PERM_MKJIL, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, j, i, l);
+  void operator()(Index_type m, Index_type k, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3315,8 +3315,8 @@ struct ForallN_Permute_Functor<PERM_MKJLI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, j, l, i);
+  void operator()(Index_type m, Index_type k, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3338,8 +3338,8 @@ struct ForallN_Permute_Functor<PERM_MKLIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, l, i, j);
+  void operator()(Index_type m, Index_type k, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3361,8 +3361,8 @@ struct ForallN_Permute_Functor<PERM_MKLJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, k, l, j, i);
+  void operator()(Index_type m, Index_type k, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3384,8 +3384,8 @@ struct ForallN_Permute_Functor<PERM_MLIJK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, i, j, k);
+  void operator()(Index_type m, Index_type l, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3407,8 +3407,8 @@ struct ForallN_Permute_Functor<PERM_MLIKJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, i, k, j);
+  void operator()(Index_type m, Index_type l, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3430,8 +3430,8 @@ struct ForallN_Permute_Functor<PERM_MLJIK, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, j, i, k);
+  void operator()(Index_type m, Index_type l, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3453,8 +3453,8 @@ struct ForallN_Permute_Functor<PERM_MLJKI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, j, k, i);
+  void operator()(Index_type m, Index_type l, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3476,8 +3476,8 @@ struct ForallN_Permute_Functor<PERM_MLKIJ, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, k, i, j);
+  void operator()(Index_type m, Index_type l, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
@@ -3499,8 +3499,8 @@ struct ForallN_Permute_Functor<PERM_MLKJI, BODY>{
 
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
-    body(m, l, k, j, i);
+  void operator()(Index_type m, Index_type l, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
   }
   
   template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>

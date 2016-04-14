@@ -228,7 +228,6 @@ struct ForallN_Executor<
   template<typename BODY, typename ... CARGS>
   RAJA_INLINE
   void callLauncher(CudaDim const &dims, BODY body, CARGS const &... cargs) const {
-  dims.print();
     cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, cargs...);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
