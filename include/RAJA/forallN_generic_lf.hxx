@@ -110,7 +110,6 @@ struct ForallN_PeelOuter {
 };
 
 
-
 template<typename PI, typename ... PREST>
 struct ForallN_Executor {
   typedef typename PI::ISET TI;
@@ -118,11 +117,11 @@ struct ForallN_Executor {
 
   typedef ForallN_Executor<PREST...> NextExec;
 
-  TI const is_i;
+  PI const is_i;
   NextExec next_exec;
 
   template<typename ... TREST>
-  ForallN_Executor(TI const &is_i0, TREST ... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
+  ForallN_Executor(PI const &is_i0, TREST ... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
 
   template<typename BODY>
   RAJA_INLINE
@@ -137,16 +136,15 @@ struct ForallN_Executor<PI> {
   typedef typename PI::ISET TI;
   typedef typename PI::POLICY POLICY_I;
 
-  TI const is_i;
+  PI const is_i;
 
-  explicit ForallN_Executor(TI const &is_i0) : is_i(is_i0) {printf("WOODF\n");}
+  explicit ForallN_Executor(PI const &is_i0) : is_i(is_i0) {}
 
   template<typename BODY>
   RAJA_INLINE void operator()(BODY body) const {
     RAJA::forall<POLICY_I>(is_i, body);
   }
 };
-
 
 
 /******************************************************************
