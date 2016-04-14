@@ -23,7 +23,11 @@ cuda_add_executable(reducesum.exe
 cuda_add_executable(traversal.exe
   Traversal.cxx)
 
+cuda_add_executable(nested.exe
+  Nested.cxx)
+
 target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
 target_link_libraries(reducesum.exe RAJA)
 target_link_libraries(traversal.exe RAJA)
+target_link_libraries(nested.exe RAJA)
