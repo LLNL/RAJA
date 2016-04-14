@@ -75,15 +75,31 @@ struct CudaThreadBlock {
 template<typename VIEW, int THREADS>
 using cuda_threadblock_exec = CudaPolicy<CudaThreadBlock<VIEW, THREADS>>;
 
+// Function to check indices for out-of-bounds
+template <typename BODY, typename ... ARGS>
+RAJA_INLINE
+__device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
+  if(i >= 0){
+    ForallN_BindFirstArg<BODY, Index_type> bound(body, i);
+    cudaCheckBounds(bound, args...);
+  }  
+}
 
-// Simple launcher, that maps thread (x,y) to indices
+template <typename BODY>
+RAJA_INLINE
+__device__ void cudaCheckBounds(BODY body, int i){
+  if(i >= 0){
+    body(i);
+  }  
+}
+
+// Launcher that uses execution policies to map blockIdx and threadIdx to map
+// to N-argument function
 template <typename BODY, typename ... CARGS>
 __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
-  //int i = ci();
-  //int j = cj();
-  //if(i >= 0 && j >= 0){
-    body((cargs())...);
-  //}
+  
+  // Compute indices and then pass through the bounds-checking mechanism
+  cudaCheckBounds(body, (cargs())... );
 }
 
 
