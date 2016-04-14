@@ -113,6 +113,11 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     // Copy to host the result
     cudaMemcpy(&phi_data[0], d_phi, sizeof(double)*phi_data.size(), cudaMemcpyDeviceToHost);
 
+    // Free CUDA memory
+    cudaFree(d_ell);
+    cudaFree(d_phi);
+    cudaFree(d_psi);
+
 
     ////
     //// CHECK ANSWER against the hand-written sequential kernel
