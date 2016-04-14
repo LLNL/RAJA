@@ -72,8 +72,93 @@ struct CudaThreadBlock {
   }  
 };
 
-template<typename VIEW, int THREADS>
-using cuda_threadblock_exec = CudaPolicy<CudaThreadBlock<VIEW, THREADS>>;
+template<int THREADS>
+using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
+
+template<int THREADS>
+using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
+
+template<int THREADS>
+using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
+
+
+
+
+template<typename VIEWDIM>
+struct CudaThread {
+  int begin;
+  int end;
+  
+  VIEWDIM view;
+  
+  CudaThread(CudaDim &dims, RangeSegment const &is) : 
+    begin(is.getBegin()), end(is.getEnd())
+  {  
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void){
+    
+    int idx = begin + view(threadIdx);
+    if(idx >= end){
+      idx = -1;
+    }
+    return idx;
+  }
+  
+  void inline setDims(CudaDim &dims){
+    int n = end-begin;
+    view(dims.num_threads) = n;  
+  }  
+};
+
+using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
+
+using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
+
+using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
+
+
+
+
+
+template<typename VIEWDIM>
+struct CudaBlock {
+  int begin;
+  int end;
+  
+  VIEWDIM view;
+  
+  CudaBlock(CudaDim &dims, RangeSegment const &is) : 
+    begin(is.getBegin()), end(is.getEnd())
+  {  
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void){
+    
+    int idx = begin + view(blockIdx);
+    if(idx >= end){
+      idx = -1;
+    }
+    return idx;
+  }
+  
+  void inline setDims(CudaDim &dims){
+    int n = end-begin;
+    view(dims.num_blocks) = n;  
+  }  
+};
+
+using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
+
+using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
+
+using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
+
+
+
+
 
 // Function to check indices for out-of-bounds
 template <typename BODY, typename ... ARGS>

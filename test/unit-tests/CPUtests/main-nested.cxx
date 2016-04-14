@@ -429,15 +429,15 @@ int main(int argc, char *argv[])
              << s_ntests_run_total << endl;
 
   //typedef NestedPolicy<ExecList<seq_exec>> PP;
-  typedef NestedPolicy<ExecList<cuda_threadblock_exec<Dim3x, 4>>> PP;
+  typedef NestedPolicy<ExecList<cuda_threadblock_x_exec<4>>> PP;
   forallN<PP>(RangeSegment(0,9), fcn());
 
 
   typedef NestedPolicy<ExecList<
-    cuda_threadblock_exec<Dim3x, 4>,
-    cuda_threadblock_exec<Dim3y, 3>
+    cuda_block_z_exec,
+    cuda_thread_z_exec
     >> PPP;
-  forallN<PPP>(RangeSegment(0, 4), RangeSegment(0,4), fcn());
+  forallN<PPP>(RangeSegment(0, 3), RangeSegment(0,4), fcn());
 
 //
 // Clean up....
