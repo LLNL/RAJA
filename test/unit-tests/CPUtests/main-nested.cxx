@@ -36,8 +36,6 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 
-#if 1
-
 ///////////////////////////////////////////////////////////////////////////
 //
 // Method that defines and runs a basic RAJA 2d kernel test
@@ -224,7 +222,17 @@ void run2dTests(Index_type size_i, Index_type size_j){
 //
 // Example LTimes kernel test routines
 //
+// Demonstrates a 4-nested loop, the use of complex nested policies and
+// the use of strongly-typed indices
+//
+// This routine computes phi(m, g, z) = SUM_d {  ell(m, d)*psi(d,g,z)  }
+//
 ///////////////////////////////////////////////////////////////////////////
+
+RAJA_INDEX_VALUE(IMoment, "IMoment");
+RAJA_INDEX_VALUE(IDirection, "IDirection");
+RAJA_INDEX_VALUE(IGroup, "IGroup");
+RAJA_INDEX_VALUE(IZone, "IZone");
 
 template <typename POL>
 void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type num_directions, Index_type num_groups, Index_type num_zones)
@@ -233,10 +241,6 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
    cout << "\n TestLTimes " << num_moments << " moments, " << num_directions << " directions, " << num_groups << " groups, and " << num_zones << " zones"
        << " with policy " << policy << "\n";
 
-
-     /*
-      * This routine computes phi(m, g, z) = SUM_d {  ell(m, d)*psi(d,g,z)  }
-      */
 
     s_ntests_run++;
     s_ntests_run_total++;
@@ -266,24 +270,26 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     // get execution policy
     using EXEC = typename POL::EXEC;
 
-    // do calculation
-    forallN<EXEC, int, int, int, int>(
+    // do calculation using RAJA
+    forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
         RangeSegment(0, num_moments),
         RangeSegment(0, num_directions),
         RangeSegment(0, num_groups),
         RangeSegment(0, num_zones),
-        [=](int m, int d, int g, int z){phi(m,g,z) += ell(m,d) * psi(d,g,z);}
+        [=](IMoment m, IDirection d, IGroup g, IZone z){
+          phi(m,g,z) += ell(m,d) * psi(d,g,z);
+        }
     );
 
     ////
     //// CHECK ANSWER against the hand-written sequential kernel
     ////
     size_t nfailed = 0;
-    for(int z = 0;z < num_zones;++ z){
-      for(int g = 0;g < num_groups;++ g){
-        for(int m = 0;m < num_moments;++ m){
+    for(IZone z(0);z < num_zones;++ z){
+      for(IGroup g(0);g < num_groups;++ g){
+        for(IMoment m(0);m < num_moments;++ m){
           double total = 0.0;
-          for(int d = 0;d < num_directions;++ d){
+          for(IDirection d(0);d < num_directions;++ d){
             total += ell(m,d) * psi(d,g,z);
           }
 
@@ -312,13 +318,13 @@ struct PolLTimesA {
   typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec> > EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, int, int, int>> PSI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>> PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, int, int, int>> PHI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, int, int>> ELL_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
 };
 
 // Sequential, reversed permutation
@@ -329,36 +335,82 @@ struct PolLTimesB {
       > EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, int, int, int>> PSI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>> PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, int, int, int>> PHI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_JI, int, int>> ELL_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_JI, IMoment, IDirection>> ELL_VIEW;
 };
 
 // Sequential, Tiled, another permutation
 struct PolLTimesC {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-        //Tile<TileList<tile_none, tile_none, tile_fixed<64>, tile_fixed<64>>,
+        Tile<TileList<tile_none, tile_none, tile_fixed<64>, tile_fixed<64>>,
           Permute<PERM_JKIL>
-        //>
+        >
       > EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, int, int, int>> PSI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>> PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, int, int, int>> PHI_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, int, int>> ELL_VIEW;
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
 };
 
 
 #ifdef RAJA_USE_OPENMP
+
+
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
+struct PolLTimesD_OMP {
+  // Loops: Moments, Directions, Groups, Zones
+  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, omp_for_nowait_exec>,
+    OMP_Parallel<
+      Permute<PERM_LKIJ,
+        Execute // implicit
+      >
+    >
+  > EXEC;
+
+  // psi[direction, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>> PSI_VIEW;
+
+  // phi[moment, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>> PHI_VIEW;
+
+  // ell[moment, direction]
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
+};
+
+// Same as D, but with tiling on zones
+struct PolLTimesE_OMP {
+  // Loops: Moments, Directions, Groups, Zones
+  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, omp_for_nowait_exec>,
+    OMP_Parallel<
+      Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
+        Permute<PERM_LKIJ,
+          Execute // implicit
+        >
+      >
+    >
+  > EXEC;
+
+  // psi[direction, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>> PSI_VIEW;
+
+  // phi[moment, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>> PHI_VIEW;
+
+  // ell[moment, direction]
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
+};
+
 
 #endif
 
@@ -370,35 +422,17 @@ void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_typ
   runLTimesTest<PolLTimesC>("PolLTimesC", num_moments, num_directions, num_groups, num_zones);
 
 #ifdef RAJA_USE_OPENMP
-
+  runLTimesTest<PolLTimesD_OMP>("PolLTimesD_OMP", num_moments, num_directions, num_groups, num_zones);
+  runLTimesTest<PolLTimesE_OMP>("PolLTimesE_OMP", num_moments, num_directions, num_groups, num_zones);
 #endif
 }
 
-#endif
 
 ///////////////////////////////////////////////////////////////////////////
 //
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-
-
-struct fcn{
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void operator()(int i) const {
-    printf("i=%d\n", i);
-  }
-  
-  
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void operator()(int i, int j) const {
-    printf("ij=%d,%d\n", i, j);
-  }
-  
-  
-};
 
 int main(int argc, char *argv[])
 {
@@ -427,18 +461,6 @@ int main(int argc, char *argv[])
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
-  //typedef NestedPolicy<ExecList<seq_exec>> PP;
-  /*
-  typedef NestedPolicy<ExecList<cuda_threadblock_x_exec<4>>> PP;
-  forallN<PP>(RangeSegment(0,9), fcn());
-
-
-  typedef NestedPolicy<ExecList<
-    cuda_block_z_exec,
-    cuda_thread_z_exec
-    >> PPP;
-  forallN<PPP>(RangeSegment(0, 3), RangeSegment(0,4), fcn());
-*/
 //
 // Clean up....
 //  
