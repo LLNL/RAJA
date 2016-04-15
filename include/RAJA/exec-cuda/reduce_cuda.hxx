@@ -45,6 +45,19 @@ namespace RAJA {
 #define RAJA_USE_ATOMIC_TWO
 //#define RAJA_USE_NO_ATOMICS
 
+#if 0
+#define ull_to_double(x) \
+   __longlong_as_double(reinterpret_cast<long long>(x))
+
+#define double_to_ull(x) \
+   reinterpret_cast<unsigned long long>(__double_as_longlong(x))
+#else
+#define ull_to_double(x) __longlong_as_double(x)
+
+#define double_to_ull(x) __double_as_longlong(x)
+#endif
+
+
 /*!
  ******************************************************************************
  *
@@ -71,31 +84,43 @@ double shfl_xor(double var, int laneMask)
  */
 __device__ inline void atomicMin(double *address, double value)
 {
+  double temp = *(reinterpret_cast<double volatile *>(address)) ;
+  if (temp > value) {
     unsigned long long oldval, newval, readback;
-    oldval = __double_as_longlong(*address);
-    newval = __double_as_longlong(value);
+    oldval = double_to_ull(temp);
+    newval = double_to_ull(value);
+    unsigned long long *address_as_ull =
+             reinterpret_cast<unsigned long long *>(address);
+
     while ((readback = 
-            atomicCAS((unsigned long long*)address,oldval,newval)) != oldval)
+            atomicCAS(address_as_ull, oldval, newval)) != oldval)
     {
-        oldval = readback;
-        newval = __double_as_longlong( 
-                    RAJA_MIN(__longlong_as_double(oldval),value) );
+      oldval = readback;
+      newval = double_to_ull(RAJA_MIN(ull_to_double(oldval), value)) ;
     }
+  }
 }
+
 ///
 __device__ inline void atomicMax(double *address, double value)
 {
-    unsigned long long oldval, newval, readback;
-    oldval = __double_as_longlong(*address);
-    newval = __double_as_longlong(value);
+  double temp = *(reinterpret_cast<double volatile *>(address)) ;
+  if (temp < value) {
+    unsigned long long oldval, newval, readback ;
+    oldval = double_to_ull(temp);
+    newval = double_to_ull(value);
+    unsigned long long *address_as_ull =
+             reinterpret_cast<unsigned long long *>(address);
+
     while ((readback =
-            atomicCAS((unsigned long long*)address,oldval,newval)) != oldval)
+            atomicCAS(address_as_ull, oldval, newval)) != oldval)
     {
-        oldval = readback;
-        newval = __double_as_longlong(
-                    RAJA_MAX(__longlong_as_double(oldval),value) );
+      oldval = readback;
+      newval = double_to_ull(RAJA_MAX(ull_to_double(oldval), value));
     }
+  }
 }
+
 
 #elif defined(RAJA_USE_ATOMIC_TWO)
 
@@ -111,28 +136,72 @@ __device__ inline void atomicMax(double *address, double value)
  */
 __device__ inline void atomicMin(double *address, double value)
 {
-    unsigned long long int* address_as_ull =
-                            (unsigned long long int*)address;
-    unsigned long long int oldval = *address_as_ull, assumed;
+  double temp = *(reinterpret_cast<double volatile *>(address)) ;
+  if (temp > value) {
+    unsigned long long *address_as_ull =
+             reinterpret_cast<unsigned long long *>(address);
 
+    unsigned long long assumed ;
+    unsigned long long oldval = double_to_ull(temp) ;
     do {
-       assumed = oldval;
-       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong( 
-                        RAJA_MIN( __longlong_as_double(assumed), value) ) );
+      assumed = oldval;
+      oldval = atomicCAS(address_as_ull, assumed,
+                         double_to_ull(RAJA_MIN(ull_to_double(assumed), value))
+                        );
     } while (assumed != oldval);
+  }
+}
+///
+__device__ inline void atomicMin(float *address, float value)
+{
+  float temp = *(reinterpret_cast<float volatile *>(address));
+  if(temp > value) {
+    int *address_as_i = (int *) address;
+    int assumed ;
+    int oldval = __float_as_int(temp) ;
+    do
+    {
+      assumed = oldval;
+      oldval = atomicCAS(address_as_i, assumed,
+                         __float_as_int(RAJA_MIN(__int_as_float(assumed),value))
+                        );
+    } while(assumed != oldval) ;
+  }
 }
 ///
 __device__ inline void atomicMax(double *address, double value)
 {
-    unsigned long long int* address_as_ull =
-                            (unsigned long long int*)address;
-    unsigned long long int oldval = *address_as_ull, assumed;
+  double temp = *(reinterpret_cast<double volatile *>(address)) ;
+  if (temp < value) {
+    unsigned long long *address_as_ull =
+             reinterpret_cast<unsigned long long *>(address);
 
+    unsigned long long assumed ;
+    unsigned long long oldval = double_to_ull(temp) ;
     do {
-       assumed = oldval;
-       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong(
-                        RAJA_MAX( __longlong_as_double(assumed), value) ) );
+      assumed = oldval;
+      oldval = atomicCAS(address_as_ull, assumed,
+                         double_to_ull(RAJA_MAX(ull_to_double(assumed), value))
+                        );
     } while (assumed != oldval);
+  }
+}
+///
+__device__ inline void atomicMax(float *address, float value)
+{
+  float temp = *(reinterpret_cast<float volatile *>(address));
+  if(temp < value) {
+    int *address_as_i = (int *) address;
+    int assumed ;
+    int oldval = __float_as_int(temp) ;
+    do
+    {
+      assumed = oldval;
+      oldval = atomicCAS(address_as_i, assumed,
+                         __float_as_int(RAJA_MAX(__int_as_float(assumed),value))
+                        );
+    } while(assumed != oldval) ;
+  }
 }
 
 #elif defined(RAJA_USE_NO_ATOMICS)
