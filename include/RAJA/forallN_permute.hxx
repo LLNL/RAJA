@@ -12,2091 +12,3507 @@
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
+#include "forallN_permute_lf.hxx"
 
 namespace RAJA {
 
 
 
-/******************************************************************
- *  ForallN loop interchange policies
- ******************************************************************/
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJ, BODY>{
 
-// Interchange loop order given permutation
-struct Forall2_Permute_Tag {};
-template<typename LOOP_ORDER, typename NEXT=Forall2_Execute>
-struct Forall2_Permute {
-  typedef Forall2_Permute_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-  typedef LOOP_ORDER LoopOrder;
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j) const {
+    body(i, j);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj);
+  }
+  
+  BODY body;
 };
 
-// Interchange loop order given permutation
-struct Forall3_Permute_Tag {};
-template<typename LOOP_ORDER, typename NEXT=Forall3_Execute>
-struct Forall3_Permute {
-  typedef Forall3_Permute_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-  typedef LOOP_ORDER LoopOrder;
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i) const {
+    body(i, j);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi);
+  }
+  
+  BODY body;
 };
 
-// Interchange loop order given permutation
-struct Forall4_Permute_Tag {};
-template<typename LOOP_ORDER, typename NEXT=Forall4_Execute>
-struct Forall4_Permute {
-  typedef Forall4_Permute_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-  typedef LOOP_ORDER LoopOrder;
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk);
+  }
+  
+  BODY body;
 };
 
-// Interchange loop order given permutation
-struct Forall5_Permute_Tag {};
-template<typename LOOP_ORDER, typename NEXT=Forall5_Execute>
-struct Forall5_Permute {
-  typedef Forall5_Permute_Tag PolicyTag;
-  typedef NEXT NextPolicy;
-  typedef LOOP_ORDER LoopOrder;
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj);
+  }
+  
+  BODY body;
 };
 
-
-/******************************************************************
- *  ForallN loop interchange policies
- ******************************************************************/
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_permute(PERM_IJ, TI const &is_i, TJ const &is_j, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall2_policy<NextPolicy, PolicyI, PolicyJ>(NextPolicyTag(), is_i, is_j,
-    [=](Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_permute(PERM_JI, TI const &is_i, TJ const &is_j, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall2_policy<NextPolicy, PolicyJ, PolicyI>(NextPolicyTag(), is_j, is_i,
-    [=](Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_IJK, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_j, is_k,
-    [=](Index_type i, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_IKJ, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_k, is_j,
-    [=](Index_type i, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_JIK, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_i, is_k,
-    [=](Index_type j, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_JKI, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_k, is_i,
-    [=](Index_type j, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_KIJ, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_i, is_j,
-    [=](Index_type k, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_permute(PERM_KJI, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall3_policy<NextPolicy, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_j, is_i,
-    [=](Index_type k, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_IJKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_j, is_k, is_l,
-    [=](Index_type i, Index_type j, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_IJLK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyJ, PolicyL, PolicyK>(NextPolicyTag(), is_i, is_j, is_l, is_k,
-    [=](Index_type i, Index_type j, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_IKJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyK, PolicyJ, PolicyL>(NextPolicyTag(), is_i, is_k, is_j, is_l,
-    [=](Index_type i, Index_type k, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_IKLJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyK, PolicyL, PolicyJ>(NextPolicyTag(), is_i, is_k, is_l, is_j,
-    [=](Index_type i, Index_type k, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_ILJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyL, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_l, is_j, is_k,
-    [=](Index_type i, Index_type l, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_ILKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyI, PolicyL, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_l, is_k, is_j,
-    [=](Index_type i, Index_type l, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JIKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyI, PolicyK, PolicyL>(NextPolicyTag(), is_j, is_i, is_k, is_l,
-    [=](Index_type j, Index_type i, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JILK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyI, PolicyL, PolicyK>(NextPolicyTag(), is_j, is_i, is_l, is_k,
-    [=](Index_type j, Index_type i, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JKIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyK, PolicyI, PolicyL>(NextPolicyTag(), is_j, is_k, is_i, is_l,
-    [=](Index_type j, Index_type k, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JKLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyK, PolicyL, PolicyI>(NextPolicyTag(), is_j, is_k, is_l, is_i,
-    [=](Index_type j, Index_type k, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JLIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyL, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_l, is_i, is_k,
-    [=](Index_type j, Index_type l, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_JLKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyJ, PolicyL, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_l, is_k, is_i,
-    [=](Index_type j, Index_type l, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KIJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyI, PolicyJ, PolicyL>(NextPolicyTag(), is_k, is_i, is_j, is_l,
-    [=](Index_type k, Index_type i, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KILJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyI, PolicyL, PolicyJ>(NextPolicyTag(), is_k, is_i, is_l, is_j,
-    [=](Index_type k, Index_type i, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KJIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyJ, PolicyI, PolicyL>(NextPolicyTag(), is_k, is_j, is_i, is_l,
-    [=](Index_type k, Index_type j, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KJLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyJ, PolicyL, PolicyI>(NextPolicyTag(), is_k, is_j, is_l, is_i,
-    [=](Index_type k, Index_type j, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KLIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyL, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_l, is_i, is_j,
-    [=](Index_type k, Index_type l, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_KLJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyK, PolicyL, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_l, is_j, is_i,
-    [=](Index_type k, Index_type l, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LIJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_l, is_i, is_j, is_k,
-    [=](Index_type l, Index_type i, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LIKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_l, is_i, is_k, is_j,
-    [=](Index_type l, Index_type i, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LJIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_l, is_j, is_i, is_k,
-    [=](Index_type l, Index_type j, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LJKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_l, is_j, is_k, is_i,
-    [=](Index_type l, Index_type j, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LKIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_l, is_k, is_i, is_j,
-    [=](Index_type l, Index_type k, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_permute(PERM_LKJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall4_policy<NextPolicy, PolicyL, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_l, is_k, is_j, is_i,
-    [=](Index_type l, Index_type k, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJKLM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyL, PolicyM>(NextPolicyTag(), is_i, is_j, is_k, is_l, is_m,
-    [=](Index_type i, Index_type j, Index_type k, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJKML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyK, PolicyM, PolicyL>(NextPolicyTag(), is_i, is_j, is_k, is_m, is_l,
-    [=](Index_type i, Index_type j, Index_type k, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJLKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyL, PolicyK, PolicyM>(NextPolicyTag(), is_i, is_j, is_l, is_k, is_m,
-    [=](Index_type i, Index_type j, Index_type l, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJLMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyL, PolicyM, PolicyK>(NextPolicyTag(), is_i, is_j, is_l, is_m, is_k,
-    [=](Index_type i, Index_type j, Index_type l, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJMKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyM, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_j, is_m, is_k, is_l,
-    [=](Index_type i, Index_type j, Index_type m, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IJMLK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyJ, PolicyM, PolicyL, PolicyK>(NextPolicyTag(), is_i, is_j, is_m, is_l, is_k,
-    [=](Index_type i, Index_type j, Index_type m, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKJLM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyJ, PolicyL, PolicyM>(NextPolicyTag(), is_i, is_k, is_j, is_l, is_m,
-    [=](Index_type i, Index_type k, Index_type j, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKJML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyJ, PolicyM, PolicyL>(NextPolicyTag(), is_i, is_k, is_j, is_m, is_l,
-    [=](Index_type i, Index_type k, Index_type j, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKLJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyL, PolicyJ, PolicyM>(NextPolicyTag(), is_i, is_k, is_l, is_j, is_m,
-    [=](Index_type i, Index_type k, Index_type l, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKLMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyL, PolicyM, PolicyJ>(NextPolicyTag(), is_i, is_k, is_l, is_m, is_j,
-    [=](Index_type i, Index_type k, Index_type l, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKMJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyM, PolicyJ, PolicyL>(NextPolicyTag(), is_i, is_k, is_m, is_j, is_l,
-    [=](Index_type i, Index_type k, Index_type m, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IKMLJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyK, PolicyM, PolicyL, PolicyJ>(NextPolicyTag(), is_i, is_k, is_m, is_l, is_j,
-    [=](Index_type i, Index_type k, Index_type m, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILJKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyJ, PolicyK, PolicyM>(NextPolicyTag(), is_i, is_l, is_j, is_k, is_m,
-    [=](Index_type i, Index_type l, Index_type j, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILJMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyJ, PolicyM, PolicyK>(NextPolicyTag(), is_i, is_l, is_j, is_m, is_k,
-    [=](Index_type i, Index_type l, Index_type j, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILKJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyK, PolicyJ, PolicyM>(NextPolicyTag(), is_i, is_l, is_k, is_j, is_m,
-    [=](Index_type i, Index_type l, Index_type k, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILKMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyK, PolicyM, PolicyJ>(NextPolicyTag(), is_i, is_l, is_k, is_m, is_j,
-    [=](Index_type i, Index_type l, Index_type k, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILMJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyM, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_l, is_m, is_j, is_k,
-    [=](Index_type i, Index_type l, Index_type m, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_ILMKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyL, PolicyM, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_l, is_m, is_k, is_j,
-    [=](Index_type i, Index_type l, Index_type m, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMJKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_i, is_m, is_j, is_k, is_l,
-    [=](Index_type i, Index_type m, Index_type j, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMJLK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyJ, PolicyL, PolicyK>(NextPolicyTag(), is_i, is_m, is_j, is_l, is_k,
-    [=](Index_type i, Index_type m, Index_type j, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMKJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyK, PolicyJ, PolicyL>(NextPolicyTag(), is_i, is_m, is_k, is_j, is_l,
-    [=](Index_type i, Index_type m, Index_type k, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMKLJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyK, PolicyL, PolicyJ>(NextPolicyTag(), is_i, is_m, is_k, is_l, is_j,
-    [=](Index_type i, Index_type m, Index_type k, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMLJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyL, PolicyJ, PolicyK>(NextPolicyTag(), is_i, is_m, is_l, is_j, is_k,
-    [=](Index_type i, Index_type m, Index_type l, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_IMLKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyI, PolicyM, PolicyL, PolicyK, PolicyJ>(NextPolicyTag(), is_i, is_m, is_l, is_k, is_j,
-    [=](Index_type i, Index_type m, Index_type l, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JIKLM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyK, PolicyL, PolicyM>(NextPolicyTag(), is_j, is_i, is_k, is_l, is_m,
-    [=](Index_type j, Index_type i, Index_type k, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JIKML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyK, PolicyM, PolicyL>(NextPolicyTag(), is_j, is_i, is_k, is_m, is_l,
-    [=](Index_type j, Index_type i, Index_type k, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JILKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyL, PolicyK, PolicyM>(NextPolicyTag(), is_j, is_i, is_l, is_k, is_m,
-    [=](Index_type j, Index_type i, Index_type l, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JILMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyL, PolicyM, PolicyK>(NextPolicyTag(), is_j, is_i, is_l, is_m, is_k,
-    [=](Index_type j, Index_type i, Index_type l, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JIMKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyM, PolicyK, PolicyL>(NextPolicyTag(), is_j, is_i, is_m, is_k, is_l,
-    [=](Index_type j, Index_type i, Index_type m, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JIMLK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyI, PolicyM, PolicyL, PolicyK>(NextPolicyTag(), is_j, is_i, is_m, is_l, is_k,
-    [=](Index_type j, Index_type i, Index_type m, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKILM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyI, PolicyL, PolicyM>(NextPolicyTag(), is_j, is_k, is_i, is_l, is_m,
-    [=](Index_type j, Index_type k, Index_type i, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKIML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyI, PolicyM, PolicyL>(NextPolicyTag(), is_j, is_k, is_i, is_m, is_l,
-    [=](Index_type j, Index_type k, Index_type i, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKLIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyL, PolicyI, PolicyM>(NextPolicyTag(), is_j, is_k, is_l, is_i, is_m,
-    [=](Index_type j, Index_type k, Index_type l, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKLMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyL, PolicyM, PolicyI>(NextPolicyTag(), is_j, is_k, is_l, is_m, is_i,
-    [=](Index_type j, Index_type k, Index_type l, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKMIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyM, PolicyI, PolicyL>(NextPolicyTag(), is_j, is_k, is_m, is_i, is_l,
-    [=](Index_type j, Index_type k, Index_type m, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JKMLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyK, PolicyM, PolicyL, PolicyI>(NextPolicyTag(), is_j, is_k, is_m, is_l, is_i,
-    [=](Index_type j, Index_type k, Index_type m, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLIKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyI, PolicyK, PolicyM>(NextPolicyTag(), is_j, is_l, is_i, is_k, is_m,
-    [=](Index_type j, Index_type l, Index_type i, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLIMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyI, PolicyM, PolicyK>(NextPolicyTag(), is_j, is_l, is_i, is_m, is_k,
-    [=](Index_type j, Index_type l, Index_type i, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLKIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyK, PolicyI, PolicyM>(NextPolicyTag(), is_j, is_l, is_k, is_i, is_m,
-    [=](Index_type j, Index_type l, Index_type k, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLKMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyK, PolicyM, PolicyI>(NextPolicyTag(), is_j, is_l, is_k, is_m, is_i,
-    [=](Index_type j, Index_type l, Index_type k, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLMIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyM, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_l, is_m, is_i, is_k,
-    [=](Index_type j, Index_type l, Index_type m, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JLMKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyL, PolicyM, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_l, is_m, is_k, is_i,
-    [=](Index_type j, Index_type l, Index_type m, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMIKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyI, PolicyK, PolicyL>(NextPolicyTag(), is_j, is_m, is_i, is_k, is_l,
-    [=](Index_type j, Index_type m, Index_type i, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMILK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyI, PolicyL, PolicyK>(NextPolicyTag(), is_j, is_m, is_i, is_l, is_k,
-    [=](Index_type j, Index_type m, Index_type i, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMKIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyK, PolicyI, PolicyL>(NextPolicyTag(), is_j, is_m, is_k, is_i, is_l,
-    [=](Index_type j, Index_type m, Index_type k, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMKLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyK, PolicyL, PolicyI>(NextPolicyTag(), is_j, is_m, is_k, is_l, is_i,
-    [=](Index_type j, Index_type m, Index_type k, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMLIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyL, PolicyI, PolicyK>(NextPolicyTag(), is_j, is_m, is_l, is_i, is_k,
-    [=](Index_type j, Index_type m, Index_type l, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_JMLKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyJ, PolicyM, PolicyL, PolicyK, PolicyI>(NextPolicyTag(), is_j, is_m, is_l, is_k, is_i,
-    [=](Index_type j, Index_type m, Index_type l, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KIJLM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyJ, PolicyL, PolicyM>(NextPolicyTag(), is_k, is_i, is_j, is_l, is_m,
-    [=](Index_type k, Index_type i, Index_type j, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KIJML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyJ, PolicyM, PolicyL>(NextPolicyTag(), is_k, is_i, is_j, is_m, is_l,
-    [=](Index_type k, Index_type i, Index_type j, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KILJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyL, PolicyJ, PolicyM>(NextPolicyTag(), is_k, is_i, is_l, is_j, is_m,
-    [=](Index_type k, Index_type i, Index_type l, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KILMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyL, PolicyM, PolicyJ>(NextPolicyTag(), is_k, is_i, is_l, is_m, is_j,
-    [=](Index_type k, Index_type i, Index_type l, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KIMJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyM, PolicyJ, PolicyL>(NextPolicyTag(), is_k, is_i, is_m, is_j, is_l,
-    [=](Index_type k, Index_type i, Index_type m, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KIMLJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyI, PolicyM, PolicyL, PolicyJ>(NextPolicyTag(), is_k, is_i, is_m, is_l, is_j,
-    [=](Index_type k, Index_type i, Index_type m, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJILM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyI, PolicyL, PolicyM>(NextPolicyTag(), is_k, is_j, is_i, is_l, is_m,
-    [=](Index_type k, Index_type j, Index_type i, Index_type l, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJIML, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyI, PolicyM, PolicyL>(NextPolicyTag(), is_k, is_j, is_i, is_m, is_l,
-    [=](Index_type k, Index_type j, Index_type i, Index_type m, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJLIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyL, PolicyI, PolicyM>(NextPolicyTag(), is_k, is_j, is_l, is_i, is_m,
-    [=](Index_type k, Index_type j, Index_type l, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJLMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyL, PolicyM, PolicyI>(NextPolicyTag(), is_k, is_j, is_l, is_m, is_i,
-    [=](Index_type k, Index_type j, Index_type l, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJMIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyM, PolicyI, PolicyL>(NextPolicyTag(), is_k, is_j, is_m, is_i, is_l,
-    [=](Index_type k, Index_type j, Index_type m, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KJMLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyJ, PolicyM, PolicyL, PolicyI>(NextPolicyTag(), is_k, is_j, is_m, is_l, is_i,
-    [=](Index_type k, Index_type j, Index_type m, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLIJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyI, PolicyJ, PolicyM>(NextPolicyTag(), is_k, is_l, is_i, is_j, is_m,
-    [=](Index_type k, Index_type l, Index_type i, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLIMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyI, PolicyM, PolicyJ>(NextPolicyTag(), is_k, is_l, is_i, is_m, is_j,
-    [=](Index_type k, Index_type l, Index_type i, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLJIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyJ, PolicyI, PolicyM>(NextPolicyTag(), is_k, is_l, is_j, is_i, is_m,
-    [=](Index_type k, Index_type l, Index_type j, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLJMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyJ, PolicyM, PolicyI>(NextPolicyTag(), is_k, is_l, is_j, is_m, is_i,
-    [=](Index_type k, Index_type l, Index_type j, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLMIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyM, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_l, is_m, is_i, is_j,
-    [=](Index_type k, Index_type l, Index_type m, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KLMJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyL, PolicyM, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_l, is_m, is_j, is_i,
-    [=](Index_type k, Index_type l, Index_type m, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMIJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyI, PolicyJ, PolicyL>(NextPolicyTag(), is_k, is_m, is_i, is_j, is_l,
-    [=](Index_type k, Index_type m, Index_type i, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMILJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyI, PolicyL, PolicyJ>(NextPolicyTag(), is_k, is_m, is_i, is_l, is_j,
-    [=](Index_type k, Index_type m, Index_type i, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMJIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyJ, PolicyI, PolicyL>(NextPolicyTag(), is_k, is_m, is_j, is_i, is_l,
-    [=](Index_type k, Index_type m, Index_type j, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMJLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyJ, PolicyL, PolicyI>(NextPolicyTag(), is_k, is_m, is_j, is_l, is_i,
-    [=](Index_type k, Index_type m, Index_type j, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMLIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyL, PolicyI, PolicyJ>(NextPolicyTag(), is_k, is_m, is_l, is_i, is_j,
-    [=](Index_type k, Index_type m, Index_type l, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_KMLJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyK, PolicyM, PolicyL, PolicyJ, PolicyI>(NextPolicyTag(), is_k, is_m, is_l, is_j, is_i,
-    [=](Index_type k, Index_type m, Index_type l, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIJKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyJ, PolicyK, PolicyM>(NextPolicyTag(), is_l, is_i, is_j, is_k, is_m,
-    [=](Index_type l, Index_type i, Index_type j, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIJMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyJ, PolicyM, PolicyK>(NextPolicyTag(), is_l, is_i, is_j, is_m, is_k,
-    [=](Index_type l, Index_type i, Index_type j, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIKJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyK, PolicyJ, PolicyM>(NextPolicyTag(), is_l, is_i, is_k, is_j, is_m,
-    [=](Index_type l, Index_type i, Index_type k, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIKMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyK, PolicyM, PolicyJ>(NextPolicyTag(), is_l, is_i, is_k, is_m, is_j,
-    [=](Index_type l, Index_type i, Index_type k, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIMJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyM, PolicyJ, PolicyK>(NextPolicyTag(), is_l, is_i, is_m, is_j, is_k,
-    [=](Index_type l, Index_type i, Index_type m, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LIMKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyI, PolicyM, PolicyK, PolicyJ>(NextPolicyTag(), is_l, is_i, is_m, is_k, is_j,
-    [=](Index_type l, Index_type i, Index_type m, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJIKM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyI, PolicyK, PolicyM>(NextPolicyTag(), is_l, is_j, is_i, is_k, is_m,
-    [=](Index_type l, Index_type j, Index_type i, Index_type k, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJIMK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyI, PolicyM, PolicyK>(NextPolicyTag(), is_l, is_j, is_i, is_m, is_k,
-    [=](Index_type l, Index_type j, Index_type i, Index_type m, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJKIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyK, PolicyI, PolicyM>(NextPolicyTag(), is_l, is_j, is_k, is_i, is_m,
-    [=](Index_type l, Index_type j, Index_type k, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJKMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyK, PolicyM, PolicyI>(NextPolicyTag(), is_l, is_j, is_k, is_m, is_i,
-    [=](Index_type l, Index_type j, Index_type k, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJMIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyM, PolicyI, PolicyK>(NextPolicyTag(), is_l, is_j, is_m, is_i, is_k,
-    [=](Index_type l, Index_type j, Index_type m, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LJMKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyJ, PolicyM, PolicyK, PolicyI>(NextPolicyTag(), is_l, is_j, is_m, is_k, is_i,
-    [=](Index_type l, Index_type j, Index_type m, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKIJM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyI, PolicyJ, PolicyM>(NextPolicyTag(), is_l, is_k, is_i, is_j, is_m,
-    [=](Index_type l, Index_type k, Index_type i, Index_type j, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKIMJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyI, PolicyM, PolicyJ>(NextPolicyTag(), is_l, is_k, is_i, is_m, is_j,
-    [=](Index_type l, Index_type k, Index_type i, Index_type m, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKJIM, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyJ, PolicyI, PolicyM>(NextPolicyTag(), is_l, is_k, is_j, is_i, is_m,
-    [=](Index_type l, Index_type k, Index_type j, Index_type i, Index_type m){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKJMI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyJ, PolicyM, PolicyI>(NextPolicyTag(), is_l, is_k, is_j, is_m, is_i,
-    [=](Index_type l, Index_type k, Index_type j, Index_type m, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKMIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyM, PolicyI, PolicyJ>(NextPolicyTag(), is_l, is_k, is_m, is_i, is_j,
-    [=](Index_type l, Index_type k, Index_type m, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LKMJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyK, PolicyM, PolicyJ, PolicyI>(NextPolicyTag(), is_l, is_k, is_m, is_j, is_i,
-    [=](Index_type l, Index_type k, Index_type m, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMIJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_l, is_m, is_i, is_j, is_k,
-    [=](Index_type l, Index_type m, Index_type i, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMIKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_l, is_m, is_i, is_k, is_j,
-    [=](Index_type l, Index_type m, Index_type i, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMJIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_l, is_m, is_j, is_i, is_k,
-    [=](Index_type l, Index_type m, Index_type j, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMJKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_l, is_m, is_j, is_k, is_i,
-    [=](Index_type l, Index_type m, Index_type j, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMKIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_l, is_m, is_k, is_i, is_j,
-    [=](Index_type l, Index_type m, Index_type k, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_LMKJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyL, PolicyM, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_l, is_m, is_k, is_j, is_i,
-    [=](Index_type l, Index_type m, Index_type k, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MIJKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyJ, PolicyK, PolicyL>(NextPolicyTag(), is_m, is_i, is_j, is_k, is_l,
-    [=](Index_type m, Index_type i, Index_type j, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MIJLK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyJ, PolicyL, PolicyK>(NextPolicyTag(), is_m, is_i, is_j, is_l, is_k,
-    [=](Index_type m, Index_type i, Index_type j, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MIKJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyK, PolicyJ, PolicyL>(NextPolicyTag(), is_m, is_i, is_k, is_j, is_l,
-    [=](Index_type m, Index_type i, Index_type k, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MIKLJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyK, PolicyL, PolicyJ>(NextPolicyTag(), is_m, is_i, is_k, is_l, is_j,
-    [=](Index_type m, Index_type i, Index_type k, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MILJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyL, PolicyJ, PolicyK>(NextPolicyTag(), is_m, is_i, is_l, is_j, is_k,
-    [=](Index_type m, Index_type i, Index_type l, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MILKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyI, PolicyL, PolicyK, PolicyJ>(NextPolicyTag(), is_m, is_i, is_l, is_k, is_j,
-    [=](Index_type m, Index_type i, Index_type l, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJIKL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyI, PolicyK, PolicyL>(NextPolicyTag(), is_m, is_j, is_i, is_k, is_l,
-    [=](Index_type m, Index_type j, Index_type i, Index_type k, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJILK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyI, PolicyL, PolicyK>(NextPolicyTag(), is_m, is_j, is_i, is_l, is_k,
-    [=](Index_type m, Index_type j, Index_type i, Index_type l, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJKIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyK, PolicyI, PolicyL>(NextPolicyTag(), is_m, is_j, is_k, is_i, is_l,
-    [=](Index_type m, Index_type j, Index_type k, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJKLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyK, PolicyL, PolicyI>(NextPolicyTag(), is_m, is_j, is_k, is_l, is_i,
-    [=](Index_type m, Index_type j, Index_type k, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJLIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyL, PolicyI, PolicyK>(NextPolicyTag(), is_m, is_j, is_l, is_i, is_k,
-    [=](Index_type m, Index_type j, Index_type l, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MJLKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyJ, PolicyL, PolicyK, PolicyI>(NextPolicyTag(), is_m, is_j, is_l, is_k, is_i,
-    [=](Index_type m, Index_type j, Index_type l, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKIJL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyI, PolicyJ, PolicyL>(NextPolicyTag(), is_m, is_k, is_i, is_j, is_l,
-    [=](Index_type m, Index_type k, Index_type i, Index_type j, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKILJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyI, PolicyL, PolicyJ>(NextPolicyTag(), is_m, is_k, is_i, is_l, is_j,
-    [=](Index_type m, Index_type k, Index_type i, Index_type l, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKJIL, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyJ, PolicyI, PolicyL>(NextPolicyTag(), is_m, is_k, is_j, is_i, is_l,
-    [=](Index_type m, Index_type k, Index_type j, Index_type i, Index_type l){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKJLI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyJ, PolicyL, PolicyI>(NextPolicyTag(), is_m, is_k, is_j, is_l, is_i,
-    [=](Index_type m, Index_type k, Index_type j, Index_type l, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKLIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyL, PolicyI, PolicyJ>(NextPolicyTag(), is_m, is_k, is_l, is_i, is_j,
-    [=](Index_type m, Index_type k, Index_type l, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MKLJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyK, PolicyL, PolicyJ, PolicyI>(NextPolicyTag(), is_m, is_k, is_l, is_j, is_i,
-    [=](Index_type m, Index_type k, Index_type l, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLIJK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyI, PolicyJ, PolicyK>(NextPolicyTag(), is_m, is_l, is_i, is_j, is_k,
-    [=](Index_type m, Index_type l, Index_type i, Index_type j, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLIKJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyI, PolicyK, PolicyJ>(NextPolicyTag(), is_m, is_l, is_i, is_k, is_j,
-    [=](Index_type m, Index_type l, Index_type i, Index_type k, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLJIK, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyJ, PolicyI, PolicyK>(NextPolicyTag(), is_m, is_l, is_j, is_i, is_k,
-    [=](Index_type m, Index_type l, Index_type j, Index_type i, Index_type k){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLJKI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyJ, PolicyK, PolicyI>(NextPolicyTag(), is_m, is_l, is_j, is_k, is_i,
-    [=](Index_type m, Index_type l, Index_type j, Index_type k, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLKIJ, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyK, PolicyI, PolicyJ>(NextPolicyTag(), is_m, is_l, is_k, is_i, is_j,
-    [=](Index_type m, Index_type l, Index_type k, Index_type i, Index_type j){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_permute(PERM_MLKJI, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  typedef typename POLICY::NextPolicy            NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
-  // Call next policy with permuted indices and policies
-  forall5_policy<NextPolicy, PolicyM, PolicyL, PolicyK, PolicyJ, PolicyI>(NextPolicyTag(), is_m, is_l, is_k, is_j, is_i,
-    [=](Index_type m, Index_type l, Index_type k, Index_type j, Index_type i){
-      // Call body with non-permuted indices
-      body(i, j, k, l, m);
-    });
-}
-
-
-/******************************************************************
- *  forallN_policy(), loop interchange policies
- ******************************************************************/
-
-
-/*!
- * \brief Permutation policy function, providing loop interchange.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forall2_policy(Forall2_Permute_Tag, TI const &is_i, TJ const &is_j, BODY body){
-  // Get the loop permutation
-  typedef typename POLICY::LoopOrder LoopOrder;
-
-  // Call loop interchange overload to re-wrire indicies and policies
-  forall2_permute<POLICY, PolicyI, PolicyJ>(LoopOrder(), is_i, is_j, body);
-}
-
-
-/*!
- * \brief Permutation policy function, providing loop interchange.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forall3_policy(Forall3_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  // Get the loop permutation
-  typedef typename POLICY::LoopOrder LoopOrder;
-
-  // Call loop interchange overload to re-wrire indicies and policies
-  forall3_permute<POLICY, PolicyI, PolicyJ, PolicyK>(LoopOrder(), is_i, is_j, is_k, body);
-}
-
-
-/*!
- * \brief Permutation policy function, providing loop interchange.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forall4_policy(Forall4_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  // Get the loop permutation
-  typedef typename POLICY::LoopOrder LoopOrder;
-
-  // Call loop interchange overload to re-wrire indicies and policies
-  forall4_permute<POLICY, PolicyI, PolicyJ, PolicyK, PolicyL>(LoopOrder(), is_i, is_j, is_k, is_l, body);
-}
-
-
-/*!
- * \brief Permutation policy function, providing loop interchange.
- */
-template<typename POLICY, typename PolicyI, typename PolicyJ, typename PolicyK, typename PolicyL, typename PolicyM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forall5_policy(Forall5_Permute_Tag, TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  // Get the loop permutation
-  typedef typename POLICY::LoopOrder LoopOrder;
-
-  // Call loop interchange overload to re-wrire indicies and policies
-  forall5_permute<POLICY, PolicyI, PolicyJ, PolicyK, PolicyL, PolicyM>(LoopOrder(), is_i, is_j, is_k, is_l, is_m, body);
-}
-
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJLK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKLJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JILK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KILJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJKLM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJKML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type k, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJLKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJLMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type l, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJMKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type m, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pm, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IJMLK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type j, Index_type m, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pm, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKJLM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKJML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type j, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKLJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKLMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type l, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKMJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type m, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pm, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IKMLJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type k, Index_type m, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pm, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILJKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILJMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type j, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILKJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILKMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type k, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILMJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type m, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pm, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_ILMKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type l, Index_type m, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pm, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMJKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type j, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pj, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMJLK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pj, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMKJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pk, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMKLJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pk, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMLJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pl, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_IMLKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type i, Index_type m, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pl, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIKLM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIKML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type k, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JILKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JILMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type l, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIMKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type m, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pm, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JIMLK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type i, Index_type m, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pm, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKILM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKIML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type i, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKLIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKLMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type l, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKMIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type m, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pm, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JKMLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type k, Index_type m, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pm, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLIKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLIMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type i, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLKIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLKMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type k, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLMIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type m, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pm, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JLMKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type l, Index_type m, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pm, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMIKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pi, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMILK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pi, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMKIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pk, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMKLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pk, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMLIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pl, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_JMLKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type j, Index_type m, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pl, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIJLM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIJML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type j, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KILJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KILMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type l, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIMJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type m, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pm, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KIMLJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type i, Index_type m, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pm, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJILM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type l, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pl, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJIML, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type i, Index_type m, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pm, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJLIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJLMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type l, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJMIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type m, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pm, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KJMLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type j, Index_type m, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pm, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLIJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLIMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type i, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLJIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLJMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type j, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLMIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type m, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pm, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KLMJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type l, Index_type m, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pm, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMIJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pi, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMILJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pi, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMJIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pj, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMJLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pj, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMLIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pl, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_KMLJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type k, Index_type m, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pl, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIJKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIJMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type j, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIKJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIKMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type k, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIMJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type m, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pm, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LIMKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type i, Index_type m, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pm, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJIKM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type k, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pk, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJIMK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type i, Index_type m, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pm, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJKIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJKMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type k, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJMIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type m, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pm, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LJMKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type j, Index_type m, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pm, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKIJM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type j, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pj, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKIMJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type i, Index_type m, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pm, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKJIM, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type i, Index_type m) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pi, pm);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKJMI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type j, Index_type m, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pm, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKMIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type m, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pm, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LKMJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type k, Index_type m, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pm, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMIJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pi, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMIKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pi, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMJIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pj, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMJKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pj, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMKIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pk, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_LMKJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type l, Index_type m, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pk, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MIJKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type j, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pj, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MIJLK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type j, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pj, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MIKJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type k, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pk, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MIKLJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type k, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pk, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MILJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type l, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pl, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MILKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type i, Index_type l, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pl, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJIKL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type i, Index_type k, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pi, pk, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJILK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type i, Index_type l, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pi, pl, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJKIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type k, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pk, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJKLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type k, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pk, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJLIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type l, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pl, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MJLKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type j, Index_type l, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pl, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKIJL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type i, Index_type j, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pi, pj, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKILJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type i, Index_type l, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pi, pl, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKJIL, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type j, Index_type i, Index_type l) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pj, pi, pl);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKJLI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type j, Index_type l, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pj, pl, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKLIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type l, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pl, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MKLJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type k, Index_type l, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pl, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLIJK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type i, Index_type j, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pi, pj, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLIKJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type i, Index_type k, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pi, pk, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLJIK, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type j, Index_type i, Index_type k) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pj, pi, pk);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLJKI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type j, Index_type k, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pj, pk, pi);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLKIJ, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type k, Index_type i, Index_type j) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pk, pi, pj);
+  }
+  
+  BODY body;
+};
+
+    
+
+template<typename BODY>
+struct ForallN_Permute_Functor<PERM_MLKJI, BODY>{
+
+  RAJA_INLINE
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(Index_type m, Index_type l, Index_type k, Index_type j, Index_type i) const {
+    body(i, j, k, l, m);
+  }
+  
+  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
+  RAJA_INLINE
+  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
+    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pk, pj, pi);
+  }
+  
+  BODY body;
+};
+
+    
 
 
 } // namespace RAJA

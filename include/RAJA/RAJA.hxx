@@ -31,6 +31,24 @@
 
 #include "config.hxx"
 
+
+//
+// Macros for decorating host/device functions for CUDA kernels.
+// We need a better solution than this as it is a pain to manage
+// this stuff in an application.
+//
+#if defined(RAJA_USE_CUDA)
+
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#else
+
+#define RAJA_HOST_DEVICE
+#define RAJA_DEVICE
+#endif
+
+
+
 #include "int_datatypes.hxx"
 #include "real_datatypes.hxx"
 
@@ -108,20 +126,6 @@
 #include "exec-cilk/raja_cilk.hxx"
 #endif
 
-//
-// Macros for decorating host/device functions for CUDA kernels.
-// We need a better solution than this as it is a pain to manage
-// this stuff in an application. 
-//
-#if defined(RAJA_USE_CUDA)
-
-#define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#else
-
-#define RAJA_HOST_DEVICE 
-#define RAJA_DEVICE 
-#endif
 
 
 #include "IndexSetUtils.hxx"

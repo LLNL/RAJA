@@ -16,7 +16,21 @@
 
 namespace RAJA {
 
+/******************************************************************
+ *  Generic prototype for all Layouts
+ ******************************************************************/
+
+template<typename IdxLin, typename Perm, typename ... IdxList>
+struct Layout {};
+
+
+
   
+/******************************************************************
+ *  Permutation tags
+ ******************************************************************/
+ 
+
 struct PERM_I {};
 struct PERM_IJ {};
 struct PERM_JI {};
@@ -171,28 +185,13 @@ struct PERM_MLJKI {};
 struct PERM_MLKIJ {};
 struct PERM_MLKJI {};
 
-template<typename Perm, typename IdxI=Index_type, typename IdxLin=Index_type>
-struct Layout1d {};
-
-template<typename Perm, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxLin=Index_type>
-struct Layout2d {};
-
-template<typename Perm, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxLin=Index_type>
-struct Layout3d {};
-
-template<typename Perm, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxLin=Index_type>
-struct Layout4d {};
-
-template<typename Perm, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename IdxLin=Index_type>
-struct Layout5d {};
-
 
 /******************************************************************
  *  Implementation for Layout1D
  ******************************************************************/
 
-template<typename IdxI, typename IdxLin>
-struct Layout1d<PERM_I, IdxI, IdxLin> {
+template<typename IdxLin, typename IdxI>
+struct Layout<IdxLin, PERM_I, IdxI> {
   typedef PERM_I Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -201,7 +200,7 @@ struct Layout1d<PERM_I, IdxI, IdxLin> {
 
   Index_type const stride_i;
 
-  inline Layout1d(Index_type ni):
+  inline Layout(Index_type ni):
     size_i(ni), stride_i(1)
   {}
 
@@ -221,8 +220,8 @@ struct Layout1d<PERM_I, IdxI, IdxLin> {
  *  Implementation for Layout2D
  ******************************************************************/
 
-template<typename IdxI, typename IdxJ, typename IdxLin>
-struct Layout2d<PERM_IJ, IdxI, IdxJ, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ>
+struct Layout<IdxLin, PERM_IJ, IdxI, IdxJ> {
   typedef PERM_IJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -234,7 +233,7 @@ struct Layout2d<PERM_IJ, IdxI, IdxJ, IdxLin> {
   Index_type const stride_i;
   Index_type const stride_j;
 
-  inline Layout2d(Index_type ni, Index_type nj):
+  inline Layout(Index_type ni, Index_type nj):
     size_i(ni), size_j(nj), stride_i(nj), stride_j(1)
   {}
 
@@ -252,8 +251,8 @@ struct Layout2d<PERM_IJ, IdxI, IdxJ, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxLin>
-struct Layout2d<PERM_JI, IdxI, IdxJ, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ>
+struct Layout<IdxLin, PERM_JI, IdxI, IdxJ> {
   typedef PERM_JI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -265,7 +264,7 @@ struct Layout2d<PERM_JI, IdxI, IdxJ, IdxLin> {
   Index_type const stride_i;
   Index_type const stride_j;
 
-  inline Layout2d(Index_type ni, Index_type nj):
+  inline Layout(Index_type ni, Index_type nj):
     size_i(ni), size_j(nj), stride_i(1), stride_j(ni)
   {}
 
@@ -288,8 +287,8 @@ struct Layout2d<PERM_JI, IdxI, IdxJ, IdxLin> {
  *  Implementation for Layout3D
  ******************************************************************/
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_IJK, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_IJK, IdxI, IdxJ, IdxK> {
   typedef PERM_IJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -304,7 +303,7 @@ struct Layout3d<PERM_IJK, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nj*nk), stride_j(nk), stride_k(1)
   {}
 
@@ -325,8 +324,8 @@ struct Layout3d<PERM_IJK, IdxI, IdxJ, IdxK, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_IKJ, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_IKJ, IdxI, IdxJ, IdxK> {
   typedef PERM_IKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -341,7 +340,7 @@ struct Layout3d<PERM_IKJ, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nk*nj), stride_j(1), stride_k(nj)
   {}
 
@@ -362,8 +361,8 @@ struct Layout3d<PERM_IKJ, IdxI, IdxJ, IdxK, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_JIK, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_JIK, IdxI, IdxJ, IdxK> {
   typedef PERM_JIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -378,7 +377,7 @@ struct Layout3d<PERM_JIK, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nk), stride_j(ni*nk), stride_k(1)
   {}
 
@@ -399,8 +398,8 @@ struct Layout3d<PERM_JIK, IdxI, IdxJ, IdxK, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_JKI, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_JKI, IdxI, IdxJ, IdxK> {
   typedef PERM_JKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -415,7 +414,7 @@ struct Layout3d<PERM_JKI, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(1), stride_j(nk*ni), stride_k(ni)
   {}
 
@@ -436,8 +435,8 @@ struct Layout3d<PERM_JKI, IdxI, IdxJ, IdxK, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_KIJ, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_KIJ, IdxI, IdxJ, IdxK> {
   typedef PERM_KIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -452,7 +451,7 @@ struct Layout3d<PERM_KIJ, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nj), stride_j(1), stride_k(ni*nj)
   {}
 
@@ -473,8 +472,8 @@ struct Layout3d<PERM_KIJ, IdxI, IdxJ, IdxK, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxLin>
-struct Layout3d<PERM_KJI, IdxI, IdxJ, IdxK, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK>
+struct Layout<IdxLin, PERM_KJI, IdxI, IdxJ, IdxK> {
   typedef PERM_KJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -489,7 +488,7 @@ struct Layout3d<PERM_KJI, IdxI, IdxJ, IdxK, IdxLin> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  inline Layout3d(Index_type ni, Index_type nj, Index_type nk):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(1), stride_j(ni), stride_k(nj*ni)
   {}
 
@@ -515,8 +514,8 @@ struct Layout3d<PERM_KJI, IdxI, IdxJ, IdxK, IdxLin> {
  *  Implementation for Layout4D
  ******************************************************************/
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_IJKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_IJKL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_IJKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -534,7 +533,7 @@ struct Layout4d<PERM_IJKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1)
   {}
 
@@ -558,8 +557,8 @@ struct Layout4d<PERM_IJKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_IJLK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_IJLK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_IJLK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -577,7 +576,7 @@ struct Layout4d<PERM_IJLK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk)
   {}
 
@@ -601,8 +600,8 @@ struct Layout4d<PERM_IJLK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_IKJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_IKJL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_IKJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -620,7 +619,7 @@ struct Layout4d<PERM_IKJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1)
   {}
 
@@ -644,8 +643,8 @@ struct Layout4d<PERM_IKJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_IKLJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_IKLJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_IKLJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -663,7 +662,7 @@ struct Layout4d<PERM_IKLJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj)
   {}
 
@@ -687,8 +686,8 @@ struct Layout4d<PERM_IKLJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_ILJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_ILJK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_ILJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -706,7 +705,7 @@ struct Layout4d<PERM_ILJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk)
   {}
 
@@ -730,8 +729,8 @@ struct Layout4d<PERM_ILJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_ILKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_ILKJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_ILKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -749,7 +748,7 @@ struct Layout4d<PERM_ILKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj)
   {}
 
@@ -773,8 +772,8 @@ struct Layout4d<PERM_ILKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JIKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JIKL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JIKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -792,7 +791,7 @@ struct Layout4d<PERM_JIKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nl), stride_j(ni*nk*nl), stride_k(nl), stride_l(1)
   {}
 
@@ -816,8 +815,8 @@ struct Layout4d<PERM_JIKL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JILK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JILK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JILK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -835,7 +834,7 @@ struct Layout4d<PERM_JILK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nk), stride_j(ni*nl*nk), stride_k(1), stride_l(nk)
   {}
 
@@ -859,8 +858,8 @@ struct Layout4d<PERM_JILK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JKIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JKIL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JKIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -878,7 +877,7 @@ struct Layout4d<PERM_JKIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl), stride_j(nk*ni*nl), stride_k(ni*nl), stride_l(1)
   {}
 
@@ -902,8 +901,8 @@ struct Layout4d<PERM_JKIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JKLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JKLI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JKLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -921,7 +920,7 @@ struct Layout4d<PERM_JKLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nk*nl*ni), stride_k(nl*ni), stride_l(ni)
   {}
 
@@ -945,8 +944,8 @@ struct Layout4d<PERM_JKLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JLIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JLIK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JLIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -964,7 +963,7 @@ struct Layout4d<PERM_JLIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk), stride_j(nl*ni*nk), stride_k(1), stride_l(ni*nk)
   {}
 
@@ -988,8 +987,8 @@ struct Layout4d<PERM_JLIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_JLKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_JLKI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_JLKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1007,7 +1006,7 @@ struct Layout4d<PERM_JLKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nl*nk*ni), stride_k(ni), stride_l(nk*ni)
   {}
 
@@ -1031,8 +1030,8 @@ struct Layout4d<PERM_JLKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KIJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KIJL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KIJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1050,7 +1049,7 @@ struct Layout4d<PERM_KIJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nl), stride_j(nl), stride_k(ni*nj*nl), stride_l(1)
   {}
 
@@ -1074,8 +1073,8 @@ struct Layout4d<PERM_KIJL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KILJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KILJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KILJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1093,7 +1092,7 @@ struct Layout4d<PERM_KILJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nj), stride_j(1), stride_k(ni*nl*nj), stride_l(nj)
   {}
 
@@ -1117,8 +1116,8 @@ struct Layout4d<PERM_KILJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KJIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KJIL, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KJIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1136,7 +1135,7 @@ struct Layout4d<PERM_KJIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl), stride_j(ni*nl), stride_k(nj*ni*nl), stride_l(1)
   {}
 
@@ -1160,8 +1159,8 @@ struct Layout4d<PERM_KJIL, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KJLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KJLI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KJLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1179,7 +1178,7 @@ struct Layout4d<PERM_KJLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nl*ni), stride_k(nj*nl*ni), stride_l(ni)
   {}
 
@@ -1203,8 +1202,8 @@ struct Layout4d<PERM_KJLI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KLIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KLIJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KLIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1222,7 +1221,7 @@ struct Layout4d<PERM_KLIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj), stride_j(1), stride_k(nl*ni*nj), stride_l(ni*nj)
   {}
 
@@ -1246,8 +1245,8 @@ struct Layout4d<PERM_KLIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_KLJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_KLJI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_KLJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1265,7 +1264,7 @@ struct Layout4d<PERM_KLJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(ni), stride_k(nl*nj*ni), stride_l(nj*ni)
   {}
 
@@ -1289,8 +1288,8 @@ struct Layout4d<PERM_KLJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LIJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LIJK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LIJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1308,7 +1307,7 @@ struct Layout4d<PERM_LIJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nj*nk)
   {}
 
@@ -1332,8 +1331,8 @@ struct Layout4d<PERM_LIJK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LIKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LIKJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LIKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1351,7 +1350,7 @@ struct Layout4d<PERM_LIKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nk*nj)
   {}
 
@@ -1375,8 +1374,8 @@ struct Layout4d<PERM_LIKJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LJIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LJIK, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LJIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1394,7 +1393,7 @@ struct Layout4d<PERM_LJIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nj*ni*nk)
   {}
 
@@ -1418,8 +1417,8 @@ struct Layout4d<PERM_LJIK, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LJKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LJKI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LJKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1437,7 +1436,7 @@ struct Layout4d<PERM_LJKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nj*nk*ni)
   {}
 
@@ -1461,8 +1460,8 @@ struct Layout4d<PERM_LJKI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LKIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LKIJ, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LKIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1480,7 +1479,7 @@ struct Layout4d<PERM_LKIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nk*ni*nj)
   {}
 
@@ -1504,8 +1503,8 @@ struct Layout4d<PERM_LKIJ, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxLin>
-struct Layout4d<PERM_LKJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
+struct Layout<IdxLin, PERM_LKJI, IdxI, IdxJ, IdxK, IdxL> {
   typedef PERM_LKJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1523,7 +1522,7 @@ struct Layout4d<PERM_LKJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  inline Layout4d(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nk*nj*ni)
   {}
 
@@ -1552,8 +1551,8 @@ struct Layout4d<PERM_LKJI, IdxI, IdxJ, IdxK, IdxL, IdxLin> {
  *  Implementation for Layout5D
  ******************************************************************/
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJKLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJKLM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1574,7 +1573,7 @@ struct Layout5d<PERM_IJKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nl*nm), stride_j(nk*nl*nm), stride_k(nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -1601,8 +1600,8 @@ struct Layout5d<PERM_IJKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJKML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJKML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1623,7 +1622,7 @@ struct Layout5d<PERM_IJKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nm*nl), stride_j(nk*nm*nl), stride_k(nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -1650,8 +1649,8 @@ struct Layout5d<PERM_IJKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJLKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJLKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJLKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1672,7 +1671,7 @@ struct Layout5d<PERM_IJLKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nk*nm), stride_j(nl*nk*nm), stride_k(nm), stride_l(nk*nm), stride_m(1)
   {}
 
@@ -1699,8 +1698,8 @@ struct Layout5d<PERM_IJLKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJLMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJLMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJLMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1721,7 +1720,7 @@ struct Layout5d<PERM_IJLMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nm*nk), stride_j(nl*nm*nk), stride_k(1), stride_l(nm*nk), stride_m(nk)
   {}
 
@@ -1748,8 +1747,8 @@ struct Layout5d<PERM_IJLMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJMKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJMKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1770,7 +1769,7 @@ struct Layout5d<PERM_IJMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nk*nl), stride_j(nm*nk*nl), stride_k(nl), stride_l(1), stride_m(nk*nl)
   {}
 
@@ -1797,8 +1796,8 @@ struct Layout5d<PERM_IJMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IJMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IJMLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IJMLK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1819,7 +1818,7 @@ struct Layout5d<PERM_IJMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nl*nk), stride_j(nm*nl*nk), stride_k(1), stride_l(nk), stride_m(nl*nk)
   {}
 
@@ -1846,8 +1845,8 @@ struct Layout5d<PERM_IJMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKJLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKJLM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1868,7 +1867,7 @@ struct Layout5d<PERM_IKJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nl*nm), stride_j(nl*nm), stride_k(nj*nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -1895,8 +1894,8 @@ struct Layout5d<PERM_IKJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKJML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKJML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1917,7 +1916,7 @@ struct Layout5d<PERM_IKJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nm*nl), stride_j(nm*nl), stride_k(nj*nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -1944,8 +1943,8 @@ struct Layout5d<PERM_IKJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKLJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKLJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKLJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -1966,7 +1965,7 @@ struct Layout5d<PERM_IKLJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nj*nm), stride_j(nm), stride_k(nl*nj*nm), stride_l(nj*nm), stride_m(1)
   {}
 
@@ -1993,8 +1992,8 @@ struct Layout5d<PERM_IKLJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKLMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKLMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKLMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2015,7 +2014,7 @@ struct Layout5d<PERM_IKLMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nm*nj), stride_j(1), stride_k(nl*nm*nj), stride_l(nm*nj), stride_m(nj)
   {}
 
@@ -2042,8 +2041,8 @@ struct Layout5d<PERM_IKLMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKMJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKMJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2064,7 +2063,7 @@ struct Layout5d<PERM_IKMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nj*nl), stride_j(nl), stride_k(nm*nj*nl), stride_l(1), stride_m(nj*nl)
   {}
 
@@ -2091,8 +2090,8 @@ struct Layout5d<PERM_IKMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IKMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IKMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IKMLJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2113,7 +2112,7 @@ struct Layout5d<PERM_IKMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nl*nj), stride_j(1), stride_k(nm*nl*nj), stride_l(nj), stride_m(nl*nj)
   {}
 
@@ -2140,8 +2139,8 @@ struct Layout5d<PERM_IKMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILJKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILJKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2162,7 +2161,7 @@ struct Layout5d<PERM_ILJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nk*nm), stride_j(nk*nm), stride_k(nm), stride_l(nj*nk*nm), stride_m(1)
   {}
 
@@ -2189,8 +2188,8 @@ struct Layout5d<PERM_ILJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILJMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILJMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2211,7 +2210,7 @@ struct Layout5d<PERM_ILJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nm*nk), stride_j(nm*nk), stride_k(1), stride_l(nj*nm*nk), stride_m(nk)
   {}
 
@@ -2238,8 +2237,8 @@ struct Layout5d<PERM_ILJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILKJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILKJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2260,7 +2259,7 @@ struct Layout5d<PERM_ILKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nj*nm), stride_j(nm), stride_k(nj*nm), stride_l(nk*nj*nm), stride_m(1)
   {}
 
@@ -2287,8 +2286,8 @@ struct Layout5d<PERM_ILKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILKMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2309,7 +2308,7 @@ struct Layout5d<PERM_ILKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nm*nj), stride_j(1), stride_k(nm*nj), stride_l(nk*nm*nj), stride_m(nj)
   {}
 
@@ -2336,8 +2335,8 @@ struct Layout5d<PERM_ILKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILMJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILMJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2358,7 +2357,7 @@ struct Layout5d<PERM_ILMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nj*nk), stride_j(nk), stride_k(1), stride_l(nm*nj*nk), stride_m(nj*nk)
   {}
 
@@ -2385,8 +2384,8 @@ struct Layout5d<PERM_ILMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_ILMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_ILMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_ILMKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2407,7 +2406,7 @@ struct Layout5d<PERM_ILMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nk*nj), stride_j(1), stride_k(nj), stride_l(nm*nk*nj), stride_m(nk*nj)
   {}
 
@@ -2434,8 +2433,8 @@ struct Layout5d<PERM_ILMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMJKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMJKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2456,7 +2455,7 @@ struct Layout5d<PERM_IMJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1), stride_m(nj*nk*nl)
   {}
 
@@ -2483,8 +2482,8 @@ struct Layout5d<PERM_IMJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMJLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMJLK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2505,7 +2504,7 @@ struct Layout5d<PERM_IMJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk), stride_m(nj*nl*nk)
   {}
 
@@ -2532,8 +2531,8 @@ struct Layout5d<PERM_IMJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMKJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMKJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2554,7 +2553,7 @@ struct Layout5d<PERM_IMKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1), stride_m(nk*nj*nl)
   {}
 
@@ -2581,8 +2580,8 @@ struct Layout5d<PERM_IMKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMKLJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2603,7 +2602,7 @@ struct Layout5d<PERM_IMKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj), stride_m(nk*nl*nj)
   {}
 
@@ -2630,8 +2629,8 @@ struct Layout5d<PERM_IMKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMLJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMLJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMLJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2652,7 +2651,7 @@ struct Layout5d<PERM_IMLJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk), stride_m(nl*nj*nk)
   {}
 
@@ -2679,8 +2678,8 @@ struct Layout5d<PERM_IMLJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_IMLKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_IMLKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_IMLKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2701,7 +2700,7 @@ struct Layout5d<PERM_IMLKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj), stride_m(nl*nk*nj)
   {}
 
@@ -2728,8 +2727,8 @@ struct Layout5d<PERM_IMLKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JIKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JIKLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JIKLM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2750,7 +2749,7 @@ struct Layout5d<PERM_JIKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nm), stride_j(ni*nk*nl*nm), stride_k(nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -2777,8 +2776,8 @@ struct Layout5d<PERM_JIKLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JIKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JIKML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JIKML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2799,7 +2798,7 @@ struct Layout5d<PERM_JIKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nl), stride_j(ni*nk*nm*nl), stride_k(nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -2826,8 +2825,8 @@ struct Layout5d<PERM_JIKML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JILKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JILKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JILKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2848,7 +2847,7 @@ struct Layout5d<PERM_JILKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nm), stride_j(ni*nl*nk*nm), stride_k(nm), stride_l(nk*nm), stride_m(1)
   {}
 
@@ -2875,8 +2874,8 @@ struct Layout5d<PERM_JILKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JILMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JILMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JILMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2897,7 +2896,7 @@ struct Layout5d<PERM_JILMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nk), stride_j(ni*nl*nm*nk), stride_k(1), stride_l(nm*nk), stride_m(nk)
   {}
 
@@ -2924,8 +2923,8 @@ struct Layout5d<PERM_JILMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JIMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JIMKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JIMKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2946,7 +2945,7 @@ struct Layout5d<PERM_JIMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nl), stride_j(ni*nm*nk*nl), stride_k(nl), stride_l(1), stride_m(nk*nl)
   {}
 
@@ -2973,8 +2972,8 @@ struct Layout5d<PERM_JIMKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JIMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JIMLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JIMLK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -2995,7 +2994,7 @@ struct Layout5d<PERM_JIMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nk), stride_j(ni*nm*nl*nk), stride_k(1), stride_l(nk), stride_m(nl*nk)
   {}
 
@@ -3022,8 +3021,8 @@ struct Layout5d<PERM_JIMLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKILM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKILM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3044,7 +3043,7 @@ struct Layout5d<PERM_JKILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm), stride_j(nk*ni*nl*nm), stride_k(ni*nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -3071,8 +3070,8 @@ struct Layout5d<PERM_JKILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKIML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKIML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3093,7 +3092,7 @@ struct Layout5d<PERM_JKIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl), stride_j(nk*ni*nm*nl), stride_k(ni*nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -3120,8 +3119,8 @@ struct Layout5d<PERM_JKIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKLIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKLIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3142,7 +3141,7 @@ struct Layout5d<PERM_JKLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nk*nl*ni*nm), stride_k(nl*ni*nm), stride_l(ni*nm), stride_m(1)
   {}
 
@@ -3169,8 +3168,8 @@ struct Layout5d<PERM_JKLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKLMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKLMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3191,7 +3190,7 @@ struct Layout5d<PERM_JKLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nl*nm*ni), stride_k(nl*nm*ni), stride_l(nm*ni), stride_m(ni)
   {}
 
@@ -3218,8 +3217,8 @@ struct Layout5d<PERM_JKLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKMIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKMIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3240,7 +3239,7 @@ struct Layout5d<PERM_JKMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nk*nm*ni*nl), stride_k(nm*ni*nl), stride_l(1), stride_m(ni*nl)
   {}
 
@@ -3267,8 +3266,8 @@ struct Layout5d<PERM_JKMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JKMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JKMLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JKMLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3289,7 +3288,7 @@ struct Layout5d<PERM_JKMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nm*nl*ni), stride_k(nm*nl*ni), stride_l(ni), stride_m(nl*ni)
   {}
 
@@ -3316,8 +3315,8 @@ struct Layout5d<PERM_JKMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLIKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLIKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3338,7 +3337,7 @@ struct Layout5d<PERM_JLIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm), stride_j(nl*ni*nk*nm), stride_k(nm), stride_l(ni*nk*nm), stride_m(1)
   {}
 
@@ -3365,8 +3364,8 @@ struct Layout5d<PERM_JLIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLIMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLIMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3387,7 +3386,7 @@ struct Layout5d<PERM_JLIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk), stride_j(nl*ni*nm*nk), stride_k(1), stride_l(ni*nm*nk), stride_m(nk)
   {}
 
@@ -3414,8 +3413,8 @@ struct Layout5d<PERM_JLIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLKIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLKIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3436,7 +3435,7 @@ struct Layout5d<PERM_JLKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nl*nk*ni*nm), stride_k(ni*nm), stride_l(nk*ni*nm), stride_m(1)
   {}
 
@@ -3463,8 +3462,8 @@ struct Layout5d<PERM_JLKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLKMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLKMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3485,7 +3484,7 @@ struct Layout5d<PERM_JLKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nk*nm*ni), stride_k(nm*ni), stride_l(nk*nm*ni), stride_m(ni)
   {}
 
@@ -3512,8 +3511,8 @@ struct Layout5d<PERM_JLKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLMIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLMIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3534,7 +3533,7 @@ struct Layout5d<PERM_JLMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nl*nm*ni*nk), stride_k(1), stride_l(nm*ni*nk), stride_m(ni*nk)
   {}
 
@@ -3561,8 +3560,8 @@ struct Layout5d<PERM_JLMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JLMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JLMKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JLMKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3583,7 +3582,7 @@ struct Layout5d<PERM_JLMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nm*nk*ni), stride_k(ni), stride_l(nm*nk*ni), stride_m(nk*ni)
   {}
 
@@ -3610,8 +3609,8 @@ struct Layout5d<PERM_JLMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMIKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMIKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3632,7 +3631,7 @@ struct Layout5d<PERM_JMIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl), stride_j(nm*ni*nk*nl), stride_k(nl), stride_l(1), stride_m(ni*nk*nl)
   {}
 
@@ -3659,8 +3658,8 @@ struct Layout5d<PERM_JMIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMILK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMILK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3681,7 +3680,7 @@ struct Layout5d<PERM_JMILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk), stride_j(nm*ni*nl*nk), stride_k(1), stride_l(nk), stride_m(ni*nl*nk)
   {}
 
@@ -3708,8 +3707,8 @@ struct Layout5d<PERM_JMILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMKIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMKIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3730,7 +3729,7 @@ struct Layout5d<PERM_JMKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nm*nk*ni*nl), stride_k(ni*nl), stride_l(1), stride_m(nk*ni*nl)
   {}
 
@@ -3757,8 +3756,8 @@ struct Layout5d<PERM_JMKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMKLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMKLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3779,7 +3778,7 @@ struct Layout5d<PERM_JMKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nk*nl*ni), stride_k(nl*ni), stride_l(ni), stride_m(nk*nl*ni)
   {}
 
@@ -3806,8 +3805,8 @@ struct Layout5d<PERM_JMKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMLIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMLIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3828,7 +3827,7 @@ struct Layout5d<PERM_JMLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nm*nl*ni*nk), stride_k(1), stride_l(ni*nk), stride_m(nl*ni*nk)
   {}
 
@@ -3855,8 +3854,8 @@ struct Layout5d<PERM_JMLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_JMLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_JMLKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_JMLKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3877,7 +3876,7 @@ struct Layout5d<PERM_JMLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nl*nk*ni), stride_k(ni), stride_l(nk*ni), stride_m(nl*nk*ni)
   {}
 
@@ -3904,8 +3903,8 @@ struct Layout5d<PERM_JMLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KIJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KIJLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KIJLM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3926,7 +3925,7 @@ struct Layout5d<PERM_KIJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nm), stride_j(nl*nm), stride_k(ni*nj*nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -3953,8 +3952,8 @@ struct Layout5d<PERM_KIJLM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KIJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KIJML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KIJML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -3975,7 +3974,7 @@ struct Layout5d<PERM_KIJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nl), stride_j(nm*nl), stride_k(ni*nj*nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -4002,8 +4001,8 @@ struct Layout5d<PERM_KIJML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KILJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KILJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KILJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4024,7 +4023,7 @@ struct Layout5d<PERM_KILJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nm), stride_j(nm), stride_k(ni*nl*nj*nm), stride_l(nj*nm), stride_m(1)
   {}
 
@@ -4051,8 +4050,8 @@ struct Layout5d<PERM_KILJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KILMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KILMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KILMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4073,7 +4072,7 @@ struct Layout5d<PERM_KILMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nj), stride_j(1), stride_k(ni*nl*nm*nj), stride_l(nm*nj), stride_m(nj)
   {}
 
@@ -4100,8 +4099,8 @@ struct Layout5d<PERM_KILMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KIMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KIMJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KIMJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4122,7 +4121,7 @@ struct Layout5d<PERM_KIMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nl), stride_j(nl), stride_k(ni*nm*nj*nl), stride_l(1), stride_m(nj*nl)
   {}
 
@@ -4149,8 +4148,8 @@ struct Layout5d<PERM_KIMJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KIMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KIMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KIMLJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4171,7 +4170,7 @@ struct Layout5d<PERM_KIMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nj), stride_j(1), stride_k(ni*nm*nl*nj), stride_l(nj), stride_m(nl*nj)
   {}
 
@@ -4198,8 +4197,8 @@ struct Layout5d<PERM_KIMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJILM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJILM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4220,7 +4219,7 @@ struct Layout5d<PERM_KJILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm), stride_j(ni*nl*nm), stride_k(nj*ni*nl*nm), stride_l(nm), stride_m(1)
   {}
 
@@ -4247,8 +4246,8 @@ struct Layout5d<PERM_KJILM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJIML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJIML Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4269,7 +4268,7 @@ struct Layout5d<PERM_KJIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl), stride_j(ni*nm*nl), stride_k(nj*ni*nm*nl), stride_l(1), stride_m(nl)
   {}
 
@@ -4296,8 +4295,8 @@ struct Layout5d<PERM_KJIML, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJLIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJLIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4318,7 +4317,7 @@ struct Layout5d<PERM_KJLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nl*ni*nm), stride_k(nj*nl*ni*nm), stride_l(ni*nm), stride_m(1)
   {}
 
@@ -4345,8 +4344,8 @@ struct Layout5d<PERM_KJLIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJLMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJLMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4367,7 +4366,7 @@ struct Layout5d<PERM_KJLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nm*ni), stride_k(nj*nl*nm*ni), stride_l(nm*ni), stride_m(ni)
   {}
 
@@ -4394,8 +4393,8 @@ struct Layout5d<PERM_KJLMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJMIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJMIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4416,7 +4415,7 @@ struct Layout5d<PERM_KJMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nm*ni*nl), stride_k(nj*nm*ni*nl), stride_l(1), stride_m(ni*nl)
   {}
 
@@ -4443,8 +4442,8 @@ struct Layout5d<PERM_KJMIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KJMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KJMLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KJMLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4465,7 +4464,7 @@ struct Layout5d<PERM_KJMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nl*ni), stride_k(nj*nm*nl*ni), stride_l(ni), stride_m(nl*ni)
   {}
 
@@ -4492,8 +4491,8 @@ struct Layout5d<PERM_KJMLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLIJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLIJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4514,7 +4513,7 @@ struct Layout5d<PERM_KLIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm), stride_j(nm), stride_k(nl*ni*nj*nm), stride_l(ni*nj*nm), stride_m(1)
   {}
 
@@ -4541,8 +4540,8 @@ struct Layout5d<PERM_KLIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLIMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4563,7 +4562,7 @@ struct Layout5d<PERM_KLIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj), stride_j(1), stride_k(nl*ni*nm*nj), stride_l(ni*nm*nj), stride_m(nj)
   {}
 
@@ -4590,8 +4589,8 @@ struct Layout5d<PERM_KLIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLJIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLJIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4612,7 +4611,7 @@ struct Layout5d<PERM_KLJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(ni*nm), stride_k(nl*nj*ni*nm), stride_l(nj*ni*nm), stride_m(1)
   {}
 
@@ -4639,8 +4638,8 @@ struct Layout5d<PERM_KLJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLJMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLJMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4661,7 +4660,7 @@ struct Layout5d<PERM_KLJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*ni), stride_k(nl*nj*nm*ni), stride_l(nj*nm*ni), stride_m(ni)
   {}
 
@@ -4688,8 +4687,8 @@ struct Layout5d<PERM_KLJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLMIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4710,7 +4709,7 @@ struct Layout5d<PERM_KLMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nl*nm*ni*nj), stride_l(nm*ni*nj), stride_m(ni*nj)
   {}
 
@@ -4737,8 +4736,8 @@ struct Layout5d<PERM_KLMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KLMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KLMJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KLMJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4759,7 +4758,7 @@ struct Layout5d<PERM_KLMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nl*nm*nj*ni), stride_l(nm*nj*ni), stride_m(nj*ni)
   {}
 
@@ -4786,8 +4785,8 @@ struct Layout5d<PERM_KLMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMIJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMIJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4808,7 +4807,7 @@ struct Layout5d<PERM_KMIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl), stride_j(nl), stride_k(nm*ni*nj*nl), stride_l(1), stride_m(ni*nj*nl)
   {}
 
@@ -4835,8 +4834,8 @@ struct Layout5d<PERM_KMIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMILJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMILJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4857,7 +4856,7 @@ struct Layout5d<PERM_KMILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj), stride_j(1), stride_k(nm*ni*nl*nj), stride_l(nj), stride_m(ni*nl*nj)
   {}
 
@@ -4884,8 +4883,8 @@ struct Layout5d<PERM_KMILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMJIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMJIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4906,7 +4905,7 @@ struct Layout5d<PERM_KMJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(ni*nl), stride_k(nm*nj*ni*nl), stride_l(1), stride_m(nj*ni*nl)
   {}
 
@@ -4933,8 +4932,8 @@ struct Layout5d<PERM_KMJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMJLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMJLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -4955,7 +4954,7 @@ struct Layout5d<PERM_KMJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*ni), stride_k(nm*nj*nl*ni), stride_l(ni), stride_m(nj*nl*ni)
   {}
 
@@ -4982,8 +4981,8 @@ struct Layout5d<PERM_KMJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMLIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5004,7 +5003,7 @@ struct Layout5d<PERM_KMLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nm*nl*ni*nj), stride_l(ni*nj), stride_m(nl*ni*nj)
   {}
 
@@ -5031,8 +5030,8 @@ struct Layout5d<PERM_KMLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_KMLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_KMLJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_KMLJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5053,7 +5052,7 @@ struct Layout5d<PERM_KMLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nm*nl*nj*ni), stride_l(nj*ni), stride_m(nl*nj*ni)
   {}
 
@@ -5080,8 +5079,8 @@ struct Layout5d<PERM_KMLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIJKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIJKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5102,7 +5101,7 @@ struct Layout5d<PERM_LIJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nm), stride_j(nk*nm), stride_k(nm), stride_l(ni*nj*nk*nm), stride_m(1)
   {}
 
@@ -5129,8 +5128,8 @@ struct Layout5d<PERM_LIJKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIJMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIJMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5151,7 +5150,7 @@ struct Layout5d<PERM_LIJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nk), stride_j(nm*nk), stride_k(1), stride_l(ni*nj*nm*nk), stride_m(nk)
   {}
 
@@ -5178,8 +5177,8 @@ struct Layout5d<PERM_LIJMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIKJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIKJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5200,7 +5199,7 @@ struct Layout5d<PERM_LIKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nm), stride_j(nm), stride_k(nj*nm), stride_l(ni*nk*nj*nm), stride_m(1)
   {}
 
@@ -5227,8 +5226,8 @@ struct Layout5d<PERM_LIKJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIKMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5249,7 +5248,7 @@ struct Layout5d<PERM_LIKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nj), stride_j(1), stride_k(nm*nj), stride_l(ni*nk*nm*nj), stride_m(nj)
   {}
 
@@ -5276,8 +5275,8 @@ struct Layout5d<PERM_LIKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIMJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIMJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5298,7 +5297,7 @@ struct Layout5d<PERM_LIMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nm*nj*nk), stride_m(nj*nk)
   {}
 
@@ -5325,8 +5324,8 @@ struct Layout5d<PERM_LIMJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LIMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LIMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LIMKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5347,7 +5346,7 @@ struct Layout5d<PERM_LIMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nm*nk*nj), stride_m(nk*nj)
   {}
 
@@ -5374,8 +5373,8 @@ struct Layout5d<PERM_LIMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJIKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJIKM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5396,7 +5395,7 @@ struct Layout5d<PERM_LJIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm), stride_j(ni*nk*nm), stride_k(nm), stride_l(nj*ni*nk*nm), stride_m(1)
   {}
 
@@ -5423,8 +5422,8 @@ struct Layout5d<PERM_LJIKM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJIMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJIMK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5445,7 +5444,7 @@ struct Layout5d<PERM_LJIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk), stride_j(ni*nm*nk), stride_k(1), stride_l(nj*ni*nm*nk), stride_m(nk)
   {}
 
@@ -5472,8 +5471,8 @@ struct Layout5d<PERM_LJIMK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJKIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJKIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5494,7 +5493,7 @@ struct Layout5d<PERM_LJKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nk*ni*nm), stride_k(ni*nm), stride_l(nj*nk*ni*nm), stride_m(1)
   {}
 
@@ -5521,8 +5520,8 @@ struct Layout5d<PERM_LJKIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJKMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJKMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5543,7 +5542,7 @@ struct Layout5d<PERM_LJKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nm*ni), stride_k(nm*ni), stride_l(nj*nk*nm*ni), stride_m(ni)
   {}
 
@@ -5570,8 +5569,8 @@ struct Layout5d<PERM_LJKMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJMIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJMIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5592,7 +5591,7 @@ struct Layout5d<PERM_LJMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nm*ni*nk), stride_k(1), stride_l(nj*nm*ni*nk), stride_m(ni*nk)
   {}
 
@@ -5619,8 +5618,8 @@ struct Layout5d<PERM_LJMIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LJMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LJMKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LJMKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5641,7 +5640,7 @@ struct Layout5d<PERM_LJMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nk*ni), stride_k(ni), stride_l(nj*nm*nk*ni), stride_m(nk*ni)
   {}
 
@@ -5668,8 +5667,8 @@ struct Layout5d<PERM_LJMKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKIJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKIJM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5690,7 +5689,7 @@ struct Layout5d<PERM_LKIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm), stride_j(nm), stride_k(ni*nj*nm), stride_l(nk*ni*nj*nm), stride_m(1)
   {}
 
@@ -5717,8 +5716,8 @@ struct Layout5d<PERM_LKIJM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKIMJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5739,7 +5738,7 @@ struct Layout5d<PERM_LKIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj), stride_j(1), stride_k(ni*nm*nj), stride_l(nk*ni*nm*nj), stride_m(nj)
   {}
 
@@ -5766,8 +5765,8 @@ struct Layout5d<PERM_LKIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKJIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKJIM Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5788,7 +5787,7 @@ struct Layout5d<PERM_LKJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(ni*nm), stride_k(nj*ni*nm), stride_l(nk*nj*ni*nm), stride_m(1)
   {}
 
@@ -5815,8 +5814,8 @@ struct Layout5d<PERM_LKJIM, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKJMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKJMI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5837,7 +5836,7 @@ struct Layout5d<PERM_LKJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*ni), stride_k(nj*nm*ni), stride_l(nk*nj*nm*ni), stride_m(ni)
   {}
 
@@ -5864,8 +5863,8 @@ struct Layout5d<PERM_LKJMI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKMIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5886,7 +5885,7 @@ struct Layout5d<PERM_LKMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nm*ni*nj), stride_l(nk*nm*ni*nj), stride_m(ni*nj)
   {}
 
@@ -5913,8 +5912,8 @@ struct Layout5d<PERM_LKMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LKMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LKMJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LKMJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5935,7 +5934,7 @@ struct Layout5d<PERM_LKMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nm*nj*ni), stride_l(nk*nm*nj*ni), stride_m(nj*ni)
   {}
 
@@ -5962,8 +5961,8 @@ struct Layout5d<PERM_LKMJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMIJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMIJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -5984,7 +5983,7 @@ struct Layout5d<PERM_LMIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(nm*ni*nj*nk), stride_m(ni*nj*nk)
   {}
 
@@ -6011,8 +6010,8 @@ struct Layout5d<PERM_LMIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMIKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6033,7 +6032,7 @@ struct Layout5d<PERM_LMIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(nm*ni*nk*nj), stride_m(ni*nk*nj)
   {}
 
@@ -6060,8 +6059,8 @@ struct Layout5d<PERM_LMIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMJIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMJIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6082,7 +6081,7 @@ struct Layout5d<PERM_LMJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nm*nj*ni*nk), stride_m(nj*ni*nk)
   {}
 
@@ -6109,8 +6108,8 @@ struct Layout5d<PERM_LMJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMJKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMJKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6131,7 +6130,7 @@ struct Layout5d<PERM_LMJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nm*nj*nk*ni), stride_m(nj*nk*ni)
   {}
 
@@ -6158,8 +6157,8 @@ struct Layout5d<PERM_LMJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMKIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6180,7 +6179,7 @@ struct Layout5d<PERM_LMKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nm*nk*ni*nj), stride_m(nk*ni*nj)
   {}
 
@@ -6207,8 +6206,8 @@ struct Layout5d<PERM_LMKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_LMKJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_LMKJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_LMKJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6229,7 +6228,7 @@ struct Layout5d<PERM_LMKJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nm*nk*nj*ni), stride_m(nk*nj*ni)
   {}
 
@@ -6256,8 +6255,8 @@ struct Layout5d<PERM_LMKJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MIJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MIJKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MIJKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6278,7 +6277,7 @@ struct Layout5d<PERM_MIJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1), stride_m(ni*nj*nk*nl)
   {}
 
@@ -6305,8 +6304,8 @@ struct Layout5d<PERM_MIJKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MIJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MIJLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MIJLK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6327,7 +6326,7 @@ struct Layout5d<PERM_MIJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk), stride_m(ni*nj*nl*nk)
   {}
 
@@ -6354,8 +6353,8 @@ struct Layout5d<PERM_MIJLK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MIKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MIKJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MIKJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6376,7 +6375,7 @@ struct Layout5d<PERM_MIKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1), stride_m(ni*nk*nj*nl)
   {}
 
@@ -6403,8 +6402,8 @@ struct Layout5d<PERM_MIKJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MIKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MIKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MIKLJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6425,7 +6424,7 @@ struct Layout5d<PERM_MIKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj), stride_m(ni*nk*nl*nj)
   {}
 
@@ -6452,8 +6451,8 @@ struct Layout5d<PERM_MIKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MILJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MILJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MILJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6474,7 +6473,7 @@ struct Layout5d<PERM_MILJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk), stride_m(ni*nl*nj*nk)
   {}
 
@@ -6501,8 +6500,8 @@ struct Layout5d<PERM_MILJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MILKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MILKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MILKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6523,7 +6522,7 @@ struct Layout5d<PERM_MILKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj), stride_m(ni*nl*nk*nj)
   {}
 
@@ -6550,8 +6549,8 @@ struct Layout5d<PERM_MILKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJIKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJIKL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6572,7 +6571,7 @@ struct Layout5d<PERM_MJIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl), stride_j(ni*nk*nl), stride_k(nl), stride_l(1), stride_m(nj*ni*nk*nl)
   {}
 
@@ -6599,8 +6598,8 @@ struct Layout5d<PERM_MJIKL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJILK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJILK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6621,7 +6620,7 @@ struct Layout5d<PERM_MJILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk), stride_j(ni*nl*nk), stride_k(1), stride_l(nk), stride_m(nj*ni*nl*nk)
   {}
 
@@ -6648,8 +6647,8 @@ struct Layout5d<PERM_MJILK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJKIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJKIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6670,7 +6669,7 @@ struct Layout5d<PERM_MJKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nk*ni*nl), stride_k(ni*nl), stride_l(1), stride_m(nj*nk*ni*nl)
   {}
 
@@ -6697,8 +6696,8 @@ struct Layout5d<PERM_MJKIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJKLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJKLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6719,7 +6718,7 @@ struct Layout5d<PERM_MJKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nl*ni), stride_k(nl*ni), stride_l(ni), stride_m(nj*nk*nl*ni)
   {}
 
@@ -6746,8 +6745,8 @@ struct Layout5d<PERM_MJKLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJLIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJLIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6768,7 +6767,7 @@ struct Layout5d<PERM_MJLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nl*ni*nk), stride_k(1), stride_l(ni*nk), stride_m(nj*nl*ni*nk)
   {}
 
@@ -6795,8 +6794,8 @@ struct Layout5d<PERM_MJLIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MJLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MJLKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MJLKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6817,7 +6816,7 @@ struct Layout5d<PERM_MJLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nk*ni), stride_k(ni), stride_l(nk*ni), stride_m(nj*nl*nk*ni)
   {}
 
@@ -6844,8 +6843,8 @@ struct Layout5d<PERM_MJLKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKIJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKIJL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6866,7 +6865,7 @@ struct Layout5d<PERM_MKIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl), stride_j(nl), stride_k(ni*nj*nl), stride_l(1), stride_m(nk*ni*nj*nl)
   {}
 
@@ -6893,8 +6892,8 @@ struct Layout5d<PERM_MKIJL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKILJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKILJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6915,7 +6914,7 @@ struct Layout5d<PERM_MKILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj), stride_j(1), stride_k(ni*nl*nj), stride_l(nj), stride_m(nk*ni*nl*nj)
   {}
 
@@ -6942,8 +6941,8 @@ struct Layout5d<PERM_MKILJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKJIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKJIL Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -6964,7 +6963,7 @@ struct Layout5d<PERM_MKJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(ni*nl), stride_k(nj*ni*nl), stride_l(1), stride_m(nk*nj*ni*nl)
   {}
 
@@ -6991,8 +6990,8 @@ struct Layout5d<PERM_MKJIL, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKJLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKJLI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7013,7 +7012,7 @@ struct Layout5d<PERM_MKJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*ni), stride_k(nj*nl*ni), stride_l(ni), stride_m(nk*nj*nl*ni)
   {}
 
@@ -7040,8 +7039,8 @@ struct Layout5d<PERM_MKJLI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKLIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7062,7 +7061,7 @@ struct Layout5d<PERM_MKLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nl*ni*nj), stride_l(ni*nj), stride_m(nk*nl*ni*nj)
   {}
 
@@ -7089,8 +7088,8 @@ struct Layout5d<PERM_MKLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MKLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MKLJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MKLJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7111,7 +7110,7 @@ struct Layout5d<PERM_MKLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nl*nj*ni), stride_l(nj*ni), stride_m(nk*nl*nj*ni)
   {}
 
@@ -7138,8 +7137,8 @@ struct Layout5d<PERM_MKLJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLIJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLIJK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7160,7 +7159,7 @@ struct Layout5d<PERM_MLIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nj*nk), stride_m(nl*ni*nj*nk)
   {}
 
@@ -7187,8 +7186,8 @@ struct Layout5d<PERM_MLIJK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLIKJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7209,7 +7208,7 @@ struct Layout5d<PERM_MLIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nk*nj), stride_m(nl*ni*nk*nj)
   {}
 
@@ -7236,8 +7235,8 @@ struct Layout5d<PERM_MLIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLJIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLJIK Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7258,7 +7257,7 @@ struct Layout5d<PERM_MLJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nj*ni*nk), stride_m(nl*nj*ni*nk)
   {}
 
@@ -7285,8 +7284,8 @@ struct Layout5d<PERM_MLJIK, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLJKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLJKI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7307,7 +7306,7 @@ struct Layout5d<PERM_MLJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nj*nk*ni), stride_m(nl*nj*nk*ni)
   {}
 
@@ -7334,8 +7333,8 @@ struct Layout5d<PERM_MLJKI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLKIJ Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7356,7 +7355,7 @@ struct Layout5d<PERM_MLKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nk*ni*nj), stride_m(nl*nk*ni*nj)
   {}
 
@@ -7383,8 +7382,8 @@ struct Layout5d<PERM_MLKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
 };
 
 
-template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename IdxLin>
-struct Layout5d<PERM_MLKJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
+template<typename IdxLin, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
+struct Layout<IdxLin, PERM_MLKJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   typedef PERM_MLKJI Permutation;
   typedef IdxLin IndexLinear;
   typedef IdxI IndexI;
@@ -7405,7 +7404,7 @@ struct Layout5d<PERM_MLKJI, IdxI, IdxJ, IdxK, IdxL, IdxM, IdxLin> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  inline Layout5d(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  inline Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nk*nj*ni), stride_m(nl*nk*nj*ni)
   {}
 
