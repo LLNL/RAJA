@@ -102,6 +102,25 @@ __device__ inline void atomicMin(double *address, double value)
 }
 
 ///
+__device__ inline void atomicMin(float *address, double value)
+{
+  float temp = *(reinterpret_cast<float volatile *>(address)) ;
+  if (temp > value) {
+    int oldval, newval, readback;
+    oldval = __float_as_int(temp);
+    newval = __float_as_int(value);
+    int *address_as_i = reinterpret_cast<int *>(address);
+
+    while ((readback = 
+            atomicCAS(address_as_i, oldval, newval)) != oldval)
+    {
+      oldval = readback;
+      newval = __float_as_int(RAJA_MIN(__int_as_float(oldval), value)) ;
+    }
+  }
+}
+
+///
 __device__ inline void atomicMax(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address)) ;
@@ -117,6 +136,25 @@ __device__ inline void atomicMax(double *address, double value)
     {
       oldval = readback;
       newval = double_to_ull(RAJA_MAX(ull_to_double(oldval), value));
+    }
+  }
+}
+
+///
+__device__ inline void atomicMax(float *address, double value)
+{
+  float temp = *(reinterpret_cast<float volatile *>(address)) ;
+  if (temp < value) {
+    int oldval, newval, readback;
+    oldval = __float_as_int(temp);
+    newval = __float_as_int(value);
+    int *address_as_i = reinterpret_cast<int *>(address);
+
+    while ((readback = 
+            atomicCAS(address_as_i, oldval, newval)) != oldval)
+    {
+      oldval = readback;
+      newval = __float_as_int(RAJA_MAX(__int_as_float(oldval), value)) ;
     }
   }
 }
