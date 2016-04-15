@@ -371,9 +371,8 @@ public:
           
 #else
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-          atomicMin( &m_blockdata[m_blockoffset],
-                     RAJA_MIN( m_blockdata[m_blockoffset],
-                               m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+          atomicMin( &m_blockdata[m_blockoffset], 
+                      m_blockdata[m_blockoffset + blockIdx.x+1] );
 #endif
       }
 
@@ -547,8 +546,7 @@ public:
 #else
           m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
           atomicMax( &m_blockdata[m_blockoffset],
-                     RAJA_MAX( m_blockdata[m_blockoffset],
-                               m_blockdata[m_blockoffset + blockIdx.x+1] ) );
+                      m_blockdata[m_blockoffset + blockIdx.x+1] );
 #endif
       }
 
