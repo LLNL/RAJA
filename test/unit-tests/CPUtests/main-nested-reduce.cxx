@@ -80,8 +80,8 @@ int main(int argc, char *argv[])
       ++passed ;
    }
 
-   printf("\n All Tests : # run / # passed = %d / %d\n\n DONE!!!\n",
-          run, passed) ;
+   printf("\n All Tests : # passed / # run = %d / %d\n\n DONE!!!\n",
+          passed, run) ;
 
    return 0 ;
 }
