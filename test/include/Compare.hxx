@@ -31,7 +31,7 @@ namespace RAJA {
 template <typename T>
 bool equal(T a, T b)
 {
-   return (abs(a-b) <= ( ( abs(a) < abs(b) ? abs(a) : abs(b) ) * 1.0e-12 ) );
+   return (abs(a-b) <= ( ( abs(a) < abs(b) ? abs(a) : abs(b) ) * T(1.0e-12) ) );
 }
 
 //
