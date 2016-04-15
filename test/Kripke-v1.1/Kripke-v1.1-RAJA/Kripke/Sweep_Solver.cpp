@@ -123,9 +123,9 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
     }
 
     {
-      //BLOCK_TIMER(grid_data->timing, ParticleEdit);
-      //double part = grid_data->particleEdit();
-      double part = -1.0;
+      BLOCK_TIMER(grid_data->timing, ParticleEdit);
+      double part = grid_data->particleEdit();
+      //double part = -1.0;
       if(mpi_rank==0){
         printf("iter %d: particle count=%e, change=%e\n", iter, part, (part-part_last)/part);
       }

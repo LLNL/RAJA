@@ -108,8 +108,9 @@ Subdomain *ParallelComm::dequeueSubdomain(int sdom_id){
   All recieves use the plane_data[] arrays as recieve buffers.
 */
 void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom){
-  int mpi_rank=0, mpi_size=1;
+  int mpi_rank=0;
 #ifdef KRIPKE_USE_MPI
+  int mpi_size=1;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
@@ -154,8 +155,9 @@ void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom){
 
 void ParallelComm::postSends(Subdomain *sdom, double *src_buffers[3]){
   // post sends for downwind dependencies
-  int mpi_rank=0, mpi_size=1;
+  int mpi_rank=0;
 #ifdef KRIPKE_USE_MPI
+  int mpi_size=1;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
