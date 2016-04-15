@@ -181,7 +181,7 @@ int main(int argc, char *argv[])
    ///
    /// Print total number of tests passed/run.
    ///
-   cout << "\n All Tests : # run / # passed = " 
+   cout << "\n All Tests : # passed / # run = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
