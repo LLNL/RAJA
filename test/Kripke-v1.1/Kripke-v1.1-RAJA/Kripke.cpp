@@ -36,10 +36,13 @@
 #include<Kripke/Test/TestKernels.h>
 #include<stdio.h>
 #include<string.h>
-#include<mpi.h>
 #include<algorithm>
 #include<string>
 #include<sstream>
+
+#ifdef KRIPKE_USE_MPI
+#include<mpi.h>
+#endif
 
 #ifdef KRIPKE_USE_OPENMP
 #include<omp.h>
@@ -60,8 +63,10 @@
 
 
 void usage(void){
-  int myid;
+  int myid=0;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+#endif
   if(myid == 0){
     // Get a new object with defaulted values
     Input_Variables def;
@@ -157,7 +162,9 @@ void usage(void){
     printf("  --test                 Run Kernel Test instead of solver\n\n");
     printf("\n");
   }
+#ifdef KRIPKE_USE_MPI
   MPI_Finalize();
+#endif
   exit(1);
 }
 
@@ -211,11 +218,14 @@ int main(int argc, char **argv) {
   /*
    * Initialize MPI
    */
+
+  int myid=0;
+  int num_tasks=1;
+#ifdef KRIPKE_USE_MPI
   MPI_Init(&argc, &argv);
-  int myid;
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
-  int num_tasks;
   MPI_Comm_size(MPI_COMM_WORLD, &num_tasks);
+#endif
 
   if (myid == 0) {
     /* Print out a banner message along with a version number. */
@@ -457,8 +467,10 @@ int main(int argc, char **argv) {
 #endif
 
     // Print Timing Info
-    int myid;
+    int myid=0;
+#ifdef KRIPKE_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+#endif
     if(myid == 0){
       grid_data->timing.print();
       printf("\n\n");
@@ -505,7 +517,9 @@ int main(int argc, char **argv) {
   }
   
   // Cleanup and exit
+#ifdef KRIPKE_USE_MPI
   MPI_Finalize();
+#endif
 
   return (0);
 }

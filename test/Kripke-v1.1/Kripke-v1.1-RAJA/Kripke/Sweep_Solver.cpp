@@ -38,6 +38,9 @@
 #include <vector>
 #include <stdio.h>
 
+#ifdef KRIPKE_USE_MPI
+#include<mpi.h>
+#endif
 
 /**
   Run solver iterations.
@@ -46,8 +49,10 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
 {
   Kernel *kernel = grid_data->kernel;
 
-  int mpi_rank;
+  int mpi_rank = 0;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
 
   BLOCK_TIMER(grid_data->timing, Solve);
 

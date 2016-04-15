@@ -103,8 +103,10 @@ struct runSweep {
  */
 template<typename KernelRunner>
 void testKernel(Input_Variables &input_variables){
-  int myid;
+  int myid=0;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+#endif
 
   KernelRunner kr;
 
@@ -139,8 +141,7 @@ void testKernel(Input_Variables &input_variables){
   // Compare differences
   bool is_diff = ref_data->compare(*grid_data, 1e-12, true);
   if(is_diff){
-    if(myid == 0)printf("Differences found, bailing out\n");
-    MPI_Abort(MPI_COMM_WORLD, 1);
+    if(myid == 0)KripkeAbort("Differences found, bailing out\n");
   }
 
   // Cleanup

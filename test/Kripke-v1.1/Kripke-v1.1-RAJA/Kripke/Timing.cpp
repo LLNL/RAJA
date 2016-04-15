@@ -39,7 +39,10 @@
 #include <algorithm>
 #include <vector>
 #include <sstream>
+
+#ifdef KRIPKE_USE_MPI
 #include <mpi.h>
+#endif
 
 #ifdef KRIPKE_USE_BGPM
 extern "C" void HPM_Start(char const *);
@@ -66,7 +69,7 @@ void Timing::start(std::string const &name){
 
   if(!timer.started){
     timer.started = true;
-    timer.start_time = MPI_Wtime();
+    timer.start_time = getTime();
 
 #ifdef KRIPKE_USE_PAPI
     int num_papi = papi_event.size();
@@ -124,7 +127,7 @@ void Timing::stop(std::string const &name){
 
     // Stop the timer
     timer.started = false;
-    timer.total_time += MPI_Wtime() - timer.start_time;
+    timer.total_time += getTime() - timer.start_time;
     timer.count ++;
 
   }
@@ -141,8 +144,10 @@ void Timing::clear(void){
 }
 
 void Timing::print(void) const {
-  int rank;
+  int rank=0;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#endif
   if(rank != 0){
     return;
   }

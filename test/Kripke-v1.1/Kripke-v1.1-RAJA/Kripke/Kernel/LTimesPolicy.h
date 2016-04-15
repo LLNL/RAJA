@@ -34,41 +34,39 @@
 #define KERNEL_LTIMES_POLICY_H__
 
 #include<Kripke.h>
-#include<RAJA/Layout.hxx>
-#include<RAJA/Forall.hxx>
 
 
 template<typename T>
 struct LTimesPolicy{}; // nm, d, g, z
 
 template<>
-struct LTimesPolicy<NEST_DGZ_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_nowait, seq_pol,
-                                        RAJA::Forall4_OMP_Parallel<
-                                          RAJA::Forall4_Tile<RAJA::tile_none, RAJA::tile_none, RAJA::tile_none, RAJA::tile_fixed<512>,
-                                           RAJA::Forall4_Permute<RAJA::PERM_IJKL>
+struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy< RAJA::ExecList<seq_pol, seq_pol, omp_nowait, seq_pol>,
+                                        RAJA::OMP_Parallel<
+                                          RAJA::Tile< RAJA::TileList<RAJA::tile_none, RAJA::tile_none, RAJA::tile_none, RAJA::tile_fixed<512>>,
+                                           RAJA::Permute<RAJA::PERM_IJKL>
                                       >
                                     >
                                   >
 {};
 
 template<>
-struct LTimesPolicy<NEST_DZG_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, seq_pol, omp_nowait, RAJA::Forall4_Permute<RAJA::PERM_LIJK>>
+struct LTimesPolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, seq_pol, omp_nowait>, RAJA::Permute<RAJA::PERM_LIJK>>
 {};
 
 template<>
-struct LTimesPolicy<NEST_GDZ_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, seq_pol, RAJA::Forall4_Permute<RAJA::PERM_KIJL>>
+struct LTimesPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_KIJL>>
 {};
 
 template<>
-struct LTimesPolicy<NEST_GZD_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_KLIJ>>
+struct LTimesPolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, omp_pol>, RAJA::Permute<RAJA::PERM_KLIJ>>
 {};
 
 template<>
-struct LTimesPolicy<NEST_ZDG_T> : RAJA::Forall4_Policy<omp_pol, seq_pol, seq_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_LIJK>>
+struct LTimesPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol, seq_pol, omp_pol>, RAJA::Permute<RAJA::PERM_LIJK>>
 {}; 
 
 template<>
-struct LTimesPolicy<NEST_ZGD_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_LKIJ>>
+struct LTimesPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, omp_pol>, RAJA::Permute<RAJA::PERM_LKIJ>>
 {};
 
 

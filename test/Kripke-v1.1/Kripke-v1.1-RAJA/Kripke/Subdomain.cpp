@@ -30,6 +30,7 @@
  * Department of Energy (DOE) or Lawrence Livermore National Security.
  */
 
+#include <Kripke.h>
 #include <Kripke/Grid.h>
 #include <Kripke/SubTVec.h>
 #include <Kripke/Input_Variables.h>
@@ -488,8 +489,7 @@ namespace {
     int i, nn;
 
     if(std::abs(x) > 1.0){
-      printf("Bad input to ardra_PnmFcn: abs(x) > 1.0, x = %e\n", x);
-      MPI_Abort(MPI_COMM_WORLD, 1);
+      KripkeAbort("Bad input to ardra_PnmFcn: abs(x) > 1.0, x = %e\n", x);
     }
     else if((x > 1.0) && (x <= 1.0)){
       x = 1.0;

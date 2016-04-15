@@ -34,39 +34,37 @@
 #define KERNEL_SOURCE_POLICY_H__
 
 #include<Kripke.h>
-#include<RAJA/Layout.hxx>
-#include<RAJA/Forall.hxx>
 
 
 template<typename T>
-struct SourcePolicy : RAJA::Forall2_Policy<> {}; // g,mix
+struct SourcePolicy {}; // g,mix
 
 template<>
-struct SourcePolicy<NEST_DGZ_T> :  RAJA::Forall2_Policy<omp_nowait, seq_pol,
-                      RAJA::Forall2_OMP_Parallel<
-                      RAJA::Forall2_Permute<RAJA::PERM_IJ>
+struct SourcePolicy<NEST_DGZ_T> :  RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, seq_pol>,
+                      RAJA::OMP_Parallel<
+                      RAJA::Permute<RAJA::PERM_IJ>
 									  >
 									>
 {};
 
 template<>
-struct SourcePolicy<NEST_DZG_T> : RAJA::Forall2_Policy<omp_pol, seq_pol, RAJA::Forall2_Permute<RAJA::PERM_JI> >
+struct SourcePolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
 {};
 
 template<>
-struct SourcePolicy<NEST_GDZ_T> : RAJA::Forall2_Policy<seq_pol, seq_pol, RAJA::Forall2_Permute<RAJA::PERM_IJ> >
+struct SourcePolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol>, RAJA::Permute<RAJA::PERM_IJ> >
 {};
 
 template<>
-struct SourcePolicy<NEST_GZD_T> : RAJA::Forall2_Policy<omp_pol, seq_pol, RAJA::Forall2_Permute<RAJA::PERM_IJ> >
+struct SourcePolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_IJ> >
 {};
 
 template<>
-struct SourcePolicy<NEST_ZDG_T> : RAJA::Forall2_Policy<omp_pol, seq_pol, RAJA::Forall2_Permute<RAJA::PERM_JI> >
+struct SourcePolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
 {};
 
 template<>
-struct SourcePolicy<NEST_ZGD_T> : RAJA::Forall2_Policy<omp_pol, seq_pol, RAJA::Forall2_Permute<RAJA::PERM_JI> >
+struct SourcePolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
 {};
 
 #endif

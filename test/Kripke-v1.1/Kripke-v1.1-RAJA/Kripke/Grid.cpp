@@ -30,6 +30,7 @@
  * Department of Energy (DOE) or Lawrence Livermore National Security.
  */
 
+#include <Kripke.h>
 #include <Kripke/Grid.h>
 
 #include <Kripke/Input_Variables.h>
@@ -37,7 +38,10 @@
 #include <Kripke/SubTVec.h>
 #include <cmath>
 #include <sstream>
+
+#ifdef KRIPKE_USE_MPI
 #include <mpi.h>
+#endif
 
 #ifdef KRIPKE_USE_SILO
 #include <sys/stat.h>
@@ -178,14 +182,21 @@ Grid_Data::Grid_Data(Input_Variables *input_vars)
     }
   }
 
-  long long global_size[4];
-  MPI_Reduce(vec_size, global_size, 4, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
 
-  double global_volume[3];
-  MPI_Reduce(vec_volume, global_volume, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
-
+#ifdef KRIPKE_USE_MPI
   int mpi_rank;
+  double global_volume[3];
+  long long global_size[4];
+
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+  MPI_Reduce(vec_size, global_size, 4, MPI_LONG_LONG_INT, MPI_SUM, 0, MPI_COMM_WORLD);
+  MPI_Reduce(vec_volume, global_volume, 3, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+#else
+  int mpi_rank = 0;
+  long long *global_size = vec_size;
+  double *global_volume = vec_volume;
+#endif
+
   if(mpi_rank == 0){
     printf("Unknown counts: psi=%ld, rhs=%ld, phi=%ld, phi_out=%ld\n",
       (long)global_size[0], (long)global_size[1], (long)global_size[2], (long)global_size[3]);
@@ -266,10 +277,17 @@ double Grid_Data::particleEdit(void){
   }
 
   // reduce
+#ifdef KRIPKE_USE_MPI
   double part_global;
+
   MPI_Reduce(&part, &part_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
 
   return part_global;
+#else
+
+  return part;
+
+#endif
 }
 
 

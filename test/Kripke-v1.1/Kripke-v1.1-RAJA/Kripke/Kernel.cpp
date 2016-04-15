@@ -35,8 +35,6 @@
 #include<Kripke/SubTVec.h>
 
 #include<RAJA/RAJA.hxx>
-#include<RAJA/View.hxx>
-#include<RAJA/Forall.hxx>
 
 #include<Kripke/Kernel/Kernel_3d_GDZ.h>
 #include<Kripke/Kernel/Kernel_3d_DGZ.h>
@@ -69,7 +67,7 @@ Kernel *createKernel(Nesting_Order nest, int num_dims){
     }
   }
 
-  MPI_Abort(MPI_COMM_WORLD, 1);
+  KripkeAbort("Unknown nesting order %d or number of dimensions %d\n", (int)nest, num_dims);
   return NULL;
 }
 
@@ -84,121 +82,164 @@ Kernel::~Kernel(){
 
 
 #include<Kripke/Kernel/LTimesPolicy.h>
+
+namespace {
+
+template<typename nest_type>
+RAJA_INLINE
+void kernel_LTimes(Grid_Data &domain) {
+
+  typedef DataPolicy<nest_type> POL;
+  // Zero Phi
+  FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
+    sdom.phi->clear(0.0);
+  END_FORALL
+
+  // Loop over Subdomains
+  FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
+
+    // Get dimensioning
+    int group0 = sdom.group0;
+
+    // Get pointers
+    typename POL::View_Psi psi(domain, sdom_id, sdom.psi->ptr());
+    typename POL::View_Phi phi(domain, sdom_id, sdom.phi->ptr());
+    typename POL::View_Ell ell(domain, sdom_id, sdom.ell->ptr());
+
+    dForallN<LTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
+      domain, sdom_id,
+      RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
+
+        IGlobalGroup g_global( (*g) + group0);
+
+        phi(nm, g_global, z) += ell(d, nm) * psi(d, g, z);
+      });
+
+  END_FORALL
+}
+
+} // anon namespace
+
 void Kernel::LTimes(Grid_Data *domain) {
-
-  BEGIN_POLICY(nesting_order, nest_type)
-    typedef DataPolicy<nest_type> POL;
-
-    // Zero Phi
-    FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
-      sdom.phi->clear(0.0);
-    END_FORALL
-
-    // Loop over Subdomains
-    FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
-
-      // Get dimensioning
-      int group0 = sdom.group0;
-
-      // Get pointers
-      typename POL::View_Psi psi(sdom.psi->ptr(), domain, sdom_id);
-      typename POL::View_Phi phi(sdom.phi->ptr(), domain, sdom_id);
-      typename POL::View_Ell ell(sdom.ell->ptr(), domain, sdom_id);
-
-      dForall4<LTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id, 
-        RAJA_LAMBDA (auto nm, auto d, auto g, auto z){
-  
-          IGlobalGroup g_global( (*g) + group0);
-          
-          phi(nm, g_global, z) += ell(d, nm) * psi(d, g, z);
-        });
-
-    END_FORALL
-  END_POLICY
+  switch(nesting_order){
+    case NEST_DGZ: kernel_LTimes<NEST_DGZ_T>(*domain); break;
+    case NEST_DZG: kernel_LTimes<NEST_DZG_T>(*domain); break;
+    case NEST_GDZ: kernel_LTimes<NEST_GDZ_T>(*domain); break;
+    case NEST_GZD: kernel_LTimes<NEST_GZD_T>(*domain); break;
+    case NEST_ZDG: kernel_LTimes<NEST_ZDG_T>(*domain); break;
+    case NEST_ZGD: kernel_LTimes<NEST_ZGD_T>(*domain); break;
+  }
 }
 
 #include<Kripke/Kernel/LPlusTimesPolicy.h>
-void Kernel::LPlusTimes(Grid_Data *domain) {
 
-  BEGIN_POLICY(nesting_order, nest_type)
-    typedef DataPolicy<nest_type> POL;
+namespace {
+template<typename nest_type>
+RAJA_INLINE
+void kernel_LPlusTimes(Grid_Data &domain) {
 
-    // Loop over Subdomains
-    FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
-      sdom.rhs->clear(0.0);
-    END_FORALL
+  typedef DataPolicy<nest_type> POL;
 
-    FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
+  // Loop over Subdomains
+  FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
+    sdom.rhs->clear(0.0);
+  END_FORALL
 
-      // Get dimensioning
-      int group0 = sdom.group0;
+  FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
 
-      // Get pointers
-      typename POL::View_Psi     rhs(sdom.rhs->ptr(), domain, sdom_id);
-      typename POL::View_Phi     phi_out(sdom.phi_out->ptr(), domain, sdom_id);
-      typename POL::View_EllPlus ell_plus(sdom.ell_plus->ptr(), domain, sdom_id);
-      
-      dForall4<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id, 
-        RAJA_LAMBDA (auto nm, auto d, auto g, auto z){
+    // Get dimensioning
+    int group0 = sdom.group0;
+
+    // Get pointers
+    typename POL::View_Psi     rhs     (domain, sdom_id, sdom.rhs->ptr());
+    typename POL::View_Phi     phi_out (domain, sdom_id, sdom.phi_out->ptr());
+    typename POL::View_EllPlus ell_plus(domain, sdom_id, sdom.ell_plus->ptr());
+
+    dForallN<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
+      domain, sdom_id,
+      RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
+
+        IGlobalGroup g_global( (*g) + group0);
+
+        rhs(d, g, z) += ell_plus(d, nm) * phi_out(nm, g_global, z);
+      });
+
+  END_FORALL
   
-          IGlobalGroup g_global( (*g) + group0);
-  
-          rhs(d, g, z) += ell_plus(d, nm) * phi_out(nm, g_global, z);  
-        });
-
-    END_FORALL
-  END_POLICY
 }
 
+} // anon namespace
+
+void Kernel::LPlusTimes(Grid_Data *domain) {
+  switch(nesting_order){
+    case NEST_DGZ: kernel_LPlusTimes<NEST_DGZ_T>(*domain); break;
+    case NEST_DZG: kernel_LPlusTimes<NEST_DZG_T>(*domain); break;
+    case NEST_GDZ: kernel_LPlusTimes<NEST_GDZ_T>(*domain); break;
+    case NEST_GZD: kernel_LPlusTimes<NEST_GZD_T>(*domain); break;
+    case NEST_ZDG: kernel_LPlusTimes<NEST_ZDG_T>(*domain); break;
+    case NEST_ZGD: kernel_LPlusTimes<NEST_ZGD_T>(*domain); break;
+  }
+}
 
 /**
   Compute scattering source term phi_out from flux moments in phi.
   phi_out(gp,z,nm) = sum_g { sigs(g, n, gp) * phi(g,z,nm) }
 */
 #include<Kripke/Kernel/ScatteringPolicy.h>
-void Kernel::scattering(Grid_Data *domain){
+namespace {
+template<typename nest_type>
+RAJA_INLINE
+void kernel_scattering(Grid_Data &domain) {
   
-  BEGIN_POLICY(nesting_order, nest_type)
-    typedef DataPolicy<nest_type> POL;
+  typedef DataPolicy<nest_type> POL;
 
-    // Zero out source terms
-    FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
-      sdom.phi_out->clear(0.0);
-    END_FORALL
+  // Zero out source terms
+  FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
+    sdom.phi_out->clear(0.0);
+  END_FORALL
 
-    // Loop over zoneset subdomains
-    FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
+  // Loop over zoneset subdomains
+  FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
 
-      typename POL::View_Phi     phi(sdom.phi->ptr(), domain, sdom_id);
-      typename POL::View_Phi     phi_out(sdom.phi_out->ptr(), domain, sdom_id);
-      typename POL::View_SigS    sigs(domain->sigs->ptr(), domain, sdom_id);
+    typename POL::View_Phi     phi    (domain, sdom_id, sdom.phi->ptr());
+    typename POL::View_Phi     phi_out(domain, sdom_id, sdom.phi_out->ptr());
+    typename POL::View_SigS    sigs   (domain, sdom_id, domain.sigs->ptr());
 
-      typename POL::View_MixedToZones mixed_to_zones((IZone*)&sdom.mixed_to_zones[0], domain, sdom_id);
-      typename POL::View_MixedToMaterial mixed_material((IMaterial*)&sdom.mixed_material[0], domain, sdom_id);
-      typename POL::View_MixedToFraction mixed_fraction(&sdom.mixed_fraction[0], domain, sdom_id);
-      typename POL::View_MomentToCoeff moment_to_coeff((ILegendre*)&domain->moment_to_coeff[0], domain, sdom_id);
+    typename POL::View_MixedToZones    mixed_to_zones (domain, sdom_id, (IZone*)&sdom.mixed_to_zones[0]);
+    typename POL::View_MixedToMaterial mixed_material (domain, sdom_id, (IMaterial*)&sdom.mixed_material[0]);
+    typename POL::View_MixedToFraction mixed_fraction (domain, sdom_id, &sdom.mixed_fraction[0]);
+    typename POL::View_MomentToCoeff   moment_to_coeff(domain, sdom_id, (ILegendre*)&domain.moment_to_coeff[0]);
+
+    dForallN<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
+      domain, sdom_id,
+      RAJA_LAMBDA (IMoment nm, IGlobalGroup g, IGlobalGroup gp, IMix mix){
       
-      dForall4<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
-        domain, sdom_id,
-        RAJA_LAMBDA (auto nm, auto g, auto gp, auto mix){
+        ILegendre n = moment_to_coeff(nm);
+        IZone zone = mixed_to_zones(mix);
+        IMaterial material = mixed_material(mix);
+        double fraction = mixed_fraction(mix);
+
+        phi_out(nm, gp, zone) +=
+          sigs(n, g, gp, material) * phi(nm, g, zone) * fraction;
+
+      });  // forall
         
-          ILegendre n = moment_to_coeff(nm);
-          IZone zone = mixed_to_zones(mix);
-          IMaterial material = mixed_material(mix);
-          double fraction = mixed_fraction(mix);
+  END_FORALL // zonesets
 
-          phi_out(nm, gp, zone) += 
-            sigs(n, g, gp, material) * phi(nm, g, zone) * fraction;                     
-                             
-        });  // forall
-          
-    END_FORALL // zonesets
-
-  END_POLICY
 }
 
+} // anon namespace
+
+void Kernel::scattering(Grid_Data *domain) {
+  switch(nesting_order){
+    case NEST_DGZ: kernel_scattering<NEST_DGZ_T>(*domain); break;
+    case NEST_DZG: kernel_scattering<NEST_DZG_T>(*domain); break;
+    case NEST_GDZ: kernel_scattering<NEST_GDZ_T>(*domain); break;
+    case NEST_GZD: kernel_scattering<NEST_GZD_T>(*domain); break;
+    case NEST_ZDG: kernel_scattering<NEST_ZDG_T>(*domain); break;
+    case NEST_ZGD: kernel_scattering<NEST_ZGD_T>(*domain); break;
+  }
+}
   
 /**
  * Add an isotropic source, with flux of 1, to every zone with Region 1
@@ -207,96 +248,126 @@ void Kernel::scattering(Grid_Data *domain){
  * Since it's isotropic, we're just adding this to nm=0.
  */
 #include<Kripke/Kernel/SourcePolicy.h>
-void Kernel::source(Grid_Data *domain){
+namespace {
+template<typename nest_type>
+RAJA_INLINE
+void kernel_source(Grid_Data &domain) {
+  typedef DataPolicy<nest_type> POL;
 
-  BEGIN_POLICY(nesting_order, nest_type)
-    typedef DataPolicy<nest_type> POL;
+  // Loop over zoneset subdomains
+  FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
+    typename POL::View_Phi             phi_out       (domain, sdom_id, sdom.phi_out->ptr());
+    typename POL::View_MixedToZones    mixed_to_zones(domain, sdom_id, (IZone*)&sdom.mixed_to_zones[0]);
+    typename POL::View_MixedToMaterial mixed_material(domain, sdom_id, (IMaterial*)&sdom.mixed_material[0]);
+    typename POL::View_MixedToFraction mixed_fraction(domain, sdom_id, &sdom.mixed_fraction[0]);
 
-    // Loop over zoneset subdomains
-    FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
-      typename POL::View_Phi     phi_out(sdom.phi_out->ptr(), domain, sdom_id);
-      typename POL::View_MixedToZones mixed_to_zones((IZone*)&sdom.mixed_to_zones[0], domain, sdom_id);
-      typename POL::View_MixedToMaterial mixed_material((IMaterial*)&sdom.mixed_material[0], domain, sdom_id);
-      typename POL::View_MixedToFraction mixed_fraction(&sdom.mixed_fraction[0], domain, sdom_id);
+    dForallN<SourcePolicy<nest_type>, IGlobalGroup, IMix >(
+      domain, sdom_id,
+      RAJA_LAMBDA (IGlobalGroup g, IMix mix){
+        IZone zone = mixed_to_zones(mix);
+        IMaterial material = mixed_material(mix);
+        double fraction = mixed_fraction(mix);
 
-      dForall2<SourcePolicy<nest_type>, IGlobalGroup, IMix >(
-        domain, sdom_id,
-        RAJA_LAMBDA (auto g, auto mix){
-          IZone zone = mixed_to_zones(mix);
-          IMaterial material = mixed_material(mix);
-          double fraction = mixed_fraction(mix);
+        if(*material == 0){
+          phi_out(IMoment(0), g, zone) += 1.0 * fraction;
+        }
+    }); // forall
 
-          if(*material == 0){
-            phi_out(IMoment(0), g, zone) += 1.0 * fraction;
-          }
-      }); // forall
+  END_FORALL
+}
 
-    END_FORALL
-  END_POLICY
+} // anon namespace
+
+
+
+void Kernel::source(Grid_Data *domain) {
+  switch(nesting_order){
+    case NEST_DGZ: kernel_source<NEST_DGZ_T>(*domain); break;
+    case NEST_DZG: kernel_source<NEST_DZG_T>(*domain); break;
+    case NEST_GDZ: kernel_source<NEST_GDZ_T>(*domain); break;
+    case NEST_GZD: kernel_source<NEST_GZD_T>(*domain); break;
+    case NEST_ZDG: kernel_source<NEST_ZDG_T>(*domain); break;
+    case NEST_ZGD: kernel_source<NEST_ZGD_T>(*domain); break;
+  }
 }
 
 
 #include<Kripke/Kernel/SweepPolicy.h>
-void Kernel::sweep(Grid_Data *domain, int sdom_id) {
-  BEGIN_POLICY(nesting_order, nest_type)
-    typedef DataPolicy<nest_type> POL;
 
-    Subdomain *sdom = &domain->subdomains[sdom_id];
+namespace {
+template<typename nest_type>
+RAJA_INLINE
+void kernel_sweep(Grid_Data &domain, int sdom_id) {
+  typedef DataPolicy<nest_type> POL;
 
-    typename POL::View_Directions direction(sdom->directions, domain, sdom_id);
+  Subdomain *sdom = &domain.subdomains[sdom_id];
 
-    typename POL::View_Psi     rhs(sdom->rhs->ptr(), domain, sdom_id);
-    typename POL::View_Psi     psi(sdom->psi->ptr(), domain, sdom_id);
-    typename POL::View_SigT    sigt(sdom->sigt->ptr(), domain, sdom_id);
+  typename POL::View_Directions direction(domain, sdom_id, sdom->directions);
 
-    typename POL::View_dx      dx(&sdom->deltas[0][0], domain, sdom_id);
-    typename POL::View_dy      dy(&sdom->deltas[1][0], domain, sdom_id);
-    typename POL::View_dz      dz(&sdom->deltas[2][0], domain, sdom_id);
-    
-    typename POL::TLayout_Zone zone_layout(domain, sdom_id);
-    
-    typename POL::View_FaceI face_lf(sdom->plane_data[0]->ptr(), domain, sdom_id);
-    typename POL::View_FaceJ face_fr(sdom->plane_data[1]->ptr(), domain, sdom_id);
-    typename POL::View_FaceK face_bo(sdom->plane_data[2]->ptr(), domain, sdom_id);
+  typename POL::View_Psi     rhs (domain, sdom_id, sdom->rhs->ptr());
+  typename POL::View_Psi     psi (domain, sdom_id, sdom->psi->ptr());
+  typename POL::View_SigT    sigt(domain, sdom_id, sdom->sigt->ptr());
 
-    // All directions have same id,jd,kd, since these are all one Direction Set
-    // So pull that information out now
-    Grid_Sweep_Block const &extent = sdom->sweep_block;    
-    typename POL::View_IdxToI  idx_to_i((IZoneI*)&extent.idx_to_i[0], domain, sdom_id);
-    typename POL::View_IdxToJ  idx_to_j((IZoneJ*)&extent.idx_to_j[0], domain, sdom_id);
-    typename POL::View_IdxToK  idx_to_k((IZoneK*)&extent.idx_to_k[0], domain, sdom_id);
+  typename POL::View_dx      dx(domain, sdom_id, &sdom->deltas[0][0]);
+  typename POL::View_dy      dy(domain, sdom_id, &sdom->deltas[1][0]);
+  typename POL::View_dz      dz(domain, sdom_id, &sdom->deltas[2][0]);
 
-    RAJA::forall3<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>(
-      domain->indexRange<IDirection>(sdom_id),
-      domain->indexRange<IGroup>(sdom_id),
-      extent.indexset_sweep,
-      RAJA_LAMBDA (auto d, auto g, auto zone_idx){
-        
-        IZoneI i = idx_to_i(zone_idx);
-        IZoneJ j = idx_to_j(zone_idx);
-        IZoneK k = idx_to_k(zone_idx);
-        
-        double const xcos_dxi = 2.0 * direction(d).xcos / dx(i+1); 
-        double const ycos_dyj = 2.0 * direction(d).ycos / dy(j+1); 
-        double const zcos_dzk = 2.0 * direction(d).zcos / dz(k+1); 
+  typename POL::TLayout_Zone zone_layout(domain, sdom_id);
 
-        IZone z = zone_layout(i,j,k);
-        
-        // Calculate new zonal flux
-        double const psi_d_g_z = (
-              rhs(d,g,z)
-            + face_lf(d,g,j,k) * xcos_dxi
-            + face_fr(d,g,i,k) * ycos_dyj
-            + face_bo(d,g,i,j) * zcos_dzk)
-            / (xcos_dxi + ycos_dyj + zcos_dzk + sigt(g,z) );
+  typename POL::View_FaceI face_lf(domain, sdom_id, sdom->plane_data[0]->ptr());
+  typename POL::View_FaceJ face_fr(domain, sdom_id, sdom->plane_data[1]->ptr());
+  typename POL::View_FaceK face_bo(domain, sdom_id, sdom->plane_data[2]->ptr());
 
-        psi(d,g,z) = psi_d_g_z;
+  // All directions have same id,jd,kd, since these are all one Direction Set
+  // So pull that information out now
+  Grid_Sweep_Block const &extent = sdom->sweep_block;
+  typename POL::View_IdxToI  idx_to_i(domain, sdom_id, (IZoneI*)&extent.idx_to_i[0]);
+  typename POL::View_IdxToJ  idx_to_j(domain, sdom_id, (IZoneJ*)&extent.idx_to_j[0]);
+  typename POL::View_IdxToK  idx_to_k(domain, sdom_id, (IZoneK*)&extent.idx_to_k[0]);
 
-        // Apply diamond-difference relationships
-        face_lf(d,g,j,k) = 2.0 * psi_d_g_z - face_lf(d,g,j,k);
-        face_fr(d,g,i,k) = 2.0 * psi_d_g_z - face_fr(d,g,i,k);
-        face_bo(d,g,i,j) = 2.0 * psi_d_g_z - face_bo(d,g,i,j);
-      }); // forall3
-  END_POLICY
+  RAJA::forallN<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>(
+    domain.indexRange<IDirection>(sdom_id),
+    domain.indexRange<IGroup>(sdom_id),
+    extent.indexset_sweep,
+    RAJA_LAMBDA (IDirection d, IGroup g, IZoneIdx zone_idx){
+
+      IZoneI i = idx_to_i(zone_idx);
+      IZoneJ j = idx_to_j(zone_idx);
+      IZoneK k = idx_to_k(zone_idx);
+
+      double const xcos_dxi = 2.0 * direction(d).xcos / dx(i+1);
+      double const ycos_dyj = 2.0 * direction(d).ycos / dy(j+1);
+      double const zcos_dzk = 2.0 * direction(d).zcos / dz(k+1);
+
+      IZone z = zone_layout(i,j,k);
+
+      // Calculate new zonal flux
+      double const psi_d_g_z = (
+            rhs(d,g,z)
+          + face_lf(d,g,j,k) * xcos_dxi
+          + face_fr(d,g,i,k) * ycos_dyj
+          + face_bo(d,g,i,j) * zcos_dzk)
+          / (xcos_dxi + ycos_dyj + zcos_dzk + sigt(g,z) );
+
+      psi(d,g,z) = psi_d_g_z;
+
+      // Apply diamond-difference relationships
+      face_lf(d,g,j,k) = 2.0 * psi_d_g_z - face_lf(d,g,j,k);
+      face_fr(d,g,i,k) = 2.0 * psi_d_g_z - face_fr(d,g,i,k);
+      face_bo(d,g,i,j) = 2.0 * psi_d_g_z - face_bo(d,g,i,j);
+    }); // forall3
+
 }
 
+} // anon namespace
+
+void Kernel::sweep(Grid_Data *domain, int sdom_id) {
+  switch(nesting_order){
+    case NEST_DGZ: kernel_sweep<NEST_DGZ_T>(*domain, sdom_id); break;
+    case NEST_DZG: kernel_sweep<NEST_DZG_T>(*domain, sdom_id); break;
+    case NEST_GDZ: kernel_sweep<NEST_GDZ_T>(*domain, sdom_id); break;
+    case NEST_GZD: kernel_sweep<NEST_GZD_T>(*domain, sdom_id); break;
+    case NEST_ZDG: kernel_sweep<NEST_ZDG_T>(*domain, sdom_id); break;
+    case NEST_ZGD: kernel_sweep<NEST_ZGD_T>(*domain, sdom_id); break;
+  }
+}

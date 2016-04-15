@@ -36,7 +36,6 @@
 
 #include <fcntl.h>
 #include <unistd.h>
-#include <mpi.h>
 #include <vector>
 #include <stdio.h>
 
