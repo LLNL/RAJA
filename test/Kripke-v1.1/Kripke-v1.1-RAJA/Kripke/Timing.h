@@ -33,7 +33,6 @@
 #ifndef KRIPKE_TIMING_H__
 #define KRIPKE_TIMING_H__
 
-#include<Kripke.h>
 #include <string>
 #include <vector>
 #include <map>

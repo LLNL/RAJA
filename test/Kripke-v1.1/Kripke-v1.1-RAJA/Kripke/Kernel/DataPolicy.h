@@ -36,9 +36,6 @@
 #include<Kripke.h>
 #include<Kripke/Directions.h>
 #include<Kripke/DView.h>
-#include<RAJA/Layout.hxx>
-#include<RAJA/Forall.hxx>
-#include<RAJA/IndexValue.hxx>
 
 
 /*
@@ -63,10 +60,10 @@ RAJA_INDEX_VALUE(IZoneK, "IZoneK");        // zone on the K boundary face
  * Layout policies that don't change with nesting.
  */
 struct FixedLayoutPolicy {
-  typedef DLayout2d<RAJA::PERM_JI, IDirection, IMoment> Layout_Ell;
-  typedef DLayout2d<RAJA::PERM_IJ, IDirection, IMoment> Layout_EllPlus;
+  typedef DLayout<int, RAJA::PERM_JI, IDirection, IMoment> Layout_Ell;
+  typedef DLayout<int, RAJA::PERM_IJ, IDirection, IMoment> Layout_EllPlus;
 
-  typedef DLayout3d<RAJA::PERM_KJI, IZoneI, IZoneJ, IZoneK, IZone> TLayout_Zone;
+  typedef DLayout<IZone, RAJA::PERM_KJI, IZoneI, IZoneJ, IZoneK> TLayout_Zone;
 };
 
 
@@ -78,74 +75,74 @@ struct NestingPolicy{};
 
 template<>
 struct NestingPolicy<NEST_DGZ_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_IJK, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_IJK, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_IJKL, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_IJK, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_IJK, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_IJKL, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
   
-  typedef DLayout4d<RAJA::PERM_IJLK, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_IJLK, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_IJLK, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_IJLK, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_IJLK, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_IJLK, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 template<>
 struct NestingPolicy<NEST_DZG_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_IKJ, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_IKJ, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_ILJK, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_IKJ, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_IKJ, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_ILJK, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
 
-  typedef DLayout4d<RAJA::PERM_ILKJ, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_ILKJ, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_ILKJ, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_ILKJ, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_ILKJ, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_ILKJ, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 template<>
 struct NestingPolicy<NEST_GDZ_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_JIK, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_JIK, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_JKIL, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_JIK, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_JIK, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_JKIL, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
 
-  typedef DLayout4d<RAJA::PERM_JILK, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_JILK, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_JILK, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_JILK, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_JILK, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_JILK, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 template<>
 struct NestingPolicy<NEST_GZD_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_JKI, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_JKI, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_JKLI, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_JKI, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_JKI, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_JKLI, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_IJ, IGroup, IZone> Layout_SigT;
 
-  typedef DLayout4d<RAJA::PERM_JLKI, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_JLKI, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_JLKI, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_JLKI, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_JLKI, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_JLKI, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 template<>
 struct NestingPolicy<NEST_ZDG_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_KIJ, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_KIJ, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_LIJK, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_KIJ, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_KIJ, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_LIJK, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
 
-  typedef DLayout4d<RAJA::PERM_LKIJ, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_LKIJ, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_LKIJ, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_LKIJ, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_LKIJ, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_LKIJ, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 template<>
 struct NestingPolicy<NEST_ZGD_T> : public FixedLayoutPolicy {
-  typedef DLayout3d<RAJA::PERM_KJI, IDirection, IGroup, IZone>    Layout_Psi;
-  typedef DLayout3d<RAJA::PERM_KJI, IMoment, IGlobalGroup, IZone> Layout_Phi;
-  typedef DLayout4d<RAJA::PERM_LJKI, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
-  typedef DLayout2d<RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
+  typedef DLayout<int, RAJA::PERM_KJI, IDirection, IGroup, IZone>    Layout_Psi;
+  typedef DLayout<int, RAJA::PERM_KJI, IMoment, IGlobalGroup, IZone> Layout_Phi;
+  typedef DLayout<int, RAJA::PERM_LJKI, ILegendre, IGlobalGroup, IGlobalGroup, IMaterial> Layout_SigS;
+  typedef DLayout<int, RAJA::PERM_JI, IGroup, IZone> Layout_SigT;
 
-  typedef DLayout4d<RAJA::PERM_LKJI, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
-  typedef DLayout4d<RAJA::PERM_LKJI, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
-  typedef DLayout4d<RAJA::PERM_LKJI, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
+  typedef DLayout<int, RAJA::PERM_LKJI, IDirection, IGroup, IZoneJ, IZoneK> Layout_FaceI;
+  typedef DLayout<int, RAJA::PERM_LKJI, IDirection, IGroup, IZoneI, IZoneK> Layout_FaceJ;
+  typedef DLayout<int, RAJA::PERM_LKJI, IDirection, IGroup, IZoneI, IZoneJ> Layout_FaceK;
 };
 
 
@@ -153,19 +150,19 @@ struct NestingPolicy<NEST_ZGD_T> : public FixedLayoutPolicy {
  * Views that have fixed policies
  */
 struct FixedViewPolicy {
-  typedef DView1d<double, DLayout1d<RAJA::PERM_I, IZoneI> >View_dx;
-  typedef DView1d<double, DLayout1d<RAJA::PERM_I, IZoneJ> > View_dy;
-  typedef DView1d<double, DLayout1d<RAJA::PERM_I, IZoneK> > View_dz;
-  typedef DView1d<Directions, DLayout1d<RAJA::PERM_I, IDirection> > View_Directions;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneI> > View_dx;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneJ> > View_dy;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneK> > View_dz;
+  typedef DView<Directions, DLayout<int, RAJA::PERM_I, IDirection> > View_Directions;
   
-  typedef DView1d<IZoneI, DLayout1d<RAJA::PERM_I, IZoneIdx> > View_IdxToI;
-  typedef DView1d<IZoneJ, DLayout1d<RAJA::PERM_I, IZoneIdx> > View_IdxToJ;
-  typedef DView1d<IZoneK, DLayout1d<RAJA::PERM_I, IZoneIdx> > View_IdxToK;
+  typedef DView<IZoneI, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToI;
+  typedef DView<IZoneJ, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToJ;
+  typedef DView<IZoneK, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToK;
 
-  typedef DView1d<IZone, DLayout1d<RAJA::PERM_I, IMix> > View_MixedToZones;
-  typedef DView1d<IMaterial, DLayout1d<RAJA::PERM_I, IMix> > View_MixedToMaterial;
-  typedef DView1d<double, DLayout1d<RAJA::PERM_I, IMix> > View_MixedToFraction;
-  typedef DView1d<ILegendre, DLayout1d<RAJA::PERM_I, IMoment> > View_MomentToCoeff;
+  typedef DView<IZone, DLayout<int, RAJA::PERM_I, IMix> > View_MixedToZones;
+  typedef DView<IMaterial, DLayout<int, RAJA::PERM_I, IMix> > View_MixedToMaterial;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IMix> > View_MixedToFraction;
+  typedef DView<ILegendre, DLayout<int, RAJA::PERM_I, IMoment> > View_MomentToCoeff;
 };
 
 /**
@@ -174,21 +171,21 @@ struct FixedViewPolicy {
 template<typename T>
 struct ViewPolicy : public FixedViewPolicy {
   // Discrete and Moment Unknowns
-  typedef DView3d<double, typename T::Layout_Psi> View_Psi;
-  typedef DView3d<double, typename T::Layout_Phi> View_Phi;
+  typedef DView<double, typename T::Layout_Psi> View_Psi;
+  typedef DView<double, typename T::Layout_Phi> View_Phi;
 
   // Spatial domain face indices
-  typedef DView4d<double, typename T::Layout_FaceI> View_FaceI;
-  typedef DView4d<double, typename T::Layout_FaceJ> View_FaceJ;
-  typedef DView4d<double, typename T::Layout_FaceK> View_FaceK;
+  typedef DView<double, typename T::Layout_FaceI> View_FaceI;
+  typedef DView<double, typename T::Layout_FaceJ> View_FaceJ;
+  typedef DView<double, typename T::Layout_FaceK> View_FaceK;
 
   // L and L+ matrices
-  typedef DView2d<double, typename T::Layout_Ell> View_Ell;
-  typedef DView2d<double, typename T::Layout_EllPlus> View_EllPlus;
+  typedef DView<double, typename T::Layout_Ell> View_Ell;
+  typedef DView<double, typename T::Layout_EllPlus> View_EllPlus;
 
   // Data tables
-  typedef DView4d<double, typename T::Layout_SigS> View_SigS;
-  typedef DView2d<double, typename T::Layout_SigT> View_SigT;
+  typedef DView<double, typename T::Layout_SigS> View_SigS;
+  typedef DView<double, typename T::Layout_SigT> View_SigT;
 };
 
 

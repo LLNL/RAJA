@@ -32,7 +32,9 @@
 
 #include<Kripke/Input_Variables.h>
 
+#ifdef KRIPKE_US_MPI
 #include<mpi.h>
+#endif
 
 /**
 * Setup the default input choices
@@ -74,8 +76,12 @@ Input_Variables::Input_Variables() :
  */
 bool Input_Variables::checkValues(void) const{
   // make sure any output only goes to root
+#ifdef KRIPKE_USE_MPI
   int rank;
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+#else
+  int rank = 0;
+#endif
 
   if(num_zonesets_dim[0] <= 0 || num_zonesets_dim[1] <= 0 || num_zonesets_dim[2] <= 0){
     if(!rank)

@@ -33,7 +33,10 @@
 #include<Kripke/Layout.h>
 
 #include<Kripke/Input_Variables.h>
+
+#ifdef KRIPKE_USE_MPI
 #include<mpi.h>
+#endif
 
 namespace {
   /*
@@ -91,20 +94,25 @@ Layout::Layout(Input_Variables *input_vars){
   int R = num_procs[0] * num_procs[1] * num_procs[2];
 
   /* Check requested size is the same as MPI_COMM_WORLD */
-  int size;
+  int size=1;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_size(MPI_COMM_WORLD, &size);
+#endif
   if(R != size){
-    int myid;
+    int myid=0;
+#ifdef KRIPKE_USE_MPI
     MPI_Comm_rank(MPI_COMM_WORLD, &myid);
+#endif
     if(myid == 0){
-      printf("ERROR: Incorrect number of MPI tasks. Need %d MPI tasks.", R);
+      KripkeAbort("ERROR: Incorrect number of MPI tasks. Need %d MPI tasks.", R);
     }
-    MPI_Abort(MPI_COMM_WORLD, 1);
   }
 
   /* Compute the local coordinates in the processor decomposition */
-  int mpi_rank;
+  int mpi_rank = 0;
+#ifdef KRIPKE_USE_MPI
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
+#endif
   rankToIndices(mpi_rank, our_rank, num_procs);
 }
 Layout::~Layout(){
@@ -366,7 +374,6 @@ Layout *createLayout(Input_Variables *input_vars){
     case 1:
       return new ScatterLayout(input_vars);
   }
-  printf("Unknown Layout patter\n");
-  MPI_Abort(MPI_COMM_WORLD, 1);
+  KripkeAbort("Unknown Layout patter\n");
   return NULL;
 }

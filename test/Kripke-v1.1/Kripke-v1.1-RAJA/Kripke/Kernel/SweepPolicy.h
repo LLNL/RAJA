@@ -34,36 +34,34 @@
 #define KERNEL_SWEEP_POLICY_H__
 
 #include<Kripke.h>
-#include<RAJA/Layout.hxx>
-#include<RAJA/Forall.hxx>
   
 
 template<typename T>
 struct SweepPolicy{}; // d, g, z
 
 template<>
-struct SweepPolicy<NEST_DGZ_T> : RAJA::Forall3_Policy<omp_nowait, omp_nowait, sweep_seq_pol, 
-                                                      RAJA::Forall3_OMP_Parallel<RAJA::Forall3_Permute<RAJA::PERM_IJK>>>
+struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, omp_nowait, sweep_seq_pol>,
+                                                      RAJA::OMP_Parallel<RAJA::Permute<RAJA::PERM_IJK>>>
 {};
 
 template<>
-struct SweepPolicy<NEST_DZG_T> : RAJA::Forall3_Policy<omp_pol, seq_pol, sweep_seq_pol, RAJA::Forall3_Permute<RAJA::PERM_IKJ>>
+struct SweepPolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_IKJ>>
 {};
 
 template<>
-struct SweepPolicy<NEST_GDZ_T> : RAJA::Forall3_Policy<omp_pol, omp_pol, sweep_seq_pol, RAJA::Forall3_Permute<RAJA::PERM_JIK>>
+struct SweepPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, omp_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_JIK>>
 {};
 
 template<>
-struct SweepPolicy<NEST_GZD_T> : RAJA::Forall3_Policy<seq_pol, omp_pol, sweep_seq_pol, RAJA::Forall3_Permute<RAJA::PERM_JKI>>
+struct SweepPolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, omp_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_JKI>>
 {};
 
 template<>
-struct SweepPolicy<NEST_ZDG_T> : RAJA::Forall3_Policy<seq_pol, seq_pol, sweep_omp_pol, RAJA::Forall3_Permute<RAJA::PERM_KIJ>>
+struct SweepPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, sweep_omp_pol>, RAJA::Permute<RAJA::PERM_KIJ>>
 {};
 
 template<>
-struct SweepPolicy<NEST_ZGD_T> : RAJA::Forall3_Policy<seq_pol, seq_pol, sweep_omp_pol, RAJA::Forall3_Permute<RAJA::PERM_KJI>>
+struct SweepPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, sweep_omp_pol>, RAJA::Permute<RAJA::PERM_KJI>>
 {};
 
 

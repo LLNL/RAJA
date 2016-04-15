@@ -39,12 +39,40 @@
 #include<cmath>
 #include<strings.h>
 
+
+// Stubs for building without MPI
+#ifdef KRIPKE_USE_MPI
+
+#include<mpi.h>
+
+#define KripkeAbort(...) {printf(__VA_ARGS__); MPI_Abort(MPI_COMM_WORLD, 1);}
+
+#else
+
+
+#define KripkeAbort(...) {printf(__VA_ARGS__); exit(1);}
+
+#endif
+
+
+// Adopt RAJA's use of OPENMP
+#include<RAJA/RAJA.hxx>
+#ifndef KRIPKE_USE_OPENMP
+#ifdef RAJA_USE_OPENMP
+#define KRIPKE_USE_OPENMP
+#endif
+#endif
+
 // Make sure that there's openmp support, otherwise error out
-#if KRIPKE_USE_OPENMP
+#ifdef KRIPKE_USE_OPENMP
 #ifndef _OPENMP
 #error "OpenMP selected for build, but OpenMP is not available"
 #endif
 #endif
+
+
+
+
 
 // Forward Decl
 struct Grid_Data;
@@ -171,6 +199,9 @@ inline bool compareScalar(std::string const &name,
   }
   return false;
 }
+
+
+#include<KripkeRAJA.h>
 
 #endif
 

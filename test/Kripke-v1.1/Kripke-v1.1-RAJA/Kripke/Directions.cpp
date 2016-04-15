@@ -30,6 +30,7 @@
  * Department of Energy (DOE) or Lawrence Livermore National Security.
  */
 
+#include <Kripke.h>
 #include <Kripke/Directions.h>
 #include <Kripke/Grid.h>
 #include <Kripke/Input_Variables.h>
@@ -106,17 +107,14 @@ void InitDirections(Grid_Data *grid_data, Input_Variables *input_vars)
   if(num_polar > 0){
     // make sure the user specified the correct number of quadrature points
     if(num_polar % 4 != 0){
-      printf("Must have number of polar angles be a multiple of 4\n");
-      MPI_Abort(MPI_COMM_WORLD, 1);
+      KripkeAbort("Must have number of polar angles be a multiple of 4\n");
     }
     if(num_azimuth % 2 != 0){
-      printf("Must have number of azimuthal angles be a multiple of 2\n");
-      MPI_Abort(MPI_COMM_WORLD, 1);
+      KripkeAbort("Must have number of azimuthal angles be a multiple of 2\n");
     }
     if(num_polar*num_azimuth != num_directions){
-      printf("You need to specify %d total directions, not %d\n",
+      KripkeAbort("You need to specify %d total directions, not %d\n",
           num_polar*num_azimuth, num_directions);
-      MPI_Abort(MPI_COMM_WORLD, 1);
     }
 
     // Compute gauss legendre weights

@@ -34,42 +34,40 @@
 #define KERNEL_LPLUSTIMES_POLICY_H__
 
 #include<Kripke.h>
-#include<RAJA/Layout.hxx>
-#include<RAJA/Forall.hxx>
 
 
 template<typename T>
 struct LPlusTimesPolicy{}; // nm, d, g, z
 
 template<>
-struct LPlusTimesPolicy<NEST_DGZ_T> :// RAJA::Forall4_Policy<seq_pol, seq_pol, omp_nowait, seq_pol, RAJA::Forall4_Permute<RAJA::PERM_IJKL>>
-                                 RAJA::Forall4_Policy<seq_pol, seq_pol, omp_nowait, seq_pol,
-                                        RAJA::Forall4_OMP_Parallel<
-                                          RAJA::Forall4_Tile<RAJA::tile_none, RAJA::tile_none, RAJA::tile_none, RAJA::tile_fixed<512>,
-                                           RAJA::Forall4_Permute<RAJA::PERM_IJKL>
+struct LPlusTimesPolicy<NEST_DGZ_T> :
+                                 RAJA::NestedPolicy< RAJA::ExecList<seq_pol, seq_pol, omp_nowait, seq_pol>,
+                                        RAJA::OMP_Parallel<
+                                          RAJA::Tile<RAJA::TileList<RAJA::tile_none, RAJA::tile_none, RAJA::tile_none, RAJA::tile_fixed<512>>,
+                                           RAJA::Permute<RAJA::PERM_IJKL>
                                       >
                                     >
                                   >
 {};
 
 template<>
-struct LPlusTimesPolicy<NEST_DZG_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, seq_pol, omp_nowait, RAJA::Forall4_Permute<RAJA::PERM_LIJK>>
+struct LPlusTimesPolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, seq_pol, omp_nowait>, RAJA::Permute<RAJA::PERM_LIJK>>
 {};
 
 template<>
-struct LPlusTimesPolicy<NEST_GDZ_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, seq_pol, RAJA::Forall4_Permute<RAJA::PERM_KIJL>>
+struct LPlusTimesPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_KIJL>>
 {};
 
 template<>
-struct LPlusTimesPolicy<NEST_GZD_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_KLIJ>>
+struct LPlusTimesPolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, omp_pol>, RAJA::Permute<RAJA::PERM_KLIJ>>
 {};
 
 template<>
-struct LPlusTimesPolicy<NEST_ZDG_T> : RAJA::Forall4_Policy<omp_pol, seq_pol, seq_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_LIJK>>
+struct LPlusTimesPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol, seq_pol, omp_pol>, RAJA::Permute<RAJA::PERM_LIJK>>
 {};
 
 template<>
-struct LPlusTimesPolicy<NEST_ZGD_T> : RAJA::Forall4_Policy<seq_pol, seq_pol, omp_pol, omp_pol, RAJA::Forall4_Permute<RAJA::PERM_LKIJ>>
+struct LPlusTimesPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, omp_pol, omp_pol>, RAJA::Permute<RAJA::PERM_LKIJ>>
 {};
 
 

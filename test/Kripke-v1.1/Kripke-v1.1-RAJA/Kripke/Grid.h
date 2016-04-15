@@ -33,12 +33,11 @@
 #ifndef KRIPKE_GRID_DATA_H__
 #define KRIPKE_GRID_DATA_H__
 
+#include <Kripke.h>
 #include <Kripke/Directions.h>
 #include <Kripke/Kernel.h>
 #include <Kripke/Subdomain.h>
 #include <Kripke/Timing.h>
-#include <RAJA/IndexValue.hxx>
-#include <mpi.h>
 #include <vector>
 
 // Foreward Decl
