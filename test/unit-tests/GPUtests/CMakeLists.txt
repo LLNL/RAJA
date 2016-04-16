@@ -9,6 +9,8 @@
 ##
 
 add_definitions(-DRAJA_USE_CLOCK)
+add_definitions(-DRAJA_USE_NESTED)
+
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 cuda_add_executable(reducemin.exe
