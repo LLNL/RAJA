@@ -5,6 +5,7 @@ if(RAJA_USE_CUDA)
     Directions.cpp  
     Grid.cpp  
     Input_Variables.cpp
+    LTimes.cpp
     Kernel.cpp
     Layout.cpp
     Subdomain.cpp  
@@ -30,7 +31,8 @@ else()
     Directions.cpp  
     Grid.cpp  
     Input_Variables.cpp
-    Kernel.cpp
+    LTimes.cpp
+		Kernel.cpp
     Layout.cpp
     Subdomain.cpp  
     Sweep_Solver.cpp
