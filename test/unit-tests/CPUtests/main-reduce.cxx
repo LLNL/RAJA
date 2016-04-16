@@ -15,6 +15,7 @@
 
 #include <cstdlib>
 #include <time.h>
+#include <math.h>
 
 #include<string>
 #include<vector>
@@ -68,7 +69,7 @@ void runBasicMinReductionTest(const string& policy,
    // Make all test array values positve
    //
    for (Index_type i=0 ; i<alen; ++i) {
-      test_array[i] = abs( in_array[i] );
+      test_array[i] = fabs( in_array[i] );
    }
 
    //
@@ -217,7 +218,7 @@ void runBasicMinLocReductionTest(const string& policy,
    // Make all test array values positve
    //
    for (Index_type i=0 ; i<alen; ++i) {
-      test_array[i] = abs( in_array[i] );
+      test_array[i] = fabs( in_array[i] );
    }
 
    //
@@ -371,7 +372,7 @@ void runBasicMaxReductionTest(const string& policy,
    // Make all test array values negative
    //
    for (Index_type i=0 ; i<alen; ++i) {
-      test_array[i] = -abs( in_array[i] );
+      test_array[i] = -fabs( in_array[i] );
    }
 
    //
@@ -521,7 +522,7 @@ void runBasicMaxLocReductionTest(const string& policy,
    // Make all test array values negative
    //
    for (Index_type i=0 ; i<alen; ++i) {
-      test_array[i] = -abs( in_array[i] );
+      test_array[i] = -fabs( in_array[i] );
    }
 
    //
@@ -880,7 +881,7 @@ int main(int argc, char *argv[])
    int len = is_indices.size();
    vector<double> min_array(len);
    for (int j = 0; j < len; ++j) {
-      min_array[j] = abs( parent[ is_indices[j] ] );
+      min_array[j] = fabs( parent[ is_indices[j] ] );
    }
    const Index_type ref_min_indx = len/2;
    min_array[ref_min_indx] = ref_min_val;

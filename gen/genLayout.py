@@ -16,6 +16,15 @@ from itertools import permutations
 from lperm import *
 
 def writeEnumDecl(ndims_list):
+
+  print """
+  
+/******************************************************************
+ *  Permutation tags
+ ******************************************************************/
+ 
+"""
+
   for ndims in ndims_list:
     # Get names of each permutation    
     enum_names = getEnumNames(ndims)
@@ -27,18 +36,7 @@ def writeEnumDecl(ndims_list):
     
   print ""
 
-def writeLayoutDecl(ndims_list):
-
-  for ndims in ndims_list:
-    dim_names = getDimNames(ndims)
-  
-    args = map(lambda a: "typename Idx%s=Index_type"%a.upper(), dim_names)
-    argstr = ", ".join(args)
-    print "template<typename Perm, %s, typename IdxLin=Index_type>" % argstr
-    print "struct Layout%dd {};" % ndims
-    print 
        
- 
   
 def writeLayoutImpl(ndims_list):
 
@@ -60,11 +58,11 @@ def writeLayoutImpl(ndims_list):
       # Start the partial specialization
       args = map(lambda a: "typename Idx%s"%a.upper(), dim_names)
       argstr = ", ".join(args)
-      print "template<%s, typename IdxLin>" % argstr
+      print "template<typename IdxLin, %s>" % argstr
       
       args = map(lambda a: "Idx%s"%a.upper(), dim_names)
       argstr = ", ".join(args)
-      print "struct Layout%dd<%s, %s, IdxLin> {" % (ndims, enum, argstr)
+      print "struct Layout<IdxLin, %s, %s> {" % (enum, argstr)
     
       # Create typedefs to capture the template parameters
       print "  typedef %s Permutation;" % enum
@@ -89,7 +87,7 @@ def writeLayoutImpl(ndims_list):
       # Define constructor
       args = map(lambda a: "Index_type n"+a, dim_names)
       argstr = ", ".join(args)    
-      print "  inline Layout%dd(%s):" % (ndims, argstr)    
+      print "  inline Layout(%s):" % (argstr)    
       
       # initialize size of each dim
       args = map(lambda a: "size_%s(n%s)"%(a,a), dim_names)
@@ -174,13 +172,19 @@ def main(ndims):
 
 namespace RAJA {
 
-  """
+/******************************************************************
+ *  Generic prototype for all Layouts
+ ******************************************************************/
+
+template<typename IdxLin, typename Perm, typename ... IdxList>
+struct Layout {};
+
+"""
 
   ndims_list = range(1,ndims+1)
 
   # Dump all declarations (with documentation, etc)
   writeEnumDecl(ndims_list)
-  writeLayoutDecl(ndims_list)
 
   # Dump all implementations and specializations
   writeLayoutImpl(ndims_list)
