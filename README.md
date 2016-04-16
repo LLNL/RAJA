@@ -1,8 +1,7 @@
 
-RAJA v1.0 
-=========
-
 ##############################################################################
+
+RAJA v1.0
 
 Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 
@@ -16,7 +15,7 @@ OCEC-16-063
 
 For release details and restrictions, please read the README-license.txt file.
 It is also linked here:
-- [LICENSE](/README-license.txt)
+- [LICENSE](./README-license.txt)
 
 ##############################################################################
 
