@@ -46,6 +46,11 @@
 #include<Kripke/Kernel/DataPolicy.h>
 
 
+// Uncomment to use Lambdas instead of Functors for each kernel
+#define KRIPKE_USE_FUNCTORS
+
+
+
 /**
  * Factory to create a kernel object for the specified nesting
  */
@@ -81,80 +86,72 @@ Kernel::~Kernel(){
 
 
 
-#include<Kripke/Kernel/LTimesPolicy.h>
 
-namespace {
 
-template<typename nest_type>
-RAJA_INLINE
-void kernel_LTimes(Grid_Data &domain) {
-
-  typedef DataPolicy<nest_type> POL;
-  // Zero Phi
-  FORALL_ZONESETS(seq_pol, domain, sdom_id, sdom)
-    sdom.phi->clear(0.0);
-  END_FORALL
-
-  // Loop over Subdomains
-  FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
-
-    // Get dimensioning
-    int group0 = sdom.group0;
-
-    // Get pointers
-    typename POL::View_Psi psi(domain, sdom_id, sdom.psi->ptr());
-    typename POL::View_Phi phi(domain, sdom_id, sdom.phi->ptr());
-    typename POL::View_Ell ell(domain, sdom_id, sdom.ell->ptr());
-
-    dForallN<LTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-      domain, sdom_id,
-      RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
-
-        IGlobalGroup g_global( (*g) + group0);
-
-        phi(nm, g_global, z) += ell(d, nm) * psi(d, g, z);
-      });
-
-  END_FORALL
-}
-
-} // anon namespace
-
-void Kernel::LTimes(Grid_Data *domain) {
-  switch(nesting_order){
-    case NEST_DGZ: kernel_LTimes<NEST_DGZ_T>(*domain); break;
-    case NEST_DZG: kernel_LTimes<NEST_DZG_T>(*domain); break;
-    case NEST_GDZ: kernel_LTimes<NEST_GDZ_T>(*domain); break;
-    case NEST_GZD: kernel_LTimes<NEST_GZD_T>(*domain); break;
-    case NEST_ZDG: kernel_LTimes<NEST_ZDG_T>(*domain); break;
-    case NEST_ZGD: kernel_LTimes<NEST_ZGD_T>(*domain); break;
-  }
-}
 
 #include<Kripke/Kernel/LPlusTimesPolicy.h>
-
 namespace {
+
+#ifdef KRIPKE_USE_FUNCTORS
+template<typename PSI, typename ELL_PLUS, typename PHI>
+struct LPlusTimesFcn {
+
+  int      group0;
+  PSI      rhs;
+  ELL_PLUS ell_plus;
+  PHI      phi_out;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  LPlusTimesFcn(PSI const &rhs_, ELL_PLUS const &ell_plus_, PHI const &phi_out_, int g0) :
+    rhs(rhs_), ell_plus(ell_plus_), phi_out(phi_out_), group0(g0)
+  {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(IMoment nm, IDirection d, IGroup g, IZone z) const {
+
+    IGlobalGroup g_global( (*g) + group0);
+
+    rhs(d, g, z) += ell_plus(d, nm) * phi_out(nm, g_global, z);
+  }
+
+};
+#endif
+
+
 template<typename nest_type>
 RAJA_INLINE
 void kernel_LPlusTimes(Grid_Data &domain) {
 
   typedef DataPolicy<nest_type> POL;
 
-  // Loop over Subdomains
+  using PHI      = typename POL::View_Phi;
+  using PSI      = typename POL::View_Psi;
+  using ELL_PLUS = typename POL::View_EllPlus;
+
+  // Zero Phi
   FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
     sdom.rhs->clear(0.0);
   END_FORALL
 
+  // Loop over Subdomains
   FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
 
     // Get dimensioning
     int group0 = sdom.group0;
 
     // Get pointers
-    typename POL::View_Psi     rhs     (domain, sdom_id, sdom.rhs->ptr());
-    typename POL::View_Phi     phi_out (domain, sdom_id, sdom.phi_out->ptr());
-    typename POL::View_EllPlus ell_plus(domain, sdom_id, sdom.ell_plus->ptr());
+    PSI      rhs     (domain, sdom_id, sdom.rhs->ptr());
+    PHI      phi_out (domain, sdom_id, sdom.phi_out->ptr());
+    ELL_PLUS ell_plus(domain, sdom_id, sdom.ell_plus->ptr());
 
+#ifdef KRIPKE_USE_FUNCTORS
+    dForallN<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
+      domain, sdom_id,
+      LPlusTimesFcn<PSI, ELL_PLUS, PHI>(rhs, ell_plus, phi_out, group0)
+    );
+#else
     dForallN<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
       domain, sdom_id,
       RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
@@ -162,10 +159,11 @@ void kernel_LPlusTimes(Grid_Data &domain) {
         IGlobalGroup g_global( (*g) + group0);
 
         rhs(d, g, z) += ell_plus(d, nm) * phi_out(nm, g_global, z);
-      });
+      }
+    );
+#endif
 
   END_FORALL
-  
 }
 
 } // anon namespace
@@ -181,14 +179,58 @@ void Kernel::LPlusTimes(Grid_Data *domain) {
   }
 }
 
+
+
+
+
+
 /**
   Compute scattering source term phi_out from flux moments in phi.
   phi_out(gp,z,nm) = sum_g { sigs(g, n, gp) * phi(g,z,nm) }
 */
 #include<Kripke/Kernel/ScatteringPolicy.h>
 namespace {
+
+#ifdef KRIPKE_USE_FUNCTORS
+template<typename PHI, typename SIGS, typename MZ, typename MM, typename MF, typename MC>
+struct ScatteringFcn {
+
+  PHI  phi;
+  PHI  phi_out;
+  SIGS sigs;
+
+  MZ   mixed_to_zones;
+  MM   mixed_material;
+  MF   mixed_fraction;
+  MC   moment_to_coeff;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ScatteringFcn(PHI phi_, PHI phi_out_, SIGS sigs_, MZ mz, MM mm, MF mf, MC mc) :
+    phi(phi_), phi_out(phi_out_), sigs(sigs_),
+    mixed_to_zones(mz),
+    mixed_material(mm),
+    mixed_fraction(mf),
+    moment_to_coeff(mc)
+  {}
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(IMoment nm, IGlobalGroup g, IGlobalGroup gp, IMix mix) const {
+
+    ILegendre n = moment_to_coeff(nm);
+    IZone zone = mixed_to_zones(mix);
+    IMaterial material = mixed_material(mix);
+    double fraction = mixed_fraction(mix);
+
+    phi_out(nm, gp, zone) +=
+      sigs(n, g, gp, material) * phi(nm, g, zone) * fraction;
+  }
+
+};
+#endif
+
 template<typename nest_type>
-RAJA_INLINE
 void kernel_scattering(Grid_Data &domain) {
   
   typedef DataPolicy<nest_type> POL;
@@ -210,6 +252,18 @@ void kernel_scattering(Grid_Data &domain) {
     typename POL::View_MixedToFraction mixed_fraction (domain, sdom_id, &sdom.mixed_fraction[0]);
     typename POL::View_MomentToCoeff   moment_to_coeff(domain, sdom_id, (ILegendre*)&domain.moment_to_coeff[0]);
 
+#ifdef KRIPKE_USE_FUNCTORS
+    dForallN<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
+      domain, sdom_id,
+      ScatteringFcn<typename POL::View_Phi,
+                    typename POL::View_SigS,
+                    typename POL::View_MixedToZones,
+                    typename POL::View_MixedToMaterial,
+                    typename POL::View_MixedToFraction,
+                    typename POL::View_MomentToCoeff>
+                  (phi, phi_out, sigs, mixed_to_zones, mixed_material, mixed_fraction, moment_to_coeff)
+    );
+#else
     dForallN<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
       domain, sdom_id,
       RAJA_LAMBDA (IMoment nm, IGlobalGroup g, IGlobalGroup gp, IMix mix){
@@ -223,7 +277,7 @@ void kernel_scattering(Grid_Data &domain) {
           sigs(n, g, gp, material) * phi(nm, g, zone) * fraction;
 
       });  // forall
-        
+#endif
   END_FORALL // zonesets
 
 }
@@ -260,7 +314,7 @@ void kernel_source(Grid_Data &domain) {
     typename POL::View_MixedToZones    mixed_to_zones(domain, sdom_id, (IZone*)&sdom.mixed_to_zones[0]);
     typename POL::View_MixedToMaterial mixed_material(domain, sdom_id, (IMaterial*)&sdom.mixed_material[0]);
     typename POL::View_MixedToFraction mixed_fraction(domain, sdom_id, &sdom.mixed_fraction[0]);
-
+/*
     dForallN<SourcePolicy<nest_type>, IGlobalGroup, IMix >(
       domain, sdom_id,
       RAJA_LAMBDA (IGlobalGroup g, IMix mix){
@@ -272,7 +326,7 @@ void kernel_source(Grid_Data &domain) {
           phi_out(IMoment(0), g, zone) += 1.0 * fraction;
         }
     }); // forall
-
+*/
   END_FORALL
 }
 
@@ -298,6 +352,7 @@ namespace {
 template<typename nest_type>
 RAJA_INLINE
 void kernel_sweep(Grid_Data &domain, int sdom_id) {
+  /*
   typedef DataPolicy<nest_type> POL;
 
   Subdomain *sdom = &domain.subdomains[sdom_id];
@@ -356,7 +411,7 @@ void kernel_sweep(Grid_Data &domain, int sdom_id) {
       face_fr(d,g,i,k) = 2.0 * psi_d_g_z - face_fr(d,g,i,k);
       face_bo(d,g,i,j) = 2.0 * psi_d_g_z - face_bo(d,g,i,j);
     }); // forall3
-
+*/
 }
 
 } // anon namespace

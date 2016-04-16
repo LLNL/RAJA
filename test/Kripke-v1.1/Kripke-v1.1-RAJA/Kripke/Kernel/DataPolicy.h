@@ -41,18 +41,18 @@
 /*
  * Define strongly-typed indices used in Kripke
  */
-RAJA_INDEX_VALUE(IMaterial, "IMaterial");     // Material ID
-RAJA_INDEX_VALUE(ILegendre, "ILegendre");     // Legendre expansion coefficient
-RAJA_INDEX_VALUE(IMoment, "IMoment");       // Spherical harmonic moment
-RAJA_INDEX_VALUE(IDirection, "IDirection");    // Local direction
+RAJA_INDEX_VALUE(IMaterial,    "IMaterial");     // Material ID
+RAJA_INDEX_VALUE(ILegendre,    "ILegendre");     // Legendre expansion coefficient
+RAJA_INDEX_VALUE(IMoment,      "IMoment");       // Spherical harmonic moment
+RAJA_INDEX_VALUE(IDirection,   "IDirection");    // Local direction
 RAJA_INDEX_VALUE(IGlobalGroup, "IGlobalGroup");  // Global energy group
-RAJA_INDEX_VALUE(IGroup, "IGroup");        // Local energy group
-RAJA_INDEX_VALUE(IZone, "IZone");         // Cannonical zone number
-RAJA_INDEX_VALUE(IZoneIdx, "IZoneIdx");      // Mapped zone index (sequential in hyperplane)
-RAJA_INDEX_VALUE(IMix, "IMix");          // Mixed element slot
-RAJA_INDEX_VALUE(IZoneI, "IZoneI");        // zone on the I boundary face
-RAJA_INDEX_VALUE(IZoneJ, "IZoneJ");        // zone on the K boundary face
-RAJA_INDEX_VALUE(IZoneK, "IZoneK");        // zone on the K boundary face
+RAJA_INDEX_VALUE(IGroup,       "IGroup");        // Local energy group
+RAJA_INDEX_VALUE(IZone,        "IZone");         // Cannonical zone number
+RAJA_INDEX_VALUE(IZoneIdx,     "IZoneIdx");      // Mapped zone index (sequential in hyperplane)
+RAJA_INDEX_VALUE(IMix,         "IMix");          // Mixed element slot
+RAJA_INDEX_VALUE(IZoneI,       "IZoneI");        // zone on the I boundary face
+RAJA_INDEX_VALUE(IZoneJ,       "IZoneJ");        // zone on the K boundary face
+RAJA_INDEX_VALUE(IZoneK,       "IZoneK");        // zone on the K boundary face
 
 
 
