@@ -31,6 +31,24 @@
 
 #include "config.hxx"
 
+
+//
+// Macros for decorating host/device functions for CUDA kernels.
+// We need a better solution than this as it is a pain to manage
+// this stuff in an application.
+//
+#if defined(RAJA_USE_CUDA)
+
+#define RAJA_HOST_DEVICE __host__ __device__
+#define RAJA_DEVICE __device__
+#else
+
+#define RAJA_HOST_DEVICE
+#define RAJA_DEVICE
+#endif
+
+
+
 #include "int_datatypes.hxx"
 #include "real_datatypes.hxx"
 
@@ -39,6 +57,8 @@
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
+
+#if defined(RAJA_USE_NESTED)
 
 //
 // Strongly typed index class.
@@ -52,6 +72,8 @@
 #include "Layout.hxx"
 #include "View.hxx"
 
+#endif // defined(RAJA_USE_NESTED)
+
 
 //
 // Generic iteration templates require specializations defined 
@@ -59,10 +81,15 @@
 //
 #include "forall_generic.hxx"
 
+
+#if defined(RAJA_USE_NESTED)
+
 //
 // Generic iteration templates for perfectly nested loops
 //
 #include "forallN_generic.hxx"
+
+#endif // defined(RAJA_USE_NESTED)
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -99,24 +126,12 @@
 #include "exec-cilk/raja_cilk.hxx"
 #endif
 
-//
-// Macros for decorating host/device functions for CUDA kernels.
-// We need a better solution than this as it is a pain to manage
-// this stuff in an application. 
-//
-#if defined(RAJA_USE_CUDA)
-
-#define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#else
-
-#define RAJA_HOST_DEVICE 
-#define RAJA_DEVICE 
-#endif
 
 
 #include "IndexSetUtils.hxx"
 
+
+#if defined(RAJA_USE_NESTED)
 
 //
 // Perfectly nested loop transformations
@@ -127,6 +142,8 @@
 
 // Loop interchange policies
 #include "forallN_permute.hxx"
+
+#endif // defined(RAJA_USE_NESTED)
 
 
 #endif  // closing endif for header file include guard
