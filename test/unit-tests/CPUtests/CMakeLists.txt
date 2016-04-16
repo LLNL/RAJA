@@ -8,6 +8,8 @@
 ## For release details and restrictions, please see raja/README-license.txt
 ##
 
+add_definitions(-DRAJA_USE_NESTED)
+
 if (RAJA_USE_CUDA)
   cuda_add_executable(CPUtraversal-test.exe
     main-traversal.cxx

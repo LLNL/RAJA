@@ -122,7 +122,10 @@ const int WARP_SIZE = 32;
 //
 #include "reduce_cuda.hxx"
 #include "forall_cuda.hxx"
+
+#if defined(RAJA_USE_NESTED)
 #include "forallN_cuda.hxx"
+#endif
 
 
 #endif  // closing endif for if defined(RAJA_USE_CUDA)
