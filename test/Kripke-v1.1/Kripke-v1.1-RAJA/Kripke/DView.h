@@ -38,43 +38,45 @@ struct DView<DataType, DLayout<IdxLin, Perm, Idxs...>> : public RAJA::View<DataT
 
 
 
-template<typename POL, typename IdxI, typename BODY>
+template<typename POL, typename IdxI, typename R, typename BODY>
 RAJA_INLINE
-void dForallN(Grid_Data &domain, int sdom_id, BODY const &body){
+void dForallN_expanded(Grid_Data &domain, int sdom_id, BODY const &body, R (BODY::*mf)(IdxI) const){
 
   RAJA::RangeSegment seg_i = domain.indexRange<IdxI>(sdom_id);
 
   // Call underlying forall, extracting ranges from domain
-  RAJA::forallN<POL, IdxI>(seg_i, body);
+  RAJA::forallN<POL>(seg_i, body);
 }
 
-
-template<typename POL, typename IdxI, typename IdxJ, typename BODY>
+template<typename POL, typename IdxI, typename IdxJ, typename R, typename BODY>
 RAJA_INLINE
-void dForallN(Grid_Data &domain, int sdom_id, BODY const &body){
+void dForallN_expanded(Grid_Data &domain, int sdom_id, BODY const &body, R (BODY::*mf)(IdxI, IdxJ) const){
 
   RAJA::RangeSegment seg_i = domain.indexRange<IdxI>(sdom_id);
   RAJA::RangeSegment seg_j = domain.indexRange<IdxJ>(sdom_id);
 
   // Call underlying forall, extracting ranges from domain
-  RAJA::forallN<POL, IdxI, IdxJ>(seg_i, seg_j, body);
+  RAJA::forallN<POL>(seg_i, seg_j, body);
 }
 
-template<typename POL, typename IdxI, typename IdxJ, typename IdxK, typename BODY>
+
+
+template<typename POL, typename IdxI, typename IdxJ, typename IdxK, typename R, typename BODY>
 RAJA_INLINE
-void dForallN(Grid_Data &domain, int sdom_id, BODY const &body){
+void dForallN_expanded(Grid_Data &domain, int sdom_id, BODY const &body, R (BODY::*mf)(IdxI, IdxJ, IdxK) const){
 
   RAJA::RangeSegment seg_i = domain.indexRange<IdxI>(sdom_id);
   RAJA::RangeSegment seg_j = domain.indexRange<IdxJ>(sdom_id);
   RAJA::RangeSegment seg_k = domain.indexRange<IdxK>(sdom_id);
 
   // Call underlying forall, extracting ranges from domain
-  RAJA::forallN<POL, IdxI, IdxJ, IdxK>(seg_i, seg_j, seg_k, body);
+  RAJA::forallN<POL>(seg_i, seg_j, seg_k, body);
 }
 
-template<typename POL, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename BODY>
+
+template<typename POL, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename R, typename BODY>
 RAJA_INLINE
-void dForallN(Grid_Data &domain, int sdom_id, BODY const &body){
+void dForallN_expanded(Grid_Data &domain, int sdom_id, BODY const &body, R (BODY::*mf)(IdxI, IdxJ, IdxK, IdxL) const){
 
   RAJA::RangeSegment seg_i = domain.indexRange<IdxI>(sdom_id);
   RAJA::RangeSegment seg_j = domain.indexRange<IdxJ>(sdom_id);
@@ -82,7 +84,14 @@ void dForallN(Grid_Data &domain, int sdom_id, BODY const &body){
   RAJA::RangeSegment seg_l = domain.indexRange<IdxL>(sdom_id);
 
   // Call underlying forall, extracting ranges from domain
-  RAJA::forallN<POL, IdxI, IdxJ, IdxK, IdxL>(seg_i, seg_j, seg_k, seg_l, body);
+  RAJA::forallN<POL>(seg_i, seg_j, seg_k, seg_l, body);
+}
+
+
+template<typename POLICY, typename BODY>
+RAJA_INLINE 
+void dForallN(Grid_Data &domain, int sdom_id, BODY body){
+  dForallN_expanded<POLICY>(domain, sdom_id, body, &BODY::operator());
 }
 
 #endif

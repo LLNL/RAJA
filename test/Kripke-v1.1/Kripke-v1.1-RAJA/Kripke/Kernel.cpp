@@ -59,7 +59,7 @@
 #define KRIPKE_USE_FUNCTORS
 #else
 // Uncomment the next line to force the use of functors
-//#define KRIPKE_USE_FUNCTORS
+#define KRIPKE_USE_FUNCTORS
 #endif
 
 
@@ -150,13 +150,11 @@ struct Kernel_LTimes{
       ELL ell(domain, sdom_id, sdom.ell->ptr());
 
 #ifdef KRIPKE_USE_FUNCTORS
-      dForallN<LTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id, 
+      dForallN<LTimesPolicy<nest_type>>(domain, sdom_id, 
         LTimesFcn<PHI, ELL, PSI>(phi, ell, psi, group0)
       );
 #else
-      dForallN<LTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id,
+      dForallN<LTimesPolicy<nest_type>>(domain, sdom_id,
         RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
 
           IGlobalGroup g_global( (*g) + group0);
@@ -205,13 +203,11 @@ struct Kernel_LPlusTimes {
       ELL_PLUS ell_plus(domain, sdom_id, sdom.ell_plus->ptr());
 
 #ifdef KRIPKE_USE_FUNCTORS
-      dForallN<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id,
+      dForallN<LPlusTimesPolicy<nest_type>>(domain, sdom_id,
         LPlusTimesFcn<PSI, ELL_PLUS, PHI>(rhs, ell_plus, phi_out, group0)
       );
 #else
-      dForallN<LPlusTimesPolicy<nest_type>, IMoment, IDirection, IGroup, IZone>(
-        domain, sdom_id,
+      dForallN<LPlusTimesPolicy<nest_type>>(domain, sdom_id,
         RAJA_LAMBDA (IMoment nm, IDirection d, IGroup g, IZone z){
 
           IGlobalGroup g_global( (*g) + group0);
@@ -264,8 +260,7 @@ struct Kernel_Scattering{
       typename POL::View_MomentToCoeff   moment_to_coeff(domain, sdom_id, (ILegendre*)&domain.moment_to_coeff[0]);
 
 #ifdef KRIPKE_USE_FUNCTORS
-      dForallN<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
-        domain, sdom_id,
+      dForallN<ScatteringPolicy<nest_type>>(domain, sdom_id,
         ScatteringFcn<typename POL::View_Phi,
                       typename POL::View_SigS,
                       typename POL::View_MixedToZones,
@@ -275,8 +270,7 @@ struct Kernel_Scattering{
                     (phi, phi_out, sigs, mixed_to_zones, mixed_material, mixed_fraction, moment_to_coeff)
       );
 #else
-      dForallN<ScatteringPolicy<nest_type>, IMoment, IGlobalGroup, IGlobalGroup, IMix>(
-        domain, sdom_id,
+      dForallN<ScatteringPolicy<nest_type>>(domain, sdom_id,
         RAJA_LAMBDA (IMoment nm, IGlobalGroup g, IGlobalGroup gp, IMix mix){
         
           ILegendre n = moment_to_coeff(nm);
@@ -322,8 +316,7 @@ struct Kernel_Source {
       typename POL::View_MixedToFraction mixed_fraction(domain, sdom_id, &sdom.mixed_fraction[0]);
 
 #ifdef KRIPKE_USE_FUNCTORS
-      dForallN<SourcePolicy<nest_type>, IGlobalGroup, IMix >(
-        domain, sdom_id,
+      dForallN<SourcePolicy<nest_type>>(domain, sdom_id,
         SourceFcn<typename POL::View_Phi,
                   typename POL::View_MixedToZones,
                   typename POL::View_MixedToMaterial,
@@ -333,8 +326,7 @@ struct Kernel_Source {
       
 
 #else
-      dForallN<SourcePolicy<nest_type>, IGlobalGroup, IMix >(
-        domain, sdom_id,
+      dForallN<SourcePolicy<nest_type>>(domain, sdom_id,
         RAJA_LAMBDA (IGlobalGroup g, IMix mix){
           IZone zone = mixed_to_zones(mix);
           IMaterial material = mixed_material(mix);
@@ -390,7 +382,7 @@ struct Kernel_Sweep{
     typename POL::View_IdxToK  idx_to_k(domain, sdom_id, (IZoneK*)&extent.idx_to_k[0]);
 
 #ifdef KRIPKE_USE_FUNCTORS
-    RAJA::forallN<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>(
+    RAJA::forallN<SweepPolicy<nest_type>>( 
       domain.indexRange<IDirection>(sdom_id),
       domain.indexRange<IGroup>(sdom_id),
       extent.indexset_sweep,
@@ -411,7 +403,7 @@ struct Kernel_Sweep{
                 face_lf, face_fr, face_bo, idx_to_i, idx_to_j, idx_to_k)
     );
 #else
-    RAJA::forallN<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>(
+    RAJA::forallN<SweepPolicy<nest_type>>( 
       domain.indexRange<IDirection>(sdom_id),
       domain.indexRange<IGroup>(sdom_id),
       extent.indexset_sweep,
@@ -478,8 +470,7 @@ struct Kernel_ParticleEdit {
 #ifdef KRIPKE_USE_FUNCTORS
       // TODO
 #else
-      dForallN<ParticleEditPolicy<nest_type>, IDirection, IGroup, IZone>(
-        domain, sdom_id,
+      dForallN<ParticleEditPolicy<nest_type>>(domain, sdom_id,
         RAJA_LAMBDA (IDirection d, IGroup g, IZone z){
           part_reduce += direction(d).w * psi(d,g,z) * volume(z);              
         }
