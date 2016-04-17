@@ -286,7 +286,7 @@ struct Kernel_Scattering{
           phi_out(nm, gp, zone) +=
             sigs(n, g, gp, material) * phi(nm, g, zone) * fraction;
 
-        });  // forall
+        });  
 #endif
     END_FORALL // zonesets
   }
@@ -342,7 +342,7 @@ struct Kernel_Source {
           if(*material == 0){
             phi_out(IMoment(0), g, zone) += 1.0 * fraction;
           }
-      }); // forall
+      }); 
 #endif
     END_FORALL
   }
@@ -440,7 +440,7 @@ struct Kernel_Sweep{
         face_lf(d,g,j,k) = 2.0 * psi_d_g_z - face_lf(d,g,j,k);
         face_fr(d,g,i,k) = 2.0 * psi_d_g_z - face_fr(d,g,i,k);
         face_bo(d,g,i,j) = 2.0 * psi_d_g_z - face_bo(d,g,i,j);
-      }); // forall3
+      }); 
 #endif
   }
 };
