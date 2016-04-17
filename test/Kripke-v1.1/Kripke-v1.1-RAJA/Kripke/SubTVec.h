@@ -63,6 +63,8 @@ public:
     elements(groups*directions*zones),
     data_linear(NULL)
   {
+//#ifdef RAJA_USE_CUDA
+    
 #ifdef KRIPKE_ALIGN_DATA
     int status = posix_memalign((void**)&data_linear, KRIPKE_ALIGN, sizeof(double)*elements);
     if(status != 0){
@@ -71,7 +73,8 @@ public:
     }
 #else
     data_linear = (double *) malloc(sizeof(double)*elements);
-#endif
+#endif // align
+//#endif // cuda
     setupIndices(nesting, data_linear);
   }
 
@@ -235,7 +238,6 @@ public:
 
   int groups, directions, zones, elements;
   double *data_pointer;
-  //std::vector<double> data_linear;
   double *data_linear;
 };
 
