@@ -30,49 +30,41 @@
  * Department of Energy (DOE) or Lawrence Livermore National Security.
  */
 
-#ifndef KERNEL_SOURCE_POLICY_H__
-#define KERNEL_SOURCE_POLICY_H__
+#ifndef KERNEL_PARTICLEDIT_POLICY_H__
+#define KERNEL_PARTICLEDIT_POLICY_H__
 
 #include<Kripke.h>
 
 // There are really only 2 policies, based on group and zone ordering
 // So we define those here, and assign them to each nesting order
 
-using SourcePolicy_GZ = RAJA::NestedPolicy<
-                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
-                                         RAJA::omp_collapse_nowait_exec>,
-                          RAJA::OMP_Parallel<
-                            RAJA::Permute<RAJA::PERM_IJ>
-			                    >
-			                  >;
+using ParticleEditPolicy_CPU = RAJA::NestedPolicy<
+                                 RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                                RAJA::simd_exec,
+                                                RAJA::simd_exec>,
+                                 RAJA::OMP_Parallel<>
+			                         >;
 
-using SourcePolicy_ZG = RAJA::NestedPolicy<
-                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
-                                         RAJA::omp_collapse_nowait_exec>,
-                          RAJA::OMP_Parallel<
-                            RAJA::Permute<RAJA::PERM_JI>
-			                    >
-			                  >;
 
 template<typename T>
-struct SourcePolicy {}; // g,mix
+struct ParticleEditPolicy {}; // g,mix
 
 template<>
-struct SourcePolicy<NEST_DGZ_T> : SourcePolicy_GZ {};
+struct ParticleEditPolicy<NEST_DGZ_T> : ParticleEditPolicy_CPU {};
 
 template<>
-struct SourcePolicy<NEST_DZG_T> : SourcePolicy_ZG {};
+struct ParticleEditPolicy<NEST_DZG_T> : ParticleEditPolicy_CPU {};
 
 template<>
-struct SourcePolicy<NEST_GDZ_T> : SourcePolicy_GZ {};
+struct ParticleEditPolicy<NEST_GDZ_T> : ParticleEditPolicy_CPU {};
 
 template<>
-struct SourcePolicy<NEST_GZD_T> : SourcePolicy_GZ {};
+struct ParticleEditPolicy<NEST_GZD_T> : ParticleEditPolicy_CPU {};
 
 template<>
-struct SourcePolicy<NEST_ZDG_T> : SourcePolicy_ZG {};
+struct ParticleEditPolicy<NEST_ZDG_T> : ParticleEditPolicy_CPU {};
 
 template<>
-struct SourcePolicy<NEST_ZGD_T> : SourcePolicy_ZG {};
+struct ParticleEditPolicy<NEST_ZGD_T> : ParticleEditPolicy_CPU {};
 
 #endif

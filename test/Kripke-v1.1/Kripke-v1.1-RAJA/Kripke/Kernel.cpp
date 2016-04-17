@@ -50,6 +50,7 @@
 #include<Kripke/Kernel/ScatteringPolicy.h>
 #include<Kripke/Kernel/SourcePolicy.h>
 #include<Kripke/Kernel/SweepPolicy.h>
+#include<Kripke/Kernel/ParticleEditPolicy.h>
 
 // For now, if CUDA is being used, then we are using functors for the kernels 
 // instead of lambdas.  CUDA8's __host__ __device__ lambdas might fix this
@@ -58,7 +59,7 @@
 #define KRIPKE_USE_FUNCTORS
 #else
 // Uncomment the next line to force the use of functors
-#define KRIPKE_USE_FUNCTORS
+//#define KRIPKE_USE_FUNCTORS
 #endif
 
 
@@ -450,4 +451,57 @@ void Kernel::sweep(Grid_Data *domain, int sdom_id) {
   callKernelWithPolicy(nesting_order, Kernel_Sweep(), *domain, sdom_id);
 }
 
+/**
+ *  Edit that sums up number of particles on mesh.
+ */
 
+struct Kernel_ParticleEdit {
+
+  double &part;
+
+  Kernel_ParticleEdit(double &t) : part(t) {}
+
+  template<typename nest_type>
+  RAJA_INLINE
+  void operator()(nest_type, Grid_Data &domain) const {
+    typedef DataPolicy<nest_type> POL;
+ 
+    RAJA::ReduceSum<typename POL::reduce_policy, double> part_reduce(0.0);
+       
+    // Loop over zoneset subdomains
+    FORALL_SUBDOMAINS(seq_pol, domain, sdom_id, sdom)
+      typename POL::View_Psi         psi      (domain, sdom_id, sdom.psi->ptr());
+      typename POL::View_Directions  direction(domain, sdom_id, sdom.directions);
+      typename POL::View_Volume      volume   (domain, sdom_id, &sdom.volume[0]);
+
+      
+#ifdef KRIPKE_USE_FUNCTORS
+      // TODO
+#else
+      dForallN<ParticleEditPolicy<nest_type>, IDirection, IGroup, IZone>(
+        domain, sdom_id,
+        RAJA_LAMBDA (IDirection d, IGroup g, IZone z){
+          part_reduce += direction(d).w * psi(d,g,z) * volume(z);              
+        }
+      ); 
+#endif
+    END_FORALL
+    
+    part = part_reduce;
+    
+    // reduce across MPI
+#ifdef KRIPKE_USE_MPI
+    double part_global;
+
+    MPI_Reduce(&part, &part_global, 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+
+    part = part_global;
+#endif
+  }
+};
+
+double Kernel::particleEdit(Grid_Data *domain) {
+  double total = 0.0;
+  callKernelWithPolicy(nesting_order, Kernel_ParticleEdit(total), *domain);
+  return total;
+}

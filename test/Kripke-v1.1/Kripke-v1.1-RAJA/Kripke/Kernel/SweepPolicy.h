@@ -43,10 +43,10 @@ struct SweepPolicy{}; // d, g, z
 
 template<>
 struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::omp_for_nowait_exec, 
-                                                   RAJA::seq_exec, 
+                                    RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
+                                                   RAJA::omp_collapse_nowait_exec, 
                                                    sweep_seq_exec>,
-                                    RAJA::OMP_Parallel<RAJA::Permute<RAJA::PERM_IJK>>
+                                    RAJA::OMP_Parallel<>
                                  >
 {};
 

@@ -42,6 +42,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<%s, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE

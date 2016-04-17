@@ -44,14 +44,14 @@ struct LPlusTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::omp_for_nowait_exec, 
-                                                       RAJA::seq_exec>,
+                                                       RAJA::simd_exec>,
                                         RAJA::OMP_Parallel<
                                           RAJA::Tile<
                                             RAJA::TileList<RAJA::tile_none, 
                                                            RAJA::tile_none, 
                                                            RAJA::tile_none, 
                                                            RAJA::tile_fixed<512>>,
-                                            RAJA::Permute<RAJA::PERM_IJKL>
+                                            RAJA::Permute<RAJA::PERM_JIKL>
                                           >
                                         >
                                       >
