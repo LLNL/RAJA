@@ -42,7 +42,7 @@ struct ForallN_PolicyPair : public I {
   typedef I ISET;
 
   RAJA_INLINE
-  ForallN_PolicyPair(ISET const &i) : ISET(i) {}
+  constexpr ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
 
@@ -83,6 +83,7 @@ struct ForallN_BindFirstArg {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
+  constexpr
   ForallN_BindFirstArg(BODY const &b, INDEX_TYPE i0) : body(b), i(i0) {}
 
   template<typename ... ARGS>
@@ -100,6 +101,7 @@ struct ForallN_PeelOuter {
   BODY const body;
 
   RAJA_INLINE
+  constexpr
   ForallN_PeelOuter(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
 
   RAJA_INLINE
@@ -107,11 +109,20 @@ struct ForallN_PeelOuter {
     ForallN_BindFirstArg<BODY> inner(body, i);
     next_exec(inner);
   }
+  
+  RAJA_INLINE
+  void operator()(Index_type i, Index_type j) const {
+    ForallN_BindFirstArg<BODY> inner_i(body, i);
+    ForallN_BindFirstArg<decltype(inner_i)> inner_j(inner_i, j);
+    next_exec(inner_j);
+  }
 };
 
+template<typename ... PREST>
+struct ForallN_Executor {};
 
 template<typename PI, typename ... PREST>
-struct ForallN_Executor {
+struct ForallN_Executor<PI, PREST...> {
   typedef typename PI::ISET TI;
   typedef typename PI::POLICY POLICY_I;
 
@@ -121,6 +132,7 @@ struct ForallN_Executor {
   NextExec next_exec;
 
   template<typename ... TREST>
+  constexpr
   ForallN_Executor(PI const &is_i0, TREST ... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
 
   template<typename BODY>
@@ -131,18 +143,14 @@ struct ForallN_Executor {
   }
 };
 
-template<typename PI>
-struct ForallN_Executor<PI> {
-  typedef typename PI::ISET TI;
-  typedef typename PI::POLICY POLICY_I;
-
-  PI const is_i;
-
-  explicit ForallN_Executor(PI const &is_i0) : is_i(is_i0) {}
+template<>
+struct ForallN_Executor<> {
+  constexpr
+  ForallN_Executor()  {}
 
   template<typename BODY>
   RAJA_INLINE void operator()(BODY body) const {
-    RAJA::forall<POLICY_I>(is_i, body);
+    body();
   }
 };
 
@@ -183,6 +191,7 @@ struct ForallN_IndexTypeConverter {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
+  constexpr
   explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
   // call 'policy' layer with next policy
@@ -207,6 +216,7 @@ struct ForallN_IndexTypeConverter<BODY, IdxI> {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
+  constexpr
   explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
   // call 'policy' layer with next policy

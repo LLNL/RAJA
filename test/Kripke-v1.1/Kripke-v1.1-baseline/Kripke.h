@@ -39,6 +39,11 @@
 #include<cmath>
 #include<strings.h>
 
+// Let the RAJA build system decide if we are using OpenMP
+#ifdef RAJA_USE_OPENMP
+#define KRIPKE_USE_OPENMP
+#endif
+
 
 // Stubs for building without MPI
 #ifdef KRIPKE_USE_MPI

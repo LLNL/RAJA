@@ -154,6 +154,7 @@ struct FixedViewPolicy {
   typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneJ> > View_dy;
   typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneK> > View_dz;
   typedef DView<Directions, DLayout<int, RAJA::PERM_I, IDirection> > View_Directions;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IZone> > View_Volume;
   
   typedef DView<IZoneI, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToI;
   typedef DView<IZoneJ, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToJ;
@@ -186,6 +187,9 @@ struct ViewPolicy : public FixedViewPolicy {
   // Data tables
   typedef DView<double, typename T::Layout_SigS> View_SigS;
   typedef DView<double, typename T::Layout_SigT> View_SigT;
+  
+  
+  typedef RAJA::omp_reduce reduce_policy;
 };
 
 

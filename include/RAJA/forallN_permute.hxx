@@ -22,6 +22,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -45,6 +46,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -68,6 +70,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -91,6 +94,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -114,6 +118,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -137,6 +142,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -160,6 +166,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -183,6 +190,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -206,6 +214,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -229,6 +238,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -252,6 +262,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -275,6 +286,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -298,6 +310,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -321,6 +334,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -344,6 +358,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -367,6 +382,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -390,6 +406,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -413,6 +430,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -436,6 +454,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -459,6 +478,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -482,6 +502,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -505,6 +526,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -528,6 +550,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -551,6 +574,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -574,6 +598,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -597,6 +622,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -620,6 +646,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -643,6 +670,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -666,6 +694,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -689,6 +718,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -712,6 +742,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -735,6 +766,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -758,6 +790,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKLM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -781,6 +814,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -804,6 +838,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -827,6 +862,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -850,6 +886,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -873,6 +910,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMLK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -896,6 +934,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJLM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -919,6 +958,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -942,6 +982,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -965,6 +1006,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -988,6 +1030,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1011,6 +1054,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMLJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1034,6 +1078,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1057,6 +1102,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1080,6 +1126,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1103,6 +1150,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1126,6 +1174,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1149,6 +1198,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1172,6 +1222,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1195,6 +1246,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJLK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1218,6 +1270,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1241,6 +1294,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKLJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1264,6 +1318,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1287,6 +1342,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1310,6 +1366,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKLM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1333,6 +1390,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1356,6 +1414,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1379,6 +1438,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1402,6 +1462,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1425,6 +1486,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMLK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1448,6 +1510,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKILM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1471,6 +1534,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1494,6 +1558,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1517,6 +1582,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1540,6 +1606,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1563,6 +1630,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1586,6 +1654,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1609,6 +1678,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1632,6 +1702,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1655,6 +1726,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1678,6 +1750,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1701,6 +1774,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1724,6 +1798,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMIKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1747,6 +1822,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMILK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1770,6 +1846,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1793,6 +1870,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1816,6 +1894,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1839,6 +1918,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1862,6 +1942,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJLM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1885,6 +1966,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1908,6 +1990,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1931,6 +2014,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1954,6 +2038,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -1977,6 +2062,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMLJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2000,6 +2086,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJILM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2023,6 +2110,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIML, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2046,6 +2134,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2069,6 +2158,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2092,6 +2182,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2115,6 +2206,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2138,6 +2230,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2161,6 +2254,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2184,6 +2278,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2207,6 +2302,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2230,6 +2326,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2253,6 +2350,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2276,6 +2374,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMIJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2299,6 +2398,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMILJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2322,6 +2422,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2345,6 +2446,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2368,6 +2470,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2391,6 +2494,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2414,6 +2518,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2437,6 +2542,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2460,6 +2566,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2483,6 +2590,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2506,6 +2614,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2529,6 +2638,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2552,6 +2662,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIKM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2575,6 +2686,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIMK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2598,6 +2710,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2621,6 +2734,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2644,6 +2758,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2667,6 +2782,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2690,6 +2806,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2713,6 +2830,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIMJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2736,6 +2854,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJIM, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2759,6 +2878,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJMI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2782,6 +2902,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2805,6 +2926,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2828,6 +2950,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2851,6 +2974,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2874,6 +2998,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2897,6 +3022,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2920,6 +3046,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2943,6 +3070,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2966,6 +3094,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -2989,6 +3118,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJLK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3012,6 +3142,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3035,6 +3166,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKLJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3058,6 +3190,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3081,6 +3214,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3104,6 +3238,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJIKL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3127,6 +3262,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJILK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3150,6 +3286,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3173,6 +3310,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3196,6 +3334,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3219,6 +3358,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3242,6 +3382,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKIJL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3265,6 +3406,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKILJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3288,6 +3430,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJIL, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3311,6 +3454,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJLI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3334,6 +3478,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3357,6 +3502,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3380,6 +3526,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIJK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3403,6 +3550,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIKJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3426,6 +3574,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJIK, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3449,6 +3598,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJKI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3472,6 +3622,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKIJ, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE
@@ -3495,6 +3646,7 @@ template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKJI, BODY>{
 
   RAJA_INLINE
+  constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
   RAJA_INLINE

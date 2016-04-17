@@ -87,7 +87,7 @@ def writeLayoutImpl(ndims_list):
       # Define constructor
       args = map(lambda a: "Index_type n"+a, dim_names)
       argstr = ", ".join(args)    
-      print "  inline Layout(%s):" % (argstr)    
+      print "  RAJA_INLINE constexpr Layout(%s):" % (argstr)    
       
       # initialize size of each dim
       args = map(lambda a: "size_%s(n%s)"%(a,a), dim_names)
@@ -123,7 +123,7 @@ def writeLayoutImpl(ndims_list):
           idxparts.append("convertIndex<Index_type>(%s)" % perm[i])
       idx = " + ".join(idxparts)  
 
-      print "  inline IdxLin operator()(%s) const {" % (argstr)
+      print "  RAJA_INLINE constexpr IdxLin operator()(%s) const {" % (argstr)
       print "    return convertIndex<IdxLin>(" + idx + ");"
       print "  }"
       print ""
@@ -134,7 +134,7 @@ def writeLayoutImpl(ndims_list):
       args = map(lambda a: "Idx%s &%s"%(a.upper(), a), dim_names)
       argstr = ", ".join(args)
       print "  inline void toIndices(IdxLin lin, %s) const {" % (argstr)
-      print "    Index_type linear = convertIndex<Index_type>(lin);"
+      print "    constexpr Index_type linear = convertIndex<Index_type>(lin);"
       for i in range(0, ndims):
         idx = perm[i]
         prod = "*".join(map(lambda a: "size_%s"%a, perm[i+1 : ndims]))

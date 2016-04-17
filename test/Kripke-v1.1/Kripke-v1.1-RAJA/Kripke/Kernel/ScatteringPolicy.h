@@ -44,7 +44,7 @@ struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::omp_for_nowait_exec, 
-                                                       RAJA::seq_exec>,
+                                                       RAJA::simd_exec>,
                                         RAJA::OMP_Parallel<
                                           RAJA::Permute<RAJA::PERM_IJKL>
                                         >
