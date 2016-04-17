@@ -94,18 +94,6 @@ enum Nesting_Order {
   NEST_ZGD
 };
 
-/** 
- *Tags corresponding Nesting_Order's, as types
- */
-struct NEST_DGZ_T {};
-struct NEST_DZG_T {};
-struct NEST_GDZ_T {};
-struct NEST_GZD_T {};
-struct NEST_ZDG_T {};
-struct NEST_ZGD_T {};
-
-
-
 
 /**
   Tags for which parallel algorithm to use.
@@ -195,9 +183,6 @@ inline bool compareScalar(std::string const &name,
   }
   return false;
 }
-
-
-#include<KripkeRAJA.h>
 
 #endif
 

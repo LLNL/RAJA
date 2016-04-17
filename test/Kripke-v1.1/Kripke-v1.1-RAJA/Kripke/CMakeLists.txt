@@ -26,12 +26,12 @@ set(KRIPKE_SRC
     Test/TestKernels.cpp)
 
 if(RAJA_USE_CUDA)
-  cuda_add_library(lib_kripke ${KRIPKE_SRC})  
+  cuda_add_library(lib_kripke_raja ${KRIPKE_SRC})  
 else()
-  add_library(lib_kripke ${KRIPKE_SRC})  
+  add_library(lib_kripke_raja ${KRIPKE_SRC})  
 endif()  
                                                                                                           
-list(APPEND KRIPKE_LIBS lib_kripke) 
+list(APPEND KRIPKE_LIBS lib_kripke_raja) 
 
 
 # Propagate to parent directory
