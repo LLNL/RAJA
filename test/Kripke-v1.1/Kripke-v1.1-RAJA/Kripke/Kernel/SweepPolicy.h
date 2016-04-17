@@ -40,7 +40,7 @@ template<typename T>
 struct SweepPolicy{}; // d, g, z
 
 template<>
-struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, omp_nowait, sweep_seq_pol>,
+struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, seq_pol, sweep_seq_pol>,
                                                       RAJA::OMP_Parallel<RAJA::Permute<RAJA::PERM_IJK>>>
 {};
 
