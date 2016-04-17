@@ -176,7 +176,7 @@ void SweepSubdomains (std::vector<int> subdomain_list, Grid_Data *grid_data, boo
       {
         BLOCK_TIMER(grid_data->timing, Sweep_Kernel);
         // Perform subdomain sweep
-        grid_data->kernel->sweep(grid_data, sdom_id);
+        grid_data->kernel->sweep(&sdom);
       }
 
       // Mark as complete (and do any communication)
