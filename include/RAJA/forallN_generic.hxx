@@ -23,7 +23,8 @@ namespace RAJA {
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename TI, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, BODY body){
+RAJA_INLINE
+void forallN(TI const &is_i, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -41,14 +42,14 @@ RAJA_INLINE void forallN(TI const &is_i, BODY body){
     ForallN_PolicyPair<PolicyI, TI>(is_i));
 }
 
-
 /*!
  * \brief Provides abstraction of a 2-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, BODY body){
+RAJA_INLINE
+void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -68,14 +69,14 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, BODY body){
     ForallN_PolicyPair<PolicyJ, TJ>(is_j));
 }
 
-
 /*!
  * \brief Provides abstraction of a 3-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
+RAJA_INLINE
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -97,14 +98,14 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY bo
     ForallN_PolicyPair<PolicyK, TK>(is_k));
 }
 
-
 /*!
  * \brief Provides abstraction of a 4-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
+RAJA_INLINE
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -128,14 +129,14 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL cons
     ForallN_PolicyPair<PolicyL, TL>(is_l));
 }
 
-
 /*!
  * \brief Provides abstraction of a 5-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
+RAJA_INLINE
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -160,7 +161,6 @@ RAJA_INLINE void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL cons
     ForallN_PolicyPair<PolicyL, TL>(is_l),
     ForallN_PolicyPair<PolicyM, TM>(is_m));
 }
-
 
 
 
