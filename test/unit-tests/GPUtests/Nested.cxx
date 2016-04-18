@@ -100,7 +100,7 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     using EXEC = typename POL::EXEC;
 
     // do calculation using RAJA
-    forallN<EXEC>(
+    forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
         RangeSegment(0, num_moments),
         RangeSegment(0, num_directions),
         RangeSegment(0, num_groups),
@@ -162,8 +162,10 @@ struct PolLTimesA_GPU {
       ExecList<
         seq_exec,
         seq_exec,
+        //seq_exec,
         cuda_threadblock_x_exec<32>,
         cuda_threadblock_y_exec<32>
+        //CudaPolicy<CudaThreadBlock<Dim3x, 32>>
       >
     > EXEC;
 
