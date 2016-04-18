@@ -189,6 +189,13 @@ __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
 
 
 /*
+ * The following is commented out.
+ * It would be the preferred way of implementing the CUDA Executor
+ * class, but there are some template deduction issues that need
+ * to be worked out
+ *
+ */
+/*
 template<int ...> struct integer_sequence {};
 
 template<int N, int ...S> struct gen_sequence : gen_sequence<N-1, N-1, S...> {};
