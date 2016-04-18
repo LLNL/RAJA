@@ -162,10 +162,8 @@ struct PolLTimesA_GPU {
       ExecList<
         seq_exec,
         seq_exec,
-        //seq_exec,
         cuda_threadblock_x_exec<32>,
         cuda_threadblock_y_exec<32>
-        //CudaPolicy<CudaThreadBlock<Dim3x, 32>>
       >
     > EXEC;
 
