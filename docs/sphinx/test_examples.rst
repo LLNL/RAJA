@@ -112,9 +112,15 @@ the directories containing the proxy app examples.
     uses RAJA IndexSets to permute data and loop iteration ordering in ways 
     that can be beneficial in a manycore environment. 
 
-  * **Kripke.** Fill this in...
-
+  * **Kripke.** 
+    The directory 'Kripke-v1.1-baseline' contains the reference version of 
+    Kripke v1.1 that uses basic OpenMP threading and zone-sequential sweep
+    traversals.  It is available at
     `Kripke <https://codesign.llnl.gov/kripke.php>`_
+    
+    The directory 'Kripke-v1.1-RAJA' contains the RAJA version of Kripke v1.1 
+    that uses the nested-loop RAJA forallN traversals and make use of 
+    IndexSets to perform hyperplane sweep traversals.
 
   * **CoMD.** Fill this in...
 

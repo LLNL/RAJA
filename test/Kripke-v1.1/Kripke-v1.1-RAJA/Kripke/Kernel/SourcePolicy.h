@@ -35,36 +35,44 @@
 
 #include<Kripke.h>
 
+// There are really only 2 policies, based on group and zone ordering
+// So we define those here, and assign them to each nesting order
+
+using SourcePolicy_GZ = RAJA::NestedPolicy<
+                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
+                                         RAJA::omp_collapse_nowait_exec>,
+                          RAJA::OMP_Parallel<
+                            RAJA::Permute<RAJA::PERM_IJ>
+			                    >
+			                  >;
+
+using SourcePolicy_ZG = RAJA::NestedPolicy<
+                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
+                                         RAJA::omp_collapse_nowait_exec>,
+                          RAJA::OMP_Parallel<
+                            RAJA::Permute<RAJA::PERM_JI>
+			                    >
+			                  >;
 
 template<typename T>
 struct SourcePolicy {}; // g,mix
 
 template<>
-struct SourcePolicy<NEST_DGZ_T> :  RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, seq_pol>,
-                      RAJA::OMP_Parallel<
-                      RAJA::Permute<RAJA::PERM_IJ>
-									  >
-									>
-{};
+struct SourcePolicy<NEST_DGZ_T> : SourcePolicy_GZ {};
 
 template<>
-struct SourcePolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
-{};
+struct SourcePolicy<NEST_DZG_T> : SourcePolicy_ZG {};
 
 template<>
-struct SourcePolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol>, RAJA::Permute<RAJA::PERM_IJ> >
-{};
+struct SourcePolicy<NEST_GDZ_T> : SourcePolicy_GZ {};
 
 template<>
-struct SourcePolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_IJ> >
-{};
+struct SourcePolicy<NEST_GZD_T> : SourcePolicy_GZ {};
 
 template<>
-struct SourcePolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
-{};
+struct SourcePolicy<NEST_ZDG_T> : SourcePolicy_ZG {};
 
 template<>
-struct SourcePolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol>, RAJA::Permute<RAJA::PERM_JI> >
-{};
+struct SourcePolicy<NEST_ZGD_T> : SourcePolicy_ZG {};
 
 #endif

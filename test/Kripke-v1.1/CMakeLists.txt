@@ -8,4 +8,5 @@
 ## For release details and restrictions, please see raja/README-license.txt
 ##
 
+add_subdirectory(Kripke-v1.1-baseline)
 add_subdirectory(Kripke-v1.1-RAJA)

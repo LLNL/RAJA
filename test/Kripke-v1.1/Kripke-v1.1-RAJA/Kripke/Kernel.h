@@ -61,6 +61,7 @@ class Kernel {
     void scattering(Grid_Data *grid_data);
     void source(Grid_Data *grid_data);
     void sweep(Grid_Data *domain, int sdom_id);
+    double particleEdit(Grid_Data *domain);
   private:
     Nesting_Order nesting_order;
 };

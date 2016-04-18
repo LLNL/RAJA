@@ -35,33 +35,64 @@
 
 #include<Kripke.h>
   
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> sweep_seq_exec;
+typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> sweep_omp_exec;
 
 template<typename T>
 struct SweepPolicy{}; // d, g, z
 
 template<>
-struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_nowait, omp_nowait, sweep_seq_pol>,
-                                                      RAJA::OMP_Parallel<RAJA::Permute<RAJA::PERM_IJK>>>
+struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
+                                                   RAJA::omp_collapse_nowait_exec, 
+                                                   sweep_seq_exec>,
+                                    RAJA::OMP_Parallel<>
+                                 >
 {};
 
 template<>
-struct SweepPolicy<NEST_DZG_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, seq_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_IKJ>>
+struct SweepPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                                   RAJA::seq_exec, 
+                                                   sweep_seq_exec>, 
+                                    RAJA::Permute<RAJA::PERM_IKJ>
+                                 >
 {};
 
 template<>
-struct SweepPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<RAJA::ExecList<omp_pol, omp_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_JIK>>
+struct SweepPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                                   RAJA::omp_for_nowait_exec, 
+                                                   sweep_seq_exec>, 
+                                    RAJA::Permute<RAJA::PERM_JIK>
+                                 >
 {};
 
 template<>
-struct SweepPolicy<NEST_GZD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, omp_pol, sweep_seq_pol>, RAJA::Permute<RAJA::PERM_JKI>>
+struct SweepPolicy<NEST_GZD_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::omp_for_nowait_exec, 
+                                                   sweep_seq_exec>, 
+                                    RAJA::Permute<RAJA::PERM_JKI>
+                                 >
 {};
 
 template<>
-struct SweepPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, sweep_omp_pol>, RAJA::Permute<RAJA::PERM_KIJ>>
+struct SweepPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   sweep_omp_exec>, 
+                                    RAJA::Permute<RAJA::PERM_KIJ>
+                                 >
 {};
 
 template<>
-struct SweepPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<RAJA::ExecList<seq_pol, seq_pol, sweep_omp_pol>, RAJA::Permute<RAJA::PERM_KJI>>
+struct SweepPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   sweep_omp_exec>, 
+                                    RAJA::Permute<RAJA::PERM_KJI>
+                                 >
 {};
 
 
