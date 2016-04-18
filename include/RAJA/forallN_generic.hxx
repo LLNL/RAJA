@@ -17,9 +17,14 @@
 namespace RAJA {
 
 
-template<typename POLICY, typename IdxI, typename TI, typename R, typename BODY>
+/*!
+ * \brief Provides abstraction of a 1-nested loop
+ *
+ * Provides index typing, and initial nested policy unwrapping
+ */
+template<typename POLICY, typename IdxI=Index_type, typename TI, typename BODY>
 RAJA_INLINE
-void forallN_expanded(TI const &is_i, BODY const &body, R (BODY::*mf)(IdxI) const){
+void forallN(TI const &is_i, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -38,19 +43,13 @@ void forallN_expanded(TI const &is_i, BODY const &body, R (BODY::*mf)(IdxI) cons
 }
 
 /*!
- * \brief Provides abstraction of a 1-nested loop
+ * \brief Provides abstraction of a 2-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
-template<typename POLICY, typename TI, typename BODY>
-RAJA_INLINE 
-void forallN(TI const &is_i, BODY body){
-  forallN_expanded<POLICY>(is_i, body, &BODY::operator());
-}
-
-template<typename POLICY, typename IdxI, typename IdxJ, typename TI, typename TJ, typename R, typename BODY>
+template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
 RAJA_INLINE
-void forallN_expanded(TI const &is_i, TJ const &is_j, BODY const &body, R (BODY::*mf)(IdxI, IdxJ) const){
+void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -71,19 +70,13 @@ void forallN_expanded(TI const &is_i, TJ const &is_j, BODY const &body, R (BODY:
 }
 
 /*!
- * \brief Provides abstraction of a 2-nested loop
+ * \brief Provides abstraction of a 3-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
-template<typename POLICY, typename TI, typename TJ, typename BODY>
-RAJA_INLINE 
-void forallN(TI const &is_i, TJ const &is_j, BODY body){
-  forallN_expanded<POLICY>(is_i, is_j, body, &BODY::operator());
-}
-
-template<typename POLICY, typename IdxI, typename IdxJ, typename IdxK, typename TI, typename TJ, typename TK, typename R, typename BODY>
+template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE
-void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body, R (BODY::*mf)(IdxI, IdxJ, IdxK) const){
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -106,19 +99,13 @@ void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const
 }
 
 /*!
- * \brief Provides abstraction of a 3-nested loop
+ * \brief Provides abstraction of a 4-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
-template<typename POLICY, typename TI, typename TJ, typename TK, typename BODY>
-RAJA_INLINE 
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY body){
-  forallN_expanded<POLICY>(is_i, is_j, is_k, body, &BODY::operator());
-}
-
-template<typename POLICY, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename TI, typename TJ, typename TK, typename TL, typename R, typename BODY>
+template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE
-void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY const &body, R (BODY::*mf)(IdxI, IdxJ, IdxK, IdxL) const){
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -143,19 +130,13 @@ void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &
 }
 
 /*!
- * \brief Provides abstraction of a 4-nested loop
+ * \brief Provides abstraction of a 5-nested loop
  *
  * Provides index typing, and initial nested policy unwrapping
  */
-template<typename POLICY, typename TI, typename TJ, typename TK, typename TL, typename BODY>
-RAJA_INLINE 
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY body){
-  forallN_expanded<POLICY>(is_i, is_j, is_k, is_l, body, &BODY::operator());
-}
-
-template<typename POLICY, typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM, typename TI, typename TJ, typename TK, typename TL, typename TM, typename R, typename BODY>
+template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE
-void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY const &body, R (BODY::*mf)(IdxI, IdxJ, IdxK, IdxL, IdxM) const){
+void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY const &body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -179,17 +160,6 @@ void forallN_expanded(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &
     ForallN_PolicyPair<PolicyK, TK>(is_k),
     ForallN_PolicyPair<PolicyL, TL>(is_l),
     ForallN_PolicyPair<PolicyM, TM>(is_m));
-}
-
-/*!
- * \brief Provides abstraction of a 5-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE 
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY body){
-  forallN_expanded<POLICY>(is_i, is_j, is_k, is_l, is_m, body, &BODY::operator());
 }
 
 

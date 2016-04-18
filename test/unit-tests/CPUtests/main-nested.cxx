@@ -271,7 +271,7 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     using EXEC = typename POL::EXEC;
 
     // do calculation using RAJA
-    forallN<EXEC>(
+    forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
         RangeSegment(0, num_moments),
         RangeSegment(0, num_directions),
         RangeSegment(0, num_groups),

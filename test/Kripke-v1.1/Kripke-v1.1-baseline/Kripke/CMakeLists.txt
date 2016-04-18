@@ -1,6 +1,6 @@
 include_directories(..)
 
-add_library(lib_kripke  
+set(KRIPKE_SRC 
   Directions.cpp  
   Grid.cpp  
   Input_Variables.cpp
@@ -24,5 +24,10 @@ add_library(lib_kripke
   Test/TestKernels.cpp
 )
 
+if(RAJA_USE_CUDA)
+  cuda_add_library(lib_kripke ${KRIPKE_SRC})  
+else()
+  add_library(lib_kripke ${KRIPKE_SRC})  
+endif() 
                                                                                                           
 set(KRIPKE_LIBS ${KRIPKE_LIBS} lib_kripke PARENT_SCOPE) 
