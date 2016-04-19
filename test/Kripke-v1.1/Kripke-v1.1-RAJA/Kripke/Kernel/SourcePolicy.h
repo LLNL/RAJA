@@ -38,6 +38,14 @@
 // There are really only 2 policies, based on group and zone ordering
 // So we define those here, and assign them to each nesting order
 
+#ifdef RAJA_COMPILER_ICC
+using SourcePolicy_GZ = RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::simd_exec>
+                                  >;
+
+#else
+
 using SourcePolicy_GZ = RAJA::NestedPolicy<
                           RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
                                          RAJA::omp_collapse_nowait_exec>,
@@ -45,7 +53,7 @@ using SourcePolicy_GZ = RAJA::NestedPolicy<
                             RAJA::Permute<RAJA::PERM_IJ>
 			                    >
 			                  >;
-
+#endif
 using SourcePolicy_ZG = RAJA::NestedPolicy<
                           RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
                                          RAJA::omp_collapse_nowait_exec>,
