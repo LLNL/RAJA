@@ -18,6 +18,16 @@ License
 =======
 See included file NOTICE.md
 
+RAJA Version
+============
+This is a variant of Kripke that uses RAJA::forallN for its compute kernels.
+See Kripke/Kernel.cpp for all of these kernels.
+
+Currently there are issues building with the Intel compiler which are being
+investigated.  As a result, building the RAJA version of Kripke with icpc 
+will diable all but the DGZ data layouts, and disables complex execution
+policies.  Once a resolution to these issues have been found, this code will
+be updated.
 
 Overview
 ========
