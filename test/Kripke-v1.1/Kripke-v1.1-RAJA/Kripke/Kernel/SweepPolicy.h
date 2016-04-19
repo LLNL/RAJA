@@ -41,6 +41,16 @@ typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>
 template<typename T>
 struct SweepPolicy{}; // d, g, z
 
+#ifdef RAJA_COMPILER_ICC
+template<>
+struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   sweep_seq_exec>
+                                  >
+{};
+
+#else
 template<>
 struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                     RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
@@ -49,7 +59,7 @@ struct SweepPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                     RAJA::OMP_Parallel<>
                                  >
 {};
-
+#endif
 template<>
 struct SweepPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
                                     RAJA::ExecList<RAJA::omp_for_nowait_exec, 

@@ -39,6 +39,17 @@
 template<typename T>
 struct LTimesPolicy{}; // nm, d, g, z
 
+#ifdef RAJA_COMPILER_ICC
+template<>
+struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   RAJA::simd_exec>
+                                  >
+{};
+
+#else
 template<>
 struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                     RAJA::ExecList<RAJA::seq_exec, 
@@ -56,7 +67,7 @@ struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                     >
                                   >
 {};
-
+#endif
 template<>
 struct LTimesPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
                                     RAJA::ExecList<RAJA::seq_exec, 
