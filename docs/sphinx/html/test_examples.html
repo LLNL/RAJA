@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Examples &mdash; RAJA 1.0.0 documentation</title>
+  <title>Tests and Examples &mdash; RAJA 1.0.0 documentation</title>
   
 
   
@@ -82,10 +82,10 @@
             
             
                 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA version 1.0</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
 <li class="toctree-l1"><a class="reference internal" href="code_organization.html">RAJA source code organization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and building the code</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="">Examples</a><ul>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Tests and Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#basic-tests">Basic tests</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-applications">Example applications</a></li>
 </ul>
@@ -121,7 +121,7 @@
   <ul class="wy-breadcrumbs">
     <li><a href="index.html">Docs</a> &raquo;</li>
       
-    <li>Examples</li>
+    <li>Tests and Examples</li>
       <li class="wy-breadcrumbs-aside">
         
           
@@ -135,8 +135,8 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="examples">
-<h1>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="tests-and-examples">
+<h1>Tests and Examples<a class="headerlink" href="#tests-and-examples" title="Permalink to this headline">¶</a></h1>
 <p>The RAJA code comes with several simple test codes and proxy-app examples
 that illustrate various usage scenarios. When RAJA is compiled, these
 executables are built in their default configurations. They can be run by
@@ -224,11 +224,14 @@ header file to change the variant.</p>
 uses RAJA IndexSets to permute data and loop iteration ordering in ways
 that can be beneficial in a manycore environment.</p>
 </li>
-<li><p class="first"><strong>Kripke.</strong> Fill this in...</p>
-<p><a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a></p>
-</li>
-<li><p class="first"><strong>CoMD.</strong> Fill this in...</p>
-<p><a class="reference external" href="https://github.com/exmatex/CoMD">CoMD</a></p>
+<li><p class="first"><strong>Kripke.</strong></p>
+<p>The directory &#8216;Kripke-v1.1-baseline&#8217; contains the reference version of
+Kripke v1.1 that uses basic OpenMP threading and zone-sequential sweep
+traversals.  It is available at
+<a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a></p>
+<p>The directory &#8216;Kripke-v1.1-RAJA&#8217; contains the RAJA version of Kripke v1.1
+that uses the nested-loop RAJA forallN traversals and
+IndexSets to perform hyperplane sweep traversals.</p>
 </li>
 </ul>
 </div></blockquote>
