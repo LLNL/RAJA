@@ -13,6 +13,7 @@
 //
 
 #include <cstdlib>
+#include <cmath>
 #include <time.h>
 
 #include<string>
@@ -294,7 +295,7 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
           }
 
           // check answer with some reasonable tolerance
-          if(std::abs(total-phi(m,g,z)) > 1e-12){
+          if(fabs(total-phi(m,g,z)) > 1e-12){
             nfailed ++;
           }
         }
