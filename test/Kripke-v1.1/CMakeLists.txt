@@ -42,4 +42,7 @@
 ###############################################################################
 
 add_subdirectory(Kripke-v1.1-baseline)
-add_subdirectory(Kripke-v1.1-RAJA)
+
+if(RAJA_USE_OPENMP)
+  add_subdirectory(Kripke-v1.1-RAJA)
+endif()

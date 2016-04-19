@@ -56,13 +56,14 @@ set(RAJA_VERSION_PATCHLEVEL 0)
 # We need to find the packages _after_ the CMake starts up, so this isn't in
 # a host-config file.
 if (RAJA_USE_OPENMP)
-  find_package(OpenMP REQUIRED)
+  find_package(OpenMP)
   if(OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
     message(STATUS "OpenMP Enabled")
   else()
     message(WARNING "OpenMP NOT FOUND")
+    set(RAJA_USE_OPENMP Off)
   endif()
 endif()
 
@@ -77,7 +78,8 @@ if (RAJA_USE_CUDA)
 endif()
 
 # Used for timing
-find_library(RT_LIBRARIES rt)
+#find_library(RT_LIBRARIES rt)
+set(RT_LIBRARIES "")
 
 
 # Set Release as the default build type
@@ -110,9 +112,9 @@ set(RAJA_USE_FT OFF)
 set(RAJA_REPORT_FT OFF)
 
 ## Timer options
-add_definitions(-DRAJA_USE_GETTIME)
+#add_definitions(-DRAJA_USE_GETTIME)
 #add_definitions(-DRAJA_USE_CLOCK)
-#add_definitions(-DRAJA_USE_CYCLE)
+add_definitions(-DRAJA_USE_CYCLE)
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
