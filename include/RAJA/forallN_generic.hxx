@@ -58,7 +58,7 @@ namespace RAJA {
  */
 template<typename POLICY, typename IdxI=Index_type, typename TI, typename BODY>
 RAJA_INLINE
-void forallN(TI const &is_i, BODY const &body){
+void forallN(TI const is_i, BODY const body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -83,7 +83,7 @@ void forallN(TI const &is_i, BODY const &body){
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
+void forallN(TI const is_i, TJ const is_j, BODY const body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -110,7 +110,7 @@ void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
+void forallN(TI const is_i, TJ const is_j, TK const is_k, BODY const body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -139,7 +139,7 @@ void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY const &body){
+void forallN(TI const is_i, TJ const is_j, TK const is_k, TL const is_l, BODY const body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
@@ -170,7 +170,7 @@ void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BOD
  */
 template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY const &body){
+void forallN(TI const is_i, TJ const is_j, TK const is_k, TL const is_l, TM const is_m, BODY const body){
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
