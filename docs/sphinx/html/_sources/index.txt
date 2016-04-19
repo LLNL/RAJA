@@ -17,8 +17,8 @@ RAJA is a collection of C++ software abstractions, being developed at
 Lawrence Livermore National Laboratory (LLNL), that enable architecture 
 portability for HPC applications. The overarching goals of RAJA are to:
 
-  * make existing (production) applications *portable with minimal disruption*
-  * provide a model for new applications so that they are portable from 
+  * Make existing (production) applications *portable with minimal disruption*
+  * Provide a model for new applications so that they are portable from 
     inception. 
 
 RAJA uses standard C++11 -- C++ is the predominant programming language in
