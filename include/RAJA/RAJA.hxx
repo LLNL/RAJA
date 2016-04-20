@@ -63,7 +63,6 @@
 
 #include "config.hxx"
 
-
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
@@ -73,10 +72,12 @@
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
+#define RAJA_SUPPRESS_HD_WARN #pragma nv_exec_check_disable
 #else
 
 #define RAJA_HOST_DEVICE
 #define RAJA_DEVICE
+#define RAJA_SUPPRESS_HD_WARN
 #endif
 
 
