@@ -49,6 +49,25 @@
 namespace RAJA {
 
 
+template<typename BODY>
+struct ForallN_BindFirstArg_Device {
+
+  BODY const body;  
+  size_t  i;
+
+  RAJA_INLINE
+  RAJA_DEVICE
+  ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
+
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void  operator()(ARGS ... args) const {
+    body(i, args...);
+  }
+};
+
+
 struct CudaDim {
   dim3 num_threads;
   dim3 num_blocks;
@@ -59,7 +78,6 @@ struct CudaDim {
       num_threads.x, num_threads.y, num_threads.z);
   }
 };
-
 
 template<typename POL>
 struct CudaPolicy {};
@@ -78,7 +96,7 @@ struct CudaThreadBlock {
   }
 
   __device__ inline int operator()(void){
-    
+
     int idx = begin + view(blockIdx) * threads_per_block + view(threadIdx);
     if(idx >= end){
       idx = -1;
@@ -197,7 +215,7 @@ template <typename BODY, typename ... ARGS>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
   if(i >= 0){
-    ForallN_BindFirstArg<BODY, Index_type> bound(body, i);
+    ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
   }  
 }
