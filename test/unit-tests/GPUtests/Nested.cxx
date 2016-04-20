@@ -58,7 +58,7 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
 {
 
    cout << "\n TestLTimes " << num_moments << " moments, " << num_directions << " directions, " << num_groups << " groups, and " << num_zones << " zones"
-       << " with policy " << policy << "\n";
+       << " with policy " << policy << endl;
 
 
     s_ntests_run++;
@@ -254,7 +254,7 @@ int main(int argc, char *argv[])
 // Run RAJA::forall nested loop tests...
 //
 ///////////////////////////////////////////////////////////////////////////
-
+   cout << "Starting GPU nested tests" << endl << endl;
    // Run some LTimes example tests (directions, groups, zones)
    runLTimesTests(2, 3, 7, 3);
    runLTimesTests(25, 96, 8, 32);
