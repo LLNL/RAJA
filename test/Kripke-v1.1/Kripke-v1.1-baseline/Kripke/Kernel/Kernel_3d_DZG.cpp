@@ -254,7 +254,6 @@ void Kernel_3d_DZG::source(Grid_Data *grid_data){
     // grab dimensions
     int num_zones = sdom.num_zones;
     int num_groups = phi_out.groups;
-    int num_moments = grid_data->total_num_moments;
     
 #ifdef KRIPKE_USE_OPENMP
 #pragma omp parallel for

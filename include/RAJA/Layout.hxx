@@ -234,15 +234,15 @@ struct Layout<IdxLin, PERM_I, IdxI> {
 
   Index_type const stride_i;
 
-  RAJA_INLINE constexpr Layout(Index_type ni):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni):
     size_i(ni), stride_i(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     i = IdxI(linear);
   }
@@ -267,15 +267,15 @@ struct Layout<IdxLin, PERM_IJ, IdxI, IdxJ> {
   Index_type const stride_i;
   Index_type const stride_j;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj):
     size_i(ni), size_j(nj), stride_i(nj), stride_j(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j);
     i = IdxI(_i);
@@ -298,15 +298,15 @@ struct Layout<IdxLin, PERM_JI, IdxI, IdxJ> {
   Index_type const stride_i;
   Index_type const stride_j;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj):
     size_i(ni), size_j(nj), stride_i(1), stride_j(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i);
     j = IdxJ(_j);
@@ -337,15 +337,15 @@ struct Layout<IdxLin, PERM_IJK, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nj*nk), stride_j(nk), stride_k(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_k);
     i = IdxI(_i);
@@ -374,15 +374,15 @@ struct Layout<IdxLin, PERM_IKJ, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nk*nj), stride_j(1), stride_k(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_j);
     i = IdxI(_i);
@@ -411,15 +411,15 @@ struct Layout<IdxLin, PERM_JIK, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nk), stride_j(ni*nk), stride_k(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_k);
     j = IdxJ(_j);
@@ -448,15 +448,15 @@ struct Layout<IdxLin, PERM_JKI, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(1), stride_j(nk*ni), stride_k(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_i);
     j = IdxJ(_j);
@@ -485,15 +485,15 @@ struct Layout<IdxLin, PERM_KIJ, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(nj), stride_j(1), stride_k(ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_j);
     k = IdxK(_k);
@@ -522,15 +522,15 @@ struct Layout<IdxLin, PERM_KJI, IdxI, IdxJ, IdxK> {
   Index_type const stride_j;
   Index_type const stride_k;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk):
     size_i(ni), size_j(nj), size_k(nk), stride_i(1), stride_j(ni), stride_k(nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_i);
     k = IdxK(_k);
@@ -567,15 +567,15 @@ struct Layout<IdxLin, PERM_IJKL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_k*size_l);
     i = IdxI(_i);
@@ -610,15 +610,15 @@ struct Layout<IdxLin, PERM_IJLK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_l*size_k);
     i = IdxI(_i);
@@ -653,15 +653,15 @@ struct Layout<IdxLin, PERM_IKJL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_j*size_l);
     i = IdxI(_i);
@@ -696,15 +696,15 @@ struct Layout<IdxLin, PERM_IKLJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_l*size_j);
     i = IdxI(_i);
@@ -739,15 +739,15 @@ struct Layout<IdxLin, PERM_ILJK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_j*size_k);
     i = IdxI(_i);
@@ -782,15 +782,15 @@ struct Layout<IdxLin, PERM_ILKJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_k*size_j);
     i = IdxI(_i);
@@ -825,15 +825,15 @@ struct Layout<IdxLin, PERM_JIKL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nl), stride_j(ni*nk*nl), stride_k(nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_k*size_l);
     j = IdxJ(_j);
@@ -868,15 +868,15 @@ struct Layout<IdxLin, PERM_JILK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nk), stride_j(ni*nl*nk), stride_k(1), stride_l(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_l*size_k);
     j = IdxJ(_j);
@@ -911,15 +911,15 @@ struct Layout<IdxLin, PERM_JKIL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl), stride_j(nk*ni*nl), stride_k(ni*nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_i*size_l);
     j = IdxJ(_j);
@@ -954,15 +954,15 @@ struct Layout<IdxLin, PERM_JKLI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nk*nl*ni), stride_k(nl*ni), stride_l(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_l*size_i);
     j = IdxJ(_j);
@@ -997,15 +997,15 @@ struct Layout<IdxLin, PERM_JLIK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk), stride_j(nl*ni*nk), stride_k(1), stride_l(ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_i*size_k);
     j = IdxJ(_j);
@@ -1040,15 +1040,15 @@ struct Layout<IdxLin, PERM_JLKI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nl*nk*ni), stride_k(ni), stride_l(nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_k*size_i);
     j = IdxJ(_j);
@@ -1083,15 +1083,15 @@ struct Layout<IdxLin, PERM_KIJL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nl), stride_j(nl), stride_k(ni*nj*nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_j*size_l);
     k = IdxK(_k);
@@ -1126,15 +1126,15 @@ struct Layout<IdxLin, PERM_KILJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl*nj), stride_j(1), stride_k(ni*nl*nj), stride_l(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_l*size_j);
     k = IdxK(_k);
@@ -1169,15 +1169,15 @@ struct Layout<IdxLin, PERM_KJIL, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nl), stride_j(ni*nl), stride_k(nj*ni*nl), stride_l(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_i*size_l);
     k = IdxK(_k);
@@ -1212,15 +1212,15 @@ struct Layout<IdxLin, PERM_KJLI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nl*ni), stride_k(nj*nl*ni), stride_l(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_l*size_i);
     k = IdxK(_k);
@@ -1255,15 +1255,15 @@ struct Layout<IdxLin, PERM_KLIJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj), stride_j(1), stride_k(nl*ni*nj), stride_l(ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_i*size_j);
     k = IdxK(_k);
@@ -1298,15 +1298,15 @@ struct Layout<IdxLin, PERM_KLJI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(ni), stride_k(nl*nj*ni), stride_l(nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_j*size_i);
     k = IdxK(_k);
@@ -1341,15 +1341,15 @@ struct Layout<IdxLin, PERM_LIJK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_j*size_k);
     l = IdxL(_l);
@@ -1384,15 +1384,15 @@ struct Layout<IdxLin, PERM_LIKJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_k*size_j);
     l = IdxL(_l);
@@ -1427,15 +1427,15 @@ struct Layout<IdxLin, PERM_LJIK, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nj*ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_i*size_k);
     l = IdxL(_l);
@@ -1470,15 +1470,15 @@ struct Layout<IdxLin, PERM_LJKI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nj*nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_k*size_i);
     l = IdxL(_l);
@@ -1513,15 +1513,15 @@ struct Layout<IdxLin, PERM_LKIJ, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nk*ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_i*size_j);
     l = IdxL(_l);
@@ -1556,15 +1556,15 @@ struct Layout<IdxLin, PERM_LKJI, IdxI, IdxJ, IdxK, IdxL> {
   Index_type const stride_k;
   Index_type const stride_l;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nk*nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_j*size_i);
     l = IdxL(_l);
@@ -1607,15 +1607,15 @@ struct Layout<IdxLin, PERM_IJKLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nl*nm), stride_j(nk*nl*nm), stride_k(nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_k*size_l*size_m);
     i = IdxI(_i);
@@ -1656,15 +1656,15 @@ struct Layout<IdxLin, PERM_IJKML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nm*nl), stride_j(nk*nm*nl), stride_k(nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_k*size_m*size_l);
     i = IdxI(_i);
@@ -1705,15 +1705,15 @@ struct Layout<IdxLin, PERM_IJLKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nk*nm), stride_j(nl*nk*nm), stride_k(nm), stride_l(nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_l*size_k*size_m);
     i = IdxI(_i);
@@ -1754,15 +1754,15 @@ struct Layout<IdxLin, PERM_IJLMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nm*nk), stride_j(nl*nm*nk), stride_k(1), stride_l(nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_l*size_m*size_k);
     i = IdxI(_i);
@@ -1803,15 +1803,15 @@ struct Layout<IdxLin, PERM_IJMKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nk*nl), stride_j(nm*nk*nl), stride_k(nl), stride_l(1), stride_m(nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_m*size_k*size_l);
     i = IdxI(_i);
@@ -1852,15 +1852,15 @@ struct Layout<IdxLin, PERM_IJMLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nl*nk), stride_j(nm*nl*nk), stride_k(1), stride_l(nk), stride_m(nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_j*size_m*size_l*size_k);
     i = IdxI(_i);
@@ -1901,15 +1901,15 @@ struct Layout<IdxLin, PERM_IKJLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nl*nm), stride_j(nl*nm), stride_k(nj*nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_j*size_l*size_m);
     i = IdxI(_i);
@@ -1950,15 +1950,15 @@ struct Layout<IdxLin, PERM_IKJML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nm*nl), stride_j(nm*nl), stride_k(nj*nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_j*size_m*size_l);
     i = IdxI(_i);
@@ -1999,15 +1999,15 @@ struct Layout<IdxLin, PERM_IKLJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nj*nm), stride_j(nm), stride_k(nl*nj*nm), stride_l(nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_l*size_j*size_m);
     i = IdxI(_i);
@@ -2048,15 +2048,15 @@ struct Layout<IdxLin, PERM_IKLMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nm*nj), stride_j(1), stride_k(nl*nm*nj), stride_l(nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_l*size_m*size_j);
     i = IdxI(_i);
@@ -2097,15 +2097,15 @@ struct Layout<IdxLin, PERM_IKMJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nj*nl), stride_j(nl), stride_k(nm*nj*nl), stride_l(1), stride_m(nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_m*size_j*size_l);
     i = IdxI(_i);
@@ -2146,15 +2146,15 @@ struct Layout<IdxLin, PERM_IKMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nl*nj), stride_j(1), stride_k(nm*nl*nj), stride_l(nj), stride_m(nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_k*size_m*size_l*size_j);
     i = IdxI(_i);
@@ -2195,15 +2195,15 @@ struct Layout<IdxLin, PERM_ILJKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nk*nm), stride_j(nk*nm), stride_k(nm), stride_l(nj*nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_j*size_k*size_m);
     i = IdxI(_i);
@@ -2244,15 +2244,15 @@ struct Layout<IdxLin, PERM_ILJMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nm*nk), stride_j(nm*nk), stride_k(1), stride_l(nj*nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_j*size_m*size_k);
     i = IdxI(_i);
@@ -2293,15 +2293,15 @@ struct Layout<IdxLin, PERM_ILKJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nj*nm), stride_j(nm), stride_k(nj*nm), stride_l(nk*nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_k*size_j*size_m);
     i = IdxI(_i);
@@ -2342,15 +2342,15 @@ struct Layout<IdxLin, PERM_ILKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nm*nj), stride_j(1), stride_k(nm*nj), stride_l(nk*nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_k*size_m*size_j);
     i = IdxI(_i);
@@ -2391,15 +2391,15 @@ struct Layout<IdxLin, PERM_ILMJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nj*nk), stride_j(nk), stride_k(1), stride_l(nm*nj*nk), stride_m(nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_m*size_j*size_k);
     i = IdxI(_i);
@@ -2440,15 +2440,15 @@ struct Layout<IdxLin, PERM_ILMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nk*nj), stride_j(1), stride_k(nj), stride_l(nm*nk*nj), stride_m(nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_l*size_m*size_k*size_j);
     i = IdxI(_i);
@@ -2489,15 +2489,15 @@ struct Layout<IdxLin, PERM_IMJKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1), stride_m(nj*nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_j*size_k*size_l);
     i = IdxI(_i);
@@ -2538,15 +2538,15 @@ struct Layout<IdxLin, PERM_IMJLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk), stride_m(nj*nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_j*size_l*size_k);
     i = IdxI(_i);
@@ -2587,15 +2587,15 @@ struct Layout<IdxLin, PERM_IMKJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1), stride_m(nk*nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_k*size_j*size_l);
     i = IdxI(_i);
@@ -2636,15 +2636,15 @@ struct Layout<IdxLin, PERM_IMKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj), stride_m(nk*nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_k*size_l*size_j);
     i = IdxI(_i);
@@ -2685,15 +2685,15 @@ struct Layout<IdxLin, PERM_IMLJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk), stride_m(nl*nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_l*size_j*size_k);
     i = IdxI(_i);
@@ -2734,15 +2734,15 @@ struct Layout<IdxLin, PERM_IMLKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj), stride_m(nl*nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _i = linear / (size_m*size_l*size_k*size_j);
     i = IdxI(_i);
@@ -2783,15 +2783,15 @@ struct Layout<IdxLin, PERM_JIKLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nm), stride_j(ni*nk*nl*nm), stride_k(nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_k*size_l*size_m);
     j = IdxJ(_j);
@@ -2832,15 +2832,15 @@ struct Layout<IdxLin, PERM_JIKML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nl), stride_j(ni*nk*nm*nl), stride_k(nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_k*size_m*size_l);
     j = IdxJ(_j);
@@ -2881,15 +2881,15 @@ struct Layout<IdxLin, PERM_JILKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nm), stride_j(ni*nl*nk*nm), stride_k(nm), stride_l(nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_l*size_k*size_m);
     j = IdxJ(_j);
@@ -2930,15 +2930,15 @@ struct Layout<IdxLin, PERM_JILMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nk), stride_j(ni*nl*nm*nk), stride_k(1), stride_l(nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_l*size_m*size_k);
     j = IdxJ(_j);
@@ -2979,15 +2979,15 @@ struct Layout<IdxLin, PERM_JIMKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nl), stride_j(ni*nm*nk*nl), stride_k(nl), stride_l(1), stride_m(nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_m*size_k*size_l);
     j = IdxJ(_j);
@@ -3028,15 +3028,15 @@ struct Layout<IdxLin, PERM_JIMLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nk), stride_j(ni*nm*nl*nk), stride_k(1), stride_l(nk), stride_m(nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_i*size_m*size_l*size_k);
     j = IdxJ(_j);
@@ -3077,15 +3077,15 @@ struct Layout<IdxLin, PERM_JKILM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm), stride_j(nk*ni*nl*nm), stride_k(ni*nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_i*size_l*size_m);
     j = IdxJ(_j);
@@ -3126,15 +3126,15 @@ struct Layout<IdxLin, PERM_JKIML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl), stride_j(nk*ni*nm*nl), stride_k(ni*nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_i*size_m*size_l);
     j = IdxJ(_j);
@@ -3175,15 +3175,15 @@ struct Layout<IdxLin, PERM_JKLIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nk*nl*ni*nm), stride_k(nl*ni*nm), stride_l(ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_l*size_i*size_m);
     j = IdxJ(_j);
@@ -3224,15 +3224,15 @@ struct Layout<IdxLin, PERM_JKLMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nl*nm*ni), stride_k(nl*nm*ni), stride_l(nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_l*size_m*size_i);
     j = IdxJ(_j);
@@ -3273,15 +3273,15 @@ struct Layout<IdxLin, PERM_JKMIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nk*nm*ni*nl), stride_k(nm*ni*nl), stride_l(1), stride_m(ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_m*size_i*size_l);
     j = IdxJ(_j);
@@ -3322,15 +3322,15 @@ struct Layout<IdxLin, PERM_JKMLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nm*nl*ni), stride_k(nm*nl*ni), stride_l(ni), stride_m(nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_k*size_m*size_l*size_i);
     j = IdxJ(_j);
@@ -3371,15 +3371,15 @@ struct Layout<IdxLin, PERM_JLIKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm), stride_j(nl*ni*nk*nm), stride_k(nm), stride_l(ni*nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_i*size_k*size_m);
     j = IdxJ(_j);
@@ -3420,15 +3420,15 @@ struct Layout<IdxLin, PERM_JLIMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk), stride_j(nl*ni*nm*nk), stride_k(1), stride_l(ni*nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_i*size_m*size_k);
     j = IdxJ(_j);
@@ -3469,15 +3469,15 @@ struct Layout<IdxLin, PERM_JLKIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nl*nk*ni*nm), stride_k(ni*nm), stride_l(nk*ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_k*size_i*size_m);
     j = IdxJ(_j);
@@ -3518,15 +3518,15 @@ struct Layout<IdxLin, PERM_JLKMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nk*nm*ni), stride_k(nm*ni), stride_l(nk*nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_k*size_m*size_i);
     j = IdxJ(_j);
@@ -3567,15 +3567,15 @@ struct Layout<IdxLin, PERM_JLMIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nl*nm*ni*nk), stride_k(1), stride_l(nm*ni*nk), stride_m(ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_m*size_i*size_k);
     j = IdxJ(_j);
@@ -3616,15 +3616,15 @@ struct Layout<IdxLin, PERM_JLMKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nm*nk*ni), stride_k(ni), stride_l(nm*nk*ni), stride_m(nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_l*size_m*size_k*size_i);
     j = IdxJ(_j);
@@ -3665,15 +3665,15 @@ struct Layout<IdxLin, PERM_JMIKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl), stride_j(nm*ni*nk*nl), stride_k(nl), stride_l(1), stride_m(ni*nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_i*size_k*size_l);
     j = IdxJ(_j);
@@ -3714,15 +3714,15 @@ struct Layout<IdxLin, PERM_JMILK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk), stride_j(nm*ni*nl*nk), stride_k(1), stride_l(nk), stride_m(ni*nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_i*size_l*size_k);
     j = IdxJ(_j);
@@ -3763,15 +3763,15 @@ struct Layout<IdxLin, PERM_JMKIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nm*nk*ni*nl), stride_k(ni*nl), stride_l(1), stride_m(nk*ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_k*size_i*size_l);
     j = IdxJ(_j);
@@ -3812,15 +3812,15 @@ struct Layout<IdxLin, PERM_JMKLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nk*nl*ni), stride_k(nl*ni), stride_l(ni), stride_m(nk*nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_k*size_l*size_i);
     j = IdxJ(_j);
@@ -3861,15 +3861,15 @@ struct Layout<IdxLin, PERM_JMLIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nm*nl*ni*nk), stride_k(1), stride_l(ni*nk), stride_m(nl*ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_l*size_i*size_k);
     j = IdxJ(_j);
@@ -3910,15 +3910,15 @@ struct Layout<IdxLin, PERM_JMLKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nl*nk*ni), stride_k(ni), stride_l(nk*ni), stride_m(nl*nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _j = linear / (size_m*size_l*size_k*size_i);
     j = IdxJ(_j);
@@ -3959,15 +3959,15 @@ struct Layout<IdxLin, PERM_KIJLM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nm), stride_j(nl*nm), stride_k(ni*nj*nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_j*size_l*size_m);
     k = IdxK(_k);
@@ -4008,15 +4008,15 @@ struct Layout<IdxLin, PERM_KIJML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nl), stride_j(nm*nl), stride_k(ni*nj*nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_j*size_m*size_l);
     k = IdxK(_k);
@@ -4057,15 +4057,15 @@ struct Layout<IdxLin, PERM_KILJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nm), stride_j(nm), stride_k(ni*nl*nj*nm), stride_l(nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_l*size_j*size_m);
     k = IdxK(_k);
@@ -4106,15 +4106,15 @@ struct Layout<IdxLin, PERM_KILMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm*nj), stride_j(1), stride_k(ni*nl*nm*nj), stride_l(nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_l*size_m*size_j);
     k = IdxK(_k);
@@ -4155,15 +4155,15 @@ struct Layout<IdxLin, PERM_KIMJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nl), stride_j(nl), stride_k(ni*nm*nj*nl), stride_l(1), stride_m(nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_m*size_j*size_l);
     k = IdxK(_k);
@@ -4204,15 +4204,15 @@ struct Layout<IdxLin, PERM_KIMLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl*nj), stride_j(1), stride_k(ni*nm*nl*nj), stride_l(nj), stride_m(nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_i*size_m*size_l*size_j);
     k = IdxK(_k);
@@ -4253,15 +4253,15 @@ struct Layout<IdxLin, PERM_KJILM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nm), stride_j(ni*nl*nm), stride_k(nj*ni*nl*nm), stride_l(nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_i*size_l*size_m);
     k = IdxK(_k);
@@ -4302,15 +4302,15 @@ struct Layout<IdxLin, PERM_KJIML, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nl), stride_j(ni*nm*nl), stride_k(nj*ni*nm*nl), stride_l(1), stride_m(nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_i*size_m*size_l);
     k = IdxK(_k);
@@ -4351,15 +4351,15 @@ struct Layout<IdxLin, PERM_KJLIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nl*ni*nm), stride_k(nj*nl*ni*nm), stride_l(ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_l*size_i*size_m);
     k = IdxK(_k);
@@ -4400,15 +4400,15 @@ struct Layout<IdxLin, PERM_KJLMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nm*ni), stride_k(nj*nl*nm*ni), stride_l(nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_l*size_m*size_i);
     k = IdxK(_k);
@@ -4449,15 +4449,15 @@ struct Layout<IdxLin, PERM_KJMIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nm*ni*nl), stride_k(nj*nm*ni*nl), stride_l(1), stride_m(ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_m*size_i*size_l);
     k = IdxK(_k);
@@ -4498,15 +4498,15 @@ struct Layout<IdxLin, PERM_KJMLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nl*ni), stride_k(nj*nm*nl*ni), stride_l(ni), stride_m(nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_j*size_m*size_l*size_i);
     k = IdxK(_k);
@@ -4547,15 +4547,15 @@ struct Layout<IdxLin, PERM_KLIJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm), stride_j(nm), stride_k(nl*ni*nj*nm), stride_l(ni*nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_i*size_j*size_m);
     k = IdxK(_k);
@@ -4596,15 +4596,15 @@ struct Layout<IdxLin, PERM_KLIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj), stride_j(1), stride_k(nl*ni*nm*nj), stride_l(ni*nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_i*size_m*size_j);
     k = IdxK(_k);
@@ -4645,15 +4645,15 @@ struct Layout<IdxLin, PERM_KLJIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(ni*nm), stride_k(nl*nj*ni*nm), stride_l(nj*ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_j*size_i*size_m);
     k = IdxK(_k);
@@ -4694,15 +4694,15 @@ struct Layout<IdxLin, PERM_KLJMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*ni), stride_k(nl*nj*nm*ni), stride_l(nj*nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_j*size_m*size_i);
     k = IdxK(_k);
@@ -4743,15 +4743,15 @@ struct Layout<IdxLin, PERM_KLMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nl*nm*ni*nj), stride_l(nm*ni*nj), stride_m(ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_m*size_i*size_j);
     k = IdxK(_k);
@@ -4792,15 +4792,15 @@ struct Layout<IdxLin, PERM_KLMJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nl*nm*nj*ni), stride_l(nm*nj*ni), stride_m(nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_l*size_m*size_j*size_i);
     k = IdxK(_k);
@@ -4841,15 +4841,15 @@ struct Layout<IdxLin, PERM_KMIJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl), stride_j(nl), stride_k(nm*ni*nj*nl), stride_l(1), stride_m(ni*nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_i*size_j*size_l);
     k = IdxK(_k);
@@ -4890,15 +4890,15 @@ struct Layout<IdxLin, PERM_KMILJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj), stride_j(1), stride_k(nm*ni*nl*nj), stride_l(nj), stride_m(ni*nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_i*size_l*size_j);
     k = IdxK(_k);
@@ -4939,15 +4939,15 @@ struct Layout<IdxLin, PERM_KMJIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(ni*nl), stride_k(nm*nj*ni*nl), stride_l(1), stride_m(nj*ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_j*size_i*size_l);
     k = IdxK(_k);
@@ -4988,15 +4988,15 @@ struct Layout<IdxLin, PERM_KMJLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*ni), stride_k(nm*nj*nl*ni), stride_l(ni), stride_m(nj*nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_j*size_l*size_i);
     k = IdxK(_k);
@@ -5037,15 +5037,15 @@ struct Layout<IdxLin, PERM_KMLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nm*nl*ni*nj), stride_l(ni*nj), stride_m(nl*ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_l*size_i*size_j);
     k = IdxK(_k);
@@ -5086,15 +5086,15 @@ struct Layout<IdxLin, PERM_KMLJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nm*nl*nj*ni), stride_l(nj*ni), stride_m(nl*nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _k = linear / (size_m*size_l*size_j*size_i);
     k = IdxK(_k);
@@ -5135,15 +5135,15 @@ struct Layout<IdxLin, PERM_LIJKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nm), stride_j(nk*nm), stride_k(nm), stride_l(ni*nj*nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_j*size_k*size_m);
     l = IdxL(_l);
@@ -5184,15 +5184,15 @@ struct Layout<IdxLin, PERM_LIJMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm*nk), stride_j(nm*nk), stride_k(1), stride_l(ni*nj*nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_j*size_m*size_k);
     l = IdxL(_l);
@@ -5233,15 +5233,15 @@ struct Layout<IdxLin, PERM_LIKJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nm), stride_j(nm), stride_k(nj*nm), stride_l(ni*nk*nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_k*size_j*size_m);
     l = IdxL(_l);
@@ -5282,15 +5282,15 @@ struct Layout<IdxLin, PERM_LIKMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm*nj), stride_j(1), stride_k(nm*nj), stride_l(ni*nk*nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_k*size_m*size_j);
     l = IdxL(_l);
@@ -5331,15 +5331,15 @@ struct Layout<IdxLin, PERM_LIMJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nm*nj*nk), stride_m(nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_m*size_j*size_k);
     l = IdxL(_l);
@@ -5380,15 +5380,15 @@ struct Layout<IdxLin, PERM_LIMKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nm*nk*nj), stride_m(nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_i*size_m*size_k*size_j);
     l = IdxL(_l);
@@ -5429,15 +5429,15 @@ struct Layout<IdxLin, PERM_LJIKM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nm), stride_j(ni*nk*nm), stride_k(nm), stride_l(nj*ni*nk*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_i*size_k*size_m);
     l = IdxL(_l);
@@ -5478,15 +5478,15 @@ struct Layout<IdxLin, PERM_LJIMK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nk), stride_j(ni*nm*nk), stride_k(1), stride_l(nj*ni*nm*nk), stride_m(nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_i*size_m*size_k);
     l = IdxL(_l);
@@ -5527,15 +5527,15 @@ struct Layout<IdxLin, PERM_LJKIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(nk*ni*nm), stride_k(ni*nm), stride_l(nj*nk*ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_k*size_i*size_m);
     l = IdxL(_l);
@@ -5576,15 +5576,15 @@ struct Layout<IdxLin, PERM_LJKMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nm*ni), stride_k(nm*ni), stride_l(nj*nk*nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_k*size_m*size_i);
     l = IdxL(_l);
@@ -5625,15 +5625,15 @@ struct Layout<IdxLin, PERM_LJMIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nm*ni*nk), stride_k(1), stride_l(nj*nm*ni*nk), stride_m(ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_m*size_i*size_k);
     l = IdxL(_l);
@@ -5674,15 +5674,15 @@ struct Layout<IdxLin, PERM_LJMKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*nk*ni), stride_k(ni), stride_l(nj*nm*nk*ni), stride_m(nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_j*size_m*size_k*size_i);
     l = IdxL(_l);
@@ -5723,15 +5723,15 @@ struct Layout<IdxLin, PERM_LKIJM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nm), stride_j(nm), stride_k(ni*nj*nm), stride_l(nk*ni*nj*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_i*size_j*size_m);
     l = IdxL(_l);
@@ -5772,15 +5772,15 @@ struct Layout<IdxLin, PERM_LKIMJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm*nj), stride_j(1), stride_k(ni*nm*nj), stride_l(nk*ni*nm*nj), stride_m(nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_i*size_m*size_j);
     l = IdxL(_l);
@@ -5821,15 +5821,15 @@ struct Layout<IdxLin, PERM_LKJIM, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nm), stride_j(ni*nm), stride_k(nj*ni*nm), stride_l(nk*nj*ni*nm), stride_m(1)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(m));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_j*size_i*size_m);
     l = IdxL(_l);
@@ -5870,15 +5870,15 @@ struct Layout<IdxLin, PERM_LKJMI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nm*ni), stride_k(nj*nm*ni), stride_l(nk*nj*nm*ni), stride_m(ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_j*size_m*size_i);
     l = IdxL(_l);
@@ -5919,15 +5919,15 @@ struct Layout<IdxLin, PERM_LKMIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nm*ni*nj), stride_l(nk*nm*ni*nj), stride_m(ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_m*size_i*size_j);
     l = IdxL(_l);
@@ -5968,15 +5968,15 @@ struct Layout<IdxLin, PERM_LKMJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nm*nj*ni), stride_l(nk*nm*nj*ni), stride_m(nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_k*size_m*size_j*size_i);
     l = IdxL(_l);
@@ -6017,15 +6017,15 @@ struct Layout<IdxLin, PERM_LMIJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(nm*ni*nj*nk), stride_m(ni*nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_i*size_j*size_k);
     l = IdxL(_l);
@@ -6066,15 +6066,15 @@ struct Layout<IdxLin, PERM_LMIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(nm*ni*nk*nj), stride_m(ni*nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_i*size_k*size_j);
     l = IdxL(_l);
@@ -6115,15 +6115,15 @@ struct Layout<IdxLin, PERM_LMJIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nm*nj*ni*nk), stride_m(nj*ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_j*size_i*size_k);
     l = IdxL(_l);
@@ -6164,15 +6164,15 @@ struct Layout<IdxLin, PERM_LMJKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nm*nj*nk*ni), stride_m(nj*nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_j*size_k*size_i);
     l = IdxL(_l);
@@ -6213,15 +6213,15 @@ struct Layout<IdxLin, PERM_LMKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nm*nk*ni*nj), stride_m(nk*ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_k*size_i*size_j);
     l = IdxL(_l);
@@ -6262,15 +6262,15 @@ struct Layout<IdxLin, PERM_LMKJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nm*nk*nj*ni), stride_m(nk*nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _l = linear / (size_m*size_k*size_j*size_i);
     l = IdxL(_l);
@@ -6311,15 +6311,15 @@ struct Layout<IdxLin, PERM_MIJKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk*nl), stride_j(nk*nl), stride_k(nl), stride_l(1), stride_m(ni*nj*nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_j*size_k*size_l);
     m = IdxM(_m);
@@ -6360,15 +6360,15 @@ struct Layout<IdxLin, PERM_MIJLK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl*nk), stride_j(nl*nk), stride_k(1), stride_l(nk), stride_m(ni*nj*nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_j*size_l*size_k);
     m = IdxM(_m);
@@ -6409,15 +6409,15 @@ struct Layout<IdxLin, PERM_MIKJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj*nl), stride_j(nl), stride_k(nj*nl), stride_l(1), stride_m(ni*nk*nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_k*size_j*size_l);
     m = IdxM(_m);
@@ -6458,15 +6458,15 @@ struct Layout<IdxLin, PERM_MIKLJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl*nj), stride_j(1), stride_k(nl*nj), stride_l(nj), stride_m(ni*nk*nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_k*size_l*size_j);
     m = IdxM(_m);
@@ -6507,15 +6507,15 @@ struct Layout<IdxLin, PERM_MILJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj*nk), stride_j(nk), stride_k(1), stride_l(nj*nk), stride_m(ni*nl*nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_l*size_j*size_k);
     m = IdxM(_m);
@@ -6556,15 +6556,15 @@ struct Layout<IdxLin, PERM_MILKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk*nj), stride_j(1), stride_k(nj), stride_l(nk*nj), stride_m(ni*nl*nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_i*size_l*size_k*size_j);
     m = IdxM(_m);
@@ -6605,15 +6605,15 @@ struct Layout<IdxLin, PERM_MJIKL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nl), stride_j(ni*nk*nl), stride_k(nl), stride_l(1), stride_m(nj*ni*nk*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_i*size_k*size_l);
     m = IdxM(_m);
@@ -6654,15 +6654,15 @@ struct Layout<IdxLin, PERM_MJILK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nk), stride_j(ni*nl*nk), stride_k(1), stride_l(nk), stride_m(nj*ni*nl*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_i*size_l*size_k);
     m = IdxM(_m);
@@ -6703,15 +6703,15 @@ struct Layout<IdxLin, PERM_MJKIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(nk*ni*nl), stride_k(ni*nl), stride_l(1), stride_m(nj*nk*ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_k*size_i*size_l);
     m = IdxM(_m);
@@ -6752,15 +6752,15 @@ struct Layout<IdxLin, PERM_MJKLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*nl*ni), stride_k(nl*ni), stride_l(ni), stride_m(nj*nk*nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_k*size_l*size_i);
     m = IdxM(_m);
@@ -6801,15 +6801,15 @@ struct Layout<IdxLin, PERM_MJLIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(nl*ni*nk), stride_k(1), stride_l(ni*nk), stride_m(nj*nl*ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_l*size_i*size_k);
     m = IdxM(_m);
@@ -6850,15 +6850,15 @@ struct Layout<IdxLin, PERM_MJLKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*nk*ni), stride_k(ni), stride_l(nk*ni), stride_m(nj*nl*nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_j*size_l*size_k*size_i);
     m = IdxM(_m);
@@ -6899,15 +6899,15 @@ struct Layout<IdxLin, PERM_MKIJL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nl), stride_j(nl), stride_k(ni*nj*nl), stride_l(1), stride_m(nk*ni*nj*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_i*size_j*size_l);
     m = IdxM(_m);
@@ -6948,15 +6948,15 @@ struct Layout<IdxLin, PERM_MKILJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl*nj), stride_j(1), stride_k(ni*nl*nj), stride_l(nj), stride_m(nk*ni*nl*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_i*size_l*size_j);
     m = IdxM(_m);
@@ -6997,15 +6997,15 @@ struct Layout<IdxLin, PERM_MKJIL, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nl), stride_j(ni*nl), stride_k(nj*ni*nl), stride_l(1), stride_m(nk*nj*ni*nl)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(l));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_j*size_i*size_l);
     m = IdxM(_m);
@@ -7046,15 +7046,15 @@ struct Layout<IdxLin, PERM_MKJLI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nl*ni), stride_k(nj*nl*ni), stride_l(ni), stride_m(nk*nj*nl*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_j*size_l*size_i);
     m = IdxM(_m);
@@ -7095,15 +7095,15 @@ struct Layout<IdxLin, PERM_MKLIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(nl*ni*nj), stride_l(ni*nj), stride_m(nk*nl*ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_l*size_i*size_j);
     m = IdxM(_m);
@@ -7144,15 +7144,15 @@ struct Layout<IdxLin, PERM_MKLJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nl*nj*ni), stride_l(nj*ni), stride_m(nk*nl*nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_k*size_l*size_j*size_i);
     m = IdxM(_m);
@@ -7193,15 +7193,15 @@ struct Layout<IdxLin, PERM_MLIJK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj*nk), stride_j(nk), stride_k(1), stride_l(ni*nj*nk), stride_m(nl*ni*nj*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_i*size_j*size_k);
     m = IdxM(_m);
@@ -7242,15 +7242,15 @@ struct Layout<IdxLin, PERM_MLIKJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk*nj), stride_j(1), stride_k(nj), stride_l(ni*nk*nj), stride_m(nl*ni*nk*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_i*size_k*size_j);
     m = IdxM(_m);
@@ -7291,15 +7291,15 @@ struct Layout<IdxLin, PERM_MLJIK, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nk), stride_j(ni*nk), stride_k(1), stride_l(nj*ni*nk), stride_m(nl*nj*ni*nk)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(k));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_j*size_i*size_k);
     m = IdxM(_m);
@@ -7340,15 +7340,15 @@ struct Layout<IdxLin, PERM_MLJKI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(nk*ni), stride_k(ni), stride_l(nj*nk*ni), stride_m(nl*nj*nk*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_j*size_k*size_i);
     m = IdxM(_m);
@@ -7389,15 +7389,15 @@ struct Layout<IdxLin, PERM_MLKIJ, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(nj), stride_j(1), stride_k(ni*nj), stride_l(nk*ni*nj), stride_m(nl*nk*ni*nj)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(i)*stride_i + convertIndex<Index_type>(j));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_k*size_i*size_j);
     m = IdxM(_m);
@@ -7438,15 +7438,15 @@ struct Layout<IdxLin, PERM_MLKJI, IdxI, IdxJ, IdxK, IdxL, IdxM> {
   Index_type const stride_l;
   Index_type const stride_m;
 
-  RAJA_INLINE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr Layout(Index_type ni, Index_type nj, Index_type nk, Index_type nl, Index_type nm):
     size_i(ni), size_j(nj), size_k(nk), size_l(nl), size_m(nm), stride_i(1), stride_j(ni), stride_k(nj*ni), stride_l(nk*nj*ni), stride_m(nl*nk*nj*ni)
   {}
 
-  RAJA_INLINE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     return convertIndex<IdxLin>(convertIndex<Index_type>(m)*stride_m + convertIndex<Index_type>(l)*stride_l + convertIndex<Index_type>(k)*stride_k + convertIndex<Index_type>(j)*stride_j + convertIndex<Index_type>(i));
   }
 
-  inline void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, IdxI &i, IdxJ &j, IdxK &k, IdxL &l, IdxM &m) const {
     constexpr Index_type linear = convertIndex<Index_type>(lin);
     Index_type _m = linear / (size_l*size_k*size_j*size_i);
     m = IdxM(_m);
