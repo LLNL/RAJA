@@ -39,10 +39,10 @@
 // So we define those here, and assign them to each nesting order
 
 using ParticleEditPolicy_CPU = RAJA::NestedPolicy<
-                                 RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                 RAJA::ExecList<kripke_omp_for_nowait_exec, 
                                                 RAJA::simd_exec,
                                                 RAJA::simd_exec>,
-                                 RAJA::OMP_Parallel<>
+                                 kripke_OMP_Parallel<RAJA::Execute>
 			                         >;
 
 

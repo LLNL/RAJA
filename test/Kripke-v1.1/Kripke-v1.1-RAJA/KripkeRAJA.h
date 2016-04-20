@@ -13,6 +13,25 @@
 //#define RAJA_LAMBDA [=] __device__
 
 
+// All of our OpenMP execution policies are swapped out with sequential if
+// an OpenMP compiler is not available.
+// Note:  It is always safe to replace OpenMP loops with sequential loops for
+// this code.
+#ifdef RAJA_USE_OPENMP
+using kripke_omp_for_nowait_exec = RAJA::omp_for_nowait_exec;
+using kripke_omp_collapse_nowait_exec = RAJA::omp_collapse_nowait_exec;
+
+template<typename T>
+using kripke_OMP_Parallel = RAJA::OMP_Parallel<T>;
+
+#else
+typedef RAJA::simd_exec kripke_omp_for_nowait_exec;
+typedef RAJA::simd_exec kripke_omp_collapse_nowait_exec;
+
+template<typename T>
+using kripke_OMP_Parallel = RAJA::Execute;
+
+#endif
 
 // Subdomain loops
 template<typename SubdomainPolicy, typename BODY>

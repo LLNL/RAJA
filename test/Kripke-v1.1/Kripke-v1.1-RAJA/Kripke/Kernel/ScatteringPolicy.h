@@ -55,9 +55,9 @@ template<>
 struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec, 
                                                        RAJA::simd_exec>,
-                                        RAJA::OMP_Parallel<
+                                        kripke_OMP_Parallel<
                                           RAJA::Permute<RAJA::PERM_IJKL>
                                         >
                                       >
@@ -66,7 +66,7 @@ struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
 
 template<>
 struct ScatteringPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                        RAJA::ExecList<kripke_omp_for_nowait_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec>, 
@@ -78,9 +78,9 @@ template<>
 struct ScatteringPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec, 
                                                        RAJA::seq_exec>,
-                                        RAJA::OMP_Parallel<
+                                        kripke_OMP_Parallel<
                                           RAJA::Permute<RAJA::PERM_JKIL>
                                         >
                                       >
@@ -90,7 +90,7 @@ template<>
 struct ScatteringPolicy<NEST_GZD_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec, 
                                                        RAJA::seq_exec>, 
                                         RAJA::Permute<RAJA::PERM_JKLI>
                                       >
@@ -101,7 +101,7 @@ struct ScatteringPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_LIJK>
                                       >
 {};
@@ -111,7 +111,7 @@ struct ScatteringPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_LJKI>
                                       >
 {};
