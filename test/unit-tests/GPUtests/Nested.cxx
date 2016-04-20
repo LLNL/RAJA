@@ -160,7 +160,7 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     }
 }
 
-// Sequential
+// Use thread-block mappings
 struct PolLTimesA_GPU {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<
@@ -183,10 +183,57 @@ struct PolLTimesA_GPU {
 };
 
 
+// Use thread and block mappings
+struct PolLTimesB_GPU {
+  // Loops: Moments, Directions, Groups, Zones
+  typedef NestedPolicy<
+      ExecList<
+        seq_exec,
+        seq_exec,
+        cuda_thread_z_exec,
+        cuda_block_y_exec
+      >,
+      Permute<PERM_JILK>
+    > EXEC;
+
+  // psi[direction, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>> PSI_VIEW;
+
+  // phi[moment, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>> PHI_VIEW;
+
+  // ell[moment, direction]
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
+};
+
+// Combine OMP Parallel, omp nowait, and cuda thread-block launch
+struct PolLTimesC_GPU {
+  // Loops: Moments, Directions, Groups, Zones
+  typedef NestedPolicy<
+      ExecList<
+        seq_exec,
+        seq_exec,
+        omp_for_nowait_exec,
+        cuda_threadblock_y_exec<32>
+      >,
+      OMP_Parallel<>
+    > EXEC;
+
+  // psi[direction, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>> PSI_VIEW;
+
+  // phi[moment, group, zone]
+  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>> PHI_VIEW;
+
+  // ell[moment, direction]
+  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
+};
 
 
 void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_type num_groups, Index_type num_zones){
   runLTimesTest<PolLTimesA_GPU>("PolLTimesA_GPU", num_moments, num_directions, num_groups, num_zones);
+  runLTimesTest<PolLTimesB_GPU>("PolLTimesB_GPU", num_moments, num_directions, num_groups, num_zones);
+  runLTimesTest<PolLTimesC_GPU>("PolLTimesC_GPU", num_moments, num_directions, num_groups, num_zones);
 }
 
 
