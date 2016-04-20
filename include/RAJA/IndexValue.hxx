@@ -266,7 +266,7 @@ class IndexValue {
     // this is done by the macro
     static std::string getName(void);
   
-  private:
+  protected:
     Index_type value;
 
 };
@@ -318,9 +318,10 @@ TO convertIndex(FROM val){
 #define RAJA_INDEX_VALUE(TYPE, NAME) \
   class TYPE : public RAJA::IndexValue<TYPE>{ \
   public: \
-    RAJA_HOST_DEVICE \
-    RAJA_INLINE \
-    explicit TYPE(RAJA::Index_type v) : RAJA::IndexValue<TYPE>::IndexValue(v) {} \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() {}\
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(RAJA::Index_type v) : RAJA::IndexValue<TYPE>::IndexValue(v) {} \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE(TYPE const &b){value = *b;} \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator=(TYPE const &b){value = *b; return *this;} \
     static inline std::string getName(void){return NAME;} \
   };
 
