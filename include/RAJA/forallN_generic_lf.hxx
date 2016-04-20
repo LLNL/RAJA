@@ -109,6 +109,11 @@ struct NestedPolicy {
  *  ForallN_Executor(): Default Executor for loops
  ******************************************************************/
 
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-only constructor and host-device operator.
+ */
 template<typename BODY, typename INDEX_TYPE=Index_type>
 struct ForallN_BindFirstArg_HostDevice {
   BODY const body;  
@@ -126,6 +131,12 @@ RAJA_SUPPRESS_HD_WARN
   }
 };
 
+
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-only constructor and host-only operator.
+ */
 template<typename BODY, typename INDEX_TYPE=Index_type>
 struct ForallN_BindFirstArg_Host {
 
@@ -178,6 +189,13 @@ struct ForallN_PeelOuter {
 template<typename ... PREST>
 struct ForallN_Executor {};
 
+
+/*!
+ * \brief Primary policy execution that peels off loop nests.
+ *
+ *  The default action is to call RAJA::forall to peel off outer loop nest.
+ */
+
 template<typename PI, typename ... PREST>
 struct ForallN_Executor<PI, PREST...> {
   typedef typename PI::ISET TI;
@@ -200,6 +218,10 @@ struct ForallN_Executor<PI, PREST...> {
   }
 };
 
+
+/*!
+ * \brief Execution termination case
+ */
 template<>
 struct ForallN_Executor<> {
   constexpr
@@ -241,6 +263,12 @@ void forallN_policy(ForallN_Execute_Tag, BODY body, ARGS ... args){
  *  callable object where all variables are Index_type
  ******************************************************************/
 
+
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-device constructor and host-device operator.
+ */
 template<typename BODY, typename INDEX_TYPE=Index_type>
 struct ForallN_BindFirstArg_Idx {
   BODY const body;  
@@ -259,7 +287,11 @@ struct ForallN_BindFirstArg_Idx {
   }
 };
 
-
+/*!
+ * \brief Wraps a callable that uses strongly typed arguments, and produces
+ * a functor with Index_type arguments. 
+ *
+ */
 template<typename BODY, typename IdxI, typename ... IdxRest>
 struct ForallN_IndexTypeConverter {
 

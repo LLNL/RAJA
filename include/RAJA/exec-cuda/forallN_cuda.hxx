@@ -49,6 +49,11 @@
 namespace RAJA {
 
 
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-device constructor and device-only operator.
+ */
 template<typename BODY>
 struct ForallN_BindFirstArg_Device {
 
@@ -68,6 +73,12 @@ struct ForallN_BindFirstArg_Device {
 };
 
 
+/*!
+ * \brief Struct that contains two CUDA dim3's that represent the number of
+ * thread block and the number of blocks.
+ *
+ * This is passed to the execution policies to setup the kernel launch.
+ */
 struct CudaDim {
   dim3 num_threads;
   dim3 num_blocks;
@@ -81,6 +92,7 @@ struct CudaDim {
 
 template<typename POL>
 struct CudaPolicy {};
+
 
 template<typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
@@ -122,6 +134,12 @@ struct CudaThreadBlock {
   }  
 };
 
+
+/*
+ * These execution policies map a loop nest to the block and threads of a
+ * given dimension with the number of THREADS per block specifies.
+ */
+
 template<int THREADS>
 using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
 
@@ -162,6 +180,9 @@ struct CudaThread {
   }  
 };
 
+/* These execution policies map the given loop nest to the threads in the 
+   specified dimensions (not blocks)
+ */
 using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
 
 using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
@@ -200,6 +221,10 @@ struct CudaBlock {
   }  
 };
 
+
+/* These execution policies map the given loop nest to the blocks in the 
+   specified dimensions (not threads)
+ */
 using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
 
 using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
