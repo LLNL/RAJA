@@ -54,14 +54,18 @@ struct View {
   DataType *data;
 
   template<typename ...Args>
-  constexpr inline View(DataType *data_ptr, Args... dim_sizes )
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  constexpr View(DataType *data_ptr, Args... dim_sizes )
           : layout(dim_sizes...), data(data_ptr)
           { }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template<typename ...Args>
-  inline DataType &operator()(Args... args) const {
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  DataType &operator()(Args... args) const {
     return data[convertIndex<Index_type>(layout(args...))];
   }
 };

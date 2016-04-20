@@ -105,10 +105,13 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
         RangeSegment(0, num_directions),
         RangeSegment(0, num_groups),
         RangeSegment(0, num_zones),
-        [=] __device__ (IMoment m, IDirection d, IGroup g, IZone z){
+        [=]  __device__ (IMoment m, IDirection d, IGroup g, IZone z){
+          //printf("%d,%d,%d,%d\n", *m, *d, *g, *z);
           phi(m,g,z) += ell(m,d) * psi(d,g,z);
         }
     );
+    
+    cudaDeviceSynchronize();
 
     // Copy to host the result
     cudaMemcpy(&phi_data[0], d_phi, sizeof(double)*phi_data.size(), cudaMemcpyDeviceToHost);
@@ -122,12 +125,14 @@ void runLTimesTest(std::string const &policy, Index_type num_moments, Index_type
     ////
     //// CHECK ANSWER against the hand-written sequential kernel
     ////
+    size_t nfailed = 0;
+    
     // swap to host pointers
     ell.data = &ell_data[0];
     phi.data = &phi_data[0];
     psi.data = &psi_data[0];
 
-    size_t nfailed = 0;
+    
     for(IZone z(0);z < num_zones;++ z){
       for(IGroup g(0);g < num_groups;++ g){
         for(IMoment m(0);m < num_moments;++ m){
@@ -204,6 +209,7 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 
    // Run some LTimes example tests (directions, groups, zones)
+   runLTimesTests(2, 3, 7, 3);
    runLTimesTests(25, 96, 8, 32);
    runLTimesTests(100, 15, 7, 13);
 

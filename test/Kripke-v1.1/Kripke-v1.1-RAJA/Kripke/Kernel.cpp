@@ -417,6 +417,7 @@ struct Kernel_Sweep{
                 face_lf, face_fr, face_bo, idx_to_i, idx_to_j, idx_to_k)
     );
 #else
+
     RAJA::forallN<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>( 
       domain.indexRange<IDirection>(sdom_id),
       domain.indexRange<IGroup>(sdom_id),

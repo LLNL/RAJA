@@ -213,7 +213,8 @@ void run2dTests(Index_type size_i, Index_type size_j){
   run2dTest<Pol2dB_OMP>("Pol2dB_OMP", size_i, size_j);
   run2dTest<Pol2dC_OMP>("Pol2dC_OMP", size_i, size_j);
   run2dTest<Pol2dD_OMP>("Pol2dD_OMP", size_i, size_j);
-#endif
+#endif 
+
 }
 
 
@@ -373,9 +374,7 @@ struct PolLTimesD_OMP {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, omp_for_nowait_exec>,
     OMP_Parallel<
-      Permute<PERM_LKIJ,
-        Execute // implicit
-      >
+      Permute<PERM_LKIJ>
     >
   > EXEC;
 
@@ -389,10 +388,10 @@ struct PolLTimesD_OMP {
   typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>> ELL_VIEW;
 };
 
-// Same as D, but with tiling on zones
+// Same as D, but with tiling on zones and omp collapse on groups and zones
 struct PolLTimesE_OMP {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, omp_for_nowait_exec>,
+  typedef NestedPolicy<ExecList<seq_exec, seq_exec, omp_collapse_nowait_exec, omp_collapse_nowait_exec>,
     OMP_Parallel<
       Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
         Permute<PERM_LKIJ,
@@ -461,6 +460,7 @@ int main(int argc, char *argv[])
    cout << "\n All Tests : # run / # passed = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
+                         
 
 //
 // Clean up....
