@@ -345,64 +345,6 @@ struct ForallN_Executor<
 };
 
 
-//template<typename CuARG0, typename ISET0, typename CuARG1, typename ISET1>
-//struct ForallN_Executor< 
-//  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
-//  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> > 
-//{
-//  ISET0 iset0;
-//  ISET1 iset1; 
-//  
-//  ForallN_Executor(
-//    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
-//    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_) 
-//    :  iset0(iset0_), iset1(iset1_)
-//  { }
-//
-//  template<typename BODY>
-//  RAJA_INLINE
-//  void operator()(BODY body) const {
-//    CudaDim dims;
-//    CuARG0 c0(dims, iset0);
-//    CuARG1 c1(dims, iset1);
-//    
-//    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0, c1);
-//    cudaErrchk(cudaPeekAtLastError());
-//    cudaErrchk(cudaDeviceSynchronize());
-//  }
-//};
-//
-//
-//template<typename CuARG0, typename ISET0, typename CuARG1, typename ISET1, typename CuARG2, typename ISET2>
-//struct ForallN_Executor< 
-//  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
-//  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
-//  ForallN_PolicyPair<CudaPolicy<CuARG2>, ISET2> > 
-//{
-//  ISET0 iset0;
-//  ISET1 iset1; 
-//  ISET2 iset2;
-//  
-//  ForallN_Executor(
-//    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
-//    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_,
-//    ForallN_PolicyPair<CudaPolicy<CuARG2>, ISET2> const & iset2_) 
-//    :  iset0(iset0_), iset1(iset1_), iset2(iset2_)
-//  { }
-//
-//  template<typename BODY>
-//  RAJA_INLINE
-//  void operator()(BODY body) const {
-//    CudaDim dims;
-//    CuARG0 c0(dims, iset0);
-//    CuARG1 c1(dims, iset1);
-//    CuARG2 c2(dims, iset2);
-//    
-//    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0, c1, c2);
-//    cudaErrchk(cudaPeekAtLastError());
-//    cudaErrchk(cudaDeviceSynchronize());
-//  }
-//};
 
 } // namespace RAJA
   
