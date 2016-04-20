@@ -249,6 +249,8 @@ struct ParticleEditFcn {
     volume(vol_)
   {}
 
+
+#pragma nv_exec_check_disable
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(IDirection d, IGroup g, IZone z) const {

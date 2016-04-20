@@ -80,7 +80,6 @@ void Kernel_3d_GZD::LTimes(Grid_Data *grid_data) {
     int num_local_groups = sdom.num_groups;
     int group0 = sdom.group0;
     int num_local_directions = sdom.num_directions;
-    int num_groups_zones = num_local_groups*num_zones;
     int num_dz = num_zones*num_local_directions;
     int num_nmz = num_zones*num_moments;
 

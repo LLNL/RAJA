@@ -287,13 +287,11 @@ void Kernel_3d_ZGD::source(Grid_Data *grid_data){
 void Kernel_3d_ZGD::sweep(Subdomain *sdom) {
   int num_directions = sdom->num_directions;
   int num_groups = sdom->num_groups;
-  int num_zones = sdom->num_zones;
 
   Directions *direction = sdom->directions;
 
   int local_imax = sdom->nzones[0];
   int local_jmax = sdom->nzones[1];
-  int local_kmax = sdom->nzones[2];
 
   double const * KRESTRICT dx = &sdom->deltas[0][0];
   double const * KRESTRICT dy = &sdom->deltas[1][0];
