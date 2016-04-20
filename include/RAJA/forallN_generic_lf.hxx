@@ -74,9 +74,11 @@ struct ForallN_PolicyPair : public I {
   typedef P POLICY;
   typedef I ISET;
 
-  RAJA_INLINE ~ForallN_PolicyPair() {}
+  RAJA_INLINE 
+  ~ForallN_PolicyPair() {}
 
   RAJA_INLINE
+  explicit
   ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
