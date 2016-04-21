@@ -267,34 +267,11 @@ void forallN_policy(ForallN_Execute_Tag, BODY body, ARGS ... args){
 
 
 /*!
- * \brief Functor that binds the first argument of a callable.
- * 
- * This version has host-device constructor and host-device operator.
- */
-template<typename BODY, typename INDEX_TYPE=Index_type>
-struct ForallN_BindFirstArg_Idx {
-  BODY const body;  
-  INDEX_TYPE i;
-
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  ForallN_BindFirstArg_Idx(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
-
-  RAJA_SUPPRESS_HD_WARN
-  template<typename ... ARGS>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void  operator()(ARGS ... args) const {
-    body(i, args...);
-  }
-};
-
-/*!
  * \brief Wraps a callable that uses strongly typed arguments, and produces
  * a functor with Index_type arguments. 
  *
  */
-template<typename BODY, typename IdxI, typename ... IdxRest>
+template<typename BODY, typename ... Idx>
 struct ForallN_IndexTypeConverter {
 
 
@@ -309,39 +286,13 @@ struct ForallN_IndexTypeConverter {
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  void operator()(Index_type i, ARGS ... args) const {
-    // Bind the first argument
-    ForallN_BindFirstArg_Idx<BODY, IdxI> bound(body, IdxI(i));
-
-    // Peel a wrapper
-    ForallN_IndexTypeConverter<decltype(bound), IdxRest...> inner(bound);
-    inner(args...);
+  void operator()(ARGS ... arg) const {
+    body(Idx(arg)...);
   }
   
   
   BODY body;
 
-};
-
-template<typename BODY, typename IdxI>
-struct ForallN_IndexTypeConverter<BODY, IdxI> {
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  explicit ForallN_IndexTypeConverter(BODY b) : body(b) {}
-
-  // call 'policy' layer with next policy
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void operator()(Index_type i) const {
- 
-    body(IdxI(i));
-  }
-
-  // Copy of loop body
-  BODY const body;
 };
 
 
