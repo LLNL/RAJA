@@ -69,10 +69,9 @@ void forallN(TI const &is_i, BODY const &body){
   
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI> IDX_CONV;
-  IDX_CONV lamb(body);
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
     ForallN_PolicyPair<PolicyI, TI>(is_i));
 }
 
@@ -95,10 +94,9 @@ void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
   
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ> IDX_CONV;
-  IDX_CONV lamb(body);
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
     ForallN_PolicyPair<PolicyI, TI>(is_i),
     ForallN_PolicyPair<PolicyJ, TJ>(is_j));
 }
@@ -123,10 +121,9 @@ void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
   
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK> IDX_CONV;
-  IDX_CONV lamb(body);
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
     ForallN_PolicyPair<PolicyI, TI>(is_i),
     ForallN_PolicyPair<PolicyJ, TJ>(is_j),
     ForallN_PolicyPair<PolicyK, TK>(is_k));
@@ -153,10 +150,9 @@ void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BOD
   
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL> IDX_CONV;
-  IDX_CONV lamb(body);
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
     ForallN_PolicyPair<PolicyI, TI>(is_i),
     ForallN_PolicyPair<PolicyJ, TJ>(is_j),
     ForallN_PolicyPair<PolicyK, TK>(is_k),
@@ -185,10 +181,9 @@ void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM 
   
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL, IdxM> IDX_CONV;
-  IDX_CONV lamb(body);
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb,
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
     ForallN_PolicyPair<PolicyI, TI>(is_i),
     ForallN_PolicyPair<PolicyJ, TJ>(is_j),
     ForallN_PolicyPair<PolicyK, TK>(is_k),

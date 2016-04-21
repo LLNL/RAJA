@@ -92,7 +92,6 @@ def writeUserIface(ndims):
   print """  
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, %s> IDX_CONV;
-  IDX_CONV lamb(body);
 """ % argstr
 
 
@@ -103,7 +102,7 @@ def writeUserIface(ndims):
   args = map(lambda a: "is_"+a, dim_names)
   isetstr = ", ".join(args)
   
-  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb"
+  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body)"
   for d in dim_names:
     outstr += ",\n    ForallN_PolicyPair<Policy%s, T%s>(is_%s)" % (d.upper(), d.upper(), d)
   print outstr + ");"
@@ -151,7 +150,6 @@ def writeUserIfaceAutoDeduce(ndims):
   print """  
   // Create index type conversion layer
   typedef ForallN_IndexTypeConverter<BODY, %s> IDX_CONV;
-  IDX_CONV lamb(body);
 """ % argstr
 
 
@@ -162,7 +160,7 @@ def writeUserIfaceAutoDeduce(ndims):
   args = map(lambda a: "is_"+a, dim_names)
   isetstr = ", ".join(args)
   
-  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb"
+  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body)"
   for d in dim_names:
     outstr += ",\n    ForallN_PolicyPair<Policy%s, T%s>(is_%s)" % (d.upper(), d.upper(), d)
   print outstr + ");"

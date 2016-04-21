@@ -70,6 +70,7 @@ class IndexValue {
      */
     RAJA_HOST_DEVICE
     RAJA_INLINE
+    constexpr
     IndexValue() : value(0) {}
 
     /*!
@@ -78,6 +79,7 @@ class IndexValue {
      */
     RAJA_HOST_DEVICE
     RAJA_INLINE
+    constexpr
     explicit IndexValue(Index_type v) : value(v) {}
 
     /*!
@@ -320,8 +322,6 @@ TO convertIndex(FROM val){
   public: \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() {}\
     RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(RAJA::Index_type v) : RAJA::IndexValue<TYPE>::IndexValue(v) {} \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE(TYPE const &b){value = *b;} \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE& operator=(TYPE const &b){value = *b; return *this;} \
     static inline std::string getName(void){return NAME;} \
   };
 
