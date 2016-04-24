@@ -32,13 +32,13 @@ Other contributors include:
   * Holger Jones (jones19@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
   * Olga Pearce (pearce8@llnl.gov)
+  * Tom Scogland (scogland1@llnl.gov)
 
-Useful information about what is contained in RAJA, how to compile it, 
-run tests and examples, etc. is located in the file:
+Useful information about the RAJA source code, how to compile it, 
+run tests and examples, etc. can be found here:
+- [RAJA User Guide](./docs/sphinx/html/index.html).
 
-docs/sphinx/html/index.html
-
-This file is best viewed by opening it in your web browser. The HTML
+This content is best viewed in your web browser. The HTML
 files are generated from the *.rst files in the directory raja/docs/sphinx.
 You can also look at those text files if this is more convenient.
 
