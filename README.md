@@ -36,7 +36,7 @@ Other contributors include:
 
 Useful information about the RAJA source code, how to compile it, 
 run tests and examples, etc. can be found here:
-- [RAJA User Guide](./docs/sphinx/html/index.html).
+- [RAJA User Guide](file://docs/sphinx/html/index.html).
 
 This content is best viewed in your web browser. The HTML
 files are generated from the *.rst files in the directory raja/docs/sphinx.

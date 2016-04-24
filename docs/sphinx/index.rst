@@ -52,6 +52,7 @@ Other contributors include:
   * Holger Jones (jones19@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
   * Olga Pearce (pearce8@llnl.gov)
+  * Tom Scogland (scogland1@llnl.gov)
 
 If you have questions, find a bug, or have ideas about expanding the
 functionality or applicability of RAJA and are interested in contributing
