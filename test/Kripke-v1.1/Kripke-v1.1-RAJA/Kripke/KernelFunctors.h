@@ -232,4 +232,31 @@ struct SweepFcn {
 };
 
 
+template<typename REDUCE, typename DIR, typename PSI, typename VOL>
+struct ParticleEditFcn {
+
+  REDUCE &part_reduce;
+  DIR direction;
+  PSI psi;
+  VOL volume;
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ParticleEditFcn(REDUCE &reduce_, DIR &direction_, PSI psi_, VOL vol_) :
+    part_reduce(reduce_),
+    direction(direction_),
+    psi(psi_),
+    volume(vol_)
+  {}
+
+
+#pragma nv_exec_check_disable
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(IDirection d, IGroup g, IZone z) const {
+    part_reduce += direction(d).w * psi(d,g,z) * volume(z);              
+  }
+  
+};
+
 #endif
