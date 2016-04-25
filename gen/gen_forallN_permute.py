@@ -77,12 +77,13 @@ def writeForallPermutations(ndims):
 template<typename BODY>
 struct ForallN_Permute_Functor<%s, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<%s>
   RAJA_INLINE
   RAJA_HOST_DEVICE 

@@ -58,12 +58,13 @@ struct ForallN_Permute_Functor;
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -90,12 +91,13 @@ void forallN_permute(PERM_IJ, BODY const &body, PI const &pi, PJ const &pj){
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -122,12 +124,13 @@ void forallN_permute(PERM_JI, BODY const &body, PI const &pi, PJ const &pj){
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -154,12 +157,13 @@ void forallN_permute(PERM_IJK, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -186,12 +190,13 @@ void forallN_permute(PERM_IKJ, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -218,12 +223,13 @@ void forallN_permute(PERM_JIK, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -250,12 +256,13 @@ void forallN_permute(PERM_JKI, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -282,12 +289,13 @@ void forallN_permute(PERM_KIJ, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -314,12 +322,13 @@ void forallN_permute(PERM_KJI, BODY const &body, PI const &pi, PJ const &pj, PK 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -346,12 +355,13 @@ void forallN_permute(PERM_IJKL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -378,12 +388,13 @@ void forallN_permute(PERM_IJLK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -410,12 +421,13 @@ void forallN_permute(PERM_IKJL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -442,12 +454,13 @@ void forallN_permute(PERM_IKLJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -474,12 +487,13 @@ void forallN_permute(PERM_ILJK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -506,12 +520,13 @@ void forallN_permute(PERM_ILKJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -538,12 +553,13 @@ void forallN_permute(PERM_JIKL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -570,12 +586,13 @@ void forallN_permute(PERM_JILK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -602,12 +619,13 @@ void forallN_permute(PERM_JKIL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -634,12 +652,13 @@ void forallN_permute(PERM_JKLI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -666,12 +685,13 @@ void forallN_permute(PERM_JLIK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -698,12 +718,13 @@ void forallN_permute(PERM_JLKI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -730,12 +751,13 @@ void forallN_permute(PERM_KIJL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -762,12 +784,13 @@ void forallN_permute(PERM_KILJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -794,12 +817,13 @@ void forallN_permute(PERM_KJIL, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -826,12 +850,13 @@ void forallN_permute(PERM_KJLI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -858,12 +883,13 @@ void forallN_permute(PERM_KLIJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -890,12 +916,13 @@ void forallN_permute(PERM_KLJI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -922,12 +949,13 @@ void forallN_permute(PERM_LIJK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -954,12 +982,13 @@ void forallN_permute(PERM_LIKJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -986,12 +1015,13 @@ void forallN_permute(PERM_LJIK, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1018,12 +1048,13 @@ void forallN_permute(PERM_LJKI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1050,12 +1081,13 @@ void forallN_permute(PERM_LKIJ, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1082,12 +1114,13 @@ void forallN_permute(PERM_LKJI, BODY const &body, PI const &pi, PJ const &pj, PK
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKLM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1114,12 +1147,13 @@ void forallN_permute(PERM_IJKLM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1146,12 +1180,13 @@ void forallN_permute(PERM_IJKML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1178,12 +1213,13 @@ void forallN_permute(PERM_IJLKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1210,12 +1246,13 @@ void forallN_permute(PERM_IJLMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1242,12 +1279,13 @@ void forallN_permute(PERM_IJMKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMLK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1274,12 +1312,13 @@ void forallN_permute(PERM_IJMLK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJLM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1306,12 +1345,13 @@ void forallN_permute(PERM_IKJLM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1338,12 +1378,13 @@ void forallN_permute(PERM_IKJML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1370,12 +1411,13 @@ void forallN_permute(PERM_IKLJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1402,12 +1444,13 @@ void forallN_permute(PERM_IKLMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1434,12 +1477,13 @@ void forallN_permute(PERM_IKMJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMLJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1466,12 +1510,13 @@ void forallN_permute(PERM_IKMLJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1498,12 +1543,13 @@ void forallN_permute(PERM_ILJKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1530,12 +1576,13 @@ void forallN_permute(PERM_ILJMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1562,12 +1609,13 @@ void forallN_permute(PERM_ILKJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1594,12 +1642,13 @@ void forallN_permute(PERM_ILKMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1626,12 +1675,13 @@ void forallN_permute(PERM_ILMJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1658,12 +1708,13 @@ void forallN_permute(PERM_ILMKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1690,12 +1741,13 @@ void forallN_permute(PERM_IMJKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJLK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1722,12 +1774,13 @@ void forallN_permute(PERM_IMJLK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1754,12 +1807,13 @@ void forallN_permute(PERM_IMKJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKLJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1786,12 +1840,13 @@ void forallN_permute(PERM_IMKLJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1818,12 +1873,13 @@ void forallN_permute(PERM_IMLJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1850,12 +1906,13 @@ void forallN_permute(PERM_IMLKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKLM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1882,12 +1939,13 @@ void forallN_permute(PERM_JIKLM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1914,12 +1972,13 @@ void forallN_permute(PERM_JIKML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1946,12 +2005,13 @@ void forallN_permute(PERM_JILKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -1978,12 +2038,13 @@ void forallN_permute(PERM_JILMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2010,12 +2071,13 @@ void forallN_permute(PERM_JIMKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMLK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2042,12 +2104,13 @@ void forallN_permute(PERM_JIMLK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKILM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2074,12 +2137,13 @@ void forallN_permute(PERM_JKILM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2106,12 +2170,13 @@ void forallN_permute(PERM_JKIML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2138,12 +2203,13 @@ void forallN_permute(PERM_JKLIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2170,12 +2236,13 @@ void forallN_permute(PERM_JKLMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2202,12 +2269,13 @@ void forallN_permute(PERM_JKMIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2234,12 +2302,13 @@ void forallN_permute(PERM_JKMLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2266,12 +2335,13 @@ void forallN_permute(PERM_JLIKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2298,12 +2368,13 @@ void forallN_permute(PERM_JLIMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2330,12 +2401,13 @@ void forallN_permute(PERM_JLKIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2362,12 +2434,13 @@ void forallN_permute(PERM_JLKMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2394,12 +2467,13 @@ void forallN_permute(PERM_JLMIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2426,12 +2500,13 @@ void forallN_permute(PERM_JLMKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMIKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2458,12 +2533,13 @@ void forallN_permute(PERM_JMIKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMILK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2490,12 +2566,13 @@ void forallN_permute(PERM_JMILK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2522,12 +2599,13 @@ void forallN_permute(PERM_JMKIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2554,12 +2632,13 @@ void forallN_permute(PERM_JMKLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2586,12 +2665,13 @@ void forallN_permute(PERM_JMLIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2618,12 +2698,13 @@ void forallN_permute(PERM_JMLKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJLM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2650,12 +2731,13 @@ void forallN_permute(PERM_KIJLM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2682,12 +2764,13 @@ void forallN_permute(PERM_KIJML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2714,12 +2797,13 @@ void forallN_permute(PERM_KILJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2746,12 +2830,13 @@ void forallN_permute(PERM_KILMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2778,12 +2863,13 @@ void forallN_permute(PERM_KIMJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMLJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2810,12 +2896,13 @@ void forallN_permute(PERM_KIMLJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJILM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2842,12 +2929,13 @@ void forallN_permute(PERM_KJILM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIML, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2874,12 +2962,13 @@ void forallN_permute(PERM_KJIML, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2906,12 +2995,13 @@ void forallN_permute(PERM_KJLIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2938,12 +3028,13 @@ void forallN_permute(PERM_KJLMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -2970,12 +3061,13 @@ void forallN_permute(PERM_KJMIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3002,12 +3094,13 @@ void forallN_permute(PERM_KJMLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3034,12 +3127,13 @@ void forallN_permute(PERM_KLIJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3066,12 +3160,13 @@ void forallN_permute(PERM_KLIMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3098,12 +3193,13 @@ void forallN_permute(PERM_KLJIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3130,12 +3226,13 @@ void forallN_permute(PERM_KLJMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3162,12 +3259,13 @@ void forallN_permute(PERM_KLMIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3194,12 +3292,13 @@ void forallN_permute(PERM_KLMJI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMIJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3226,12 +3325,13 @@ void forallN_permute(PERM_KMIJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMILJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3258,12 +3358,13 @@ void forallN_permute(PERM_KMILJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3290,12 +3391,13 @@ void forallN_permute(PERM_KMJIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3322,12 +3424,13 @@ void forallN_permute(PERM_KMJLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3354,12 +3457,13 @@ void forallN_permute(PERM_KMLIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3386,12 +3490,13 @@ void forallN_permute(PERM_KMLJI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3418,12 +3523,13 @@ void forallN_permute(PERM_LIJKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3450,12 +3556,13 @@ void forallN_permute(PERM_LIJMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3482,12 +3589,13 @@ void forallN_permute(PERM_LIKJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3514,12 +3622,13 @@ void forallN_permute(PERM_LIKMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3546,12 +3655,13 @@ void forallN_permute(PERM_LIMJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3578,12 +3688,13 @@ void forallN_permute(PERM_LIMKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIKM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3610,12 +3721,13 @@ void forallN_permute(PERM_LJIKM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIMK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3642,12 +3754,13 @@ void forallN_permute(PERM_LJIMK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3674,12 +3787,13 @@ void forallN_permute(PERM_LJKIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3706,12 +3820,13 @@ void forallN_permute(PERM_LJKMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3738,12 +3853,13 @@ void forallN_permute(PERM_LJMIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3770,12 +3886,13 @@ void forallN_permute(PERM_LJMKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3802,12 +3919,13 @@ void forallN_permute(PERM_LKIJM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIMJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3834,12 +3952,13 @@ void forallN_permute(PERM_LKIMJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJIM, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3866,12 +3985,13 @@ void forallN_permute(PERM_LKJIM, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJMI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3898,12 +4018,13 @@ void forallN_permute(PERM_LKJMI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3930,12 +4051,13 @@ void forallN_permute(PERM_LKMIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3962,12 +4084,13 @@ void forallN_permute(PERM_LKMJI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -3994,12 +4117,13 @@ void forallN_permute(PERM_LMIJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4026,12 +4150,13 @@ void forallN_permute(PERM_LMIKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4058,12 +4183,13 @@ void forallN_permute(PERM_LMJIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4090,12 +4216,13 @@ void forallN_permute(PERM_LMJKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4122,12 +4249,13 @@ void forallN_permute(PERM_LMKIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4154,12 +4282,13 @@ void forallN_permute(PERM_LMKJI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4186,12 +4315,13 @@ void forallN_permute(PERM_MIJKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJLK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4218,12 +4348,13 @@ void forallN_permute(PERM_MIJLK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4250,12 +4381,13 @@ void forallN_permute(PERM_MIKJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKLJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4282,12 +4414,13 @@ void forallN_permute(PERM_MIKLJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4314,12 +4447,13 @@ void forallN_permute(PERM_MILJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4346,12 +4480,13 @@ void forallN_permute(PERM_MILKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJIKL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4378,12 +4513,13 @@ void forallN_permute(PERM_MJIKL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJILK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4410,12 +4546,13 @@ void forallN_permute(PERM_MJILK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4442,12 +4579,13 @@ void forallN_permute(PERM_MJKIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4474,12 +4612,13 @@ void forallN_permute(PERM_MJKLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4506,12 +4645,13 @@ void forallN_permute(PERM_MJLIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4538,12 +4678,13 @@ void forallN_permute(PERM_MJLKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKIJL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4570,12 +4711,13 @@ void forallN_permute(PERM_MKIJL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKILJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4602,12 +4744,13 @@ void forallN_permute(PERM_MKILJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJIL, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4634,12 +4777,13 @@ void forallN_permute(PERM_MKJIL, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJLI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4666,12 +4810,13 @@ void forallN_permute(PERM_MKJLI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4698,12 +4843,13 @@ void forallN_permute(PERM_MKLIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4730,12 +4876,13 @@ void forallN_permute(PERM_MKLJI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIJK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4762,12 +4909,13 @@ void forallN_permute(PERM_MLIJK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIKJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4794,12 +4942,13 @@ void forallN_permute(PERM_MLIKJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJIK, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4826,12 +4975,13 @@ void forallN_permute(PERM_MLJIK, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJKI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4858,12 +5008,13 @@ void forallN_permute(PERM_MLJKI, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKIJ, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
@@ -4890,12 +5041,13 @@ void forallN_permute(PERM_MLKIJ, BODY const &body, PI const &pi, PJ const &pj, P
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKJI, BODY>{
 
-  BODY const &body;
+  BODY body;
 
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
   template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 

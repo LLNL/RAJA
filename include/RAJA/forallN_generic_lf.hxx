@@ -124,7 +124,7 @@ struct ForallN_BindFirstArg_HostDevice {
   constexpr
   ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
 
-RAJA_SUPPRESS_HD_WARN
+  RAJA_SUPPRESS_HD_WARN
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -156,38 +156,6 @@ struct ForallN_BindFirstArg_Host {
   }
 };
 
-
-template<typename NextExec, typename BODY>
-struct ForallN_PeelOuter {
-
-  NextExec const next_exec;
-  BODY const body;
-
-  RAJA_INLINE
-  constexpr
-  ForallN_PeelOuter(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
-
-  RAJA_INLINE
-  void operator()(Index_type i) const {
-    ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
-    next_exec(inner);
-  }
-  
-  RAJA_INLINE
-  void operator()(Index_type i, Index_type j) const {
-    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
-    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
-    next_exec(inner_j);
-  }
-  
-  RAJA_INLINE
-  void operator()(Index_type i, Index_type j, Index_type k) const {
-    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
-    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
-    ForallN_BindFirstArg_HostDevice<decltype(inner_j)> inner_k(inner_j, k);
-    next_exec(inner_k);
-  }
-};
 
 template<typename ... PREST>
 struct ForallN_Executor {};
