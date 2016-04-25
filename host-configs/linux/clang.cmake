@@ -8,6 +8,8 @@
 ## For release details and restrictions, please see raja/README-license.txt
 ##
 
+include(../general.cmake)
+
 set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "clang++" CACHE PATH "")
@@ -26,3 +28,5 @@ set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
 set(RAJA_DATA_ALIGN 64 CACHE INT "")
 set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
+
+set(RAJA_HOST_CONFIG_LOADED On CACHE Bool "")
