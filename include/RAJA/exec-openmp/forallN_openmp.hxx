@@ -78,12 +78,11 @@ struct ForallN_Executor<
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
   PREST... > 
 {
-  typedef ForallN_Executor<PREST...> NextExec;
-  
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset0;  
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset1;  
+ 
+  typedef ForallN_Executor<PREST...> NextExec;
   NextExec next_exec;
-  
   
   RAJA_INLINE
   constexpr
@@ -126,6 +125,9 @@ struct ForallN_Executor<
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset1;  
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset2;  
   
+  typedef ForallN_Executor<PREST...> NextExec;
+  NextExec next_exec;
+  
   RAJA_INLINE
   constexpr
   ForallN_Executor(
@@ -133,12 +135,12 @@ struct ForallN_Executor<
     ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset1_,  
     ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset2_,
     PREST ... prest) 
-    :  iset0(iset0_), iset1(iset1_), iset2(iset2_) 
+    :  iset0(iset0_), iset1(iset1_), iset2(iset2_), next_exec(prest...)
   { }
 
-  template<typename BODY, typename ... ARGS>
+  template<typename BODY>
   RAJA_INLINE
-  void operator()(BODY body, ARGS ... args) const {
+  void operator()(BODY body) const {
     
     int begin_i = iset0.getBegin();
     int begin_j = iset1.getBegin();
@@ -147,15 +149,13 @@ struct ForallN_Executor<
     int end_j = iset1.getEnd();
     int end_k = iset2.getEnd();
     
+    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    
 #pragma omp for nowait collapse(3)
     for(int i = begin_i;i < end_i;++ i){
       for(int j = begin_j;j < end_j;++ j){
         for(int k = begin_k;k < end_k;++ k){
-          ForallN_BindFirstArg<BODY> bind_i(body, i);
-          ForallN_BindFirstArg<decltype(bind_i)> bind_j(bind_i, j);
-          ForallN_BindFirstArg<decltype(bind_j)> bind_k(bind_j, k);
-          
-          bind_k(args...);    
+          outer(i,j,k);    
         }
       }
     }

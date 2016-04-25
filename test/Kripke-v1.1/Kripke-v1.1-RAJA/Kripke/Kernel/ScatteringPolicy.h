@@ -39,6 +39,18 @@
 template<typename T>
 struct ScatteringPolicy{}; // nm, g, gp, mat
 
+
+#ifdef RAJA_COMPILER_ICC
+template<>
+struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
+                                    RAJA::ExecList<RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   RAJA::seq_exec, 
+                                                   RAJA::simd_exec>
+                                  >
+{};
+
+#else
 template<>
 struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
@@ -50,6 +62,7 @@ struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
                                         >
                                       >
 {};
+#endif
 
 template<>
 struct ScatteringPolicy<NEST_DZG_T> : RAJA::NestedPolicy<

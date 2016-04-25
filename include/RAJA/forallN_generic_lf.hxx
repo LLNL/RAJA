@@ -74,8 +74,12 @@ struct ForallN_PolicyPair : public I {
   typedef P POLICY;
   typedef I ISET;
 
+  RAJA_INLINE 
+  ~ForallN_PolicyPair() {}
+
   RAJA_INLINE
-  constexpr ForallN_PolicyPair(ISET const &i) : ISET(i) {}
+  explicit
+  ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
 
@@ -107,18 +111,20 @@ struct NestedPolicy {
  *  ForallN_Executor(): Default Executor for loops
  ******************************************************************/
 
-
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-only constructor and host-device operator.
+ */
 template<typename BODY, typename INDEX_TYPE=Index_type>
-struct ForallN_BindFirstArg {
-
-  BODY const body;
-  INDEX_TYPE const i;
+struct ForallN_BindFirstArg_HostDevice {
+  BODY const body;  
+  INDEX_TYPE i;
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  ForallN_BindFirstArg(BODY const &b, INDEX_TYPE i0) : body(b), i(i0) {}
+  ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
 
+RAJA_SUPPRESS_HD_WARN
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
@@ -126,6 +132,29 @@ struct ForallN_BindFirstArg {
     body(i, args...);
   }
 };
+
+
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-only constructor and host-only operator.
+ */
+template<typename BODY, typename INDEX_TYPE=Index_type>
+struct ForallN_BindFirstArg_Host {
+
+  BODY const body;  
+  INDEX_TYPE i;
+
+  RAJA_INLINE
+  ForallN_BindFirstArg_Host(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
+
+  template<typename ... ARGS>
+  RAJA_INLINE
+  void  operator()(ARGS ... args) const {
+    body(i, args...);
+  }
+};
+
 
 template<typename NextExec, typename BODY>
 struct ForallN_PeelOuter {
@@ -139,20 +168,35 @@ struct ForallN_PeelOuter {
 
   RAJA_INLINE
   void operator()(Index_type i) const {
-    ForallN_BindFirstArg<BODY> inner(body, i);
+    ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
     next_exec(inner);
   }
   
   RAJA_INLINE
   void operator()(Index_type i, Index_type j) const {
-    ForallN_BindFirstArg<BODY> inner_i(body, i);
-    ForallN_BindFirstArg<decltype(inner_i)> inner_j(inner_i, j);
+    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
     next_exec(inner_j);
+  }
+  
+  RAJA_INLINE
+  void operator()(Index_type i, Index_type j, Index_type k) const {
+    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_j)> inner_k(inner_j, k);
+    next_exec(inner_k);
   }
 };
 
 template<typename ... PREST>
 struct ForallN_Executor {};
+
+
+/*!
+ * \brief Primary policy execution that peels off loop nests.
+ *
+ *  The default action is to call RAJA::forall to peel off outer loop nest.
+ */
 
 template<typename PI, typename ... PREST>
 struct ForallN_Executor<PI, PREST...> {
@@ -176,6 +220,10 @@ struct ForallN_Executor<PI, PREST...> {
   }
 };
 
+
+/*!
+ * \brief Execution termination case
+ */
 template<>
 struct ForallN_Executor<> {
   constexpr
@@ -218,44 +266,77 @@ void forallN_policy(ForallN_Execute_Tag, BODY body, ARGS ... args){
  ******************************************************************/
 
 
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-device constructor and host-device operator.
+ */
+template<typename BODY, typename INDEX_TYPE=Index_type>
+struct ForallN_BindFirstArg_Idx {
+  BODY const body;  
+  INDEX_TYPE i;
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  ForallN_BindFirstArg_Idx(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
+
+  RAJA_SUPPRESS_HD_WARN
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void  operator()(ARGS ... args) const {
+    body(i, args...);
+  }
+};
+
+/*!
+ * \brief Wraps a callable that uses strongly typed arguments, and produces
+ * a functor with Index_type arguments. 
+ *
+ */
 template<typename BODY, typename IdxI, typename ... IdxRest>
 struct ForallN_IndexTypeConverter {
+
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr
   explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
+
   // call 'policy' layer with next policy
+  RAJA_SUPPRESS_HD_WARN
   template<typename ... ARGS>
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Index_type i, ARGS ... args) const {
     // Bind the first argument
-    ForallN_BindFirstArg<BODY, IdxI> bound(body, IdxI(i));
+    ForallN_BindFirstArg_Idx<BODY, IdxI> bound(body, IdxI(i));
 
     // Peel a wrapper
-    ForallN_IndexTypeConverter<ForallN_BindFirstArg<BODY, IdxI>, IdxRest...> inner(bound);
+    ForallN_IndexTypeConverter<decltype(bound), IdxRest...> inner(bound);
     inner(args...);
   }
+  
+  
+  BODY body;
 
-  // Copy of loop body
-  BODY const body;
 };
 
 template<typename BODY, typename IdxI>
 struct ForallN_IndexTypeConverter<BODY, IdxI> {
 
+  RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr
-  explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+  explicit ForallN_IndexTypeConverter(BODY b) : body(b) {}
 
   // call 'policy' layer with next policy
+  RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Index_type i) const {
+ 
     body(IdxI(i));
   }
 

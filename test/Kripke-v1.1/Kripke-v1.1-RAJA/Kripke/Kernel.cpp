@@ -58,8 +58,10 @@
 #ifdef RAJA_USE_CUDA
 #define KRIPKE_USE_FUNCTORS
 #else
+
 // Uncomment the next line to force the use of functors
 //#define KRIPKE_USE_FUNCTORS
+
 #endif
 
 
@@ -77,11 +79,15 @@ RAJA_INLINE
 void callKernelWithPolicy(Nesting_Order nesting_order, KERNEL kernel, ARGS & ... args){
   switch(nesting_order){
     case NEST_DGZ: kernel(NEST_DGZ_T(), args...); break;
+#ifndef RAJA_COMPILER_ICC
     case NEST_DZG: kernel(NEST_DZG_T(), args...); break;
     case NEST_GDZ: kernel(NEST_GDZ_T(), args...); break;
     case NEST_GZD: kernel(NEST_GZD_T(), args...); break;
     case NEST_ZDG: kernel(NEST_ZDG_T(), args...); break;
     case NEST_ZGD: kernel(NEST_ZGD_T(), args...); break;
+#else
+    default: KripkeAbort("All nesting orders except DGZ are currently disabled with the Intel compilers\n");
+#endif
   }
 }
 
@@ -411,6 +417,7 @@ struct Kernel_Sweep{
                 face_lf, face_fr, face_bo, idx_to_i, idx_to_j, idx_to_k)
     );
 #else
+
     RAJA::forallN<SweepPolicy<nest_type>, IDirection, IGroup, IZoneIdx>( 
       domain.indexRange<IDirection>(sdom_id),
       domain.indexRange<IGroup>(sdom_id),
@@ -476,7 +483,14 @@ struct Kernel_ParticleEdit {
 
       
 #ifdef KRIPKE_USE_FUNCTORS
-      // TODO
+      dForallN<ParticleEditPolicy<nest_type>, IDirection, IGroup, IZone>( 
+        domain, sdom_id,
+        ParticleEditFcn<decltype(part_reduce),
+                  typename POL::View_Directions,
+                  typename POL::View_Psi,
+                  typename POL::View_Volume>
+                (part_reduce, direction, psi, volume)
+      );
 #else
       dForallN<ParticleEditPolicy<nest_type>, IDirection, IGroup, IZone>( 
         domain, sdom_id,
