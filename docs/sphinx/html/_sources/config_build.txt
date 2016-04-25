@@ -82,16 +82,6 @@ Configuring the code can be done in a couple of ways depending on your needs.
 
     $ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
 
-**Note that compiling with 'nvcc' on LC machines that have GPUs that support 
-CUDA, you will have to load the CUDA module and set the host compiler.** For 
-example, type these lines :: 
-
-  $ module load cudatoolkit/7.5
-  $ use gcc-4.9.3p
-
-At least we know things work if you use this CUDA and host compiler 
-combination.
-
 Regardless of how you configure your build, you build the code by going into 
 the build directory and typing ::
 
@@ -103,6 +93,36 @@ If you want to also create an installation of the code, you can type ::
 
 This will create 'include' and 'lib' directories in the install directory.
 
+
+**LLNL platform-specific build information.**
+
+We are the first ones to admit that our build system is convenient, but not
+completely 'push button' for all platforms. For machines at LLNL, there are 
+a few platform-specific things you must do to make things work. We note
+them here. As things improve, we will update the information here.
+
+  * BG/Q builds
+
+    So far, at LLNL, we have only been able to build our complete set of 
+    RAJA tests and examples on BG/Q using the GNU compiler. We have had 
+    moderate success with the clang compiler. To build with the GNU compiler, 
+    you need to set the version of python and CMake. You can do this by 
+    typing ::
+
+      $ use cmake-3.1.2
+      $ use python-2.7.3
+
+    After this, you can use the 'config-build.py' script as usual.
+
+
+  * nvcc builds
+
+    To compile with 'nvcc' on LC machines that have GPUs that support CUDA, 
+    you will have to load the CUDA module and set the host compiler. For 
+    example, type these lines :: 
+
+      $ module load cudatoolkit/7.5
+      $ use gcc-4.9.3p
 
 
 RAJA configuration options

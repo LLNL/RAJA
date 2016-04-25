@@ -1,12 +1,44 @@
-/*
- * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * For release details and restrictions, please see raja/README-license.txt
- */
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For additional details, please also read raja/README-license.txt.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// * Redistributions of source code must retain the above copyright notice,
+//   this list of conditions and the disclaimer below.
+//
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the disclaimer (as noted below) in the
+//   documentation and/or other materials provided with the distribution.
+//
+// * Neither the name of the LLNS/LLNL nor the names of its contributors may
+//   be used to endorse or promote products derived from this software without
+//   specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
+// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #ifndef RAJA_forallN_cuda_HXX__
 #define RAJA_forallN_cuda_HXX__
@@ -17,6 +49,36 @@
 namespace RAJA {
 
 
+/*!
+ * \brief Functor that binds the first argument of a callable.
+ * 
+ * This version has host-device constructor and device-only operator.
+ */
+template<typename BODY>
+struct ForallN_BindFirstArg_Device {
+
+  BODY const body;  
+  size_t  i;
+
+  RAJA_INLINE
+  RAJA_DEVICE
+  ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
+
+  template<typename ... ARGS>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void  operator()(ARGS ... args) const {
+    body(i, args...);
+  }
+};
+
+
+/*!
+ * \brief Struct that contains two CUDA dim3's that represent the number of
+ * thread block and the number of blocks.
+ *
+ * This is passed to the execution policies to setup the kernel launch.
+ */
 struct CudaDim {
   dim3 num_threads;
   dim3 num_blocks;
@@ -28,9 +90,9 @@ struct CudaDim {
   }
 };
 
-
 template<typename POL>
 struct CudaPolicy {};
+
 
 template<typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
@@ -46,7 +108,7 @@ struct CudaThreadBlock {
   }
 
   __device__ inline int operator()(void){
-    
+
     int idx = begin + view(blockIdx) * threads_per_block + view(threadIdx);
     if(idx >= end){
       idx = -1;
@@ -71,6 +133,12 @@ struct CudaThreadBlock {
     }
   }  
 };
+
+
+/*
+ * These execution policies map a loop nest to the block and threads of a
+ * given dimension with the number of THREADS per block specifies.
+ */
 
 template<int THREADS>
 using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
@@ -112,6 +180,9 @@ struct CudaThread {
   }  
 };
 
+/* These execution policies map the given loop nest to the threads in the 
+   specified dimensions (not blocks)
+ */
 using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
 
 using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
@@ -150,6 +221,10 @@ struct CudaBlock {
   }  
 };
 
+
+/* These execution policies map the given loop nest to the blocks in the 
+   specified dimensions (not threads)
+ */
 using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
 
 using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
@@ -165,7 +240,7 @@ template <typename BODY, typename ... ARGS>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
   if(i >= 0){
-    ForallN_BindFirstArg<BODY, Index_type> bound(body, i);
+    ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
   }  
 }
@@ -188,6 +263,14 @@ __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
 }
 
 
+/*
+ * The following is commented out.
+ * It would be the preferred way of implementing the CUDA Executor
+ * class, but there are some template deduction issues that need
+ * to be worked out
+ *
+ */
+/*
 template<int ...> struct integer_sequence {};
 
 template<int N, int ...S> struct gen_sequence : gen_sequence<N-1, N-1, S...> {};
@@ -212,7 +295,7 @@ struct ForallN_Executor<
   template<typename BODY>
   RAJA_INLINE
   void operator()(BODY body) const {
-    unpackIndexSets(body, typename gen_sequence<sizeof...(ISETS)>::type()); 
+    unpackIndexSets(body, typename gen_sequence<sizeof...(CuARGS)>::type()); 
   }
   
   template<typename BODY, int ... N>
@@ -232,7 +315,8 @@ struct ForallN_Executor<
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
-};
+};*/
+
 
 template<typename CuARG0, typename ISET0>
 struct ForallN_Executor< 
@@ -258,7 +342,64 @@ struct ForallN_Executor<
 };
 
 
+template<typename CuARG0, typename ISET0, typename CuARG1, typename ISET1>
+struct ForallN_Executor< 
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> > 
+{
+  ISET0 iset0;
+  ISET1 iset1; 
+  
+  ForallN_Executor(
+    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
+    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_) 
+    :  iset0(iset0_), iset1(iset1_)
+  { }
 
+  template<typename BODY>
+  RAJA_INLINE
+  void operator()(BODY body) const {
+    CudaDim dims;
+    CuARG0 c0(dims, iset0);
+    CuARG1 c1(dims, iset1);
+    
+    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0, c1);
+    cudaErrchk(cudaPeekAtLastError());
+    cudaErrchk(cudaDeviceSynchronize());
+  }
+};
+
+
+template<typename CuARG0, typename ISET0, typename CuARG1, typename ISET1, typename CuARG2, typename ISET2>
+struct ForallN_Executor< 
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
+  ForallN_PolicyPair<CudaPolicy<CuARG2>, ISET2> > 
+{
+  ISET0 iset0;
+  ISET1 iset1; 
+  ISET2 iset2;
+  
+  ForallN_Executor(
+    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
+    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_,
+    ForallN_PolicyPair<CudaPolicy<CuARG2>, ISET2> const & iset2_) 
+    :  iset0(iset0_), iset1(iset1_), iset2(iset2_)
+  { }
+
+  template<typename BODY>
+  RAJA_INLINE
+  void operator()(BODY body) const {
+    CudaDim dims;
+    CuARG0 c0(dims, iset0);
+    CuARG1 c1(dims, iset1);
+    CuARG2 c2(dims, iset2);
+    
+    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0, c1, c2);
+    cudaErrchk(cudaPeekAtLastError());
+    cudaErrchk(cudaDeviceSynchronize());
+  }
+};
 
 } // namespace RAJA
   
