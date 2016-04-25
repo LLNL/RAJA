@@ -1,16 +1,48 @@
-/*
- * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * For release details and restrictions, please see raja/README-license.txt
- */
-  
 #ifndef RAJA_forallN_tile_HXX__
 #define RAJA_forallN_tile_HXX__
 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For additional details, please also read raja/README-license.txt.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// * Redistributions of source code must retain the above copyright notice,
+//   this list of conditions and the disclaimer below.
+//
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the disclaimer (as noted below) in the
+//   documentation and/or other materials provided with the distribution.
+//
+// * Neither the name of the LLNS/LLNL nor the names of its contributors may
+//   be used to endorse or promote products derived from this software without
+//   specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
+// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~// 
+ 
 #include"config.hxx"
 #include"int_datatypes.hxx"
 
@@ -61,22 +93,23 @@ struct Tile {
 
 // Forward declaration so the apply_tile's can recurse into peel_tile
 template<typename BODY, typename TilePolicy, int TIDX, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_peel_tile(BODY body, PI pi, PREST ... prest);
+RAJA_INLINE void forallN_peel_tile(BODY body, PI const &pi, PREST const &... prest);
 
 
 /*!
  * \brief Applys the tile_none policy
  */
 template<typename BODY, typename TilePolicy, int TIDX, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_apply_tile(tile_none, BODY body, PI pi, PREST ... prest){
+RAJA_INLINE void forallN_apply_tile(tile_none, BODY body, PI const &pi, PREST const &... prest){
   //printf("TIDX=%d: policy=tile_none\n", (int)TIDX);
 
   // Pass thru, so just bind the index set
-  typedef ForallN_BindFirstArg<BODY, PI> BOUND;
+  typedef ForallN_BindFirstArg_Host<BODY, PI> BOUND;
   BOUND new_body(body, pi);
 
   // Recurse to the next policy
   forallN_peel_tile<BOUND, TilePolicy, TIDX+1>(new_body, prest...);
+
 }
 
 
@@ -84,10 +117,10 @@ RAJA_INLINE void forallN_apply_tile(tile_none, BODY body, PI pi, PREST ... prest
  * \brief Applys the tile_fixed<N> policy
  */
 template<typename BODY, typename TilePolicy, int TIDX, int TileSize, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>, BODY body, PI pi, PREST ... prest){
+RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>, BODY body, PI const &pi, PREST const &... prest){
   //printf("TIDX=%d: policy=tile_fixed<%d>\n", TIDX, TileSize);
 
-  typedef ForallN_BindFirstArg<BODY, PI> BOUND;
+  typedef ForallN_BindFirstArg_Host<BODY, PI> BOUND;
 
   // tile loop
   Index_type i_begin = pi.getBegin();
@@ -120,9 +153,8 @@ struct ForallN_NextPolicyWrapper {
   explicit ForallN_NextPolicyWrapper(BODY b) : body(b) {}
 
   RAJA_INLINE
-  void operator()(ARGS ... args) const {
+  void operator()(ARGS const &... args) const {
     typedef typename NextPolicy::PolicyTag NextPolicyTag;
-
     forallN_policy<NextPolicy>(NextPolicyTag(), body, args...);
   }
 
@@ -150,7 +182,7 @@ RAJA_INLINE void forallN_peel_tile(BODY body){
  * forallN_apply_tile function... which in turn recursively calls this function
  */
 template<typename BODY, typename TilePolicy, int TIDX, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_peel_tile(BODY body, PI pi, PREST ... prest){
+RAJA_INLINE void forallN_peel_tile(BODY body, PI const &pi, PREST const &... prest){
 
   // Extract the tiling policy for loop nest TIDX
   using TP = typename std::tuple_element<TIDX, typename TilePolicy::tuple>::type;

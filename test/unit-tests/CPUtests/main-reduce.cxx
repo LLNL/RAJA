@@ -15,7 +15,7 @@
 
 #include <cstdlib>
 #include <time.h>
-#include <math.h>
+#include <cmath>
 
 #include<string>
 #include<vector>

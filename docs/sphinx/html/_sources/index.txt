@@ -5,7 +5,7 @@
 .. ##
 .. ## All rights reserved.
 .. ##
-.. ## For release details and restrictions, please see raja/README-license.txt
+.. ## For details and restrictions, please read the README-license.txt file.
 .. ##
 
 
@@ -17,8 +17,8 @@ RAJA is a collection of C++ software abstractions, being developed at
 Lawrence Livermore National Laboratory (LLNL), that enable architecture 
 portability for HPC applications. The overarching goals of RAJA are to:
 
-  * make existing (production) applications *portable with minimal disruption*
-  * provide a model for new applications so that they are portable from 
+  * Make existing (production) applications *portable with minimal disruption*
+  * Provide a model for new applications so that they are portable from 
     inception. 
 
 RAJA uses standard C++11 -- C++ is the predominant programming language in
@@ -46,11 +46,6 @@ The core developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-If you have questions, find a bug, or have ideas about expanding the 
-functionality or applicability of RAJA and are interested in contributing 
-to its development, please do not hesitate to contact us. We are always 
-interested in exploring new ways to use RAJA. 
- 
 Other contributors include:
 
   * David Beckingsale (beckingsale1@llnl.gov)
@@ -58,6 +53,10 @@ Other contributors include:
   * Adam Kunen (kunen1@llnl.gov)
   * Olga Pearce (pearce8@llnl.gov)
 
+If you have questions, find a bug, or have ideas about expanding the
+functionality or applicability of RAJA and are interested in contributing
+to its development, please do not hesitate to contact us. We are always
+interested in improving RAJA and exploring new ways to use it.
 
 =============
 Introduction
@@ -159,6 +158,7 @@ RAJA contains several cooperating encapsulation features, which include:
 .. toctree::
    :maxdepth: 2
 
+   raja_license
    code_organization
    config_build
    test_examples

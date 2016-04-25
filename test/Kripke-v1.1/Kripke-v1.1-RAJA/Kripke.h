@@ -70,10 +70,6 @@
 #endif
 #endif
 
-
-
-
-
 // Forward Decl
 struct Grid_Data;
 

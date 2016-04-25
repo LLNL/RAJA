@@ -86,8 +86,8 @@ namespace {
 
 
 Subdomain::Subdomain() :
-  idx_group_set(0),
   idx_dir_set(0),
+  idx_group_set(0),
   idx_zone_set(0),
   num_groups(0),
   num_directions(0),
@@ -136,7 +136,6 @@ void Subdomain::setup(int sdom_id, Input_Variables *input_vars, int gs, int ds, 
   num_directions = input_vars->num_directions / input_vars->num_dirsets;
   direction0 = ds * num_directions;
   directions = &direction_list[direction0];
-  
 
   num_zones = 1;
   for(int dim = 0;dim < 3;++ dim){

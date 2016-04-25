@@ -41,18 +41,18 @@
 /*
  * Define strongly-typed indices used in Kripke
  */
-RAJA_INDEX_VALUE(IMaterial, "IMaterial");     // Material ID
-RAJA_INDEX_VALUE(ILegendre, "ILegendre");     // Legendre expansion coefficient
-RAJA_INDEX_VALUE(IMoment, "IMoment");       // Spherical harmonic moment
-RAJA_INDEX_VALUE(IDirection, "IDirection");    // Local direction
+RAJA_INDEX_VALUE(IMaterial,    "IMaterial");     // Material ID
+RAJA_INDEX_VALUE(ILegendre,    "ILegendre");     // Legendre expansion coefficient
+RAJA_INDEX_VALUE(IMoment,      "IMoment");       // Spherical harmonic moment
+RAJA_INDEX_VALUE(IDirection,   "IDirection");    // Local direction
 RAJA_INDEX_VALUE(IGlobalGroup, "IGlobalGroup");  // Global energy group
-RAJA_INDEX_VALUE(IGroup, "IGroup");        // Local energy group
-RAJA_INDEX_VALUE(IZone, "IZone");         // Cannonical zone number
-RAJA_INDEX_VALUE(IZoneIdx, "IZoneIdx");      // Mapped zone index (sequential in hyperplane)
-RAJA_INDEX_VALUE(IMix, "IMix");          // Mixed element slot
-RAJA_INDEX_VALUE(IZoneI, "IZoneI");        // zone on the I boundary face
-RAJA_INDEX_VALUE(IZoneJ, "IZoneJ");        // zone on the K boundary face
-RAJA_INDEX_VALUE(IZoneK, "IZoneK");        // zone on the K boundary face
+RAJA_INDEX_VALUE(IGroup,       "IGroup");        // Local energy group
+RAJA_INDEX_VALUE(IZone,        "IZone");         // Cannonical zone number
+RAJA_INDEX_VALUE(IZoneIdx,     "IZoneIdx");      // Mapped zone index (sequential in hyperplane)
+RAJA_INDEX_VALUE(IMix,         "IMix");          // Mixed element slot
+RAJA_INDEX_VALUE(IZoneI,       "IZoneI");        // zone on the I boundary face
+RAJA_INDEX_VALUE(IZoneJ,       "IZoneJ");        // zone on the K boundary face
+RAJA_INDEX_VALUE(IZoneK,       "IZoneK");        // zone on the K boundary face
 
 
 
@@ -154,6 +154,7 @@ struct FixedViewPolicy {
   typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneJ> > View_dy;
   typedef DView<double, DLayout<int, RAJA::PERM_I, IZoneK> > View_dz;
   typedef DView<Directions, DLayout<int, RAJA::PERM_I, IDirection> > View_Directions;
+  typedef DView<double, DLayout<int, RAJA::PERM_I, IZone> > View_Volume;
   
   typedef DView<IZoneI, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToI;
   typedef DView<IZoneJ, DLayout<int, RAJA::PERM_I, IZoneIdx> > View_IdxToJ;
@@ -186,6 +187,9 @@ struct ViewPolicy : public FixedViewPolicy {
   // Data tables
   typedef DView<double, typename T::Layout_SigS> View_SigS;
   typedef DView<double, typename T::Layout_SigT> View_SigT;
+  
+  
+  typedef RAJA::omp_reduce reduce_policy;
 };
 
 
