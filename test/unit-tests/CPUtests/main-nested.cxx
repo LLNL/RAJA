@@ -36,88 +36,7 @@ unsigned s_ntests_passed_total = 0;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-template<typename P, typename I, typename IDX>
-struct PolicyPair : I {
-  RAJA_INLINE
-  constexpr
-  PolicyPair(I const &is) : I(is) {}
 
-  typedef P POLICY;
-  typedef I ISET;
-  typedef IDX INDEX;
-};
-
-
-template<typename ... PREST>
-struct ForallN_Execute {};
-
-template<typename PI, typename ... PREST>
-struct ForallN_Execute<PI, PREST...> {
-  typedef typename PI::ISET TI;
-  typedef typename PI::POLICY POLICY_I;
-
-  typedef ForallN_Execute<PREST...> NextExec;
-
-  template<typename BODY>
-  RAJA_INLINE
-  void operator()(BODY const &body, PI const &pi, PREST const &... prest) const {
-    
-    using IdxType = typename PI::INDEX;
-    
-    NextExec next_exec;
-    
-    RAJA::forall<POLICY_I>(pi,
-      [=](int i){
-        printf("%d ", i);
-        RAJA::ForallN_BindFirstArg_Host<BODY, IdxType> bound(body, IdxType(i));
-        next_exec(bound, prest...);
-      }
-    );
-  }
-};
-
-template<>
-struct ForallN_Execute<> {
-
-  template<typename BODY>
-  RAJA_INLINE void operator()(BODY const &body) const {
-    printf("call body\n");
-    //body();
-  }
-};
-
-template<typename POLICY, typename BODY, typename ... PALL>
-RAJA_INLINE
-void forallN_policy_exp(ForallN_Execute_Tag, BODY const &body, PALL const &... pall){
-  
-  // Create executor object to launch loops
-  ForallN_Execute<PALL...> exec;
-  
-  // Launch loop body
-  exec(body, pall...);
-}
-
-template<typename POLICY, typename TI, typename TJ, typename IdxI=Index_type, typename IdxJ=Index_type, typename BODY>
-void forallN_exp(TI const &is_i, TJ const &is_j, BODY const &body){
-
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
-
-  // Create index type conversion layer
-  //typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ> IDX_CONV;
-
-  // call policy layer with next policy
-  forallN_policy_exp<NextPolicy>(NextPolicyTag(), body,
-    PolicyPair<PolicyI, TI, IdxI>(is_i),
-    PolicyPair<PolicyJ, TJ, IdxJ>(is_j));
-
-}
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -285,7 +204,6 @@ struct Pol2dD_OMP {
 #endif
 
 void run2dTests(Index_type size_i, Index_type size_j){
-
   run2dTest<Pol2dA>("Pol2dA", size_i, size_j);
   run2dTest<Pol2dB>("Pol2dB", size_i, size_j);
   run2dTest<Pol2dC>("Pol2dC", size_i, size_j);
@@ -529,8 +447,8 @@ int main(int argc, char *argv[])
 ///////////////////////////////////////////////////////////////////////////
 
    // Run some 2d -> 1d reduction tests
-   //run2dTests(128,1024);
-   run2dTests(3,5);
+   run2dTests(128,1024);
+   run2dTests(37,1);
 
    // Run some LTimes example tests (directions, groups, zones)
    runLTimesTests(25, 96, 8, 32);
