@@ -198,8 +198,15 @@ create a build directory in the root directory and go into it</p>
 $ cd my-awesome-build
 </pre></div>
 </div>
-<p>Then, invoke CMake and specify the build type and cache file you want and
-the location of the top-level RAJA CMakeLists.txt file; for example</p>
+<p>Then, you can invoke CMake without any arguments to pick a default
+compiler on your platform based on your environment; e.g., on a linux
+system, GNU is the default compiler choice</p>
+<div class="highlight-python"><div class="highlight"><pre>$ use gcc-4.9.3p
+$ cmake ../
+</pre></div>
+</div>
+<p>You can also invoke CMake directly and specify the build type and host-config
+file you want; for example</p>
 <div class="highlight-python"><div class="highlight"><pre>$ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
 </pre></div>
 </div>
