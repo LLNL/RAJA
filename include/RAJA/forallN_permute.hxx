@@ -46,3662 +46,5035 @@
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include "forallN_permute_lf.hxx"
-
 namespace RAJA {
+
+
+template<typename PERM, typename BODY>
+struct ForallN_Permute_Functor;
+
 
 
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j) const {
+  void operator()(IdxI i, IdxJ j) const {
     body(i, j);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ>
+RAJA_INLINE
+void forallN_permute(PERM_IJ, BODY const &body, PI const &pi, PJ const &pj){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJ, BODY>(body),
+    pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i) const {
+  void operator()(IdxJ j, IdxI i) const {
     body(i, j);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ>
+RAJA_INLINE
+void forallN_permute(PERM_JI, BODY const &body, PI const &pi, PJ const &pj){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JI, BODY>(body),
+    pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k) const {
+  void operator()(IdxI i, IdxJ j, IdxK k) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_IJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJK, BODY>(body),
+    pi, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type j) const {
+  void operator()(IdxI i, IdxK k, IdxJ j) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_IKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKJ, BODY>(body),
+    pi, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type k) const {
+  void operator()(IdxJ j, IdxI i, IdxK k) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_JIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIK, BODY>(body),
+    pj, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type i) const {
+  void operator()(IdxJ j, IdxK k, IdxI i) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_JKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKI, BODY>(body),
+    pj, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type j) const {
+  void operator()(IdxK k, IdxI i, IdxJ j) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_KIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIJ, BODY>(body),
+    pk, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type i) const {
+  void operator()(IdxK k, IdxJ j, IdxI i) const {
     body(i, j, k);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK>
+RAJA_INLINE
+void forallN_permute(PERM_KJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJI, BODY>(body),
+    pk, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l) const {
+  void operator()(IdxI i, IdxJ j, IdxK k, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_IJKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJKL, BODY>(body),
+    pi, pj, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type l, Index_type k) const {
+  void operator()(IdxI i, IdxJ j, IdxL l, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_IJLK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJLK, BODY>(body),
+    pi, pj, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type j, Index_type l) const {
+  void operator()(IdxI i, IdxK k, IdxJ j, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_IKJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKJL, BODY>(body),
+    pi, pk, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type l, Index_type j) const {
+  void operator()(IdxI i, IdxK k, IdxL l, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_IKLJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKLJ, BODY>(body),
+    pi, pk, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type j, Index_type k) const {
+  void operator()(IdxI i, IdxL l, IdxJ j, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_ILJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILJK, BODY>(body),
+    pi, pl, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type k, Index_type j) const {
+  void operator()(IdxI i, IdxL l, IdxK k, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_ILKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILKJ, BODY>(body),
+    pi, pl, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type k, Index_type l) const {
+  void operator()(IdxJ j, IdxI i, IdxK k, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JIKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIKL, BODY>(body),
+    pj, pi, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type l, Index_type k) const {
+  void operator()(IdxJ j, IdxI i, IdxL l, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JILK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JILK, BODY>(body),
+    pj, pi, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type i, Index_type l) const {
+  void operator()(IdxJ j, IdxK k, IdxI i, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JKIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKIL, BODY>(body),
+    pj, pk, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type l, Index_type i) const {
+  void operator()(IdxJ j, IdxK k, IdxL l, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JKLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKLI, BODY>(body),
+    pj, pk, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type i, Index_type k) const {
+  void operator()(IdxJ j, IdxL l, IdxI i, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JLIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLIK, BODY>(body),
+    pj, pl, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type k, Index_type i) const {
+  void operator()(IdxJ j, IdxL l, IdxK k, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_JLKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLKI, BODY>(body),
+    pj, pl, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type j, Index_type l) const {
+  void operator()(IdxK k, IdxI i, IdxJ j, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KIJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIJL, BODY>(body),
+    pk, pi, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type l, Index_type j) const {
+  void operator()(IdxK k, IdxI i, IdxL l, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KILJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KILJ, BODY>(body),
+    pk, pi, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type i, Index_type l) const {
+  void operator()(IdxK k, IdxJ j, IdxI i, IdxL l) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KJIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJIL, BODY>(body),
+    pk, pj, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type l, Index_type i) const {
+  void operator()(IdxK k, IdxJ j, IdxL l, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KJLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJLI, BODY>(body),
+    pk, pj, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type i, Index_type j) const {
+  void operator()(IdxK k, IdxL l, IdxI i, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KLIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLIJ, BODY>(body),
+    pk, pl, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type j, Index_type i) const {
+  void operator()(IdxK k, IdxL l, IdxJ j, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_KLJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLJI, BODY>(body),
+    pk, pl, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type j, Index_type k) const {
+  void operator()(IdxL l, IdxI i, IdxJ j, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LIJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIJK, BODY>(body),
+    pl, pi, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type k, Index_type j) const {
+  void operator()(IdxL l, IdxI i, IdxK k, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LIKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIKJ, BODY>(body),
+    pl, pi, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type i, Index_type k) const {
+  void operator()(IdxL l, IdxJ j, IdxI i, IdxK k) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LJIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJIK, BODY>(body),
+    pl, pj, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type k, Index_type i) const {
+  void operator()(IdxL l, IdxJ j, IdxK k, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LJKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJKI, BODY>(body),
+    pl, pj, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type i, Index_type j) const {
+  void operator()(IdxL l, IdxK k, IdxI i, IdxJ j) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LKIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKIJ, BODY>(body),
+    pl, pk, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type j, Index_type i) const {
+  void operator()(IdxL l, IdxK k, IdxJ j, IdxI i) const {
     body(i, j, k, l);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL>
+RAJA_INLINE
+void forallN_permute(PERM_LKJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKJI, BODY>(body),
+    pl, pk, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKLM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type l, Index_type m) const {
+  void operator()(IdxI i, IdxJ j, IdxK k, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJKLM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJKLM, BODY>(body),
+    pi, pj, pk, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJKML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type k, Index_type m, Index_type l) const {
+  void operator()(IdxI i, IdxJ j, IdxK k, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pk, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJKML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJKML, BODY>(body),
+    pi, pj, pk, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type l, Index_type k, Index_type m) const {
+  void operator()(IdxI i, IdxJ j, IdxL l, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJLKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJLKM, BODY>(body),
+    pi, pj, pl, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJLMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type l, Index_type m, Index_type k) const {
+  void operator()(IdxI i, IdxJ j, IdxL l, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pl, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJLMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJLMK, BODY>(body),
+    pi, pj, pl, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type m, Index_type k, Index_type l) const {
+  void operator()(IdxI i, IdxJ j, IdxM m, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pm, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJMKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJMKL, BODY>(body),
+    pi, pj, pm, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IJMLK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type j, Index_type m, Index_type l, Index_type k) const {
+  void operator()(IdxI i, IdxJ j, IdxM m, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pj, pm, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IJMLK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IJMLK, BODY>(body),
+    pi, pj, pm, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJLM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type j, Index_type l, Index_type m) const {
+  void operator()(IdxI i, IdxK k, IdxJ j, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKJLM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKJLM, BODY>(body),
+    pi, pk, pj, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKJML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type j, Index_type m, Index_type l) const {
+  void operator()(IdxI i, IdxK k, IdxJ j, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pj, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKJML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKJML, BODY>(body),
+    pi, pk, pj, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type l, Index_type j, Index_type m) const {
+  void operator()(IdxI i, IdxK k, IdxL l, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKLJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKLJM, BODY>(body),
+    pi, pk, pl, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKLMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type l, Index_type m, Index_type j) const {
+  void operator()(IdxI i, IdxK k, IdxL l, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pl, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKLMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKLMJ, BODY>(body),
+    pi, pk, pl, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type m, Index_type j, Index_type l) const {
+  void operator()(IdxI i, IdxK k, IdxM m, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pm, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKMJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKMJL, BODY>(body),
+    pi, pk, pm, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IKMLJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type k, Index_type m, Index_type l, Index_type j) const {
+  void operator()(IdxI i, IdxK k, IdxM m, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pk, pm, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IKMLJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IKMLJ, BODY>(body),
+    pi, pk, pm, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type j, Index_type k, Index_type m) const {
+  void operator()(IdxI i, IdxL l, IdxJ j, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILJKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILJKM, BODY>(body),
+    pi, pl, pj, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILJMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type j, Index_type m, Index_type k) const {
+  void operator()(IdxI i, IdxL l, IdxJ j, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pj, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILJMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILJMK, BODY>(body),
+    pi, pl, pj, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type k, Index_type j, Index_type m) const {
+  void operator()(IdxI i, IdxL l, IdxK k, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILKJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILKJM, BODY>(body),
+    pi, pl, pk, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILKMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type k, Index_type m, Index_type j) const {
+  void operator()(IdxI i, IdxL l, IdxK k, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pk, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILKMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILKMJ, BODY>(body),
+    pi, pl, pk, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type m, Index_type j, Index_type k) const {
+  void operator()(IdxI i, IdxL l, IdxM m, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pm, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILMJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILMJK, BODY>(body),
+    pi, pl, pm, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_ILMKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type l, Index_type m, Index_type k, Index_type j) const {
+  void operator()(IdxI i, IdxL l, IdxM m, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pl, pm, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_ILMKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_ILMKJ, BODY>(body),
+    pi, pl, pm, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type j, Index_type k, Index_type l) const {
+  void operator()(IdxI i, IdxM m, IdxJ j, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pj, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMJKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMJKL, BODY>(body),
+    pi, pm, pj, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMJLK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type j, Index_type l, Index_type k) const {
+  void operator()(IdxI i, IdxM m, IdxJ j, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pj, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMJLK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMJLK, BODY>(body),
+    pi, pm, pj, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type k, Index_type j, Index_type l) const {
+  void operator()(IdxI i, IdxM m, IdxK k, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pk, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMKJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMKJL, BODY>(body),
+    pi, pm, pk, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMKLJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type k, Index_type l, Index_type j) const {
+  void operator()(IdxI i, IdxM m, IdxK k, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pk, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMKLJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMKLJ, BODY>(body),
+    pi, pm, pk, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type l, Index_type j, Index_type k) const {
+  void operator()(IdxI i, IdxM m, IdxL l, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pl, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMLJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMLJK, BODY>(body),
+    pi, pm, pl, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_IMLKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type i, Index_type m, Index_type l, Index_type k, Index_type j) const {
+  void operator()(IdxI i, IdxM m, IdxL l, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pi, pm, pl, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_IMLKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_IMLKJ, BODY>(body),
+    pi, pm, pl, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKLM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type k, Index_type l, Index_type m) const {
+  void operator()(IdxJ j, IdxI i, IdxK k, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JIKLM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIKLM, BODY>(body),
+    pj, pi, pk, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIKML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type k, Index_type m, Index_type l) const {
+  void operator()(IdxJ j, IdxI i, IdxK k, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pk, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JIKML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIKML, BODY>(body),
+    pj, pi, pk, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type l, Index_type k, Index_type m) const {
+  void operator()(IdxJ j, IdxI i, IdxL l, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JILKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JILKM, BODY>(body),
+    pj, pi, pl, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JILMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type l, Index_type m, Index_type k) const {
+  void operator()(IdxJ j, IdxI i, IdxL l, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pl, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JILMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JILMK, BODY>(body),
+    pj, pi, pl, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type m, Index_type k, Index_type l) const {
+  void operator()(IdxJ j, IdxI i, IdxM m, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pm, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JIMKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIMKL, BODY>(body),
+    pj, pi, pm, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JIMLK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type i, Index_type m, Index_type l, Index_type k) const {
+  void operator()(IdxJ j, IdxI i, IdxM m, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pi, pm, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JIMLK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JIMLK, BODY>(body),
+    pj, pi, pm, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKILM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type i, Index_type l, Index_type m) const {
+  void operator()(IdxJ j, IdxK k, IdxI i, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKILM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKILM, BODY>(body),
+    pj, pk, pi, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKIML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type i, Index_type m, Index_type l) const {
+  void operator()(IdxJ j, IdxK k, IdxI i, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pi, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKIML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKIML, BODY>(body),
+    pj, pk, pi, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type l, Index_type i, Index_type m) const {
+  void operator()(IdxJ j, IdxK k, IdxL l, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKLIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKLIM, BODY>(body),
+    pj, pk, pl, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKLMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type l, Index_type m, Index_type i) const {
+  void operator()(IdxJ j, IdxK k, IdxL l, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pl, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKLMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKLMI, BODY>(body),
+    pj, pk, pl, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type m, Index_type i, Index_type l) const {
+  void operator()(IdxJ j, IdxK k, IdxM m, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pm, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKMIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKMIL, BODY>(body),
+    pj, pk, pm, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JKMLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type k, Index_type m, Index_type l, Index_type i) const {
+  void operator()(IdxJ j, IdxK k, IdxM m, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pk, pm, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JKMLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JKMLI, BODY>(body),
+    pj, pk, pm, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type i, Index_type k, Index_type m) const {
+  void operator()(IdxJ j, IdxL l, IdxI i, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLIKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLIKM, BODY>(body),
+    pj, pl, pi, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLIMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type i, Index_type m, Index_type k) const {
+  void operator()(IdxJ j, IdxL l, IdxI i, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pi, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLIMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLIMK, BODY>(body),
+    pj, pl, pi, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type k, Index_type i, Index_type m) const {
+  void operator()(IdxJ j, IdxL l, IdxK k, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLKIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLKIM, BODY>(body),
+    pj, pl, pk, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLKMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type k, Index_type m, Index_type i) const {
+  void operator()(IdxJ j, IdxL l, IdxK k, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pk, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLKMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLKMI, BODY>(body),
+    pj, pl, pk, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type m, Index_type i, Index_type k) const {
+  void operator()(IdxJ j, IdxL l, IdxM m, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pm, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLMIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLMIK, BODY>(body),
+    pj, pl, pm, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JLMKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type l, Index_type m, Index_type k, Index_type i) const {
+  void operator()(IdxJ j, IdxL l, IdxM m, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pl, pm, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JLMKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JLMKI, BODY>(body),
+    pj, pl, pm, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMIKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type i, Index_type k, Index_type l) const {
+  void operator()(IdxJ j, IdxM m, IdxI i, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pi, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMIKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMIKL, BODY>(body),
+    pj, pm, pi, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMILK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type i, Index_type l, Index_type k) const {
+  void operator()(IdxJ j, IdxM m, IdxI i, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pi, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMILK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMILK, BODY>(body),
+    pj, pm, pi, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type k, Index_type i, Index_type l) const {
+  void operator()(IdxJ j, IdxM m, IdxK k, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pk, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMKIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMKIL, BODY>(body),
+    pj, pm, pk, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMKLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type k, Index_type l, Index_type i) const {
+  void operator()(IdxJ j, IdxM m, IdxK k, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pk, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMKLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMKLI, BODY>(body),
+    pj, pm, pk, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type l, Index_type i, Index_type k) const {
+  void operator()(IdxJ j, IdxM m, IdxL l, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pl, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMLIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMLIK, BODY>(body),
+    pj, pm, pl, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_JMLKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type j, Index_type m, Index_type l, Index_type k, Index_type i) const {
+  void operator()(IdxJ j, IdxM m, IdxL l, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pj, pm, pl, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_JMLKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_JMLKI, BODY>(body),
+    pj, pm, pl, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJLM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type j, Index_type l, Index_type m) const {
+  void operator()(IdxK k, IdxI i, IdxJ j, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KIJLM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIJLM, BODY>(body),
+    pk, pi, pj, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIJML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type j, Index_type m, Index_type l) const {
+  void operator()(IdxK k, IdxI i, IdxJ j, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pj, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KIJML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIJML, BODY>(body),
+    pk, pi, pj, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type l, Index_type j, Index_type m) const {
+  void operator()(IdxK k, IdxI i, IdxL l, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KILJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KILJM, BODY>(body),
+    pk, pi, pl, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KILMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type l, Index_type m, Index_type j) const {
+  void operator()(IdxK k, IdxI i, IdxL l, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pl, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KILMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KILMJ, BODY>(body),
+    pk, pi, pl, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type m, Index_type j, Index_type l) const {
+  void operator()(IdxK k, IdxI i, IdxM m, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pm, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KIMJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIMJL, BODY>(body),
+    pk, pi, pm, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KIMLJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type i, Index_type m, Index_type l, Index_type j) const {
+  void operator()(IdxK k, IdxI i, IdxM m, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pi, pm, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KIMLJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KIMLJ, BODY>(body),
+    pk, pi, pm, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJILM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type i, Index_type l, Index_type m) const {
+  void operator()(IdxK k, IdxJ j, IdxI i, IdxL l, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pl, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJILM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJILM, BODY>(body),
+    pk, pj, pi, pl, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJIML, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type i, Index_type m, Index_type l) const {
+  void operator()(IdxK k, IdxJ j, IdxI i, IdxM m, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pi, pm, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJIML, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJIML, BODY>(body),
+    pk, pj, pi, pm, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type l, Index_type i, Index_type m) const {
+  void operator()(IdxK k, IdxJ j, IdxL l, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJLIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJLIM, BODY>(body),
+    pk, pj, pl, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJLMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type l, Index_type m, Index_type i) const {
+  void operator()(IdxK k, IdxJ j, IdxL l, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pl, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJLMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJLMI, BODY>(body),
+    pk, pj, pl, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type m, Index_type i, Index_type l) const {
+  void operator()(IdxK k, IdxJ j, IdxM m, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pm, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJMIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJMIL, BODY>(body),
+    pk, pj, pm, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KJMLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type j, Index_type m, Index_type l, Index_type i) const {
+  void operator()(IdxK k, IdxJ j, IdxM m, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pj, pm, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KJMLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KJMLI, BODY>(body),
+    pk, pj, pm, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type i, Index_type j, Index_type m) const {
+  void operator()(IdxK k, IdxL l, IdxI i, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLIJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLIJM, BODY>(body),
+    pk, pl, pi, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLIMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type i, Index_type m, Index_type j) const {
+  void operator()(IdxK k, IdxL l, IdxI i, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pi, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLIMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLIMJ, BODY>(body),
+    pk, pl, pi, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type j, Index_type i, Index_type m) const {
+  void operator()(IdxK k, IdxL l, IdxJ j, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLJIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLJIM, BODY>(body),
+    pk, pl, pj, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLJMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type j, Index_type m, Index_type i) const {
+  void operator()(IdxK k, IdxL l, IdxJ j, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pj, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLJMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLJMI, BODY>(body),
+    pk, pl, pj, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type m, Index_type i, Index_type j) const {
+  void operator()(IdxK k, IdxL l, IdxM m, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pm, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLMIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLMIJ, BODY>(body),
+    pk, pl, pm, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KLMJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type l, Index_type m, Index_type j, Index_type i) const {
+  void operator()(IdxK k, IdxL l, IdxM m, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pl, pm, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KLMJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KLMJI, BODY>(body),
+    pk, pl, pm, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMIJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type i, Index_type j, Index_type l) const {
+  void operator()(IdxK k, IdxM m, IdxI i, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pi, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMIJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMIJL, BODY>(body),
+    pk, pm, pi, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMILJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type i, Index_type l, Index_type j) const {
+  void operator()(IdxK k, IdxM m, IdxI i, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pi, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMILJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMILJ, BODY>(body),
+    pk, pm, pi, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type j, Index_type i, Index_type l) const {
+  void operator()(IdxK k, IdxM m, IdxJ j, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pj, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMJIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMJIL, BODY>(body),
+    pk, pm, pj, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMJLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type j, Index_type l, Index_type i) const {
+  void operator()(IdxK k, IdxM m, IdxJ j, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pj, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMJLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMJLI, BODY>(body),
+    pk, pm, pj, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type l, Index_type i, Index_type j) const {
+  void operator()(IdxK k, IdxM m, IdxL l, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pl, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMLIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMLIJ, BODY>(body),
+    pk, pm, pl, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_KMLJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type k, Index_type m, Index_type l, Index_type j, Index_type i) const {
+  void operator()(IdxK k, IdxM m, IdxL l, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pk, pm, pl, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_KMLJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_KMLJI, BODY>(body),
+    pk, pm, pl, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type j, Index_type k, Index_type m) const {
+  void operator()(IdxL l, IdxI i, IdxJ j, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIJKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIJKM, BODY>(body),
+    pl, pi, pj, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIJMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type j, Index_type m, Index_type k) const {
+  void operator()(IdxL l, IdxI i, IdxJ j, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pj, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIJMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIJMK, BODY>(body),
+    pl, pi, pj, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type k, Index_type j, Index_type m) const {
+  void operator()(IdxL l, IdxI i, IdxK k, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIKJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIKJM, BODY>(body),
+    pl, pi, pk, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIKMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type k, Index_type m, Index_type j) const {
+  void operator()(IdxL l, IdxI i, IdxK k, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pk, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIKMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIKMJ, BODY>(body),
+    pl, pi, pk, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type m, Index_type j, Index_type k) const {
+  void operator()(IdxL l, IdxI i, IdxM m, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pm, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIMJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIMJK, BODY>(body),
+    pl, pi, pm, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LIMKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type i, Index_type m, Index_type k, Index_type j) const {
+  void operator()(IdxL l, IdxI i, IdxM m, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pi, pm, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LIMKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LIMKJ, BODY>(body),
+    pl, pi, pm, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIKM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type i, Index_type k, Index_type m) const {
+  void operator()(IdxL l, IdxJ j, IdxI i, IdxK k, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pk, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJIKM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJIKM, BODY>(body),
+    pl, pj, pi, pk, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJIMK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type i, Index_type m, Index_type k) const {
+  void operator()(IdxL l, IdxJ j, IdxI i, IdxM m, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pi, pm, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJIMK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJIMK, BODY>(body),
+    pl, pj, pi, pm, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type k, Index_type i, Index_type m) const {
+  void operator()(IdxL l, IdxJ j, IdxK k, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJKIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJKIM, BODY>(body),
+    pl, pj, pk, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJKMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type k, Index_type m, Index_type i) const {
+  void operator()(IdxL l, IdxJ j, IdxK k, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pk, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJKMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJKMI, BODY>(body),
+    pl, pj, pk, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type m, Index_type i, Index_type k) const {
+  void operator()(IdxL l, IdxJ j, IdxM m, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pm, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJMIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJMIK, BODY>(body),
+    pl, pj, pm, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LJMKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type j, Index_type m, Index_type k, Index_type i) const {
+  void operator()(IdxL l, IdxJ j, IdxM m, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pj, pm, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LJMKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LJMKI, BODY>(body),
+    pl, pj, pm, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIJM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type i, Index_type j, Index_type m) const {
+  void operator()(IdxL l, IdxK k, IdxI i, IdxJ j, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pj, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKIJM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKIJM, BODY>(body),
+    pl, pk, pi, pj, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKIMJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type i, Index_type m, Index_type j) const {
+  void operator()(IdxL l, IdxK k, IdxI i, IdxM m, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pi, pm, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKIMJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKIMJ, BODY>(body),
+    pl, pk, pi, pm, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJIM, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type j, Index_type i, Index_type m) const {
+  void operator()(IdxL l, IdxK k, IdxJ j, IdxI i, IdxM m) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pi, pm);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKJIM, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKJIM, BODY>(body),
+    pl, pk, pj, pi, pm
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKJMI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type j, Index_type m, Index_type i) const {
+  void operator()(IdxL l, IdxK k, IdxJ j, IdxM m, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pj, pm, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKJMI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKJMI, BODY>(body),
+    pl, pk, pj, pm, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type m, Index_type i, Index_type j) const {
+  void operator()(IdxL l, IdxK k, IdxM m, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pm, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKMIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKMIJ, BODY>(body),
+    pl, pk, pm, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LKMJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type k, Index_type m, Index_type j, Index_type i) const {
+  void operator()(IdxL l, IdxK k, IdxM m, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pk, pm, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LKMJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LKMJI, BODY>(body),
+    pl, pk, pm, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type i, Index_type j, Index_type k) const {
+  void operator()(IdxL l, IdxM m, IdxI i, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pi, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMIJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMIJK, BODY>(body),
+    pl, pm, pi, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMIKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type i, Index_type k, Index_type j) const {
+  void operator()(IdxL l, IdxM m, IdxI i, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pi, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMIKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMIKJ, BODY>(body),
+    pl, pm, pi, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type j, Index_type i, Index_type k) const {
+  void operator()(IdxL l, IdxM m, IdxJ j, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pj, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMJIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMJIK, BODY>(body),
+    pl, pm, pj, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMJKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type j, Index_type k, Index_type i) const {
+  void operator()(IdxL l, IdxM m, IdxJ j, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pj, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMJKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMJKI, BODY>(body),
+    pl, pm, pj, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type k, Index_type i, Index_type j) const {
+  void operator()(IdxL l, IdxM m, IdxK k, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pk, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMKIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMKIJ, BODY>(body),
+    pl, pm, pk, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_LMKJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type l, Index_type m, Index_type k, Index_type j, Index_type i) const {
+  void operator()(IdxL l, IdxM m, IdxK k, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pl, pm, pk, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_LMKJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_LMKJI, BODY>(body),
+    pl, pm, pk, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type j, Index_type k, Index_type l) const {
+  void operator()(IdxM m, IdxI i, IdxJ j, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pj, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MIJKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MIJKL, BODY>(body),
+    pm, pi, pj, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIJLK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type j, Index_type l, Index_type k) const {
+  void operator()(IdxM m, IdxI i, IdxJ j, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pj, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MIJLK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MIJLK, BODY>(body),
+    pm, pi, pj, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type k, Index_type j, Index_type l) const {
+  void operator()(IdxM m, IdxI i, IdxK k, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pk, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MIKJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MIKJL, BODY>(body),
+    pm, pi, pk, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MIKLJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type k, Index_type l, Index_type j) const {
+  void operator()(IdxM m, IdxI i, IdxK k, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pk, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MIKLJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MIKLJ, BODY>(body),
+    pm, pi, pk, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type l, Index_type j, Index_type k) const {
+  void operator()(IdxM m, IdxI i, IdxL l, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pl, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MILJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MILJK, BODY>(body),
+    pm, pi, pl, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MILKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type i, Index_type l, Index_type k, Index_type j) const {
+  void operator()(IdxM m, IdxI i, IdxL l, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pi, pl, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MILKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MILKJ, BODY>(body),
+    pm, pi, pl, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJIKL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type i, Index_type k, Index_type l) const {
+  void operator()(IdxM m, IdxJ j, IdxI i, IdxK k, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pi, pk, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJIKL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJIKL, BODY>(body),
+    pm, pj, pi, pk, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJILK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type i, Index_type l, Index_type k) const {
+  void operator()(IdxM m, IdxJ j, IdxI i, IdxL l, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pi, pl, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJILK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJILK, BODY>(body),
+    pm, pj, pi, pl, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type k, Index_type i, Index_type l) const {
+  void operator()(IdxM m, IdxJ j, IdxK k, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pk, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJKIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJKIL, BODY>(body),
+    pm, pj, pk, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJKLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type k, Index_type l, Index_type i) const {
+  void operator()(IdxM m, IdxJ j, IdxK k, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pk, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJKLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJKLI, BODY>(body),
+    pm, pj, pk, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type l, Index_type i, Index_type k) const {
+  void operator()(IdxM m, IdxJ j, IdxL l, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pl, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJLIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJLIK, BODY>(body),
+    pm, pj, pl, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MJLKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type j, Index_type l, Index_type k, Index_type i) const {
+  void operator()(IdxM m, IdxJ j, IdxL l, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pj, pl, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MJLKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MJLKI, BODY>(body),
+    pm, pj, pl, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKIJL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type i, Index_type j, Index_type l) const {
+  void operator()(IdxM m, IdxK k, IdxI i, IdxJ j, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pi, pj, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKIJL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKIJL, BODY>(body),
+    pm, pk, pi, pj, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKILJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type i, Index_type l, Index_type j) const {
+  void operator()(IdxM m, IdxK k, IdxI i, IdxL l, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pi, pl, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKILJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKILJ, BODY>(body),
+    pm, pk, pi, pl, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJIL, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type j, Index_type i, Index_type l) const {
+  void operator()(IdxM m, IdxK k, IdxJ j, IdxI i, IdxL l) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pj, pi, pl);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKJIL, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKJIL, BODY>(body),
+    pm, pk, pj, pi, pl
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKJLI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type j, Index_type l, Index_type i) const {
+  void operator()(IdxM m, IdxK k, IdxJ j, IdxL l, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pj, pl, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKJLI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKJLI, BODY>(body),
+    pm, pk, pj, pl, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type l, Index_type i, Index_type j) const {
+  void operator()(IdxM m, IdxK k, IdxL l, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pl, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKLIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKLIJ, BODY>(body),
+    pm, pk, pl, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MKLJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type k, Index_type l, Index_type j, Index_type i) const {
+  void operator()(IdxM m, IdxK k, IdxL l, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pk, pl, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MKLJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MKLJI, BODY>(body),
+    pm, pk, pl, pj, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIJK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type i, Index_type j, Index_type k) const {
+  void operator()(IdxM m, IdxL l, IdxI i, IdxJ j, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pi, pj, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLIJK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLIJK, BODY>(body),
+    pm, pl, pi, pj, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLIKJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type i, Index_type k, Index_type j) const {
+  void operator()(IdxM m, IdxL l, IdxI i, IdxK k, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pi, pk, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLIKJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLIKJ, BODY>(body),
+    pm, pl, pi, pk, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJIK, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type j, Index_type i, Index_type k) const {
+  void operator()(IdxM m, IdxL l, IdxJ j, IdxI i, IdxK k) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pj, pi, pk);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLJIK, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLJIK, BODY>(body),
+    pm, pl, pj, pi, pk
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLJKI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type j, Index_type k, Index_type i) const {
+  void operator()(IdxM m, IdxL l, IdxJ j, IdxK k, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pj, pk, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLJKI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLJKI, BODY>(body),
+    pm, pl, pj, pk, pi
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKIJ, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type k, Index_type i, Index_type j) const {
+  void operator()(IdxM m, IdxL l, IdxK k, IdxI i, IdxJ j) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pk, pi, pj);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLKIJ, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLKIJ, BODY>(body),
+    pm, pl, pk, pi, pj
+  );
+}
 
     
 
 template<typename BODY>
 struct ForallN_Permute_Functor<PERM_MLKJI, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<typename IdxI, typename IdxJ, typename IdxK, typename IdxL, typename IdxM>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
-  void operator()(Index_type m, Index_type l, Index_type k, Index_type j, Index_type i) const {
+  void operator()(IdxM m, IdxL l, IdxK k, IdxJ j, IdxI i) const {
     body(i, j, k, l, m);
   }
-  
-  template<typename NextPolicy, typename TAG, typename PI, typename PJ, typename PK, typename PL, typename PM>
-  RAJA_INLINE
-  void callNextPolicy(PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm) const {
-    forallN_policy<NextPolicy>(TAG(), *this, pm, pl, pk, pj, pi);
-  }
-  
-  BODY body;
 };
+
+
+template<typename NextPolicy, typename BODY, typename PI, typename PJ, typename PK, typename PL, typename PM>
+RAJA_INLINE
+void forallN_permute(PERM_MLKJI, BODY const &body, PI const &pi, PJ const &pj, PK const &pk, PL const &pl, PM const &pm){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<PERM_MLKJI, BODY>(body),
+    pm, pl, pk, pj, pi
+  );
+}
 
     
 
 
 } // namespace RAJA
-  
+
+#include "forallN_permute_lf.hxx"
+
 #endif
 
