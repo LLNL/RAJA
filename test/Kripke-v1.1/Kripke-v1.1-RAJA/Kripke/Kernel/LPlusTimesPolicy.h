@@ -54,9 +54,9 @@ template<>
 struct LPlusTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy< 
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec, 
                                                        RAJA::simd_exec>,
-                                        RAJA::OMP_Parallel<
+                                        kripke_OMP_Parallel<
                                           RAJA::Tile<
                                             RAJA::TileList<RAJA::tile_none, 
                                                            RAJA::tile_none, 
@@ -75,7 +75,7 @@ struct LPlusTimesPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_LIJK>
                                       >
 {};
@@ -84,7 +84,7 @@ template<>
 struct LPlusTimesPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec, 
                                                        RAJA::seq_exec>, 
                                         RAJA::Permute<RAJA::PERM_KIJL>
                                       >
@@ -94,18 +94,18 @@ template<>
 struct LPlusTimesPolicy<NEST_GZD_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_KLIJ>
                                       >
 {};
 
 template<>
 struct LPlusTimesPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::omp_for_nowait_exec, 
+                                        RAJA::ExecList<kripke_omp_for_nowait_exec, 
                                                        RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_LIJK>
                                       >
 {};
@@ -114,8 +114,8 @@ template<>
 struct LPlusTimesPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<
                                         RAJA::ExecList<RAJA::seq_exec, 
                                                        RAJA::seq_exec, 
-                                                       RAJA::omp_for_nowait_exec, 
-                                                       RAJA::omp_for_nowait_exec>, 
+                                                       kripke_omp_for_nowait_exec, 
+                                                       kripke_omp_for_nowait_exec>, 
                                         RAJA::Permute<RAJA::PERM_LKIJ>
                                       >
 {};
