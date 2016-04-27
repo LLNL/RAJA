@@ -1,3 +1,13 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file containing tiling policies and mechanics.
+ *
+ ******************************************************************************
+ */
+
 #ifndef RAJA_forallN_tile_HXX__
 #define RAJA_forallN_tile_HXX__
 

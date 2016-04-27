@@ -14,6 +14,8 @@
 #ifndef RAJA_forall_openmp_HXX
 #define RAJA_forall_openmp_HXX
 
+#if defined(RAJA_USE_OPENMP)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -1195,5 +1197,7 @@ void forall_segments(omp_taskgraph_interval_segit,
 
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for if defined(RAJA_USE_OPENMP) 
 
 #endif  // closing endif for header file include guard

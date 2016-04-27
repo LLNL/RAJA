@@ -23,11 +23,6 @@ Adam Kunen (kunen1@llnl.gov)
 Olga Pearce (pearce8@llnl.gov)
 Tom Scogland (scogland1@llnl.gov)
 
-If you have questions, find a bug, or have ideas about expanding the
-functionality or applicability of RAJA and are interested in contributing
-to its development, please do not hesitate to contact us. We are always
-interested in improving RAJA and exploring new ways to use it.
-
 *******************************************************************************
 
 Redistribution and use in source and binary forms, with or without 

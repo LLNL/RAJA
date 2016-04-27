@@ -12,6 +12,8 @@
 #ifndef RAJA_MemUtils_CUDA_HXX
 #define RAJA_MemUtils_CUDA_HXX
 
+#if defined(RAJA_USE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -56,8 +58,6 @@
 
 #include "RAJA/config.hxx"
 
-
-#if defined(RAJA_USE_CUDA)
 
 namespace RAJA {
 
