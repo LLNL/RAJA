@@ -41,18 +41,21 @@
 #
 ###############################################################################
 
-add_executable(lulesh-OMP.exe
-  luleshOMP.cc)
 
-target_link_libraries(lulesh-OMP.exe
-  ${RT_LIBRARIES})
+if(RAJA_USE_OPENMP)
+  add_executable(lulesh-OMP.exe
+    luleshOMP.cc)
 
-add_executable(lulesh-OMP_NG.exe
-  luleshOMP_NG.cc)
+  target_link_libraries(lulesh-OMP.exe
+    ${RT_LIBRARIES})
 
-target_link_libraries(
-  lulesh-OMP_NG.exe
-  ${RT_LIBRARIES})
+  add_executable(lulesh-OMP_NG.exe
+    luleshOMP_NG.cc)
+
+  target_link_libraries(
+    lulesh-OMP_NG.exe
+    ${RT_LIBRARIES})
+endif()
 
 add_executable(lulesh-serial.exe
   lulesh.cc)
