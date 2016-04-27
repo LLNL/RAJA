@@ -46,6 +46,8 @@
 #include<RAJA/config.hxx>
 #include<RAJA/int_datatypes.hxx>
 
+#include<omp.h>
+
 namespace RAJA {
 
 
@@ -72,96 +74,94 @@ struct OMP_Parallel {
 
 struct omp_collapse_nowait_exec {};
 
-template<typename ... PREST>
+template<typename IdxI, typename IdxJ, typename ... PREST>
 struct ForallN_Executor<
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxI>,
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxJ>,
   PREST... > 
 {
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset0;  
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset1;  
- 
-  typedef ForallN_Executor<PREST...> NextExec;
-  NextExec next_exec;
-  
-  RAJA_INLINE
-  constexpr
-  ForallN_Executor(
-    ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset0_,  
-    ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset1_,
-    PREST const &... prest) 
-    :  iset0(iset0_), iset1(iset1_), next_exec(prest...) 
-  { }
 
   template<typename BODY>
   RAJA_INLINE
-  void operator()(BODY body) const {
+  void operator()(BODY body,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxI> iset_i,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxJ> iset_j,
+      PREST ... prest) const
+  {
     
-    int begin_i = iset0.getBegin();
-    int begin_j = iset1.getBegin();
-    int end_i = iset0.getEnd();
-    int end_j = iset1.getEnd();
+    int begin_i = iset_i.getBegin();
+    int begin_j = iset_j.getBegin();
+    int end_i = iset_i.getEnd();
+    int end_j = iset_j.getEnd();
     
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-    
-#pragma omp for nowait collapse(2)
+    using BindI = ForallN_BindFirstArg_HostDevice<BODY, IdxI>;
+    using BindJ = ForallN_BindFirstArg_HostDevice<BindI, IdxJ>;
+
+#pragma omp for collapse(2) schedule(static)
     for(int i = begin_i;i < end_i;++ i){
       for(int j = begin_j;j < end_j;++ j){
-        outer(i,j);
+
+        // Bind the two known values
+        BindI bound_i(body, IdxI(i));
+        BindJ bound_ij(bound_i, IdxJ(j));
+
+        // Execute the next inner loop nests
+        ForallN_Executor<PREST...> next_exec;
+        next_exec(bound_ij, prest...);
+
       }
     }
   }
 };
 
-template<typename ... PREST>
+template<typename IdxI, typename IdxJ, typename IdxK, typename ... PREST>
 struct ForallN_Executor<
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment>,
-  PREST... > 
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxI>,
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxJ>,
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxK>,
+  PREST... >
 {
-
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset0;  
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset1;  
-  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset2;  
-  
-  typedef ForallN_Executor<PREST...> NextExec;
-  NextExec next_exec;
-  
-  RAJA_INLINE
-  constexpr
-  ForallN_Executor(
-    ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset0_,  
-    ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset1_,  
-    ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> const &iset2_,
-    PREST ... prest) 
-    :  iset0(iset0_), iset1(iset1_), iset2(iset2_), next_exec(prest...)
-  { }
 
   template<typename BODY>
   RAJA_INLINE
-  void operator()(BODY body) const {
-    
-    int begin_i = iset0.getBegin();
-    int begin_j = iset1.getBegin();
-    int begin_k = iset2.getBegin();
-    int end_i = iset0.getEnd();
-    int end_j = iset1.getEnd();
-    int end_k = iset2.getEnd();
-    
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-    
-#pragma omp for nowait collapse(3)
+  void operator()(BODY body,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxI> iset_i,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxJ> iset_j,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment, IdxK> iset_k,
+      PREST ... prest) const
+  {
+
+    int begin_i = iset_i.getBegin();
+    int begin_j = iset_j.getBegin();
+    int begin_k = iset_k.getBegin();
+    int end_i = iset_i.getEnd();
+    int end_j = iset_j.getEnd();
+    int end_k = iset_k.getEnd();
+
+    ForallN_Executor<PREST...> next_exec;
+
+    using BindI = ForallN_BindFirstArg_HostDevice<BODY, IdxI>;
+    using BindJ = ForallN_BindFirstArg_HostDevice<BindI, IdxJ>;
+    using BindK = ForallN_BindFirstArg_HostDevice<BindJ, IdxK>;
+
+#pragma omp for nowait collapse(3) schedule(static)
     for(int i = begin_i;i < end_i;++ i){
       for(int j = begin_j;j < end_j;++ j){
         for(int k = begin_k;k < end_k;++ k){
-          outer(i,j,k);    
+          // Bind the three known values
+          BindI bound_i(body, IdxI(i));
+          BindJ bound_ij(bound_i, IdxJ(j));
+          BindK bound_ijk(bound_ij, IdxK(k));
+
+          // Execute the next inner loop nests
+          next_exec(bound_ijk, prest...);
         }
       }
     }
-  
   }
 };
+
+
 
 /******************************************************************
  *  forallN_policy(), OpenMP Parallel Region execution
@@ -175,10 +175,12 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag, BODY body, PARGS ... p
   typedef typename POLICY::NextPolicy            NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
+
 #pragma omp parallel
   {
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }
+
 }
 
 

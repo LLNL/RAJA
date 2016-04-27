@@ -37,6 +37,7 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 
+
 ///////////////////////////////////////////////////////////////////////////
 //
 // Method that defines and runs a basic RAJA 2d kernel test

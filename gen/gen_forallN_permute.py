@@ -57,6 +57,7 @@ def writeForallPermutations(ndims):
   dim_names = getDimNames(ndims)
   
   # Create common strings to all perms
+  func_template = ", ".join(map(lambda a: "typename Idx%s"%(a.upper()) , dim_names))
   body_args     = ", ".join(dim_names)  
   next_template = ", ".join(map(lambda a: "typename P%s"%a.upper() , dim_names))
   next_param    = ", ".join(map(lambda a: "P%s const &p%s"%(a.upper(), a) , dim_names))
@@ -68,7 +69,7 @@ def writeForallPermutations(ndims):
     enum_name = getEnumName(perm)
     
     # Compute permuted arguments
-    func_param   = ", ".join(map(lambda a: "Index_type %s"%a , perm))  
+    func_param    = ", ".join(map(lambda a: "Idx%s %s"%(a.upper(),a) , perm))
     policy_args   = ", ".join(map(lambda a: "p%s"%a , perm))
     
     # Print header for functor
@@ -76,26 +77,35 @@ def writeForallPermutations(ndims):
 template<typename BODY>
 struct ForallN_Permute_Functor<%s, BODY>{
 
+  BODY body;
+
   RAJA_INLINE
   constexpr
   explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  template<%s>
   RAJA_INLINE
   RAJA_HOST_DEVICE 
   void operator()(%s) const {
     body(%s);
   }
-  
-  template<typename NextPolicy, typename TAG, %s>
-  RAJA_INLINE
-  void callNextPolicy(%s) const {
-    forallN_policy<NextPolicy>(TAG(), *this, %s);
-  }
-  
-  BODY body;
 };
 
-    """ % (enum_name, func_param, body_args, next_template, next_param, policy_args)
+
+template<typename NextPolicy, typename BODY, %s>
+RAJA_INLINE
+void forallN_permute(%s, BODY const &body, %s){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<%s, BODY>(body),
+    %s
+  );
+}
+
+    """ % (enum_name, func_template, func_param, body_args, next_template, enum_name, next_param, enum_name, policy_args)
     
 
 
@@ -107,9 +117,12 @@ def main(ndims):
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include "forallN_permute_lf.hxx"
-
 namespace RAJA {
+
+
+template<typename PERM, typename BODY>
+struct ForallN_Permute_Functor;
+
 
 """ % notice
   ndims_list = range(2,ndims+1)
@@ -121,7 +134,9 @@ namespace RAJA {
   print """
 
 } // namespace RAJA
-  
+
+#include "forallN_permute_lf.hxx"
+
 #endif
 """
 

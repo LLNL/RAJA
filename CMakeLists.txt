@@ -40,9 +40,10 @@
 # 
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.1)
 
 project(RAJA LANGUAGES CXX)
+set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
@@ -52,6 +53,40 @@ enable_testing()
 set(RAJA_VERSION_MAJOR 1)
 set(RAJA_VERSION_MINOR 0)
 set(RAJA_VERSION_PATCHLEVEL 0)
+
+# Setup some defaults if no host-config used
+if(NOT RAJA_HOST_CONFIG_LOADED)
+# Default build type
+  if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE Release)
+  endif()
+
+  # Default constants
+  if(NOT RAJA_RANGE_ALIGN)
+    set(RAJA_RANGE_ALIGN 4)
+  endif()
+  if(NOT RAJA_RANGE_MIN_LENGTH)
+    set(RAJA_RANGE_MIN_LENGTH 32)
+  endif()
+  if(NOT RAJA_DATA_ALGN)
+    set(RAJA_DATA_ALIGN 64)
+  endif()
+  if(NOT RAJA_COHERENCE_BLOCK_SIZE)
+    set(RAJA_COHERENCE_BLOCK_SIZE 64)
+  endif()
+
+  # Set up RAJA_COMPILER
+  if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+    set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+    set(RAJA_COMPILER "RAJA_COMPILER_GNU")
+  elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+    set(RAJA_COMPILER "RAJA_COMPILER_INTEL")
+  endif()
+
+  # Use OpenMP by default
+  set(RAJA_USE_OPENMP On)
+endif()
 
 # We need to find the packages _after_ the CMake starts up, so this isn't in
 # a host-config file.
@@ -63,6 +98,7 @@ if (RAJA_USE_OPENMP)
     message(STATUS "OpenMP Enabled")
   else()
     message(WARNING "OpenMP NOT FOUND")
+    set(RAJA_USE_OPENMP Off)
   endif()
 endif()
 
@@ -78,13 +114,6 @@ endif()
 
 # Used for timing
 find_library(RT_LIBRARIES rt)
-
-
-# Set Release as the default build type
-if(NOT CMAKE_BUILD_TYPE)
-  message(STATUS "Setting build type to 'Release' as none was specified.")
-  set(CMAKE_BUILD_TYPE Release CACHE STRING "Choose the type of build." FORCE)
-endif()
 
 #
 # Configure all variables in the code 

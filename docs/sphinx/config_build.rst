@@ -77,8 +77,15 @@ Configuring the code can be done in a couple of ways depending on your needs.
     $ my-awesome-build
     $ cd my-awesome-build
 
-  Then, invoke CMake and specify the build type and cache file you want and
-  the location of the top-level RAJA CMakeLists.txt file; for example ::
+  Then, you can invoke CMake without any arguments to pick a default 
+  compiler on your platform based on your environment; e.g., on a linux
+  system, GNU is the default compiler choice ::
+
+    $ use gcc-4.9.3p
+    $ cmake ../
+
+  You can also invoke CMake directly and specify the build type and host-config
+  file you want; for example ::
 
     $ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
 

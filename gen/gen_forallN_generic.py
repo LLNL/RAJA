@@ -85,16 +85,7 @@ def writeUserIface(ndims):
   for i in range(0,ndims):
     d = dim_names[i]
     print "  using Policy%s = typename std::tuple_element<%d, typename ExecPolicies::tuple>::type;" % (d.upper(), i)
-
-    
-  args = map(lambda a: "Idx%s"%(a.upper()), dim_names)
-  argstr = ", ".join(args)  
-  print """  
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, %s> IDX_CONV;
-  IDX_CONV lamb(body);
-""" % argstr
-
+  print ""
 
   print "  // call policy layer with next policy"
 
@@ -103,9 +94,9 @@ def writeUserIface(ndims):
   args = map(lambda a: "is_"+a, dim_names)
   isetstr = ", ".join(args)
   
-  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb"
+  outstr = "  forallN_policy<NextPolicy>(NextPolicyTag(), body"
   for d in dim_names:
-    outstr += ",\n    ForallN_PolicyPair<Policy%s, T%s>(is_%s)" % (d.upper(), d.upper(), d)
+    outstr += ",\n    ForallN_PolicyPair<Policy%s, T%s, Idx%s>(is_%s)" % (d.upper(), d.upper(), d.upper(), d)
   print outstr + ");"
   
   print "}"
@@ -145,14 +136,6 @@ def writeUserIfaceAutoDeduce(ndims):
     d = dim_names[i]
     print "  using Policy%s = typename std::tuple_element<%d, typename ExecPolicies::tuple>::type;" % (d.upper(), i)
 
-    
-  args = map(lambda a: "Idx%s"%(a.upper()), dim_names)
-  argstr = ", ".join(args)  
-  print """  
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, %s> IDX_CONV;
-  IDX_CONV lamb(body);
-""" % argstr
 
 
   print "  // call policy layer with next policy"
@@ -162,7 +145,7 @@ def writeUserIfaceAutoDeduce(ndims):
   args = map(lambda a: "is_"+a, dim_names)
   isetstr = ", ".join(args)
   
-  outstr = "  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), lamb"
+  outstr = "  forallN_policy<NextPolicy>(NextPolicyTag(), body"
   for d in dim_names:
     outstr += ",\n    ForallN_PolicyPair<Policy%s, T%s>(is_%s)" % (d.upper(), d.upper(), d)
   print outstr + ");"
