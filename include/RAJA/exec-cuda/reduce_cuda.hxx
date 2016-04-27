@@ -14,6 +14,8 @@
 #ifndef RAJA_reduce_cuda_HXX
 #define RAJA_reduce_cuda_HXX
 
+#if defined(RAJA_USE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -695,5 +697,7 @@ private:
 
 }  // closing brace for RAJA namespace
 
+
+#endif  // closing endif for RAJA_USE_CUDA guard
 
 #endif  // closing endif for header file include guard
