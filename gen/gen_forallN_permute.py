@@ -1,14 +1,49 @@
 #!/usr/bin/env python
 
-#
-# Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-#
-# Produced at the Lawrence Livermore National Laboratory.
-#
-# All rights reserved.
-#
-# For release details and restrictions, please see raja/README-license.txt
-#
+notice= """
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// 
+// Produced at the Lawrence Livermore National Laboratory
+// 
+// LLNL-CODE-689114
+// 
+// All rights reserved.
+// 
+// This file is part of RAJA. 
+// 
+// For additional details, please also read raja/README-license.txt.
+// 
+// Redistribution and use in source and binary forms, with or without 
+// modification, are permitted provided that the following conditions are met:
+// 
+// * Redistributions of source code must retain the above copyright notice, 
+//   this list of conditions and the disclaimer below.
+// 
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the disclaimer (as noted below) in the
+//   documentation and/or other materials provided with the distribution.
+// 
+// * Neither the name of the LLNS/LLNL nor the names of its contributors may
+//   be used to endorse or promote products derived from this software without
+//   specific prior written permission.
+// 
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
+// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL 
+// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, 
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+// POSSIBILITY OF SUCH DAMAGE.
+// 
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+"""
+
 
 
 import sys
@@ -16,34 +51,16 @@ from itertools import permutations
 from lperm import *
 
 
-def writeForallPolicy(ndims):
-
-  dim_names = getDimNames(ndims)
-
-  print "// Interchange loop order given permutation"
-  print "struct Forall%d_Permute_Tag {};" % ndims
-  print "template<typename LOOP_ORDER, typename NEXT=Forall%d_Execute>" % (ndims)
-  print "struct Forall%d_Permute {" % (ndims)
-  print "  typedef Forall%d_Permute_Tag PolicyTag;" % ndims
-  print "  typedef NEXT NextPolicy;"
-  print "  typedef LOOP_ORDER LoopOrder;"
-  print "};"
-  print ""
-  
-
 
 def writeForallPermutations(ndims):
   
   dim_names = getDimNames(ndims)
-
-  # Create boiler-plate used for all _policy() fcns
-  polstr = ", ".join(map(lambda a: "typename Policy"+a.upper(), dim_names))
-  setstr = ", ".join(map(lambda a: "typename T"+a.upper(), dim_names))
-  isstr = ", ".join(map(lambda a: "T%s const &is_%s"%(a.upper(), a) , dim_names))
   
-  template_string = "template<typename POLICY, %s, %s, typename BODY>" % (polstr, setstr)
-  fcnargs_string = "%s, BODY body" % isstr
-
+  # Create common strings to all perms
+  func_template = ", ".join(map(lambda a: "typename Idx%s"%(a.upper()) , dim_names))
+  body_args     = ", ".join(dim_names)  
+  next_template = ", ".join(map(lambda a: "typename P%s"%a.upper() , dim_names))
+  next_param    = ", ".join(map(lambda a: "P%s const &p%s"%(a.upper(), a) , dim_names))
   
   # Loop over each permutation specialization
   perms = getDimPerms(dim_names)
@@ -51,121 +68,75 @@ def writeForallPermutations(ndims):
     # get enumeration name
     enum_name = getEnumName(perm)
     
-    # print function declaration
-    print template_string
-    print "RAJA_INLINE void forall%d_permute(%s, %s){" % (ndims, enum_name, fcnargs_string)
-    print "  typedef typename POLICY::NextPolicy            NextPolicy;"
-    print "  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;"
+    # Compute permuted arguments
+    func_param    = ", ".join(map(lambda a: "Idx%s %s"%(a.upper(),a) , perm))
+    policy_args   = ", ".join(map(lambda a: "p%s"%a , perm))
     
+    # Print header for functor
+    print """
+template<typename BODY>
+struct ForallN_Permute_Functor<%s, BODY>{
+
+  BODY body;
+
+  RAJA_INLINE
+  constexpr
+  explicit ForallN_Permute_Functor(BODY const &b) : body(b) {}
+
+  RAJA_SUPPRESS_HD_WARN
+  template<%s>
+  RAJA_INLINE
+  RAJA_HOST_DEVICE 
+  void operator()(%s) const {
+    body(%s);
+  }
+};
+
+
+template<typename NextPolicy, typename BODY, %s>
+RAJA_INLINE
+void forallN_permute(%s, BODY const &body, %s){
+  using TAG = typename NextPolicy::PolicyTag;
+  
+  forallN_policy<NextPolicy>(
+    TAG(),
+    ForallN_Permute_Functor<%s, BODY>(body),
+    %s
+  );
+}
+
+    """ % (enum_name, func_template, func_param, body_args, next_template, enum_name, next_param, enum_name, policy_args)
     
-    # Call next policy with permuted indices and policies
-    p_polstr  = ", ".join(map(lambda a: "Policy"+a.upper(), perm))
-    p_varstr  = ", ".join(map(lambda a: "is_"+a, perm))
-    p_argstr  = ", ".join(map(lambda a: "Index_type "+a, perm))
-    argstr    = ", ".join(dim_names)
-
-    print ""
-    print "  // Call next policy with permuted indices and policies"
-    print "  forall%d_policy<NextPolicy, %s>(NextPolicyTag(), %s," % (ndims, p_polstr, p_varstr)
-    print "    [=](%s){" % (p_argstr)
-    print "      // Call body with non-permuted indices"
-    print "      body(%s);" % (argstr)
-    print "    });"
-    print "}"
-    print ""
-
-
-def writeForall_policy(ndims):
-  
-  dim_names = getDimNames(ndims)
-  
-  # Create boiler-plate used for all _policy() fcns
-  polstr = ", ".join(map(lambda a: "typename Policy"+a.upper(), dim_names))
-  setstr = ", ".join(map(lambda a: "typename T"+a.upper(), dim_names))
-  isstr = ", ".join(map(lambda a: "T%s const &is_%s"%(a.upper(), a) , dim_names))
-
-  template_string = "template<typename POLICY, %s, %s, typename BODY>" % (polstr, setstr)
-  fcnargs_string = "%s, BODY body" % isstr
-   
-  polstr  = ", ".join(map(lambda a: "Policy"+a.upper(), dim_names))
-  typestr = ", ".join(map(lambda a: "T"+a.upper(), dim_names))
-  varstr = ", ".join(map(lambda a: "is_"+a, dim_names))
-  
-  print ""
-  print "/*!"
-  print " * \\brief Permutation policy function, providing loop interchange."
-  print " */"
-  print template_string
-  print "RAJA_INLINE void forall%d_policy(Forall%d_Permute_Tag, %s){" % (ndims, ndims, fcnargs_string)
-  
-  print "  // Get the loop permutation"
-  print "  typedef typename POLICY::LoopOrder LoopOrder;"
-  print ""
-  print "  // Call loop interchange overload to re-wrire indicies and policies"
-  print "  forall%d_permute<POLICY, %s>(LoopOrder(), %s, body);" % (ndims, polstr, varstr)
-  print "}"
-  print ""
 
 
 def main(ndims):
   # ACTUAL SCRIPT ENTRY:
-  print """//AUTOGENERATED BY gen_forallN_generic.py
-/*
- * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * For release details and restrictions, please see raja/README-license.txt
- */
+  print """//AUTOGENERATED BY gen_forallN_permute.py
+%s
   
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
-
 namespace RAJA {
 
-""" 
-  ndims_list = range(2,ndims+1)
-  
-  # Create the policy struct so the user can define loop policies
-  print ""
-  print "/******************************************************************"
-  print " *  ForallN loop interchange policies"
-  print " ******************************************************************/"
-  print ""
-  for n in ndims_list:
-    writeForallPolicy(n)
 
+template<typename PERM, typename BODY>
+struct ForallN_Permute_Functor;
+
+
+""" % notice
+  ndims_list = range(2,ndims+1)
 
   # Create the loop interchange specializations for each permutation
-  print ""
-  print "/******************************************************************"
-  print " *  ForallN loop interchange policies"
-  print " ******************************************************************/"
-  print ""
   for n in ndims_list:
     writeForallPermutations(n)
-
-
-  # Create _policy functions
-  print ""
-  print "/******************************************************************"
-  print " *  forallN_policy(), loop interchange policies"
-  print " ******************************************************************/"
-  print ""
-  for n in ndims_list:
-    writeForall_policy(n)
-
-
 
   print """
 
 } // namespace RAJA
-  
+
+#include "forallN_permute_lf.hxx"
+
 #endif
 """
 

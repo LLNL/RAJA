@@ -21,6 +21,8 @@
 #ifndef RAJA_Compare_HXX
 #define RAJA_Compare_HXX
 
+#define rcabs(val) (((val) < 0) ? (-val) : (val))
+
 namespace RAJA {
 
 //
@@ -29,7 +31,7 @@ namespace RAJA {
 template <typename T>
 bool equal(T a, T b)
 {
-   return (abs(a-b) <= ( ( abs(a) < abs(b) ? abs(a) : abs(b) ) * 10e-12 ) );
+   return (rcabs(a-b) <= ( ( rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b) ) * T(1.0e-12) ) );
 }
 
 //

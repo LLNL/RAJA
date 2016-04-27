@@ -65,6 +65,8 @@ Additional BSD Notice
 #include <cmath>
 #include <cstdio>
 #include <cstdlib>
+#include <cstring>
+#include <cctype>
 
 #include "RAJA/RAJA.hxx"
 
@@ -82,7 +84,7 @@ Additional BSD Notice
 //
 // Display simulation time and timestep during run.
 //
-const bool show_run_progress = false;
+bool show_run_progress = false;
 
 //
 // Set stop time and time increment for run.
@@ -2735,10 +2737,10 @@ int main(int argc, char *argv[])
    RAJA::Timer timer_cycle;
 
    timer_main.start();
- 
 
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
+   int maxIter = 1024*1024 ;
 
    //
    // Allocate domain so it can be accessed from host or device code.
@@ -2746,6 +2748,31 @@ int main(int argc, char *argv[])
    Domain* domain = Allocate<Domain>(1);
 
    Index_t edgeElems = lulesh_edge_elems ;
+
+   for (int i=1; i<argc; ++i) {
+      if (strcmp(argv[i], "-p") == 0) {
+         show_run_progress = true ;
+      }
+      else if (strcmp(argv[i], "-i") == 0) {
+         if ((i+1 < argc) && isdigit(argv[i+1][0])) {
+            maxIter = atoi(argv[i+1]) ;
+            ++i;
+         }
+         else  {
+            printf("Iteration (-i) option has bad argument -- ignoring\n") ;
+         }
+      }     
+      else if (strcmp(argv[i], "-s") == 0) {
+         if ((i+1 < argc) && isdigit(argv[i+1][0])) {
+            edgeElems = atoi(argv[i+1]) ;
+            ++i;
+         }
+         else  {
+            printf("Size (-s) option has bad argument -- ignoring\n") ;
+         }
+      }
+   }
+
    Index_t edgeNodes = edgeElems+1 ;
 
    Index_p perm = 0 ;
@@ -3435,7 +3462,7 @@ int main(int argc, char *argv[])
 
    /* timestep to solution */
    timer_cycle.start();
-   while(domain->time < domain->stoptime) {
+   while((domain->time < domain->stoptime) && (domain->cycle < maxIter)) {
       TimeIncrement(domain) ;
       LagrangeLeapFrog(domain) ;
       /* problem->commNodes->Transfer(CommNodes::syncposvel) ; */
