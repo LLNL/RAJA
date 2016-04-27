@@ -8,8 +8,6 @@
 ## For release details and restrictions, please see raja/README-license.txt
 ##
 
-include(../general.cmake)
-
 set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "clang++" CACHE PATH "")

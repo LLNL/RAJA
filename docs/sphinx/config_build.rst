@@ -16,6 +16,10 @@ Configuring and building the code
 This section provides a brief discussion of how to configure and build
 the RAJA code.
 
+It is important to note that RAJA requires compiler support for lambda 
+functions and a few other C++11 features. Please make sure your compiler
+is C++11-compliant before attempting to build RAJA.
+
 RAJA CMake System
 -----------------
 
