@@ -47,17 +47,17 @@ using SourcePolicy_GZ = RAJA::NestedPolicy<
 #else
 
 using SourcePolicy_GZ = RAJA::NestedPolicy<
-                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
-                                         RAJA::omp_collapse_nowait_exec>,
-                          RAJA::OMP_Parallel<
+                          RAJA::ExecList<kripke_omp_collapse_nowait_exec, 
+                                         kripke_omp_collapse_nowait_exec>,
+                          kripke_OMP_Parallel<
                             RAJA::Permute<RAJA::PERM_IJ>
 			                    >
 			                  >;
 #endif
 using SourcePolicy_ZG = RAJA::NestedPolicy<
-                          RAJA::ExecList<RAJA::omp_collapse_nowait_exec, 
-                                         RAJA::omp_collapse_nowait_exec>,
-                          RAJA::OMP_Parallel<
+                          RAJA::ExecList<kripke_omp_collapse_nowait_exec, 
+                                         kripke_omp_collapse_nowait_exec>,
+                          kripke_OMP_Parallel<
                             RAJA::Permute<RAJA::PERM_JI>
 			                    >
 			                  >;
