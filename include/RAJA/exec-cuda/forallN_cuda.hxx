@@ -1,3 +1,19 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file containing constructs used to run forallN
+ *          traversals on GPU with CUDA.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forallN_cuda_HXX__
+#define RAJA_forallN_cuda_HXX__
+
+#if defined(RAJA_USE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -39,9 +55,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#ifndef RAJA_forallN_cuda_HXX__
-#define RAJA_forallN_cuda_HXX__
 
 #include<RAJA/config.hxx>
 #include<RAJA/int_datatypes.hxx>
@@ -334,8 +347,9 @@ struct ForallN_Executor<
 };
 
 
-
 } // namespace RAJA
   
-#endif
+#endif  // closing endif for RAJA_USE_CUDA guard
+
+#endif  // closing endif for header file include guard
 

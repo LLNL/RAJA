@@ -1,3 +1,16 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file for strongly-typed integer class.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_INDEXVALUE_HXX__
+#define RAJA_INDEXVALUE_HXX__
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -39,9 +52,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#ifndef RAJA_INDEXVALUE_HXX__
-#define RAJA_INDEXVALUE_HXX__
 
 #include<RAJA/int_datatypes.hxx>
 #include<string>

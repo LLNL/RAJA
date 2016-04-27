@@ -21,6 +21,9 @@
  ******************************************************************************
  */
 
+#ifndef RAJA_config_HXX
+#define RAJA_config_HXX
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -62,9 +65,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#ifndef RAJA_config_HXX
-#define RAJA_config_HXX
 
 #cmakedefine RAJA_USE_STL
 #cmakedefine RAJA_USE_CUDA

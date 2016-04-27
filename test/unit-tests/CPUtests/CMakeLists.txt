@@ -70,12 +70,16 @@ else()
   add_executable(CPUnested-test.exe
     main-nested.cxx)
     
-  add_executable(CPUnested_reduce-test.exe
-    main-nested-reduce.cxx)
+  if(RAJA_USE_OPENMP)
+    add_executable(CPUnested_reduce-test.exe
+      main-nested-reduce.cxx)
+  endif()
 
 endif()
 
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)
 target_link_libraries(CPUnested-test.exe RAJA)
-target_link_libraries(CPUnested_reduce-test.exe RAJA)
+if(RAJA_USE_OPENMP)
+  target_link_libraries(CPUnested_reduce-test.exe RAJA)
+endif()
