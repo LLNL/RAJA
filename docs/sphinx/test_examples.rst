@@ -9,9 +9,9 @@
 .. ##
 
 
-================
-Examples
-================
+===================
+Tests and Examples
+===================
 
 The RAJA code comes with several simple test codes and proxy-app examples
 that illustrate various usage scenarios. When RAJA is compiled, these 
@@ -112,11 +112,20 @@ the directories containing the proxy app examples.
     uses RAJA IndexSets to permute data and loop iteration ordering in ways 
     that can be beneficial in a manycore environment. 
 
-  * **Kripke.** Fill this in...
+  * **Kripke.** 
 
+    The directory 'Kripke-v1.1-baseline' contains the reference version of 
+    Kripke v1.1 that uses basic OpenMP threading and zone-sequential sweep
+    traversals.  It is available at
     `Kripke <https://codesign.llnl.gov/kripke.php>`_
+    
+    The directory 'Kripke-v1.1-RAJA' contains the RAJA version of Kripke v1.1 
+    that uses the nested-loop RAJA forallN traversals and 
+    IndexSets to perform hyperplane sweep traversals.
 
-  * **CoMD.** Fill this in...
-
-    `CoMD <https://github.com/exmatex/CoMD>`_
+    Currently there are issues building with the Intel compiler which are being
+    investigated.  As a result, building the RAJA version of Kripke with icpc
+    will diable all but the DGZ data layouts, and disables complex execution
+    policies.  Once a resolution to these issues have been found, this code will
+    be updated.
 
