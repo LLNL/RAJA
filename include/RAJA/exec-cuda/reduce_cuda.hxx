@@ -435,16 +435,13 @@ public:
       __syncthreads();
 
       if (threadIdx.x < 1) {
-          sd[threadIdx.x] = RAJA_MIN(sd[threadIdx.x],sd[threadIdx.x+1]);
+          sd[0] = RAJA_MIN(sd[0],sd[1]);
 #if defined(RAJA_USE_NO_ATOMICS)
           m_blockdata[m_blockoffset + blockIdx.x+1]  = 
-              RAJA_MIN( sd[threadIdx.x], 
-                        m_blockdata[m_blockoffset + blockIdx.x+1] );
+              RAJA_MIN( sd[0], m_blockdata[m_blockoffset + blockIdx.x+1] );
           
 #else
-          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-          atomicMin( &m_blockdata[m_blockoffset], 
-                      m_blockdata[m_blockoffset + blockIdx.x+1] );
+          atomicMin( &m_blockdata[m_blockoffset], sd[0] );
 #endif
       }
 
@@ -609,16 +606,13 @@ public:
       __syncthreads();
 
       if (threadIdx.x < 1) {
-          sd[threadIdx.x] = RAJA_MAX(sd[threadIdx.x],sd[threadIdx.x+1]);
+          sd[0] = RAJA_MAX(sd[0],sd[1]);
 #if defined(RAJA_USE_NO_ATOMICS)
           m_blockdata[m_blockoffset + blockIdx.x+1]  =
-              RAJA_MAX( sd[threadIdx.x],
-                        m_blockdata[m_blockoffset + blockIdx.x+1] );
+              RAJA_MAX( sd[0], m_blockdata[m_blockoffset + blockIdx.x+1] );
 
 #else
-          m_blockdata[m_blockoffset + blockIdx.x+1]  = sd[threadIdx.x];
-          atomicMax( &m_blockdata[m_blockoffset],
-                      m_blockdata[m_blockoffset + blockIdx.x+1] );
+          atomicMax( &m_blockdata[m_blockoffset], sd[0] );
 #endif
       }
 
