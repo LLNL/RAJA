@@ -74,10 +74,15 @@ struct Permute {
 
 
 
+
+
 /******************************************************************
  *  forallN_policy(), loop interchange policies
  ******************************************************************/
 
+// Forward declaration (for stuff that is currently code-gen'ed)
+template<typename PERM, typename BODY>
+struct ForallN_Permute_Functor;
 
 
 /*!
@@ -85,12 +90,19 @@ struct Permute {
  */
 template<typename POLICY, typename BODY, typename ... ARGS>
 RAJA_INLINE void forallN_policy(ForallN_Permute_Tag, BODY body, ARGS ... args){
-  // Get the loop permutation and next policy
-  typedef typename POLICY::LoopOrder    LoopOrder;
-  typedef typename POLICY::NextPolicy   NextPolicy;
-  
-  // Do the permutation
-  forallN_permute<NextPolicy>(LoopOrder(), body, args...);
+  // Get the loop permutation
+  typedef typename POLICY::LoopOrder LoopOrder;
+
+  // Get next policy  
+  typedef typename POLICY::NextPolicy            NextPolicy;
+  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
+
+  // Create wrapper functor that permutes indices and policies
+  typedef ForallN_Permute_Functor<LoopOrder, BODY> PERM_FUNC;
+  PERM_FUNC perm_func(body);
+
+  // Use the wrapper to call the next policy
+  perm_func.template callNextPolicy<NextPolicy, NextPolicyTag>(args...);
 }
 
 
