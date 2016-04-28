@@ -709,8 +709,10 @@ void runBasicSumReductionTest(const string& policy,
          tsum1 += 1.0;
       } );
 
-      if ( !equal( static_cast<Real_type>(tsum0), k*ref_sum ) ||
-           !equal( static_cast<Real_type>(tsum1), k*iset.getLength() + 5.0 ) ) {
+      if ( !equal( static_cast<Real_type>(tsum0),
+                   static_cast<Real_type>(k*ref_sum) ) ||
+           !equal( static_cast<Real_type>(tsum1),
+                   static_cast<Real_type>(k*iset.getLength() + 5.0) ) ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
          cout << "\ttmin0 = " << static_cast<Real_type>(tsum0) << " ("
                               << k*ref_sum << ") " << endl;
@@ -880,7 +882,7 @@ int main(int argc, char *argv[])
    ///
    /// Print total number of tests passed/run.
    ///
-   cout << "\n All Tests : # run / # passed = " 
+   cout << "\n All Tests : # passed / # run = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
