@@ -225,8 +225,7 @@ void runBasicMinLocReductionTest(const string& policy,
    //
    // Generate reference result for min in middle of index set.
    //
-   const Index_type ref_min_indx =
-      Index_type(is_indices[is_indices.size()/2]);
+   const Index_type ref_min_indx = Index_type(is_indices[is_indices.size()/2]);
    const Real_type  ref_min_val  = -100.0;
 
    test_array[ref_min_indx] = ref_min_val;
