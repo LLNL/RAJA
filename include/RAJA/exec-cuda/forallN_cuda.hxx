@@ -67,16 +67,16 @@ namespace RAJA {
  * 
  * This version has host-device constructor and device-only operator.
  */
-template<typename BODY, typename IDX>
+template<typename BODY>
 struct ForallN_BindFirstArg_Device {
 
   BODY const body;  
-  IDX  const i;
+  size_t  i;
 
   RAJA_INLINE
   RAJA_DEVICE
   constexpr
-  ForallN_BindFirstArg_Device(BODY b, IDX i0) : body(b), i(i0) {}
+  ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
 
   template<typename ... ARGS>
   RAJA_INLINE
@@ -261,18 +261,18 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 
 // Function to check indices for out-of-bounds
-template <typename BODY, typename TI, typename ... ARGS>
+template <typename BODY, typename ... ARGS>
 RAJA_INLINE
-__device__ void cudaCheckBounds(BODY body, TI i, ARGS ... args){
+__device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
   if(i >= 0){
-    ForallN_BindFirstArg_Device<BODY, TI> bound(body, i);
+    ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
   }  
 }
 
-template <typename BODY, typename TI>
+template <typename BODY>
 RAJA_INLINE
-__device__ void cudaCheckBounds(BODY body, TI i){
+__device__ void cudaCheckBounds(BODY body, int i){
   if(i >= 0){
     body(i);
   }  
@@ -284,7 +284,7 @@ template <typename BODY, typename ... CARGS>
 __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
   
   // Compute indices and then pass through the bounds-checking mechanism
-  cudaCheckBounds(body, (typename CARGS::INDEX(cargs()))... );
+  cudaCheckBounds(body, (cargs())... );
 }
 
 
@@ -296,29 +296,46 @@ __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
  *
  */
 
-template<typename CuARG0, typename ISET0, typename IDX0, typename CuARG1, typename ISET1, typename IDX1, typename ... CuARGS, typename ... ISETS, typename ... IDXS>
+template<int ...> struct integer_sequence {};
+
+template<int N, int ...S> struct gen_sequence : gen_sequence<N-1, N-1, S...> {};
+
+template<int ...S> struct gen_sequence<0, S...>{ typedef integer_sequence<S...> type; };
+
+template<typename CuARG0, typename ISET0,typename CuARG1, typename ISET1, typename ... CuARGS, typename ... ISETS>
 struct ForallN_Executor< 
-  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0, IDX0>,
-  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1, IDX1>,
-  ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS, IDXS>... >
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
+  ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>... > 
 {
+
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;  
+  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> iset1;  
+  std::tuple<ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> isets;
+  
+  ForallN_Executor(
+    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
+    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_, 
+    ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS> const & ...isets_) 
+    :  iset0(iset0_), iset1(iset1_), isets(isets_...) 
+  { }
 
   template<typename BODY>
   RAJA_INLINE
-  void operator()(BODY body,
-      ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0, IDX0> const & iset0,
-      ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1, IDX1> const & iset1,
-      ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS, IDXS> const & ...isets) const
-  {
-    CudaDim dims;
-    callLauncher(dims, body,
-        CudaIndexPair<CuARG0, IDX0>(dims, iset0),
-        CudaIndexPair<CuARG1, IDX1>(dims, iset1),
-        CudaIndexPair<CuARGS, IDXS>(dims, isets)...);
-
+  void operator()(BODY body) const {
+    unpackIndexSets(body, typename gen_sequence<sizeof...(CuARGS)>::type()); 
   }
-
+  
+  template<typename BODY, int ... N>
+  RAJA_INLINE
+  void unpackIndexSets(BODY body, integer_sequence<N...>) const {
+  
+    CudaDim dims;
     
+    callLauncher(dims, body, CuARG0(dims, iset0), CuARG1(dims, iset1), CuARGS(dims, std::get<N>(isets))...);
+  }
+  
+  
   template<typename BODY, typename ... CARGS>
   RAJA_INLINE
   void callLauncher(CudaDim const &dims, BODY body, CARGS const &... cargs) const {
@@ -329,22 +346,29 @@ struct ForallN_Executor<
 };
 
 
-template<typename CuARG0, typename ISET0, typename IDX0>
+template<typename CuARG0, typename ISET0>
 struct ForallN_Executor< 
-  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0, IDX0> >
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> > 
 {
+  ISET0 iset0;
+
+  ForallN_Executor(
+    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_) 
+    :  iset0(iset0_) 
+  { }
 
   template<typename BODY>
   RAJA_INLINE
-  void operator()(BODY body, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0, IDX0> const & iset0) const {
+  void operator()(BODY body) const {
     CudaDim dims;
-    CudaIndexPair<CuARG0, IDX0> c0(dims, iset0);
+    CuARG0 c0(dims, iset0);
 
     cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
 };
+
 
 
 } // namespace RAJA
