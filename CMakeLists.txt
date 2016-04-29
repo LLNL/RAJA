@@ -113,8 +113,8 @@ if (RAJA_USE_CUDA)
 endif()
 
 # Used for timing
-#find_library(RT_LIBRARIES rt)
-set(RT_LIBRARIES "")
+find_library(RT_LIBRARIES rt)
+#set(RT_LIBRARIES "")
 
 #
 # Configure all variables in the code 
@@ -140,9 +140,9 @@ set(RAJA_USE_FT OFF)
 set(RAJA_REPORT_FT OFF)
 
 ## Timer options
-#add_definitions(-DRAJA_USE_GETTIME)
+add_definitions(-DRAJA_USE_GETTIME)
 #add_definitions(-DRAJA_USE_CLOCK)
-add_definitions(-DRAJA_USE_CYCLE)
+#add_definitions(-DRAJA_USE_CYCLE)
 
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
