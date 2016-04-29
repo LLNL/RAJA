@@ -75,8 +75,7 @@ void runBasicMinReductionTest(const string& policy,
    //
    // Generate reference result for min in middle of index set.
    //
-   const Index_type ref_min_indx =
-      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Index_type ref_min_indx = Index_type(is_indices[is_indices.size()/2]);
    const Real_type  ref_min_val  = -100.0;
 
    test_array[ref_min_indx] = ref_min_val;
@@ -107,12 +106,12 @@ void runBasicMinReductionTest(const string& policy,
          tmin1.min(test_array[idx]);
       } );
 
-      if ( static_cast<Real_type>(tmin0) != k*ref_min_val ||
-           static_cast<Real_type>(tmin1) != -200.0 ) {
+      if ( Real_type(tmin0) != Real_type(k*ref_min_val) ||
+           Real_type(tmin1) != Real_type(-200.0) ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
-         cout << "\ttmin0 = " << static_cast<Real_type>(tmin0) << " ("
+         cout << "\ttmin0 = " << Real_type(tmin0) << " ("
                               << k*ref_min_val << ") " << endl;
-         cout << "\ttmin1 = " << static_cast<Real_type>(tmin1) << " ("
+         cout << "\ttmin1 = " << Real_type(tmin1) << " ("
                               << -200.0 << ") " << endl;
       } else {
          s_ntests_passed++;
@@ -173,7 +172,7 @@ void runMinReduceTests( Real_ptr in_array,
                 iset, is_indices ); 
 #endif
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_CILK
    runBasicMinReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -226,8 +225,7 @@ void runBasicMinLocReductionTest(const string& policy,
    //
    // Generate reference result for min in middle of index set.
    //
-   const Index_type ref_min_indx =
-      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Index_type ref_min_indx = Index_type(is_indices[is_indices.size()/2]);
    const Real_type  ref_min_val  = -100.0;
 
    test_array[ref_min_indx] = ref_min_val;
@@ -258,17 +256,17 @@ void runBasicMinLocReductionTest(const string& policy,
          tmin1.minloc(test_array[idx], idx);
       } );
 
-      if ( static_cast<Real_type>(tmin0) != k*ref_min_val ||
+      if ( Real_type(tmin0) != Real_type(k*ref_min_val) ||
            tmin0.getMinLoc() != ref_min_indx ||
-           static_cast<Real_type>(tmin1) != -200.0 || 
+           Real_type(tmin1) != Real_type(-200.0) || 
            tmin1.getMinLoc() != -1 ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
          cout << "\ttmin0, loc = " 
-              << static_cast<Real_type>(tmin0) << " , " << tmin0.getMinLoc()
+              << Real_type(tmin0) << " , " << tmin0.getMinLoc()
               << " (" << k*ref_min_val << ", "
                       << ref_min_indx << " ) " << endl;
          cout << "\ttmin1, loc = " 
-              << static_cast<Real_type>(tmin1) << " , " << tmin1.getMinLoc()
+              << Real_type(tmin1) << " , " << tmin1.getMinLoc()
               << " (" << -200.0 << ", " << -1 << " ) " << endl;
       } else {
          s_ntests_passed++;
@@ -309,7 +307,7 @@ void runMinLocReduceTests( Real_ptr in_array,
                 in_array, alen,
                 iset, is_indices ); 
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_OPENMP
    runBasicMinLocReductionTest< 
       IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce > ( 
                "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -329,7 +327,7 @@ void runMinLocReduceTests( Real_ptr in_array,
                 iset, is_indices ); 
 #endif
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_CILK
    runBasicMinLocReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -382,8 +380,7 @@ void runBasicMaxReductionTest(const string& policy,
    //
    // Generate reference result for max in middle of index set.
    //
-   const Index_type ref_max_indx =
-      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Index_type ref_max_indx = Index_type(is_indices[is_indices.size()/2]);
    const Real_type  ref_max_val  = 100.0;
 
    test_array[ref_max_indx] = ref_max_val;
@@ -414,12 +411,12 @@ void runBasicMaxReductionTest(const string& policy,
          tmax1.max(test_array[idx]);
       } );
 
-      if ( static_cast<Real_type>(tmax0) != k*ref_max_val ||
-           static_cast<Real_type>(tmax1) != 200.0 ) {
+      if ( Real_type(tmax0) != Real_type(k*ref_max_val) ||
+           Real_type(tmax1) != Real_type(200.0) ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
-         cout << "\ttmax0 = " << static_cast<Real_type>(tmax0) << " ("
+         cout << "\ttmax0 = " << Real_type(tmax0) << " ("
                               << k*ref_max_val << ") " << endl;
-         cout << "\ttmax1 = " << static_cast<Real_type>(tmax1) << " ("
+         cout << "\ttmax1 = " << Real_type(tmax1) << " ("
                               << 200.0 << ") " << endl;
       } else {
          s_ntests_passed++;
@@ -480,7 +477,7 @@ void runMaxReduceTests( Real_ptr in_array,
                 iset, is_indices ); 
 #endif
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_CILK
    runBasicMaxReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -534,8 +531,7 @@ void runBasicMaxLocReductionTest(const string& policy,
    //
    // Generate reference result for min in middle of index set.
    //
-   const Index_type ref_max_indx =
-      static_cast<Index_type>(is_indices[is_indices.size()/2]);
+   const Index_type ref_max_indx = Index_type(is_indices[is_indices.size()/2]);
    const Real_type  ref_max_val  = 100.0;
 
    test_array[ref_max_indx] = ref_max_val;
@@ -566,17 +562,17 @@ void runBasicMaxLocReductionTest(const string& policy,
          tmax1.maxloc(test_array[idx], idx);
       } );
 
-      if ( static_cast<Real_type>(tmax0) != k*ref_max_val ||
+      if ( Real_type(tmax0) != Real_type(k*ref_max_val) ||
            tmax0.getMaxLoc() != ref_max_indx ||
-           static_cast<Real_type>(tmax1) != 200.0 || 
+           Real_type(tmax1) != Real_type(200.0) || 
            tmax1.getMaxLoc() != -1 ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
          cout << "\ttmax0, loc = " 
-              << static_cast<Real_type>(tmax0) << " , " << tmax0.getMaxLoc()
+              << Real_type(tmax0) << " , " << tmax0.getMaxLoc()
               << " (" << k*ref_max_val << ", "
                       << ref_max_indx << " ) " << endl;
          cout << "\ttmax1, loc = "
-              << static_cast<Real_type>(tmax1) << " , " << tmax1.getMaxLoc()
+              << Real_type(tmax1) << " , " << tmax1.getMaxLoc()
               << " (" << 200.0 << ", " << -1 << " ) " << endl;
       } else {
          s_ntests_passed++;
@@ -637,7 +633,7 @@ void runMaxLocReduceTests( Real_ptr in_array,
                 iset, is_indices ); 
 #endif
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_CILK
    runBasicMaxLocReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -709,12 +705,12 @@ void runBasicSumReductionTest(const string& policy,
          tsum1 += 1.0;
       } );
 
-      if ( !equal( static_cast<Real_type>(tsum0), k*ref_sum ) ||
-           !equal( static_cast<Real_type>(tsum1), k*iset.getLength() + 5.0 ) ) {
+      if ( !equal( Real_type(tsum0), Real_type(k*ref_sum) ) ||
+           !equal( Real_type(tsum1), Real_type(k*iset.getLength() + 5.0) ) ) {
          cout << "\n TEST FAILURE: k = " << k << endl;
-         cout << "\ttmin0 = " << static_cast<Real_type>(tsum0) << " ("
+         cout << "\ttmin0 = " << Real_type(tsum0) << " ("
                               << k*ref_sum << ") " << endl;
-         cout << "\ttmin1 = " << static_cast<Real_type>(tsum1) << " ("
+         cout << "\ttmin1 = " << Real_type(tsum1) << " ("
                               << k*iset.getLength() + 5.0 << ") " << endl;
       } else {
          s_ntests_passed++;
@@ -773,7 +769,7 @@ void runSumReduceTests( Real_ptr in_array,
                 iset, is_indices ); 
 #endif
 
-#if RAJA_USE_CILK
+#ifdef RAJA_USE_CILK
    runBasicSumReductionTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec>, cilk_reduce > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -851,7 +847,7 @@ int main(int argc, char *argv[])
    posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
 
    for (Index_type i=0 ; i<array_length; ++i) {
-      parent[i] = static_cast<Real_type>( rand() % 65536 );
+      parent[i] = Real_type( rand() % 65536 );
    }
 
    //
@@ -880,7 +876,7 @@ int main(int argc, char *argv[])
    ///
    /// Print total number of tests passed/run.
    ///
-   cout << "\n All Tests : # run / # passed = " 
+   cout << "\n All Tests : # passed / # run = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 

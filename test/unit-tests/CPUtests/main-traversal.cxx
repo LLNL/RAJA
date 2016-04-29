@@ -459,7 +459,7 @@ int main(int argc, char *argv[])
    posix_memalign((void **)&parent, DATA_ALIGN, array_length*sizeof(Real_type)) ;
 
    for (Index_type i=0 ; i<array_length; ++i) {
-      parent[i] = static_cast<Real_type>( rand() % 65536 );
+      parent[i] = Real_type( rand() % 65536 );
    }
 
    //
@@ -561,7 +561,7 @@ int main(int argc, char *argv[])
    ///
    /// Print number of tests passed/run.
    ///
-   cout << "\n All Tests : # run / # passed = " 
+   cout << "\n All Tests : # passed / # run = " 
              << s_ntests_passed_total << " / " 
              << s_ntests_run_total << endl;
 
