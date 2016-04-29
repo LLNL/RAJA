@@ -196,7 +196,7 @@ void forall_Icount(cilk_for_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over index ranges with stride.
+// Function templates that iterate over raw Box.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -204,60 +204,25 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with stride.
+ * \brief  cilk_for iteration over raw Box.
  *         
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(cilk_for_exec,
-            Index_type begin, Index_type end, 
-            Index_type stride,
-            LOOP_BODY loop_body)
-{                    
-   RAJA_FT_BEGIN ;
-
-   cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
 
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over index range with stride with index count.
+ * \brief  cilk_for iteration over raw Box with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(cilk_for_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range-stride segment objects.
+// Function templates that iterate over Box segment objects.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -265,56 +230,105 @@ void forall_Icount(cilk_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range-stride segment object.
+ * \brief  cilk_for iteration over Box segment object.
  *
  ******************************************************************************
  */
+
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(cilk_for_exec,
-            const RangeStrideSegment& iseg,
+            const BoxSegment& iseg,
             LOOP_BODY loop_body)
 {
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
+   Index_type        corner = iseg.getCorner();
+   Index_type        dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      cilk_for ( Index_type y = 0 ; y < yExtent ; ++y ) {
+         Index_type idx = corner + y*yStride ;
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( idx );
+            idx += xStride ;
+         }
+      }
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      cilk_for (Index_type x = 0 ; x < xExtent ; ++x) {
+         loop_body( corner + x*xStride );
+      }
+   }
+   else /* dim == 3 */ {
+      /* need to but some code here */
    }
 
    RAJA_FT_END ;
 }
 
+
 /*!
  ******************************************************************************
  *
- * \brief  cilk_for iteration over range-stride segment object 
- *         with index count.
+ * \brief  cilk_for iteration over Box segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
+
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(cilk_for_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+            const BoxSegment& iseg,
+            Index_type icount,
+            LOOP_BODY loop_body)
 {
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
+   Index_type        corner = iseg.getCorner();
+   Index_type        dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
-   cilk_for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      cilk_for ( Index_type y = 0 ; y < yExtent ; ++y ) {
+         Index_type idx = corner + y*yStride ;
+         Index_type myCount = icount + y*xExtent ;
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( myCount, idx );
+            idx += xStride ;
+            ++myCount ;
+         }
+      }
+    }
+    else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      cilk_for (Index_type x = 0 ; x < xExtent ; ++x) {
+         loop_body( icount + x, corner + x*xStride );
+      }
+    }
+    else /* dim == 3 */ {
+       /* need to but some code here */
+    }
 
    RAJA_FT_END ;
 }

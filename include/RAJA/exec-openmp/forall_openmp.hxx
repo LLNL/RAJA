@@ -317,7 +317,7 @@ void forall_Icount(omp_for_nowait_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over index ranges with stride.
+// Function templates that iterate over raw Box.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -325,58 +325,200 @@ void forall_Icount(omp_for_nowait_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range with stride.
+ * \brief  omp parallel for iteration over raw Box.
+ *
+ ******************************************************************************
+ */
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp for "nowait" iteration over raw Box.
+ *
+ ******************************************************************************
+ */
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp parallel for iteration over raw Box with index count.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp for "nowait" iteration over raw Box with index count.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over Box segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp parallel for iteration over Box segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_parallel_for_exec,
-            Index_type begin, Index_type end,
-            Index_type stride,
+            const BoxSegment& iseg,
             LOOP_BODY loop_body)
 {
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
    RAJA_FT_BEGIN ;
 
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ; 
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+#pragma omp parallel
+      {
+         int yStart, yEnd ;
+         int maxThreads = omp_get_max_threads() ;
+         int myThread   = omp_get_thread_num() ;
+
+         if (yExtent <= maxThreads) {
+            if (myThread < yExtent) {
+               yStart = myThread;
+               yEnd   = myThread+1;
+            }
+            else {
+               yStart = 0;
+               yEnd = 0;
+            }
+         }
+         else {
+            /* chomp */ ;
+            yStart = myThread*yExtent/maxThreads;
+            yEnd   = (myThread+1)*yExtent/maxThreads;
+         }
+
+         Index_type idx = corner + yStart*yStride;
+         for ( Index_type y = yStart ; y < yEnd ; ++y ) {
+            for (Index_type x = 0 ; x < xExtent ; ++x) {
+               loop_body( idx );
+               idx += xStride ;
+            }
+            idx += yStride - xStride*xExtent ;
+         }
+      }
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ; 
+      Index_type end     = corner + xExtent * xStride ;
+
 #pragma omp parallel for schedule(static)
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
+      for (int x=corner; x < end; x += xStride) {
+         loop_body( x ) ;
+      }
+   }
+   else /* dim == 3 */ {
+      /* need to but some code here */ ;
    }
 
    RAJA_FT_END ;
 }
 
-
 /*!
  ******************************************************************************
  *
- * \brief  omp for "nowait" iteration over index range with stride.
+ * \brief  omp for "nowait" iteration over Box segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(omp_for_nowait_exec,
-            Index_type begin, Index_type end,
-            Index_type stride,
+            const BoxSegment& iseg,
             LOOP_BODY loop_body)
 {
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+ 
    RAJA_FT_BEGIN ;
+   
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ; 
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      int yStart, yEnd ;
+      int maxThreads = omp_get_max_threads() ;
+      int myThread   = omp_get_thread_num() ;
+      
+      if (yExtent <= maxThreads) {
+         if (myThread < yExtent) {
+            yStart = myThread;
+            yEnd   = myThread+1;
+         }
+         else {
+            yStart = 0;
+            yEnd = 0;
+         }
+      }
+      else {
+         /* chomp */ ;
+         yStart = myThread*yExtent/maxThreads;
+         yEnd   = (myThread+1)*yExtent/maxThreads;
+      }
+         
+      Index_type idx = corner + yStart*yStride;
+      for ( Index_type y = yStart ; y < yEnd ; ++y ) {
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( idx );
+            idx += xStride ;
+         }
+         idx += yStride - xStride*xExtent ;
+      }
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ; 
+      Index_type end     = corner + xExtent * xStride ;
 
 #pragma omp for schedule(static) nowait
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
+      for (int x=corner; x < end; x += xStride) {
+         loop_body( x ) ;
+      }
+   }
+   else /* dim == 3 */ {
+      /* need to but some code here */ ;
    }
 
    RAJA_FT_END ;
 }
 
-
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range with stride
- *         with index count.
+ * \brief  omp parallel for iteration over Box segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -385,19 +527,68 @@ void forall(omp_for_nowait_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_parallel_for_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
+                   const BoxSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+#pragma omp parallel
+      {
+         int yStart, yEnd ;
+         int maxThreads = omp_get_max_threads() ;
+         int myThread   = omp_get_thread_num() ;
+
+         if (yExtent <= maxThreads) {
+            if (myThread < yExtent) {
+               yStart = myThread;
+               yEnd   = myThread+1;
+            }
+            else {
+               yStart = 0;
+               yEnd = 0;
+            }
+         }
+         else {
+            /* chomp */ ;
+            yStart = myThread*yExtent/maxThreads;
+            yEnd   = (myThread+1)*yExtent/maxThreads;
+         }
+
+         Index_type idx = corner + yStart*yStride;
+         Index_type myCount = icount + yStart*xExtent ;
+         for ( Index_type y = yStart ; y < yEnd ; ++y ) {
+            for (Index_type x = 0 ; x < xExtent ; ++x) {
+               loop_body( myCount, idx );
+               idx += xStride ;
+               ++myCount ;
+            }
+            idx += yStride - xStride*xExtent ;
+         }
+      }
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
 #pragma omp parallel for schedule(static)
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
+      for (int x=0; x<xExtent; ++x) {
+         loop_body(icount + x, corner + x*xStride) ;
+      }
+   }
+   else /* dim == 3 */ {
+      /* need to but some code here */ ;
    }
 
    RAJA_FT_END ;
@@ -407,8 +598,7 @@ void forall_Icount(omp_parallel_for_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp for "nowait" iteration over index range with stride
- *         with index count.
+ * \brief  omp for "nowait" iteration over Box segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -417,147 +607,65 @@ void forall_Icount(omp_parallel_for_exec,
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(omp_for_nowait_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
+                   const BoxSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
+
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ; 
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      int yStart, yEnd ;
+      int maxThreads = omp_get_max_threads() ;
+      int myThread   = omp_get_thread_num() ;
+         
+      if (yExtent <= maxThreads) {
+         if (myThread < yExtent) {
+            yStart = myThread;
+            yEnd   = myThread+1;
+         }
+         else {
+            yStart = 0;
+            yEnd = 0;
+         }
+      }
+      else {
+         /* chomp */ ;
+         yStart = myThread*yExtent/maxThreads;
+         yEnd   = (myThread+1)*yExtent/maxThreads;
+      }
+         
+      Index_type idx = corner + yStart*yStride;
+      Index_type myCount = icount + yStart*xExtent ; 
+      for ( Index_type y = yStart ; y < yEnd ; ++y ) {
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( myCount, idx );
+            idx += xStride ;
+            ++myCount ;
+         }
+         idx += yStride - xStride*xExtent ;
+      }
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
 
 #pragma omp for schedule(static) nowait
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
+      for (int x=0; x<xExtent; ++x) {
+         loop_body(icount + x, corner + x*xStride) ;
+      }
    }
-
-   RAJA_FT_END ;
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range-stride segment objects.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  omp parallel for iteration over range-stride segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over range-stride segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp for schedule(static) nowait
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp parallel for iteration over range-stride segment object
- *         with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(omp_parallel_for_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over range-stride segment object
- *         with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(omp_for_nowait_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp for schedule(static) nowait
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
+   else /* dim == 3 */ {
+      /* need to but some code here */ ;
    }
 
    RAJA_FT_END ;

@@ -52,6 +52,7 @@
 
 #include "RAJA/IndexSet.hxx"
 
+#include "RAJA/BoxSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 #include "RAJA/ListSegment.hxx"
 
@@ -133,9 +134,7 @@ bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
       SegmentType seg_type = segment->getType(); 
    
       if ( seg_type == _RangeSeg_ ||
-#if 0 // RDH RETHINK
-           seg_type == _RangeStrideSeg_ ||
-#endif
+           seg_type == _BoxSeg_ ||
            seg_type == _ListSeg_ ) 
       {
          ret_val = true;
@@ -321,17 +320,15 @@ void IndexSet::print(std::ostream& os) const
             break;
          }
 
-#if 0  // RDH RETHINK
-         case _RangeStrideSeg_ : {
+         case _BoxSeg_ : {
             if ( iseg ) {
                os << "\t icount = " << seg_info->getIcount() << std::endl;
-               static_cast<const RangeStrideSegment*>(iseg)->print(os);
+               static_cast<const BoxSegment*>(iseg)->print(os);
             } else {
-               os << "_RangeStrideSeg_ is null" << std::endl;
+               os << "_BoxSeg_ is null" << std::endl;
             }
             break;
          }
-#endif
 
          case _ListSeg_ : {
             if ( iseg ) {
@@ -384,12 +381,10 @@ void IndexSet::copy(const IndexSet& other)
                break;
             }
 
-#if 0  // RDH RETHINK
-            case _RangeStrideSeg_ : {
-               push_back(*static_cast<const RangeStrideSegment*>(iseg));
+            case _BoxSeg_ : {
+               push_back(*static_cast<const BoxSegment*>(iseg));
                break;
             }
-#endif
 
             case _ListSeg_ : {
                push_back(*static_cast<const ListSegment*>(iseg));
@@ -468,13 +463,11 @@ BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
          break;
       }
 
-#if 0  // RDH RETHINK
-      case _RangeStrideSeg_ : {
-         const RangeStrideSegment& seg = static_cast<const RangeStrideSegment&>(segment);
-         new_seg = new RangeStrideSegment(seg); 
+      case _BoxSeg_ : {
+         const BoxSegment& seg = static_cast<const BoxSegment&>(segment);
+         new_seg = new BoxSegment(seg); 
          break;
       }
-#endif
 
       case _ListSeg_ : {
          const ListSegment& seg = static_cast<const ListSegment&>(segment);

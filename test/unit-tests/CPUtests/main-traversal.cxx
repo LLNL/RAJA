@@ -409,12 +409,14 @@ int main(int argc, char *argv[])
    // initialize test counters for this test set
    s_ntests_run = 0;
    s_ntests_passed = 0;
+   int extent = 2 ;
+   int stride = 2 ;
 
-   RangeStrideSegment rs_segment(0, 4, 2);
+   BoxSegment box_segment(0, 1, &extent, &stride);
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].isValidSegmentType(&rs_segment) ) {
-      cout << "RangeStrideSegment reported as VALID for index[0]!!!" << endl;
+   if ( index[0].isValidSegmentType(&box_segment) ) {
+      cout << "BoxSegment reported as VALID for index[0]!!!" << endl;
    } else {
       s_ntests_passed++;
       s_ntests_passed_total++;
@@ -422,8 +424,8 @@ int main(int argc, char *argv[])
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back(rs_segment) ) {
-      cout << "push_back(RangeStrideSegment) SUCCEEDED!!!" << endl;
+   if ( index[0].push_back(box_segment) ) {
+      cout << "push_back(BoxSegment) SUCCEEDED!!!" << endl;
    } else {
       s_ntests_passed++;
       s_ntests_passed_total++;
@@ -431,8 +433,8 @@ int main(int argc, char *argv[])
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back_nocopy(&rs_segment) ) {
-      cout << "push_back_cocopy(RangeStrideSegment) SUCCEEDED!!!" << endl;
+   if ( index[0].push_back_nocopy(&box_segment) ) {
+      cout << "push_back_cocopy(BoxSegment) SUCCEEDED!!!" << endl;
    } else {
       s_ntests_passed++;
       s_ntests_passed_total++;

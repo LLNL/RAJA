@@ -246,55 +246,6 @@ void forall_Icount(Index_type begin, Index_type end,
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range-stride segment objects.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iterations over range-stride segment object.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   forall( EXEC_POLICY_T(),
-           iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
-           loop_body );
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iterations over range-stride segment object with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   forall_Icount( EXEC_POLICY_T(),
-                  iseg.getBegin(), iseg.getEnd(), iseg.getStride(),
-                  icount,
-                  loop_body );
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
 // Function templates that iterate over indirection arrays.
 //
 //////////////////////////////////////////////////////////////////////

@@ -87,6 +87,7 @@
 
 #include "reducers.hxx"
 
+#include "BoxSegment.hxx"
 #include "RangeSegment.hxx"
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
