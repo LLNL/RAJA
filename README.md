@@ -1,25 +1,39 @@
-
-##############################################################################
-
 RAJA v1.0
+============
 
-Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+RAJA is a collection of C++ software abstractions, being developed at
+Lawrence Livermore National Laboratory (LLNL), that enable architecture
+portability for HPC applications. The overarching goals of RAJA are to:
 
-Produced at the Lawrence Livermore National Laboratory.
+  * Make existing (production) applications *portable with minimal disruption*
+  * Provide a model for new applications so that they are portable from
+    inception.
 
-All rights reserved.
+RAJA uses standard C++11 -- C++ is the predominant programming language in
+which many LLNL codes are written. RAJA shares goals and concepts found in
+other C++ portability abstraction approaches, such as
+[Kokkos](https://github.com/kokkos/kokkos)
+and [Thrust](https://developer.nvidia.com/thrust). RAJA is rooted in
+a perspective based on substantial experience working on production
+mesh-based multiphysics applications at LLNL. It provides constructs that
+are absent in other models and which are fundamental in those codes. Also,
+another goal of RAJA is enable application developers to adapt RAJA concepts
+and specialize them for different code implementation patterns and C++ usage,
+since data structures and algorithms vary widely across applications.
 
-Unlimited Open Source - BSD Distribution
+Documentation
+-----------------
 
-LLNL-CODE-689114
+The [**Documentation**](http://software.llnl.gov/RAJA/) is the best place
+to start learning about RAJA.
 
-OCEC-16-063
+See also:
 
-For release details and restrictions, please read the README-license.txt file.
-It is also linked here:
-- [LICENSE](./README-license.txt)
+  * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
+  * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
 
-##############################################################################
+Authors
+-----------
 
 The core developers of RAJA are:
 
@@ -34,9 +48,9 @@ Other contributors include:
   * Olga Pearce (pearce8@llnl.gov)
   * Tom Scogland (scogland1@llnl.gov)
 
-Useful information about the RAJA source code, how to compile it, 
-run tests and examples, etc. can be seen by opening the file 
-raja/docs/sphinx/html/index.html in the RAJA repo in your web browser. The 
+Useful information about the RAJA source code, how to compile it,
+run tests and examples, etc. can be seen by opening the file
+raja/docs/sphinx/html/index.html in the RAJA repo in your web browser. The
 HTML files are generated from the *.rst files in the directory raja/docs/sphinx.
 You can also look at those text files if you find this more convenient.
 
@@ -45,3 +59,19 @@ functionality or applicability of RAJA and are interested in contributing
 to its development, please do not hesitate to contact us. We are always
 interested in improving RAJA and exploring new ways to use it.
 
+Release
+-----------
+
+Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+
+Produced at the Lawrence Livermore National Laboratory.
+
+All rights reserved.
+
+Unlimited Open Source - BSD Distribution
+
+For release details and restrictions, please read the README-license.txt file.
+It is also linked here:
+- [LICENSE](./README-license.txt)
+
+`LLNL-CODE-689114`  `OCEC-16-063`
