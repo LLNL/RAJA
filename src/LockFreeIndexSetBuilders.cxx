@@ -82,7 +82,7 @@ namespace RAJA {
 void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
                                 int fastDim, int midDim, int slowDim)
 {
-   int numThreads = getMaxThreadsCPU();
+   int numThreads = getMaxOMPThreadsCPU();
 
    // printf("Lock-free created\n") ;
 
