@@ -65,7 +65,8 @@ namespace RAJA {
 *
 *************************************************************************
 */
-int getMaxThreadsCPU(); 
+int getMaxReduceThreadsCPU(); 
+int getMaxOMPThreadsCPU();
 
 
 }  // closing brace for RAJA namespace
