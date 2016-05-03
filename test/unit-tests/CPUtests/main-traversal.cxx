@@ -400,11 +400,11 @@ int main(int argc, char *argv[])
 
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run checks for adding invalid segment type to index set.
+// Run checks for Box Segment type to index set.
 //
 ///////////////////////////////////////////////////////////////////////////
 
-   cout << "\n\n BEGIN IndexSet invalid segment tests " << endl;
+   cout << "\n\n BEGIN Box Segment tests " << endl;
 
    // initialize test counters for this test set
    s_ntests_run = 0;
@@ -412,30 +412,25 @@ int main(int argc, char *argv[])
    int extent = 2 ;
    int stride = 2 ;
 
-   BoxSegment box_segment(0, 1, &extent, &stride);
+   IndexSet boxIndex ;
+   BoxSegment boxSegment(0, 1, &extent, &stride);
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].isValidSegmentType(&box_segment) ) {
-      cout << "BoxSegment reported as VALID for index[0]!!!" << endl;
-   } else {
+   if ( boxIndex.isValidSegmentType(&boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back(box_segment) ) {
-      cout << "push_back(BoxSegment) SUCCEEDED!!!" << endl;
-   } else {
+   if ( boxIndex.push_back(boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back_nocopy(&box_segment) ) {
-      cout << "push_back_cocopy(BoxSegment) SUCCEEDED!!!" << endl;
-   } else {
+   if ( boxIndex.push_back_nocopy(&boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
