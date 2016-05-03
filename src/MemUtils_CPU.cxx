@@ -145,7 +145,7 @@ void releaseCPUReductionId(int id)
 */
 CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 {
-   int nthreads = getMaxThreadsCPU();
+   int nthreads = getMaxReduceThreadsCPU();
 
    int block_offset = COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
 
@@ -186,7 +186,7 @@ void freeCPUReductionMemBlock()
 */
 Index_type* getCPUReductionLocBlock(int id)
 {
-   int nthreads = getMaxThreadsCPU();
+   int nthreads = getMaxReduceThreadsCPU();
 
    int block_offset = COHERENCE_BLOCK_SIZE/sizeof(Index_type);
 

@@ -73,7 +73,7 @@ namespace RAJA {
 *
 *************************************************************************
 */
-int getMaxThreadsCPU()
+int getMaxReduceThreadsCPU()
 {
    int nthreads = 1;
 
@@ -83,6 +83,24 @@ int getMaxThreadsCPU()
 #if defined(RAJA_USE_CILK)
    int nworkers = __cilkrts_get_nworkers();
    nthreads = std::max(nthreads, nworkers);
+#endif
+
+   return nthreads;
+}
+
+/*
+*************************************************************************
+*
+* Return max number of OpenMP threads for code run on CPU.
+*
+*************************************************************************
+*/
+int getMaxOMPThreadsCPU()
+{
+   int nthreads = 1;
+
+#if defined(_OPENMP)
+   nthreads = omp_get_max_threads();
 #endif
 
    return nthreads;
