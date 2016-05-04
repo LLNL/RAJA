@@ -41,8 +41,9 @@
 #
 ###############################################################################
 
-add_subdirectory(src/tpl/googletest-release-1.7.0)
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+add_executable(gtest-test
+  gtest-test.cxx)
 
-add_subdirectory(unit)
-add_subdirectory(integration)
+add_test(tests gtest-test)
+
+target_link_libraries(gtest-test RAJA gtest gtest_main)

@@ -41,8 +41,10 @@
 #
 ###############################################################################
 
-add_subdirectory(src/tpl/googletest-release-1.7.0)
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+include_directories(include)
 
-add_subdirectory(unit)
-add_subdirectory(integration)
+add_subdirectory(CPUtests)
+
+if(RAJA_USE_CUDA)
+  add_subdirectory(GPUtests)
+endif()
