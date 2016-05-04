@@ -82,6 +82,17 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
 
    switch ( segtype ) {
 
+      case _RangeSeg_ : {
+         const RangeSegment* tseg =
+            static_cast<const RangeSegment*>(iseg);
+         forall(
+            SEG_EXEC_POLICY_T(),
+            tseg->getBegin(), tseg->getEnd(),
+            loop_body
+         );
+         break;
+      }
+
       case _BoxSeg_ : {
          const BoxSegment* tseg =
             static_cast<const BoxSegment*>(iseg);
@@ -90,17 +101,6 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
             *tseg,
             // tseg->getCorner(), tseg->getDim(),
             // tseg->getExtent(), tseg->getStride(),
-            loop_body
-         );
-         break;
-      }
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
             loop_body
          );
          break;
@@ -146,6 +146,18 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
 
    switch ( segtype ) {
 
+      case _RangeSeg_ : {
+         const RangeSegment* tseg =
+            static_cast<const RangeSegment*>(iseg);
+         forall_Icount(
+            SEG_EXEC_POLICY_T(),
+            tseg->getBegin(), tseg->getEnd(),
+            icount,
+            loop_body
+         );
+         break;
+      }
+
       case _BoxSeg_ : {
          const BoxSegment* tseg =
             static_cast<const BoxSegment*>(iseg);
@@ -154,18 +166,6 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
             *tseg,
             // tseg->getCorner(), tseg->getDim(),
             // tseg->getExtent(), tseg->getStride(),
-            icount,
-            loop_body
-         );
-         break;
-      }
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
             icount,
             loop_body
          );
