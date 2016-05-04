@@ -42,7 +42,7 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-project(RAJA LANGUAGES CXX)
+project(RAJA LANGUAGES CXX C)
 set(CMAKE_CXX_STANDARD 11)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
