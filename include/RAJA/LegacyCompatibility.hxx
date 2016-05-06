@@ -184,6 +184,31 @@ void assign_args(ToT dst, index_sequence<To...>, Args...args) {
     ignore_args((dst[To] = args)...);
 }
 
+// Get nth element of parameter pack
+template<size_t index, size_t first, size_t... rest>
+struct get_at {
+        static constexpr size_t value = get_at<index-1, rest...>::value;
+};
+
+template<size_t first, size_t...rest>
+struct get_at<0, first, rest...> {
+        static constexpr size_t value = first;
+};
+
+// Get offset of element of parameter pack
+template<size_t diff, size_t off, size_t match, size_t... rest>
+struct get_offset_impl {
+        static constexpr size_t value = get_offset_impl<match-get_at<off+1, rest...>::value, off+1, match, rest...>::value;
+};
+
+template<size_t off, size_t match, size_t...rest>
+struct get_offset_impl<0, off, match, rest...> {
+        static constexpr size_t value = off;
+};
+
+template<size_t match, size_t first, size_t...rest>
+struct get_offset : public get_offset_impl<match-first, 0, match, first, rest...>{};
+
 }
 
 #endif

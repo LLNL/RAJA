@@ -46,152 +46,64 @@
 #ifndef RAJA_forallN_generic_HXX__
 #define RAJA_forallN_generic_HXX__
 
+#include "RAJA/LegacyCompatibility.hxx"
 #include "RAJA/forallN_generic_lf.hxx"
 
 namespace RAJA {
 
 
-/*!
- * \brief Provides abstraction of a 1-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename TI, typename BODY>
+template<typename POLICY, typename ...Indices, typename...ExecPolicies, typename BODY, typename... Ts>
 RAJA_INLINE
-void forallN(TI const &is_i, BODY const &body){
+void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>, BODY const &body, const Ts ... args){
+  static_assert(sizeof...(ExecPolicies) == sizeof...(args),
+                "The number of execution policies and arguments does not match");
   // extract next policy
   typedef typename POLICY::NextPolicy             NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
 
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  
   // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, IdxI> IDX_CONV;
+  typedef ForallN_IndexTypeConverter<BODY, Indices...> IDX_CONV;
 
   // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
-    ForallN_PolicyPair<PolicyI, TI>(is_i));
+  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body), ForallN_PolicyPair<ExecPolicies, Ts>(args)...);
 }
 
-/*!
- * \brief Provides abstraction of a 2-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename TI, typename TJ, typename BODY>
+template<typename T, typename T2>
+T return_first(T a, T2 b) { return a; }
+
+template<typename POLICY, typename...Indices, size_t ... Range, typename BODY, typename... Ts>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, BODY const &body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
+void forallN_impl(VarOps::index_sequence<Range...>, BODY const &body, const Ts ... args){
   
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ> IDX_CONV;
-
-  // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
-    ForallN_PolicyPair<PolicyI, TI>(is_i),
-    ForallN_PolicyPair<PolicyJ, TJ>(is_j));
+  static_assert(sizeof...(Indices) <= sizeof...(args),
+                "More index types have been specified than arguments, one of these is wrong");
+  // Make it look like variadics can have defaults
+  using index_type_tuple = decltype(
+                             std::tuple_cat(
+                               std::tuple<Indices...>(),
+                               std::tuple<decltype(return_first((Index_type)0, args))...>()));
+  forallN_impl_extract<POLICY, typename std::tuple_element<Range, index_type_tuple>::type...>(typename POLICY::ExecPolicies(), body, args...);
 }
 
-/*!
- * \brief Provides abstraction of a 3-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename TI, typename TJ, typename TK, typename BODY>
+template<typename POLICY, typename...Indices, size_t...I0s, size_t...I1s, typename...Ts>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, BODY const &body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
-  using PolicyK = typename std::tuple_element<2, typename ExecPolicies::tuple>::type;
-  
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK> IDX_CONV;
-
-  // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
-    ForallN_PolicyPair<PolicyI, TI>(is_i),
-    ForallN_PolicyPair<PolicyJ, TJ>(is_j),
-    ForallN_PolicyPair<PolicyK, TK>(is_k));
+void fun_unpacker(VarOps::index_sequence<I0s...>,
+                  VarOps::index_sequence<I1s...>,
+                  std::tuple<Ts...> args)
+{
+    forallN_impl<POLICY, Indices...> (VarOps::make_index_sequence<std::tuple_size<decltype(args)>::value - 1>(),
+                                      std::get<I0s>(std::move(args))..., std::get<I1s>(std::move(args))...);
 }
 
-/*!
- * \brief Provides abstraction of a 4-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename TI, typename TJ, typename TK, typename TL, typename BODY>
+template<typename POLICY, typename...Indices, typename... Ts>
 RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, BODY const &body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
-  using PolicyK = typename std::tuple_element<2, typename ExecPolicies::tuple>::type;
-  using PolicyL = typename std::tuple_element<3, typename ExecPolicies::tuple>::type;
-  
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL> IDX_CONV;
-
-  // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
-    ForallN_PolicyPair<PolicyI, TI>(is_i),
-    ForallN_PolicyPair<PolicyJ, TJ>(is_j),
-    ForallN_PolicyPair<PolicyK, TK>(is_k),
-    ForallN_PolicyPair<PolicyL, TL>(is_l));
+void forallN(Ts... args)
+{
+    fun_unpacker<POLICY, Indices...> (
+            VarOps::index_sequence<sizeof...(args) - 1>{},
+            VarOps::make_index_sequence<sizeof...(args) - 1>{},
+            std::make_tuple(std::forward<Ts>(args)...));
 }
-
-/*!
- * \brief Provides abstraction of a 5-nested loop
- *
- * Provides index typing, and initial nested policy unwrapping
- */
-template<typename POLICY, typename IdxI=Index_type, typename IdxJ=Index_type, typename IdxK=Index_type, typename IdxL=Index_type, typename IdxM=Index_type, typename TI, typename TJ, typename TK, typename TL, typename TM, typename BODY>
-RAJA_INLINE
-void forallN(TI const &is_i, TJ const &is_j, TK const &is_k, TL const &is_l, TM const &is_m, BODY const &body){
-  // extract next policy
-  typedef typename POLICY::NextPolicy             NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag  NextPolicyTag;
-
-  // extract each loop's execution policy
-  using ExecPolicies = typename POLICY::ExecPolicies;
-  using PolicyI = typename std::tuple_element<0, typename ExecPolicies::tuple>::type;
-  using PolicyJ = typename std::tuple_element<1, typename ExecPolicies::tuple>::type;
-  using PolicyK = typename std::tuple_element<2, typename ExecPolicies::tuple>::type;
-  using PolicyL = typename std::tuple_element<3, typename ExecPolicies::tuple>::type;
-  using PolicyM = typename std::tuple_element<4, typename ExecPolicies::tuple>::type;
-  
-  // Create index type conversion layer
-  typedef ForallN_IndexTypeConverter<BODY, IdxI, IdxJ, IdxK, IdxL, IdxM> IDX_CONV;
-
-  // call policy layer with next policy
-  forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(), IDX_CONV(body),
-    ForallN_PolicyPair<PolicyI, TI>(is_i),
-    ForallN_PolicyPair<PolicyJ, TJ>(is_j),
-    ForallN_PolicyPair<PolicyK, TK>(is_k),
-    ForallN_PolicyPair<PolicyL, TL>(is_l),
-    ForallN_PolicyPair<PolicyM, TM>(is_m));
-}
-
-
 
 } // namespace RAJA
   

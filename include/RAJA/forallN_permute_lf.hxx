@@ -74,17 +74,43 @@ struct Permute {
 
 
 
-
-
-
 /******************************************************************
  *  forallN_policy(), loop interchange policies
  ******************************************************************/
 
-// Forward declaration (for stuff that is currently code-gen'ed)
-template<typename PERM, typename BODY>
-struct ForallN_Permute_Functor;
+template<typename Range, typename PERM, typename BODY>
+struct ForallN_Permute_Functor_impl;
 
+template<size_t ... Range, size_t ... PermInts, typename BODY>
+struct ForallN_Permute_Functor_impl<VarOps::index_sequence<Range...>, VarOps::index_sequence<PermInts...>, BODY>{
+
+  RAJA_INLINE
+  constexpr
+  explicit ForallN_Permute_Functor_impl(BODY const &b) : body(b) {}
+
+  template<typename ... Indices>
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  void operator()(Indices ... indices) const {
+      auto args = std::forward_as_tuple(indices...);
+      constexpr size_t perms[] = {VarOps::get_offset<Range, PermInts...>::value...};
+      VarOps::invoke(
+        std::forward_as_tuple(std::get<perms[Range]>(args)...),
+        body);
+  }
+
+  template<typename NextPolicy, typename TAG, typename ...Ps>
+  RAJA_INLINE
+  void callNextPolicy(const Ps &...ps) const {
+    auto args = std::forward_as_tuple(ps...);
+    forallN_policy<NextPolicy>(TAG(), *this, std::get<PermInts>(args)...);
+  }
+
+  BODY body;
+};
+template<typename PERM, typename BODY>
+using ForallN_Permute_Functor = ForallN_Permute_Functor_impl<VarOps::make_index_sequence<PERM::size>, PERM, BODY>;
 
 /*!
  * \brief Permutation policy function, providing loop interchange.

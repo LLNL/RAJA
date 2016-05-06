@@ -47,7 +47,16 @@
 #include "RAJA/LegacyCompatibility.hxx"
 #include "RAJA/IndexValue.hxx"
 #include <iostream>
+#include <algorithm>
+#include <array>
+#include <cstring>
 
+namespace RAJA {
+
+/******************************************************************
+ *  Permutation tags
+ ******************************************************************/
+ 
 using PERM_I = VarOps::index_sequence<0>;
 using PERM_IJ = VarOps::index_sequence<0,1>;
 using PERM_JI = VarOps::index_sequence<1,0>;
