@@ -1,6 +1,8 @@
 RAJA v1.0
 ============
 
+[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 RAJA is a collection of C++ software abstractions, being developed at
 Lawrence Livermore National Laboratory (LLNL), that enable architecture
 portability for HPC applications. The overarching goals of RAJA are to:
