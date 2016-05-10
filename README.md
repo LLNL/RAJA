@@ -34,6 +34,12 @@ See also:
   * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
   * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
 
+Mailing List
+-----------------
+
+Interested in RAJA? Want to contribute? The first thing to do is join our mailing list, over at Google Groups:
+- [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users)
+
 Authors
 -----------
 
