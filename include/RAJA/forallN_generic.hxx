@@ -54,7 +54,7 @@ namespace RAJA {
 
 template<typename POLICY, typename ...Indices, typename...ExecPolicies, typename BODY, typename... Ts>
 RAJA_INLINE
-void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>, BODY const &body, const Ts ... args){
+void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>, BODY &&body, const Ts& ... args){
   static_assert(sizeof...(ExecPolicies) == sizeof...(args),
                 "The number of execution policies and arguments does not match");
   // extract next policy
@@ -71,38 +71,39 @@ void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>, BODY const &body, con
 template<typename T, typename T2>
 T return_first(T a, T2 b) { return a; }
 
-template<typename POLICY, typename...Indices, size_t ... Range, typename BODY, typename... Ts>
+template<typename POLICY, typename...Indices, size_t ... Range, size_t ... Unspecified,typename BODY, typename... Ts>
 RAJA_INLINE
-void forallN_impl(VarOps::index_sequence<Range...>, BODY const &body, const Ts ... args){
+void forallN_impl(VarOps::index_sequence<Range...>, VarOps::index_sequence<Unspecified...>, BODY &&body, const Ts& ... args){
   
   static_assert(sizeof...(Indices) <= sizeof...(args),
                 "More index types have been specified than arguments, one of these is wrong");
   // Make it look like variadics can have defaults
-  using index_type_tuple = decltype(
-                             std::tuple_cat(
-                               std::tuple<Indices...>(),
-                               std::tuple<decltype(return_first((Index_type)0, args))...>()));
-  forallN_impl_extract<POLICY, typename std::tuple_element<Range, index_type_tuple>::type...>(typename POLICY::ExecPolicies(), body, args...);
+  forallN_impl_extract<POLICY, Indices..., decltype(return_first((Index_type)0, Unspecified))...>(
+          typename POLICY::ExecPolicies(),
+          body,
+          args...);
 }
 
 template<typename POLICY, typename...Indices, size_t...I0s, size_t...I1s, typename...Ts>
 RAJA_INLINE
 void fun_unpacker(VarOps::index_sequence<I0s...>,
                   VarOps::index_sequence<I1s...>,
-                  std::tuple<Ts...> args)
+                  Ts&&... args)
 {
-    forallN_impl<POLICY, Indices...> (VarOps::make_index_sequence<std::tuple_size<decltype(args)>::value - 1>(),
-                                      std::get<I0s>(std::move(args))..., std::get<I1s>(std::move(args))...);
+    forallN_impl<POLICY, Indices...> (VarOps::make_index_sequence<sizeof...(args) - 1>(),
+                                      VarOps::make_index_sequence<sizeof...(args) - 1 - sizeof...(Indices)>(),
+                                      VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
+                                      VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
 }
 
 template<typename POLICY, typename...Indices, typename... Ts>
 RAJA_INLINE
-void forallN(Ts... args)
+void forallN(Ts&&... args)
 {
     fun_unpacker<POLICY, Indices...> (
             VarOps::index_sequence<sizeof...(args) - 1>{},
             VarOps::make_index_sequence<sizeof...(args) - 1>{},
-            std::make_tuple(std::forward<Ts>(args)...));
+            VarOps::forward<Ts>(args)...);
 }
 
 } // namespace RAJA

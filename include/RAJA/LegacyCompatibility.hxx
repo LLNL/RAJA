@@ -1,7 +1,11 @@
 #ifndef KRIPKE_LEGAGY_COMPATIBILITY_HXX
 #define KRIPKE_LEGAGY_COMPATIBILITY_HXX 1
 
-static_assert(__cplusplus >= 201103L, "C++ standards below 2011 are not supported");
+#define stringify(X) #X
+
+#if !defined(__INTEL_COMPILER)
+static_assert(__cplusplus >= 201103L, "C++ standards below 2011 are not supported" stringify(__cplusplus));
+#endif
 
 #include <type_traits>
 #include <utility>
@@ -9,9 +13,39 @@ static_assert(__cplusplus >= 201103L, "C++ standards below 2011 are not supporte
 #include <functional>
 #include <cstdint>
 
+#if __cplusplus > 201400L
+#define RAJA_CXX14_CONSTEXPR constexpr
+#else
+#define RAJA_CXX14_CONSTEXPR
+#endif
+
+// #if defined(RAJA_USE_CUDA)
+// #include <thrust/tuple.h>
+// namespace VarOps {
+//     using thrust::tuple;
+//     using thrust::tuple_element;
+//     using thrust::get;
+//     using thrust::tuple_size;
+//     using thrust::make_tuple;
+// }
+// #else
+#include <tuple>
+namespace VarOps {
+    using std::tuple;
+    using std::tuple_element;
+    using std::tuple_cat;
+    using std::get;
+    using std::tuple_size;
+    using std::make_tuple;
+}
+// #endif
+
+
 namespace VarOps {
 
 // Basics, using c++14 semantics in a c++11 compatible way, credit to libc++
+
+// Forward
 template <class T> struct remove_reference {
     typedef T type;
 };
@@ -22,13 +56,17 @@ template <class T> struct remove_reference<T&&> {
     typedef T type;
 };
 template <class T>
-constexpr T&& forward(typename remove_reference<T>::type& t) noexcept{
-    return static_cast<T&&>(t);
-}
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr T&& forward(typename remove_reference<T>::type& t) noexcept{
+        return static_cast<T&&>(t);
+    }
 template <class T>
-constexpr T&& forward(typename remove_reference<T>::type&& t) noexcept{
-    return static_cast<T&&>(t);
-}
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr T&& forward(typename remove_reference<T>::type&& t) noexcept{
+        return static_cast<T&&>(t);
+    }
 
 // FoldL
 template<typename Op, typename ...Rest>
@@ -51,12 +89,16 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
 };
 
 template <typename Op, typename Arg1>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 constexpr auto foldl(Op&& operation, Arg1&& arg) -> typename foldl_impl<Op, Arg1>::Ret
 {
     return forward<Arg1&&>(arg);
 }
 
 template <typename Op, typename Arg1, typename Arg2>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 constexpr auto foldl(Op&& operation, Arg1&& arg1, Arg2&& arg2) ->  typename foldl_impl<Op, Arg1, Arg2>::Ret
 {
     return forward<Op&&>(operation)(
@@ -65,6 +107,8 @@ constexpr auto foldl(Op&& operation, Arg1&& arg1, Arg2&& arg2) ->  typename fold
 
 template <typename Op, typename Arg1, typename Arg2, typename Arg3,
     typename... Rest>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 constexpr auto foldl(
     Op&& operation, Arg1&& arg1, Arg2&& arg2, Arg3&& arg3, Rest&&... rest) ->  typename foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>::Ret
 {
@@ -78,6 +122,8 @@ constexpr auto foldl(
 
 // Convenience folds
 template<typename Result, typename ... Args>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 Result sum(Args...args)
 {
     return foldl([](Result l, Result r){ return l + r; }, args...);
@@ -110,6 +156,8 @@ struct integer_sequence{
 };
 
 template<template <class...> class Seq, class First, class ...Ints>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 constexpr auto rotate_left_one(const Seq<First, Ints...>) -> Seq<Ints..., First>
 {
     return Seq<Ints..., First>{};
@@ -122,22 +170,20 @@ namespace integer_sequence_detail {
 // using aliases for cleaner syntax
 template<class T> using Invoke = typename T::type;
 
-template<typename T, class S1, class S2> struct concat;
+template<class S1, class S2> struct concat;
 
-template<typename T, T... I1, T... I2>
-struct concat<T, integer_sequence<I1...>, integer_sequence<I2...>>
+template<size_t... I1, size_t... I2>
+struct concat<integer_sequence<I1...>, integer_sequence<I2...>>
   : integer_sequence<I1..., (sizeof...(I1)+I2)...>{};
 
-template<typename T, class S1, class S2>
-using Concat = Invoke<concat<T, S1, S2>>;
+template<class S1, class S2>
+using Concat = Invoke<concat<S1, S2>>;
 
 template<size_t N> struct gen_seq;
 template<size_t N> using GenSeq = Invoke<gen_seq<N>>;
 
 template<size_t N>
-struct gen_seq : integer_sequence_detail::Concat<size_t,
-                 integer_sequence_detail::GenSeq<N/2>,
-                 integer_sequence_detail::GenSeq<N - N/2>>{};
+struct gen_seq : Concat< GenSeq<N/2>, GenSeq<N - N/2>>{};
 
 template<> struct gen_seq<0> : integer_sequence<>{};
 template<> struct gen_seq<1> : integer_sequence<0>{};
@@ -153,18 +199,24 @@ using index_sequence = integer_sequence<Ints...>;
 // Invoke
 
 template<typename Fn, size_t ...Sequence, typename TupleLike>
-constexpr auto invoke_with_order(TupleLike&& t, Fn&& f, index_sequence<Sequence...>) -> decltype(f(std::get<Sequence>(t)...)) {
-    return f(std::get<Sequence>(t)...);
+RAJA_HOST_DEVICE
+RAJA_INLINE
+constexpr auto invoke_with_order(TupleLike&& t, Fn&& f, index_sequence<Sequence...>) -> decltype(f(get<Sequence>(t)...)) {
+    return f(get<Sequence>(t)...);
 }
 
 template<typename Fn, typename TupleLike>
-constexpr auto invoke(TupleLike&& t, Fn&& f)
-    -> decltype(invoke_with_order(t, f, make_index_sequence<std::tuple_size<TupleLike>::value>{})) {
-    return invoke_with_order(t, f, make_index_sequence<std::tuple_size<TupleLike>::value>{});
+RAJA_HOST_DEVICE
+RAJA_INLINE
+constexpr auto invoke(TupleLike&& t, Fn&& f) 
+    -> decltype(invoke_with_order(t, f, make_index_sequence<tuple_size<TupleLike>::value>{})) {
+    return invoke_with_order(t, f, make_index_sequence<tuple_size<TupleLike>::value>{});
 }
 
 // Ignore helper
 template<typename ... Args>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 void ignore_args(Args...) {}
 
 // Assign
@@ -173,6 +225,8 @@ template<size_t ... To,
          size_t ... From,
          typename ToT,
          typename FromT>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 void assign(ToT dst, FromT src, index_sequence<To...>, index_sequence<From...>) {
     ignore_args((dst[To] = src[From])...);
 }
@@ -180,6 +234,8 @@ void assign(ToT dst, FromT src, index_sequence<To...>, index_sequence<From...>) 
 template<size_t ... To,
          typename ToT,
          typename... Args>
+RAJA_HOST_DEVICE
+RAJA_INLINE
 void assign_args(ToT dst, index_sequence<To...>, Args...args) {
     ignore_args((dst[To] = args)...);
 }
@@ -195,6 +251,17 @@ struct get_at<0, first, rest...> {
         static constexpr size_t value = first;
 };
 
+// Get nth element of parameter pack
+template<size_t index, typename first, typename... rest>
+struct get_type_at {
+        using type = typename get_type_at<index-1, rest...>::type;
+};
+
+template<typename first, typename...rest>
+struct get_type_at<0, first, rest...> {
+        using type = first;
+};
+
 // Get offset of element of parameter pack
 template<size_t diff, size_t off, size_t match, size_t... rest>
 struct get_offset_impl {
@@ -208,6 +275,30 @@ struct get_offset_impl<0, off, match, rest...> {
 
 template<size_t match, size_t first, size_t...rest>
 struct get_offset : public get_offset_impl<match-first, 0, match, first, rest...>{};
+
+// Get nth element of argument list
+// TODO: add specializations to make this compile faster and with less
+// recursion
+template<size_t index>
+struct get_arg_at {
+    template<typename First, typename... Rest>
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+    static constexpr auto value(First&& first, Rest&&...rest) -> decltype(VarOps::forward<typename VarOps::get_type_at<index-1,Rest...>::type>(get_arg_at<index-1>::value(VarOps::forward<Rest>(rest)...))){
+        static_assert(index < sizeof...(Rest) + 1, "index is past the end");
+        return VarOps::forward<typename VarOps::get_type_at<index-1,Rest...>::type>(get_arg_at<index-1>::value(VarOps::forward<Rest>(rest)...));
+    }
+};
+
+template<>
+struct get_arg_at<0> {
+    template<typename First, typename...Rest>
+        RAJA_HOST_DEVICE
+        RAJA_INLINE
+    static constexpr auto value(First&& first, Rest&&...rest) -> decltype(VarOps::forward<First>(first)) {
+        return VarOps::forward<First>(first);
+    }
+};
 
 }
 

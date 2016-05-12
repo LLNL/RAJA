@@ -47,6 +47,7 @@
 #include "RAJA/LegacyCompatibility.hxx"
 #include "RAJA/IndexValue.hxx"
 #include <iostream>
+#include <limits>
 #include <algorithm>
 #include <array>
 #include <cstring>

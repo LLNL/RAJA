@@ -93,18 +93,14 @@ struct ForallN_Permute_Functor_impl<VarOps::index_sequence<Range...>, VarOps::in
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Indices ... indices) const {
-      auto args = std::forward_as_tuple(indices...);
       constexpr size_t perms[] = {VarOps::get_offset<Range, PermInts...>::value...};
-      VarOps::invoke(
-        std::forward_as_tuple(std::get<perms[Range]>(args)...),
-        body);
+      body(VarOps::get_arg_at<perms[Range]>::value(indices...)...);
   }
 
   template<typename NextPolicy, typename TAG, typename ...Ps>
   RAJA_INLINE
   void callNextPolicy(const Ps &...ps) const {
-    auto args = std::forward_as_tuple(ps...);
-    forallN_policy<NextPolicy>(TAG(), *this, std::get<PermInts>(args)...);
+    forallN_policy<NextPolicy>(TAG(), *this, VarOps::get_arg_at<PermInts>::value(ps...)...);
   }
 
   BODY body;
