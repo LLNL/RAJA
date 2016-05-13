@@ -35,6 +35,10 @@ See also:
   * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
   * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
 
+To cite RAJA, please use the following reference:
+
+* R. D. Hornung and J. A. Keasler, “The RAJA Poratability Layer: Overview and Status,” Tech Report, LLNL-TR-661403, Sep. 2014.
+
 Mailing List
 -----------------
 
