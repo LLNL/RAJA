@@ -227,6 +227,7 @@ void forall_Icount(cilk_for_exec,
 //////////////////////////////////////////////////////////////////////
 //
 
+#if defined(RAJA_USE_BOXSEGMENT)
 /*!
  ******************************************************************************
  *
@@ -332,6 +333,7 @@ void forall_Icount(cilk_for_exec,
 
    RAJA_FT_END ;
 }
+#endif  // defined(RAJA_USE_BOXSEGMENT)
 
 
 //

@@ -282,6 +282,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
    RAJA_FT_END ;
 }
 
+#if defined(RAJA_USE_BOXSEGMENT)
 //
 ////////////////////////////////////////////////////////////////////////
 //
@@ -551,6 +552,7 @@ void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
       RAJA_FT_END ;
    }
 }
+#endif  // defined(RAJA_USE_BOXSEGMENT)
 
 
 //

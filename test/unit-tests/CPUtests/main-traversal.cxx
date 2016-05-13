@@ -398,6 +398,7 @@ int main(int argc, char *argv[])
    cout << "\n END IndexSet equality/inequality tests " << endl;
 
 
+#if defined(RAJA_USE_BOXSEGMENT)
 ///////////////////////////////////////////////////////////////////////////
 //
 // Run checks for Box Segment type to index set.
@@ -439,6 +440,7 @@ int main(int argc, char *argv[])
         << s_ntests_passed << " / " << s_ntests_run << endl;
 
    cout << "\n END IndexSet invalid segment tests " << endl;
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
 
 ///////////////////////////////////////////////////////////////////////////

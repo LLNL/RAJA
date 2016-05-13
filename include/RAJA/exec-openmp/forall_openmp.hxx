@@ -314,6 +314,7 @@ void forall_Icount(omp_for_nowait_exec,
 }
 
 
+#if defined(RAJA_USE_BOXSEGMENT)
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -670,6 +671,7 @@ void forall_Icount(omp_for_nowait_exec,
 
    RAJA_FT_END ;
 }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
 //
 //////////////////////////////////////////////////////////////////////

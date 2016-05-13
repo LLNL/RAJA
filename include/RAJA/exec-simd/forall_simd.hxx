@@ -191,6 +191,7 @@ RAJA_SIMD
 }
 
 
+#if defined(RAJA_USE_BOXSEGMENT)
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -320,6 +321,7 @@ void forall_Icount(simd_exec,
    RAJA_FT_END ;
 #endif
 }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
 
 //

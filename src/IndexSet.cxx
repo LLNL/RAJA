@@ -52,7 +52,10 @@
 
 #include "RAJA/IndexSet.hxx"
 
+#if defined(RAJA_USE_BOXSEGMENT)
 #include "RAJA/BoxSegment.hxx"
+#endif
+
 #include "RAJA/RangeSegment.hxx"
 #include "RAJA/ListSegment.hxx"
 
@@ -134,7 +137,9 @@ bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
       SegmentType seg_type = segment->getType(); 
    
       if ( seg_type == _RangeSeg_ ||
+#if defined(RAJA_USE_BOXSEGMENT)
            seg_type == _BoxSeg_ ||
+#endif
            seg_type == _ListSeg_ ) 
       {
          ret_val = true;
@@ -320,6 +325,7 @@ void IndexSet::print(std::ostream& os) const
             break;
          }
 
+#if defined(RAJA_USE_BOXSEGMENT)
          case _BoxSeg_ : {
             if ( iseg ) {
                os << "\t icount = " << seg_info->getIcount() << std::endl;
@@ -329,6 +335,7 @@ void IndexSet::print(std::ostream& os) const
             }
             break;
          }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
          case _ListSeg_ : {
             if ( iseg ) {
@@ -381,10 +388,12 @@ void IndexSet::copy(const IndexSet& other)
                break;
             }
 
+#if defined(RAJA_USE_BOXSEGMENT)
             case _BoxSeg_ : {
                push_back(*static_cast<const BoxSegment*>(iseg));
                break;
             }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
             case _ListSeg_ : {
                push_back(*static_cast<const ListSegment*>(iseg));
@@ -463,11 +472,13 @@ BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
          break;
       }
 
+#if defined(RAJA_USE_BOXSEGMENT)
       case _BoxSeg_ : {
          const BoxSegment& seg = static_cast<const BoxSegment&>(segment);
          new_seg = new BoxSegment(seg); 
          break;
       }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
       case _ListSeg_ : {
          const ListSegment& seg = static_cast<const ListSegment&>(segment);

@@ -18,6 +18,7 @@
  ******************************************************************************
  */
 
+#if defined(RAJA_USE_BOXSEGMENT)
 #include "RAJA/BoxSegment.hxx"
 
 #include <iostream>
@@ -42,3 +43,9 @@ void BoxSegment::print(std::ostream& os) const
 
 
 }  // closing brace for RAJA namespace
+#else
+static void dummyfunc()
+{
+   return ;
+}
+#endif // defined(RAJA_USE_BOXSEGMENT)

@@ -93,6 +93,7 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
          break;
       }
 
+#if defined(RAJA_USE_BOXSEGMENT)
       case _BoxSeg_ : {
          const BoxSegment* tseg =
             static_cast<const BoxSegment*>(iseg);
@@ -105,6 +106,7 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
          );
          break;
       }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
       case _ListSeg_ : {
          const ListSegment* tseg =
@@ -158,6 +160,7 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
          break;
       }
 
+#if defined(RAJA_USE_BOXSEGMENT)
       case _BoxSeg_ : {
          const BoxSegment* tseg =
             static_cast<const BoxSegment*>(iseg);
@@ -171,6 +174,7 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
          );
          break;
       }
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
       case _ListSeg_ : {
          const ListSegment* tseg =
