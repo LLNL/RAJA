@@ -37,7 +37,7 @@ See also:
 
 To cite RAJA, please use the following reference:
 
-* R. D. Hornung and J. A. Keasler, “The RAJA Poratability Layer: Overview and Status,” Tech Report, LLNL-TR-661403, Sep. 2014.
+* R. D. Hornung and J. A. Keasler, “[The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf),” Tech Report, LLNL-TR-661403, Sep. 2014.
 
 Mailing List
 -----------------
