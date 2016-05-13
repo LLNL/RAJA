@@ -1,6 +1,9 @@
 RAJA v1.0
 ============
 
+[![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
+[![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 RAJA is a collection of C++ software abstractions, being developed at
 Lawrence Livermore National Laboratory (LLNL), that enable architecture
 portability for HPC applications. The overarching goals of RAJA are to:
@@ -31,6 +34,16 @@ See also:
 
   * [The RAJA Portability Layer: Overview and Status (2014)](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf)
   * [RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)](http://software.llnl.gov/RAJA/_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf)
+
+To cite RAJA, please use the following reference:
+
+* R. D. Hornung and J. A. Keasler, “[The RAJA Poratability Layer: Overview and Status](http://software.llnl.gov/RAJA/_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf),” Tech Report, LLNL-TR-661403, Sep. 2014.
+
+Mailing List
+-----------------
+
+Interested in RAJA? Want to contribute? The first thing to do is join our mailing list, over at Google Groups:
+- [RAJA Google Group](https://groups.google.com/forum/#!forum/raja-users)
 
 Authors
 -----------
