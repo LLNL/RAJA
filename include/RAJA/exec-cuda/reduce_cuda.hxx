@@ -1156,13 +1156,13 @@ public:
           retiredBlocks[m_myID] = 0;
         }
 
-        CudaReductionLocBlockDataType lmin;
-        lmin.val = m_reduced_val;
-        lmin.idx = m_reduced_idx;
+        CudaReductionLocBlockDataType lmax;
+        lmax.val = m_reduced_val;
+        lmax.idx = m_reduced_idx;
         for (int i = threadIdx.x; i < gridDim.x; i += BLOCK_SIZE) {
-            lmin = RAJA_MAXLOC(lmin,m_blockdata[m_blockoffset+i+1]);
+            lmax = RAJA_MAXLOC(lmax,m_blockdata[m_blockoffset+i+1]);
         }
-        sd[threadIdx.x] = lmin;
+        sd[threadIdx.x] = lmax;
         __syncthreads();
 
         for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
