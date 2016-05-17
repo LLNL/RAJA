@@ -75,7 +75,7 @@ TilingMode const lulesh_tiling_mode = Canonical;
 typedef RAJA::seq_segit         Segment_Iter;
 
 /// Define thread block size for CUDA exec policy
-const size_t thread_block_size = 256;
+const size_t thread_block_size = 32;
 typedef RAJA::cuda_exec<thread_block_size>    Segment_Exec;
 
 typedef RAJA::IndexSet::ExecPolicy<Segment_Iter, Segment_Exec> node_exec_policy;

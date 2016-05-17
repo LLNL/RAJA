@@ -63,7 +63,7 @@ namespace RAJA {
 /// Enum describing index set types.
 ///
 enum SegmentType { _RangeSeg_, 
-                   _RangeStrideSeg_, 
+                   _BoxSeg_, 
                    _ListSeg_, 
                    _UnknownSeg_   // Keep last; used for default in case stmts
                  };

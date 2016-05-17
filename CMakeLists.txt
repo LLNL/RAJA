@@ -159,6 +159,7 @@ install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include
 if (RAJA_USE_CUDA)
 cuda_add_library(RAJA
     src/AlignedRangeIndexSetBuilders.cxx
+    src/BoxSegment.cxx
     src/DepGraphNode.cxx
     src/IndexSet.cxx
     src/ListSegment.cxx
@@ -171,6 +172,7 @@ cuda_add_library(RAJA
 else()
 add_library(RAJA
     src/AlignedRangeIndexSetBuilders.cxx
+    src/BoxSegment.cxx
     src/DepGraphNode.cxx
     src/IndexSet.cxx
     src/ListSegment.cxx

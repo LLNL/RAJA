@@ -389,8 +389,10 @@ public:
    {
       __shared__ T sd[BLOCK_SIZE];
 
-      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
-          m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      if ( blockIdx.x  + blockIdx.y  + blockIdx.z +
+           threadIdx.x + threadIdx.y + threadIdx.z == 0 ) {
+          int numBlocks = gridDim.x * gridDim.y * gridDim.z ;
+          m_max_grid_size[0] = RAJA_MAX( numBlocks,  m_max_grid_size[0] );
       } 
 
       // initialize shared memory
@@ -435,11 +437,12 @@ public:
       __syncthreads();
 
       if (threadIdx.x < 1) {
+          int blockID = m_blockoffset + 1 + blockIdx.x +
+                        blockIdx.y*gridDim.x +
+                        blockIdx.z*gridDim.x*gridDim.y ;
           sd[0] = RAJA_MIN(sd[0],sd[1]);
 #if defined(RAJA_USE_NO_ATOMICS)
-          m_blockdata[m_blockoffset + blockIdx.x+1]  = 
-              RAJA_MIN( sd[0], m_blockdata[m_blockoffset + blockIdx.x+1] );
-          
+          m_blockdata[blockID]  = RAJA_MIN( sd[0], m_blockdata[blockID] );
 #else
           atomicMin( &m_blockdata[m_blockoffset], sd[0] );
 #endif
@@ -561,8 +564,10 @@ public:
    {
       __shared__ T sd[BLOCK_SIZE];
 
-      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
-         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      if ( blockIdx.x  + blockIdx.y  + blockIdx.z +
+           threadIdx.x + threadIdx.y + threadIdx.z == 0 ) {
+          int numBlocks = gridDim.x * gridDim.y * gridDim.z ;
+          m_max_grid_size[0] = RAJA_MAX( numBlocks,  m_max_grid_size[0] );
       }
 
        // initialize shared memory
@@ -606,11 +611,12 @@ public:
       __syncthreads();
 
       if (threadIdx.x < 1) {
+          int blockID = m_blockoffset + 1 + blockIdx.x +
+                        blockIdx.y*gridDim.x +
+                        blockIdx.z*gridDim.x*gridDim.y ;
           sd[0] = RAJA_MAX(sd[0],sd[1]);
 #if defined(RAJA_USE_NO_ATOMICS)
-          m_blockdata[m_blockoffset + blockIdx.x+1]  =
-              RAJA_MAX( sd[0], m_blockdata[m_blockoffset + blockIdx.x+1] );
-
+          m_blockdata[blockID]  = RAJA_MAX( sd[0], m_blockdata[blockID] );
 #else
           atomicMax( &m_blockdata[m_blockoffset], sd[0] );
 #endif
@@ -733,8 +739,10 @@ public:
    {
       __shared__ T sd[BLOCK_SIZE];
 
-      if ( blockDim.x * blockIdx.x + threadIdx.x == 0 ) {
-         m_max_grid_size[0] = RAJA_MAX( gridDim.x,  m_max_grid_size[0] );
+      if ( blockIdx.x  + blockIdx.y  + blockIdx.z +
+           threadIdx.x + threadIdx.y + threadIdx.z == 0 ) {
+         int numBlocks = gridDim.x * gridDim.y * gridDim.z ;
+         m_max_grid_size[0] = RAJA_MAX( numBlocks,  m_max_grid_size[0] );
       }
 
        // initialize shared memory
@@ -769,7 +777,10 @@ public:
       // one thread adds to gmem, we skip m_blockdata[m_blockoffset]
       // because we will be accumlating into this
       if (threadIdx.x == 0) {
-         m_blockdata[m_blockoffset + blockIdx.x+1] += temp ;
+         int blockID = m_blockoffset + 1 + blockIdx.x +
+                       blockIdx.y*gridDim.x +
+                       blockIdx.z*gridDim.x*gridDim.y ;
+         m_blockdata[blockID] += temp ;
       }
 
       return *this ;

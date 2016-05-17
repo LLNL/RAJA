@@ -398,42 +398,40 @@ int main(int argc, char *argv[])
    cout << "\n END IndexSet equality/inequality tests " << endl;
 
 
+#if defined(RAJA_USE_BOXSEGMENT)
 ///////////////////////////////////////////////////////////////////////////
 //
-// Run checks for adding invalid segment type to index set.
+// Run checks for Box Segment type to index set.
 //
 ///////////////////////////////////////////////////////////////////////////
 
-   cout << "\n\n BEGIN IndexSet invalid segment tests " << endl;
+   cout << "\n\n BEGIN Box Segment tests " << endl;
 
    // initialize test counters for this test set
    s_ntests_run = 0;
    s_ntests_passed = 0;
+   int extent = 2 ;
+   int stride = 2 ;
 
-   RangeStrideSegment rs_segment(0, 4, 2);
+   IndexSet boxIndex ;
+   BoxSegment boxSegment(0, 1, &extent, &stride);
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].isValidSegmentType(&rs_segment) ) {
-      cout << "RangeStrideSegment reported as VALID for index[0]!!!" << endl;
-   } else {
+   if ( boxIndex.isValidSegmentType(&boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back(rs_segment) ) {
-      cout << "push_back(RangeStrideSegment) SUCCEEDED!!!" << endl;
-   } else {
+   if ( boxIndex.push_back(boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
 
    s_ntests_run++;
    s_ntests_run_total++;
-   if ( index[0].push_back_nocopy(&rs_segment) ) {
-      cout << "push_back_cocopy(RangeStrideSegment) SUCCEEDED!!!" << endl;
-   } else {
+   if ( boxIndex.push_back_nocopy(&boxSegment) ) {
       s_ntests_passed++;
       s_ntests_passed_total++;
    }
@@ -442,6 +440,7 @@ int main(int argc, char *argv[])
         << s_ntests_passed << " / " << s_ntests_run << endl;
 
    cout << "\n END IndexSet invalid segment tests " << endl;
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
 
 ///////////////////////////////////////////////////////////////////////////

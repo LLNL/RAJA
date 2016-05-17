@@ -72,21 +72,4 @@ void RangeSegment::print(std::ostream& os) const
       << m_begin << ", " << m_end << std::endl;
 }
 
-
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
-
-void RangeStrideSegment::print(std::ostream& os) const
-{
-   os << "RangeStrideSegment : length = " << getLength() 
-      << " : begin, end, stride = "
-      << m_begin << ", " << m_end << ", " << m_stride << std::endl;
-}
-
-
 }  // closing brace for RAJA namespace
