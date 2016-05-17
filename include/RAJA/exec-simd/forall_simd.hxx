@@ -191,10 +191,11 @@ RAJA_SIMD
 }
 
 
+#if defined(RAJA_USE_BOXSEGMENT)
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over index ranges with stride.
+// Function templates that iterate over raw Box.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -202,31 +203,79 @@ RAJA_SIMD
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range with stride.
+ * \brief  SIMD iteration over raw Box.
+ *
+ ******************************************************************************
+ */
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  SIMD iteration over raw Box with index count.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over Box segment objects.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  SIMD iteration over Box segment object.
  *
  ******************************************************************************
  */
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall(simd_exec,
-            Index_type begin, Index_type end, 
-            Index_type stride,
+            const BoxSegment& iseg,
             LOOP_BODY loop_body)
-{  
+{
+#if 1
+   forall<seq_exec>(iseg, loop_body) ;
+#else
+   Index_type        corner = iseg.getCorner();
+   Index_type        dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
    RAJA_FT_BEGIN ;
 
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      Index_type idx = corner ;
+      for ( Index_type y = 0 ; y < yExtent ; ++y ) {
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( idx );
+            idx += xStride ;
+         }
+         idx += yStride - xStride*xExtent ;
+      }
+    }
+    else /* dim == 3 */ {
+       /* need to put some code here */
+    }
 
    RAJA_FT_END ;
+#endif
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  SIMD iteration over index range with stride with index count.
+ * \brief  SIMD iteration over Box Segement with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
  *
@@ -235,91 +284,44 @@ RAJA_SIMD
 template <typename LOOP_BODY>
 RAJA_INLINE
 void forall_Icount(simd_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
+                   const BoxSegment& iseg,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
+#if 1
+   forall_Icount<seq_exec>(iseg, icount, loop_body) ;
+#else
+   Index_type        corner = iseg.getCorner();
+   Index_type        dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
 
    RAJA_FT_BEGIN ;
 
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      Index_type idx = corner ;
+      for ( Index_type y = 0 ; y < yExtent ; ++y ) {
+         for (Index_type x = 0 ; x < xExtent ; ++x) {
+            loop_body( icount, idx );
+            idx += xStride ;
+            ++icount ;
+         }
+         idx += yStride - xStride*xExtent ;
+      }
+    }
+    else /* dim == 3 */ {
+       /* need to put some code here */
+    }
 
    RAJA_FT_END ;
+#endif
 }
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range-stride segment objects.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over range segment object with stride.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over range index set with stride object
- *         with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
 
 //
