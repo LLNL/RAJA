@@ -14,6 +14,7 @@
 #include <cstdio>
 #include <cfloat>
 #include <random>
+#include <math.h>
 
 #include "RAJA/RAJA.hxx"
 
@@ -23,6 +24,35 @@
 
 using namespace RAJA;
 using namespace std;
+
+
+#define SERIES_LENGTH 128
+double fact_table[SERIES_LENGTH];
+double coef[SERIES_LENGTH];
+double x = -2.0*M_PI;
+
+double fact(int aa) {
+ if (aa == 0 || aa == 1) {
+   return 1.0;
+ } else {
+     if (fact_table[aa] != 0.0)
+       return fact_table[aa];
+     else
+       return fact_table[aa] = (aa * fact(aa - 1));
+ }
+}
+
+double taylor(double x, int n, double *coef)
+{
+ double approx=1.0;
+ coef[0] = 0.0;
+ for (int i=1; i<n; i++) {
+   coef[i]=((pow(x,i))/fact(i));
+   printf("coef[%d]= %le : fact[%d] = %le\n",i,coef[i],i,fact(i));
+   approx+=coef[i];
+ }
+ return approx;
+}
 
 //
 // Global variables for counting tests executed/passed.
@@ -39,14 +69,29 @@ int main(int argc, char *argv[])
    //
    // Allocate and initialize managed data arrays
    //
+
+
    double dinit_val = 0.1;
    int iinit_val = 1; 
 
    double* dvalue ;
+   double *series; 
+
+   memset(fact_table,0,SERIES_LENGTH*sizeof(double)); 
+   double a = pow(2,-53);
+   double b = 0.1;
+   printf("%0.16le %0.16le %0.16le\n",b+a,b-a,b+a/2);
    int* ivalue ;
 
    cudaMallocManaged((void **)&dvalue, sizeof(double)*TEST_VEC_LEN,
                      cudaMemAttachGlobal) ;
+   for (int i=0; i<TEST_VEC_LEN; ++i) {
+      dvalue[i] = dinit_val ;
+   }
+
+   cudaMallocManaged((void **)&series, sizeof(double)*TEST_VEC_LEN,
+                     cudaMemAttachGlobal) ;
+   memset(series,0,TEST_VEC_LEN*sizeof(double));
    for (int i=0; i<TEST_VEC_LEN; ++i) {
       dvalue[i] = dinit_val ;
    }
@@ -243,7 +288,7 @@ int main(int argc, char *argv[])
 
          ReduceSum< cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
          ReduceSum< cuda_reduce<block_size>, int>    isum1(itinit * 2);
-         ReduceSum< cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
+         ReduceSum< cuda_reduce_atomic<block_size>, double> dsum2(dtinit * 3.0);
          ReduceSum< cuda_reduce<block_size>, int>    isum3(itinit * 4);
 
          forall< IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(iset,
@@ -281,6 +326,20 @@ int main(int argc, char *argv[])
          }
 
       } // end test 3
+      
+      // Test four exercises the cuda_reduce_atomic ReduceSum policy
+      // The test hopefully can consistently expose the non-determinism
+      // inherent in the atomic variant. The test needs to pass two criterion
+      // one is that cuda_reduce default policy based ReducedSum is repeatably predictable
+      // and the other is that cuda_reduce_atomic is repeatable within some bound
+      //  
+      { // Begin Test 4
+        s_ntests_run++;
+
+
+
+        s_ntests_passed++;
+      }
 
    } // end test repeat loop
 

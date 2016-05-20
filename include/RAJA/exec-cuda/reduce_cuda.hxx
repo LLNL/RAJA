@@ -69,8 +69,7 @@
 #include "raja_cudaerrchk.hxx"
 
 
-namespace RAJA {
-
+// The following atomic functions need to be outside of the RAJA namespace
 //
 // Three different variants of min/max reductions can be run by choosing
 // one of these macros. Only one should be defined!!!
@@ -193,7 +192,18 @@ __device__ inline void atomicMax(float *address, double value)
   }
 }
 
-
+__device__ void atomicAdd(double *address, double value)
+{
+  unsigned long long oldval, newval, readback; 
+ 
+  oldval = __double_as_longlong(*address);
+  newval = __double_as_longlong(__longlong_as_double(oldval) + value);
+  while ((readback=atomicCAS((unsigned long long *)address, oldval, newval)) != oldval)
+  {
+    oldval = readback;
+    newval = __double_as_longlong(__longlong_as_double(oldval) + value);
+  }
+}
 #elif defined(RAJA_USE_ATOMIC_TWO)
 
 /*!
@@ -276,6 +286,20 @@ __device__ inline void atomicMax(float *address, float value)
   }
 }
 
+
+__device__ inline void atomicAdd(double *address, double value)
+{
+    unsigned long long int* address_as_ull =
+                            (unsigned long long int*)address;
+    unsigned long long int oldval = *address_as_ull, assumed;
+
+    do {
+       assumed = oldval;
+       oldval = atomicCAS( address_as_ull, assumed, __double_as_longlong(
+                        __longlong_as_double(oldval) + value ) );
+    } while (assumed != oldval);
+}
+
 #elif defined(RAJA_USE_NO_ATOMICS)
 
 // Noting to do here...
@@ -287,6 +311,7 @@ __device__ inline void atomicMax(float *address, float value)
 #endif
 
 
+namespace RAJA {
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -725,6 +750,133 @@ private:
 } ;
 
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Sum reduction Atomic Non-Deterministic Variant class template for use in CUDA kernel.
+ *
+ *         For usage example, see reducers.hxx.
+ *
+ ******************************************************************************
+ */
+template <size_t BLOCK_SIZE, typename T>
+class ReduceSum< cuda_reduce_atomic<BLOCK_SIZE>, T > 
+{
+public:
+   //
+   // Constructor takes initial reduction value (default ctor is disabled).
+   // Ctor only executes on the host.
+   //
+   explicit ReduceSum(T init_val)
+   {
+      m_is_copy = false;
+      m_reduced_val = static_cast<T>(0);
+      m_init_val = init_val;
+      m_myID = getCudaReductionId();
+      m_tallydata = getCudaReductionTallyBlock(m_myID);
+      m_tallydata->tally = static_cast<T>(0);
+      m_tallydata->initVal = init_val;
+   }
+
+   //
+   // Copy ctor executes on both host and device.
+   //
+   __host__ __device__ 
+   ReduceSum( const ReduceSum< cuda_reduce_atomic<BLOCK_SIZE>, T >& other )
+   {
+      *this = other;
+      m_is_copy = true;
+   }
+
+   //
+   // Destructor executes on both host and device.
+   // Destruction on host releases the unique id for others to use. 
+   //
+   __host__ __device__ 
+   ~ReduceSum< cuda_reduce_atomic<BLOCK_SIZE>, T >()
+   {
+      if (!m_is_copy) {
+#if defined( __CUDA_ARCH__ )
+#else
+         releaseCudaReductionId(m_myID);
+#endif
+         // OK to perform cudaFree of cudaMalloc vars if needed...
+      }
+   }
+
+   //
+   // Operator to retrieve reduced sum value (before object is destroyed).
+   // Accessor only operates on host.
+   //
+   operator T()
+   {
+      cudaDeviceSynchronize() ;
+      m_reduced_val = m_init_val + static_cast<T>(m_tallydata->tally);
+      return m_reduced_val;
+   }
+
+   //
+   // += operator to accumulate arg value in the proper shared
+   // memory block location.
+   //
+   __device__ 
+   ReduceSum<  cuda_reduce_atomic<BLOCK_SIZE>, T > operator+=(T val) const
+   {
+      __shared__ T sd[BLOCK_SIZE];
+
+       // initialize shared memory
+      for ( int i = BLOCK_SIZE / 2; i > 0; i /=2 ) {     
+          // this descends all the way to 1
+          if ( threadIdx.x < i ) {
+              // no need for __syncthreads()
+              sd[threadIdx.x + i] = m_reduced_val;  
+          } 
+      }
+      __syncthreads();
+
+      sd[threadIdx.x] = val;
+
+      T temp = 0;
+      __syncthreads();
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+         if (threadIdx.x < i) {
+            sd[threadIdx.x] += sd[threadIdx.x + i];
+         }
+         __syncthreads();
+      }
+
+      if (threadIdx.x < WARP_SIZE) {
+         temp = sd[threadIdx.x];
+         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+            temp += shfl_xor(temp, i);
+         }
+      }
+
+      // one thread adds to tally
+      if (threadIdx.x == 0) {
+        atomicAdd(&(m_tallydata->tally),temp);
+      }
+
+      return *this ;
+   }
+
+private:
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceSum< cuda_reduce_atomic<BLOCK_SIZE>, T >();
+
+   bool m_is_copy;
+
+   int m_myID;
+
+   T m_init_val;
+   T m_reduced_val;
+
+   CudaReductionBlockTallyType* m_tallydata;
+} ;
+
 
 ///
 /// each reduce variable involved in either ReduceMinLoc or ReduceMaxLoc
@@ -869,7 +1021,7 @@ public:
           m_blockdata[m_blockoffset + blockIdx.x+1]  = 
               RAJA_MINLOC( sd[threadIdx.x], 
                         m_blockdata[m_blockoffset + blockIdx.x+1] );
-          unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID],1);
+          int oldBlockCount = atomicAdd(&retiredBlocks[m_myID],(int)1);
           lastBlock = (oldBlockCount == (gridDim.x-1));
 
       }

@@ -139,6 +139,9 @@ struct cuda_exec_async {};
 template <size_t BLOCK_SIZE>
 struct cuda_reduce {};
 
+
+template <size_t BLOCK_SIZE>
+struct cuda_reduce_atomic {};
 //
 // Operations in the included files are parametrized using the following
 // values. 
