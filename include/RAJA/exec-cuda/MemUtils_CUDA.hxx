@@ -13,6 +13,7 @@
 #define RAJA_MemUtils_CUDA_HXX
 
 #include "RAJA/config.hxx"
+#include "RAJA/int_datatypes.hxx"
 
 #if defined(RAJA_USE_CUDA)
 
@@ -63,11 +64,15 @@ namespace RAJA {
 
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
 
+
 ///
 /// Typedef defining common data type for RAJA-Cuda reduction data blocks
 /// (use this in all cases to avoid type confusion).
 ///
 typedef double CudaReductionBlockDataType;
+
+typedef struct{double val; Index_type idx;} CudaReductionLocBlockDataType; 
+
 
 /*!
 *************************************************************************
@@ -110,6 +115,8 @@ void releaseCudaReductionId(int id);
  */
 CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
 
+CudaReductionLocBlockDataType * getCudaReductionLocMemBlock(int id);
+
 /*!
  ******************************************************************************
  *
@@ -118,6 +125,8 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
  ******************************************************************************
  */
 void freeCudaReductionMemBlock();
+
+void freeCudaReductionLocMemBlock();
 
 
 }  // closing brace for RAJA namespace
