@@ -24,6 +24,17 @@ another goal of RAJA is enable application developers to adapt RAJA concepts
 and specialize them for different code implementation patterns and C++ usage,
 since data structures and algorithms vary widely across applications.
 
+Quick Start
+-----------
+
+You can build RAJA like any other CMake project, provided you have a C++
+compiler that supports the C++11 standard. Out of source builds are encouraged!
+
+    mkdir build
+    cd build
+    cmake ../
+    make
+
 Documentation
 -----------------
 
