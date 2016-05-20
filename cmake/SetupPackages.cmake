@@ -40,44 +40,28 @@
 # 
 ###############################################################################
 
-cmake_minimum_required (VERSION 2.8)
-
-project(RAJA LANGUAGES CXX C)
-set(CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
-
-# Set version number
-set(RAJA_VERSION_MAJOR 1)
-set(RAJA_VERSION_MINOR 0)
-set(RAJA_VERSION_PATCHLEVEL 0)
-
-# Build options
-option(RAJA_USE_OPENMP "Build OpenMP support" On)
-option(RAJA_USE_CUDA "Build CUDA support" Off)
-option(RAJA_USE_CILK "Build Cilk support" Off)
-option(RAJA_ENABLE_TESTS "Build tests and exmaple applications" On)
-
-# Setup vendor-specific compiler flags
-include(cmake/SetupCompilers.cmake)
-# Find third-party packages
-include(cmake/SetupPackages.cmake)
-# Setup internal RAJA configuration options
-include(cmake/SetupRajaConfig.cmake)
-
-# Configure a header file with all the variables we found.
-configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
-include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
-include_directories(${PROJECT_BINARY_DIR}/include)
-
-include_directories(include)
-
-install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
-
-add_subdirectory(src)
-
-if(RAJA_ENABLE_TESTS)
-  add_subdirectory(test)
+if (RAJA_USE_OPENMP)
+  find_package(OpenMP)
+  if(OPENMP_FOUND)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
+    list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
+    message(STATUS "OpenMP Enabled")
+  else()
+    message(WARNING "OpenMP NOT FOUND")
+    set(RAJA_USE_OPENMP Off)
+  endif()
 endif()
+
+if (RAJA_USE_CUDA)
+  find_package(CUDA)
+  if(CUDA_FOUND)
+    message(STATUS "CUDA")
+    set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
+    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+    include_directories(${CUDA_INCLUDE_DIRS})
+  endif()
+endif()
+
+#Used for timing
+find_library(RT_LIBRARIES rt)
+#set(RT_LIBRARIES "")

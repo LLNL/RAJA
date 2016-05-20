@@ -40,44 +40,32 @@
 # 
 ###############################################################################
 
-cmake_minimum_required (VERSION 2.8)
-
-project(RAJA LANGUAGES CXX C)
-set(CMAKE_CXX_STANDARD 11)
-
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
-
-# Set version number
-set(RAJA_VERSION_MAJOR 1)
-set(RAJA_VERSION_MINOR 0)
-set(RAJA_VERSION_PATCHLEVEL 0)
-
-# Build options
-option(RAJA_USE_OPENMP "Build OpenMP support" On)
-option(RAJA_USE_CUDA "Build CUDA support" Off)
-option(RAJA_USE_CILK "Build Cilk support" Off)
-option(RAJA_ENABLE_TESTS "Build tests and exmaple applications" On)
-
-# Setup vendor-specific compiler flags
-include(cmake/SetupCompilers.cmake)
-# Find third-party packages
-include(cmake/SetupPackages.cmake)
-# Setup internal RAJA configuration options
-include(cmake/SetupRajaConfig.cmake)
-
-# Configure a header file with all the variables we found.
-configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
-include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
-include_directories(${PROJECT_BINARY_DIR}/include)
-
-include_directories(include)
-
-install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
-
-add_subdirectory(src)
-
-if(RAJA_ENABLE_TESTS)
-  add_subdirectory(test)
+if (RAJA_USE_CUDA)
+  cuda_add_library(RAJA
+      AlignedRangeIndexSetBuilders.cxx
+      DepGraphNode.cxx
+      IndexSet.cxx
+      ListSegment.cxx
+      LockFreeIndexSetBuilders.cxx
+      MemUtils_CPU.cxx
+      MemUtils_CUDA.cxx
+      RangeSegment.cxx
+      ThreadUtils_CPU.cxx
+    )
+else()
+  add_library(RAJA
+      AlignedRangeIndexSetBuilders.cxx
+      DepGraphNode.cxx
+      IndexSet.cxx
+      ListSegment.cxx
+      LockFreeIndexSetBuilders.cxx
+      MemUtils_CPU.cxx
+      MemUtils_CUDA.cxx
+      RangeSegment.cxx
+      ThreadUtils_CPU.cxx
+    )
 endif()
+
+install(TARGETS RAJA 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
