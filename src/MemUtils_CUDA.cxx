@@ -77,6 +77,8 @@ static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 //
 CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
 
+CudaReductionLocBlockDataType* s_cuda_reduction_loc_mem_block = 0;
+
 /*
 *************************************************************************
 *
@@ -189,6 +191,66 @@ void freeCudaReductionMemBlock()
    }
 }
 
+
+/*
+*************************************************************************
+*
+* Return pointer into shared RAJA-CUDA managed reduction memory block
+* for reducer object with given id. Allocate block if not already allocated.
+*
+*************************************************************************
+*/
+CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id)
+{
+   //
+   // For each reducer object, we want a chunk of managed memory that
+   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction 
+   // value for each thread, a single slot for the global reduced value
+   // across grid blocks, and a single slot for the max grid size.  
+   //
+   int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
+
+   if (s_cuda_reduction_loc_mem_block == 0) {
+      int len = RAJA_MAX_REDUCE_VARS * block_offset;
+
+      cudaError_t cudaerr = 
+         cudaMallocManaged((void **)&s_cuda_reduction_loc_mem_block,
+                           sizeof(CudaReductionLocBlockDataType)*len,
+                           cudaMemAttachGlobal);
+
+      if ( cudaerr != cudaSuccess ) {
+         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
+                   << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+      }
+      cudaMemset(s_cuda_reduction_loc_mem_block, 0, 
+                 sizeof(CudaReductionLocBlockDataType)*len);
+
+      atexit(freeCudaReductionLocMemBlock);
+   }
+
+   return &(s_cuda_reduction_loc_mem_block[id * block_offset]) ;
+}
+
+/*
+*************************************************************************
+*
+* Free managed memory blocks used in RAJA-Cuda reductions.
+*
+*************************************************************************
+*/
+void freeCudaReductionLocMemBlock()
+{
+   if ( s_cuda_reduction_loc_mem_block != 0 ) {
+      cudaError_t cudaerr = cudaFree(s_cuda_reduction_loc_mem_block);
+      s_cuda_reduction_loc_mem_block = 0;
+      if (cudaerr != cudaSuccess) {
+         std::cerr << "\n ERROR in cudaFree call, FILE: "
+                   << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+       }
+   }
+}
 
 }  // closing brace for RAJA namespace
 
