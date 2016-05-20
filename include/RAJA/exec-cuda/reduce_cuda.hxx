@@ -354,7 +354,7 @@ public:
    //
    operator T()
    {
-     cudaDeviceSynchronize();
+     cudaErrchk(cudaDeviceSynchronize());
      m_reduced_val = static_cast<T>(m_tallydata->tally);
      return m_reduced_val;
    }
@@ -491,7 +491,7 @@ public:
    //
    operator T()
    {
-     cudaDeviceSynchronize() ;
+     cudaErrchk(cudaDeviceSynchronize());
      m_reduced_val = static_cast<T>(m_tallydata->tally);
      return m_reduced_val;
    }
