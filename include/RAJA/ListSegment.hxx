@@ -57,6 +57,7 @@
 
 #include "BaseSegment.hxx"
 
+#include <iostream> 
 #include <algorithm> 
 #include <iosfwd> 
 
@@ -219,7 +220,17 @@ ListSegment::ListSegment(const T& indx)
   m_indx(0), m_indx_own(Unowned), m_len( indx.size() )
 {
    if ( !indx.empty() ) {
+#if defined(RAJA_USE_CUDA)
+      if ( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type),
+                             cudaMemAttachGlobal) != cudaSuccess ) {
+         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
+                   << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+      }
+      cudaMemset(m_indx,0,m_len*sizeof(Index_type));
+#else
       m_indx = new Index_type[indx.size()];
+#endif
       std::copy(indx.begin(), indx.end(), m_indx);
       m_indx_own = Owned;
    } 

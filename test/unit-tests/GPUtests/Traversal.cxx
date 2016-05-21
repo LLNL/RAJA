@@ -13,6 +13,7 @@
 #include <cstdio>
 #include <cfloat>
 #include <random>
+#include <vector>
 
 #include "RAJA/RAJA.hxx"
 
@@ -59,6 +60,7 @@ int main(int argc, char *argv[])
    Index_type last_idx;
    Index_type lseg_len = lindices.size();
    RAJAVec<Index_type> lseg(lseg_len);
+   std::vector<Index_type> lseg_vec(lseg_len);
 
    // Create Range segment
    rbeg = 1;
@@ -74,6 +76,15 @@ int main(int argc, char *argv[])
    }
    iset.push_back( ListSegment(&lseg[0], lseg_len) );
    last_idx = lseg[lseg_len-1];
+
+   cout << "\n last_idx = " << last_idx << endl;
+
+   // Create List segment using alternate ctor
+   for (Index_type i = 0; i < lseg_len; ++i) {
+      lseg_vec[i] = lindices[i] + last_idx + 3;
+   }
+   iset.push_back( ListSegment(lseg_vec) );
+   last_idx = lseg_vec[lseg_len-1];
 
    cout << "\n last_idx = " << last_idx << endl;
 
@@ -107,6 +118,15 @@ int main(int argc, char *argv[])
    rend = rbeg + 32003;
    iset.push_back( RangeSegment(rbeg, rend) );
    last_idx = rend;
+
+   cout << "\n last_idx = " << last_idx << endl;
+
+   // Create List segment using alternate ctor
+   for (Index_type i = 0; i < lseg_len; ++i) {
+      lseg_vec[i] = lindices[i] + last_idx + 7;
+   }
+   iset.push_back( ListSegment(lseg_vec) );
+   last_idx = lseg_vec[lseg_len-1];
 
    cout << "\n last_idx = " << last_idx << endl;
 
