@@ -57,7 +57,8 @@
 
 #include "BaseSegment.hxx"
 
-#include <iostream> 
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
+
 #include <algorithm> 
 #include <iosfwd> 
 
@@ -221,13 +222,10 @@ ListSegment::ListSegment(const T& indx)
 {
    if ( !indx.empty() ) {
 #if defined(RAJA_USE_CUDA)
-      if ( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type),
-                             cudaMemAttachGlobal) != cudaSuccess ) {
-         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-      }
-      cudaMemset(m_indx,0,m_len*sizeof(Index_type));
+      cudaErrchk( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type),
+                                    cudaMemAttachGlobal) );
+      cudaErrchk( cudaMemset(m_indx,0,m_len*sizeof(Index_type)) );
+      cudaErrchk(cudaDeviceSynchronize());
 #else
       m_indx = new Index_type[indx.size()];
 #endif
