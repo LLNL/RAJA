@@ -13,7 +13,6 @@
 #define RAJA_MemUtils_CUDA_HXX
 
 #include "RAJA/config.hxx"
-#include "RAJA/int_datatypes.hxx"
 
 #if defined(RAJA_USE_CUDA)
 
@@ -58,6 +57,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA/int_datatypes.hxx"
 
 namespace RAJA {
 
