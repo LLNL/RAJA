@@ -43,9 +43,11 @@
 ## Floating point options
 set(RAJA_FP "RAJA_USE_DOUBLE")
 #set(RAJA_FP "RAJA_USE_FLOAT")
+option(RAJA_USE_DOUBLE On)
+option(RAJA_USE_FLOAT Off)
 
 ## Pointer options
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -56,8 +58,8 @@ endif()
 #set(RAJA_USE_PTR_CLASS OFF)
 
 ## Fault tolerance options
-set(RAJA_USE_FT OFF)
-set(RAJA_REPORT_FT OFF)
+option(RAJA_ENABLE_FT "Enable fault-tolerance features" OFF)
+option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
 
 ## Timer options
 add_definitions(-DRAJA_USE_GETTIME)

@@ -57,7 +57,7 @@
 
 #include "RAJA/reducers.hxx"
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #include <cuda.h>
 #include <cuda_runtime.h>
 
@@ -254,4 +254,4 @@ void freeCudaReductionLocMemBlock()
 
 }  // closing brace for RAJA namespace
 
-#endif  // if defined(RAJA_USE_CUDA)
+#endif  // if defined(RAJA_ENABLE_CUDA)

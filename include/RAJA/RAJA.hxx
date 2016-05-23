@@ -68,7 +68,7 @@
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
@@ -91,7 +91,7 @@
 #include "ListSegment.hxx"
 #include "IndexSet.hxx"
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Strongly typed index class.
@@ -105,7 +105,7 @@
 #include "Layout.hxx"
 #include "View.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 
 //
@@ -115,14 +115,14 @@
 #include "forall_generic.hxx"
 
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Generic iteration templates for perfectly nested loops
 //
 #include "forallN_generic.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -147,15 +147,15 @@
 //
 #include "exec-simd/raja_simd.hxx"
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #include "exec-cuda/raja_cuda.hxx"
 #endif
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #include "exec-openmp/raja_openmp.hxx"
 #endif
 
-#if defined(RAJA_USE_CILK)
+#if defined(RAJA_ENABLE_CILK)
 #include "exec-cilk/raja_cilk.hxx"
 #endif
 
@@ -164,7 +164,7 @@
 #include "IndexSetUtils.hxx"
 
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Perfectly nested loop transformations
@@ -176,7 +176,7 @@
 // Loop interchange policies
 #include "forallN_permute.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 
 #endif  // closing endif for header file include guard

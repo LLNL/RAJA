@@ -40,6 +40,8 @@
 # 
 ###############################################################################
 
+set(CMAKE_CXX_STANDARD 11)
+
 if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
 
@@ -89,7 +91,7 @@ elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
   set(RAJA_COHERENCE_BLOCK_SIZE 64)
 endif()
 
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   if(CMAKE_BUILD_TYPE MATCHES Release)
     set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin; ${CMAKE_CXX_COMPILER})
   elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)

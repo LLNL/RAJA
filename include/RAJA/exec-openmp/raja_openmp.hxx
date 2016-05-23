@@ -13,7 +13,7 @@
 #ifndef RAJA_openmp_HXX
 #define RAJA_openmp_HXX
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -97,11 +97,11 @@ struct omp_reduce {};
 #include "reduce_openmp.hxx"
 #include "forall_openmp.hxx"
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 #include "forallN_openmp.hxx"
 #endif
 
-#endif  // closing endif for if defined(RAJA_USE_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
 

@@ -40,7 +40,7 @@
 # 
 ###############################################################################
 
-if (RAJA_USE_OPENMP)
+if (RAJA_ENABLE_OPENMP)
   find_package(OpenMP)
   if(OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
@@ -48,11 +48,11 @@ if (RAJA_USE_OPENMP)
     message(STATUS "OpenMP Enabled")
   else()
     message(WARNING "OpenMP NOT FOUND")
-    set(RAJA_USE_OPENMP Off)
+    set(RAJA_ENABLE_OPENMP Off)
   endif()
 endif()
 
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   find_package(CUDA)
   if(CUDA_FOUND)
     message(STATUS "CUDA")

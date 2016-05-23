@@ -1,6 +1,6 @@
 include_directories(..)
 
-add_definitions(-DRAJA_USE_NESTED)
+add_definitions(-DRAJA_ENABLE_NESTED)
 
 set(KRIPKE_SRC 
     Directions.cpp  
@@ -25,7 +25,7 @@ set(KRIPKE_SRC
     
     Test/TestKernels.cpp)
 
-if(RAJA_USE_CUDA)
+if(RAJA_ENABLE_CUDA)
   cuda_add_library(lib_kripke_raja ${KRIPKE_SRC})  
 else()
   add_library(lib_kripke_raja ${KRIPKE_SRC})  

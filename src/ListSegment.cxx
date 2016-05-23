@@ -55,7 +55,7 @@
 #include <iostream>
 #include <string>
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #include <cuda.h>
 #include <cuda_runtime.h>
 #endif
@@ -104,7 +104,7 @@ ListSegment& ListSegment::operator=(const ListSegment& rhs)
 ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
       if (cudaFree(m_indx) != cudaSuccess) {
          std::cerr << "\n ERROR in cudaFree call, FILE: "
                       << __FILE__ << " line " << __LINE__ << std::endl;
@@ -183,7 +183,7 @@ void ListSegment::initIndexData(const Index_type* indx,
       m_indx_own = indx_own;
 
       if ( m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
          if ( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type), 
                                  cudaMemAttachGlobal) != cudaSuccess ) {

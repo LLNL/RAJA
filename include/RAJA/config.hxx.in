@@ -67,8 +67,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_USE_CUDA
-#cmakedefine RAJA_USE_FT 
+#cmakedefine RAJA_ENABLE_CUDA
+#cmakedefine RAJA_ENABLE_FT 
 
 #define @RAJA_FP@
 
@@ -80,10 +80,10 @@
  * Programming models
  */
 
-#cmakedefine RAJA_USE_OPENMP
-#cmakedefine RAJA_USE_CILK
-#cmakedefine RAJA_USE_CUDA
-#cmakedefine RAJA_USE_NESTED
+#cmakedefine RAJA_ENABLE_OPENMP
+#cmakedefine RAJA_ENABLE_CILK
+#cmakedefine RAJA_ENABLE_CUDA
+#cmakedefine RAJA_ENABLE_NESTED
 
 
 namespace RAJA {
@@ -152,7 +152,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 
@@ -174,7 +174,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 
@@ -205,7 +205,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 

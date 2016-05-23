@@ -42,7 +42,7 @@
 ###############################################################################
 
 
-if(RAJA_USE_OPENMP)
+if(RAJA_ENABLE_OPENMP)
   add_executable(lulesh-OMP.exe
     luleshOMP.cc)
 

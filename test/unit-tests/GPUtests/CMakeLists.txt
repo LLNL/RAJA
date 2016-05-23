@@ -41,7 +41,7 @@
 #
 ###############################################################################
 
-add_definitions(-DRAJA_USE_NESTED)
+add_definitions(-DRAJA_ENABLE_NESTED)
 
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 

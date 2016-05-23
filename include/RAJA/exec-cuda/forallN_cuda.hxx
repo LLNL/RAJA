@@ -12,7 +12,7 @@
 #ifndef RAJA_forallN_cuda_HXX__
 #define RAJA_forallN_cuda_HXX__
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -373,7 +373,7 @@ struct ForallN_Executor<
 
 } // namespace RAJA
   
-#endif  // closing endif for RAJA_USE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard
 
