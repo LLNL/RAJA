@@ -4,3 +4,8 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
      CMakeCache.txt from the 'src' dir and configure an out-of-source build in \
      another directory.")
  endif()
+
+ if(NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE "Release" CACHE STRING "Choose the type of build, \
+   options are: Debug Release RelWithDebInfo" FORCE)
+ endif(NOT CMAKE_BUILD_TYPE)

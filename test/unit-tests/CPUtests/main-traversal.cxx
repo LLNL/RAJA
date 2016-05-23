@@ -289,7 +289,7 @@ void runForall_IcountTests( unsigned ibuild,
                 iset, is_indices );
 #endif
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined(RAJA_ENABLE_CILK)
    runBasicForall_IcountTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec> > (
                "ExecPolicy<seq_segit, cilk_for_exec>",

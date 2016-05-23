@@ -328,6 +328,8 @@
 #
 ###############################################################################
 
+include(FindPackageHandleStandardArgs)
+
 # FindCUDA.cmake
 
 # This macro helps us find the location of helper files we will need the full path to
