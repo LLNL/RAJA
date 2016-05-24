@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f build-icpc-release 2>/dev/null
+rm -rf build-icpc-release 2>/dev/null
 mkdir build-icpc-release && cd build-icpc-release
 
 cmake \

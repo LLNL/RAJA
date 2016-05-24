@@ -1,6 +1,6 @@
 #!/bin/bash
 
-rm -f build-gnu-4.9.3-release 2>/dev/null
+rm -rf build-gnu-4.9.3-release 2>/dev/null
 mkdir build-gnu-4.9.3-release && cd build-gnu-4.9.3-release
 
 cmake \
