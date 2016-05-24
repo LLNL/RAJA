@@ -81,6 +81,7 @@ CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
 
 CudaReductionLocBlockDataType* s_cuda_reduction_loc_mem_block = 0;
 
+CudaReductionBlockTallyType* s_cuda_reduction_tally_block = 0;
 /*
 *************************************************************************
 *
@@ -229,6 +230,59 @@ void freeCudaReductionLocMemBlock()
    if ( s_cuda_reduction_loc_mem_block != 0 ) {
       cudaErrchk( cudaFree(s_cuda_reduction_loc_mem_block) );
       s_cuda_reduction_loc_mem_block = 0;
+   }
+}
+
+/*
+*************************************************************************
+*
+* Return pointer into shared RAJA-CUDA managed reduction memory block
+* for reducer object with given id. Allocate block if not already allocated.
+*
+*************************************************************************
+*/
+CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id)
+{
+   if (s_cuda_reduction_tally_block == 0) {
+      int len = RAJA_CUDA_REDUCE_TALLY_LENGTH; 
+
+      cudaError_t cudaerr = 
+         cudaMallocManaged((void **)&s_cuda_reduction_tally_block,
+                           sizeof(CudaReductionBlockTallyType)*len,
+                           cudaMemAttachGlobal);
+
+      if ( cudaerr != cudaSuccess ) {
+         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
+                   << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+      }
+      cudaMemset(s_cuda_reduction_tally_block, 0, 
+                 sizeof(CudaReductionBlockTallyType)*len);
+
+      atexit(freeCudaReductionTallyBlock);
+   }
+
+   return &(s_cuda_reduction_tally_block[id]) ;
+}
+
+/*
+*************************************************************************
+*
+* Free managed memory blocks used in RAJA-Cuda reductions.
+*
+*************************************************************************
+*/
+
+void freeCudaReductionTallyBlock()
+{
+   if ( s_cuda_reduction_tally_block != 0 ) {
+      cudaError_t cudaerr = cudaFree(s_cuda_reduction_tally_block);
+      s_cuda_reduction_tally_block = 0;
+      if (cudaerr != cudaSuccess) {
+         std::cerr << "\n ERROR in cudaFree call, FILE: "
+                   << __FILE__ << " line " << __LINE__ << std::endl;
+         exit(1);
+       }
    }
 }
 
