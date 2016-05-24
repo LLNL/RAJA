@@ -182,7 +182,9 @@ add_library(RAJA
   )
 endif()
 
-install(TARGETS RAJA ARCHIVE DESTINATION lib)
+install(TARGETS RAJA 
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib)
 
 set(BUILD_TESTS On CACHE STRING "Build test applications")
 if(BUILD_TESTS)

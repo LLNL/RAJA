@@ -9,6 +9,10 @@
  ******************************************************************************
  */
 
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_USE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -57,9 +61,7 @@
 
 #include "RAJA/reducers.hxx"
 
-#if defined(RAJA_USE_CUDA)
-#include <cuda.h>
-#include <cuda_runtime.h>
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 #include<string>
 #include<iostream>
@@ -153,18 +155,12 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
    if (s_cuda_reduction_mem_block == 0) {
       int len = RAJA_MAX_REDUCE_VARS * block_offset;
 
-      cudaError_t cudaerr = 
-         cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
-                           sizeof(CudaReductionBlockDataType)*len,
-                           cudaMemAttachGlobal);
-
-      if ( cudaerr != cudaSuccess ) {
-         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-      }
-      cudaMemset(s_cuda_reduction_mem_block, 0, 
-                 sizeof(CudaReductionBlockDataType)*len);
+      cudaErrchk( cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
+                                    sizeof(CudaReductionBlockDataType)*len,
+                                    cudaMemAttachGlobal) );
+      cudaErrchk( cudaMemset(s_cuda_reduction_mem_block, 0, 
+                             sizeof(CudaReductionBlockDataType)*len) );
+      cudaErrchk(cudaDeviceSynchronize());
 
       atexit(freeCudaReductionMemBlock);
    }
@@ -182,13 +178,8 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
 void freeCudaReductionMemBlock()
 {
    if ( s_cuda_reduction_mem_block != 0 ) {
-      cudaError_t cudaerr = cudaFree(s_cuda_reduction_mem_block);
+      cudaErrchk( cudaFree(s_cuda_reduction_mem_block) );
       s_cuda_reduction_mem_block = 0;
-      if (cudaerr != cudaSuccess) {
-         std::cerr << "\n ERROR in cudaFree call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-       }
    }
 }
 
@@ -214,18 +205,12 @@ CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id)
    if (s_cuda_reduction_loc_mem_block == 0) {
       int len = RAJA_MAX_REDUCE_VARS * block_offset;
 
-      cudaError_t cudaerr = 
-         cudaMallocManaged((void **)&s_cuda_reduction_loc_mem_block,
-                           sizeof(CudaReductionLocBlockDataType)*len,
-                           cudaMemAttachGlobal);
-
-      if ( cudaerr != cudaSuccess ) {
-         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-      }
-      cudaMemset(s_cuda_reduction_loc_mem_block, 0, 
-                 sizeof(CudaReductionLocBlockDataType)*len);
+      cudaErrchk( cudaMallocManaged((void **)&s_cuda_reduction_loc_mem_block,
+                                    sizeof(CudaReductionLocBlockDataType)*len,
+                                    cudaMemAttachGlobal) );
+      cudaErrchk( cudaMemset(s_cuda_reduction_loc_mem_block, 0, 
+                  sizeof(CudaReductionLocBlockDataType)*len) );
+      cudaErrchk(cudaDeviceSynchronize());
 
       atexit(freeCudaReductionLocMemBlock);
    }
@@ -243,13 +228,8 @@ CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id)
 void freeCudaReductionLocMemBlock()
 {
    if ( s_cuda_reduction_loc_mem_block != 0 ) {
-      cudaError_t cudaerr = cudaFree(s_cuda_reduction_loc_mem_block);
+      cudaErrchk( cudaFree(s_cuda_reduction_loc_mem_block) );
       s_cuda_reduction_loc_mem_block = 0;
-      if (cudaerr != cudaSuccess) {
-         std::cerr << "\n ERROR in cudaFree call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-       }
    }
 }
 

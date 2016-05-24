@@ -57,6 +57,8 @@
 
 #include "BaseSegment.hxx"
 
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
+
 #include <algorithm> 
 #include <iosfwd> 
 
@@ -219,7 +221,14 @@ ListSegment::ListSegment(const T& indx)
   m_indx(0), m_indx_own(Unowned), m_len( indx.size() )
 {
    if ( !indx.empty() ) {
+#if defined(RAJA_USE_CUDA)
+      cudaErrchk( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type),
+                                    cudaMemAttachGlobal) );
+      cudaErrchk( cudaMemset(m_indx,0,m_len*sizeof(Index_type)) );
+      cudaErrchk(cudaDeviceSynchronize());
+#else
       m_indx = new Index_type[indx.size()];
+#endif
       std::copy(indx.begin(), indx.end(), m_indx);
       m_indx_own = Owned;
    } 
