@@ -236,6 +236,47 @@ void runLTimesTests(Index_type num_moments, Index_type num_directions, Index_typ
   runLTimesTest<PolLTimesC_GPU>("PolLTimesC_GPU", num_moments, num_directions, num_groups, num_zones);
 }
 
+void runNegativeRange()
+{
+  s_ntests_run++;
+  s_ntests_run_total++;
+
+  cout << "\n TestNegativeRange " << endl;
+
+  double* data;
+  double host_data[100];
+
+  cudaMallocManaged((void **)&data, sizeof(double)*100, cudaMemAttachGlobal);
+
+  for (int i = 0; i < 100; ++i) {
+    host_data[i] = i * 1.0;
+  }
+
+  forallN< NestedPolicy<ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16> > > >(
+      RangeSegment(-2,8), 
+      RangeSegment(-2,8), 
+      [=] RAJA_DEVICE (int k, int j){
+      const int idx = ((k- -2)*10)+(j- -2);
+      data[idx] = idx * 1.0;
+      });
+
+  cudaDeviceSynchronize();
+
+  size_t nfailed = 0;
+
+  for (int i = 0; i < 100; ++i) {
+    if (host_data[i] != data[i]) {
+      nfailed++;
+    }
+  }
+
+  if ( nfailed ) {
+    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
+  } else {
+    s_ntests_passed++;
+    s_ntests_passed_total++;
+  }
+}
 
 
 ///////////////////////////////////////////////////////////////////////////
@@ -259,6 +300,7 @@ int main(int argc, char *argv[])
    runLTimesTests(2, 3, 7, 3);
    runLTimesTests(25, 96, 8, 32);
    runLTimesTests(100, 15, 7, 13);
+   runNegativeRange();
 
    ///
    /// Print total number of tests passed/run.
