@@ -3,6 +3,8 @@
 rm -rf build-icpc-16.0.109-release 2>/dev/null
 mkdir build-icpc-16.0.109-release && cd build-icpc-16.0.109-release
 
+RAJA_DIR=$(git rev-parse --show-toplevel)
+
 cmake \
   -DCMAKE_C_COMPILER=/usr/local/bin/icc-16.0.109 \
   -DCMAKE_CXX_COMPILER=/usr/local/bin/icpc-16.0.109 \
@@ -10,4 +12,4 @@ cmake \
   -DCMAKE_BUILD_TYPE=Release \
   -DCMAKE_INSTALL_PREFIX=../install-icpc-16.0.109-release \
   "$@" \
-  ../../
+  ${RAJA_DIR}
