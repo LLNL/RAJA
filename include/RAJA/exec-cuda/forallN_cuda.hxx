@@ -266,7 +266,7 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 template <typename BODY, typename ... ARGS>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
-  if(i >= INT_MIN){
+  if(i > INT_MIN){
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
   }  
@@ -275,7 +275,7 @@ __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
 template <typename BODY>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i){
-  if(i >= INT_MIN){
+  if(i > INT_MIN){
     body(i);
   }  
 }
