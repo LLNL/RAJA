@@ -115,11 +115,11 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 //     RANGE_ALIGN - alignment of begin/end indices in range segments
 //                   (i.e., starting index and length of range segments 
 //                    constructed by index set builder methods will 
-//                    be multiples of this value; units of "real" data type
+//                    be multiples of this value)
 //
 //     RANGE_MIN_LENGTH - used in index set builder methods
 //                        as min length of range segments (an integer multiple
-//                        of RANGE_ALIGN); units of "real" data type
+//                        of RANGE_ALIGN)
 //
 //     DATA_ALIGN - used in compiler-specific intrinsics and typedefs
 //                  to specify alignment of data, loop bounds, etc.;

@@ -45,6 +45,7 @@ set(RAJA_FP "RAJA_USE_DOUBLE")
 #set(RAJA_FP "RAJA_USE_FLOAT")
 option(RAJA_USE_DOUBLE On)
 option(RAJA_USE_FLOAT Off)
+option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
 if (RAJA_ENABLE_CUDA)

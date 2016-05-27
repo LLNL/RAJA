@@ -13,31 +13,48 @@ portability for HPC applications. The overarching goals of RAJA are to:
     inception.
 
 RAJA uses standard C++11 -- C++ is the predominant programming language in
-which many LLNL codes are written. RAJA shares goals and concepts found in
+which many LLNL codes are written. RAJA is rooted in a perspective based on 
+substantial experience working on production mesh-based multiphysics 
+applications at LLNL. Another goal of RAJA is to enable application developers
+to adapt RAJA concepts and specialize them for different code implementation 
+patterns and C++ usage, since data structures and algorithms vary widely 
+across applications.
+
+RAJA shares goals and concepts found in
 other C++ portability abstraction approaches, such as
-[Kokkos](https://github.com/kokkos/kokkos)
-and [Thrust](https://developer.nvidia.com/thrust). RAJA is rooted in
-a perspective based on substantial experience working on production
-mesh-based multiphysics applications at LLNL. It provides constructs that
-are absent in other models and which are fundamental in those codes. Also,
-another goal of RAJA is enable application developers to adapt RAJA concepts
-and specialize them for different code implementation patterns and C++ usage,
-since data structures and algorithms vary widely across applications.
+`Kokkos <https://github.com/kokkos/kokkos>`_
+and `Thrust <https://developer.nvidia.com/thrust>`_. 
+However, it includes concepts that are absent in other models and which are 
+fundamental to LLNL codes. 
+
+It is important to note that RAJA is very much a work-in-progress.
+The community of researchers and application developers at LLNL that are
+actively contributing to it and developing new capabilities is growing.
+The publicly-released version contains only core pieces of RAJA as they
+exist today. While the basic interfaces are fairly stable, the implementation
+of the underlying concepts is being refined. Additional features will appear
+in future releases.
 
 Quick Start
 -----------
 
-You can build RAJA like any other CMake project, provided you have a C++
-compiler that supports the C++11 standard. The simplest way to build is 
-to do the following in the top-level RAJA directory (out-of-source builds 
-are encouraged!):
+The RAJA code live in a `github repository <https://github.com/llnl/raja>`_.
+To clone the repo, use the command:
+
+   $ git clone https://github.com/llnl/raja.git
+
+Then, you can build RAJA like any other CMake project, provided you have a C++
+compiler that supports the C++11 standard. The simplest way to build the code 
+is to do the following in the top-level RAJA directory (in-source builds 
+are not allowed!):
 
     mkdir build
     cd build
     cmake ../
     make
 
-Details about RAJA configuration options can be found in the User Documentation.
+More details about RAJA configuration options are located in the User 
+Documentation.
 
 User Documentation
 -------------------
@@ -78,7 +95,7 @@ develop branch into the `master` branch and tag a new release.
 Authors
 -----------
 
-The core developers of RAJA are:
+The main RAJA developers are:
 
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)

@@ -10,8 +10,16 @@
 
 
 =============
-Introduction
+RAJA Primer
 =============
+
+.. warning:: This section will be rewritten to introduce and describe RAJA 
+             concepts and features using simple illustrative examples 
+             (e.g., in increasing order of complexity: forall, exec policy, 
+             segments, index sets, etc.). The text below is from the original 
+             sphinx docs. I kept it so we can use bits that we want to keep.
+
+
 
 The main conceptual abstraction in RAJA is a loop. A typical large
 multiphysics code may contain O(10K) loops and these are where most
