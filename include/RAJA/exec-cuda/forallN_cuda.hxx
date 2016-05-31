@@ -12,6 +12,8 @@
 #ifndef RAJA_forallN_cuda_HXX__
 #define RAJA_forallN_cuda_HXX__
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -56,8 +58,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<RAJA/config.hxx>
-#include<RAJA/int_datatypes.hxx>
+#include "RAJA/int_datatypes.hxx"
 
 #include <climits>
 

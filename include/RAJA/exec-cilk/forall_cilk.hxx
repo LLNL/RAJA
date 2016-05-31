@@ -14,6 +14,8 @@
 #ifndef RAJA_forall_cilk_HXX
 #define RAJA_forall_cilk_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -57,8 +59,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/config.hxx"
 
 #include "RAJA/int_datatypes.hxx"
 

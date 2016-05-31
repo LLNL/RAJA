@@ -196,7 +196,7 @@ def main(ndims):
 #ifndef RAJA_forallN_generic_HXX__
 #define RAJA_forallN_generic_HXX__
 
-#include "forallN_generic_lf.hxx"
+#include "RAJA/forallN_generic_lf.hxx"
 
 namespace RAJA {
 

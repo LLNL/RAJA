@@ -46,7 +46,7 @@
 #ifndef RAJA_LAYOUT_HXX__
 #define RAJA_LAYOUT_HXX__
 
-#include <RAJA/IndexValue.hxx>
+#include "RAJA/IndexValue.hxx"
 
 namespace RAJA {
 

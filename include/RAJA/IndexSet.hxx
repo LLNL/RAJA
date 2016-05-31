@@ -53,12 +53,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
-
-#include "IndexSetSegInfo.hxx"
-
-#include "RAJAVec.hxx"
+#include "RAJA/IndexSetSegInfo.hxx"
+#include "RAJA/RAJAVec.hxx"
 
 #include <iosfwd>
 

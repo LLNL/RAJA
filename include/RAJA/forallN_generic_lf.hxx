@@ -56,9 +56,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
-#include<tuple>
+#include "RAJA/config.hxx"
+
+#include "RAJA/int_datatypes.hxx"
+
+#include <tuple>
 
 namespace RAJA {
 
