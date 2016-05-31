@@ -53,8 +53,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<RAJA/int_datatypes.hxx>
-#include<string>
+#include "RAJA/int_datatypes.hxx"
+#include <string>
 
 
 namespace RAJA {

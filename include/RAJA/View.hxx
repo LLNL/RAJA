@@ -53,7 +53,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
   
-#include <RAJA/Layout.hxx>
+#include "RAJA/Layout.hxx"
 
 namespace RAJA {
 

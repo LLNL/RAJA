@@ -13,6 +13,8 @@
 #ifndef RAJA_cilk_HXX
 #define RAJA_cilk_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -89,8 +91,8 @@ struct cilk_reduce {};
 }  // closing brace for RAJA namespace
 
 
-#include "reduce_cilk.hxx"
-#include "forall_cilk.hxx"
+#include "RAJA/exec-cilk/reduce_cilk.hxx"
+#include "RAJA/exec-cilk/forall_cilk.hxx"
 
 
 #endif  // closing endif for if defined(RAJA_USE_CILK)

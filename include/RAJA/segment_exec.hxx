@@ -56,7 +56,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
 
 namespace RAJA {

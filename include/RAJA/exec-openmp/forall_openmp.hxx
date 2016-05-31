@@ -14,6 +14,8 @@
 #ifndef RAJA_forall_openmp_HXX
 #define RAJA_forall_openmp_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -57,8 +59,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/config.hxx"
 
 #include "RAJA/int_datatypes.hxx"
 
