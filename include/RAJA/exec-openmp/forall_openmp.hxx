@@ -87,52 +87,6 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over index range.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            Index_type begin, Index_type end, 
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over index range.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            Index_type begin, Index_type end, 
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma omp for schedule(static) nowait
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
  * \brief  omp parallel for iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -197,58 +151,6 @@ void forall_Icount(omp_for_nowait_exec,
 //////////////////////////////////////////////////////////////////////
 //
 
-/*!
- ******************************************************************************
- *
- * \brief  omp parallel for iteration over range segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over range segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp for schedule(static) nowait
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
 
 
 /*!
@@ -574,54 +476,6 @@ void forall_Icount(omp_for_nowait_exec,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over indirection array.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const Index_type* __restrict__ idx, Index_type len,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp parallel for schedule(static)
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over indirection array.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const Index_type* __restrict__ idx, Index_type len,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp for schedule(static) nowait
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
  * \brief  omp parallel for iteration over indirection array
  *         with index count.
  *
@@ -683,61 +537,6 @@ void forall_Icount(omp_for_nowait_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief  omp parallel for iteration over list segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp parallel for schedule(static)
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp for "nowait" iteration over list segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp for schedule(static) nowait
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 /*!
  ******************************************************************************
@@ -1165,7 +964,7 @@ void forall_segments(omp_taskgraph_interval_segit,
             sched_yield() ;
          }
 
-         RangeSegment* isetSeg = 
+         RangeSegment* isetSeg =
             static_cast<RangeSegment*>(ncis.getSegment(isi));
 
          segTmp->setBegin(isetSeg->getBegin()) ;
@@ -1181,8 +980,8 @@ void forall_segments(omp_taskgraph_interval_segit,
          if (task->numDepTasks() != 0) {
             for (int ii = 0; ii < task->numDepTasks(); ++ii) {
                // Alternateively, we could get the return value of this call
-               // and actively launch the task if we are the last depedent 
-               // task. In that case, we would not need the semaphore spin 
+               // and actively launch the task if we are the last depedent
+               // task. In that case, we would not need the semaphore spin
                // loop above.
                int seg = task->depTaskNum(ii) ;
                DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
