@@ -55,6 +55,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hxx"
+#include "RAJA/Iterators.hxx"
 
 #include <algorithm>
 
@@ -128,6 +129,22 @@ public:
    ~RAJAVec()
    {
       if (m_capacity > 0) delete [] m_data;  
+   }
+
+   using iterator = Iterators::pointer_iterator<T*>;
+
+   ///
+   /// Get an iterator to the end.
+   ///
+   iterator end() const {
+       return iterator(m_data);
+   }
+
+   ///
+   /// Get an iterator to the beginning.
+   ///
+   iterator begin() const {
+       return iterator(m_data + m_size);
    }
 
    ///

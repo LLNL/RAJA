@@ -1195,6 +1195,32 @@ void forall_segments(omp_taskgraph_interval_segit,
    } // end omp parallel region
 }
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp parallel for iteration over random access iterators.
+ *
+ ******************************************************************************
+ */
+template <typename Iterator,
+         typename LOOP_BODY>
+RAJA_INLINE
+void forall(omp_parallel_for_exec,
+            std::random_access_iterator_tag,
+            Iterator begin,
+            Iterator end,
+            LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+#pragma omp parallel for schedule(static)
+   for ( auto ii = begin ; ii < end ; ++ii ) {
+      loop_body( *ii );
+   }
+
+   RAJA_FT_END ;
+}
+
 
 }  // closing brace for RAJA namespace
 

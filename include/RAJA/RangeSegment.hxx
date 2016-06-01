@@ -56,12 +56,14 @@
 #include "RAJA/config.hxx"
 
 #include "RAJA/BaseSegment.hxx"
+#include "RAJA/Iterators.hxx"
 
 #include <algorithm>
 #include <iosfwd>
 
 
 namespace RAJA {
+
 
 
 /*!
@@ -212,6 +214,28 @@ public:
    /// Print segment data to given output stream.
    ///
    void print(std::ostream& os) const;
+
+   ///
+   /// Get an iterator to the end.
+   ///
+   Iterators::numeric_iterator<Index_type> end() const {
+       return Iterators::numeric_iterator<Index_type>(m_end);
+   }
+
+   ///
+   /// Get an iterator to the beginning.
+   ///
+   Iterators::numeric_iterator<Index_type> begin() const {
+       return Iterators::numeric_iterator<Index_type>(m_begin);
+   }
+
+   ///
+   /// Return the number of elements in the range.
+   ///
+   Index_type size() const {
+       return m_end - m_begin;
+   }
+
 
 private:
    Index_type m_begin;

@@ -90,6 +90,9 @@
 #include "RAJA/config.hxx"
 
 #include "RAJA/int_datatypes.hxx"
+#include "RAJA/Iterators.hxx"
+
+#include <type_traits>
 
 
 namespace RAJA {
@@ -408,7 +411,9 @@ void forall_Icount(const ListSegment& iseg,
  */
 template <typename EXEC_POLICY_T,
           typename INDEXSET_T, 
-          typename LOOP_BODY>
+          typename LOOP_BODY,
+          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
+          >
 RAJA_INLINE
 void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
 {
@@ -428,7 +433,9 @@ void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
  */
 template <typename EXEC_POLICY_T,
           typename INDEXSET_T, 
-          typename LOOP_BODY>
+          typename LOOP_BODY,
+          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
+          >
 RAJA_INLINE
 void forall_Icount(const INDEXSET_T& iset, LOOP_BODY loop_body)
 {
@@ -448,7 +455,9 @@ void forall_Icount(const INDEXSET_T& iset, LOOP_BODY loop_body)
  */
 template <typename EXEC_POLICY_T,
           typename INDEXSET_T,
-          typename LOOP_BODY>
+          typename LOOP_BODY,
+          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
+          >
 RAJA_INLINE
 void forall_Icount(const INDEXSET_T& iset, 
                    Index_type icount,
@@ -468,7 +477,8 @@ void forall_Icount(const INDEXSET_T& iset,
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
+          typename LOOP_BODY,
+          >
 RAJA_INLINE
 void forall_segments(const IndexSet& iset,
                      LOOP_BODY loop_body)
@@ -479,7 +489,55 @@ void forall_segments(const IndexSet& iset,
 }
 
 
-}  // closing brace for RAJA namespace
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over iterators.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall(Iterator begin,
+            Iterator end,
+            LOOP_BODY loop_body)
+{
+   using category = typename std::iterator_traits<Iterator>::iterator_category;
 
+   forall(EXEC_POLICY_T(),
+          category(),
+          begin, end,
+          loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Container,
+          typename LOOP_BODY,
+          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr
+          >
+RAJA_INLINE
+void forall(Container c,
+            LOOP_BODY loop_body)
+{
+   auto begin = std::begin(c);
+   auto end = std::end(c);
+   using category = typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          begin, end,
+          loop_body );
+}
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

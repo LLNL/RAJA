@@ -67,8 +67,7 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class BaseSegment
-{
+class BaseSegment {
 public:
 
    ///
