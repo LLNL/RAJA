@@ -13,6 +13,8 @@
 #ifndef RAJA_cuda_HXX
 #define RAJA_cuda_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -155,11 +157,11 @@ const int WARP_SIZE = 32;
 //
 // Headers containing traversal and reduction templates 
 //
-#include "reduce_cuda.hxx"
-#include "forall_cuda.hxx"
+#include "RAJA/exec-cuda/reduce_cuda.hxx"
+#include "RAJA/exec-cuda/forall_cuda.hxx"
 
 #if defined(RAJA_USE_NESTED)
-#include "forallN_cuda.hxx"
+#include "RAJA/exec-cuda/forallN_cuda.hxx"
 #endif
 
 

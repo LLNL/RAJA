@@ -13,6 +13,8 @@
 #ifndef RAJA_raja_cudaerrchk_HXX
 #define RAJA_raja_cudaerrchk_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -57,8 +59,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<string>
-#include<iostream>
+#include <string>
+#include <iostream>
 
 #include <cuda.h>
 #include <cuda_runtime.h>

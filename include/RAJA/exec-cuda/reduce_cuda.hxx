@@ -14,6 +14,8 @@
 #ifndef RAJA_reduce_cuda_HXX
 #define RAJA_reduce_cuda_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_USE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -58,15 +60,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
-
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/reducers.hxx"
 
-#include "MemUtils_CUDA.hxx"
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
-#include "raja_cudaerrchk.hxx"
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
 // The following atomic functions need to be outside of the RAJA namespace
@@ -379,7 +379,7 @@ public:
    //
    operator T()
    {
-     cudaDeviceSynchronize();
+     cudaErrchk(cudaDeviceSynchronize());
      m_reduced_val = static_cast<T>(m_tallydata->tally);
      return m_reduced_val;
    }
@@ -516,7 +516,7 @@ public:
    //
    operator T()
    {
-     cudaDeviceSynchronize() ;
+     cudaErrchk(cudaDeviceSynchronize());
      m_reduced_val = static_cast<T>(m_tallydata->tally);
      return m_reduced_val;
    }

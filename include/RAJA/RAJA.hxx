@@ -61,7 +61,7 @@
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
@@ -82,28 +82,27 @@
 
 
 
-#include "int_datatypes.hxx"
-#include "real_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
+#include "RAJA/real_datatypes.hxx"
 
-#include "reducers.hxx"
+#include "RAJA/reducers.hxx"
 
-#include "RangeSegment.hxx"
-#include "ListSegment.hxx"
-#include "IndexSet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
+#include "RAJA/IndexSet.hxx"
 
 #if defined(RAJA_USE_NESTED)
 
 //
 // Strongly typed index class.
 //
-#include "IndexValue.hxx"
-
+#include "RAJA/IndexValue.hxx"
 
 //
 // Multidimensional layouts and views.
 //
-#include "Layout.hxx"
-#include "View.hxx"
+#include "RAJA/Layout.hxx"
+#include "RAJA/View.hxx"
 
 #endif // defined(RAJA_USE_NESTED)
 
@@ -112,7 +111,7 @@
 // Generic iteration templates require specializations defined 
 // in the files included below.
 //
-#include "forall_generic.hxx"
+#include "RAJA/forall_generic.hxx"
 
 
 #if defined(RAJA_USE_NESTED)
@@ -120,7 +119,7 @@
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "forallN_generic.hxx"
+#include "RAJA/forallN_generic.hxx"
 
 #endif // defined(RAJA_USE_NESTED)
 
@@ -140,28 +139,28 @@
 //
 // All platforms must support sequential execution.  
 //
-#include "exec-sequential/raja_sequential.hxx"
+#include "RAJA/exec-sequential/raja_sequential.hxx"
 
 //
 // All platforms should support simd execution.  
 //
-#include "exec-simd/raja_simd.hxx"
+#include "RAJA/exec-simd/raja_simd.hxx"
 
 #if defined(RAJA_USE_CUDA)
-#include "exec-cuda/raja_cuda.hxx"
+#include "RAJA/exec-cuda/raja_cuda.hxx"
 #endif
 
 #if defined(RAJA_USE_OPENMP)
-#include "exec-openmp/raja_openmp.hxx"
+#include "RAJA/exec-openmp/raja_openmp.hxx"
 #endif
 
 #if defined(RAJA_USE_CILK)
-#include "exec-cilk/raja_cilk.hxx"
+#include "RAJA/exec-cilk/raja_cilk.hxx"
 #endif
 
 
 
-#include "IndexSetUtils.hxx"
+#include "RAJA/IndexSetUtils.hxx"
 
 
 #if defined(RAJA_USE_NESTED)
@@ -171,10 +170,10 @@
 //
 
 // Tiling policies
-#include "forallN_tile.hxx"
+#include "RAJA/forallN_tile.hxx"
 
 // Loop interchange policies
-#include "forallN_permute.hxx"
+#include "RAJA/forallN_permute.hxx"
 
 #endif // defined(RAJA_USE_NESTED)
 

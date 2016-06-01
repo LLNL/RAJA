@@ -50,8 +50,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
+#include "RAJA/config.hxx"
+
+#include "RAJA/int_datatypes.hxx"
 
 namespace RAJA {
 
