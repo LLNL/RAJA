@@ -1,5 +1,5 @@
 BasedOnStyle : google
-IndentWidth : 3
+IndentWidth : 2
 BreakBeforeBraces : Linux
 UseTab: Never
 AllowShortIfStatementsOnASingleLine : true
@@ -21,3 +21,4 @@ BinPackArguments : false
 AlignOperands : true
 AlwaysBreakTemplateDeclarations : true
 Cpp11BracedListStyle : true
+
