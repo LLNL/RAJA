@@ -79,29 +79,6 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over index range.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            Index_type begin, Index_type end, 
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
  * \brief  Sequential iteration over index range with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -135,32 +112,6 @@ void forall_Icount(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential iteration over range segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
 
 /*!
  ******************************************************************************
@@ -334,29 +285,6 @@ void forall_Icount(seq_exec,
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const Index_type* __restrict__ idx, Index_type len,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
  * \brief  Sequential iteration over indices in indirection array 
  *         with index count.
  *
@@ -389,32 +317,6 @@ void forall_Icount(seq_exec,
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential iteration over list segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
 
 /*!
  ******************************************************************************
@@ -468,7 +370,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset, 
+             const IndexSet& iset,
              LOOP_BODY loop_body )
 {
    int num_seg = iset.getNumSegments();
@@ -537,7 +439,7 @@ void forall_segments(seq_segit,
 
    for ( int isi = 0; isi < num_seg; ++isi ) {
 
-      RangeSegment* isetSeg = 
+      RangeSegment* isetSeg =
          static_cast<RangeSegment*>(ncis.getSegment(isi));
 
       segTmp->setBegin(isetSeg->getBegin()) ;

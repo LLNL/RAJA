@@ -252,8 +252,10 @@ int main(int argc, char **argv) {
       int tid = omp_get_thread_num();
 #ifdef __bgq__
       int core = Kernel_ProcessorCoreID();
-#else
+#elif defined(__LINUX__)
       int core = sched_getcpu();
+#else
+      int core = 0;
 #endif
       printf("Rank: %d Thread %d: Core %d\n", myid, tid, core);
     }

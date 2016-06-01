@@ -59,6 +59,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/PolicyBase.hxx"
+
+#include <thread>
+#include <iostream>
+#include <omp.h>
+
 namespace RAJA {
 
 //
@@ -72,9 +78,45 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-struct omp_parallel_for_exec {};
+struct omp_parallel_for_exec : public PolicyBase {
+    template<typename IndexT = Index_type,
+             typename Func>
+    void range(IndexT begin, IndexT end, Func &&f) const {
+#pragma omp parallel for schedule(static)
+        for ( auto ii = begin ; ii < end ; ++ii ) {
+            loop_body( ii );
+        }
+    }
+
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+#pragma omp parallel for schedule(static)
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
 //struct omp_parallel_for_nowait_exec {};
-struct omp_for_nowait_exec {};
+struct omp_for_nowait_exec : public PolicyBase {
+    template<typename IndexT = Index_type,
+             typename Func>
+    void range(IndexT begin, IndexT end, Func &&f) const {
+#pragma omp for schedule(static) nowait
+        for ( auto ii = begin ; ii < end ; ++ii ) {
+            loop_body( ii );
+        }
+    }
+
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+#pragma omp for schedule(static) nowait
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
 
 ///
 /// Index set segment iteration policies

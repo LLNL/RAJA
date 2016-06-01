@@ -63,13 +63,34 @@
 //////////////////////////////////////////////////////////////////////
 //
 
+#include "RAJA/PolicyBase.hxx"
 
 ///
 /// Segment execution policies
 ///
 namespace RAJA {
 
-struct simd_exec {};
+struct simd_exec : public PolicyBase {
+    template<typename IndexT = Index_type,
+             typename Func>
+    void range(IndexT begin, IndexT end, Func &&f) const {
+        // printf("yup...\n");
+        RAJA_SIMD
+        for ( auto ii = begin ; ii < end ; ++ii ) {
+            loop_body( ii );
+        }
+    }
+
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+        // printf("yup2...\n");
+        RAJA_SIMD
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
 
 }
 
