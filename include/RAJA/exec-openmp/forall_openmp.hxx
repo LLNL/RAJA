@@ -967,7 +967,7 @@ void forall_segments(omp_parallel_segit,
 
 #pragma omp parallel
    {
-      int numThreads = omp_get_max_threads() ;
+      int numThreads = omp_get_num_threads() ;
       int tid = omp_get_thread_num() ;
 
       /* Create a temporary IndexSet with one Segment */
@@ -1026,7 +1026,7 @@ void forall_segments(omp_taskgraph_segit,
 
 #pragma omp parallel
    {
-      int numThreads = omp_get_max_threads() ;
+      int numThreads = omp_get_num_threads() ;
       int tid = omp_get_thread_num() ;
 
       /* Create a temporary IndexSet with one Segment */
