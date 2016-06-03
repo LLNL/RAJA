@@ -11,6 +11,8 @@
 #ifndef RAJA_forallN_openmp_HXX__
 #define RAJA_forallN_openmp_HXX__
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -55,10 +57,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~// 
 
-#include<RAJA/config.hxx>
-#include<RAJA/int_datatypes.hxx>
+#include "RAJA/int_datatypes.hxx"
 
-#include<omp.h>
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
 
 namespace RAJA {
 

@@ -15,6 +15,8 @@
 #ifndef RAJA_forall_cuda_HXX
 #define RAJA_forall_cuda_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -60,13 +62,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/config.hxx"
-
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/fault_tolerance.hxx"
 
-#include "raja_cudaerrchk.hxx"
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
 namespace RAJA {

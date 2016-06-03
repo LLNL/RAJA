@@ -13,6 +13,8 @@
 #ifndef RAJA_openmp_HXX
 #define RAJA_openmp_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -94,11 +96,11 @@ struct omp_reduce {};
 }  // closing brace for RAJA namespace
 
 
-#include "reduce_openmp.hxx"
-#include "forall_openmp.hxx"
+#include "RAJA/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/exec-openmp/forall_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
-#include "forallN_openmp.hxx"
+#include "RAJA/exec-openmp/forallN_openmp.hxx"
 #endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

@@ -13,6 +13,8 @@
 #ifndef RAJA_raja_cudaerrchk_HXX
 #define RAJA_raja_cudaerrchk_HXX
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -56,6 +58,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include <string>
+#include <iostream>
 
 #include <cuda.h>
 #include <cuda_runtime.h>

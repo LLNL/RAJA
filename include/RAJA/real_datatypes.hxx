@@ -63,10 +63,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
 #if defined(RAJA_USE_COMPLEX)
-#include<complex>
+#include <complex>
 #endif
 
 namespace RAJA {

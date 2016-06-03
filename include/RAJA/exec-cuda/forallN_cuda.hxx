@@ -12,6 +12,8 @@
 #ifndef RAJA_forallN_cuda_HXX__
 #define RAJA_forallN_cuda_HXX__
 
+#include "RAJA/config.hxx"
+
 #if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -56,8 +58,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<RAJA/config.hxx>
-#include<RAJA/int_datatypes.hxx>
+#include "RAJA/int_datatypes.hxx"
+
+#include <climits>
 
 namespace RAJA {
 
@@ -136,7 +139,7 @@ struct CudaThreadBlock {
 
     int idx = begin + view(blockIdx) * threads_per_block + view(threadIdx);
     if(idx >= end){
-      idx = -1;
+      idx = INT_MIN;
     }
     return idx;
   }
@@ -194,7 +197,7 @@ struct CudaThread {
     
     int idx = begin + view(threadIdx);
     if(idx >= end){
-      idx = -1;
+      idx = INT_MIN;
     }
     return idx;
   }
@@ -235,7 +238,7 @@ struct CudaBlock {
     
     int idx = begin + view(blockIdx);
     if(idx >= end){
-      idx = -1;
+      idx = INT_MIN;
     }
     return idx;
   }
@@ -264,7 +267,7 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 template <typename BODY, typename ... ARGS>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
-  if(i >= 0){
+  if(i > INT_MIN){
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
   }  
@@ -273,7 +276,7 @@ __device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
 template <typename BODY>
 RAJA_INLINE
 __device__ void cudaCheckBounds(BODY body, int i){
-  if(i >= 0){
+  if(i > INT_MIN){
     body(i);
   }  
 }
