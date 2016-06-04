@@ -204,24 +204,24 @@ void forall_Icount(omp_for_nowait_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(omp_parallel_for_exec,
+//             const RangeSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    Index_type begin = iseg.getBegin();
+//    Index_type end   = iseg.getEnd();
+//
+//    RAJA_FT_BEGIN ;
+//
+// #pragma omp parallel for schedule(static)
+//    for ( Index_type ii = begin ; ii < end ; ++ii ) {
+//       loop_body( ii );
+//    }
+//
+//    RAJA_FT_END ;
+// }
 
 
 /*!
@@ -231,24 +231,24 @@ void forall(omp_parallel_for_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-#pragma omp for schedule(static) nowait
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(omp_for_nowait_exec,
+//             const RangeSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    Index_type begin = iseg.getBegin();
+//    Index_type end   = iseg.getEnd();
+//
+//    RAJA_FT_BEGIN ;
+//
+// #pragma omp for schedule(static) nowait
+//    for ( Index_type ii = begin ; ii < end ; ++ii ) {
+//       loop_body( ii );
+//    }
+//
+//    RAJA_FT_END ;
+// }
 
 
 /*!
@@ -691,25 +691,25 @@ void forall_Icount(omp_for_nowait_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp parallel for schedule(static)
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(omp_parallel_for_exec,
+//             const ListSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    const Index_type* __restrict__ idx = iseg.getIndex();
+//    Index_type len = iseg.getLength();
+//
+//    RAJA_FT_BEGIN ;
+//
+// #pragma novector
+// #pragma omp parallel for schedule(static)
+//    for ( Index_type k = 0 ; k < len ; ++k ) {
+//       loop_body( idx[k] );
+//    }
+//
+//    RAJA_FT_END ;
+// }
 
 /*!
  ******************************************************************************
@@ -718,25 +718,25 @@ void forall(omp_parallel_for_exec,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_for_nowait_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
-
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-#pragma omp for schedule(static) nowait
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(omp_for_nowait_exec,
+//             const ListSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    const Index_type* __restrict__ idx = iseg.getIndex();
+//    Index_type len = iseg.getLength();
+//
+//    RAJA_FT_BEGIN ;
+//
+// #pragma novector
+// #pragma omp for schedule(static) nowait
+//    for ( Index_type k = 0 ; k < len ; ++k ) {
+//       loop_body( idx[k] );
+//    }
+//
+//    RAJA_FT_END ;
+// }
 
 
 /*!
@@ -1193,32 +1193,6 @@ void forall_segments(omp_taskgraph_interval_segit,
       } // loop over interval segments
 
    } // end omp parallel region
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  omp parallel for iteration over random access iterators.
- *
- ******************************************************************************
- */
-template <typename Iterator,
-         typename LOOP_BODY>
-RAJA_INLINE
-void forall(omp_parallel_for_exec,
-            std::random_access_iterator_tag,
-            Iterator begin,
-            Iterator end,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma omp parallel for schedule(static)
-   for ( auto ii = begin ; ii < end ; ++ii ) {
-      loop_body( *ii );
-   }
-
-   RAJA_FT_END ;
 }
 
 

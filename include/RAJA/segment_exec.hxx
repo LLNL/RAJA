@@ -85,9 +85,8 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
       case _RangeSeg_ : {
          const RangeSegment* tseg =
             static_cast<const RangeSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
+         forall<SEG_EXEC_POLICY_T>(
+            *tseg,
             loop_body
          );
          break;
@@ -109,9 +108,8 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
       case _ListSeg_ : {
          const ListSegment* tseg =
             static_cast<const ListSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
+         forall<SEG_EXEC_POLICY_T>(
+            *tseg,
             loop_body
          );
          break;

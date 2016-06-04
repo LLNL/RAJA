@@ -91,6 +91,7 @@
 
 #include "RAJA/int_datatypes.hxx"
 #include "RAJA/Iterators.hxx"
+#include "RAJA/fault_tolerance.hxx"
 
 #include <type_traits>
 
@@ -161,16 +162,16 @@ void forall_Icount(Index_type begin, Index_type end,
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   forall( EXEC_POLICY_T(),
-           iseg.getBegin(), iseg.getEnd(),
-           loop_body );
-}
+// template <typename EXEC_POLICY_T,
+//           typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(const RangeSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    forall( EXEC_POLICY_T(),
+//            iseg.getBegin(), iseg.getEnd(),
+//            loop_body );
+// }
 
 /*!
  ******************************************************************************
@@ -359,16 +360,16 @@ void forall_Icount(const Index_type* idx, Index_type len,
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, 
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(const ListSegment& iseg, 
-            LOOP_BODY loop_body)
-{
-   forall( EXEC_POLICY_T(),
-           iseg.getIndex(), iseg.getLength(), 
-           loop_body );
-}
+// template <typename EXEC_POLICY_T,
+//           typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(const ListSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    forall( EXEC_POLICY_T(),
+//            iseg.getIndex(), iseg.getLength(),
+//            loop_body );
+// }
 
 /*!
  ******************************************************************************
@@ -477,7 +478,7 @@ void forall_Icount(const INDEXSET_T& iset,
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
-          typename LOOP_BODY,
+          typename LOOP_BODY
           >
 RAJA_INLINE
 void forall_segments(const IndexSet& iset,
@@ -486,6 +487,31 @@ void forall_segments(const IndexSet& iset,
    forall_segments(EXEC_POLICY_T(),
                    iset,
                    loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  omp parallel for iteration over random access iterators.
+ *
+ ******************************************************************************
+ */
+template <
+         typename Policy,
+         typename Iterator,
+         typename LOOP_BODY>
+RAJA_INLINE
+void forall(const Policy &p,
+            std::random_access_iterator_tag,
+            Iterator begin,
+            Iterator end,
+            LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+   p.iterator(begin, end, loop_body);
+
+   RAJA_FT_END ;
 }
 
 
@@ -531,6 +557,8 @@ void forall(Container c,
    auto begin = std::begin(c);
    auto end = std::end(c);
    using category = typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
+
+   // printf("running container\n");
 
    forall(EXEC_POLICY_T(),
           category(),

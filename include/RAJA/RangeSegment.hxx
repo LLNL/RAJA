@@ -215,18 +215,20 @@ public:
    ///
    void print(std::ostream& os) const;
 
+   using iterator = Iterators::numeric_iterator<Index_type>;
+
    ///
    /// Get an iterator to the end.
    ///
-   Iterators::numeric_iterator<Index_type> end() const {
-       return Iterators::numeric_iterator<Index_type>(m_end);
+   iterator end() const {
+       return iterator(m_end);
    }
 
    ///
    /// Get an iterator to the beginning.
    ///
-   Iterators::numeric_iterator<Index_type> begin() const {
-       return Iterators::numeric_iterator<Index_type>(m_begin);
+   iterator begin() const {
+       return iterator(m_begin);
    }
 
    ///

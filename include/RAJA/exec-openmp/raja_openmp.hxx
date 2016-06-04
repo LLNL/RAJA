@@ -59,6 +59,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/PolicyBase.hxx"
+
 namespace RAJA {
 
 //
@@ -72,17 +74,55 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-struct omp_parallel_for_exec {};
+struct omp_parallel_for_exec : public PolicyBase {
+    template<typename IndexT = Index_type,
+             typename Func>
+    void range(IndexT begin, IndexT end, Func &&f) const {
+        // printf("yup omp pfor1...\n");
+#pragma omp parallel for schedule(static)
+        for ( auto ii = begin ; ii < end ; ++ii ) {
+            loop_body( ii );
+        }
+    }
+
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+        // printf("yup omp pfor2...\n");
+#pragma omp parallel for schedule(static)
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
 //struct omp_parallel_for_nowait_exec {};
-struct omp_for_nowait_exec {};
+struct omp_for_nowait_exec : public PolicyBase {
+    template<typename IndexT = Index_type,
+             typename Func>
+    void range(IndexT begin, IndexT end, Func &&f) const {
+#pragma omp for schedule(static) nowait
+        for ( auto ii = begin ; ii < end ; ++ii ) {
+            loop_body( ii );
+        }
+    }
+
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+#pragma omp for schedule(static) nowait
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
 
 ///
 /// Index set segment iteration policies
 ///
-struct omp_parallel_for_segit {};
-struct omp_parallel_segit {};
-struct omp_taskgraph_segit {};
-struct omp_taskgraph_interval_segit {};
+struct omp_parallel_for_segit : public PolicyBase {};
+struct omp_parallel_segit : public PolicyBase {};
+struct omp_taskgraph_segit : public PolicyBase {};
+struct omp_taskgraph_interval_segit : public PolicyBase {};
 
 ///
 ///////////////////////////////////////////////////////////////////////
