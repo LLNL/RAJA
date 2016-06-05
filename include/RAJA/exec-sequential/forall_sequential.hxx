@@ -468,7 +468,7 @@ template <typename SEG_EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset, 
+             const IndexSet& iset,
              LOOP_BODY loop_body )
 {
    int num_seg = iset.getNumSegments();
@@ -520,34 +520,34 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_segments(seq_segit,
-                     const IndexSet& iset,
-                     LOOP_BODY loop_body)
-{
-   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   int num_seg = ncis.getNumSegments();
-
-   /* Create a temporary IndexSet with one Segment */
-   IndexSet is_tmp;
-   is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
-
-   RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
-
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      RangeSegment* isetSeg = 
-         static_cast<RangeSegment*>(ncis.getSegment(isi));
-
-      segTmp->setBegin(isetSeg->getBegin()) ;
-      segTmp->setEnd(isetSeg->getEnd()) ;
-      segTmp->setPrivate(isetSeg->getPrivate()) ;
-
-      loop_body(&is_tmp) ;
-
-   } // loop over index set segments
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall_segments(seq_segit,
+//                      const IndexSet& iset,
+//                      LOOP_BODY loop_body)
+// {
+//    IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+//    int num_seg = ncis.getNumSegments();
+//
+//    #<{(| Create a temporary IndexSet with one Segment |)}>#
+//    IndexSet is_tmp;
+//    is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+//
+//    RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+//
+//    for ( int isi = 0; isi < num_seg; ++isi ) {
+//
+//       RangeSegment* isetSeg =
+//          static_cast<RangeSegment*>(ncis.getSegment(isi));
+//
+//       segTmp->setBegin(isetSeg->getBegin()) ;
+//       segTmp->setEnd(isetSeg->getEnd()) ;
+//       segTmp->setPrivate(isetSeg->getPrivate()) ;
+//
+//       loop_body(&is_tmp) ;
+//
+//    } // loop over index set segments
+// }
 
 
 }  // closing brace for RAJA namespace

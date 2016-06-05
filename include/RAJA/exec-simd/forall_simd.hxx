@@ -142,24 +142,24 @@ RAJA_SIMD
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
+// template <typename LOOP_BODY>
+// RAJA_INLINE
+// void forall(simd_exec,
+//             const RangeSegment& iseg,
+//             LOOP_BODY loop_body)
+// {
+//    Index_type begin = iseg.getBegin();
+//    Index_type end   = iseg.getEnd();
+//
+//    RAJA_FT_BEGIN ;
+//
+// RAJA_SIMD
+//    for ( Index_type ii = begin ; ii < end ; ++ii ) {
+//       loop_body( ii );
+//    }
+//
+//    RAJA_FT_END ;
+// }
 
 /*!
  ******************************************************************************
