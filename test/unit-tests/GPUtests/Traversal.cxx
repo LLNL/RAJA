@@ -298,7 +298,6 @@ int main(int argc, char *argv[])
    s_ntests_run++;
    if ( !array_equal(ref_array, test_array, array_length) ) {
       cout << "\n TEST FAILURE " << endl;
-#if 0
       cout << endl << endl;
       for (Index_type i = 0; i < is_indices.size(); ++i) {
          cout << "test_array[" << is_indices[i] << "] = "
@@ -306,7 +305,6 @@ int main(int argc, char *argv[])
                    << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
       }
       cout << endl;
-#endif
    } else {
       s_ntests_passed++;
    }
@@ -340,7 +338,6 @@ int main(int argc, char *argv[])
    s_ntests_run++;
    if ( !array_equal(ref_array, test_array, test_alen ) ) {
       cout << "\n TEST FAILURE " << endl;
-#if 0
       cout << endl << endl;
       for (Index_type i = 0; i < test_alen; ++i) {
          cout << "test_array[" << is_indices[i] << "] = "
@@ -348,7 +345,6 @@ int main(int argc, char *argv[])
                    << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
       }
       cout << endl;
-#endif
    } else {
       s_ntests_passed++;
    }

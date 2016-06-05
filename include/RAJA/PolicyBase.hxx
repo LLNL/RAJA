@@ -7,9 +7,11 @@ namespace RAJA {
 
 struct PolicyBase {
     template<typename IndexT = Index_type,
-             typename Func>
-    void range(IndexT begin, IndexT end, Func &&f) const {
-        // printf("base...\n");
+             typename Func,
+             typename std::enable_if<!std::is_base_of<
+                 std::random_access_iterator_tag,
+                 typename std::iterator_traits<IndexT>::iterator_category>::value>::type * = nullptr>
+    void operator()(IndexT begin, IndexT end, Func &&f) const {
         for ( auto ii = begin ; ii < end ; ++ii ) {
             loop_body( ii );
         }
@@ -17,8 +19,7 @@ struct PolicyBase {
 
     template<typename Iterator,
              typename Func>
-    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
-        printf("base2...\n");
+    void operator()(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
         for ( auto &ii = begin ; ii < end ; ++ii ) {
             loop_body( *ii );
         }

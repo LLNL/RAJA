@@ -147,9 +147,8 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
       case _RangeSeg_ : {
          const RangeSegment* tseg =
             static_cast<const RangeSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
+         forall_Icount<SEG_EXEC_POLICY_T>(
+            *tseg,
             icount,
             loop_body
          );
@@ -173,9 +172,8 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
       case _ListSeg_ : {
          const ListSegment* tseg =
             static_cast<const ListSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
+         forall_Icount<SEG_EXEC_POLICY_T>(
+            *tseg,
             icount,
             loop_body
          );

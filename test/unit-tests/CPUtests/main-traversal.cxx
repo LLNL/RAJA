@@ -221,14 +221,12 @@ void runBasicForall_IcountTest(const string& policy,
 
    if ( !array_equal(ref_array, test_array, test_alen) ) {
       cout << "\n TEST FAILURE " << endl;
-#if 0
       cout << endl << endl;
       for (Index_type i = 0; i < test_alen; ++i) {
          cout << "test_array[" << i << "] = " << test_array[ i ]
               << " ( " << ref_array[ i ] << " ) " << endl;
       }
       cout << endl;
-#endif
    } else {
       s_ntests_passed++;
       s_ntests_passed_total++;
