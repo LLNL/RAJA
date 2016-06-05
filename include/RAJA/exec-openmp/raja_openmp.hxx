@@ -123,7 +123,7 @@ struct omp_for_nowait_exec : public PolicyBase {
 ///
 /// Index set segment iteration policies
 ///
-struct omp_parallel_for_segit : public PolicyBase {
+struct omp_parallel_for_segit : public SegmentPolicyBase {
     template<typename Iterator,
              typename Func>
     void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
@@ -133,29 +133,26 @@ struct omp_parallel_for_segit : public PolicyBase {
         }
     }
 };
-struct omp_parallel_segit : public PolicyBase {
+struct omp_parallel_segit : public SegmentPolicyBase {
 };
-struct omp_taskgraph_segit : public PolicyBase {
+struct omp_taskgraph_segit : public SegmentPolicyBase {
     template<typename Func>
-    void iterator(IndexSetSegInfo *begin, IndexSetSegInfo *end, Func &&loop_body) const {
-        // TODO: this check is useful, but indexset is not visible here,
-        // figure out how to bring it back
-        // if ( !iset.dependencyGraphSet() ) {
-        //    std::cerr << "\n RAJA IndexSet dependency graph not set , "
-        //              << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
-        //    exit(1);
-        // }
+    void indexset(IndexSet & iset, Func &&loop_body) const {
+        if ( !iset.dependencyGraphSet() ) {
+            std::cerr << "\n RAJA IndexSet dependency graph not set , "
+                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
+            exit(1);
+        }
 
-        std::cerr << "begin: " << begin
-            << " end: " << end
-            << " distance: " << std::distance(begin, end)
-            << std::endl;
 
-        // IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+        IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+
+        int num_seg = ncis.getNumSegments();
 
 #pragma omp parallel for schedule(static, 1)
-        for ( IndexSetSegInfo* seg_info = begin; seg_info < end; ++seg_info ) {
+        for ( int isi = 0; isi < num_seg; ++isi ) {
 
+            IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
             DepGraphNode* task  = seg_info->getDepGraphNode();
 
 #pragma omp critical
@@ -181,7 +178,7 @@ struct omp_taskgraph_segit : public PolicyBase {
                 // for (volatile int spin = 0; spin<1000; ++spin) {
                 //    spin = spin ;
                 // }
-                std::this_thread::yield();
+                sched_yield() ;
             }
 
             loop_body(*seg_info);
@@ -197,7 +194,7 @@ struct omp_taskgraph_segit : public PolicyBase {
                     // task. In that case, we would not need the semaphore spin
                     // loop above.
                     int seg = task->depTaskNum(ii) ;
-                    DepGraphNode* dep  = begin[seg].getDepGraphNode();
+                    DepGraphNode* dep  = ncis.getSegmentInfo(seg)->getDepGraphNode();
                     __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
                 }
             }
@@ -205,7 +202,7 @@ struct omp_taskgraph_segit : public PolicyBase {
         } // iterate over segments of index set
     }
 };
-struct omp_taskgraph_interval_segit : public PolicyBase {};
+struct omp_taskgraph_interval_segit : public SegmentPolicyBase {};
 
 ///
 ///////////////////////////////////////////////////////////////////////

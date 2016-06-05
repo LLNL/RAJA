@@ -75,7 +75,7 @@ struct seq_exec : public PolicyBase {};
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit : public PolicyBase {};
+struct seq_segit : public SegmentPolicyBase {};
 
 ///
 ///////////////////////////////////////////////////////////////////////

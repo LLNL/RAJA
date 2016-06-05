@@ -203,12 +203,11 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
  */
 template <typename SEG_ITER_POLICY_T,
           typename SEG_EXEC_POLICY_T,
-          typename Iterator,
+          typename INDEXSET_T,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall(IndexSet::ExecPolicy<SEG_ITER_POLICY_T, SEG_EXEC_POLICY_T>,
-            std::random_access_iterator_tag,
-            Iterator begin, Iterator end,
+            INDEXSET_T && iset,
             LOOP_BODY&& loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -218,7 +217,7 @@ void forall(IndexSet::ExecPolicy<SEG_ITER_POLICY_T, SEG_EXEC_POLICY_T>,
     auto wrapped = [loop_body](const IndexSetSegInfo & seg_info) {
         executeRangeList_forall<SEG_EXEC_POLICY_T>(&seg_info, loop_body);
     };
-    first_policy.iterator(begin, end, wrapped);
+    first_policy.indexset(iset, wrapped);
 
    RAJA_FT_END ;
 }

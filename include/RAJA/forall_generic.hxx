@@ -92,6 +92,7 @@
 #include "RAJA/int_datatypes.hxx"
 #include "RAJA/Iterators.hxx"
 #include "RAJA/fault_tolerance.hxx"
+#include "RAJA/PolicyBase.hxx"
 
 #include <type_traits>
 
@@ -413,13 +414,15 @@ void forall_Icount(const ListSegment& iseg,
 template <typename EXEC_POLICY_T,
           typename INDEXSET_T, 
           typename LOOP_BODY,
-          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
+          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value &&
+          std::is_base_of<SegmentPolicyBase, typename EXEC_POLICY_T::seg_it>::value>::type * = nullptr
           >
 RAJA_INLINE
 void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
 {
    forall(EXEC_POLICY_T(),
-          iset, loop_body);
+          iset,
+          loop_body );
 }
 
 /*!
@@ -578,8 +581,8 @@ void forall_Icount(Iterator begin,
 template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
-          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
-          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
+          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr
+          , typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
           >
 RAJA_INLINE
 void forall(Container c,
