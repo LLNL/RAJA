@@ -492,14 +492,13 @@ void forall_segments(const IndexSet& iset,
 /*!
  ******************************************************************************
  *
- * \brief  omp parallel for iteration over random access iterators.
+ * \brief  Generic iteration over random access iterators.
  *
  ******************************************************************************
  */
-template <
-         typename Policy,
-         typename Iterator,
-         typename LOOP_BODY>
+template <typename Policy,
+          typename Iterator,
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall(const Policy &p,
             std::random_access_iterator_tag,
@@ -538,6 +537,37 @@ void forall(Iterator begin,
           loop_body );
 }
 
+template<typename Iterator,
+         typename Body>
+struct IcountWrapper {
+    IcountWrapper(Body && body) : m_body(body) {}
+    private:
+        Body m_body;
+};
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over iterators with count.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(Iterator begin,
+                   Iterator end,
+                   Index_type icount,
+                   LOOP_BODY loop_body)
+{
+   using category = typename std::iterator_traits<Iterator>::iterator_category;
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          begin, end,
+          loop_body );
+}
+
 /*!
  ******************************************************************************
  *
@@ -548,7 +578,8 @@ void forall(Iterator begin,
 template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
-          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr
+          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
+          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
           >
 RAJA_INLINE
 void forall(Container c,

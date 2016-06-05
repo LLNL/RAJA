@@ -58,6 +58,10 @@
 
 #include "RAJA/config.hxx"
 
+#include "RAJA/IndexSetSegInfo.hxx"
+#include "RAJA/BaseSegment.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
 namespace RAJA {
 
@@ -187,6 +191,38 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
 
    }  // switch on segment type
 }
+
+//TODO: TRWS, this does not belong here, but the current include snarl
+//prevents it from being elsewhere
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic iteration over IndexSet ExecPolicy policies
+ *
+ ******************************************************************************
+ */
+template <typename SEG_ITER_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall(IndexSet::ExecPolicy<SEG_ITER_POLICY_T, SEG_EXEC_POLICY_T>,
+            std::random_access_iterator_tag,
+            Iterator begin, Iterator end,
+            LOOP_BODY&& loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+    SEG_ITER_POLICY_T first_policy;
+    // TODO: convert lambda to functor
+    auto wrapped = [loop_body](const IndexSetSegInfo & seg_info) {
+        executeRangeList_forall<SEG_EXEC_POLICY_T>(&seg_info, loop_body);
+    };
+    first_policy.iterator(begin, end, wrapped);
+
+   RAJA_FT_END ;
+}
+
 
 
 }  // closing brace for RAJA namespace

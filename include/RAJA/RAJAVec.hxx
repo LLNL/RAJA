@@ -131,20 +131,27 @@ public:
       if (m_capacity > 0) delete [] m_data;  
    }
 
-   using iterator = Iterators::pointer_iterator<T*>;
+   using iterator = T*;
+
+   ///
+   /// Get a pointer to the beginning of the contiguous vector
+   ///
+   T* data() const {
+       return m_data;
+   }
 
    ///
    /// Get an iterator to the end.
    ///
    iterator end() const {
-       return iterator(m_data);
+       return m_data+m_size;
    }
 
    ///
    /// Get an iterator to the beginning.
    ///
    iterator begin() const {
-       return iterator(m_data + m_size);
+       return m_data;
    }
 
    ///

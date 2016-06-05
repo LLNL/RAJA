@@ -61,6 +61,10 @@
 
 #include "RAJA/PolicyBase.hxx"
 
+#include <thread>
+#include <iostream>
+#include <omp.h>
+
 namespace RAJA {
 
 //
@@ -119,9 +123,88 @@ struct omp_for_nowait_exec : public PolicyBase {
 ///
 /// Index set segment iteration policies
 ///
-struct omp_parallel_for_segit : public PolicyBase {};
-struct omp_parallel_segit : public PolicyBase {};
-struct omp_taskgraph_segit : public PolicyBase {};
+struct omp_parallel_for_segit : public PolicyBase {
+    template<typename Iterator,
+             typename Func>
+    void iterator(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+#pragma omp parallel for schedule(static, 1)
+        for ( auto &ii = begin ; ii < end ; ++ii ) {
+            loop_body( *ii );
+        }
+    }
+};
+struct omp_parallel_segit : public PolicyBase {
+};
+struct omp_taskgraph_segit : public PolicyBase {
+    template<typename Func>
+    void iterator(IndexSetSegInfo *begin, IndexSetSegInfo *end, Func &&loop_body) const {
+        // TODO: this check is useful, but indexset is not visible here,
+        // figure out how to bring it back
+        // if ( !iset.dependencyGraphSet() ) {
+        //    std::cerr << "\n RAJA IndexSet dependency graph not set , "
+        //              << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
+        //    exit(1);
+        // }
+
+        std::cerr << "begin: " << begin
+            << " end: " << end
+            << " distance: " << std::distance(begin, end)
+            << std::endl;
+
+        // IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
+
+#pragma omp parallel for schedule(static, 1)
+        for ( IndexSetSegInfo* seg_info = begin; seg_info < end; ++seg_info ) {
+
+            DepGraphNode* task  = seg_info->getDepGraphNode();
+
+#pragma omp critical
+            std::cerr << omp_get_thread_num()
+                      << " seg_info:"
+                      << seg_info
+                      << " task: "
+                      << task
+                      << std::endl;
+            //
+            // This is declared volatile to prevent compiler from
+            // optimizing the while loop (into an if-statement, for example).
+            // It may not be able to see that the value accessed through
+            // the method call will be changed at the end of the for-loop
+            // from another executing thread.
+            //
+            volatile int* __restrict__ semVal = &(task->semaphoreValue());
+
+            while(*semVal != 0) {
+                /* spin or (better) sleep here */ ;
+                // printf("%d ", *semVal) ;
+                // sleep(1) ;
+                // for (volatile int spin = 0; spin<1000; ++spin) {
+                //    spin = spin ;
+                // }
+                std::this_thread::yield();
+            }
+
+            loop_body(*seg_info);
+
+            if (task->semaphoreReloadValue() != 0) {
+                task->semaphoreValue() = task->semaphoreReloadValue() ;
+            }
+
+            if (task->numDepTasks() != 0) {
+                for (int ii = 0; ii < task->numDepTasks(); ++ii) {
+                    // Alternateively, we could get the return value of this call
+                    // and actively launch the task if we are the last depedent
+                    // task. In that case, we would not need the semaphore spin
+                    // loop above.
+                    int seg = task->depTaskNum(ii) ;
+                    DepGraphNode* dep  = begin[seg].getDepGraphNode();
+                    __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+                }
+            }
+
+        } // iterate over segments of index set
+    }
+};
 struct omp_taskgraph_interval_segit : public PolicyBase {};
 
 ///
