@@ -102,6 +102,166 @@ namespace RAJA {
 //
 //////////////////////////////////////////////////////////////////////
 //
+// Iteration over generic iterators
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+template<typename Iterator,
+         typename Body>
+struct IcountWrapper {
+    using vtype = typename std::iterator_traits<Iterator>::value_type;
+    constexpr IcountWrapper(Body && body) : m_body(body) {}
+    RAJA_INLINE void operator()(vtype&& i) const {
+        m_body(i.first, *i.second);
+    }
+    private:
+        Body&& m_body;
+};
+template<typename Iterator,
+         typename Body>
+constexpr auto make_icount_wrapper(Body &&loop_body)
+    -> IcountWrapper<Iterator, decltype(loop_body)> {
+    return IcountWrapper<Iterator, decltype(loop_body)>(loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Generic iteration over random access iterators.
+ *
+ ******************************************************************************
+ */
+template <typename Policy,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall(Policy &&p,
+            std::random_access_iterator_tag,
+            Iterator begin,
+            Iterator end,
+            LOOP_BODY loop_body)
+{
+   RAJA_FT_BEGIN ;
+
+   p(begin, end, loop_body);
+
+   RAJA_FT_END ;
+}
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over iterators with icount.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_icount(Iterator begin,
+            Iterator end,
+            Index_type icount,
+            LOOP_BODY loop_body)
+{
+   using category = typename std::iterator_traits<Iterator>::iterator_category;
+   using IterT = Iterators::Enumerater<Iterator>;
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          IterT(begin, 0, icount),
+          IterT(end, std::distance(begin, end), icount),
+          make_icount_wrapper<IterT>(loop_body));
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over iterators.
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Iterator,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall(Iterator begin,
+            Iterator end,
+            LOOP_BODY loop_body)
+{
+   using category = typename std::iterator_traits<Iterator>::iterator_category;
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          begin, end,
+          loop_body );
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with icount
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Container,
+          typename LOOP_BODY,
+          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
+          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
+          >
+RAJA_INLINE
+void forall_Icount(Container c,
+            Index_type icount,
+            LOOP_BODY loop_body)
+{
+   auto begin = std::begin(c);
+   auto end = std::end(c);
+   using Iterator = decltype(std::begin(c));
+   using category = typename std::iterator_traits<Iterator>::iterator_category;
+   using IterT = Iterators::Enumerater<Iterator>;
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          IterT(begin, 0, icount),
+          IterT(end, std::distance(begin, end), icount),
+          make_icount_wrapper<IterT>(loop_body));
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T,
+          typename Container,
+          typename LOOP_BODY,
+          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
+          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
+          >
+RAJA_INLINE
+void forall(Container c,
+            LOOP_BODY loop_body)
+{
+   auto begin = std::begin(c);
+   auto end = std::end(c);
+   using category = typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
+
+   // printf("running container\n");
+
+   forall(EXEC_POLICY_T(),
+          category(),
+          begin, end,
+          loop_body );
+}
+
+//
+//////////////////////////////////////////////////////////////////////
+//
 // Function templates that iterate over index ranges.
 //
 //////////////////////////////////////////////////////////////////////
@@ -117,12 +277,12 @@ namespace RAJA {
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(Index_type begin, Index_type end, 
+void forall(Index_type begin, Index_type end,
             LOOP_BODY loop_body)
 {
-   forall( EXEC_POLICY_T(),
-           numeric_iterator<>(begin),
-           numeric_iterator<>(end),
+   forall<EXEC_POLICY_T>(
+           begin,
+           end,
            loop_body );
 }
 
@@ -131,7 +291,7 @@ void forall(Index_type begin, Index_type end,
  *
  * \brief Generic iteration over index range with index count.
  *
- *        NOTE: lambda loop body requires two args (icount, index). 
+ *        NOTE: lambda loop body requires two args (icount, index).
  *
  ******************************************************************************
  */
@@ -142,41 +302,11 @@ void forall_Icount(Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   forall_Icount( EXEC_POLICY_T(),
-                  begin, end, 
-                  icount,
-                  loop_body );
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range segments.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iterations over range segment object with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(const RangeSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   forall_Icount( EXEC_POLICY_T(),
-                  iseg.getBegin(), iseg.getEnd(),
-                  icount,
-                  loop_body );
+   forall_Icount<EXEC_POLICY_T>(
+           Iterators::numeric_iterator<>(begin),
+           Iterators::numeric_iterator<>(end),
+           icount,
+           loop_body );
 }
 
 
@@ -302,7 +432,7 @@ void forall(const Index_type* idx, Index_type len,
             LOOP_BODY loop_body)
 {
    // turn into an iterator
-   forall( EXEC_POLICY_T(),
+   forall<EXEC_POLICY_T>(
            idx, idx+len,
            loop_body );
 }
@@ -323,41 +453,11 @@ void forall_Icount(const Index_type* idx, Index_type len,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   forall_Icount( EXEC_POLICY_T(),
-                  idx, len,
-                  icount,
-                  loop_body );
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over list segment objects.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over list segment object with index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index). 
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(const ListSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   forall_Icount( EXEC_POLICY_T(),
-                  iseg.getIndex(), iseg.getLength(),
-                  icount, 
-                  loop_body );
+   // turn into an iterator
+   forall_Icount<EXEC_POLICY_T>(
+           idx, idx+len,
+           icount,
+           loop_body );
 }
 
 
@@ -455,90 +555,6 @@ void forall_segments(const IndexSet& iset,
                    loop_body);
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  Generic iteration over random access iterators.
- *
- ******************************************************************************
- */
-template <typename Policy,
-          typename Iterator,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(const Policy &p,
-            std::random_access_iterator_tag,
-            Iterator begin,
-            Iterator end,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-   p.iterator(begin, end, loop_body);
-
-   RAJA_FT_END ;
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over iterators.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename Iterator,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(Iterator begin,
-            Iterator end,
-            LOOP_BODY loop_body)
-{
-   using category = typename std::iterator_traits<Iterator>::iterator_category;
-
-   forall(EXEC_POLICY_T(),
-          category(),
-          begin, end,
-          loop_body );
-}
-
-template<typename Iterator,
-         typename Body>
-struct IcountWrapper {
-    IcountWrapper(Body && body) : m_body(body) {}
-    private:
-        Body m_body;
-};
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over containers
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename Container,
-          typename LOOP_BODY,
-          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
-          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
-          >
-RAJA_INLINE
-void forall(Container c,
-            LOOP_BODY loop_body)
-{
-   auto begin = std::begin(c);
-   auto end = std::end(c);
-   using category = typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
-
-   // printf("running container\n");
-
-   forall(EXEC_POLICY_T(),
-          category(),
-          begin, end,
-          loop_body );
-}
 
 }  // closing brace for RAJA namespace
 
