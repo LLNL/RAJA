@@ -357,7 +357,10 @@ public:
    /// Return number of indices represented by range.
    ///
    Index_type getLength() const { return (m_end-m_begin) >= m_stride ?
-                                         (m_end-m_begin)/m_stride + 1 : 0; }
+                                             (m_end-m_begin) % m_stride ?
+                                                 (m_end-m_begin)/m_stride + 1
+                                                :(m_end-m_begin)/m_stride
+                                            : 0; }
 
    ///
    /// Return 'Owned' indicating that segment object owns the data
@@ -411,6 +414,29 @@ public:
    /// Print segment data to given output stream.
    ///
    void print(std::ostream& os) const;
+
+   using iterator = Iterators::strided_numeric_iterator<Index_type>;
+
+   ///
+   /// Get an iterator to the end.
+   ///
+   iterator end() const {
+       return iterator(m_end, m_stride);
+   }
+
+   ///
+   /// Get an iterator to the beginning.
+   ///
+   iterator begin() const {
+       return iterator(m_begin, m_stride);
+   }
+
+   ///
+   /// Return the number of elements in the range.
+   ///
+   Index_type size() const {
+       return getLength();
+   }
 
 private:
    Index_type m_begin;
