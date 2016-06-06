@@ -137,9 +137,8 @@ template <typename Policy,
           typename LOOP_BODY>
 RAJA_INLINE
 void forall(Policy &&p,
-            std::random_access_iterator_tag,
-            Iterator begin,
-            Iterator end,
+            Iterator&& begin,
+            Iterator&& end,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
@@ -161,16 +160,18 @@ template <typename EXEC_POLICY_T,
           typename Iterator,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_icount(Iterator begin,
-            Iterator end,
+void forall_icount(Iterator&& begin,
+            Iterator&& end,
             Index_type icount,
             LOOP_BODY loop_body)
 {
    using category = typename std::iterator_traits<Iterator>::iterator_category;
+   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
+                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
+
    using IterT = Iterators::Enumerater<Iterator>;
 
    forall(EXEC_POLICY_T(),
-          category(),
           IterT(begin, 0, icount),
           IterT(end, std::distance(begin, end), icount),
           make_icount_wrapper<IterT>(loop_body));
@@ -187,14 +188,16 @@ template <typename EXEC_POLICY_T,
           typename Iterator,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall(Iterator begin,
-            Iterator end,
+void forall(Iterator&& begin,
+            Iterator&& end,
             LOOP_BODY loop_body)
 {
    using category = typename std::iterator_traits<Iterator>::iterator_category;
+   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
+                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
+
 
    forall(EXEC_POLICY_T(),
-          category(),
           begin, end,
           loop_body );
 }
@@ -213,7 +216,7 @@ template <typename EXEC_POLICY_T,
           typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
           >
 RAJA_INLINE
-void forall_Icount(Container c,
+void forall_Icount(Container& c,
             Index_type icount,
             LOOP_BODY loop_body)
 {
@@ -221,10 +224,11 @@ void forall_Icount(Container c,
    auto end = std::end(c);
    using Iterator = decltype(std::begin(c));
    using category = typename std::iterator_traits<Iterator>::iterator_category;
+   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
+                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
    using IterT = Iterators::Enumerater<Iterator>;
 
    forall(EXEC_POLICY_T(),
-          category(),
           IterT(begin, 0, icount),
           IterT(end, std::distance(begin, end), icount),
           make_icount_wrapper<IterT>(loop_body));
@@ -250,11 +254,12 @@ void forall(Container c,
    auto begin = std::begin(c);
    auto end = std::end(c);
    using category = typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
+   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
+                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
    // printf("running container\n");
 
    forall(EXEC_POLICY_T(),
-          category(),
           begin, end,
           loop_body );
 }
@@ -281,8 +286,8 @@ void forall(Index_type begin, Index_type end,
             LOOP_BODY loop_body)
 {
    forall<EXEC_POLICY_T>(
-           begin,
-           end,
+           Iterators::numeric_iterator<>(begin),
+           Iterators::numeric_iterator<>(end),
            loop_body );
 }
 
