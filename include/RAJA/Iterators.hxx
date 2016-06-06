@@ -39,27 +39,6 @@ public:
     constexpr base_iterator(Type rhs) : val(rhs) {}
     constexpr base_iterator(const base_iterator &rhs) : val(rhs.val) {}
 
-    inline Type& operator*();// const {return *val;}
-    // inline Type operator->() const {return val;}
-    // inline Type& operator[](difference_type rhs) const {return val[rhs];}
-
-    inline base_iterator& operator++() {++val; return *this;}
-    inline base_iterator& operator--() {--val; return *this;}
-    inline base_iterator operator++(int) {base_iterator tmp(*this); ++val; return tmp;}
-    inline base_iterator operator--(int) {base_iterator tmp(*this); --val; return tmp;}
-
-    inline base_iterator& operator+=(const difference_type& rhs) {val+=rhs; return *this;}
-    inline base_iterator& operator-=(const difference_type& rhs) {val-=rhs; return *this;}
-    inline base_iterator& operator+=(const base_iterator& rhs) {val+=rhs.val; return *this;}
-    inline base_iterator& operator-=(const base_iterator& rhs) {val-=rhs.val; return *this;}
-
-    inline difference_type operator+(const base_iterator& rhs) const {return static_cast<difference_type>(val)+static_cast<difference_type>(rhs.val);}
-    inline difference_type operator-(const base_iterator& rhs) const {return static_cast<difference_type>(val)-static_cast<difference_type>(rhs.val);}
-    inline base_iterator operator+(const difference_type& rhs) const {return base_iterator(val+rhs);}
-    inline base_iterator operator-(const difference_type& rhs) const {return base_iterator(val-rhs);}
-    friend constexpr base_iterator operator+(difference_type lhs, const base_iterator& rhs) {return base_iterator(lhs+rhs.val);}
-    friend constexpr base_iterator operator-(difference_type lhs, const base_iterator& rhs) {return base_iterator(lhs-rhs.val);}
-
     inline bool operator==(const base_iterator& rhs) const {return val == rhs.val;}
     inline bool operator!=(const base_iterator& rhs) const {return val != rhs.val;}
     inline bool operator>(const base_iterator& rhs) const {return val > rhs.val;}
@@ -123,13 +102,9 @@ public:
 
     inline strided_numeric_iterator& operator++() {base::val += stride; return *this;}
     inline strided_numeric_iterator& operator--() {base::val -= stride; return *this;}
-    // inline strided_numeric_iterator operator++(int) {strided_numeric_iterator tmp(*this); base::val += stride; return tmp;}
-    // inline strided_numeric_iterator operator--(int) {strided_numeric_iterator tmp(*this); base::val -= stride; return tmp;}
 
     inline strided_numeric_iterator& operator+=(const difference_type& rhs) {base::val+=rhs * stride; return *this;}
     inline strided_numeric_iterator& operator-=(const difference_type& rhs) {base::val-=rhs * stride; return *this;}
-    // inline strided_numeric_iterator& operator+=(const strided_numeric_iterator& rhs) {base::val+=rhs.val * stride; return *this;}
-    // inline strided_numeric_iterator& operator-=(const strided_numeric_iterator& rhs) {base::val-=rhs.val * stride; return *this;}
 
     inline difference_type operator+(const strided_numeric_iterator& rhs) const {
         return static_cast<difference_type>(base::val)
@@ -139,7 +114,7 @@ public:
             - (static_cast<difference_type>(rhs.val));
         if (diff < stride)
             return 0;
-        if (diff % stride)
+        if (diff % stride) // check for off-stride endpoint
             return diff/stride + 1;
         return diff/stride;
     }
@@ -192,27 +167,6 @@ public:
 private:
     std::ptrdiff_t offset;
     Iterator wrapped;
-};
-
-template<typename Type,
-         typename DifferenceType = std::ptrdiff_t,
-         typename PointerType = Type *>
-class pointer_iterator : public base_iterator< Type,
-                                               DifferenceType>
-{
-    //TODO: add a static assert for pointer type
-public:
-    using difference_type = typename std::iterator<std::random_access_iterator_tag, Type>::difference_type;
-    using base = base_iterator<Type, DifferenceType>;
-
-    constexpr pointer_iterator() : base(0) {}
-    constexpr pointer_iterator(Type rhs) : base(rhs) {}
-    constexpr pointer_iterator(const pointer_iterator &rhs) : base(rhs.val) {}
-
-    inline Type& operator*() const {return *base::val;}
-    inline Type& operator->() const {return *base::val;}
-    constexpr Type& operator[](difference_type rhs) const {return base::val[rhs];}
-
 };
 
 }
