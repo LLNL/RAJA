@@ -87,7 +87,7 @@ struct simd_exec : public PolicyBase {
              typename Func>
     inline void operator()(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
         RAJA_SIMD
-        for ( auto &ii = begin ; ii < end ; ++ii ) {
+        for ( auto ii = begin ; ii < end ; ++ii ) {
             loop_body( *ii );
         }
     }
