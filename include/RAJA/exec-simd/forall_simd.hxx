@@ -81,6 +81,32 @@ namespace RAJA {
 /*!
  ******************************************************************************
  *
+ * \brief  "Fake" SIMD iteration over list segment object.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE
+void forall(simd_exec,
+            const ListSegment& iseg,
+            LOOP_BODY loop_body)
+{
+   const Index_type* __restrict__ idx = iseg.getIndex();
+   Index_type len = iseg.getLength();
+
+   RAJA_FT_BEGIN ;
+
+#pragma novector
+   for ( Index_type k = 0 ; k < len ; ++k ) {
+      loop_body( idx[k] );
+   }
+
+   RAJA_FT_END ;
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief  "Fake" SIMD iteration over list segment object with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).

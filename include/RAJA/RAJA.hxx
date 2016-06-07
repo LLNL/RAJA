@@ -63,24 +63,7 @@
 
 #include "RAJA/config.hxx"
 
-//
-// Macros for decorating host/device functions for CUDA kernels.
-// We need a better solution than this as it is a pain to manage
-// this stuff in an application.
-//
-#if defined(RAJA_ENABLE_CUDA)
-
-#define RAJA_HOST_DEVICE __host__ __device__
-#define RAJA_DEVICE __device__
-#define RAJA_SUPPRESS_HD_WARN #pragma nv_exec_check_disable
-#else
-
-#define RAJA_HOST_DEVICE
-#define RAJA_DEVICE
-#define RAJA_SUPPRESS_HD_WARN
-#endif
-
-
+#include "RAJA/internal/defines.hxx"
 
 #include "RAJA/int_datatypes.hxx"
 #include "RAJA/real_datatypes.hxx"

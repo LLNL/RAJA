@@ -95,6 +95,7 @@
 #include "RAJA/PolicyBase.hxx"
 
 #include <type_traits>
+#include <iterator>
 
 
 namespace RAJA {
@@ -112,11 +113,11 @@ template<typename Iterator,
 struct IcountWrapper {
     using vtype = typename std::iterator_traits<Iterator>::value_type;
     constexpr IcountWrapper(Body && body) : m_body(body) {}
-    RAJA_INLINE void operator()(vtype&& i) const {
+    RAJA_HOST_DEVICE RAJA_INLINE void operator()(vtype&& i) const {
         m_body(i.first, *i.second);
     }
     private:
-        Body&& m_body;
+        Body m_body;
 };
 template<typename Iterator,
          typename Body>
@@ -124,6 +125,46 @@ constexpr auto make_icount_wrapper(Body &&loop_body)
     -> IcountWrapper<Iterator, decltype(loop_body)> {
     return IcountWrapper<Iterator, decltype(loop_body)>(loop_body);
 }
+
+template<typename Iterable>
+struct IcountIterableWrapper : public Iterable {
+   using iterator = Iterators::Enumerater<typename Iterable::iterator>;
+
+   IcountIterableWrapper() = delete;
+   constexpr IcountIterableWrapper(Iterable&& iter, std::ptrdiff_t val = 0, std::ptrdiff_t offset = 0) :
+       Iterable(iter), m_val(val), m_off(offset) {}
+
+   ///
+   /// Get an iterator to the end.
+   ///
+   constexpr iterator end() const {
+       return iterator(Iterable::end(), m_val + size(), m_off);
+   }
+
+   ///
+   /// Get an iterator to the beginning.
+   ///
+   constexpr iterator begin() const {
+       return iterator(Iterable::begin(), m_val, m_off);
+   }
+
+   ///
+   /// Return the number of elements in the range.
+   ///
+   constexpr Index_type size() const {
+       return std::distance(Iterable::begin(), Iterable::end());
+   }
+    private:
+   std::ptrdiff_t m_val;
+   std::ptrdiff_t m_off;
+};
+
+template<typename Iterable>
+constexpr auto make_icount_iterable_wrapper(Iterable&& iter, std::ptrdiff_t val=0, std::ptrdiff_t offset=0)
+    -> IcountIterableWrapper<Iterable> {
+    return IcountIterableWrapper<Iterable>(std::forward<Iterable>(iter), val, offset);
+}
+
 
 /*!
  ******************************************************************************
@@ -133,17 +174,20 @@ constexpr auto make_icount_wrapper(Body &&loop_body)
  ******************************************************************************
  */
 template <typename Policy,
-          typename Iterator,
-          typename LOOP_BODY>
+          typename Iterable,
+          typename LOOP_BODY,
+          typename std::enable_if<
+                           Iterators::OffersRAI<Iterable>::value
+                        && (!std::is_base_of<IndexSet, Iterable>::value)>::type * = nullptr
+          >
 RAJA_INLINE
 void forall(Policy &&p,
-            Iterator&& begin,
-            Iterator&& end,
+            Iterable&& iter,
             LOOP_BODY loop_body)
 {
    RAJA_FT_BEGIN ;
 
-   p(begin, end, loop_body);
+   p(std::forward<Iterable>(iter), std::forward<LOOP_BODY>(loop_body));
 
    RAJA_FT_END ;
 }
@@ -160,7 +204,8 @@ template <typename EXEC_POLICY_T,
           typename Iterator,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_icount(Iterator&& begin,
+void forall_icount(
+            Iterator&& begin,
             Iterator&& end,
             Index_type icount,
             LOOP_BODY loop_body)
@@ -212,8 +257,9 @@ void forall(Iterator&& begin,
 template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
-          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
-          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
+          typename std::enable_if<
+                           Iterators::OffersRAI<Container>::value
+                        && (!std::is_base_of<IndexSet, Container>::value)>::type * = nullptr
           >
 RAJA_INLINE
 void forall_Icount(Container& c,
@@ -226,12 +272,11 @@ void forall_Icount(Container& c,
    using category = typename std::iterator_traits<Iterator>::iterator_category;
    static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
                  "Iterators passed to RAJA must be Random Access or Contiguous iterators");
-   using IterT = Iterators::Enumerater<Iterator>;
 
+   auto wrapped = make_icount_iterable_wrapper(std::forward<Container>(c), 0, icount);
    forall(EXEC_POLICY_T(),
-          IterT(begin, 0, icount),
-          IterT(end, std::distance(begin, end), icount),
-          make_icount_wrapper<IterT>(loop_body));
+          wrapped,
+          make_icount_wrapper<typename decltype(wrapped)::iterator>(loop_body));
 }
 
 /*!
@@ -244,11 +289,12 @@ void forall_Icount(Container& c,
 template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
-          typename std::enable_if<Iterators::OffersRAI<Container>::value>::type * = nullptr,
-          typename std::enable_if<!std::is_base_of<IndexSet, Container>::value>::type * = nullptr
+          typename std::enable_if<
+                           Iterators::OffersRAI<Container>::value
+                        && (!std::is_base_of<IndexSet, Container>::value)>::type * = nullptr
           >
 RAJA_INLINE
-void forall(Container c,
+void forall(Container&& c,
             LOOP_BODY loop_body)
 {
    auto begin = std::begin(c);
@@ -260,7 +306,7 @@ void forall(Container c,
    // printf("running container\n");
 
    forall(EXEC_POLICY_T(),
-          begin, end,
+          std::forward<Container>(c),
           loop_body );
 }
 
@@ -286,8 +332,7 @@ void forall(Index_type begin, Index_type end,
             LOOP_BODY loop_body)
 {
    forall<EXEC_POLICY_T>(
-           Iterators::numeric_iterator<>(begin),
-           Iterators::numeric_iterator<>(end),
+           RangeSegment(begin, end),
            loop_body );
 }
 
@@ -307,11 +352,10 @@ void forall_Icount(Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   forall_Icount<EXEC_POLICY_T>(
-           Iterators::numeric_iterator<>(begin),
-           Iterators::numeric_iterator<>(end),
-           icount,
-           loop_body );
+   auto wrapped = make_icount_iterable_wrapper(RangeSegment(begin, end), 0, icount);
+   forall(EXEC_POLICY_T(),
+          wrapped,
+          make_icount_wrapper<typename decltype(wrapped)::iterator>(loop_body));
 }
 
 
@@ -338,8 +382,7 @@ void forall(Index_type begin, Index_type end,
             LOOP_BODY loop_body)
 {
    forall( EXEC_POLICY_T(),
-           Iterators::strided_numeric_iterator<>(begin, stride),
-           Iterators::strided_numeric_iterator<>(end, stride),
+           RangeStrideSegment(begin, end, stride),
            loop_body );
 }
 
@@ -361,8 +404,7 @@ void forall_Icount(Index_type begin, Index_type end,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
-                  Iterators::strided_numeric_iterator<>(begin, stride),
-                  Iterators::strided_numeric_iterator<>(end, stride),
+                  make_icount_iterable_wrapper(RangeStrideSegment(begin, end, stride), 0, icount),
                   icount,
                   loop_body );
 }
@@ -391,7 +433,7 @@ void forall(const Index_type* idx, Index_type len,
 {
    // turn into an iterator
    forall<EXEC_POLICY_T>(
-           idx, idx+len,
+           ListSegment(idx, len),
            loop_body );
 }
 
@@ -413,7 +455,7 @@ void forall_Icount(const Index_type* idx, Index_type len,
 {
    // turn into an iterator
    forall_Icount<EXEC_POLICY_T>(
-           idx, idx+len,
+           make_icount_iterable_wrapper(ListSegment(idx, len), 0, icount),
            icount,
            loop_body );
 }
