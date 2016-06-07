@@ -11,7 +11,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -288,4 +288,4 @@ void freeCudaReductionTallyBlock()
 
 }  // closing brace for RAJA namespace
 
-#endif  // if defined(RAJA_USE_CUDA)
+#endif  // if defined(RAJA_ENABLE_CUDA)

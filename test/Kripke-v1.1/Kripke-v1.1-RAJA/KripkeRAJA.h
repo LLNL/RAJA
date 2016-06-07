@@ -17,7 +17,7 @@
 // an OpenMP compiler is not available.
 // Note:  It is always safe to replace OpenMP loops with sequential loops for
 // this code.
-#ifdef RAJA_USE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
 using kripke_omp_for_nowait_exec = RAJA::omp_for_nowait_exec;
 using kripke_omp_collapse_nowait_exec = RAJA::omp_collapse_nowait_exec;
 

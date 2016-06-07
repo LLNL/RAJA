@@ -43,6 +43,6 @@
 
 add_subdirectory(Kripke-v1.1-baseline)
 
-if(RAJA_USE_OPENMP)
+if(RAJA_ENABLE_OPENMP)
   add_subdirectory(Kripke-v1.1-RAJA)
 endif()

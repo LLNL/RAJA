@@ -10,12 +10,11 @@
 
 
 ===================================
-Future development
+Future Development
 ===================================
 
-As noted in the introduction, RAJA is very much a work-in-progress.
-Additional features will appear in future releases. Items currently in 
-development or planned include:
+RAJA is very much a work-in-progress.  Additional features will appear in 
+future releases. Items currently in development or planned include:
 
   * To complement RAJA, we are developing a resource manager runtime layer 
     that moves data automatically to desired memory locations based on 
@@ -58,9 +57,6 @@ development or planned include:
   * A faster implementation of the CUDA reductions. We've been incrementally
     improving performance for a while and we think we can do better.
 
-  * "Min-loc" and "max-loc" reduction classes for CUDA. Just haven't gotten 
-    around to these yet.
- 
   * Additional tests and example codes.
 
 **Stay tuned...**

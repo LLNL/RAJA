@@ -42,7 +42,8 @@ matrix:
 before_install:
   - sudo apt-get update -qq
 script:
-  - cd scripts
-  - ./config-build.py -hc ../host-configs/linux/gnu.cmake
-  - cd build-gnu-release && make
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir travis-build && cd travis-build
+  - cmake ../
+  - make
   - make test

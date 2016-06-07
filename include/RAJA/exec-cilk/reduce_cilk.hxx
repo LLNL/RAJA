@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_CILK)
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -608,7 +608,7 @@ private:
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_USE_CILK guard
+#endif  // closing endif for RAJA_ENABLE_CILK guard
 
 #endif  // closing endif for header file include guard
 
