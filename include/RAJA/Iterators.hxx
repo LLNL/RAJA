@@ -2,6 +2,7 @@
 #define RAJA_ITERATORS_HXX
 
 #include "RAJA/int_datatypes.hxx"
+#include "RAJA/internal/defines.hxx"
 
 #include <type_traits>
 #include <iterator>
@@ -15,7 +16,7 @@ namespace RAJA {
 
 
 template<typename Container>
-using IteratorCategoryOf = typename std::iterator_traits<typename Container::iterator>::iterator_category;
+using IteratorCategoryOf = typename std::iterator_traits<typename std::remove_reference<Container>::type::iterator>::iterator_category;
 
 template<typename Container>
 using OffersRAI =
@@ -35,16 +36,16 @@ class base_iterator : public std::iterator<std::random_access_iterator_tag,
 public:
     using difference_type = typename std::iterator<std::random_access_iterator_tag, Type>::difference_type;
 
-    constexpr base_iterator() : val(0) {}
-    constexpr base_iterator(Type rhs) : val(rhs) {}
-    constexpr base_iterator(const base_iterator &rhs) : val(rhs.val) {}
+    RAJA_HOST_DEVICE constexpr base_iterator() : val(0) {}
+    RAJA_HOST_DEVICE constexpr base_iterator(Type rhs) : val(rhs) {}
+    RAJA_HOST_DEVICE constexpr base_iterator(const base_iterator &rhs) : val(rhs.val) {}
 
-    inline bool operator==(const base_iterator& rhs) const {return val == rhs.val;}
-    inline bool operator!=(const base_iterator& rhs) const {return val != rhs.val;}
-    inline bool operator>(const base_iterator& rhs) const {return val > rhs.val;}
-    inline bool operator<(const base_iterator& rhs) const {return val < rhs.val;}
-    inline bool operator>=(const base_iterator& rhs) const {return val >= rhs.val;}
-    inline bool operator<=(const base_iterator& rhs) const {return val <= rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator==(const base_iterator& rhs) const {return val == rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator!=(const base_iterator& rhs) const {return val != rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator>(const base_iterator& rhs) const {return val > rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator<(const base_iterator& rhs) const {return val < rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator>=(const base_iterator& rhs) const {return val >= rhs.val;}
+    RAJA_HOST_DEVICE inline bool operator<=(const base_iterator& rhs) const {return val <= rhs.val;}
 protected:
     Type val;
 };
@@ -59,30 +60,30 @@ public:
     using difference_type = typename std::iterator<std::random_access_iterator_tag, Type>::difference_type;
     using base = base_iterator<Type, DifferenceType>;
 
-    constexpr numeric_iterator() : base(0) {}
-    constexpr numeric_iterator(const Type& rhs) : base(rhs) {}
-    constexpr numeric_iterator(const numeric_iterator& rhs) : base(rhs.val) {}
+    RAJA_HOST_DEVICE constexpr numeric_iterator() : base(0) {}
+    RAJA_HOST_DEVICE constexpr numeric_iterator(const Type& rhs) : base(rhs) {}
+    RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs) : base(rhs.val) {}
 
-    inline numeric_iterator& operator++() {++base::val; return *this;}
-    inline numeric_iterator& operator--() {--base::val; return *this;}
-    inline numeric_iterator operator++(int) {numeric_iterator tmp(*this); ++base::val; return tmp;}
-    inline numeric_iterator operator--(int) {numeric_iterator tmp(*this); --base::val; return tmp;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator++() {++base::val; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator--() {--base::val; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator operator++(int) {numeric_iterator tmp(*this); ++base::val; return tmp;}
+    RAJA_HOST_DEVICE inline numeric_iterator operator--(int) {numeric_iterator tmp(*this); --base::val; return tmp;}
 
-    inline numeric_iterator& operator+=(const difference_type& rhs) {base::val+=rhs; return *this;}
-    inline numeric_iterator& operator-=(const difference_type& rhs) {base::val-=rhs; return *this;}
-    inline numeric_iterator& operator+=(const numeric_iterator& rhs) {base::val+=rhs.val; return *this;}
-    inline numeric_iterator& operator-=(const numeric_iterator& rhs) {base::val-=rhs.val; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator+=(const difference_type& rhs) {base::val+=rhs; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator-=(const difference_type& rhs) {base::val-=rhs; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator+=(const numeric_iterator& rhs) {base::val+=rhs.val; return *this;}
+    RAJA_HOST_DEVICE inline numeric_iterator& operator-=(const numeric_iterator& rhs) {base::val-=rhs.val; return *this;}
 
-    inline difference_type operator+(const numeric_iterator& rhs) const {return static_cast<difference_type>(base::val)+static_cast<difference_type>(rhs.val);}
-    inline difference_type operator-(const numeric_iterator& rhs) const {return static_cast<difference_type>(base::val)-static_cast<difference_type>(rhs.val);}
-    inline numeric_iterator operator+(const difference_type& rhs) const {return numeric_iterator(base::val+rhs);}
-    inline numeric_iterator operator-(const difference_type& rhs) const {return numeric_iterator(base::val-rhs);}
-    friend constexpr numeric_iterator operator+(difference_type lhs, const numeric_iterator& rhs) {return numeric_iterator(lhs+rhs.val);}
-    friend constexpr numeric_iterator operator-(difference_type lhs, const numeric_iterator& rhs) {return numeric_iterator(lhs-rhs.val);}
+    RAJA_HOST_DEVICE inline difference_type operator+(const numeric_iterator& rhs) const {return static_cast<difference_type>(base::val)+static_cast<difference_type>(rhs.val);}
+    RAJA_HOST_DEVICE inline difference_type operator-(const numeric_iterator& rhs) const {return static_cast<difference_type>(base::val)-static_cast<difference_type>(rhs.val);}
+    RAJA_HOST_DEVICE inline numeric_iterator operator+(const difference_type& rhs) const {return numeric_iterator(base::val+rhs);}
+    RAJA_HOST_DEVICE inline numeric_iterator operator-(const difference_type& rhs) const {return numeric_iterator(base::val-rhs);}
+    RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(difference_type lhs, const numeric_iterator& rhs) {return numeric_iterator(lhs+rhs.val);}
+    RAJA_HOST_DEVICE friend constexpr numeric_iterator operator-(difference_type lhs, const numeric_iterator& rhs) {return numeric_iterator(lhs-rhs.val);}
 
-    inline Type operator*() const {return base::val;}
-    inline Type operator->() const {return base::val;}
-    constexpr Type operator[](difference_type rhs) const {return base::val + rhs;}
+    RAJA_HOST_DEVICE inline Type operator*() const {return base::val;}
+    RAJA_HOST_DEVICE inline Type operator->() const {return base::val;}
+    RAJA_HOST_DEVICE constexpr Type operator[](difference_type rhs) const {return base::val + rhs;}
 
 };
 
@@ -96,20 +97,20 @@ public:
     using difference_type = typename std::iterator<std::random_access_iterator_tag, Type>::difference_type;
     using base = base_iterator<Type, DifferenceType>;
 
-    constexpr strided_numeric_iterator() : base(0), stride(1) {}
-    constexpr strided_numeric_iterator(const Type& rhs, DifferenceType stride = 1) : base(rhs), stride(stride) {}
-    constexpr strided_numeric_iterator(const strided_numeric_iterator& rhs) : base(rhs.val), stride(rhs.stride) {}
+    RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : base(0), stride(1) {}
+    RAJA_HOST_DEVICE constexpr strided_numeric_iterator(const Type& rhs, DifferenceType stride = 1) : base(rhs), stride(stride) {}
+    RAJA_HOST_DEVICE constexpr strided_numeric_iterator(const strided_numeric_iterator& rhs) : base(rhs.val), stride(rhs.stride) {}
 
-    inline strided_numeric_iterator& operator++() {base::val += stride; return *this;}
-    inline strided_numeric_iterator& operator--() {base::val -= stride; return *this;}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator& operator++() {base::val += stride; return *this;}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator& operator--() {base::val -= stride; return *this;}
 
-    inline strided_numeric_iterator& operator+=(const difference_type& rhs) {base::val+=rhs * stride; return *this;}
-    inline strided_numeric_iterator& operator-=(const difference_type& rhs) {base::val-=rhs * stride; return *this;}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator& operator+=(const difference_type& rhs) {base::val+=rhs * stride; return *this;}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator& operator-=(const difference_type& rhs) {base::val-=rhs * stride; return *this;}
 
-    inline difference_type operator+(const strided_numeric_iterator& rhs) const {
+    RAJA_HOST_DEVICE inline difference_type operator+(const strided_numeric_iterator& rhs) const {
         return static_cast<difference_type>(base::val)
             + (static_cast<difference_type>(rhs.val * stride));}
-    inline difference_type operator-(const strided_numeric_iterator& rhs) const {
+    RAJA_HOST_DEVICE inline difference_type operator-(const strided_numeric_iterator& rhs) const {
         auto diff = static_cast<difference_type>(base::val)
             - (static_cast<difference_type>(rhs.val));
         if (diff < stride)
@@ -118,20 +119,20 @@ public:
             return diff/stride + 1;
         return diff/stride;
     }
-    inline strided_numeric_iterator operator+(const difference_type& rhs) const {return strided_numeric_iterator(base::val+rhs * stride);}
-    inline strided_numeric_iterator operator-(const difference_type& rhs) const {return strided_numeric_iterator(base::val-rhs * stride);}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(const difference_type& rhs) const {return strided_numeric_iterator(base::val+rhs * stride);}
+    RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(const difference_type& rhs) const {return strided_numeric_iterator(base::val-rhs * stride);}
 
     // Specialized comparison to allow normal iteration to work on off-stride
     // multiples by adjusting rhs to the nearest *higher* multiple of stride
-    inline bool operator!=(const strided_numeric_iterator& rhs) const {
+    RAJA_HOST_DEVICE inline bool operator!=(const strided_numeric_iterator& rhs) const {
         if (base::val == rhs.val) return false;
         auto rem = rhs.val % stride;
         return base::val != rhs.val + rem;
     }
 
-    inline Type operator*() const {return base::val;}
-    inline Type operator->() const {return base::val;}
-    inline Type operator[](difference_type rhs) const {return base::val + rhs * stride;}
+    RAJA_HOST_DEVICE inline Type operator*() const {return base::val;}
+    RAJA_HOST_DEVICE inline Type operator->() const {return base::val;}
+    RAJA_HOST_DEVICE inline Type operator[](difference_type rhs) const {return base::val + rhs * stride;}
 
 private:
     DifferenceType stride;
@@ -143,24 +144,33 @@ private:
 template<typename Iterator>
 class Enumerater : public numeric_iterator<> {
 public:
+    template<typename First,
+             typename Second>
+    class InnerPair {
+        public:
+        InnerPair() = delete;
+        RAJA_HOST_DEVICE constexpr InnerPair(First && f, Second && s) : first(f), second(s) {};
+        First first;
+        Second second;
+    };
     using base = numeric_iterator<>;
 
-    using pair = std::pair<std::ptrdiff_t,
+    using pair = InnerPair<std::ptrdiff_t,
                            Iterator>;
     using value_type = pair;
     using pointer_type = pair*;
     using reference = pair&;
 
     Enumerater() = delete;
-    constexpr Enumerater(const Iterator& rhs,
+    RAJA_HOST_DEVICE constexpr Enumerater(const Iterator& rhs,
                          std::ptrdiff_t val = 0,
                          std::ptrdiff_t offset = 0)
         : base(val), offset(offset), wrapped(rhs) {}
-    constexpr Enumerater(const Enumerater &rhs)
+    RAJA_HOST_DEVICE constexpr Enumerater(const Enumerater &rhs)
         : base(rhs.val), offset(rhs.offset), wrapped(rhs.wrapped) {}
 
-    inline pair operator*() const {return pair(offset+val, wrapped+val);}
-    constexpr pair operator[](typename base::difference_type rhs) const {
+    RAJA_HOST_DEVICE inline pair operator*() const {return pair(offset+val, wrapped+val);}
+    RAJA_HOST_DEVICE constexpr pair operator[](typename base::difference_type rhs) const {
         return pair(val+offset+rhs, wrapped+val+rhs);
     }
 

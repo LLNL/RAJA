@@ -116,11 +116,7 @@ struct Dim3z {
 ///
 /// Segment execution policies
 ///
-template <size_t BLOCK_SIZE>
-struct cuda_exec {};
-///
-template <size_t BLOCK_SIZE>
-struct cuda_exec_async {};
+//NOTE: temporarily moved to forall_cuda.hxx
 
 
 //

@@ -71,23 +71,12 @@
 namespace RAJA {
 
 struct simd_exec : public PolicyBase {
-    template<typename IndexT = Index_type,
-             typename Func,
-             typename std::enable_if<!std::is_base_of<
-                 std::random_access_iterator_tag,
-                 typename std::iterator_traits<IndexT>::iterator_category>::value>::type * = nullptr>
-    inline void operator()(IndexT begin, IndexT end, Func &&f) const {
-        RAJA_SIMD
-        for ( auto ii = begin ; ii < end ; ++ii ) {
-            f( ii );
-        }
-    }
-
-    template<typename Iterator,
+    template<typename Iterable,
              typename Func>
-    inline void operator()(Iterator &&begin, Iterator &&end, Func &&loop_body) const {
+    inline void operator()(Iterable &&iter, Func &&loop_body) const {
+        auto end = std::end(iter);
         RAJA_SIMD
-        for ( auto ii = begin ; ii < end ; ++ii ) {
+        for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
             loop_body( *ii );
         }
     }
