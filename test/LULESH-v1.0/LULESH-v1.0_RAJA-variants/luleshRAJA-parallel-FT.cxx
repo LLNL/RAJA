@@ -202,7 +202,7 @@ inline real10 FABS(real10 arg) { return fabsl(arg) ; }
 enum { VolumeError = -1, QStopError = -2 } ;
 
 
-#ifdef RAJA_USE_FT
+#ifdef RAJA_ENABLE_FT
 #include <unistd.h>
 #include <signal.h>
 
@@ -2791,7 +2791,7 @@ int main(int argc, char *argv[])
 
    Index_t edgeNodes = edgeElems+1 ;
 
-#ifdef RAJA_USE_FT
+#ifdef RAJA_ENABLE_FT
    /* mock up fault tolerance */
    sigalrmact.sa_handler = simulate_fault ;
    sigalrmact.sa_flags = 0 ;

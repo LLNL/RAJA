@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -967,7 +967,7 @@ void forall_segments(omp_parallel_segit,
 
 #pragma omp parallel
    {
-      int numThreads = omp_get_max_threads() ;
+      int numThreads = omp_get_num_threads() ;
       int tid = omp_get_thread_num() ;
 
       /* Create a temporary IndexSet with one Segment */
@@ -1026,7 +1026,7 @@ void forall_segments(omp_taskgraph_segit,
 
 #pragma omp parallel
    {
-      int numThreads = omp_get_max_threads() ;
+      int numThreads = omp_get_num_threads() ;
       int tid = omp_get_thread_num() ;
 
       /* Create a temporary IndexSet with one Segment */
@@ -1198,6 +1198,6 @@ void forall_segments(omp_taskgraph_interval_segit,
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for if defined(RAJA_USE_OPENMP) 
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) 
 
 #endif  // closing endif for header file include guard

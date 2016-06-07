@@ -63,7 +63,7 @@ public:
     elements(groups*directions*zones),
     data_linear(NULL)
   {
-//#ifdef RAJA_USE_CUDA
+//#ifdef RAJA_ENABLE_CUDA
     
 #ifdef KRIPKE_ALIGN_DATA
     int status = posix_memalign((void**)&data_linear, KRIPKE_ALIGN, sizeof(double)*elements);

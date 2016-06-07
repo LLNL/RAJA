@@ -43,12 +43,12 @@
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   add_definitions(-DUSE_CASE=9)
   cuda_add_executable(lulesh-RAJA-parallel.exe
     luleshRAJA-parallel.cxx)
 else()
-  if(RAJA_USE_OPENMP)
+  if(RAJA_ENABLE_OPENMP)
     add_executable(lulesh-RAJA-parallel.exe
       luleshRAJA-parallel.cxx)
   else()

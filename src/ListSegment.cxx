@@ -99,7 +99,7 @@ ListSegment& ListSegment::operator=(const ListSegment& rhs)
 ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
       cudaErrchk( cudaFree(m_indx) );
 #else
       delete[] m_indx ;
@@ -174,7 +174,7 @@ void ListSegment::initIndexData(const Index_type* indx,
       m_indx_own = indx_own;
 
       if ( m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
          cudaErrchk( cudaMallocManaged((void **)&m_indx, 
                                        m_len*sizeof(Index_type), 
                                        cudaMemAttachGlobal) );

@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -615,6 +615,6 @@ private:
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_USE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard
