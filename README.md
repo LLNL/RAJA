@@ -22,8 +22,8 @@ across applications.
 
 RAJA shares goals and concepts found in
 other C++ portability abstraction approaches, such as
-`Kokkos <https://github.com/kokkos/kokkos>`_
-and `Thrust <https://developer.nvidia.com/thrust>`_. 
+[Kokkos](https://github.com/kokkos/kokkos)
+and [Thrust](https://developer.nvidia.com/thrust). 
 However, it includes concepts that are absent in other models and which are 
 fundamental to LLNL codes. 
 
