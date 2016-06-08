@@ -38,7 +38,7 @@ in future releases.
 Quick Start
 -----------
 
-The RAJA code live in a `github repository <https://github.com/llnl/raja>`_.
+The RAJA code lives in a GitHub [repository](https://github.com/llnl/raja).
 To clone the repo, use the command:
 
    $ git clone https://github.com/llnl/raja.git
