@@ -53,9 +53,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
-#include "BaseSegment.hxx"
+#include "RAJA/BaseSegment.hxx"
 
 #include <algorithm>
 #include <iosfwd>

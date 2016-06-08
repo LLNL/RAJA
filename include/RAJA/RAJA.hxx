@@ -61,14 +61,14 @@
 // 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
@@ -82,50 +82,49 @@
 
 
 
-#include "int_datatypes.hxx"
-#include "real_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
+#include "RAJA/real_datatypes.hxx"
 
-#include "reducers.hxx"
+#include "RAJA/reducers.hxx"
 
 #if defined(RAJA_USE_BOXSEGMENT)
-#include "BoxSegment.hxx"
+#include "RAJA/BoxSegment.hxx"
 #endif
-#include "RangeSegment.hxx"
-#include "ListSegment.hxx"
-#include "IndexSet.hxx"
+#include "RAJA/RangeSegment.hxx"
+#include "RAJA/ListSegment.hxx"
+#include "RAJA/IndexSet.hxx"
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Strongly typed index class.
 //
-#include "IndexValue.hxx"
-
+#include "RAJA/IndexValue.hxx"
 
 //
 // Multidimensional layouts and views.
 //
-#include "Layout.hxx"
-#include "View.hxx"
+#include "RAJA/Layout.hxx"
+#include "RAJA/View.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 
 //
 // Generic iteration templates require specializations defined 
 // in the files included below.
 //
-#include "forall_generic.hxx"
+#include "RAJA/forall_generic.hxx"
 
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "forallN_generic.hxx"
+#include "RAJA/forallN_generic.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -143,43 +142,43 @@
 //
 // All platforms must support sequential execution.  
 //
-#include "exec-sequential/raja_sequential.hxx"
+#include "RAJA/exec-sequential/raja_sequential.hxx"
 
 //
 // All platforms should support simd execution.  
 //
-#include "exec-simd/raja_simd.hxx"
+#include "RAJA/exec-simd/raja_simd.hxx"
 
-#if defined(RAJA_USE_CUDA)
-#include "exec-cuda/raja_cuda.hxx"
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/exec-cuda/raja_cuda.hxx"
 #endif
 
-#if defined(RAJA_USE_OPENMP)
-#include "exec-openmp/raja_openmp.hxx"
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/exec-openmp/raja_openmp.hxx"
 #endif
 
-#if defined(RAJA_USE_CILK)
-#include "exec-cilk/raja_cilk.hxx"
+#if defined(RAJA_ENABLE_CILK)
+#include "RAJA/exec-cilk/raja_cilk.hxx"
 #endif
 
 
 
-#include "IndexSetUtils.hxx"
+#include "RAJA/IndexSetUtils.hxx"
 
 
-#if defined(RAJA_USE_NESTED)
+#if defined(RAJA_ENABLE_NESTED)
 
 //
 // Perfectly nested loop transformations
 //
 
 // Tiling policies
-#include "forallN_tile.hxx"
+#include "RAJA/forallN_tile.hxx"
 
 // Loop interchange policies
-#include "forallN_permute.hxx"
+#include "RAJA/forallN_permute.hxx"
 
-#endif // defined(RAJA_USE_NESTED)
+#endif // defined(RAJA_ENABLE_NESTED)
 
 
 #endif  // closing endif for header file include guard

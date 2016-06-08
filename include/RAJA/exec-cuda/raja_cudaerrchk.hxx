@@ -13,7 +13,9 @@
 #ifndef RAJA_raja_cudaerrchk_HXX
 #define RAJA_raja_cudaerrchk_HXX
 
-#if defined(RAJA_USE_CUDA)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -57,8 +59,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include<string>
-#include<iostream>
+#include <string>
+#include <iostream>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
@@ -89,7 +91,7 @@ inline void cudaAssert(cudaError_t code, const char *file, int line,
 }  // closing brace for RAJA namespace
 
 
-#endif  // closing endif for if defined(RAJA_USE_CUDA)
+#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
 #endif  // closing endif for header file include guard
 

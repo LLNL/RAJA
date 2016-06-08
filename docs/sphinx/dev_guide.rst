@@ -10,8 +10,21 @@
 
 
 ===================================
-RAJA source code organization
+Developer Guide
 ===================================
+
+.. warning:: This section will contain useful information for core developers
+             and others who want to contribute (e.g., the RAJA code strucure,
+             where to put new things, adding unit tests, etc. The text below is 
+             from the original sphinx docs. I kept it so we can use bits that 
+             we want to keep.
+
+This guide is intended for people who want to work on RAJA and contribute
+to its development. It also contains some useful information for users
+who may need to look through the source code.
+
+Code Structure
+---------------
 
 The RAJA root directory has several subdirectories with contents as follows:
 
@@ -73,3 +86,33 @@ directory has the header files:
 Note that SIMD execution shares reduction types with sequential execution, 
 so the 'exec-simd' directory does not contain a reduction header file. 
 
+Unit Testing
+------------
+
+The directory 'raja/test/unit-tests' has two subdirectories, each of which
+contains files that run various traversal and reduction operations for RAJA
+IndexSets and Segments. All RAJA "forall" template and execution policy
+options that are available for a given compiler are included. Running these
+tests is a good sanity check that the code is built correctly and works. The
+two subdirectories are:
+
+  * **CPUtests.** It contains codes to run traversl and reduction tests for
+    sequential, OpenMP, and CilkPlus (if available) execution policies.
+
+  * **GPUtests.** It contains codes to run traversl and reduction tests for
+    GPU CUDA execution policies. Note that these tests use Unified Memory
+    to simplify host-device memory transfers.
+
+**NOTE:** RAJA must be built with CUDA enabled to generate GPU variants.
+When running CUDA variants of the tests and examples, we advise you to set the
+environment variable CUDA_VISIBLE_DEVICES to zero before running.
+
+For example, for C-shell users ::
+
+   $ setenv CUDA_VISIBLE_DEVICES 0
+
+We are using CUDA Unified Memory and we find that this environment setting
+greatly improves performance.
+
+Performance Testing
+--------------------

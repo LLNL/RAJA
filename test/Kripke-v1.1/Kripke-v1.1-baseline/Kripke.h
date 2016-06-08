@@ -40,7 +40,7 @@
 #include<strings.h>
 
 // Let the RAJA build system decide if we are using OpenMP
-#ifdef RAJA_USE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
 #define KRIPKE_USE_OPENMP
 #endif
 
@@ -63,7 +63,7 @@
 // Adopt RAJA's use of OPENMP
 #include<RAJA/RAJA.hxx>
 #ifndef KRIPKE_USE_OPENMP
-#ifdef RAJA_USE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
 #define KRIPKE_USE_OPENMP
 #endif
 #endif

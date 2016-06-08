@@ -129,7 +129,7 @@ void runForallTests( unsigned ibuild,
                 in_array, alen,
                 iset, is_indices );
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
    runBasicForallTest<
       IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> > (
                "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -149,7 +149,7 @@ void runForallTests( unsigned ibuild,
                 iset, is_indices );
 #endif
 
-#if defined(RAJA_USE_CILK)
+#if defined(RAJA_ENABLE_CILK)
    runBasicForallTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec> > (
                "ExecPolicy<seq_segit, cilk_for_exec>",
@@ -269,7 +269,7 @@ void runForall_IcountTests( unsigned ibuild,
                 in_array, alen,
                 iset, is_indices );
 
-#if defined(RAJA_USE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
    runBasicForall_IcountTest<
       IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec> > (
                "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -289,7 +289,7 @@ void runForall_IcountTests( unsigned ibuild,
                 iset, is_indices );
 #endif
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined(RAJA_ENABLE_CILK)
    runBasicForall_IcountTest<
       IndexSet::ExecPolicy<seq_segit, cilk_for_exec> > (
                "ExecPolicy<seq_segit, cilk_for_exec>",

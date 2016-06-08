@@ -41,7 +41,7 @@
 #
 ###############################################################################
 
-if (RAJA_USE_OPENMP)
+if (RAJA_ENABLE_OPENMP)
 add_definitions(-DUSE_OMP=1)
 else()
 add_definitions(-DUSE_OMP=0)

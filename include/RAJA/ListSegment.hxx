@@ -53,9 +53,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
-#include "BaseSegment.hxx"
+#include "RAJA/BaseSegment.hxx"
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
@@ -221,7 +221,7 @@ ListSegment::ListSegment(const T& indx)
   m_indx(0), m_indx_own(Unowned), m_len( indx.size() )
 {
    if ( !indx.empty() ) {
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
       cudaErrchk( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type),
                                     cudaMemAttachGlobal) );
       cudaErrchk( cudaMemset(m_indx,0,m_len*sizeof(Index_type)) );

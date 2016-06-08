@@ -14,7 +14,9 @@
 #ifndef RAJA_reduce_cuda_HXX
 #define RAJA_reduce_cuda_HXX
 
-#if defined(RAJA_USE_CUDA)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -58,15 +60,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
-
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/reducers.hxx"
 
-#include "MemUtils_CUDA.hxx"
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
-#include "raja_cudaerrchk.hxx"
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
 namespace RAJA {
@@ -1160,6 +1160,6 @@ private:
 }  // closing brace for RAJA namespace
 
 
-#endif  // closing endif for RAJA_USE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

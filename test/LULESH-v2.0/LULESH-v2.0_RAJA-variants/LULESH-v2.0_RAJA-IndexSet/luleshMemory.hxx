@@ -6,7 +6,7 @@
 // ALLOCATE/RELEASE FUNCTIONS 
 //
 
-#if defined(RAJA_USE_CUDA) // CUDA managed memory allocate/release
+#if defined(RAJA_ENABLE_CUDA) // CUDA managed memory allocate/release
 
 #include <cuda.h>
 #include <cuda_runtime.h>

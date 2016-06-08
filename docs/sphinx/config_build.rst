@@ -10,182 +10,214 @@
 
 
 ===================================
-Configuring and building the code
+Configuring and Building RAJA 
 ===================================
 
-This section provides a brief discussion of how to configure and build
-the RAJA code.
+This section describes RAJA configuration options and how to build RAJA 
+with these options.
 
 It is important to note that RAJA requires compiler support for lambda 
 functions and a few other C++11 features. Please make sure your compiler
 is C++11-compliant before attempting to build RAJA.
 
-RAJA CMake System
+CMake System
 -----------------
 
-RAJA uses a simple CMake-based system, but you don't need to know much 
+RAJA uses a basic CMake-based system, but you don't need to know much 
 about CMake to build RAJA. It does require that you use a CMake version 
-greater than 3.1. If needed, you can learn more about CMake and download
+greater than 2.8. If needed, you can learn more about CMake and download
 it at `<http://www.cmake.org>`_
 
-An important thing to note is that our CMake setup does not allow
+You can build RAJA like any other CMake project, provided you have a C++
+compiler that supports the features in the C++11 standard that we use. The 
+simplest way to build the code is to do the following in the top-level RAJA 
+directory:
+
+.. code-block:: sh
+
+    $ mkdir build
+    $ cd build
+    $ cmake ../
+    $ make
+
+This will build RAJA and the examples and tests it contains using default
+settings (described below).
+
+It is important to note that the RAJA CMake system does not allow
 in-source builds so that you can easily configure and build for various
 systems and compilers from the same source code.
 
-Configuring the code can be done in a couple of ways depending on your needs.
+Configuration Options
+----------------------
 
-**Use the provided configuration script.**
+The RAJA configuration can be set using standard CMake variables along with
+RAJA-specific variables. For example, to make a release build with some 
+system default GNU compiler and then install the RAJA header files and
+libraries in a specific directory location, you could do the following in 
+the top-level RAJA directory:
 
-  If you have python installed on your system, you can execute a
-  python helper script from the root directory of the RAJA source code
-  to configure a build ::
+.. code-block:: sh
 
-    $ ./scripts/config-build.py
+    $ mkdir build-gnu-release
+    $ cd build-gnu-release
+    $ cmake \
+      -DCMAKE_C_COMPILER=gcc \
+      -DCMAKE_CXX_COMPILER=g++ \
+      -DCMAKE_BUILD_TYPE=Release \
+      -DCMAKE_INSTALL_PREFIX=../install-gnu-release ../
+    $ make
+    $ make install
 
-  This script will find and use a configuration file to initialize the
-  CMake cache and create build and install directories in the RAJA root
-  directory whose names contain the system type, compiler, and built type. 
-  For example ::
+Following CMake convention, RAJA supports three build types: 'Release', 
+'RelWithDebInfo', and 'Debug'. Depending on which you choose, you will not
+have to explicitly add the '-g' compiler flags to generate debugging symbols.
+The default compiler flags for optimization, etc. for various compilers can
+be found in the `cmake/SetupCompilers.cmake` file.
 
-    $ ls
-    build-chaos-gnu-debug 
-    install-chaos-gnu-debug 
+RAJA uses a variety of custom variables to control how it is compiled. Many 
+of these manifest as compilation directives and definitions that appear in 
+the RAJA 'config.hxx' file that is generated during the CMake process. The
+RAJA configuration header file is included in other RAJA headers as needed
+so all options propagate through the build process consistently.
 
-  The configuration files are located in the 'host-config' directory. 
-  The 'host-configs' directory contains configuration files for platforms
-  and compilers most commonly used in the Livermore Computing Center at
-  Lawrence Livermore National Laboratory. The contents of these files and
-  how they are used in RAJA are described below. Note that new host 
-  configuration cache files can be created by copying an existing one 
-  to a new file and modifying the contents for your needs.
+These variables are turned on or off similar to standard CMake variables; 
+e.g., to enable RAJA OpenMP functionality, do this ::
 
-  If you run the python script with no arguments, it will configure the
-  code using a default compiler and options for the platform you are on.
-  The script accepts several options for
+    -DRAJA_ENABLE_OPENMP=On
 
-    * specifying the build and install directory paths and names
-    * specifying the compiler
-    * specifying the build type (Release, Debug, RelWithDebInfo)
-    * specifying CMake options
-    * selecting the host configuration file to initialize the CMake cache
+The `scripts` directory contains several bash shell scripts that can be used 
+for common configurations. For example, you can type the following commands
+starting at the top-level RAJA directory to build a version of RAJA for 
+specific versions of the GNU and Intel compilers in a build subdirectory:
 
-  Script options can be displayed by running ::
+.. code-block:: sh
 
-    $ ./scripts/config-build.py --help
+    $ mkdir my-builds
+    $ cd my-builds
+    $ ../scripts/gcc-4.9.3.sh 
+    $ cd build-gnu-4.9.3-release
+    $ make
+    $ cd ..
+    $ ../scripts/icpc-16.0.109.sh
+    $ cd build-icpc-16.0.109-release
+    $ make
 
-**Run CMake directly.**
+These scripts also serve as useful examples for those who are not fluent in 
+CMake.
 
-  You can also run CMake directly. To configure the code using this method,
-  create a build directory in the root directory and go into it ::
+The following list describes these variables and their defaults.
 
-    $ my-awesome-build
-    $ cd my-awesome-build
+  * **Tests and Examples**
 
-  Then, you can invoke CMake without any arguments to pick a default 
-  compiler on your platform based on your environment; e.g., on a linux
-  system, GNU is the default compiler choice ::
+     *RAJA_ENABLE_TESTS* : Controls whether RAJA tests and examples are built.
+     Default is `On`
 
-    $ use gcc-4.9.3p
-    $ cmake ../
+  * **Programming Models**
 
-  You can also invoke CMake directly and specify the build type and host-config
-  file you want; for example ::
+     Variables to control which RAJA programming model back-ends are enabled
+     are the following (there names are descriptive of what they enable):
 
-    $ cmake -DCMAKE_BUILD_TYPE=Debug -C ../host-configs/chaos/gnu_4_9_3.cmake ../
+     *RAJA_ENABLE_OPENMP* : Default is `On`
 
-Regardless of how you configure your build, you build the code by going into 
-the build directory and typing ::
+     *RAJA_ENABLE_CUDA* : Default is `Off` 
 
-  $ make
+     *RAJA_ENABLE_CILK* : Default is `Off`
 
-If you want to also create an installation of the code, you can type ::
+  * **Data Types, Sizes, Alignment Parameters, etc.**
 
-  $ make install
+     RAJA internally uses several parameters to define platform-specific
+     constants for index ranges and data alignment. The defaults should be 
+     reasonable and should not need to be changed for most cases. We include
+     them here for completeness:
 
-This will create 'include' and 'lib' directories in the install directory.
+     *RAJA_USE_DOUBLE, RAJA_USE_FLOAT* : RAJA provides typedefs to be able to
+     parameterize floating point types and pointers to them in codes and 
+     easily switch between types. Exactly one of these can be on at a time. 
+     Default is *RAJA_USE_DOUBLE* is `On` and *RAJA_USE_FLOAT* is `Off`.
+
+     *RAJA_USE_COMPLEX* : Similar to above, RAJA provides typedefs for complex
+     data types if needed. Default is `Off`. 
+
+     *RAJA_USE_BARE_PTR, RAJA_USE_RESTRICT_PTR, RAJA_USE_RESTRICT_ALIGNED_PTR, 
+     RAJA_USE_PTR_CLASS* : These define the form of RAJA floating-point data
+     pointer typedefs. These are (following the order above): standard 
+     undecorated pointer, pointer with restrict, pointer with restrict and 
+     alignment (see *RAJA_DATA_ALIGN* below), and a pointer class with an 
+     overloaded `[]` operator that applies restrict and alignment intrinsics
+     useful when a compiler does not support these data attributes in a typedef.
+     Exactly one of these can be on at a time. Default is 
+     *RAJA_USE_RESTRICT_PTR* is `On` for CPU-only code and `RAJA_USE_BARE_PTR`
+     is `On` when *RAJA_ENABLE_CUDA* is `On`.
+
+     *RAJA_RANGE_ALIGN* : Constrains alignment of begin/end indices in range 
+     segments constructed by index set builder methods. That is, begin and
+     end indices of such segments will be multiples of this value. Default is `4`.
+ 
+     *RAJA_RANGE_MIN_LENGTH* : Minimum length of range segments constructed
+     by index set builder methods - should be an integer multiple of 
+     *RAJA_RANGE_ALIGN*. Default is `32`. 
+
+     *RAJA_DATA_ALIGN* : Used in compiler-specific intrinsics and typedefs
+     to specify data alignment constraints - units of **byts**. Default is `64`.
+      
+     *RAJA_COHERENCE_BLOCK_SIZE* : Defines thread coherence value for shared
+     memory blocks used by RAJA reduction objects. Default is `64`.
+
+  * **Timer Options**
+
+     *RAJA_USE_GETTIME, RAJA_USE_CLOCK, RAJA_USE_CYCLE* : Options to control
+     the timing mechanism for a simple timer class used in the RAJA examples.
+     These are (in the order above): use `timespec` from the C-std library 
+     time.h header, use `clock_t` from time.h, or `ticks` from the cycle.h
+     file in the FFTW library. Exactly one of these can be on at a time.
+     Default is `RAJA_USE_GETTIME` is `On`. This default should be the 
+     best choice on most platforms.
+
+  * **Fault Tolerance Options**
+    
+     RAJA contains some internal macros that we use to explore a simple
+     experimental loop-level fault tolerance model in the LULESH proxy-app. 
+     By default, this feature is off. To enable it, set *RAJA_ENABLE_FT* to 
+     `On`. To enable the fault-tolerance reporting mechanism, also set 
+     *RAJA_REPORT_FT* to `On`.
 
 
-**LLNL platform-specific build information.**
+Did I build RAJA correctly?
+---------------------------
 
-We are the first ones to admit that our build system is convenient, but not
-completely 'push button' for all platforms. For machines at LLNL, there are 
-a few platform-specific things you must do to make things work. We note
+You can verify that RAJA is built correctly with the options you want, you 
+can run some unit tests...
+
+.. warning:: We should add a 'make tests' or 'make check' target that 
+             compiles (if needed) and runs some basic tests with sensible 
+             output that makes it clear to users that their RAJA build is
+             good to go or is not.
+
+
+Additional Information for Using LLNL Platforms
+------------------------------------------------
+
+We are the first ones to admit that, while our build system works, it is not
+completely 'push button' for all platforms. For some machines at LLNL, there 
+are a few platform-specific things you must do to make things work. We note
 them here. As things improve, we will update the information here.
 
   * BG/Q builds
 
-    So far, at LLNL, we have only been able to build our complete set of 
-    RAJA tests and examples on BG/Q using the GNU compiler. We have had 
-    moderate success with the clang compiler. To build with the GNU compiler, 
-    you need to set the version of python and CMake. You can do this by 
-    typing ::
+    So far, at LLNL, we have only built and tested RAJA on our BG/Q systems
+    using the GNU compiler. We have had moderate success with the clang 
+    compiler. To build with the GNU compiler, you need to set the version of 
+    CMake before running it. You can do this by typing ::
 
       $ use cmake-3.1.2
-      $ use python-2.7.3
-
-    After this, you can use the 'config-build.py' script as usual.
-
 
   * nvcc builds
 
     To compile with 'nvcc' on LC machines that have GPUs that support CUDA, 
-    you will have to load the CUDA module and set the host compiler. For 
-    example, type these lines :: 
+    you will have to load the CUDA module and set the host compiler before
+    you run CMake. For example, type these lines :: 
 
       $ module load cudatoolkit/7.5
       $ use gcc-4.9.3p
 
 
-RAJA configuration options
----------------------------
-
-The RAJA include directory 'include/RAJA' contains a header file 
-called 'config.hxx.in' that is used to centralize all the configuration
-options that RAJA supports in one location. Most RAJA constructs are 
-parametrized to make it easy to try alternative implementation choices.
-
-The items in the configuration header file are set when the code is 
-configured. The results appear in the 'config.hxx' file which lives in 
-the 'include/RAJA' directory in the build space. This file gets pulled into
-all other RAJA header files so everything is consistent. The settings are 
-controlled by the contents of the selected host configuration
-file and the top-level RAJA 'CMakeLists.txt file'. For example, the file
-associated with the Intel compiler on LLNL Linux platforms is: ::
-
-  set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
-
-  set(CMAKE_C_COMPILER "/usr/local/bin/icc-16.0.109" CACHE PATH "")
-  set(CMAKE_CXX_COMPILER "/usr/local/bin/icpc-16.0.109" CACHE PATH "")
-
-  if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x" CACHE STRING "")
-  elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias -std=c++0x" CACHE STRING "")
-  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -std=c++0x" CACHE STRING "")
-  endif()
-
-  set(RAJA_USE_OPENMP On CACHE BOOL "")
-  set(RAJA_USE_CILK On CACHE BOOL "")
-
-  set(RAJA_RANGE_ALIGN 4 CACHE INT "")
-  set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
-  set(RAJA_DATA_ALIGN 64 CACHE INT "")
-  set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
-
-The first line sets a RAJA compiler variable that is used to control 
-compiler-specific syntax for certain RAJA features. The next several 
-commands in the file set the compiler and options for each build type. 
-Next, programming model options, such as OpenMP, CilkPlus, CUDA, etc. are 
-turned on or off. For example, the Intel compiler supports both OpenMP and 
-CilkPlus; so those are turned on here. Finally, options for data alignment, 
-index set range segments, and other things are set.
-
-The CMakeLists.txt file in the top-level RAJA directory controls settings 
-for other items that are not specific to a compiler. In that file, you will 
-find variables to set RAJA options for: 
-
-  * Floating-point type (e.g., double or float)
-  * Pointer types (e.g., bare ptr, ptr with restrict, ptr classes, etc.)
-  * Loop-level fault tolerance options
-  * Timer options for examples

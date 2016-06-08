@@ -54,12 +54,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
-#include "int_datatypes.hxx"
+#include "RAJA/int_datatypes.hxx"
 
 #include <cstdlib>
-
 #include <iosfwd>
 
 namespace RAJA {
@@ -82,7 +81,7 @@ public:
    /// coherence page size?).
    ///
    /// These values may need to be set differently for different
-   /// algorithms and platforms.  We haven't figured this out yet!
+   /// algorithms and platforms. We haven't determined the best defaults yet!
    ///
    static const int _MaxDepTasks_          = 8;
    static const int _SemaphoreValueAlign_  = 256;
