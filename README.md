@@ -41,7 +41,7 @@ Quick Start
 The RAJA code lives in a GitHub [repository](https://github.com/llnl/raja).
 To clone the repo, use the command:
 
-   $ git clone https://github.com/llnl/raja.git
+    git clone https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
 compiler that supports the C++11 standard. The simplest way to build the code 
