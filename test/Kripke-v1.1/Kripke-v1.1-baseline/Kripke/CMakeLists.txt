@@ -24,7 +24,7 @@ set(KRIPKE_SRC
   Test/TestKernels.cpp
 )
 
-if(RAJA_USE_CUDA)
+if(RAJA_ENABLE_CUDA)
   cuda_add_library(lib_kripke ${KRIPKE_SRC})  
 else()
   add_library(lib_kripke ${KRIPKE_SRC})  

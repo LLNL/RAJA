@@ -36,7 +36,7 @@
 #include<Kripke.h>
   
 typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::simd_exec> sweep_seq_exec;
-#ifdef RAJA_USE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
 typedef RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec> sweep_omp_exec;
 #else
 using sweep_omp_exec = sweep_seq_exec;

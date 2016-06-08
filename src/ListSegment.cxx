@@ -55,11 +55,6 @@
 #include <iostream>
 #include <string>
 
-#if defined(RAJA_USE_CUDA)
-#include <cuda.h>
-#include <cuda_runtime.h>
-#endif
-
 namespace RAJA {
 
 
@@ -104,12 +99,8 @@ ListSegment& ListSegment::operator=(const ListSegment& rhs)
 ListSegment::~ListSegment()
 {
    if ( m_indx && m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
-      if (cudaFree(m_indx) != cudaSuccess) {
-         std::cerr << "\n ERROR in cudaFree call, FILE: "
-                      << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-       }
+#if defined(RAJA_ENABLE_CUDA)
+      cudaErrchk( cudaFree(m_indx) );
 #else
       delete[] m_indx ;
 #endif
@@ -183,16 +174,12 @@ void ListSegment::initIndexData(const Index_type* indx,
       m_indx_own = indx_own;
 
       if ( m_indx_own == Owned ) {
-#if defined(RAJA_USE_CUDA)
-
-         if ( cudaMallocManaged((void **)&m_indx, m_len*sizeof(Index_type), 
-                                 cudaMemAttachGlobal) != cudaSuccess ) {
-            std::cerr << "\n ERROR in cudaMallocManaged call, FILE: " 
-                      << __FILE__ << " line " << __LINE__ << std::endl;
-            exit(1);
-         } 
-         cudaMemset(m_indx,0,m_len*sizeof(Index_type));
-
+#if defined(RAJA_ENABLE_CUDA)
+         cudaErrchk( cudaMallocManaged((void **)&m_indx, 
+                                       m_len*sizeof(Index_type), 
+                                       cudaMemAttachGlobal) );
+         cudaErrchk( cudaMemset(m_indx,0,m_len*sizeof(Index_type)) );
+         cudaErrchk(cudaDeviceSynchronize());
 #else
          m_indx = new Index_type[len];
 #endif

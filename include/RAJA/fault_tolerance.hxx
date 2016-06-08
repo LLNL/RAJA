@@ -63,7 +63,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifdef RAJA_USE_FT
+#ifdef RAJA_ENABLE_FT
 
 #ifdef RAJA_REPORT_FT
 #include "cycle.h"
@@ -131,7 +131,7 @@
 
 #define RAJA_FT_END
 
-#endif // RAJA_USE_FT
+#endif // RAJA_ENABLE_FT
 
 #endif  // closing endif for header file include guard
 

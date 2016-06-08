@@ -14,7 +14,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -58,16 +58,28 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/int_datatypes.hxx"
+
 namespace RAJA {
 
 
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
+
+// Reduction Tallies are computed into a small block to minimize UM migration
+#define RAJA_CUDA_REDUCE_TALLY_LENGTH  RAJA_MAX_REDUCE_VARS
 
 ///
 /// Typedef defining common data type for RAJA-Cuda reduction data blocks
 /// (use this in all cases to avoid type confusion).
 ///
 typedef double CudaReductionBlockDataType;
+
+typedef struct{double val; Index_type idx;} CudaReductionLocBlockDataType; 
+
+typedef struct {
+    CudaReductionBlockDataType tally;
+    CudaReductionBlockDataType initVal;
+} CudaReductionBlockTallyType;
 
 /*!
 *************************************************************************
@@ -87,6 +99,22 @@ int getCudaReductionId();
 *************************************************************************
 */
 void releaseCudaReductionId(int id);
+
+
+CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Free managed memory block used in RAJA-Cuda reductions.
+ *
+ ******************************************************************************
+ */
+
+void freeCudaReductionTallyBlock();
+
+
+
 
 /*!
  ******************************************************************************
@@ -110,6 +138,8 @@ void releaseCudaReductionId(int id);
  */
 CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
 
+CudaReductionLocBlockDataType * getCudaReductionLocMemBlock(int id);
+
 /*!
  ******************************************************************************
  *
@@ -119,10 +149,12 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
  */
 void freeCudaReductionMemBlock();
 
+void freeCudaReductionLocMemBlock();
+
 
 }  // closing brace for RAJA namespace
 
 
-#endif  // closing endif for RAJA_USE_CUDA
+#endif  // closing endif for RAJA_ENABLE_CUDA
 
 #endif  // closing endif for header file include guard

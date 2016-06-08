@@ -11,7 +11,9 @@
 #ifndef RAJA_forallN_openmp_HXX__
 #define RAJA_forallN_openmp_HXX__
 
-#if defined(RAJA_USE_OPENMP)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,10 +57,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~// 
 
-#include<RAJA/config.hxx>
-#include<RAJA/int_datatypes.hxx>
+#include "RAJA/int_datatypes.hxx"
 
-#include<omp.h>
+#if defined(_OPENMP)
+#include <omp.h>
+#endif
 
 namespace RAJA {
 
@@ -197,7 +200,7 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag, BODY body, PARGS ... p
 
 } // namespace RAJA
  
-#endif  // closing endif for if defined(RAJA_USE_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard 
 

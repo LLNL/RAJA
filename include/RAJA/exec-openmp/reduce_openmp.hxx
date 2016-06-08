@@ -14,7 +14,9 @@
 #ifndef RAJA_forall_omp_HXX
 #define RAJA_forall_omp_HXX
 
-#if defined(RAJA_USE_OPENMP)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -57,8 +59,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/config.hxx"
 
 #include "RAJA/int_datatypes.hxx"
 
@@ -615,6 +615,6 @@ private:
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_USE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

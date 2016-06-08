@@ -9,53 +9,15 @@
 .. ##
 
 
-===================
-Tests and Examples
-===================
-
-The RAJA code comes with several simple test codes and proxy-app examples
-that illustrate various usage scenarios. When RAJA is compiled, these 
-executables are built in their default configurations. They can be run by
-invoking the executables in the build space 'raja/test' subdirectories whose 
-names are descriptive of their contents. These codes can be modified to 
-experiment with them and run using various options that we describe later 
-in this section. **Note that the modifications must be made in the 'raja/test' 
-subdirectories in the actual source code, not in the build space.**
-
-**NOTE:** RAJA must be built with CUDA enabled to generate GPU variants.
-When running CUDA variants of the tests and examples, we advise you to set the
-environment variable CUDA_VISIBLE_DEVICES to zero before running. 
-
-For example, for C-shell users ::
-
-   $ setenv CUDA_VISIBLE_DEVICES 0
-
-We are using CUDA Unified Memory and we find that this environment setting 
-greatly improves performance.
-
-
---------------
-Basic tests
---------------
-
-The directory 'raja/test/unit-tests' has two subdirectories, each of which
-contains files that run various traversal and reduction operations for RAJA 
-IndexSets and Segments. All RAJA "forall" template and execution policy 
-options that are available for a given compiler are included. Running these
-tests is a good sanity check that the code is built correctly and works. The
-two subdirectories are:
-
-  * **CPUtests.** It contains codes to run traversl and reduction tests for 
-    sequential, OpenMP, and CilkPlus (if available) execution policies.
-
-  * **GPUtests.** It contains codes to run traversl and reduction tests for 
-    GPU CUDA execution policies. Note that these tests use Unified Memory 
-    to simplify host-device memory transfers.
-
-
 -----------------------
-Example applications
+RAJA Proxy Applications
 -----------------------
+
+.. warning:: We will break out the RAJA proxy apps (LULESH, Kripke, eventually
+             CoMD, etc.) into a separate repo. We can point to it here. The
+             text below is from the original sphinx docs. I kept it so we can
+             use bits that we want to keep.
+ 
 
 The directory 'raja/test' has subdirectories containing examples of RAJA 
 used in the proxy apps LULLED (versions 1.0 and 2.0), Kripke, and CoMD.

@@ -151,7 +151,7 @@ class Domain {
    // Destructor
    ~Domain();
 
-#if defined(RAJA_USE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
    void *operator new(size_t size)
    {
      void *ptr ;
