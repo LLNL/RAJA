@@ -1,0 +1,2 @@
+#!/bin/bash
+git-clang-format --extensions cxx,cpp,cc,c,hxx,hpp,h $@
