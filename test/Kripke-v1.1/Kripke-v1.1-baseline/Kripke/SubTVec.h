@@ -50,59 +50,62 @@
  *  but in whatever nesting order is specified.
  */
 struct SubTVec {
-private:
+ private:
   // disallow
   SubTVec(SubTVec const &c);
   SubTVec &operator=(SubTVec const &c);
 
-public:
-  SubTVec(Nesting_Order nesting, int ngrps, int ndir_mom, int nzones):
-    groups(ngrps),
-    directions(ndir_mom),
-    zones(nzones),
-    elements(groups*directions*zones),
-    data_linear(NULL)
-  {
+ public:
+  SubTVec(Nesting_Order nesting, int ngrps, int ndir_mom, int nzones)
+      : groups(ngrps),
+        directions(ndir_mom),
+        zones(nzones),
+        elements(groups * directions * zones),
+        data_linear(NULL) {
 //#ifdef RAJA_ENABLE_CUDA
-    
+
 #ifdef KRIPKE_ALIGN_DATA
-    int status = posix_memalign((void**)&data_linear, KRIPKE_ALIGN, sizeof(double)*elements);
-    if(status != 0){
-    	printf("Error allocating data\n");
-    	data_linear = NULL;
+    int status = posix_memalign((void **)&data_linear,
+                                KRIPKE_ALIGN,
+                                sizeof(double) * elements);
+    if (status != 0) {
+      printf("Error allocating data\n");
+      data_linear = NULL;
     }
 #else
-    data_linear = (double *) malloc(sizeof(double)*elements);
-#endif // align
-//#endif // cuda
+    data_linear = (double *)malloc(sizeof(double) * elements);
+#endif  // align
+        //#endif // cuda
     setupIndices(nesting, data_linear);
   }
-
 
   /**
    * ALIASING version of constructor.
    * Use this when you have a data buffer already, and don't want this class
    * to do any memory management.
    */
-  SubTVec(Nesting_Order nesting, int ngrps, int ndir_mom, int nzones, double *ptr):
-    groups(ngrps),
-    directions(ndir_mom),
-    zones(nzones),
-    elements(groups*directions*zones),
-    data_linear(NULL)
-  {
+  SubTVec(Nesting_Order nesting,
+          int ngrps,
+          int ndir_mom,
+          int nzones,
+          double *ptr)
+      : groups(ngrps),
+        directions(ndir_mom),
+        zones(nzones),
+        elements(groups * directions * zones),
+        data_linear(NULL) {
     setupIndices(nesting, ptr);
   }
 
-  ~SubTVec(){
-    if(data_linear != NULL){
+  ~SubTVec() {
+    if (data_linear != NULL) {
       free(data_linear);
     }
   }
 
-  void setupIndices(Nesting_Order nesting, double *ptr){
+  void setupIndices(Nesting_Order nesting, double *ptr) {
     // setup nesting order
-    switch(nesting){
+    switch (nesting) {
       case NEST_GDZ:
         ext_to_int[0] = 0;
         ext_to_int[1] = 1;
@@ -142,20 +145,16 @@ public:
     size_ext[2] = zones;
 
     // map to internal indices
-    for(int i = 0; i < 3; ++i){
+    for (int i = 0; i < 3; ++i) {
       size_int[ext_to_int[i]] = size_ext[i];
     }
 
     data_pointer = ptr;
   }
 
-  inline double* ptr(void){
-    return data_pointer;
-  }
+  inline double *ptr(void) { return data_pointer; }
 
-  inline double* ptr(int g, int d, int z){
-    return &(*this)(g,d,z);
-  }
+  inline double *ptr(int g, int d, int z) { return &(*this)(g, d, z); }
 
   // These are NOT efficient.. just used to re-stride data for comparisons
   inline double &operator()(int g, int d, int z) {
@@ -163,66 +162,72 @@ public:
     idx[ext_to_int[0]] = g;
     idx[ext_to_int[1]] = d;
     idx[ext_to_int[2]] = z;
-    int offset = idx[0] * size_int[1]*size_int[2] +
-                 idx[1] * size_int[2] +
-                 idx[2];
+    int offset =
+        idx[0] * size_int[1] * size_int[2] + idx[1] * size_int[2] + idx[2];
     return data_pointer[offset];
   }
   inline double operator()(int g, int d, int z) const {
-    return (*const_cast<SubTVec*>(this))(g,d,z);
+    return (*const_cast<SubTVec *>(this))(g, d, z);
   }
 
   inline double sum(void) const {
     double s = 0.0;
-    for(size_t i = 0;i < elements;++ i){
-      s+= data_linear[i];
+    for (size_t i = 0; i < elements; ++i) {
+      s += data_linear[i];
     }
     return s;
   }
 
-  inline void clear(double v){
+  inline void clear(double v) {
 #ifdef KRIPKE_USE_OPENMP
 #pragma omp parallel for
 #endif
-    for(int i = 0;i < elements;++ i){
+    for (int i = 0; i < elements; ++i) {
       data_linear[i] = v;
     }
   }
 
-  inline void randomizeData(void){
-    for(int i = 0;i < elements;++ i){
+  inline void randomizeData(void) {
+    for (int i = 0; i < elements; ++i) {
       data_linear[i] = drand48();
     }
   }
 
-  inline void copy(SubTVec const &b){
-    for(int g = 0;g < groups;++ g){
-      for(int d = 0;d < directions; ++ d){
-        for(int z = 0;z < zones;++ z){
+  inline void copy(SubTVec const &b) {
+    for (int g = 0; g < groups; ++g) {
+      for (int d = 0; d < directions; ++d) {
+        for (int z = 0; z < zones; ++z) {
           // Copy using abstract indexing
-          (*this)(g,d,z) = b(g,d,z);
+          (*this)(g, d, z) = b(g, d, z);
         }
       }
     }
   }
 
-  inline bool compare(std::string const &name, SubTVec const &b,
-      double tol, bool verbose){
-
+  inline bool compare(std::string const &name,
+                      SubTVec const &b,
+                      double tol,
+                      bool verbose) {
     bool is_diff = false;
     int num_wrong = 0;
-    for(int g = 0;g < groups;++ g){
-      for(int d = 0;d < directions; ++ d){
-        for(int z = 0;z < zones;++ z){
+    for (int g = 0; g < groups; ++g) {
+      for (int d = 0; d < directions; ++d) {
+        for (int z = 0; z < zones; ++z) {
           // Copy using abstract indexing
-          double err = std::abs((*this)(g,d,z) - b(g,d,z));
-          if(err > tol){
+          double err = std::abs((*this)(g, d, z) - b(g, d, z));
+          if (err > tol) {
             is_diff = true;
-            if(verbose){
+            if (verbose) {
               printf("%s[g=%d, d=%d, z=%d]: |%e - %e| = %e\n",
-                  name.c_str(), g,d,z, (*this)(g,d,z), b(g,d,z), err);
-              num_wrong ++;
-              if(num_wrong > 100){
+                     name.c_str(),
+                     g,
+                     d,
+                     z,
+                     (*this)(g, d, z),
+                     b(g, d, z),
+                     err);
+              num_wrong++;
+              if (num_wrong > 100) {
                 return true;
               }
             }
@@ -233,13 +238,12 @@ public:
     return is_diff;
   }
 
-  int ext_to_int[3]; // external index to internal index mapping
-  int size_int[3]; // size of each dimension in internal indices
+  int ext_to_int[3];  // external index to internal index mapping
+  int size_int[3];    // size of each dimension in internal indices
 
   int groups, directions, zones, elements;
   double *data_pointer;
   double *data_linear;
 };
-
 
 #endif

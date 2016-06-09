@@ -65,11 +65,9 @@ namespace RAJA {
 *
 *************************************************************************
 */
-int getMaxReduceThreadsCPU(); 
+int getMaxReduceThreadsCPU();
 int getMaxOMPThreadsCPU();
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

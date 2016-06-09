@@ -5,9 +5,9 @@
  *
  * \brief   Header file providing RAJA segment execution routines.
  *
- *          These help avoid a lot of redundant code in IndexSet 
+ *          These help avoid a lot of redundant code in IndexSet
  *          segment iteration methods.
- * 
+ *
  ******************************************************************************
  */
 
@@ -58,9 +58,7 @@
 
 #include "RAJA/config.hxx"
 
-
 namespace RAJA {
-
 
 /*!
  ******************************************************************************
@@ -71,27 +69,18 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                             LOOP_BODY loop_body)
-{
-   const BaseSegment* iseg = seg_info->getSegment();
-   SegmentType segtype = iseg->getType();
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
+                                         LOOP_BODY loop_body) {
+  const BaseSegment* iseg = seg_info->getSegment();
+  SegmentType segtype = iseg->getType();
 
-   switch ( segtype ) {
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
-            loop_body
-         );
-         break;
-      }
+  switch (segtype) {
+    case _RangeSeg_: {
+      const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
+      forall(SEG_EXEC_POLICY_T(), tseg->getBegin(), tseg->getEnd(), loop_body);
+      break;
+    }
 
 #if 0  // RDH RETHINK
       case _RangeStrideSeg_ : {
@@ -106,23 +95,19 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
       }
 #endif
 
-      case _ListSeg_ : {
-         const ListSegment* tseg =
-            static_cast<const ListSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
-            loop_body
-         );
-         break;
-      }
+    case _ListSeg_: {
+      const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
+      forall(SEG_EXEC_POLICY_T(),
+             tseg->getIndex(),
+             tseg->getLength(),
+             loop_body);
+      break;
+    }
 
-      default : {
-      }
+    default: {}
 
-   }  // switch on segment type
+  }  // switch on segment type
 }
-
 
 /*!
  ******************************************************************************
@@ -133,30 +118,24 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
-                                    LOOP_BODY loop_body)
-{
-   const BaseSegment* iseg = seg_info->getSegment();
-   SegmentType segtype = iseg->getType();
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
+                                                LOOP_BODY loop_body) {
+  const BaseSegment* iseg = seg_info->getSegment();
+  SegmentType segtype = iseg->getType();
 
-   Index_type icount = seg_info->getIcount();
+  Index_type icount = seg_info->getIcount();
 
-   switch ( segtype ) {
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
-            icount,
-            loop_body
-         );
-         break;
-      }
+  switch (segtype) {
+    case _RangeSeg_: {
+      const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
+      forall_Icount(SEG_EXEC_POLICY_T(),
+                    tseg->getBegin(),
+                    tseg->getEnd(),
+                    icount,
+                    loop_body);
+      break;
+    }
 
 #if 0  // RDH RETHINK
       case _RangeStrideSeg_ : {
@@ -172,26 +151,21 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
       }
 #endif
 
-      case _ListSeg_ : {
-         const ListSegment* tseg =
-            static_cast<const ListSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
-            icount,
-            loop_body
-         );
-         break;
-      }
+    case _ListSeg_: {
+      const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
+      forall_Icount(SEG_EXEC_POLICY_T(),
+                    tseg->getIndex(),
+                    tseg->getLength(),
+                    icount,
+                    loop_body);
+      break;
+    }
 
-      default : {
-      }
+    default: {}
 
-   }  // switch on segment type
+  }  // switch on segment type
 }
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

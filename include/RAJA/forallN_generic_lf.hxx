@@ -55,7 +55,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-
 #include "RAJA/config.hxx"
 
 #include "RAJA/int_datatypes.hxx"
@@ -64,48 +63,37 @@
 
 namespace RAJA {
 
-
-
 /******************************************************************
  *  ForallN generic policies
  ******************************************************************/
 
-template<typename P, typename I>
+template <typename P, typename I>
 struct ForallN_PolicyPair : public I {
-  
   typedef P POLICY;
   typedef I ISET;
 
   RAJA_INLINE
-  explicit
-  constexpr
-  ForallN_PolicyPair(ISET const &i) : ISET(i) {}
+  explicit constexpr ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
-
-template<typename ... PLIST>
-struct ExecList{
+template <typename... PLIST>
+struct ExecList {
   constexpr const static size_t num_loops = sizeof...(PLIST);
   typedef std::tuple<PLIST...> tuple;
 };
 
-
-
 // Execute (Termination default)
 struct ForallN_Execute_Tag {};
-
 
 struct Execute {
   typedef ForallN_Execute_Tag PolicyTag;
 };
 
-template<typename EXEC, typename NEXT=Execute>
+template <typename EXEC, typename NEXT = Execute>
 struct NestedPolicy {
   typedef NEXT NextPolicy;
   typedef EXEC ExecPolicies;
 };
-
-
 
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
@@ -113,74 +101,67 @@ struct NestedPolicy {
 
 /*!
  * \brief Functor that binds the first argument of a callable.
- * 
+ *
  * This version has host-only constructor and host-device operator.
  */
-template<typename BODY, typename INDEX_TYPE=Index_type>
+template <typename BODY, typename INDEX_TYPE = Index_type>
 struct ForallN_BindFirstArg_HostDevice {
-  BODY const body;  
+  BODY const body;
   INDEX_TYPE const i;
 
   RAJA_INLINE
-  constexpr
-  ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0) : body(b), i(i0) {}
+  constexpr ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0)
+      : body(b), i(i0) {}
 
   RAJA_SUPPRESS_HD_WARN
-  template<typename ... ARGS>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void  operator()(ARGS ... args) const {
+  template <typename... ARGS>
+  RAJA_INLINE RAJA_HOST_DEVICE void operator()(ARGS... args) const {
     body(i, args...);
   }
 };
-
 
 /*!
  * \brief Functor that binds the first argument of a callable.
- * 
+ *
  * This version has host-only constructor and host-only operator.
  */
-template<typename BODY, typename INDEX_TYPE=Index_type>
+template <typename BODY, typename INDEX_TYPE = Index_type>
 struct ForallN_BindFirstArg_Host {
-
-  BODY const body;  
+  BODY const body;
   INDEX_TYPE const i;
 
   RAJA_INLINE
-  constexpr
-  ForallN_BindFirstArg_Host(BODY const &b, INDEX_TYPE i0) : body(b), i(i0) {}
+  constexpr ForallN_BindFirstArg_Host(BODY const &b, INDEX_TYPE i0)
+      : body(b), i(i0) {}
 
-  template<typename ... ARGS>
-  RAJA_INLINE
-  void  operator()(ARGS ... args) const {
+  template <typename... ARGS>
+  RAJA_INLINE void operator()(ARGS... args) const {
     body(i, args...);
   }
 };
 
-
-template<typename NextExec, typename BODY>
+template <typename NextExec, typename BODY>
 struct ForallN_PeelOuter {
-
   NextExec const next_exec;
   BODY const body;
 
   RAJA_INLINE
-  constexpr
-  ForallN_PeelOuter(NextExec const &ne, BODY const &b) : next_exec(ne), body(b) {}
+  constexpr ForallN_PeelOuter(NextExec const &ne, BODY const &b)
+      : next_exec(ne), body(b) {}
 
   RAJA_INLINE
   void operator()(Index_type i) const {
     ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
     next_exec(inner);
   }
-  
+
   RAJA_INLINE
   void operator()(Index_type i, Index_type j) const {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
     ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
     next_exec(inner_j);
   }
-  
+
   RAJA_INLINE
   void operator()(Index_type i, Index_type j, Index_type k) const {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
@@ -190,9 +171,8 @@ struct ForallN_PeelOuter {
   }
 };
 
-template<typename ... PREST>
+template <typename... PREST>
 struct ForallN_Executor {};
-
 
 /*!
  * \brief Primary policy execution that peels off loop nests.
@@ -200,7 +180,7 @@ struct ForallN_Executor {};
  *  The default action is to call RAJA::forall to peel off outer loop nest.
  */
 
-template<typename PI, typename ... PREST>
+template <typename PI, typename... PREST>
 struct ForallN_Executor<PI, PREST...> {
   typedef typename PI::ISET TI;
   typedef typename PI::POLICY POLICY_I;
@@ -210,49 +190,44 @@ struct ForallN_Executor<PI, PREST...> {
   PI const is_i;
   NextExec const next_exec;
 
-  template<typename ... TREST>
-  constexpr
-  ForallN_Executor(PI const &is_i0, TREST const &... is_rest) : is_i(is_i0), next_exec(is_rest...) {}
+  template <typename... TREST>
+  constexpr ForallN_Executor(PI const &is_i0, TREST const &... is_rest)
+      : is_i(is_i0), next_exec(is_rest...) {}
 
-  template<typename BODY>
-  RAJA_INLINE
-  void operator()(BODY const &body) const {
+  template <typename BODY>
+  RAJA_INLINE void operator()(BODY const &body) const {
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
     RAJA::forall<POLICY_I>(is_i, outer);
   }
 };
 
-
 /*!
  * \brief Execution termination case
  */
-template<>
+template <>
 struct ForallN_Executor<> {
-  constexpr
-  ForallN_Executor()  {}
+  constexpr ForallN_Executor() {}
 
-  template<typename BODY>
+  template <typename BODY>
   RAJA_INLINE void operator()(BODY const &body) const {
     body();
   }
 };
 
-
 /******************************************************************
  *  forallN_policy(), base execution policies
  ******************************************************************/
-
 
 /*!
  * \brief Execute inner loops policy function.
  *
  * This is the default termination case.
  */
- 
-template<typename POLICY, typename BODY, typename ... ARGS>
-RAJA_INLINE
-void forallN_policy(ForallN_Execute_Tag, BODY const &body, ARGS const &... args){
 
+template <typename POLICY, typename BODY, typename... ARGS>
+RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
+                                BODY const &body,
+                                ARGS const &... args) {
   // Create executor object to launch loops
   ForallN_Executor<ARGS...> exec(args...);
 
@@ -260,40 +235,32 @@ void forallN_policy(ForallN_Execute_Tag, BODY const &body, ARGS const &... args)
   exec(body);
 }
 
-
-
 /******************************************************************
  *  Index type conversion, wraps lambda given by user with an outer
  *  callable object where all variables are Index_type
  ******************************************************************/
 
-
 /*!
  * \brief Wraps a callable that uses strongly typed arguments, and produces
- * a functor with Index_type arguments. 
+ * a functor with Index_type arguments.
  *
  */
-template<typename BODY, typename ... Idx>
+template <typename BODY, typename... Idx>
 struct ForallN_IndexTypeConverter {
-
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr
-  explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+  constexpr explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
 
   // call 'policy' layer with next policy
   RAJA_SUPPRESS_HD_WARN
-  template<typename ... ARGS>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void operator()(ARGS ... arg) const {
+  template <typename... ARGS>
+  RAJA_INLINE RAJA_HOST_DEVICE void operator()(ARGS... arg) const {
     body(Idx(arg)...);
   }
-  
-  
-  // This fixes massive compile time slowness for clang sans OpenMP
-  // using a reference to body breaks offload for CUDA
+
+// This fixes massive compile time slowness for clang sans OpenMP
+// using a reference to body breaks offload for CUDA
 #ifdef RAJA_ENABLE_CUDA
   BODY body;
 #else
@@ -301,10 +268,6 @@ struct ForallN_IndexTypeConverter {
 #endif
 };
 
+}  // namespace RAJA
 
-
-
-} // namespace RAJA
-  
 #endif
-

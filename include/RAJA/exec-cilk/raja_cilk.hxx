@@ -5,7 +5,7 @@
  *
  * \brief   Header file containing RAJA headers for Intel CilkPlus execution.
  *
- *          These methods work only on platforms that support Cilk Plus. 
+ *          These methods work only on platforms that support Cilk Plus.
  *
  ******************************************************************************
  */
@@ -90,12 +90,9 @@ struct cilk_reduce {};
 
 }  // closing brace for RAJA namespace
 
-
 #include "RAJA/exec-cilk/reduce_cilk.hxx"
 #include "RAJA/exec-cilk/forall_cilk.hxx"
-
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CILK)
 
 #endif  // closing endif for header file include guard
-

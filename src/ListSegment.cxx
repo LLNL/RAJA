@@ -57,7 +57,6 @@
 
 namespace RAJA {
 
-
 /*
 *************************************************************************
 *
@@ -68,87 +67,77 @@ namespace RAJA {
 
 ////
 ////
-ListSegment::ListSegment(const Index_type* indx, Index_type len,
+ListSegment::ListSegment(const Index_type* indx,
+                         Index_type len,
                          IndexOwnership indx_own)
-: BaseSegment( _ListSeg_ )
-{
-   initIndexData(indx, len, indx_own);
+    : BaseSegment(_ListSeg_) {
+  initIndexData(indx, len, indx_own);
 }
 
 ////
 ////
-ListSegment::ListSegment(const ListSegment& other)
-: BaseSegment( _ListSeg_ )
-{
-   initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
+ListSegment::ListSegment(const ListSegment& other) : BaseSegment(_ListSeg_) {
+  initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
 }
 
 ////
 ////
-ListSegment& ListSegment::operator=(const ListSegment& rhs)
-{
-   if ( &rhs != this ) {
-      ListSegment copy(rhs);
-      this->swap(copy);
-   }
-   return *this;
+ListSegment& ListSegment::operator=(const ListSegment& rhs) {
+  if (&rhs != this) {
+    ListSegment copy(rhs);
+    this->swap(copy);
+  }
+  return *this;
 }
 
 ////
 ////
-ListSegment::~ListSegment()
-{
-   if ( m_indx && m_indx_own == Owned ) {
+ListSegment::~ListSegment() {
+  if (m_indx && m_indx_own == Owned) {
 #if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk( cudaFree(m_indx) );
+    cudaErrchk(cudaFree(m_indx));
 #else
-      delete[] m_indx ;
+    delete[] m_indx;
 #endif
-   }
+  }
 }
 
 ////
 ////
-void ListSegment::swap(ListSegment& other)
-{
-   using std::swap;
-   swap(m_indx, other.m_indx);
-   swap(m_len, other.m_len);
-   swap(m_indx_own, other.m_indx_own);
+void ListSegment::swap(ListSegment& other) {
+  using std::swap;
+  swap(m_indx, other.m_indx);
+  swap(m_len, other.m_len);
+  swap(m_indx_own, other.m_indx_own);
 }
 
 ////
 ////
-bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const
-{
-   bool equal = true;
+bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const {
+  bool equal = true;
 
-   if ( len != m_len || indx == 0 || m_indx == 0 ) {
+  if (len != m_len || indx == 0 || m_indx == 0) {
+    equal = false;
 
-      equal = false;
+  } else {
+    Index_type i = 0;
+    while (equal && i < m_len) {
+      equal = (m_indx[i] == indx[i]);
+      i++;
+    }
+  }
 
-   } else {
-
-     Index_type i = 0;
-     while ( equal && i < m_len ) {
-        equal =  (m_indx[i] == indx[i]) ;
-        i++;
-     }
-
-   }
-
-   return equal;
+  return equal;
 }
 
 ////
 ////
-void ListSegment::print(std::ostream& os) const
-{
-   os << "ListSegment : length, owns index = " << getLength() 
-      << (m_indx_own == Owned ? " -- Owned" : " -- Unowned") << std::endl;
-   for (Index_type i = 0; i < getLength(); ++i) {
-      os << "\t" << m_indx[i] << std::endl;
-   }
+void ListSegment::print(std::ostream& os) const {
+  os << "ListSegment : length, owns index = " << getLength()
+     << (m_indx_own == Owned ? " -- Owned" : " -- Unowned") << std::endl;
+  for (Index_type i = 0; i < getLength(); ++i) {
+    os << "\t" << m_indx[i] << std::endl;
+  }
 }
 
 /*
@@ -158,43 +147,38 @@ void ListSegment::print(std::ostream& os) const
 *
 *************************************************************************
 */
-void ListSegment::initIndexData(const Index_type* indx, 
+void ListSegment::initIndexData(const Index_type* indx,
                                 Index_type len,
-                                IndexOwnership indx_own)
-{
-   if ( len <= 0 || indx == 0 ) {
+                                IndexOwnership indx_own) {
+  if (len <= 0 || indx == 0) {
+    m_indx = 0;
+    m_len = 0;
+    m_indx_own = Unowned;
 
-      m_indx = 0;
-      m_len  = 0;
-      m_indx_own = Unowned;
+  } else {
+    m_len = len;
+    m_indx_own = indx_own;
 
-   } else { 
-
-      m_len = len;
-      m_indx_own = indx_own;
-
-      if ( m_indx_own == Owned ) {
+    if (m_indx_own == Owned) {
 #if defined(RAJA_ENABLE_CUDA)
-         cudaErrchk( cudaMallocManaged((void **)&m_indx, 
-                                       m_len*sizeof(Index_type), 
-                                       cudaMemAttachGlobal) );
-         cudaErrchk( cudaMemset(m_indx,0,m_len*sizeof(Index_type)) );
-         cudaErrchk(cudaDeviceSynchronize());
+      cudaErrchk(cudaMallocManaged((void**)&m_indx,
+                                   m_len * sizeof(Index_type),
+                                   cudaMemAttachGlobal));
+      cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
+      cudaErrchk(cudaDeviceSynchronize());
 #else
-         m_indx = new Index_type[len];
+      m_indx = new Index_type[len];
 #endif
 
-         for (Index_type i = 0; i < m_len; ++i) {
-            m_indx[i] = indx[i] ;
-         }
-
-      } else {
-         // Uh-oh. Using evil const_cast.... 
-         m_indx = const_cast<Index_type*>(indx);
+      for (Index_type i = 0; i < m_len; ++i) {
+        m_indx[i] = indx[i];
       }
 
-   } 
+    } else {
+      // Uh-oh. Using evil const_cast....
+      m_indx = const_cast<Index_type*>(indx);
+    }
+  }
 }
-
 
 }  // closing brace for RAJA namespace

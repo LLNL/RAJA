@@ -30,35 +30,20 @@
  * Department of Energy (DOE) or Lawrence Livermore National Security.
  */
 
-#include<Kripke/Kernel/Kernel_3d_GZD.h>
+#include <Kripke/Kernel/Kernel_3d_GZD.h>
 
-Kernel_3d_GZD::Kernel_3d_GZD() :
-  Kernel(NEST_GZD)
-{}
+Kernel_3d_GZD::Kernel_3d_GZD() : Kernel(NEST_GZD) {}
 
-Kernel_3d_GZD::~Kernel_3d_GZD()
-{}
+Kernel_3d_GZD::~Kernel_3d_GZD() {}
 
-Nesting_Order Kernel_3d_GZD::nestingPsi(void) const {
-  return NEST_GZD;
-}
+Nesting_Order Kernel_3d_GZD::nestingPsi(void) const { return NEST_GZD; }
 
-Nesting_Order Kernel_3d_GZD::nestingPhi(void) const {
-  return NEST_GZD;
-}
+Nesting_Order Kernel_3d_GZD::nestingPhi(void) const { return NEST_GZD; }
 
-Nesting_Order Kernel_3d_GZD::nestingSigt(void) const {
-  return NEST_DGZ;
-}
+Nesting_Order Kernel_3d_GZD::nestingSigt(void) const { return NEST_DGZ; }
 
-Nesting_Order Kernel_3d_GZD::nestingEll(void) const {
-  return NEST_ZGD;
-}
+Nesting_Order Kernel_3d_GZD::nestingEll(void) const { return NEST_ZGD; }
 
-Nesting_Order Kernel_3d_GZD::nestingEllPlus(void) const {
-  return NEST_ZDG;
-}
+Nesting_Order Kernel_3d_GZD::nestingEllPlus(void) const { return NEST_ZDG; }
 
-Nesting_Order Kernel_3d_GZD::nestingSigs(void) const {
-  return NEST_GZD;
-}
+Nesting_Order Kernel_3d_GZD::nestingSigs(void) const { return NEST_GZD; }

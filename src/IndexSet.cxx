@@ -59,7 +59,6 @@
 
 namespace RAJA {
 
-
 /*
 *************************************************************************
 *
@@ -69,81 +68,63 @@ namespace RAJA {
 */
 
 IndexSet::IndexSet()
-: m_len(0),
-  m_segments(),
-  m_private(0),
-  m_dep_graph_set(false)
-{
-}
+    : m_len(0), m_segments(), m_private(0), m_dep_graph_set(false) {}
 
 IndexSet::IndexSet(const IndexSet& other)
-: m_len(0),
-  m_segments(),
-  m_private(0),
-  m_dep_graph_set(false)
-{
-   copy(other); 
+    : m_len(0), m_segments(), m_private(0), m_dep_graph_set(false) {
+  copy(other);
 }
 
-IndexSet& IndexSet::operator=(
-   const IndexSet& rhs)
-{
-   if ( &rhs != this ) {
-      IndexSet copy(rhs);
-      this->swap(copy);
-   }
-   return *this;
+IndexSet& IndexSet::operator=(const IndexSet& rhs) {
+  if (&rhs != this) {
+    IndexSet copy(rhs);
+    this->swap(copy);
+  }
+  return *this;
 }
 
-IndexSet::~IndexSet()
-{
-    for (int i = 0; i < m_segments.size(); ++i ) {
-       IndexSetSegInfo& seg_info = m_segments[ i ];
+IndexSet::~IndexSet() {
+  for (int i = 0; i < m_segments.size(); ++i) {
+    IndexSetSegInfo& seg_info = m_segments[i];
 
-       if ( seg_info.ownsSegment() ) {
-          delete seg_info.getSegment();
-       } 
-   }
+    if (seg_info.ownsSegment()) {
+      delete seg_info.getSegment();
+    }
+  }
 }
 
-void IndexSet::swap(IndexSet& other)
-{
-   using std::swap;
-   swap(m_len, other.m_len);
-   swap(m_segments, other.m_segments);
-   swap(m_private, other.m_private);
-   swap(m_dep_graph_set, other.m_dep_graph_set);
+void IndexSet::swap(IndexSet& other) {
+  using std::swap;
+  swap(m_len, other.m_len);
+  swap(m_segments, other.m_segments);
+  swap(m_private, other.m_private);
+  swap(m_dep_graph_set, other.m_dep_graph_set);
 }
-
 
 /*
 *************************************************************************
 *
-* Method to check whether given segment is a valid type for this 
+* Method to check whether given segment is a valid type for this
 * IndexSet class.
 *
 *************************************************************************
 */
-bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
-{
-   bool ret_val = false;
+bool IndexSet::isValidSegmentType(const BaseSegment* segment) const {
+  bool ret_val = false;
 
-   if ( segment ) {
-   
-      SegmentType seg_type = segment->getType(); 
-   
-      if ( seg_type == _RangeSeg_ ||
-#if 0 // RDH RETHINK
+  if (segment) {
+    SegmentType seg_type = segment->getType();
+
+    if (seg_type == _RangeSeg_ ||
+#if 0  // RDH RETHINK
            seg_type == _RangeStrideSeg_ ||
 #endif
-           seg_type == _ListSeg_ ) 
-      {
-         ret_val = true;
-      }
+        seg_type == _ListSeg_) {
+      ret_val = true;
+    }
+  }
 
-   }
-
-   return ret_val;
+  return ret_val;
 }
 
 /*
@@ -154,32 +135,29 @@ bool IndexSet::isValidSegmentType(const BaseSegment* segment) const
 *************************************************************************
 */
 
-bool IndexSet::push_back(const BaseSegment& segment)
-{
-   bool retval = false;
+bool IndexSet::push_back(const BaseSegment& segment) {
+  bool retval = false;
 
-   if ( isValidSegmentType(&segment) ) {
-      BaseSegment* new_seg =  createSegmentCopy(segment);
-      retval = push_back_private( new_seg, true /* owns segment */ );
-      if ( !retval ) delete new_seg;
-   }
+  if (isValidSegmentType(&segment)) {
+    BaseSegment* new_seg = createSegmentCopy(segment);
+    retval = push_back_private(new_seg, true /* owns segment */);
+    if (!retval) delete new_seg;
+  }
 
-   return retval;
+  return retval;
 }
 
-bool IndexSet::push_front(const BaseSegment& segment)
-{
-   bool retval = false;
+bool IndexSet::push_front(const BaseSegment& segment) {
+  bool retval = false;
 
-   if ( isValidSegmentType(&segment) ) {
-      BaseSegment* new_seg =  createSegmentCopy(segment);
-      retval = push_front_private( new_seg, true /* owns segment */ );
-      if ( !retval ) delete new_seg;
-   }
+  if (isValidSegmentType(&segment)) {
+    BaseSegment* new_seg = createSegmentCopy(segment);
+    retval = push_front_private(new_seg, true /* owns segment */);
+    if (!retval) delete new_seg;
+  }
 
-   return retval;
+  return retval;
 }
-
 
 /*
 *************************************************************************
@@ -189,36 +167,33 @@ bool IndexSet::push_front(const BaseSegment& segment)
 *************************************************************************
 */
 
-IndexSet* IndexSet::createView(int begin, int end) const
-{
-   IndexSet *retVal = new IndexSet() ;
+IndexSet* IndexSet::createView(int begin, int end) const {
+  IndexSet* retVal = new IndexSet();
 
-   int numSeg = m_segments.size() ;
-   int minSeg = ((begin >= 0) ? begin : 0) ;
-   int maxSeg = ((end < numSeg) ? end : numSeg) ;
-   for (int i = minSeg; i < maxSeg; ++i) {
-      retVal->push_back_nocopy( 
-         const_cast<BaseSegment*>( m_segments[i].getSegment() ) ) ;
-   }
+  int numSeg = m_segments.size();
+  int minSeg = ((begin >= 0) ? begin : 0);
+  int maxSeg = ((end < numSeg) ? end : numSeg);
+  for (int i = minSeg; i < maxSeg; ++i) {
+    retVal->push_back_nocopy(
+        const_cast<BaseSegment*>(m_segments[i].getSegment()));
+  }
 
-   return retVal ;
+  return retVal;
 }
 
-IndexSet* IndexSet::createView(const int* segIds, int len) const
-{
-   IndexSet *retVal = new IndexSet() ;
+IndexSet* IndexSet::createView(const int* segIds, int len) const {
+  IndexSet* retVal = new IndexSet();
 
-   int numSeg = m_segments.size() ;
-   for (int i = 0; i < len; ++i) {
-      if (segIds[i] >= 0 && segIds[i] < numSeg) {
-         retVal->push_back_nocopy( 
-            const_cast<BaseSegment*>( m_segments[ segIds[i] ].getSegment() ) ) ;
-      }
-   }
+  int numSeg = m_segments.size();
+  for (int i = 0; i < len; ++i) {
+    if (segIds[i] >= 0 && segIds[i] < numSeg) {
+      retVal->push_back_nocopy(
+          const_cast<BaseSegment*>(m_segments[segIds[i]].getSegment()));
+    }
+  }
 
-   return retVal ;
+  return retVal;
 }
-
 
 /*
 *************************************************************************
@@ -227,16 +202,14 @@ IndexSet* IndexSet::createView(const int* segIds, int len) const
 *
 *************************************************************************
 */
-void IndexSet::setSegmentInterval(int interval_id, int begin, int end)
-{
-   while ( m_seg_interval_begin.size() < interval_id+1 ) {
-      m_seg_interval_begin.push_back(UndefinedValue);
-      m_seg_interval_end.push_back(UndefinedValue);
-   }
-   m_seg_interval_begin[interval_id] = begin; 
-   m_seg_interval_end[interval_id]   = end; 
+void IndexSet::setSegmentInterval(int interval_id, int begin, int end) {
+  while (m_seg_interval_begin.size() < interval_id + 1) {
+    m_seg_interval_begin.push_back(UndefinedValue);
+    m_seg_interval_end.push_back(UndefinedValue);
+  }
+  m_seg_interval_begin[interval_id] = begin;
+  m_seg_interval_end[interval_id] = end;
 }
-
 
 /*
 *************************************************************************
@@ -245,14 +218,12 @@ void IndexSet::setSegmentInterval(int interval_id, int begin, int end)
 *
 *************************************************************************
 */
-void IndexSet::initDependencyGraph() 
-{
-   for (int i = 0; i < m_segments.size(); ++i ) {
-      IndexSetSegInfo& seg_info = m_segments[ i ];
-      seg_info.initDepGraphNode();
-   }
+void IndexSet::initDependencyGraph() {
+  for (int i = 0; i < m_segments.size(); ++i) {
+    IndexSetSegInfo& seg_info = m_segments[i];
+    seg_info.initDepGraphNode();
+  }
 }
-
 
 /*
 *************************************************************************
@@ -261,30 +232,25 @@ void IndexSet::initDependencyGraph()
 *
 *************************************************************************
 */
-bool IndexSet::operator ==(const IndexSet& other) const
-{
-   // Are # segments the same, as well as total length??
-   bool equal = ( m_segments.size() == other.m_segments.size() &&
-                  getLength() == other.getLength() );
+bool IndexSet::operator==(const IndexSet& other) const {
+  // Are # segments the same, as well as total length??
+  bool equal = (m_segments.size() == other.m_segments.size()
+                && getLength() == other.getLength());
 
-   if ( equal ) {
+  if (equal) {
+    int isi = 0;
+    while (equal && isi < m_segments.size()) {
+      const BaseSegment* iseg = getSegmentInfo(isi)->getSegment();
+      const BaseSegment* o_iseg = other.getSegmentInfo(isi)->getSegment();
 
-      int isi = 0;
-      while ( equal && isi < m_segments.size() ) {
+      equal = (*iseg == *o_iseg);
 
-         const BaseSegment* iseg = getSegmentInfo(isi)->getSegment();
-         const BaseSegment* o_iseg = other.getSegmentInfo(isi)->getSegment();
+      isi++;
+    }
+  }
 
-         equal = (*iseg == *o_iseg);
-     
-         isi++; 
-      }    
-
-   }
-
-   return equal;
+  return equal;
 }
-
 
 /*
 *************************************************************************
@@ -293,33 +259,30 @@ bool IndexSet::operator ==(const IndexSet& other) const
 *
 *************************************************************************
 */
-void IndexSet::print(std::ostream& os) const
-{
-   os << "\nINDEX SET : " 
-      << " length = " << getLength() << std::endl
-      << "      num segments = " << getNumSegments() << std::endl
-      << "      dependency graph set = " << dependencyGraphSet() << std::endl;
+void IndexSet::print(std::ostream& os) const {
+  os << "\nINDEX SET : "
+     << " length = " << getLength() << std::endl
+     << "      num segments = " << getNumSegments() << std::endl
+     << "      dependency graph set = " << dependencyGraphSet() << std::endl;
 
-   for ( int isi = 0; isi < m_segments.size(); ++isi ) {
+  for (int isi = 0; isi < m_segments.size(); ++isi) {
+    os << "\nSegment # " << isi << " : " << std::endl;
 
-      os << "\nSegment # " << isi << " : " << std::endl;
-     
-      const IndexSetSegInfo* seg_info = getSegmentInfo(isi);
+    const IndexSetSegInfo* seg_info = getSegmentInfo(isi);
 
-      const BaseSegment* iseg = seg_info->getSegment();
-      SegmentType segtype = iseg->getType();
+    const BaseSegment* iseg = seg_info->getSegment();
+    SegmentType segtype = iseg->getType();
 
-      switch ( segtype ) {
-
-         case _RangeSeg_ : {
-            if ( iseg ) {
-               os << "\t icount = " << seg_info->getIcount() << std::endl;
-               static_cast<const RangeSegment*>(iseg)->print(os);
-            } else {
-               os << "_RangeSeg_ is null" << std::endl;
-            }
-            break;
-         }
+    switch (segtype) {
+      case _RangeSeg_: {
+        if (iseg) {
+          os << "\t icount = " << seg_info->getIcount() << std::endl;
+          static_cast<const RangeSegment*>(iseg)->print(os);
+        } else {
+          os << "_RangeSeg_ is null" << std::endl;
+        }
+        break;
+      }
 
 #if 0  // RDH RETHINK
          case _RangeStrideSeg_ : {
@@ -333,30 +296,27 @@ void IndexSet::print(std::ostream& os) const
          }
 #endif
 
-         case _ListSeg_ : {
-            if ( iseg ) {
-               os << "\t icount = " << seg_info->getIcount() << std::endl;
-               static_cast<const ListSegment*>(iseg)->print(os);
-            } else {
-               os << "_ListSeg_ is null" << std::endl;
-            }
-            break;
-         }
-
-         default : {
-            os << "IndexSet print: case not implemented!!\n";
-         }
-
-      }  // switch ( segtype )
-
-      const DepGraphNode* task  = seg_info->getDepGraphNode();
-      if ( task ) {
-         task->print(os);
+      case _ListSeg_: {
+        if (iseg) {
+          os << "\t icount = " << seg_info->getIcount() << std::endl;
+          static_cast<const ListSegment*>(iseg)->print(os);
+        } else {
+          os << "_ListSeg_ is null" << std::endl;
+        }
+        break;
       }
-  
-   }  // iterate over segments...
-}
 
+      default: { os << "IndexSet print: case not implemented!!\n"; }
+
+    }  // switch ( segtype )
+
+    const DepGraphNode* task = seg_info->getDepGraphNode();
+    if (task) {
+      task->print(os);
+    }
+
+  }  // iterate over segments...
+}
 
 /*
 *************************************************************************
@@ -367,22 +327,18 @@ void IndexSet::print(std::ostream& os) const
 *
 *************************************************************************
 */
-void IndexSet::copy(const IndexSet& other)
-{
-   const int num_segs = other.getNumSegments();
-   for ( int isi = 0; isi < num_segs; ++isi ) {
+void IndexSet::copy(const IndexSet& other) {
+  const int num_segs = other.getNumSegments();
+  for (int isi = 0; isi < num_segs; ++isi) {
+    const BaseSegment* iseg = other.getSegment(isi);
+    SegmentType segtype = iseg->getType();
 
-      const BaseSegment* iseg = other.getSegment(isi);
-      SegmentType segtype = iseg->getType();
-
-      if ( iseg ) {
-
-         switch ( segtype ) {
-
-            case _RangeSeg_ : {
-               push_back(*static_cast<const RangeSegment*>(iseg));
-               break;
-            }
+    if (iseg) {
+      switch (segtype) {
+        case _RangeSeg_: {
+          push_back(*static_cast<const RangeSegment*>(iseg));
+          break;
+        }
 
 #if 0  // RDH RETHINK
             case _RangeStrideSeg_ : {
@@ -391,22 +347,19 @@ void IndexSet::copy(const IndexSet& other)
             }
 #endif
 
-            case _ListSeg_ : {
-               push_back(*static_cast<const ListSegment*>(iseg));
-               break;
-            }
+        case _ListSeg_: {
+          push_back(*static_cast<const ListSegment*>(iseg));
+          break;
+        }
 
-            default : {
-               std::cout << "\t IndexSet::copy: case not implemented!!\n";
-            }
+        default: { std::cout << "\t IndexSet::copy: case not implemented!!\n"; }
 
-         }  // switch ( segtype )
+      }  // switch ( segtype )
 
-      }  // if ( iset ) 
+    }  // if ( iset )
 
-   }  // for isi...
+  }  // for isi...
 }
-
 
 /*
 *************************************************************************
@@ -416,57 +369,51 @@ void IndexSet::copy(const IndexSet& other)
 *************************************************************************
 */
 
-bool IndexSet::push_back_private(BaseSegment* seg, bool owns_segment)
-{
-   if ( isValidSegmentType(seg) ) {
+bool IndexSet::push_back_private(BaseSegment* seg, bool owns_segment) {
+  if (isValidSegmentType(seg)) {
+    m_segments.push_back(IndexSetSegInfo(seg, owns_segment));
+    m_segments[m_segments.size() - 1].setIcount(m_len);
 
-      m_segments.push_back( IndexSetSegInfo(seg, owns_segment) );
-      m_segments[ m_segments.size() - 1 ].setIcount(m_len);
+    m_len += seg->getLength();
 
-      m_len += seg->getLength();
+    return true;
 
-      return true;
-
-   } else {
-      return false;
-   }
+  } else {
+    return false;
+  }
 }
 
-bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment)
-{
-   if ( isValidSegmentType(seg) ) {
+bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment) {
+  if (isValidSegmentType(seg)) {
+    m_segments.push_front(IndexSetSegInfo(seg, owns_segment));
+    m_segments[0].setIcount(0);
+    m_len += seg->getLength();
 
-      m_segments.push_front( IndexSetSegInfo(seg, owns_segment) );
-      m_segments[ 0 ].setIcount(0);
-      m_len += seg->getLength();
+    Index_type icount = seg->getLength();
+    for (unsigned i = 1; i < m_segments.size(); ++i) {
+      IndexSetSegInfo& seg_info = m_segments[i];
 
-      Index_type icount = seg->getLength();
-      for (unsigned i = 1; i < m_segments.size(); ++i ) {
-         IndexSetSegInfo& seg_info = m_segments[ i ];
+      seg_info.setIcount(icount);
 
-         seg_info.setIcount(icount);
+      icount += seg_info.getSegment()->getLength();
+    }
 
-         icount += seg_info.getSegment()->getLength();
-      }
+    return true;
 
-      return true;
-   
-   } else {
-      return false;
-   }
+  } else {
+    return false;
+  }
 }
 
-BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
-{
-   BaseSegment* new_seg = 0;
+BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const {
+  BaseSegment* new_seg = 0;
 
-   switch ( segment.getType() ) {
-
-      case _RangeSeg_ : {
-         const RangeSegment& seg = static_cast<const RangeSegment&>(segment);
-         new_seg = new RangeSegment(seg);
-         break;
-      }
+  switch (segment.getType()) {
+    case _RangeSeg_: {
+      const RangeSegment& seg = static_cast<const RangeSegment&>(segment);
+      new_seg = new RangeSegment(seg);
+      break;
+    }
 
 #if 0  // RDH RETHINK
       case _RangeStrideSeg_ : {
@@ -476,18 +423,17 @@ BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
       }
 #endif
 
-      case _ListSeg_ : {
-         const ListSegment& seg = static_cast<const ListSegment&>(segment);
-         new_seg = new ListSegment(seg); 
-         break;
-      }
+    case _ListSeg_: {
+      const ListSegment& seg = static_cast<const ListSegment&>(segment);
+      new_seg = new ListSegment(seg);
+      break;
+    }
 
-      default : { }
+    default: {}
 
-   }  // switch ( segtype )
+  }  // switch ( segtype )
 
-   return new_seg;
+  return new_seg;
 }
-
 
 }  // closing brace for RAJA namespace

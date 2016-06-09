@@ -33,88 +33,71 @@
 #ifndef KERNEL_SCATTERING_POLICY_H__
 #define KERNEL_SCATTERING_POLICY_H__
 
-#include<Kripke.h>
+#include <Kripke.h>
 
-
-template<typename T>
-struct ScatteringPolicy{}; // nm, g, gp, mat
-
+template <typename T>
+struct ScatteringPolicy {};  // nm, g, gp, mat
 
 #ifdef RAJA_COMPILER_ICC
-template<>
-struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::simd_exec>
-                                  >
-{};
+template <>
+struct ScatteringPolicy<NEST_DGZ_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::simd_exec> > {};
 
 #else
-template<>
-struct ScatteringPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       kripke_omp_for_nowait_exec, 
-                                                       RAJA::simd_exec>,
-                                        kripke_OMP_Parallel<
-                                          RAJA::Permute<RAJA::PERM_IJKL>
-                                        >
-                                      >
-{};
+template <>
+struct ScatteringPolicy<NEST_DGZ_T>
+    : RAJA::
+          NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                      RAJA::seq_exec,
+                                      kripke_omp_for_nowait_exec,
+                                      RAJA::simd_exec>,
+                       kripke_OMP_Parallel<RAJA::Permute<RAJA::PERM_IJKL> > > {
+};
 #endif
 
-template<>
-struct ScatteringPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<kripke_omp_for_nowait_exec, 
-                                                       RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       RAJA::seq_exec>, 
-                                        RAJA::Permute<RAJA::PERM_ILJK>
-                                      >
-{};
+template <>
+struct ScatteringPolicy<NEST_DZG_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<kripke_omp_for_nowait_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec>,
+                         RAJA::Permute<RAJA::PERM_ILJK> > {};
 
-template<>
-struct ScatteringPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       kripke_omp_for_nowait_exec, 
-                                                       RAJA::seq_exec>,
-                                        kripke_OMP_Parallel<
-                                          RAJA::Permute<RAJA::PERM_JKIL>
-                                        >
-                                      >
-{};
+template <>
+struct ScatteringPolicy<NEST_GDZ_T>
+    : RAJA::
+          NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                      RAJA::seq_exec,
+                                      kripke_omp_for_nowait_exec,
+                                      RAJA::seq_exec>,
+                       kripke_OMP_Parallel<RAJA::Permute<RAJA::PERM_JKIL> > > {
+};
 
-template<>
-struct ScatteringPolicy<NEST_GZD_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       kripke_omp_for_nowait_exec, 
-                                                       RAJA::seq_exec>, 
-                                        RAJA::Permute<RAJA::PERM_JKLI>
-                                      >
-{};
+template <>
+struct ScatteringPolicy<NEST_GZD_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec,
+                                        RAJA::seq_exec>,
+                         RAJA::Permute<RAJA::PERM_JKLI> > {};
 
-template<>
-struct ScatteringPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       kripke_omp_for_nowait_exec>, 
-                                        RAJA::Permute<RAJA::PERM_LIJK>
-                                      >
-{};
+template <>
+struct ScatteringPolicy<NEST_ZDG_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_LIJK> > {};
 
-template<>
-struct ScatteringPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<
-                                        RAJA::ExecList<RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       RAJA::seq_exec, 
-                                                       kripke_omp_for_nowait_exec>, 
-                                        RAJA::Permute<RAJA::PERM_LJKI>
-                                      >
-{};
-
+template <>
+struct ScatteringPolicy<NEST_ZGD_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_LJKI> > {};
 
 #endif

@@ -36,30 +36,24 @@
 #include <Kripke/Subdomain.h>
 #include <Kripke/SubTVec.h>
 
+ParallelComm::ParallelComm(Grid_Data *grid_data_ptr)
+    : grid_data(grid_data_ptr) {}
 
-ParallelComm::ParallelComm(Grid_Data *grid_data_ptr) :
-  grid_data(grid_data_ptr)
-{
+ParallelComm::~ParallelComm() {}
 
-}
-
-ParallelComm::~ParallelComm(){
-
-}
-
-int ParallelComm::computeTag(int mpi_rank, int sdom_id){
-  int mpi_size=1;
+int ParallelComm::computeTag(int mpi_rank, int sdom_id) {
+  int mpi_size = 1;
 #ifdef KRIPKE_USE_MPI
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
 
-  int tag = mpi_rank + mpi_size*sdom_id;
+  int tag = mpi_rank + mpi_size * sdom_id;
 
   return tag;
 }
 
-void ParallelComm::computeRankSdom(int tag, int &mpi_rank, int &sdom_id){
-  int mpi_size=1;
+void ParallelComm::computeRankSdom(int tag, int &mpi_rank, int &sdom_id) {
+  int mpi_size = 1;
 #ifdef KRIPKE_USE_MPI
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
@@ -71,62 +65,61 @@ void ParallelComm::computeRankSdom(int tag, int &mpi_rank, int &sdom_id){
 /**
   Finds subdomain in the queue by its subdomain id.
 */
-int ParallelComm::findSubdomain(int sdom_id){
-
+int ParallelComm::findSubdomain(int sdom_id) {
   // find subdomain in queue
   int index;
-  for(index = 0;index < queue_sdom_ids.size();++ index){
-    if(queue_sdom_ids[index] == sdom_id){
+  for (index = 0; index < queue_sdom_ids.size(); ++index) {
+    if (queue_sdom_ids[index] == sdom_id) {
       break;
     }
   }
-  if(index == queue_sdom_ids.size()){
+  if (index == queue_sdom_ids.size()) {
     KripkeAbort("Cannot find subdomain id %d in work queue\n", sdom_id);
   }
 
   return index;
 }
 
-
-Subdomain *ParallelComm::dequeueSubdomain(int sdom_id){
+Subdomain *ParallelComm::dequeueSubdomain(int sdom_id) {
   int index = findSubdomain(sdom_id);
 
   // Get subdomain pointer before removing it from queue
   Subdomain *sdom = queue_subdomains[index];
 
   // remove subdomain from queue
-  queue_sdom_ids.erase(queue_sdom_ids.begin()+index);
-  queue_subdomains.erase(queue_subdomains.begin()+index);
-  queue_depends.erase(queue_depends.begin()+index);
+  queue_sdom_ids.erase(queue_sdom_ids.begin() + index);
+  queue_subdomains.erase(queue_subdomains.begin() + index);
+  queue_depends.erase(queue_depends.begin() + index);
 
   return sdom;
 }
 
 /**
   Adds a subdomain to the work queue.
-  Determines if upwind dependencies require communication, and posts appropirate Irecv's.
+  Determines if upwind dependencies require communication, and posts appropirate
+  Irecv's.
   All recieves use the plane_data[] arrays as recieve buffers.
 */
-void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom){
-  int mpi_rank=0;
+void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom) {
+  int mpi_rank = 0;
 #ifdef KRIPKE_USE_MPI
-  int mpi_size=1;
+  int mpi_size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
 
   // go thru each dimensions upwind neighbors, and add the dependencies
   int num_depends = 0;
-  for(int dim = 0;dim < 3;++ dim){
+  for (int dim = 0; dim < 3; ++dim) {
     // If it's a boundary condition, skip it
-    if(sdom.upwind[dim].mpi_rank < 0){
+    if (sdom.upwind[dim].mpi_rank < 0) {
       continue;
     }
 
     // If it's an on-rank communication (from another subdomain)
-    if(sdom.upwind[dim].mpi_rank == mpi_rank){
+    if (sdom.upwind[dim].mpi_rank == mpi_rank) {
       // skip it, but track the dependency
-      num_depends ++;
+      num_depends++;
       continue;
     }
 
@@ -135,15 +128,22 @@ void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom){
     recv_requests.push_back(MPI_Request());
     recv_subdomains.push_back(sdom_id);
 
-    // compute the tag id of THIS subdomain (tags are always based on destination)
-    int tag = computeTag(sdom.upwind[dim].mpi_rank, sdom.upwind[dim].subdomain_id);
+    // compute the tag id of THIS subdomain (tags are always based on
+    // destination)
+    int tag =
+        computeTag(sdom.upwind[dim].mpi_rank, sdom.upwind[dim].subdomain_id);
 
     // Post the recieve
-    MPI_Irecv(sdom.plane_data[dim]->ptr(), sdom.plane_data[dim]->elements, MPI_DOUBLE, sdom.upwind[dim].mpi_rank,
-      tag, MPI_COMM_WORLD, &recv_requests[recv_requests.size()-1]);
+    MPI_Irecv(sdom.plane_data[dim]->ptr(),
+              sdom.plane_data[dim]->elements,
+              MPI_DOUBLE,
+              sdom.upwind[dim].mpi_rank,
+              tag,
+              MPI_COMM_WORLD,
+              &recv_requests[recv_requests.size() - 1]);
 
     // increment number of dependencies
-    num_depends ++;
+    num_depends++;
 #endif
   }
 
@@ -153,37 +153,38 @@ void ParallelComm::postRecvs(int sdom_id, Subdomain &sdom){
   queue_depends.push_back(num_depends);
 }
 
-void ParallelComm::postSends(Subdomain *sdom, double *src_buffers[3]){
+void ParallelComm::postSends(Subdomain *sdom, double *src_buffers[3]) {
   // post sends for downwind dependencies
-  int mpi_rank=0;
+  int mpi_rank = 0;
 #ifdef KRIPKE_USE_MPI
-  int mpi_size=1;
+  int mpi_size = 1;
   MPI_Comm_rank(MPI_COMM_WORLD, &mpi_rank);
   MPI_Comm_size(MPI_COMM_WORLD, &mpi_size);
 #endif
-  for(int dim = 0;dim < 3;++ dim){
+  for (int dim = 0; dim < 3; ++dim) {
     // If it's a boundary condition, skip it
-    if(sdom->downwind[dim].mpi_rank < 0){
+    if (sdom->downwind[dim].mpi_rank < 0) {
       continue;
     }
 
     // If it's an on-rank communication (to another subdomain)
-    if(sdom->downwind[dim].mpi_rank == mpi_rank){
+    if (sdom->downwind[dim].mpi_rank == mpi_rank) {
       // find the local subdomain in the queue, and decrement the counter
-      for(int i = 0;i < queue_sdom_ids.size();++ i){
-        if(queue_sdom_ids[i] == sdom->downwind[dim].subdomain_id){
-          queue_depends[i] --;
+      for (int i = 0; i < queue_sdom_ids.size(); ++i) {
+        if (queue_sdom_ids[i] == sdom->downwind[dim].subdomain_id) {
+          queue_depends[i]--;
           break;
         }
       }
 
       // copy the boundary condition data into the downwinds plane data
-      Subdomain &sdom_downwind = grid_data->subdomains[sdom->downwind[dim].subdomain_id];
+      Subdomain &sdom_downwind =
+          grid_data->subdomains[sdom->downwind[dim].subdomain_id];
       sdom_downwind.plane_data[dim]->copy(*sdom->plane_data[dim]);
       int num_elem = sdom_downwind.plane_data[dim]->elements;
-      //double const * KRESTRICT src_ptr = sdom->plane_data[dim]->ptr();
-      double * KRESTRICT dst_ptr = sdom_downwind.plane_data[dim]->ptr();
-      for(int i = 0;i < num_elem;++ i){
+      // double const * KRESTRICT src_ptr = sdom->plane_data[dim]->ptr();
+      double *KRESTRICT dst_ptr = sdom_downwind.plane_data[dim]->ptr();
+      for (int i = 0; i < num_elem; ++i) {
         dst_ptr[i] = src_buffers[dim][i];
       }
       continue;
@@ -193,19 +194,24 @@ void ParallelComm::postSends(Subdomain *sdom, double *src_buffers[3]){
     // Add request to send queue
     send_requests.push_back(MPI_Request());
 
-    // compute the tag id of TARGET subdomain (tags are always based on destination)
+    // compute the tag id of TARGET subdomain (tags are always based on
+    // destination)
     int tag = computeTag(mpi_rank, sdom->downwind[dim].subdomain_id);
 
     // Post the send
-    MPI_Isend(src_buffers[dim], sdom->plane_data[dim]->elements, MPI_DOUBLE, sdom->downwind[dim].mpi_rank,
-      tag, MPI_COMM_WORLD, &send_requests[send_requests.size()-1]);
+    MPI_Isend(src_buffers[dim],
+              sdom->plane_data[dim]->elements,
+              MPI_DOUBLE,
+              sdom->downwind[dim].mpi_rank,
+              tag,
+              MPI_COMM_WORLD,
+              &send_requests[send_requests.size() - 1]);
 #endif
   }
 }
 
-
 // Checks if there are any outstanding subdomains to complete
-bool ParallelComm::workRemaining(void){
+bool ParallelComm::workRemaining(void) {
 #ifdef KRIPKE_USE_MPI
   return (recv_requests.size() > 0 || queue_subdomains.size() > 0);
 #else
@@ -213,13 +219,12 @@ bool ParallelComm::workRemaining(void){
 #endif
 }
 
-
 // Blocks until all sends have completed, and flushes the send queues
-void ParallelComm::waitAllSends(void){
+void ParallelComm::waitAllSends(void) {
 #ifdef KRIPKE_USE_MPI
   // Wait for all remaining sends to complete, then return false
   int num_sends = send_requests.size();
-  if(num_sends > 0){
+  if (num_sends > 0) {
     std::vector<MPI_Status> status(num_sends);
     MPI_Waitall(num_sends, &send_requests[0], &status[0]);
     send_requests.clear();
@@ -230,52 +235,52 @@ void ParallelComm::waitAllSends(void){
 /**
   Checks for incomming messages, and does relevant bookkeeping.
 */
-void ParallelComm::testRecieves(void){
-
+void ParallelComm::testRecieves(void) {
 #ifdef KRIPKE_USE_MPI
   // Check for any recv requests that have completed
   int num_requests = recv_requests.size();
   bool done = false;
-  while(!done && num_requests > 0){
+  while (!done && num_requests > 0) {
     // Create array of status variables
     std::vector<MPI_Status> recv_status(num_requests);
 
     // Ask if either one or none of the recvs have completed?
-    int index; // this will be the index of request that completed
-    int complete_flag; // this is set to TRUE if somthing completed
-    MPI_Testany(num_requests, &recv_requests[0], &index, &complete_flag, &recv_status[0]);
+    int index;          // this will be the index of request that completed
+    int complete_flag;  // this is set to TRUE if somthing completed
+    MPI_Testany(num_requests,
+                &recv_requests[0],
+                &index,
+                &complete_flag,
+                &recv_status[0]);
 
-    if(complete_flag != 0){
-
+    if (complete_flag != 0) {
       // get subdomain that this completed for
       int sdom_id = recv_subdomains[index];
 
       // remove the request from the list
-      recv_requests.erase(recv_requests.begin()+index);
-      recv_subdomains.erase(recv_subdomains.begin()+index);
-      num_requests --;
+      recv_requests.erase(recv_requests.begin() + index);
+      recv_subdomains.erase(recv_subdomains.begin() + index);
+      num_requests--;
 
       // decrement the dependency count for that subdomain
-      for(int i = 0;i < queue_sdom_ids.size();++ i){
-        if(queue_sdom_ids[i] == sdom_id){
-          queue_depends[i] --;
+      for (int i = 0; i < queue_sdom_ids.size(); ++i) {
+        if (queue_sdom_ids[i] == sdom_id) {
+          queue_depends[i]--;
           break;
         }
       }
-    }
-    else{
+    } else {
       done = true;
     }
   }
 #endif
 }
 
-
-std::vector<int> ParallelComm::getReadyList(void){
+std::vector<int> ParallelComm::getReadyList(void) {
   // build up a list of ready subdomains
   std::vector<int> ready;
-  for(int i = 0;i < queue_depends.size();++ i){
-    if(queue_depends[i] == 0){
+  for (int i = 0; i < queue_depends.size(); ++i) {
+    if (queue_depends[i] == 0) {
       ready.push_back(queue_sdom_ids[i]);
     }
   }

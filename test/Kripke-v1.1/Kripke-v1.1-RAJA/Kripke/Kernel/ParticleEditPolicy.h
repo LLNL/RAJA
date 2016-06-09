@@ -33,38 +33,36 @@
 #ifndef KERNEL_PARTICLEDIT_POLICY_H__
 #define KERNEL_PARTICLEDIT_POLICY_H__
 
-#include<Kripke.h>
+#include <Kripke.h>
 
 // There are really only 2 policies, based on group and zone ordering
 // So we define those here, and assign them to each nesting order
 
-using ParticleEditPolicy_CPU = RAJA::NestedPolicy<
-                                 RAJA::ExecList<kripke_omp_for_nowait_exec, 
-                                                RAJA::simd_exec,
-                                                RAJA::simd_exec>,
-                                 kripke_OMP_Parallel<RAJA::Execute>
-			                         >;
+using ParticleEditPolicy_CPU =
+    RAJA::NestedPolicy<RAJA::ExecList<kripke_omp_for_nowait_exec,
+                                      RAJA::simd_exec,
+                                      RAJA::simd_exec>,
+                       kripke_OMP_Parallel<RAJA::Execute> >;
 
+template <typename T>
+struct ParticleEditPolicy {};  // g,mix
 
-template<typename T>
-struct ParticleEditPolicy {}; // g,mix
-
-template<>
+template <>
 struct ParticleEditPolicy<NEST_DGZ_T> : ParticleEditPolicy_CPU {};
 
-template<>
+template <>
 struct ParticleEditPolicy<NEST_DZG_T> : ParticleEditPolicy_CPU {};
 
-template<>
+template <>
 struct ParticleEditPolicy<NEST_GDZ_T> : ParticleEditPolicy_CPU {};
 
-template<>
+template <>
 struct ParticleEditPolicy<NEST_GZD_T> : ParticleEditPolicy_CPU {};
 
-template<>
+template <>
 struct ParticleEditPolicy<NEST_ZDG_T> : ParticleEditPolicy_CPU {};
 
-template<>
+template <>
 struct ParticleEditPolicy<NEST_ZGD_T> : ParticleEditPolicy_CPU {};
 
 #endif
