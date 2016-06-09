@@ -65,3 +65,7 @@ endif()
 #Used for timing
 find_library(RT_LIBRARIES rt)
 #set(RT_LIBRARIES "")
+
+if (RAJA_ENABLE_TESTS)
+  enable_testing()
+endif ()
