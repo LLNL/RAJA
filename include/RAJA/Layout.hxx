@@ -225,6 +225,7 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<
   typedef VarOps::make_index_sequence<sizeof...(IDs)> IndexRange;
 
   static constexpr size_t n_dims = sizeof...(IDs);
+  static constexpr size_t limit = std::numeric_limits<Index_type>::max();
 
   // const char *index_types[sizeof...(IDs)];
 
@@ -254,7 +255,7 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<
         for (int i=1; i < n_dims; i++) {
             lmods[i] = folded_strides[i-1];
         }
-        lmods[0] = std::numeric_limits<Index_type>::max();
+        lmods[0] = limit;
 
         assign(mods,lmods, Permutation{}, IndexRange{});
     }
@@ -271,6 +272,8 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<
 
 template<size_t ... RangeInts, size_t ... PermInts, typename IdxLin, typename ... IDs>
 constexpr size_t Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<PermInts...>, IdxLin, IDs...>::n_dims;
+template<size_t ... RangeInts, size_t ... PermInts, typename IdxLin, typename ... IDs>
+constexpr size_t Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<PermInts...>, IdxLin, IDs...>::limit;
 
 template<typename IdxLin, typename Permutation, typename ... IDs>
 using Layout = Layout_impl<VarOps::make_index_sequence<sizeof...(IDs)>, Permutation, IdxLin, IDs...>;

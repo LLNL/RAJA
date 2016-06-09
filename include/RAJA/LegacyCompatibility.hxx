@@ -120,13 +120,24 @@ constexpr auto foldl(
         forward<Rest&&>(rest)...);
 }
 
+struct adder{
+    template<typename Result>
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
+    constexpr
+    Result operator()(const Result& l, const Result& r) {
+        return l + r;
+    }
+};
+
 // Convenience folds
 template<typename Result, typename ... Args>
 RAJA_HOST_DEVICE
 RAJA_INLINE
+constexpr
 Result sum(Args...args)
 {
-    return foldl([](Result l, Result r){ return l + r; }, args...);
+    return foldl(adder(), args...);
 }
 
 // template<typename Result, size_t N>

@@ -64,7 +64,6 @@ struct View {
   DataType *data;
 
   template<typename ...Args>
-  RAJA_HOST_DEVICE
   RAJA_INLINE
   constexpr View(DataType *data_ptr, Args... dim_sizes )
           : layout(dim_sizes...), data(data_ptr)
