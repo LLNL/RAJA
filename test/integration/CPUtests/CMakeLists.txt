@@ -41,9 +41,9 @@
 #
 ###############################################################################
 
-add_definitions(-DRAJA_USE_NESTED)
+add_definitions(-DRAJA_ENABLE_NESTED)
 
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   cuda_add_executable(CPUtraversal-test.exe
     main-traversal.cxx
     buildIndexSet.cxx)
@@ -69,8 +69,7 @@ else()
   
   add_executable(CPUnested-test.exe
     main-nested.cxx)
-
-  if(RAJA_USE_OPENMP)
+  if(RAJA_ENABLE_OPENMP)
     add_executable(CPUnested_reduce-test.exe
       main-nested-reduce.cxx)
   endif()
@@ -80,6 +79,6 @@ endif()
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)
 target_link_libraries(CPUnested-test.exe RAJA)
-if(RAJA_USE_OPENMP)
+if(RAJA_ENABLE_OPENMP)
   target_link_libraries(CPUnested_reduce-test.exe RAJA)
 endif()

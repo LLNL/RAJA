@@ -108,7 +108,7 @@ def main(ndims):
 #ifndef RAJA_forallN_permute_HXX__
 #define RAJA_forallN_permute_HXX__
 
-#include "forallN_permute_lf.hxx"
+#include "RAJA/forallN_permute_lf.hxx"
 
 namespace RAJA {
 

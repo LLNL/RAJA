@@ -15,7 +15,9 @@
 #ifndef RAJA_forall_cuda_HXX
 #define RAJA_forall_cuda_HXX
 
-#if defined(RAJA_USE_CUDA)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -60,13 +62,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/config.hxx"
-
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/fault_tolerance.hxx"
 
-#include "raja_cudaerrchk.hxx"
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
 namespace RAJA {
@@ -745,6 +745,6 @@ void forall_Icount( IndexSet::ExecPolicy< seq_segit, cuda_exec<BLOCK_SIZE> >,
 }  // closing brace for RAJA namespace
 
 
-#endif  // closing endif for RAJA_USE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

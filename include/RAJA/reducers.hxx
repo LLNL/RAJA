@@ -54,7 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "config.hxx"
+#include "RAJA/config.hxx"
 
 ///
 /// Define max number of reductions allowed within a RAJA traversal
@@ -71,7 +71,11 @@ namespace RAJA {
 ///
 #define RAJA_MAX(a, b) (((b) > (a)) ? (b) : (a))
 
-
+///
+/// Macros to support structs used in minmaxloc operations
+#define RAJA_MINLOC(a,b) (((b.val) < (a.val)) ? (b) : (a))
+///
+#define RAJA_MAXLOC(a,b) (((b.val) > (a.val)) ? (b) : (a))
 //
 // Forward declarations for reduction templates. 
 // Actual classes appear in forall_*.hxx header files. 

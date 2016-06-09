@@ -13,7 +13,9 @@
 #ifndef RAJA_cilk_HXX
 #define RAJA_cilk_HXX
 
-#if defined(RAJA_USE_CILK)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -89,11 +91,11 @@ struct cilk_reduce {};
 }  // closing brace for RAJA namespace
 
 
-#include "reduce_cilk.hxx"
-#include "forall_cilk.hxx"
+#include "RAJA/exec-cilk/reduce_cilk.hxx"
+#include "RAJA/exec-cilk/forall_cilk.hxx"
 
 
-#endif  // closing endif for if defined(RAJA_USE_CILK)
+#endif  // closing endif for if defined(RAJA_ENABLE_CILK)
 
 #endif  // closing endif for header file include guard
 

@@ -13,7 +13,9 @@
 #ifndef RAJA_cuda_HXX
 #define RAJA_cuda_HXX
 
-#if defined(RAJA_USE_CUDA)
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -152,15 +154,15 @@ const int WARP_SIZE = 32;
 //
 // Headers containing traversal and reduction templates 
 //
-#include "reduce_cuda.hxx"
-#include "forall_cuda.hxx"
+#include "RAJA/exec-cuda/reduce_cuda.hxx"
+#include "RAJA/exec-cuda/forall_cuda.hxx"
 
-#if defined(RAJA_USE_NESTED)
-#include "forallN_cuda.hxx"
+#if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/exec-cuda/forallN_cuda.hxx"
 #endif
 
 
-#endif  // closing endif for if defined(RAJA_USE_CUDA)
+#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
 #endif  // closing endif for header file include guard
 

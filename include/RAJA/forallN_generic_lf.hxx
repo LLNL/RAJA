@@ -56,9 +56,11 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include"config.hxx"
-#include"int_datatypes.hxx"
-#include<tuple>
+#include "RAJA/config.hxx"
+
+#include "RAJA/int_datatypes.hxx"
+
+#include <tuple>
 
 namespace RAJA {
 
@@ -292,7 +294,7 @@ struct ForallN_IndexTypeConverter {
   
   // This fixes massive compile time slowness for clang sans OpenMP
   // using a reference to body breaks offload for CUDA
-#ifdef RAJA_USE_CUDA
+#ifdef RAJA_ENABLE_CUDA
   BODY body;
 #else
   BODY const &body;
