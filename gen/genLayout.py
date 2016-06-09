@@ -166,7 +166,7 @@ def writeLayoutImpl(ndims_list):
       args = map(lambda a: "Idx%s &%s"%(a.upper(), a), dim_names)
       argstr = ", ".join(args)
       print "  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin lin, %s) const {" % (argstr)
-      print "    constexpr Index_type linear = convertIndex<Index_type>(lin);"
+      print "    Index_type linear = convertIndex<Index_type>(lin);"
       for i in range(0, ndims):
         idx = perm[i]
         prod = "*".join(map(lambda a: "size_%s"%a, perm[i+1 : ndims]))
