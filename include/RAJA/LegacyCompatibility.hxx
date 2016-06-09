@@ -227,7 +227,7 @@ template<size_t ... To,
          typename FromT>
 RAJA_HOST_DEVICE
 RAJA_INLINE
-void assign(ToT dst, FromT src, index_sequence<To...>, index_sequence<From...>) {
+void assign(ToT&& dst, FromT src, index_sequence<To...>, index_sequence<From...>) {
     ignore_args((dst[To] = src[From])...);
 }
 
@@ -236,7 +236,7 @@ template<size_t ... To,
          typename... Args>
 RAJA_HOST_DEVICE
 RAJA_INLINE
-void assign_args(ToT dst, index_sequence<To...>, Args...args) {
+void assign_args(ToT &&dst, index_sequence<To...>, Args...args) {
     ignore_args((dst[To] = args)...);
 }
 
