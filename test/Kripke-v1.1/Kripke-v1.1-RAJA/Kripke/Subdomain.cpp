@@ -474,8 +474,8 @@ void Subdomain::computeSweepIndexSet(void) {
             sweep_block.idx_to_z[counter] =
                 ii + nzones[0] * jj
                 + nzones[0] * nzones[1] * kk;  //  Zonal_INDEX(ii, jj, kk);
-            counter++;  // counts all elements
-            FLAG++;  // counts elements per slice
+            counter++;                         // counts all elements
+            FLAG++;                            // counts elements per slice
           }
         }
       }

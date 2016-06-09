@@ -468,7 +468,7 @@ class Domain {
 
   // Region information
   Int_t m_numReg;
-  Int_t m_cost;  // imbalance cost
+  Int_t m_cost;             // imbalance cost
   Index_t* m_regElemSize;   // Size of region sets
   Index_t* m_regNumList;    // Region number per domain element
   Index_t** m_regElemlist;  // region indexset

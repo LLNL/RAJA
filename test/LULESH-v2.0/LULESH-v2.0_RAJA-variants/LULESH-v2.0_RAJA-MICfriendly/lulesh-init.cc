@@ -535,7 +535,7 @@ void Domain::CreateRegionIndexSets(Int_t nr, Int_t balance) {
     for (Index_t i = 0; i < numReg(); ++i) {
       regElemSize(i) = 0;
       costDenominator +=
-          pow((i + 1), balance);  // Total sum of all regions weights
+          pow((i + 1), balance);       // Total sum of all regions weights
       regBinEnd[i] = costDenominator;  // Chance of hitting a given region is
                                        // (regBinEnd[i] -
                                        // regBinEdn[i-1])/costDenominator
