@@ -41,45 +41,20 @@
 #
 ###############################################################################
 
-add_definitions(-DRAJA_USE_NESTED)
+add_executable(indexset-tests
+  index-set-tests.cxx
+  buildIndexSet.cxx)
 
-if (RAJA_USE_CUDA)
-  cuda_add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+add_test(indexset-test
+  indexset-tests)
 
-  cuda_add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
-    
-  cuda_add_executable(CPUnested-test.exe
-    main-nested.cxx)
-    
-  cuda_add_executable(CPUnested_reduce-test.exe
-    main-nested-reduce.cxx)
+target_link_libraries(indexset-tests RAJA gtest gtest_main)
 
-else()
-  add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+add_executable(traversal-tests
+  traversal-tests.cxx
+  buildIndexSet.cxx)
 
-  add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
-  
-  add_executable(CPUnested-test.exe
-    main-nested.cxx)
+add_test(traversal-test
+  traversal-tests)
 
-  if(RAJA_USE_OPENMP)
-    add_executable(CPUnested_reduce-test.exe
-      main-nested-reduce.cxx)
-  endif()
-
-endif()
-
-target_link_libraries(CPUtraversal-test.exe RAJA)
-target_link_libraries(CPUreduce-test.exe RAJA)
-target_link_libraries(CPUnested-test.exe RAJA)
-if(RAJA_USE_OPENMP)
-  target_link_libraries(CPUnested_reduce-test.exe RAJA)
-endif()
+target_link_libraries(traversal-tests RAJA gtest gtest_main)

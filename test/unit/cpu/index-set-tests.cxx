@@ -1,23 +1,32 @@
 #include "gtest/gtest.h"
 
-class IndexSetTest :
-  public testing::Test {
-    protected:
-      virtual void SetUp() {
-         for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-            last_indx = max( last_indx, 
-               buildIndexSet( index_sets, static_cast<IndexSetBuildMethod>(ibuild) ) );
-      }
-      
-      IndexSet index_sets[NUM_BUILD_METHODS];
+#include "buildIndexSet.hxx"
 
+#include "RAJA/RAJA.hxx"
+
+class IndexSetTest : public ::testing::Test {
+  protected:
+    virtual void SetUp() {
+      for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
+        buildIndexSet(index_sets_, static_cast<IndexSetBuildMethod>(ibuild));
+      }
+    }
+
+    RAJA::IndexSet index_sets_[NumBuildMethods];
 
 };
 
-TEST(IndexSet, IndexSetConstructors) {
-   IndexSet index[NumBuildMethods];
-   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
-      last_indx = max( last_indx, 
-         buildIndexSet( index, static_cast<IndexSetBuildMethod>(ibuild) ) );
+TEST_F(IndexSetTest, IndexSetEquality) {
+  for (unsigned ibuild = 1; ibuild < NumBuildMethods; ++ibuild) {
+    EXPECT_EQ(index_sets_[ibuild], index_sets_[1]);
+  }
+}
 
+// TODO: tests for adding other invalid types
+TEST_F(IndexSetTest, InvalidSegments) {
+  RAJA::RangeStrideSegment rs_segment(0, 4, 2);
+
+  EXPECT_NE(true, index_sets_[0].isValidSegmentType(&rs_segment));
+  EXPECT_NE(true, index_sets_[0].push_back(rs_segment));
+  EXPECT_NE(true, index_sets_[0].push_back_nocopy(&rs_segment));
 }
