@@ -100,7 +100,7 @@ public:
         cali::Annotation(name).begin(); 
     }
     void stop(const char* name){
-        cali::Annotation(name).begin();
+        cali::Annotation(name).end();
     }
 #else
     void start(const char* name){

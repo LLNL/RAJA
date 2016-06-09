@@ -2736,7 +2736,7 @@ int main(int argc, char *argv[])
    RAJA::Timer timer_main;
    RAJA::Timer timer_cycle;
 
-   timer_main.start();
+   timer_main.start("timer_main");
 
    Real_t tx, ty, tz ;
    Index_t nidx, zidx ;
@@ -3461,7 +3461,7 @@ int main(int argc, char *argv[])
 #endif
 
    /* timestep to solution */
-   timer_cycle.start();
+   timer_cycle.start("timer_cycle");
    while((domain->time < domain->stoptime) && (domain->cycle < maxIter)) {
       TimeIncrement(domain) ;
       LagrangeLeapFrog(domain) ;
@@ -3471,9 +3471,9 @@ int main(int argc, char *argv[])
                 int(domain->cycle),double(domain->time), double(domain->deltatime) ) ;
       }
    }
-   timer_cycle.stop();
+   timer_cycle.stop("timer_cycle");
 
-   timer_main.stop();
+   timer_main.stop("timer_main");
 
    printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
    printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );

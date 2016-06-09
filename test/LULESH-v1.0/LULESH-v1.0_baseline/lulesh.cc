@@ -2668,7 +2668,7 @@ int main(int argc, char *argv[])
    RAJA::Timer timer_main;
    RAJA::Timer timer_cycle;
 
-   timer_main.start();
+   timer_main.start("timer_main");
 
 
    Index_t edgeElems = 45 ;
@@ -2906,7 +2906,7 @@ int main(int argc, char *argv[])
    }
 
    /* timestep to solution */
-   timer_cycle.start();
+   timer_cycle.start("timer_cycle");
    int its=0;
    while(mesh.time() < mesh.stoptime() ) {
       TimeIncrement() ;
@@ -2918,9 +2918,9 @@ int main(int argc, char *argv[])
              double(mesh.time()), double(mesh.deltatime()) ) ;
 #endif
    }
-   timer_cycle.stop();
+   timer_cycle.stop("timer_cycle");
 
-   timer_main.stop();
+   timer_main.stop("timer_main");
 
    printf("iterations: %d\n",its);
    printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
