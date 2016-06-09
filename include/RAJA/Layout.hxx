@@ -46,6 +46,7 @@
 
 #include "RAJA/LegacyCompatibility.hxx"
 #include "RAJA/IndexValue.hxx"
+#include "RAJA/detail/IndexArray.hxx"
 #include <iostream>
 #include <limits>
 #include <algorithm>
@@ -217,6 +218,7 @@ template<typename Range, typename Perm, typename IdxLin, typename ... IDs>
 struct Layout_impl ;
 template<size_t ... RangeInts,size_t ... PermInts, typename IdxLin, typename ... IDs>
 struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<PermInts...>, IdxLin, IDs...> {
+
   typedef VarOps::index_sequence<PermInts...> Permutation;
   typedef IdxLin IndexLinear;
   typedef std::tuple<IDs...> IDtuple;
@@ -224,17 +226,19 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<
 
   static constexpr size_t n_dims = sizeof...(IDs);
 
-  const char *index_types[sizeof...(IDs)];
-  Index_type perms[sizeof...(IDs)];;
-  Index_type sizes[sizeof...(IDs)];
-  Index_type strides[sizeof...(IDs)];
-  Index_type mods[sizeof...(IDs)];
+  // const char *index_types[sizeof...(IDs)];
+
+  index_array<sizeof...(IDs), Index_type> perms;
+  index_array<sizeof...(IDs), Index_type> sizes;
+  index_array<sizeof...(IDs), Index_type> strides;
+  index_array<sizeof...(IDs), Index_type> mods;
 
   // TODO: this should be constexpr in c++14 mode
   template<typename ... Types>
   RAJA_INLINE RAJA_HOST_DEVICE  Layout_impl(Types... ns):
-    sizes{convertIndex<Index_type>(ns)...},
-    index_types{typeid(IDs).name()...} {
+    sizes(make_index_array(convertIndex<Index_type>(ns)...))
+    // index_types{typeid(IDs).name()...}
+  {
         VarOps::assign_args(perms, IndexRange{}, PermInts...);
         Index_type swizzled_sizes[] = {sizes[PermInts]...};
         Index_type folded_strides[n_dims];
@@ -257,7 +261,7 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index_sequence<
 
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IDs ... indices) const {
       return convertIndex<IdxLin>(
-              VarOps::sum<Index_type>((convertIndex<Index_type>(indices) * strides[RangeInts])...));
+              VarOps::sum<Index_type>((convertIndex<Index_type>(indices) * get<RangeInts>(strides))...));
   }
 
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index, IDs &...indices) const {
@@ -271,32 +275,17 @@ constexpr size_t Layout_impl<VarOps::index_sequence<RangeInts...>, VarOps::index
 template<typename IdxLin, typename Permutation, typename ... IDs>
 using Layout = Layout_impl<VarOps::make_index_sequence<sizeof...(IDs)>, Permutation, IdxLin, IDs...>;
 
-template<typename Perm, typename IdxLin, typename ...Indices>
-std::ostream &operator<<(std::ostream &os, Layout<Perm, IdxLin, Indices...> const &m) {
-    os << "index types: ";
-    for (const auto s : m.index_types)
-        os << s << ' ';
-    os << "permutation:";
-    for (const auto s : m.perms)
-        os << s << ' ';
-    os << std::endl;;
-    os << "sizes:";
-    for (const auto &i : m.sizes)
-        os << " " << i << ",";
-    os << std::endl;
-    os << "mods:";
-    for (const auto &i : m.mods)
-        os << " " << i << ",";
-    os << std::endl;
-    os << "strides:";
-    for (const auto &i : m.strides)
-        os << " " << i << ",";
-    os << std::endl;
-    return os;
-}
-
 
 } // namespace RAJA
+
+template<typename...Args>
+std::ostream &operator<<(std::ostream &os, RAJA::Layout_impl<Args...> const &m) {
+    os << "permutation:" << m.perms << std::endl;
+    os << "sizes:" << m.sizes << std::endl;
+    os << "mods:" << m.mods << std::endl;
+    os << "strides:" << m.strides << std::endl;
+    return os;
+}
 
 #endif
   
