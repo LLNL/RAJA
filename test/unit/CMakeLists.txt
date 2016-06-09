@@ -47,3 +47,9 @@ add_executable(gtest-test
 add_test(tests gtest-test)
 
 target_link_libraries(gtest-test RAJA gtest gtest_main)
+
+add_subdirectory(cpu)
+
+if(RAJA_USE_CUDA)
+  add_subdirectory(gpu)
+endif()
