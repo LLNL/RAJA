@@ -1,8 +1,5 @@
 # - RAJA: (David's TO DO)
 #
-#=============================================================================
-# RAJA is ....  (David's TO DO)
-#
 #=== Usage ===================================================================
 # This file allows RAJA to be automatically detected by other libraries
 # using CMake.  To build with RAJA, you can do one of two things:
@@ -19,7 +16,6 @@
 # CMakeLists.txt file.
 #
 #=== Components ==============================================================
-# (David's TO DO)
 #
 # To link against these, just do, for example:
 #
