@@ -39,49 +39,43 @@
 #include <vector>
 #include <stdio.h>
 
+BlockJacobiComm::BlockJacobiComm(Grid_Data *data)
+    : ParallelComm(data), posted_sends(false) {}
 
-BlockJacobiComm::BlockJacobiComm(Grid_Data *data) : ParallelComm(data), posted_sends(false)
-{
-
-}
-
-BlockJacobiComm::~BlockJacobiComm(){
-}
+BlockJacobiComm::~BlockJacobiComm() {}
 
 /**
   Adds a subdomain to the work queue.
-  Determines if upwind dependencies require communication, and posts appropirate Irecv's.
+  Determines if upwind dependencies require communication, and posts appropirate
+  Irecv's.
 */
-void BlockJacobiComm::addSubdomain(int sdom_id, Subdomain &sdom){
+void BlockJacobiComm::addSubdomain(int sdom_id, Subdomain &sdom) {
   // Copy old flux data to send buffers
-  for(int dim = 0;dim < 3;++ dim){
+  for (int dim = 0; dim < 3; ++dim) {
     int nelem = sdom.plane_data[dim]->elements;
-    double const * KRESTRICT src = sdom.plane_data[dim]->ptr();
-    double * KRESTRICT dst = sdom.old_plane_data[dim]->ptr();
-    for(int i = 0;i < nelem;++ i){
+    double const *KRESTRICT src = sdom.plane_data[dim]->ptr();
+    double *KRESTRICT dst = sdom.old_plane_data[dim]->ptr();
+    for (int i = 0; i < nelem; ++i) {
       dst[i] = src[i];
     }
   }
 
   // post recieves
   postRecvs(sdom_id, sdom);
-
 }
 
 // Checks if there are any outstanding subdomains to complete
 // false indicates all work is done, and all sends have completed
-bool BlockJacobiComm::workRemaining(void){
-  if(!posted_sends){
+bool BlockJacobiComm::workRemaining(void) {
+  if (!posted_sends) {
     // post sends for all queued subdomains
-    for(int i = 0;i < queue_subdomains.size();++ i){
+    for (int i = 0; i < queue_subdomains.size(); ++i) {
       Subdomain *sdom = queue_subdomains[i];
 
       // Send new downwind info for sweep
-      double *buf[3] = {
-        sdom->old_plane_data[0]->ptr(),
-        sdom->old_plane_data[1]->ptr(),
-        sdom->old_plane_data[2]->ptr()
-      };
+      double *buf[3] = {sdom->old_plane_data[0]->ptr(),
+                        sdom->old_plane_data[1]->ptr(),
+                        sdom->old_plane_data[2]->ptr()};
 
       postSends(sdom, buf);
     }
@@ -89,7 +83,7 @@ bool BlockJacobiComm::workRemaining(void){
   }
   // Since we communicate fluxes before local sweeps, when we are
   // out of work, there is no further synchronization
-  if(ParallelComm::workRemaining()){
+  if (ParallelComm::workRemaining()) {
     return true;
   }
   waitAllSends();
@@ -100,18 +94,14 @@ bool BlockJacobiComm::workRemaining(void){
 /**
   Checks for incomming messages, and returns a list of ready subdomain id's
 */
-std::vector<int> BlockJacobiComm::readySubdomains(void){
+std::vector<int> BlockJacobiComm::readySubdomains(void) {
   testRecieves();
 
   // return list of any ready subdomains
   return getReadyList();
 }
 
-
-
-void BlockJacobiComm::markComplete(int sdom_id){
+void BlockJacobiComm::markComplete(int sdom_id) {
   // remove subdomain from work queue
   dequeueSubdomain(sdom_id);
 }
-
-

@@ -45,27 +45,27 @@ struct Subdomain;
  * providing data-layout specific routines.
  */
 class Kernel {
-  public:
-    explicit Kernel(Nesting_Order nest);
-    virtual ~Kernel();
-    virtual Nesting_Order nestingPsi(void) const = 0;
-    virtual Nesting_Order nestingPhi(void) const = 0;
-    virtual Nesting_Order nestingSigt(void) const = 0;
-    virtual Nesting_Order nestingEll(void) const = 0;
-    virtual Nesting_Order nestingEllPlus(void) const = 0;
-    virtual Nesting_Order nestingSigs(void) const = 0;
+ public:
+  explicit Kernel(Nesting_Order nest);
+  virtual ~Kernel();
+  virtual Nesting_Order nestingPsi(void) const = 0;
+  virtual Nesting_Order nestingPhi(void) const = 0;
+  virtual Nesting_Order nestingSigt(void) const = 0;
+  virtual Nesting_Order nestingEll(void) const = 0;
+  virtual Nesting_Order nestingEllPlus(void) const = 0;
+  virtual Nesting_Order nestingSigs(void) const = 0;
 
-    // Computational Kernels
-    void LTimes(Grid_Data *grid_data);
-    void LPlusTimes(Grid_Data *grid_data);
-    void scattering(Grid_Data *grid_data);
-    void source(Grid_Data *grid_data);
-    void sweep(Grid_Data *domain, int sdom_id);
-    double particleEdit(Grid_Data *domain);
-  private:
-    Nesting_Order nesting_order;
+  // Computational Kernels
+  void LTimes(Grid_Data *grid_data);
+  void LPlusTimes(Grid_Data *grid_data);
+  void scattering(Grid_Data *grid_data);
+  void source(Grid_Data *grid_data);
+  void sweep(Grid_Data *domain, int sdom_id);
+  double particleEdit(Grid_Data *domain);
+
+ private:
+  Nesting_Order nesting_order;
 };
-
 
 // Factory to create correct kernel object
 Kernel *createKernel(Nesting_Order, int num_dims);

@@ -39,14 +39,13 @@
 #include <stdio.h>
 
 #ifdef KRIPKE_USE_MPI
-#include<mpi.h>
+#include <mpi.h>
 #endif
 
 /**
   Run solver iterations.
 */
-int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
-{
+int SweepSolver(Grid_Data *grid_data, bool block_jacobi) {
   Kernel *kernel = grid_data->kernel;
 
   int mpi_rank = 0;
@@ -56,11 +55,9 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
 
   BLOCK_TIMER(grid_data->timing, Solve);
 
-
   // Loop over iterations
   double part_last = 0.0;
-  for(int iter = 0;iter < grid_data->niter;++ iter){
-
+  for (int iter = 0; iter < grid_data->niter; ++iter) {
     /*
      * Compute the RHS:  rhs = LPlus*S*L*psi + Q
      */
@@ -95,10 +92,10 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
     {
       BLOCK_TIMER(grid_data->timing, Sweep);
 
-      if(true){
+      if (true) {
         // Create a list of all groups
         std::vector<int> sdom_list(grid_data->subdomains.size());
-        for(int i = 0;i < grid_data->subdomains.size();++ i){
+        for (int i = 0; i < grid_data->subdomains.size(); ++i) {
           sdom_list[i] = i;
         }
 
@@ -106,12 +103,13 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
         SweepSubdomains(sdom_list, grid_data, block_jacobi);
       }
       // This is the ARDRA version, doing each groupset sweep independently
-      else{
-        for(int group_set = 0;group_set < grid_data->num_group_sets;++ group_set){
+      else {
+        for (int group_set = 0; group_set < grid_data->num_group_sets;
+             ++group_set) {
           std::vector<int> sdom_list;
           // Add all subdomains for this groupset
-          for(int s = 0;s < grid_data->subdomains.size();++ s){
-            if(grid_data->subdomains[s].idx_group_set == group_set){
+          for (int s = 0; s < grid_data->subdomains.size(); ++s) {
+            if (grid_data->subdomains[s].idx_group_set == group_set) {
               sdom_list.push_back(s);
             }
           }
@@ -125,51 +123,51 @@ int SweepSolver (Grid_Data *grid_data, bool block_jacobi)
     {
       BLOCK_TIMER(grid_data->timing, ParticleEdit);
       double part = kernel->particleEdit(grid_data);
-      if(mpi_rank==0){
-        printf("iter %d: particle count=%e, change=%e\n", iter, part, (part-part_last)/part);
+      if (mpi_rank == 0) {
+        printf("iter %d: particle count=%e, change=%e\n",
+               iter,
+               part,
+               (part - part_last) / part);
       }
       part_last = part;
     }
   }
-  return(0);
+  return (0);
 }
-
-
 
 /**
   Perform full parallel sweep algorithm on subset of subdomains.
 */
-void SweepSubdomains (std::vector<int> subdomain_list, Grid_Data *grid_data, bool block_jacobi)
-{
+void SweepSubdomains(std::vector<int> subdomain_list,
+                     Grid_Data *grid_data,
+                     bool block_jacobi) {
   // Create a new sweep communicator object
   ParallelComm *comm = NULL;
-  if(block_jacobi){
+  if (block_jacobi) {
     comm = new BlockJacobiComm(grid_data);
-  }
-  else {
+  } else {
     comm = new SweepComm(grid_data);
   }
 
   // Add all subdomains in our list
-  for(int i = 0;i < subdomain_list.size();++ i){
+  for (int i = 0; i < subdomain_list.size(); ++i) {
     int sdom_id = subdomain_list[i];
     comm->addSubdomain(sdom_id, grid_data->subdomains[sdom_id]);
   }
 
   /* Loop until we have finished all of our work */
-  while(comm->workRemaining()){
-
+  while (comm->workRemaining()) {
     // Get a list of subdomains that have met dependencies
     std::vector<int> sdom_ready = comm->readySubdomains();
     int backlog = sdom_ready.size();
 
     // Run top of list
-    if(backlog > 0){
+    if (backlog > 0) {
       int sdom_id = sdom_ready[0];
       Subdomain &sdom = grid_data->subdomains[sdom_id];
       // Clear boundary conditions
-      for(int dim = 0;dim < 3;++ dim){
-        if(sdom.upwind[dim].subdomain_id == -1){
+      for (int dim = 0; dim < 3; ++dim) {
+        if (sdom.upwind[dim].subdomain_id == -1) {
           sdom.plane_data[dim]->clear(0.0);
         }
       }
@@ -186,5 +184,3 @@ void SweepSubdomains (std::vector<int> subdomain_list, Grid_Data *grid_data, boo
 
   delete comm;
 }
-
-

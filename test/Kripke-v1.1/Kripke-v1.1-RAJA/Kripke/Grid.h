@@ -44,12 +44,11 @@
 struct Input_Variables;
 struct SubTVec;
 
-
 /**
  * Contains all grid parameters and variables.
  */
 struct Grid_Data {
-public:
+ public:
   explicit Grid_Data(Input_Variables *input_vars);
   ~Grid_Data();
 
@@ -67,48 +66,49 @@ public:
 
   double source_value;
 
-  std::vector<double> sigma_tot;            // Cross section data
+  std::vector<double> sigma_tot;  // Cross section data
 
-  int num_group_sets;                       // Number of group-sets
-  int num_groups_per_set;                   // How many groups in each set
-  int num_direction_sets;                   // Number of direction-sets
-  int num_directions_per_set;               // Number of directions per dir set
-  int num_zone_sets;                        // Number of zone sets
-  int legendre_order;                       // Legendra expansion order ( >= 0 )
-  int total_num_moments;                    // Number of spherical harmonic moments
+  int num_group_sets;          // Number of group-sets
+  int num_groups_per_set;      // How many groups in each set
+  int num_direction_sets;      // Number of direction-sets
+  int num_directions_per_set;  // Number of directions per dir set
+  int num_zone_sets;           // Number of zone sets
+  int legendre_order;          // Legendra expansion order ( >= 0 )
+  int total_num_moments;       // Number of spherical harmonic moments
 
-  std::vector<int> moment_to_coeff;         // Map from harmonic moments to legendre coefficients
+  std::vector<int>
+      moment_to_coeff;  // Map from harmonic moments to legendre coefficients
 
-  std::vector<Directions> directions;       // Quadrature point data, for all directions
-  Kernel *kernel;                           // Layout-specific math kernels
+  std::vector<Directions>
+      directions;  // Quadrature point data, for all directions
+  Kernel *kernel;  // Layout-specific math kernels
 
-  std::vector<Subdomain> subdomains;        // Group/Angle/Zone set data
-  std::vector<int> zs_to_sdomid;            // map of zonesets to subdomains with ds=gs=0
+  std::vector<Subdomain> subdomains;  // Group/Angle/Zone set data
+  std::vector<int> zs_to_sdomid;  // map of zonesets to subdomains with ds=gs=0
 
   // Variables:
-  SubTVec *sigs;                            // scattering lookup table for each material
-                                            // G=g->gp, D=legendre coeff, Z=matidx
+  SubTVec *sigs;  // scattering lookup table for each material
+                  // G=g->gp, D=legendre coeff, Z=matidx
 
-  // Per directionset ell and ell_plus matrices (Subdomain point into these arrays)
-  std::vector<SubTVec *> ell;               // L matrix in nm_offset coordinates
-  std::vector<SubTVec *> ell_plus;          // L+ matrix in nm_offset coordinates
+  // Per directionset ell and ell_plus matrices (Subdomain point into these
+  // arrays)
+  std::vector<SubTVec *> ell;       // L matrix in nm_offset coordinates
+  std::vector<SubTVec *> ell_plus;  // L+ matrix in nm_offset coordinates
 
   // Per zoneset phi and phi_out (Subdomains point into these arrays)
-  std::vector<SubTVec *> phi;               // Moments of psi
-  std::vector<SubTVec *> phi_out;           // Scattering source
+  std::vector<SubTVec *> phi;      // Moments of psi
+  std::vector<SubTVec *> phi_out;  // Scattering source
 
-  template<typename T>
-  inline int indexSize(int sdom_id){
-
+  template <typename T>
+  inline int indexSize(int sdom_id) {
     // Get size of index from hash in the Subdomain object
-    //Subdomain &sdom = subdomains[sdom_id];
-    //sdom.index_size[T::getName()];
+    // Subdomain &sdom = subdomains[sdom_id];
+    // sdom.index_size[T::getName()];
     return subdomains[sdom_id].index_size[T::getName()];
   }
 
-  template<typename T>
-  inline RAJA::RangeSegment indexRange(int sdom_id){
-
+  template <typename T>
+  inline RAJA::RangeSegment indexRange(int sdom_id) {
     // Get size of index from hash in the Subdomain object
     int len = indexSize<T>(sdom_id);
 

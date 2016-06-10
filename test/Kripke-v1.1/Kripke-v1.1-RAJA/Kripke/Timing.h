@@ -41,23 +41,17 @@
 #include <sys/time.h>
 
 #ifdef KRIPKE_USE_PAPI
-#include<papi.h>
+#include <papi.h>
 #endif
 
-inline double getTime(void){
+inline double getTime(void) {
   struct timeval tv;
   gettimeofday(&tv, NULL);
-  return (double)tv.tv_sec + (double)tv.tv_usec/1000000.0;
+  return (double)tv.tv_sec + (double)tv.tv_usec / 1000000.0;
 }
 
-
 struct Timer {
-  Timer() :
-    started(false),
-    start_time(0.0),
-    total_time(0.0),
-    count(0)
-  {}
+  Timer() : started(false), start_time(0.0), total_time(0.0), count(0) {}
 
   bool started;
   double start_time;
@@ -70,23 +64,23 @@ struct Timer {
 };
 
 class Timing {
-  public:
-    ~Timing();
+ public:
+  ~Timing();
 
-    void start(std::string const &name);
-    void stop(std::string const &name);
+  void start(std::string const &name);
+  void stop(std::string const &name);
 
-    void stopAll(void);
-    void clear(void);
+  void stopAll(void);
+  void clear(void);
 
-    void print(void) const;
-    double getTotal(std::string const &name) const;
+  void print(void) const;
+  double getTotal(std::string const &name) const;
 
-    void setPapiEvents(std::vector<std::string> names);
+  void setPapiEvents(std::vector<std::string> names);
 
-  private:
-    typedef std::map<std::string, Timer> TimerMap;
-    TimerMap timers;
+ private:
+  typedef std::map<std::string, Timer> TimerMap;
+  TimerMap timers;
 #ifdef KRIPKE_USE_PAPI
   std::vector<std::string> papi_names;
   std::vector<int> papi_event;
@@ -94,28 +88,22 @@ class Timing {
 #endif
 };
 
-
-#include<stdio.h>
+#include <stdio.h>
 
 // Aides timing a block of code, with automatic timer stopping
 class BlockTimer {
-  public:
-  inline BlockTimer(Timing &timer_obj, std::string const &timer_name) :
-      timer(timer_obj),
-      name(timer_name)
-  {
-      timer.start(name);
+ public:
+  inline BlockTimer(Timing &timer_obj, std::string const &timer_name)
+      : timer(timer_obj), name(timer_name) {
+    timer.start(name);
   }
-  inline ~BlockTimer(){
-    timer.stop(name);
-  }
+  inline ~BlockTimer() { timer.stop(name); }
 
-  private:
-      Timing &timer;
-      std::string name;
+ private:
+  Timing &timer;
+  std::string name;
 };
 
 #define BLOCK_TIMER(TIMER, NAME) BlockTimer BLK_TIMER_##NAME(TIMER, #NAME);
-
 
 #endif

@@ -33,90 +33,80 @@
 #ifndef KERNEL_LTIMES_POLICY_H__
 #define KERNEL_LTIMES_POLICY_H__
 
-#include<Kripke.h>
+#include <Kripke.h>
 
-
-template<typename T>
-struct LTimesPolicy{}; // nm, d, g, z
+template <typename T>
+struct LTimesPolicy {};  // nm, d, g, z
 
 #ifdef RAJA_COMPILER_ICC
-template<>
-struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::simd_exec>
-                                  >
-{};
+template <>
+struct LTimesPolicy<NEST_DGZ_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::simd_exec> > {};
 
 #else
-template<>
-struct LTimesPolicy<NEST_DGZ_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec, 
-                                                   RAJA::simd_exec>,
-                                    kripke_OMP_Parallel<
-                                      RAJA::Tile<
-                                        RAJA::TileList<RAJA::tile_none, 
-                                                       RAJA::tile_none, 
-                                                       RAJA::tile_none, 
-                                                       RAJA::tile_fixed<512>>,
-                                        RAJA::Permute<RAJA::PERM_IJKL>
-                                      >
-                                    >
-                                  >
-{};
+template <>
+struct LTimesPolicy<NEST_DGZ_T>
+    : RAJA::
+          NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                      RAJA::seq_exec,
+                                      kripke_omp_for_nowait_exec,
+                                      RAJA::simd_exec>,
+                       kripke_OMP_Parallel<RAJA::
+                                               Tile<RAJA::
+                                                        TileList<RAJA::
+                                                                     tile_none,
+                                                                 RAJA::
+                                                                     tile_none,
+                                                                 RAJA::
+                                                                     tile_none,
+                                                                 RAJA::
+                                                                     tile_fixed<512> >,
+                                                    RAJA::
+                                                        Permute<RAJA::
+                                                                    PERM_IJKL> > > > {
+};
 #endif
-template<>
-struct LTimesPolicy<NEST_DZG_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec>, 
-                                    RAJA::Permute<RAJA::PERM_LIJK>
-                                  >
-{};
+template <>
+struct LTimesPolicy<NEST_DZG_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_LIJK> > {};
 
-template<>
-struct LTimesPolicy<NEST_GDZ_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec, 
-                                                   RAJA::seq_exec>, 
-                                    RAJA::Permute<RAJA::PERM_KIJL>
-                                  >
-{};
+template <>
+struct LTimesPolicy<NEST_GDZ_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec,
+                                        RAJA::seq_exec>,
+                         RAJA::Permute<RAJA::PERM_KIJL> > {};
 
-template<>
-struct LTimesPolicy<NEST_GZD_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec, 
-                                                   kripke_omp_for_nowait_exec>, 
-                                    RAJA::Permute<RAJA::PERM_KLIJ>
-                                  >
-{};
+template <>
+struct LTimesPolicy<NEST_GZD_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_KLIJ> > {};
 
-template<>
-struct LTimesPolicy<NEST_ZDG_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<kripke_omp_for_nowait_exec, 
-                                                   RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec>, 
-                                    RAJA::Permute<RAJA::PERM_LIJK>
-                                  >
-{}; 
+template <>
+struct LTimesPolicy<NEST_ZDG_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<kripke_omp_for_nowait_exec,
+                                        RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_LIJK> > {};
 
-template<>
-struct LTimesPolicy<NEST_ZGD_T> : RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::seq_exec, 
-                                                   kripke_omp_for_nowait_exec, 
-                                                   kripke_omp_for_nowait_exec>, 
-                                    RAJA::Permute<RAJA::PERM_LKIJ>
-                                  >
-{};
-
+template <>
+struct LTimesPolicy<NEST_ZGD_T>
+    : RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                        RAJA::seq_exec,
+                                        kripke_omp_for_nowait_exec,
+                                        kripke_omp_for_nowait_exec>,
+                         RAJA::Permute<RAJA::PERM_LKIJ> > {};
 
 #endif

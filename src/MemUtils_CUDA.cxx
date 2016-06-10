@@ -63,13 +63,13 @@
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
-#include<string>
-#include<iostream>
+#include <string>
+#include <iostream>
 
 namespace RAJA {
 
 //
-// Static array used to keep track of which unique ids 
+// Static array used to keep track of which unique ids
 // for CUDA reduction objects are used and which are not.
 //
 static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
@@ -90,35 +90,32 @@ CudaReductionBlockTallyType* s_cuda_reduction_tally_block = 0;
 *
 *************************************************************************
 */
-int getCudaReductionId()
-{
-   static int first_time_called = true;
+int getCudaReductionId() {
+  static int first_time_called = true;
 
-   if (first_time_called) {
+  if (first_time_called) {
+    for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
+      cuda_reduction_id_used[id] = false;
+    }
 
-      for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
-         cuda_reduction_id_used[id] = false;
-      }
+    first_time_called = false;
+  }
 
-      first_time_called = false;
-   }
+  int id = 0;
+  while (id < RAJA_MAX_REDUCE_VARS && cuda_reduction_id_used[id]) {
+    id++;
+  }
 
-   int id = 0;
-   while ( id < RAJA_MAX_REDUCE_VARS && cuda_reduction_id_used[id] ) {
-     id++;
-   }
+  if (id >= RAJA_MAX_REDUCE_VARS) {
+    std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
+              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+    exit(1);
+  }
 
-   if ( id >= RAJA_MAX_REDUCE_VARS ) {
-      std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
-                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
-      exit(1);
-   }
+  cuda_reduction_id_used[id] = true;
 
-   cuda_reduction_id_used[id] = true;
-
-   return id;
+  return id;
 }
-
 
 /*
 *************************************************************************
@@ -127,11 +124,10 @@ int getCudaReductionId()
 *
 *************************************************************************
 */
-void releaseCudaReductionId(int id)
-{
-   if ( id < RAJA_MAX_REDUCE_VARS ) {
-      cuda_reduction_id_used[id] = false;
-   }
+void releaseCudaReductionId(int id) {
+  if (id < RAJA_MAX_REDUCE_VARS) {
+    cuda_reduction_id_used[id] = false;
+  }
 }
 
 /*
@@ -142,30 +138,30 @@ void releaseCudaReductionId(int id)
 *
 *************************************************************************
 */
-CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
-{
-   //
-   // For each reducer object, we want a chunk of managed memory that
-   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction 
-   // value for each thread, a single slot for the global reduced value
-   // across grid blocks, and a single slot for the max grid size.  
-   //
-   int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
+CudaReductionBlockDataType* getCudaReductionMemBlock(int id) {
+  //
+  // For each reducer object, we want a chunk of managed memory that
+  // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
+  // value for each thread, a single slot for the global reduced value
+  // across grid blocks, and a single slot for the max grid size.
+  //
+  int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
 
-   if (s_cuda_reduction_mem_block == 0) {
-      int len = RAJA_MAX_REDUCE_VARS * block_offset;
+  if (s_cuda_reduction_mem_block == 0) {
+    int len = RAJA_MAX_REDUCE_VARS * block_offset;
 
-      cudaErrchk( cudaMallocManaged((void **)&s_cuda_reduction_mem_block,
-                                    sizeof(CudaReductionBlockDataType)*len,
-                                    cudaMemAttachGlobal) );
-      cudaErrchk( cudaMemset(s_cuda_reduction_mem_block, 0, 
-                             sizeof(CudaReductionBlockDataType)*len) );
-      cudaErrchk(cudaDeviceSynchronize());
+    cudaErrchk(cudaMallocManaged((void**)&s_cuda_reduction_mem_block,
+                                 sizeof(CudaReductionBlockDataType) * len,
+                                 cudaMemAttachGlobal));
+    cudaErrchk(cudaMemset(s_cuda_reduction_mem_block,
+                          0,
+                          sizeof(CudaReductionBlockDataType) * len));
+    cudaErrchk(cudaDeviceSynchronize());
 
-      atexit(freeCudaReductionMemBlock);
-   }
+    atexit(freeCudaReductionMemBlock);
+  }
 
-   return &(s_cuda_reduction_mem_block[id * block_offset]) ;
+  return &(s_cuda_reduction_mem_block[id * block_offset]);
 }
 
 /*
@@ -175,62 +171,11 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
 *
 *************************************************************************
 */
-void freeCudaReductionMemBlock()
-{
-   if ( s_cuda_reduction_mem_block != 0 ) {
-      cudaErrchk( cudaFree(s_cuda_reduction_mem_block) );
-      s_cuda_reduction_mem_block = 0;
-   }
-}
-
-
-/*
-*************************************************************************
-*
-* Return pointer into shared RAJA-CUDA managed reduction memory block
-* for reducer object with given id. Allocate block if not already allocated.
-*
-*************************************************************************
-*/
-CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id)
-{
-   //
-   // For each reducer object, we want a chunk of managed memory that
-   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction 
-   // value for each thread, a single slot for the global reduced value
-   // across grid blocks, and a single slot for the max grid size.  
-   //
-   int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
-
-   if (s_cuda_reduction_loc_mem_block == 0) {
-      int len = RAJA_MAX_REDUCE_VARS * block_offset;
-
-      cudaErrchk( cudaMallocManaged((void **)&s_cuda_reduction_loc_mem_block,
-                                    sizeof(CudaReductionLocBlockDataType)*len,
-                                    cudaMemAttachGlobal) );
-      cudaErrchk( cudaMemset(s_cuda_reduction_loc_mem_block, 0, 
-                  sizeof(CudaReductionLocBlockDataType)*len) );
-      cudaErrchk(cudaDeviceSynchronize());
-
-      atexit(freeCudaReductionLocMemBlock);
-   }
-
-   return &(s_cuda_reduction_loc_mem_block[id * block_offset]) ;
-}
-
-/*
-*************************************************************************
-*
-* Free managed memory blocks used in RAJA-Cuda reductions.
-*
-*************************************************************************
-*/
-void freeCudaReductionLocMemBlock()
-{
-   if ( s_cuda_reduction_loc_mem_block != 0 ) {
-      cudaErrchk( cudaFree(s_cuda_reduction_loc_mem_block) );
-      s_cuda_reduction_loc_mem_block = 0;
-   }
+void freeCudaReductionMemBlock() {
+  if (s_cuda_reduction_mem_block != 0) {
+    cudaErrchk(cudaFree(s_cuda_reduction_mem_block));
+    s_cuda_reduction_mem_block = 0;
+  }
 }
 
 /*
@@ -241,28 +186,76 @@ void freeCudaReductionLocMemBlock()
 *
 *************************************************************************
 */
-CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id)
-{
-   if (s_cuda_reduction_tally_block == 0) {
-      int len = RAJA_CUDA_REDUCE_TALLY_LENGTH; 
+CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id) {
+  //
+  // For each reducer object, we want a chunk of managed memory that
+  // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
+  // value for each thread, a single slot for the global reduced value
+  // across grid blocks, and a single slot for the max grid size.
+  //
+  int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
 
-      cudaError_t cudaerr = 
-         cudaMallocManaged((void **)&s_cuda_reduction_tally_block,
-                           sizeof(CudaReductionBlockTallyType)*len,
-                           cudaMemAttachGlobal);
+  if (s_cuda_reduction_loc_mem_block == 0) {
+    int len = RAJA_MAX_REDUCE_VARS * block_offset;
 
-      if ( cudaerr != cudaSuccess ) {
-         std::cerr << "\n ERROR in cudaMallocManaged call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-      }
-      cudaMemset(s_cuda_reduction_tally_block, 0, 
-                 sizeof(CudaReductionBlockTallyType)*len);
+    cudaErrchk(cudaMallocManaged((void**)&s_cuda_reduction_loc_mem_block,
+                                 sizeof(CudaReductionLocBlockDataType) * len,
+                                 cudaMemAttachGlobal));
+    cudaErrchk(cudaMemset(s_cuda_reduction_loc_mem_block,
+                          0,
+                          sizeof(CudaReductionLocBlockDataType) * len));
+    cudaErrchk(cudaDeviceSynchronize());
 
-      atexit(freeCudaReductionTallyBlock);
-   }
+    atexit(freeCudaReductionLocMemBlock);
+  }
 
-   return &(s_cuda_reduction_tally_block[id]) ;
+  return &(s_cuda_reduction_loc_mem_block[id * block_offset]);
+}
+
+/*
+*************************************************************************
+*
+* Free managed memory blocks used in RAJA-Cuda reductions.
+*
+*************************************************************************
+*/
+void freeCudaReductionLocMemBlock() {
+  if (s_cuda_reduction_loc_mem_block != 0) {
+    cudaErrchk(cudaFree(s_cuda_reduction_loc_mem_block));
+    s_cuda_reduction_loc_mem_block = 0;
+  }
+}
+
+/*
+*************************************************************************
+*
+* Return pointer into shared RAJA-CUDA managed reduction memory block
+* for reducer object with given id. Allocate block if not already allocated.
+*
+*************************************************************************
+*/
+CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id) {
+  if (s_cuda_reduction_tally_block == 0) {
+    int len = RAJA_CUDA_REDUCE_TALLY_LENGTH;
+
+    cudaError_t cudaerr =
+        cudaMallocManaged((void**)&s_cuda_reduction_tally_block,
+                          sizeof(CudaReductionBlockTallyType) * len,
+                          cudaMemAttachGlobal);
+
+    if (cudaerr != cudaSuccess) {
+      std::cerr << "\n ERROR in cudaMallocManaged call, FILE: " << __FILE__
+                << " line " << __LINE__ << std::endl;
+      exit(1);
+    }
+    cudaMemset(s_cuda_reduction_tally_block,
+               0,
+               sizeof(CudaReductionBlockTallyType) * len);
+
+    atexit(freeCudaReductionTallyBlock);
+  }
+
+  return &(s_cuda_reduction_tally_block[id]);
 }
 
 /*
@@ -273,17 +266,16 @@ CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id)
 *************************************************************************
 */
 
-void freeCudaReductionTallyBlock()
-{
-   if ( s_cuda_reduction_tally_block != 0 ) {
-      cudaError_t cudaerr = cudaFree(s_cuda_reduction_tally_block);
-      s_cuda_reduction_tally_block = 0;
-      if (cudaerr != cudaSuccess) {
-         std::cerr << "\n ERROR in cudaFree call, FILE: "
-                   << __FILE__ << " line " << __LINE__ << std::endl;
-         exit(1);
-       }
-   }
+void freeCudaReductionTallyBlock() {
+  if (s_cuda_reduction_tally_block != 0) {
+    cudaError_t cudaerr = cudaFree(s_cuda_reduction_tally_block);
+    s_cuda_reduction_tally_block = 0;
+    if (cudaerr != cudaSuccess) {
+      std::cerr << "\n ERROR in cudaFree call, FILE: " << __FILE__ << " line "
+                << __LINE__ << std::endl;
+      exit(1);
+    }
+  }
 }
 
 }  // closing brace for RAJA namespace

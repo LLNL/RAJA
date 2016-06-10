@@ -5,7 +5,7 @@
  *
  * \brief   Header file containing RAJA headers for OpenMP execution.
  *
- *          These methods work only on platforms that support OpenMP. 
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
@@ -73,7 +73,7 @@ namespace RAJA {
 /// Segment execution policies
 ///
 struct omp_parallel_for_exec {};
-//struct omp_parallel_for_nowait_exec {};
+// struct omp_parallel_for_nowait_exec {};
 struct omp_for_nowait_exec {};
 
 ///
@@ -95,7 +95,6 @@ struct omp_reduce {};
 
 }  // closing brace for RAJA namespace
 
-
 #include "RAJA/exec-openmp/reduce_openmp.hxx"
 #include "RAJA/exec-openmp/forall_openmp.hxx"
 
@@ -106,4 +105,3 @@ struct omp_reduce {};
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
-

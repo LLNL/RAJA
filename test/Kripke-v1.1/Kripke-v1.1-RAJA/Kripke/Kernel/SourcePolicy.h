@@ -33,54 +33,46 @@
 #ifndef KERNEL_SOURCE_POLICY_H__
 #define KERNEL_SOURCE_POLICY_H__
 
-#include<Kripke.h>
+#include <Kripke.h>
 
 // There are really only 2 policies, based on group and zone ordering
 // So we define those here, and assign them to each nesting order
 
 #ifdef RAJA_COMPILER_ICC
-using SourcePolicy_GZ = RAJA::NestedPolicy<
-                                    RAJA::ExecList<RAJA::seq_exec, 
-                                                   RAJA::simd_exec>
-                                  >;
+using SourcePolicy_GZ =
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::simd_exec> >;
 
 #else
 
-using SourcePolicy_GZ = RAJA::NestedPolicy<
-                          RAJA::ExecList<kripke_omp_collapse_nowait_exec, 
-                                         kripke_omp_collapse_nowait_exec>,
-                          kripke_OMP_Parallel<
-                            RAJA::Permute<RAJA::PERM_IJ>
-			                    >
-			                  >;
+using SourcePolicy_GZ =
+    RAJA::NestedPolicy<RAJA::ExecList<kripke_omp_collapse_nowait_exec,
+                                      kripke_omp_collapse_nowait_exec>,
+                       kripke_OMP_Parallel<RAJA::Permute<RAJA::PERM_IJ> > >;
 #endif
-using SourcePolicy_ZG = RAJA::NestedPolicy<
-                          RAJA::ExecList<kripke_omp_collapse_nowait_exec, 
-                                         kripke_omp_collapse_nowait_exec>,
-                          kripke_OMP_Parallel<
-                            RAJA::Permute<RAJA::PERM_JI>
-			                    >
-			                  >;
+using SourcePolicy_ZG =
+    RAJA::NestedPolicy<RAJA::ExecList<kripke_omp_collapse_nowait_exec,
+                                      kripke_omp_collapse_nowait_exec>,
+                       kripke_OMP_Parallel<RAJA::Permute<RAJA::PERM_JI> > >;
 
-template<typename T>
-struct SourcePolicy {}; // g,mix
+template <typename T>
+struct SourcePolicy {};  // g,mix
 
-template<>
+template <>
 struct SourcePolicy<NEST_DGZ_T> : SourcePolicy_GZ {};
 
-template<>
+template <>
 struct SourcePolicy<NEST_DZG_T> : SourcePolicy_ZG {};
 
-template<>
+template <>
 struct SourcePolicy<NEST_GDZ_T> : SourcePolicy_GZ {};
 
-template<>
+template <>
 struct SourcePolicy<NEST_GZD_T> : SourcePolicy_GZ {};
 
-template<>
+template <>
 struct SourcePolicy<NEST_ZDG_T> : SourcePolicy_ZG {};
 
-template<>
+template <>
 struct SourcePolicy<NEST_ZGD_T> : SourcePolicy_ZG {};
 
 #endif
