@@ -109,77 +109,110 @@ The following list describes these variables and their defaults.
 
   * **Tests and Examples**
 
-     *RAJA_ENABLE_TESTS* : Controls whether RAJA tests and examples are built.
-     Default is `On`
+     *RAJA_ENABLE_TESTS* -- Controls whether RAJA tests are compiled. 
+     
+      Default : *RAJA_ENABLE_TESTS=On*
 
   * **Programming Models**
 
      Variables to control which RAJA programming model back-ends are enabled
-     are the following (there names are descriptive of what they enable):
+     and their defaults (names are descriptive of what they enable):
 
-     *RAJA_ENABLE_OPENMP* : Default is `On`
+     *RAJA_ENABLE_OPENMP=On*
 
-     *RAJA_ENABLE_CUDA* : Default is `Off` 
+     *RAJA_ENABLE_CUDA=Off*
 
-     *RAJA_ENABLE_CILK* : Default is `Off`
+     *RAJA_ENABLE_CILK=Off*
 
   * **Data Types, Sizes, Alignment Parameters, etc.**
 
      RAJA internally uses several parameters to define platform-specific
      constants for index ranges and data alignment. The defaults should be 
-     reasonable and should not need to be changed for most cases. We include
-     them here for completeness:
+     reasonable for most cases. For more details on the data type-related
+     options, please see the header file `real_datatypes.hxx`.
 
-     *RAJA_USE_DOUBLE, RAJA_USE_FLOAT* : RAJA provides typedefs to be able to
-     parameterize floating point types and pointers to them in codes and 
-     easily switch between types. Exactly one of these can be on at a time. 
-     Default is *RAJA_USE_DOUBLE* is `On` and *RAJA_USE_FLOAT* is `Off`.
+     *RAJA_USE_DOUBLE, RAJA_USE_FLOAT* -- Control typedefs that can be used
+     to parameterize floating point types in applications and easily switch 
+     between types. Exactly one of these can be on at a time. 
 
-     *RAJA_USE_COMPLEX* : Similar to above, RAJA provides typedefs for complex
-     data types if needed. Default is `Off`. 
+     Default : *RAJA_USE_DOUBLE=On*, *RAJA_USE_FLOAT=Off*
 
-     *RAJA_USE_BARE_PTR, RAJA_USE_RESTRICT_PTR, RAJA_USE_RESTRICT_ALIGNED_PTR, 
-     RAJA_USE_PTR_CLASS* : These define the form of RAJA floating-point data
-     pointer typedefs. These are (following the order above): standard 
-     undecorated pointer, pointer with restrict, pointer with restrict and 
-     alignment (see *RAJA_DATA_ALIGN* below), and a pointer class with an 
-     overloaded `[]` operator that applies restrict and alignment intrinsics
-     useful when a compiler does not support these data attributes in a typedef.
-     Exactly one of these can be on at a time. Default is 
-     *RAJA_USE_RESTRICT_PTR* is `On` for CPU-only code and `RAJA_USE_BARE_PTR`
-     is `On` when *RAJA_ENABLE_CUDA* is `On`.
 
-     *RAJA_RANGE_ALIGN* : Constrains alignment of begin/end indices in range 
-     segments constructed by index set builder methods. That is, begin and
-     end indices of such segments will be multiples of this value. Default is `4`.
+     *RAJA_USE_COMPLEX* -- Enables typedefs for complex data types if needed. 
+     
+     Default : *RAJA_USE_COMPLEX=Off*
+
+     
+     There are several options for controlling RAJA floating-point data
+     pointer typedefs. Exactly one of these can be on at a time.
  
-     *RAJA_RANGE_MIN_LENGTH* : Minimum length of range segments constructed
-     by index set builder methods - should be an integer multiple of 
-     *RAJA_RANGE_ALIGN*. Default is `32`. 
+     *RAJA_USE_BARE_PTR* -- Use standard undecorated pointer
+    
+     *RAJA_USE_RESTRICT_PTR* -- Use pointer with restrict qualifier
 
-     *RAJA_DATA_ALIGN* : Used in compiler-specific intrinsics and typedefs
-     to specify data alignment constraints - units of **byts**. Default is `64`.
-      
-     *RAJA_COHERENCE_BLOCK_SIZE* : Defines thread coherence value for shared
-     memory blocks used by RAJA reduction objects. Default is `64`.
+     *RAJA_USE_RESTRICT_ALIGNED_PTR* -- Use pointer with restrict and
+     alignment (see *RAJA_DATA_ALIGN* below)
+
+     *RAJA_USE_PTR_CLASS* -- Use pointer class with an overloaded `[]` operator 
+     that applies restrict and alignment intrinsics. This is useful when a 
+     compiler does not support these attributes in a typedef.
+
+     Default : *RAJA_USE_RESTRICT_PTR=On* for CPU-only code and 
+     *RAJA_USE_BARE_PTR=On* when *RAJA_ENABLE_CUDA=On*
+
+
+     *RAJA_RANGE_ALIGN* -- Constrains alignment of begin/end indices in range 
+     segments constructed by index set builder methods. That is, begin and
+     end indices of such segments will be multiples of this value. 
+
+     Default : *RAJA_RANGE_ALIGN=4*
+
+ 
+     *RAJA_RANGE_MIN_LENGTH* -- Defines the minimum length of range segments 
+     constructed by index set builder methods; this should be an integer 
+     multiple of *RAJA_RANGE_ALIGN*. 
+
+     Default : *RAJA_RANGE_MIN_LENGTH=32* 
+
+
+     *RAJA_DATA_ALIGN* -- Used in compiler-specific intrinsics and typedefs
+     to specify data alignment constraints; units of **bytes**. 
+
+     Default : *RAJA_DATA_ALIGN=64*
+     
+ 
+     *RAJA_COHERENCE_BLOCK_SIZE* -- Defines thread coherence value for shared
+     memory blocks used by RAJA reduction objects. 
+
+     Default : *RAJA_COHERENCE_BLOCK_SIZE=64*
+
 
   * **Timer Options**
 
-     *RAJA_USE_GETTIME, RAJA_USE_CLOCK, RAJA_USE_CYCLE* : Options to control
-     the timing mechanism for a simple timer class used in the RAJA examples.
-     These are (in the order above): use `timespec` from the C-std library 
-     time.h header, use `clock_t` from time.h, or `ticks` from the cycle.h
-     file in the FFTW library. Exactly one of these can be on at a time.
-     Default is `RAJA_USE_GETTIME` is `On`. This default should be the 
-     best choice on most platforms.
+     RAJA provides a simple timer class that is used in RAJA example codes
+     to determine execution timing and can be used in other apps as well.
+     Three variables are available to select the timing mechanism used.
+     Exactly one of these can be on at a time.
+
+     *RAJA_USE_GETTIME* -- Use `timespec` from the C-std library time.h file
+
+     *RAJA_USE_CLOCK* -- Use `clock_t` from time.h 
+
+     *RAJA_USE_CYCLE* -- Use `ticks` from the cycle.h file in the FFTW library
+
+     Default : *RAJA_USE_GETTIME=On*. This should be a good choice for most i
+     situations.
 
   * **Fault Tolerance Options**
     
-     RAJA contains some internal macros that we use to explore a simple
-     experimental loop-level fault tolerance model in the LULESH proxy-app. 
-     By default, this feature is off. To enable it, set *RAJA_ENABLE_FT* to 
-     `On`. To enable the fault-tolerance reporting mechanism, also set 
-     *RAJA_REPORT_FT* to `On`.
+     RAJA contains some internal macros that are used to explore a simple
+     experimental loop-level fault tolerance model. By default, this feature 
+     is off. To enable it, turn the following variables on:
+
+     *RAJA_ENABLE_FT* -- Enables fault-tolerance mechanism
+
+     *RAJA_REPORT_FT* -- Enables a report of fault-tolerance enabled run 
+     (e.g., number of faults detected, recovered from, overhead, etc.)
 
 
 Did I build RAJA correctly?
@@ -188,7 +221,7 @@ Did I build RAJA correctly?
 You can verify that RAJA is built correctly with the options you want, you 
 can run some unit tests...
 
-.. warning:: We should add a 'make tests' or 'make check' target that 
+.. warning:: Need to add a 'make tests' or 'make check' target that 
              compiles (if needed) and runs some basic tests with sensible 
              output that makes it clear to users that their RAJA build is
              good to go or is not.
