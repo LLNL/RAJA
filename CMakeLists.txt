@@ -67,8 +67,15 @@ include(cmake/SetupPackages.cmake)
 include(cmake/SetupRajaConfig.cmake)
 
 # Configure a header file with all the variables we found.
+get_directory_property( RAJA_DEFINITIONS_INITIAL DIRECTORY ${CMAKE_SOURCE_DIR} COMPILE_DEFINITIONS )
+set(RAJA_DEFINITIONS "")
+foreach(definition ${RAJA_DEFINITIONS_INITIAL})
+  set(RAJA_DEFINITIONS "${RAJA_DEFINITIONS} -D${definition}")
+endforeach()
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
+configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/RAJA-config.cmake.in
+  ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
@@ -77,7 +84,11 @@ include_directories(include)
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
+
 add_subdirectory(src)
+
+install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake DESTINATION share/cmake/raja)
+#install(EXPORT RAJA                                   DESTINATION share/cmake/raja)
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
