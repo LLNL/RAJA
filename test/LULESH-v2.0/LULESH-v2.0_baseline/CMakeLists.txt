@@ -54,3 +54,4 @@ add_executable(lulesh2.0NORAJA.exe
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc)
+target_link_libraries(lulesh2.0NORAJA.exe ${RT_LIBRARIES})

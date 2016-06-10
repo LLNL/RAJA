@@ -39,7 +39,9 @@ typedef timespec TimeType;
 #error RAJA_TIMER_TYPE is undefined!
 
 #endif
-
+#if defined(RAJA_USE_CALIPER)
+#include <caliper/Annotation.h>
+#endif
 
 
 namespace RAJA {
@@ -91,6 +93,22 @@ public:
    long double elapsed()
       { return (stime_elapsed + nstime_elapsed); }
 
+#endif
+
+#if defined(RAJA_USE_CALIPER)
+    void start(const char* name){
+        cali::Annotation(name).begin(); 
+    }
+    void stop(const char* name){
+        cali::Annotation(name).end();
+    }
+#else
+    void start(const char* name){
+        start();
+    }
+    void stop(const char* name){
+        stop();
+    }
 #endif
 
 private:

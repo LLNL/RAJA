@@ -31,6 +31,9 @@
  */
 
 #include <Kripke/Timing.h>
+#ifdef RAJA_USE_CALIPER
+#include <caliper/Annotation.h>
+#endif
 
 #include<Kripke.h>
 
@@ -94,6 +97,9 @@ void Timing::start(std::string const &name){
     }
 #endif
 
+#ifdef RAJA_USE_CALIPER
+    cali::Annotation(name.c_str()).begin();
+#endif
 #ifdef KRIPKE_USE_BGPM
     HPM_Start(name.c_str());
 #endif
@@ -108,6 +114,9 @@ void Timing::stop(std::string const &name){
     HPM_Stop(name.c_str());
 #endif
 
+#ifdef RAJA_USE_CALIPER
+    cali::Annotation(name.c_str()).end();
+#endif
   if(timer.started){
 #ifdef KRIPKE_USE_PAPI
     int num_papi = papi_event.size();

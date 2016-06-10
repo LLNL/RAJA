@@ -62,6 +62,19 @@ if (RAJA_ENABLE_CUDA)
   endif()
 endif()
 
+if (RAJA_ENABLE_CALIPER)
+  find_package(CALIPER)
+  if(CALIPER_FOUND)
+    message(STATUS "CALIPER")
+    include_directories(${caliper_INCLUDE_DIR})
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRAJA_USE_CALIPER")
+  endif()
+endif()
+   
+
 #Used for timing
 find_library(RT_LIBRARIES rt)
+if (CALIPER_FOUND)
+  list(APPEND RT_LIBRARIES ${caliper_LIB_DIR}/libcaliper.so)
+endif()
 #set(RT_LIBRARIES "")

@@ -156,7 +156,6 @@ Additional BSD Notice
 #include <unistd.h>
 
 #include "lulesh.h"
-
 #include "Timer.hxx"
 
 #define RAJA_STORAGE static inline
@@ -2571,13 +2570,17 @@ int main(int argc, char *argv[])
    // End initialization
    MPI_Barrier(MPI_COMM_WORLD);
 #endif   
-   
    // BEGIN timestep to solution */
+#ifdef RAJA_USE_CALIPER
+   RAJA::Timer timer_main; 
+   timer_main.start("timer_main");
+#else
 #if USE_MPI   
    double start = MPI_Wtime();
 #else
    timeval start;
    gettimeofday(&start, NULL) ;
+#endif
 #endif
 //debug to see region sizes
 // for(Int_t i = 0; i < locDom->numReg(); i++) {
@@ -2595,15 +2598,19 @@ int main(int argc, char *argv[])
                 locDom->cycle(), double(locDom->time()), double(locDom->deltatime()) ) ;
       }
    }
-
+double elapsed_time;
+#ifdef RAJA_USE_CALIPER
    // Use reduced max elapsed time
-   double elapsed_time;
+   timer_main.stop("timer_main");
+   elapsed_time = timer_main.elapsed();
+#else
 #if USE_MPI   
    elapsed_time = MPI_Wtime() - start;
 #else
    timeval end;
    gettimeofday(&end, NULL) ;
    elapsed_time = (double)(end.tv_sec - start.tv_sec) + ((double)(end.tv_usec - start.tv_usec))/1000000 ;
+#endif
 #endif
    double elapsed_timeG;
 #if USE_MPI   
