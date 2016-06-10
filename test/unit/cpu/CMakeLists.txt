@@ -41,8 +41,20 @@
 #
 ###############################################################################
 
-add_subdirectory(src/tpl/googletest-release-1.7.0)
-include_directories(${gtest_SOURCE_DIR}/include ${gtest_SOURCE_DIR})
+add_executable(indexset-tests
+  index-set-tests.cxx
+  buildIndexSet.cxx)
 
-add_subdirectory(examples)
-add_subdirectory(unit)
+add_test(indexset-test
+  indexset-tests)
+
+target_link_libraries(indexset-tests RAJA gtest gtest_main)
+
+add_executable(traversal-tests
+  traversal-tests.cxx
+  buildIndexSet.cxx)
+
+add_test(traversal-test
+  traversal-tests)
+
+target_link_libraries(traversal-tests RAJA gtest gtest_main)
