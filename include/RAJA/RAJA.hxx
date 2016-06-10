@@ -91,21 +91,10 @@
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/IndexSet.hxx"
 
-#if defined(RAJA_ENABLE_NESTED)
-
 //
 // Strongly typed index class.
 //
 #include "RAJA/IndexValue.hxx"
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/Layout.hxx"
-#include "RAJA/View.hxx"
-
-#endif // defined(RAJA_ENABLE_NESTED)
-
 
 //
 // Generic iteration templates require specializations defined 
@@ -117,9 +106,16 @@
 #if defined(RAJA_ENABLE_NESTED)
 
 //
+// Multidimensional layouts and views.
+//
+#include "RAJA/foralln/Layout.hxx"
+#include "RAJA/foralln/View.hxx"
+
+
+//
 // Generic iteration templates for perfectly nested loops
 //
-#include "RAJA/forallN_generic.hxx"
+#include "RAJA/foralln/Generic.hxx"
 
 #endif // defined(RAJA_ENABLE_NESTED)
 
@@ -170,10 +166,10 @@
 //
 
 // Tiling policies
-#include "RAJA/forallN_tile.hxx"
+#include "RAJA/foralln/Tile.hxx"
 
 // Loop interchange policies
-#include "RAJA/forallN_permute.hxx"
+#include "RAJA/foralln/Permute.hxx"
 
 #endif // defined(RAJA_ENABLE_NESTED)
 

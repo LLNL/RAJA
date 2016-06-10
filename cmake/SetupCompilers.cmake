@@ -40,8 +40,6 @@
 # 
 ###############################################################################
 
-set(CMAKE_CXX_STANDARD 11)
-
 if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
 
