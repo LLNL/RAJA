@@ -78,29 +78,8 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-struct omp_parallel_for_exec : public PolicyBase {
-    template<typename Iterable,
-             typename Func>
-    inline void operator()(Iterable &&iter, Func &&loop_body) const {
-        auto end = std::end(iter);
-#pragma omp parallel for schedule(static)
-        for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
-            loop_body( *ii );
-        }
-    }
-};
-//struct omp_parallel_for_nowait_exec {};
-struct omp_for_nowait_exec : public PolicyBase {
-    template<typename Iterable,
-             typename Func>
-    inline void operator()(Iterable &&iter, Func &&loop_body) const {
-        auto end = std::end(iter);
-#pragma omp for schedule(static) nowait
-        for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
-            loop_body( *ii );
-        }
-    }
-};
+struct omp_parallel_for_exec { };
+struct omp_for_nowait_exec { };
 
 ///
 /// Index set segment iteration policies

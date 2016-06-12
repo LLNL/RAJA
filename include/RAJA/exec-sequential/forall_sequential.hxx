@@ -78,6 +78,37 @@ namespace RAJA {
 //////////////////////////////////////////////////////////////////////
 //
 
+template<typename Func>
+RAJA_INLINE
+void forall(const PolicyBase&, const RangeSegment &iter, Func &&loop_body) {
+    auto end = iter.getEnd();
+    for ( auto ii = iter.getBegin() ; ii < end ; ++ii ) {
+        loop_body( ii );
+    }
+}
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall(const PolicyBase&, Iterable &&iter, Func &&loop_body) {
+    auto end = std::end(iter);
+    for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
+        loop_body( *ii );
+    }
+}
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall_Icount(const PolicyBase&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(i + icount, begin[i]);
+    }
+}
+
 /*!
  ******************************************************************************
  *

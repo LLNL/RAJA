@@ -76,6 +76,66 @@
 
 namespace RAJA {
 
+///
+/// OpenMP for nowait policy implementation
+///
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall(const omp_for_nowait_exec&, Iterable &&iter, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp for nowait
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(begin[i]);
+    }
+}
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall_Icount(const omp_for_nowait_exec&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp for nowait
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(i + icount, begin[i]);
+    }
+}
+
+///
+/// OpenMP parallel for policy implementation
+///
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall(const omp_parallel_for_exec&, Iterable &&iter, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp parallel for
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(begin[i]);
+    }
+}
+
+template<typename Iterable,
+         typename Func>
+RAJA_INLINE
+void forall_Icount(const omp_parallel_for_exec&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp parallel for
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(i + icount, begin[i]);
+    }
+}
+
 
 //
 //////////////////////////////////////////////////////////////////////

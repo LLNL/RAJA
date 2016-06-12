@@ -96,6 +96,7 @@
 
 #include <type_traits>
 #include <iterator>
+#include <functional>
 
 
 namespace RAJA {
@@ -108,143 +109,23 @@ namespace RAJA {
 //////////////////////////////////////////////////////////////////////
 //
 
-template<typename Iterator,
-         typename Body>
-struct IcountWrapper {
-    using vtype = typename std::iterator_traits<Iterator>::value_type;
-    constexpr IcountWrapper(Body && body) : m_body(body) {}
-    RAJA_HOST_DEVICE RAJA_INLINE void operator()(vtype&& i) const {
-        m_body(i.first, *i.second);
-    }
-    private:
-        Body m_body;
-};
-template<typename Iterator,
-         typename Body>
-constexpr auto make_icount_wrapper(Body &&loop_body)
-    -> IcountWrapper<Iterator, decltype(loop_body)> {
-    return IcountWrapper<Iterator, decltype(loop_body)>(loop_body);
-}
-
-template<typename Iterable>
-struct IcountIterableWrapper : public Iterable {
-   using iterator = Iterators::Enumerater<typename Iterable::iterator>;
-
-   IcountIterableWrapper() = delete;
-   constexpr IcountIterableWrapper(Iterable&& iter, std::ptrdiff_t val = 0, std::ptrdiff_t offset = 0) :
-       Iterable(iter), m_val(val), m_off(offset) {}
-
-   ///
-   /// Get an iterator to the end.
-   ///
-   constexpr iterator end() const {
-       return iterator(Iterable::end(), m_val + size(), m_off);
-   }
-
-   ///
-   /// Get an iterator to the beginning.
-   ///
-   constexpr iterator begin() const {
-       return iterator(Iterable::begin(), m_val, m_off);
-   }
-
-   ///
-   /// Return the number of elements in the range.
-   ///
-   constexpr Index_type size() const {
-       return std::distance(Iterable::begin(), Iterable::end());
-   }
-    private:
-   std::ptrdiff_t m_val;
-   std::ptrdiff_t m_off;
-};
-
-template<typename Iterable>
-constexpr auto make_icount_iterable_wrapper(Iterable&& iter, std::ptrdiff_t val=0, std::ptrdiff_t offset=0)
-    -> IcountIterableWrapper<Iterable> {
-    return IcountIterableWrapper<Iterable>(std::forward<Iterable>(iter), val, offset);
-}
-
-
 /*!
  ******************************************************************************
  *
- * \brief  Generic iteration over random access iterators.
- *
- ******************************************************************************
- */
-template <typename Policy,
-          typename Iterable,
-          typename LOOP_BODY,
-          typename std::enable_if<
-                           Iterators::OffersRAI<Iterable>::value
-                        && (!std::is_base_of<IndexSet, Iterable>::value)>::type * = nullptr
-          >
-RAJA_INLINE
-void forall(Policy &&p,
-            Iterable&& iter,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-   p(std::forward<Iterable>(iter), std::forward<LOOP_BODY>(loop_body));
-
-   RAJA_FT_END ;
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over iterators with icount.
+ * \brief Generic dispatch over containers with icount
  *
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
-          typename Iterator,
           typename LOOP_BODY>
 RAJA_INLINE
-void forall_icount(
-            Iterator&& begin,
-            Iterator&& end,
-            Index_type icount,
-            LOOP_BODY loop_body)
+void forall_Icount(const IndexSet& c,
+        LOOP_BODY loop_body)
 {
-   using category = typename std::iterator_traits<Iterator>::iterator_category;
-   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
-                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
-   using IterT = Iterators::Enumerater<Iterator>;
-
-   forall(EXEC_POLICY_T(),
-          IterT(begin, 0, icount),
-          IterT(end, std::distance(begin, end), icount),
-          make_icount_wrapper<IterT>(loop_body));
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over iterators.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename Iterator,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall(Iterator&& begin,
-            Iterator&& end,
-            LOOP_BODY loop_body)
-{
-   using category = typename std::iterator_traits<Iterator>::iterator_category;
-   static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
-                 "Iterators passed to RAJA must be Random Access or Contiguous iterators");
-
-
-   forall(EXEC_POLICY_T(),
-          begin, end,
-          loop_body );
+   forall_Icount(EXEC_POLICY_T(),
+          c,
+          loop_body);
 }
 
 /*!
@@ -256,27 +137,21 @@ void forall(Iterator&& begin,
  */
 template <typename EXEC_POLICY_T,
           typename Container,
-          typename LOOP_BODY,
-          typename std::enable_if<
-                           Iterators::OffersRAI<Container>::value
-                        && (!std::is_base_of<IndexSet, Container>::value)>::type * = nullptr
-          >
+          typename LOOP_BODY>
 RAJA_INLINE
-void forall_Icount(Container& c,
+void forall_Icount(Container&& c,
             Index_type icount,
             LOOP_BODY loop_body)
 {
-   auto begin = std::begin(c);
-   auto end = std::end(c);
    using Iterator = decltype(std::begin(c));
    using category = typename std::iterator_traits<Iterator>::iterator_category;
    static_assert(std::is_base_of<std::random_access_iterator_tag, category>::value,
                  "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
-   auto wrapped = make_icount_iterable_wrapper(std::forward<Container>(c), 0, icount);
-   forall(EXEC_POLICY_T(),
-          wrapped,
-          make_icount_wrapper<typename decltype(wrapped)::iterator>(loop_body));
+   forall_Icount(EXEC_POLICY_T(),
+          std::forward<Container>(c),
+          icount,
+          loop_body);
 }
 
 /*!
@@ -288,11 +163,7 @@ void forall_Icount(Container& c,
  */
 template <typename EXEC_POLICY_T,
           typename Container,
-          typename LOOP_BODY,
-          typename std::enable_if<
-                           Iterators::OffersRAI<Container>::value
-                        && (!std::is_base_of<IndexSet, Container>::value)>::type * = nullptr
-          >
+          typename LOOP_BODY>
 RAJA_INLINE
 void forall(Container&& c,
             LOOP_BODY loop_body)
@@ -352,10 +223,10 @@ void forall_Icount(Index_type begin, Index_type end,
                    Index_type icount,
                    LOOP_BODY loop_body)
 {
-   auto wrapped = make_icount_iterable_wrapper(RangeSegment(begin, end), 0, icount);
-   forall(EXEC_POLICY_T(),
-          wrapped,
-          make_icount_wrapper<typename decltype(wrapped)::iterator>(loop_body));
+   forall_Icount(EXEC_POLICY_T(),
+          RangeSegment(begin, end),
+          icount,
+          loop_body);
 }
 
 
@@ -404,7 +275,7 @@ void forall_Icount(Index_type begin, Index_type end,
                    LOOP_BODY loop_body)
 {
    forall_Icount( EXEC_POLICY_T(),
-                  make_icount_iterable_wrapper(RangeStrideSegment(begin, end, stride), 0, icount),
+                  RangeStrideSegment(begin, end, stride),
                   icount,
                   loop_body );
 }
@@ -455,7 +326,7 @@ void forall_Icount(const Index_type* idx, Index_type len,
 {
    // turn into an iterator
    forall_Icount<EXEC_POLICY_T>(
-           make_icount_iterable_wrapper(ListSegment(idx, len), 0, icount),
+           ListSegment(idx, len),
            icount,
            loop_body );
 }
@@ -469,73 +340,6 @@ void forall_Icount(const Index_type* idx, Index_type len,
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over arbitrary index set or segment.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename INDEXSET_T, 
-          typename LOOP_BODY,
-          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
-          >
-RAJA_INLINE
-void forall(const INDEXSET_T& iset, LOOP_BODY loop_body)
-{
-   forall(EXEC_POLICY_T(),
-          iset, loop_body);
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over arbitrary index set or segment with index 
- *        count.
- *
- *        NOTE: lambda loop body requires two args (icount, index). 
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename INDEXSET_T, 
-          typename LOOP_BODY,
-          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
-          >
-RAJA_INLINE
-void forall_Icount(const INDEXSET_T& iset, LOOP_BODY loop_body)
-{
-   forall_Icount(EXEC_POLICY_T(),
-                 iset, loop_body);
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic iteration over arbitrary index set or segment with 
- *        starting index count.
- *
- *        NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
-          typename INDEXSET_T,
-          typename LOOP_BODY,
-          typename std::enable_if<std::is_base_of<IndexSet, INDEXSET_T>::value>::type * = nullptr
-          >
-RAJA_INLINE
-void forall_Icount(const INDEXSET_T& iset, 
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   forall_Icount(EXEC_POLICY_T(),
-                 iset, 
-                 icount,
-                 loop_body);
-}
 
 /*!
  ******************************************************************************
