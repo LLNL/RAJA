@@ -69,6 +69,8 @@
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 // The following atomic functions need to be outside of the RAJA namespace
+#include <cuda.h>
+
 //
 // Three different variants of min/max reductions can be run by choosing
 // one of these macros. Only one should be defined!!!
