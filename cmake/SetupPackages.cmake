@@ -73,13 +73,10 @@ endif()
    
 
 #Used for timing
-find_library(RT_LIBRARIES rt)
+find_library(RT_LIBRARY rt)
+if (RT_LIBRARY STREQUAL "RT_LIBRARIES-NOTFOUND")
+  set(RT_LIBRARY "" CACHE STRING "timing libraries" FORCE)
+endif ()
 if (CALIPER_FOUND)
-  list(APPEND RT_LIBRARIES ${caliper_LIB_DIR}/libcaliper.so)
-endif()
-
-# Add empty string if librt not found
-if(RT_LIBRARIES MATCHES "RT_LIBRARIES-NOTFOUND")
-  message(WARNING "librt not found, some test applications might not link")
-  set(RT_LIBRARIES "")
+    set(RT_LIBRARIES "${RT_LIBRARY} ${caliper_LIB_DIR}/libcaliper.so" CACHE STRING "testing libraries")
 endif()
