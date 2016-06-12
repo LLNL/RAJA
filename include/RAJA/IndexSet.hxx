@@ -226,28 +226,28 @@ public:
       return &(m_segments[i]);
    }
 
-   // using iterator = SegVecT::iterator;
-   //
-   // ///
-   // /// Get an iterator to the end.
-   // ///
-   // iterator end() const {
-   //     return m_segments.end();
-   // }
-   //
-   // ///
-   // /// Get an iterator to the beginning.
-   // ///
-   // iterator begin() const {
-   //     return m_segments.begin();
-   // }
-   //
-   // ///
-   // /// Return the number of elements in the range.
-   // ///
-   // size_t size() const {
-   //     return m_segments.size();
-   // }
+   using iterator = SegVecT::iterator;
+
+   ///
+   /// Get an iterator to the end.
+   ///
+   iterator end() const {
+       return m_segments.end();
+   }
+
+   ///
+   /// Get an iterator to the beginning.
+   ///
+   iterator begin() const {
+       return m_segments.begin();
+   }
+
+   ///
+   /// Return the number of elements in the range.
+   ///
+   size_t size() const {
+       return m_segments.size();
+   }
 
 //@}
 

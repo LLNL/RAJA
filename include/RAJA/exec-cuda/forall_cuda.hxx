@@ -136,6 +136,28 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
    }
 }
 
+/*!
+ ******************************************************************************
+ * 
+ * \brief  CUDA kernal forall_Icount template for indiraction array.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+template <typename Iterator,
+          typename LOOP_BODY>
+__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
+                                          const Iterator idx,
+                                          Index_type length,
+                                          Index_type icount)
+{
+   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
+   if (ii < length) {
+      loop_body(ii+icount, idx[ii]);
+   }
+}
+
 //
 ////////////////////////////////////////////////////////////////////////
 //
@@ -144,49 +166,65 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 ////////////////////////////////////////////////////////////////////////
 //
 
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename Iterable,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall(cuda_exec<BLOCK_SIZE, Async>,
+            Iterable&& iter,
+            LOOP_BODY loop_body)
+{
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    Index_type len = std::distance(begin, end);
 
-template <size_t BLOCK_SIZE>
-struct cuda_exec_async {
-    template<typename Iterable,
-             typename Func>
-    inline void operator()(Iterable &&iter, Func &&loop_body) const {
-        auto begin = std::begin(iter);
-        auto end = std::end(iter);
-        Index_type len = std::distance(begin, end);
+    size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
-        size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+    RAJA_FT_BEGIN ;
 
-        RAJA_FT_BEGIN ;
-
-        forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                begin, len);
-        cudaErrchk(cudaPeekAtLastError());
-
-        RAJA_FT_END ;
-    }
-};
-
-template <size_t BLOCK_SIZE>
-struct cuda_exec {
-    template<typename Iterable,
-             typename Func>
-    inline void operator()(Iterable &&iter, Func &&loop_body) const {
-        auto begin = std::begin(iter);
-        auto end = std::end(iter);
-        Index_type len = std::distance(begin, end);
-
-        size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-        RAJA_FT_BEGIN ;
-
-        forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                begin, len);
-        cudaErrchk(cudaPeekAtLastError());
+    forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(
+            std::move(loop_body),
+            std::move(begin),
+            len);
+    cudaErrchk(cudaPeekAtLastError());
+    if (!Async) {
         cudaErrchk(cudaDeviceSynchronize());
-
-        RAJA_FT_END ;
     }
-};
+
+    RAJA_FT_END ;
+}
+
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename Iterable,
+          typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
+            Iterable&& iter,
+            Index_type icount,
+            LOOP_BODY loop_body)
+{
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    Index_type len = std::distance(begin, end);
+
+    size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+    RAJA_FT_BEGIN ;
+
+    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(
+            std::move(loop_body),
+            std::move(begin),
+            len,
+            icount);
+    cudaErrchk(cudaPeekAtLastError());
+    if (!Async) {
+        cudaErrchk(cudaDeviceSynchronize());
+    }
+
+    RAJA_FT_END ;
+}
 
 //
 ////////////////////////////////////////////////////////////////////////
