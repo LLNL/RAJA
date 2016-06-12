@@ -68,6 +68,7 @@
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
+#include <cuda.h>
 
 namespace RAJA {
 
