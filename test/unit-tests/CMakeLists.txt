@@ -43,6 +43,6 @@
 
 add_subdirectory(CPUtests)
 
-if(RAJA_USE_CUDA)
+if(RAJA_ENABLE_CUDA)
   add_subdirectory(GPUtests)
 endif()

@@ -41,7 +41,7 @@
 #
 ###############################################################################
 
-if (RAJA_USE_OPENMP)
+if (RAJA_ENABLE_OPENMP)
 add_definitions(-DUSE_OMP=1)
 else()
 add_definitions(-DUSE_OMP=0)
@@ -54,3 +54,4 @@ add_executable(lulesh2.0NORAJA.exe
   lulesh-init.cc
   lulesh-util.cc
   lulesh-viz.cc)
+target_link_libraries(lulesh2.0NORAJA.exe ${RT_LIBRARIES})

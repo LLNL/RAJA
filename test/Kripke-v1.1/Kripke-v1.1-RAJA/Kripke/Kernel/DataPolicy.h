@@ -188,7 +188,7 @@ struct ViewPolicy : public FixedViewPolicy {
   typedef DView<double, typename T::Layout_SigS> View_SigS;
   typedef DView<double, typename T::Layout_SigT> View_SigT;
   
-#ifdef RAJA_USE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
   typedef RAJA::omp_reduce reduce_policy;
 #else
   typedef RAJA::seq_reduce reduce_policy;

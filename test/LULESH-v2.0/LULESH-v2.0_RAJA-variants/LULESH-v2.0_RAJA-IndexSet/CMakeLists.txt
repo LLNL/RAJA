@@ -45,7 +45,7 @@ add_definitions(-DUSE_MPI=0 -DUSE_OMP=1)
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR})
 
-if (RAJA_USE_CUDA)
+if (RAJA_ENABLE_CUDA)
   add_definitions(-DUSE_CASE=9)
   cuda_add_executable(lulesh2.0_RAJA-ISet.exe
     lulesh.cc
@@ -53,13 +53,13 @@ if (RAJA_USE_CUDA)
     lulesh-init.cc
     lulesh-util.cc
     lulesh-viz.cc)
-  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA)
-elseif(RAJA_USE_OPENMP)
+  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA ${RT_LIBRARIES})
+elseif(RAJA_ENABLE_OPENMP)
   add_executable(lulesh2.0_RAJA-ISet.exe
     lulesh.cc
     lulesh-comm.cc
     lulesh-init.cc
     lulesh-util.cc
     lulesh-viz.cc)
-  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA)
+  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA ${RT_LIBRARIES})
 endif()

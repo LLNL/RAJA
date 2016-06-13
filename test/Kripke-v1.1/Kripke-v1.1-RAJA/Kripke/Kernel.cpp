@@ -55,7 +55,7 @@
 // For now, if CUDA is being used, then we are using functors for the kernels 
 // instead of lambdas.  CUDA8's __host__ __device__ lambdas might fix this
 // restriction
-#ifdef RAJA_USE_CUDA
+#ifdef RAJA_ENABLE_CUDA
 #define KRIPKE_USE_FUNCTORS
 #else
 

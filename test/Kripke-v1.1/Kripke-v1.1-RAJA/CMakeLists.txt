@@ -47,13 +47,13 @@ add_subdirectory(Kripke)
 
 set(KRIPKE_LIBS ${KRIPKE_LIBS} RAJA) 
 
-add_definitions(-DRAJA_USE_NESTED)
+add_definitions(-DRAJA_ENABLE_NESTED)
 
-if(RAJA_USE_CUDA)
+if(RAJA_ENABLE_CUDA)
   cuda_add_executable(Kripke-v1.1-RAJA.exe "Kripke.cpp")
 else()
   add_executable(Kripke-v1.1-RAJA.exe "Kripke.cpp")
 endif()
 
-target_link_libraries(Kripke-v1.1-RAJA.exe ${KRIPKE_LIBS} ${KRIPKE_LIBS})
+target_link_libraries(Kripke-v1.1-RAJA.exe ${KRIPKE_LIBS} ${KRIPKE_LIBS} ${RT_LIBRARIES})
 

@@ -15,7 +15,7 @@
 
 #include "RAJA/config.hxx"
 
-#if defined(RAJA_USE_CILK)
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -95,7 +95,7 @@ struct cilk_reduce {};
 #include "RAJA/exec-cilk/forall_cilk.hxx"
 
 
-#endif  // closing endif for if defined(RAJA_USE_CILK)
+#endif  // closing endif for if defined(RAJA_ENABLE_CILK)
 
 #endif  // closing endif for header file include guard
 
