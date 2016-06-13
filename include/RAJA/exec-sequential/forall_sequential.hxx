@@ -109,58 +109,6 @@ void forall_Icount(const PolicyBase&, Iterable &&iter, Index_type icount, Func &
     }
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  Sequential iteration over segments of index set and
- *         use segment execution policy template parameter for segments.
- *
- ******************************************************************************
- */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset,
-             LOOP_BODY loop_body )
-{
-   int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential iteration over segments of index set and
- *         use segment execution policy template parameter for segments.
- *
- *         This method passes index count to segment iteration.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& iset, 
-                    LOOP_BODY loop_body )
-{
-   int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
-}
-
 
 /*!
  ******************************************************************************

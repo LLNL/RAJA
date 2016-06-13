@@ -70,17 +70,7 @@
 ///
 namespace RAJA {
 
-struct simd_exec : public PolicyBase {
-    template<typename Iterable,
-             typename Func>
-    inline void operator()(Iterable &&iter, Func &&loop_body) const {
-        auto end = std::end(iter);
-        RAJA_SIMD
-        for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
-            loop_body( *ii );
-        }
-    }
-};
+struct simd_exec { };
 
 }
 

@@ -60,7 +60,7 @@ namespace RAJA {
 void DepGraphNode::print(std::ostream& os) const
 {
    os << "DepGraphNode : sem, reload value = " 
-      << *m_semaphore_value << " , " << m_semaphore_reload_value << std::endl;
+      << m_semaphore_value << " , " << m_semaphore_reload_value << std::endl;
 
    os << "     num dep tasks = " << m_num_dep_tasks;
    if ( m_num_dep_tasks > 0 ) {

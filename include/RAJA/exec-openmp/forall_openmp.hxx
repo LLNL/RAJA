@@ -77,6 +77,31 @@
 namespace RAJA {
 
 ///
+/// OpenMP parallel for policy implementation
+///
+
+template<typename Iterable,
+         typename InnerPolicy,
+         typename Func>
+RAJA_INLINE
+void forall(const omp_parallel_exec<InnerPolicy>&, Iterable &&iter, Func &&loop_body) {
+#pragma omp parallel
+    forall<InnerPolicy>(std::forward<Iterable>(iter),
+                        std::forward<Func>(loop_body));
+}
+
+template<typename Iterable,
+         typename InnerPolicy,
+         typename Func>
+RAJA_INLINE
+void forall_Icount(const omp_parallel_exec<InnerPolicy>&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+#pragma omp parallel
+    forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
+                        icount,
+                        std::forward<Func>(loop_body));
+}
+
+///
 /// OpenMP for nowait policy implementation
 ///
 
@@ -113,11 +138,11 @@ void forall_Icount(const omp_for_nowait_exec&, Iterable &&iter, Index_type icoun
 template<typename Iterable,
          typename Func>
 RAJA_INLINE
-void forall(const omp_parallel_for_exec&, Iterable &&iter, Func &&loop_body) {
+void forall(const omp_for_exec&, Iterable &&iter, Func &&loop_body) {
     auto begin = std::begin(iter);
     auto end = std::end(iter);
     auto distance = std::distance(begin, end);
-#pragma omp parallel for
+#pragma omp for
     for ( Index_type i = 0; i < distance ; ++i ) {
         loop_body(begin[i]);
     }
@@ -126,11 +151,43 @@ void forall(const omp_parallel_for_exec&, Iterable &&iter, Func &&loop_body) {
 template<typename Iterable,
          typename Func>
 RAJA_INLINE
-void forall_Icount(const omp_parallel_for_exec&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+void forall_Icount(const omp_for_exec&, Iterable &&iter, Index_type icount, Func &&loop_body) {
     auto begin = std::begin(iter);
     auto end = std::end(iter);
     auto distance = std::distance(begin, end);
-#pragma omp parallel for
+#pragma omp for
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(i + icount, begin[i]);
+    }
+}
+
+///
+/// OpenMP parallel for static policy implementation
+///
+
+template<typename Iterable,
+         typename Func,
+         size_t ChunkSize>
+RAJA_INLINE
+void forall(const omp_for_static<ChunkSize>&, Iterable &&iter, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp for schedule(static, ChunkSize)
+    for ( Index_type i = 0; i < distance ; ++i ) {
+        loop_body(begin[i]);
+    }
+}
+
+template<typename Iterable,
+         typename Func,
+         size_t ChunkSize>
+RAJA_INLINE
+void forall_Icount(const omp_for_static<ChunkSize>&, Iterable &&iter, Index_type icount, Func &&loop_body) {
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp for schedule(static, ChunkSize)
     for ( Index_type i = 0; i < distance ; ++i ) {
         loop_body(i + icount, begin[i]);
     }
@@ -146,31 +203,6 @@ void forall_Icount(const omp_parallel_for_exec&, Iterable &&iter, Index_type ico
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief  Iterate over index set segments using omp parallel for 
- *         and use execution policy template parameter for segments.
- *
- ******************************************************************************
- */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset, LOOP_BODY loop_body )
-{
-   int num_seg = iset.getNumSegments();
-
-#pragma omp parallel for schedule(static, 1)
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
-}
 
 /*!
  ******************************************************************************
@@ -207,30 +239,11 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
       IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
       DepGraphNode* task  = seg_info->getDepGraphNode();
 
-      //
-      // This is declared volatile to prevent compiler from
-      // optimizing the while loop (into an if-statement, for example).
-      // It may not be able to see that the value accessed through
-      // the method call will be changed at the end of the for-loop
-      // from another executing thread.
-      //
-      volatile int* __restrict__ semVal = &(task->semaphoreValue());
-
-      while(*semVal != 0) {
-         /* spin or (better) sleep here */ ;
-         // printf("%d ", *semVal) ;
-         // sleep(1) ;
-         // for (volatile int spin = 0; spin<1000; ++spin) {
-         //    spin = spin ;
-         // }
-         std::this_thread::yield() ;
-      }
+      task->wait();
 
       executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
-      if (task->semaphoreReloadValue() != 0) {
-         task->semaphoreValue() = task->semaphoreReloadValue() ;
-      }
+      task->reset();
 
       if (task->numDepTasks() != 0) {
          for (int ii = 0; ii < task->numDepTasks(); ++ii) {
@@ -240,94 +253,12 @@ void forall( IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
             // loop above.
             int seg = task->depTaskNum(ii) ;
             DepGraphNode* dep  = ncis.getSegmentInfo(seg)->getDepGraphNode();
-            __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+            dep->satisfyOne();
           }
       }
 
    } // iterate over segments of index set
 }
-
-/*!
- ******************************************************************************
- *
- * \brief  Iterate over index set segments using omp parallel for
- *         execution and use execution policy template parameter for segments.
- *
- *         This method passes index count to segment iteration.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount( IndexSet::ExecPolicy<omp_parallel_for_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& iset, LOOP_BODY loop_body )
-{
-   int num_seg = iset.getNumSegments();
-
-#pragma omp parallel for schedule(static, 1)
-   for ( int isi = 0; isi < num_seg; ++isi ) {
-
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Special segment iteration using OpenMP parallel region around 
- *         segment iteration loop. Individual segment execution is defined 
- *         in loop body.
- *
- *         This method does not use a task dependency graph for
- *         the index set segments. 
- *
- *         NOTE: IndexSet must contain only RangeSegments.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_segments(omp_parallel_segit,
-                     const IndexSet& iset,
-                     LOOP_BODY loop_body)
-{
-   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   int num_seg = ncis.getNumSegments();
-
-#pragma omp parallel
-   {
-      int numThreads = omp_get_num_threads() ;
-      int tid = omp_get_thread_num() ;
-
-      /* Create a temporary IndexSet with one Segment */
-      IndexSet is_tmp;
-      is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
-
-      RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
-
-      for ( int isi = tid; isi < num_seg; isi += numThreads ) {
-
-         RangeSegment* isetSeg = 
-            static_cast<RangeSegment*>(ncis.getSegment(isi));
-
-         segTmp->setBegin(isetSeg->getBegin()) ;
-         segTmp->setEnd(isetSeg->getEnd()) ;
-         segTmp->setPrivate(isetSeg->getPrivate()) ;
-
-         loop_body(&is_tmp) ;
-
-      } // loop over index set segments
-
-   } // end omp parallel region
-
-}
-
 
 /*!
  ******************************************************************************
@@ -375,25 +306,7 @@ void forall_segments(omp_taskgraph_segit,
         IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
         DepGraphNode* task  = seg_info->getDepGraphNode();
 
-         //
-         // This is declared volatile to prevent compiler from
-         // optimizing the while loop (into an if-statement, for example).
-         // It may not be able to see that the value accessed through
-         // the method call will be changed at the end of the for-loop
-         // from another executing thread.
-         //
-         volatile int* __restrict__ semVal = &(task->semaphoreValue());
-
-         while (*semVal != 0) {
-            /* spin or (better) sleep here */ ;
-            // printf("%d ", *semVal) ;
-            // sleep(1) ;
-            // volatile int spin ;
-            // for (spin = 0; spin<1000; ++spin) {
-            //    spin = spin ;
-            // }
-            std::this_thread::yield() ;
-         }
+        task->wait();
 
          RangeSegment* isetSeg = 
             static_cast<RangeSegment*>(ncis.getSegment(isi));
@@ -404,9 +317,7 @@ void forall_segments(omp_taskgraph_segit,
 
          loop_body(&is_tmp) ;
 
-         if (task->semaphoreReloadValue() != 0) {
-            task->semaphoreValue() = task->semaphoreReloadValue() ;
-         }
+         task->reset();
 
          if (task->numDepTasks() != 0) {
             for (int ii = 0; ii < task->numDepTasks(); ++ii) {
@@ -416,7 +327,7 @@ void forall_segments(omp_taskgraph_segit,
                // loop above.
                int seg = task->depTaskNum(ii) ;
                DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
-               __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+               dep->satisfyOne();
             }
          }
 
@@ -480,25 +391,7 @@ void forall_segments(omp_taskgraph_interval_segit,
         IndexSetSegInfo* seg_info = ncis.getSegmentInfo(isi);
         DepGraphNode* task  = seg_info->getDepGraphNode();
 
-         //
-         // This is declared volatile to prevent compiler from
-         // optimizing the while loop (into an if-statement, for example).
-         // It may not be able to see that the value accessed through
-         // the method call will be changed at the end of the for-loop
-         // from another executing thread.
-         //
-         volatile int* __restrict__ semVal = &(task->semaphoreValue());
-
-         while (*semVal != 0) {
-            /* spin or (better) sleep here */ ;
-            // printf("%d ", *semVal) ;
-            // sleep(1) ;
-            // volatile int spin ;
-            // for (spin = 0; spin<1000; ++spin) {
-            //    spin = spin ;
-            // }
-            std::this_thread::yield() ;
-         }
+        task->wait();
 
          RangeSegment* isetSeg =
             static_cast<RangeSegment*>(ncis.getSegment(isi));
@@ -509,9 +402,7 @@ void forall_segments(omp_taskgraph_interval_segit,
 
          loop_body(&is_tmp) ;
 
-         if (task->semaphoreReloadValue() != 0) {
-            task->semaphoreValue() = task->semaphoreReloadValue() ;
-         }
+         task->reset();
 
          if (task->numDepTasks() != 0) {
             for (int ii = 0; ii < task->numDepTasks(); ++ii) {
@@ -521,7 +412,7 @@ void forall_segments(omp_taskgraph_interval_segit,
                // loop above.
                int seg = task->depTaskNum(ii) ;
                DepGraphNode* dep = ncis.getSegmentInfo(seg)->getDepGraphNode();
-               __sync_fetch_and_sub(&(dep->semaphoreValue()), 1) ;
+               dep->satisfyOne();
             }
          }
 
