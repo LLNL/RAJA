@@ -5,7 +5,7 @@
  *
  * \brief   Header file containing RAJA headers for NVCC CUDA execution.
  *
- *          These methods work only on platforms that support CUDA. 
+ *          These methods work only on platforms that support CUDA.
  *
  ******************************************************************************
  */
@@ -62,9 +62,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-
 namespace RAJA {
-
 
 //
 /////////////////////////////////////////////////////////////////////
@@ -76,31 +74,31 @@ namespace RAJA {
 //
 
 struct Dim3x {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
     return dim.x;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
     return dim.x;
   }
 };
 
 struct Dim3y {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
     return dim.y;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
     return dim.y;
   }
 };
 
 struct Dim3z {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim){
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
     return dim.z;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim){
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
     return dim.z;
   }
 };
@@ -122,7 +120,6 @@ struct cuda_exec {};
 template <size_t BLOCK_SIZE>
 struct cuda_exec_async {};
 
-
 //
 //
 //
@@ -141,21 +138,18 @@ struct cuda_exec_async {};
 template <size_t BLOCK_SIZE>
 struct cuda_reduce {};
 
-
 template <size_t BLOCK_SIZE>
 struct cuda_reduce_atomic {};
 //
 // Operations in the included files are parametrized using the following
-// values. 
+// values.
 //
 const int WARP_SIZE = 32;
 
-
 }  // closing brace for RAJA namespace
 
-
 //
-// Headers containing traversal and reduction templates 
+// Headers containing traversal and reduction templates
 //
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
 #include "RAJA/exec-cuda/forall_cuda.hxx"
@@ -164,8 +158,6 @@ const int WARP_SIZE = 32;
 #include "RAJA/exec-cuda/forallN_cuda.hxx"
 #endif
 
-
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
 #endif  // closing endif for header file include guard
-
