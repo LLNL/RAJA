@@ -66,6 +66,8 @@ else()
     )
 endif()
 
-install(TARGETS RAJA 
+install(TARGETS RAJA EXPORT RAJA
   ARCHIVE DESTINATION lib
-  LIBRARY DESTINATION lib)
+  LIBRARY DESTINATION lib
+  )
+install(EXPORT RAJA DESTINATION share/cmake/raja)
