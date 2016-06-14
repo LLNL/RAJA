@@ -6,10 +6,7 @@ mkdir build-icpc-release && cd build-icpc-release
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -DCMAKE_C_COMPILER=icc \
-  -DCMAKE_CXX_COMPILER=icpc \
-  -DRAJA_ENABLE_CILK=On \
-  -DCMAKE_BUILD_TYPE=Release \
+  -C ${RAJA_DIR}/host-configs/chaos/intel.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-icpc-release \
   "$@" \
   ${RAJA_DIR}
