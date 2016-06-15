@@ -568,7 +568,13 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
   // Constructor takes initial reduction value (default ctor is disabled).
   // Ctor only executes on the host.
   //
+  static_assert(BLOCK_SIZE!=0);
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
   explicit ReduceSum(T init_val) {
+   
     m_is_copy = false;
 
     m_init_val = init_val;
