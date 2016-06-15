@@ -12,7 +12,6 @@ set(RAJA_COMPILER "RAJA_COMPILER_ICC" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "/collab/usr/global/tools/intel/chaos_5_x86_64_ib/ipsxe-2017.0-beta/bin/icpc" CACHE PATH "")
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -xMIC-AVX512 -inline-max-total-size=20000 -inline-forceinline -ansi-alias" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -xMIC-AVX512 -inline-max-total-size=20000 -inline-forceinline -ansi-alias" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")

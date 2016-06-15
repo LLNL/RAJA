@@ -40,49 +40,33 @@
 # 
 ###############################################################################
 
-if (NOT RAJA_HOST_CONFIG_LOADED)
-  set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD 14)
 
-  message("Auto-detecting compiler options")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
 
-  if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
-
-    set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
-
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES GNU)
-
-    set(RAJA_COMPILER "RAJA_COMPILER_GNU")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -mavx -finline-functions -finline-limit=20000" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Ofast -mavx -finline-functions -finline-limit=20000" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -fpermissive" CACHE STRING "")
-
-  elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
-
-    set(RAJA_COMPILER "RAJA_COMPILER_ICC")
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS -std=c++0x" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -mavx -inline-max-total-size=20000 -inline-forceinline -ansi-alias" CACHE STRING "")
-    set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
-
-  endif()
-
-  if (RAJA_ENABLE_CUDA)
-    if(CMAKE_BUILD_TYPE MATCHES Release)
-      set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin; ${CMAKE_CXX_COMPILER})
-    elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-      set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
-    elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-      set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
-    endif()
-  endif()
-
-  set(RAJA_RANGE_ALIGN 4 CACHE INT "")
-  set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
-  set(RAJA_DATA_ALIGN 64 CACHE INT "")
-  set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
+if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES GNU)
+  set(RAJA_COMPILER "RAJA_COMPILER_GNU")
+elseif (CMAKE_CXX_COMPILER_ID MATCHES Intel)
+  set(RAJA_COMPILER "RAJA_COMPILER_ICC")
+else()
+  set(RAJA_COMPILER "RAJA_COMPILER_${CMAKE_CXX_COMPILER_ID}")
 endif()
+
+if (RAJA_ENABLE_CUDA)
+  if(CMAKE_BUILD_TYPE MATCHES Release)
+    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin; ${CMAKE_CXX_COMPILER})
+  elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
+  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
+    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
+  endif()
+endif()
+
+set(RAJA_RANGE_ALIGN 4 CACHE INT "")
+set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
+set(RAJA_DATA_ALIGN 64 CACHE INT "")
+set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
