@@ -423,6 +423,12 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   T m_reduced_val;
 
   CudaReductionBlockTallyType *m_tallydata;
+  
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 /*!
@@ -550,6 +556,12 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
   T m_reduced_val;
 
   CudaReductionBlockTallyType *m_tallydata;
+  
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 /*!
@@ -568,10 +580,6 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
   // Constructor takes initial reduction value (default ctor is disabled).
   // Ctor only executes on the host.
   //
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
-  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
   explicit ReduceSum(T init_val) {
    
     m_is_copy = false;
@@ -704,6 +712,12 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
   int m_blockoffset;
 
   CudaReductionBlockDataType *m_max_grid_size;
+
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 /*!
@@ -825,6 +839,12 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
   T m_reduced_val;
 
   CudaReductionBlockTallyType *m_tallydata;
+
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 ///
@@ -1030,6 +1050,12 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   Index_type m_reduced_idx;
 
   CudaReductionLocBlockDataType *m_blockdata;
+
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 template <size_t BLOCK_SIZE, typename T>
@@ -1226,6 +1252,12 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   Index_type m_reduced_idx;
 
   CudaReductionLocBlockDataType *m_blockdata;
+
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
 };
 
 }  // closing brace for RAJA namespace
