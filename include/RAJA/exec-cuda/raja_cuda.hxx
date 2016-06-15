@@ -145,6 +145,7 @@ struct cuda_reduce_atomic {};
 // values.
 //
 const int WARP_SIZE = 32;
+const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 
 }  // closing brace for RAJA namespace
 
