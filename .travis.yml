@@ -20,31 +20,37 @@ matrix:
          packages:
            - g++-5
      env: COMPILER=g++-5
-   - compiler: clang
+   - compiler: gcc
      addons:
        apt:
          sources:
            - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise-3.6
          packages:
-           - clang-3.6
-     env: COMPILER=clang++-3.6
+           - g++-6
+     env: COMPILER=g++-6
    - compiler: clang
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-           - llvm-toolchain-precise-3.7
-         packages:
-           - clang-3.7
-     env: COMPILER=clang++-3.7
-
+     env: 
+         - COMPILER=clang++-3.6
+         - SPACK=llvm@3.6
+   - compiler: clang
+     env: 
+         - COMPILER=clang++-3.7
+         - SPACK=llvm@3.7
+   - compiler: clang
+     env: 
+         - COMPILER=clang++-3.8
+         - SPACK=llvm@3.8
+cache:
+    directories:
+        - $HOME/spack
 before_install:
   - sudo apt-get update -qq
+  - git clone https://github.com/LLNL/spack $HOME/spack
+  - [[ ! -z "$SPACK" ]] && $HOME/spack/bin/spack install $SPACK && 
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER"
+  - if [[ -z "$SPACK" ]] ; then cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER" ; else $HOME/spack/bin/spack env $SPACK cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER" ; fi
   - make -j
   - make test # currently does nothing, this is how testing should be done
   - ./test/unit-tests/CPUtests/CPUnested-test.exe | tee test.out
