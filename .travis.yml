@@ -46,7 +46,7 @@ cache:
 before_install:
   - sudo apt-get update -qq
   - git clone https://github.com/LLNL/spack $HOME/spack
-  - [[ ! -z "$SPACK" ]] && $HOME/spack/bin/spack install $SPACK && 
+  - [[ ! -z "$SPACK" ]] && $HOME/spack/bin/spack install $SPACK
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
