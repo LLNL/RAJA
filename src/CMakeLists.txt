@@ -66,8 +66,15 @@ else()
     )
 endif()
 
+set_target_properties(RAJA
+  PROPERTIES
+  CXX_STANDARD 11
+  CXX_STANDARD_REQUIRED YES
+)
+
 install(TARGETS RAJA EXPORT RAJA
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
-  )
+)
+
 install(EXPORT RAJA DESTINATION share/cmake/raja)
