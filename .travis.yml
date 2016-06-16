@@ -12,40 +12,40 @@ matrix:
           packages:
             - g++-4.9
       env: COMPILER=g++-4.9
-#    - compiler: gcc
-#      addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#          packages:
-#            - g++-5
-#      env: COMPILER=g++-5
-#    - compiler: clang
-#      addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.6
-#          packages:
-#            - clang-3.6
-#      env: COMPILER=clang++-3.6
-#    - compiler: clang
-#      addons:
-#        apt:
-#          sources:
-#            - ubuntu-toolchain-r-test
-#            - llvm-toolchain-precise-3.7
-#          packages:
-#            - clang-3.7
-#      env: COMPILER=clang++-3.7
+   - compiler: gcc
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: COMPILER=g++-5
+   - compiler: clang
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+           - llvm-toolchain-precise-3.6
+         packages:
+           - clang-3.6
+     env: COMPILER=clang++-3.6
+   - compiler: clang
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+           - llvm-toolchain-precise-3.7
+         packages:
+           - clang-3.7
+     env: COMPILER=clang++-3.7
 
 before_install:
   - sudo apt-get update -qq
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake ../
-  - make
+  - cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER"
+  - make -j
   - make test # currently does nothing, this is how testing should be done
   - ./test/unit-tests/CPUtests/CPUnested-test.exe | tee test.out
   - grep "All Tests" test.out | sed -e 's/.* \([0-9]\+\) \/ \([0-9]\+\)$/\1\t\2/' | awk '{print $1 "/" $2; exit !($1 == $2)}'
@@ -54,4 +54,5 @@ script:
   - ./test/unit-tests/CPUtests/CPUreduce-test.exe | tee test.out
   - grep "All Tests" test.out | sed -e 's/.* \([0-9]\+\) \/ \([0-9]\+\)$/\1\t\2/' | awk '{print $1 "/" $2; exit !($1 == $2)}'
   - ./test/unit-tests/CPUtests/CPUtraversal-test.exe | tee test.out
+  - grep "All Tests" test.out | sed -e 's/.* \([0-9]\+\) \/ \([0-9]\+\)$/\1\t\2/' | awk '{print $1 "/" $2; exit !($1 == $2)}'
 
