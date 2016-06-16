@@ -42,7 +42,7 @@
 
 cmake_minimum_required (VERSION 2.8)
 
-project(RAJA LANGUAGES CXX C)
+project(RAJA LANGUAGES CXX)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 1)
@@ -56,6 +56,7 @@ option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests and exmaple applications" On)
+option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)

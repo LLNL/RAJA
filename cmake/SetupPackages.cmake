@@ -77,4 +77,9 @@ find_library(RT_LIBRARIES rt)
 if (CALIPER_FOUND)
   list(APPEND RT_LIBRARIES ${caliper_LIB_DIR}/libcaliper.so)
 endif()
-#set(RT_LIBRARIES "")
+
+# Add empty string if librt not found
+if(RT_LIBRARIES MATCHES "RT_LIBRARIES-NOTFOUND")
+  message(WARNING "librt not found, some test applications might not link")
+  set(RT_LIBRARIES "")
+endif()
