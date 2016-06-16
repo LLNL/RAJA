@@ -66,11 +66,13 @@ else()
     )
 endif()
 
-set_target_properties(RAJA
-  PROPERTIES
-  CXX_STANDARD 11
-  CXX_STANDARD_REQUIRED YES
-)
+if (NOT CMAKE_CXX_COMPILER_ID MATCHES Intel)
+  set_target_properties(RAJA
+    PROPERTIES
+    CXX_STANDARD 11
+    CXX_STANDARD_REQUIRED YES
+  )
+endif()
 
 install(TARGETS RAJA EXPORT RAJA
   ARCHIVE DESTINATION lib
