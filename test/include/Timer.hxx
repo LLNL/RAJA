@@ -29,9 +29,12 @@
 #endif
 
 
-namespace RAJA {
 
 #if defined(RAJA_USE_CHRONO)
+
+#include <chrono>
+
+namespace RAJA {
 /*!
  ******************************************************************************
  *
@@ -39,7 +42,6 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-#include <chrono>
 class ChronoTimer {
 #if 0
     using clock = std::chrono::system_clock;
@@ -66,9 +68,12 @@ private:
 };
 
 using TimerBase = ChronoTimer;
+}
 
 #elif defined(RAJA_USE_GETTIME)
 #include <time.h>
+
+namespace RAJA {
 typedef timespec TimeType;
 
 /*!
@@ -109,9 +114,11 @@ private:
 };
 
 using TimerBase = GettimeTimer;
+}  // closing brace for RAJA namespace
 
 #elif defined(RAJA_USE_CYCLE)
 #include "./cycle.h"
+namespace RAJA {
 typedef ticks TimeType;
 
 /*!
@@ -140,9 +147,11 @@ private:
 };
 
 using TimerBase = CycleTimer;
+}  // closing brace for RAJA namespace
 
 #elif defined(RAJA_USE_CLOCK)
 #include <time.h>
+namespace RAJA {
 typedef clock_t TimeType;
 
 /*!
@@ -173,6 +182,7 @@ private:
 };
 
 using TimerBase = ClockTimer;
+}  // closing brace for RAJA namespace
 
 #else
 
@@ -180,6 +190,7 @@ using TimerBase = ClockTimer;
 
 #endif
 
+namespace RAJA {
 
 class Timer : public TimerBase {
     public:
