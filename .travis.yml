@@ -4,7 +4,7 @@ language: cpp
 
 matrix:
   include:
-   - compiler: gcc
+   - compiler: gcc-4
      addons:
        apt:
          sources:
@@ -12,7 +12,7 @@ matrix:
          packages:
            - g++-4.9
      env: COMPILER=g++-4.9
-   - compiler: gcc
+   - compiler: gcc-5
      addons:
        apt:
          sources:
@@ -20,7 +20,7 @@ matrix:
          packages:
            - g++-5
      env: COMPILER=g++-5
-   - compiler: gcc
+   - compiler: gcc-6
      addons:
        apt:
          sources:
@@ -28,29 +28,28 @@ matrix:
          packages:
            - g++-6
      env: COMPILER=g++-6
-   - compiler: clang
+   - compiler: clang-3.6
      env: 
-         - COMPILER=clang++-3.6
-         - SPACK=llvm@3.6
-   - compiler: clang
+         - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - DOWNLOAD=http://llvm.org/releases/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+   - compiler: clang-3.7
      env: 
-         - COMPILER=clang++-3.7
-         - SPACK=llvm@3.7
-   - compiler: clang
+         - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - DOWNLOAD=http://llvm.org/releases/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+   - compiler: clang-3.8
      env: 
-         - COMPILER=clang++-3.8
-         - SPACK=llvm@3.8
+         - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - DOWNLOAD=http://llvm.org/releases/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 cache:
     directories:
-        - $HOME/spack
+        - $HOME/llvm
 before_install:
   - sudo apt-get update -qq
-  - if [[ ! -d $HOME/spack ]] ; then git clone https://github.com/LLNL/spack $HOME/spack ; else cd $HOME/spack ; git pull ; fi
-  - if [[ ! -z "$SPACK" ]] ; then $HOME/spack/bin/spack install $SPACK ; fi
+  - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ; fi
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - if [[ -z "$SPACK" ]] ; then cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER" ; else $HOME/spack/bin/spack env $SPACK cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER" ; fi
+  - cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER"
   - make -j
   - make test # currently does nothing, this is how testing should be done
   - ./test/unit-tests/CPUtests/CPUnested-test.exe | tee test.out
