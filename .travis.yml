@@ -57,6 +57,7 @@ matrix:
            - g++-5
      env: 
          - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
          - DOWNLOAD=http://llvm.org/releases/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
 cache:
     directories:
@@ -65,7 +66,6 @@ before_install:
   - sudo apt-get update -qq
   - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ; fi
 script:
-  - ls /usr/lib/gcc/x86_64-linux-gnu/
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
   - cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER"
