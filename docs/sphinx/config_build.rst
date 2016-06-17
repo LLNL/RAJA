@@ -211,28 +211,32 @@ The following list describes the RAJA CMake variables and their defaults.
 
   * **Timer Options**
 
-     RAJA provides a simple timer class that is used in RAJA example codes
-     to determine execution timing and can be used in other apps as well.
-     Three variables are available to select the timing mechanism used.
-     Exactly one of these can be on at a time.
+     RAJA provides a simple portable timer class that is used in RAJA
+     example codes to determine execution timing and can be used in other apps
+     as well.  This timer can use any of four internal timers depending on
+     your preferences, and one should be selected by setting the `RAJA_TIMER`
+     variable.  If the `RAJA_CALIPER` variable, default off, is set to on, the
+     timer will also offer caliper-based region annotations.
 
       ======================   ======================
-      Variable                 Default
+      Variable                 Values
       ======================   ======================
-      RAJA_USE_GETTIME         On 
-      RAJA_USE_CLOCK           Off 
-      RAJA_USE_CYCLE           Off 
+      RAJA_TIMER               chrono (default)
+                               gettime
+                               clock
+                               cycle
       ======================   ======================
 
      What these variables mean:
 
       =============================   ========================================
-      Variable                        Meaning
+      Value                           Meaning
       =============================   ========================================
-      RAJA_USE_GETTIME                Use `timespec` from the C standard 
+      chrono                          Use the std::chrono library from the STL
+      gettime                         Use `timespec` from the C standard 
                                       library time.h file
-      RAJA_USE_CLOCK                  Use `clock_t` from time.h
-      RAJA_USE_CYCLE                  Use `ticks` from the cycle.h file 
+      clock                           Use `clock_t` from time.h
+      cycle                           Use `ticks` from the cycle.h file 
                                       borrowed from the FFTW library
       =============================   ========================================
 
