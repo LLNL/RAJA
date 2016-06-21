@@ -64,31 +64,25 @@
 
 namespace RAJA {
 
-
 /*!
  * \brief Functor that binds the first argument of a callable.
- * 
+ *
  * This version has host-device constructor and device-only operator.
  */
-template<typename BODY>
+template <typename BODY>
 struct ForallN_BindFirstArg_Device {
-
-  BODY const body;  
-  size_t  i;
+  BODY const body;
+  size_t i;
 
   RAJA_INLINE
   RAJA_DEVICE
-  constexpr
-  ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
+  constexpr ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
 
-  template<typename ... ARGS>
-  RAJA_INLINE
-  RAJA_DEVICE
-  void  operator()(ARGS ... args) const {
+  template <typename... ARGS>
+  RAJA_INLINE RAJA_DEVICE void operator()(ARGS... args) const {
     body(i, args...);
   }
 };
-
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
@@ -99,116 +93,108 @@ struct ForallN_BindFirstArg_Device {
 struct CudaDim {
   dim3 num_threads;
   dim3 num_blocks;
-  
+
   __host__ __device__ void print(void) const {
     printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
-      num_blocks.x, num_blocks.y, num_blocks.z,
-      num_threads.x, num_threads.y, num_threads.z);
+           num_blocks.x,
+           num_blocks.y,
+           num_blocks.z,
+           num_threads.x,
+           num_threads.y,
+           num_threads.z);
   }
 };
 
-template<typename POL>
+template <typename POL>
 struct CudaPolicy {};
 
-template<typename POL, typename IDX>
-struct CudaIndexPair : public POL{
-  template<typename IS>
-  RAJA_INLINE
-  constexpr
-  CudaIndexPair(CudaDim &dims, IS const &is) : POL(dims, is) {}
-
+template <typename POL, typename IDX>
+struct CudaIndexPair : public POL {
+  template <typename IS>
+  RAJA_INLINE constexpr CudaIndexPair(CudaDim &dims, IS const &is)
+      : POL(dims, is) {}
 
   typedef IDX INDEX;
 };
 
-
-template<typename VIEWDIM, int threads_per_block>
+template <typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
   int begin;
   int end;
-  
+
   VIEWDIM view;
-  
-  CudaThreadBlock(CudaDim &dims, RangeSegment const &is) : 
-    begin(is.getBegin()), end(is.getEnd())
-  {  
+
+  CudaThreadBlock(CudaDim &dims, RangeSegment const &is)
+      : begin(is.getBegin()), end(is.getEnd()) {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void){
-
+  __device__ inline int operator()(void) {
     int idx = begin + view(blockIdx) * threads_per_block + view(threadIdx);
-    if(idx >= end){
+    if (idx >= end) {
       idx = INT_MIN;
     }
     return idx;
   }
-  
-  void inline setDims(CudaDim &dims){
-    int n = end-begin;
-    if(n < threads_per_block){
+
+  void inline setDims(CudaDim &dims) {
+    int n = end - begin;
+    if (n < threads_per_block) {
       view(dims.num_threads) = n;
       view(dims.num_blocks) = 1;
-    }
-    else{
+    } else {
       view(dims.num_threads) = threads_per_block;
-      
+
       int blocks = n / threads_per_block;
-      if(n % threads_per_block){
-        ++ blocks;
+      if (n % threads_per_block) {
+        ++blocks;
       }
       view(dims.num_blocks) = blocks;
     }
-  }  
+  }
 };
-
 
 /*
  * These execution policies map a loop nest to the block and threads of a
  * given dimension with the number of THREADS per block specifies.
  */
 
-template<int THREADS>
+template <int THREADS>
 using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
 
-template<int THREADS>
+template <int THREADS>
 using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
 
-template<int THREADS>
+template <int THREADS>
 using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
 
-
-
-
-template<typename VIEWDIM>
+template <typename VIEWDIM>
 struct CudaThread {
   int begin;
   int end;
-  
+
   VIEWDIM view;
-  
-  CudaThread(CudaDim &dims, RangeSegment const &is) : 
-    begin(is.getBegin()), end(is.getEnd())
-  {  
+
+  CudaThread(CudaDim &dims, RangeSegment const &is)
+      : begin(is.getBegin()), end(is.getEnd()) {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void){
-    
+  __device__ inline int operator()(void) {
     int idx = begin + view(threadIdx);
-    if(idx >= end){
+    if (idx >= end) {
       idx = INT_MIN;
     }
     return idx;
   }
-  
-  void inline setDims(CudaDim &dims){
-    int n = end-begin;
-    view(dims.num_threads) = n;  
-  }  
+
+  void inline setDims(CudaDim &dims) {
+    int n = end - begin;
+    view(dims.num_threads) = n;
+  }
 };
 
-/* These execution policies map the given loop nest to the threads in the 
+/* These execution policies map the given loop nest to the threads in the
    specified dimensions (not blocks)
  */
 using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
@@ -217,40 +203,33 @@ using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
 
 using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
 
-
-
-
-
-template<typename VIEWDIM>
+template <typename VIEWDIM>
 struct CudaBlock {
   int begin;
   int end;
-  
+
   VIEWDIM view;
-  
-  CudaBlock(CudaDim &dims, RangeSegment const &is) : 
-    begin(is.getBegin()), end(is.getEnd())
-  {  
+
+  CudaBlock(CudaDim &dims, RangeSegment const &is)
+      : begin(is.getBegin()), end(is.getEnd()) {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void){
-    
+  __device__ inline int operator()(void) {
     int idx = begin + view(blockIdx);
-    if(idx >= end){
+    if (idx >= end) {
       idx = INT_MIN;
     }
     return idx;
   }
-  
-  void inline setDims(CudaDim &dims){
-    int n = end-begin;
-    view(dims.num_blocks) = n;  
-  }  
+
+  void inline setDims(CudaDim &dims) {
+    int n = end - begin;
+    view(dims.num_blocks) = n;
+  }
 };
 
-
-/* These execution policies map the given loop nest to the blocks in the 
+/* These execution policies map the given loop nest to the blocks in the
    specified dimensions (not threads)
  */
 using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
@@ -259,37 +238,29 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
-
-
-
-
 // Function to check indices for out-of-bounds
-template <typename BODY, typename ... ARGS>
-RAJA_INLINE
-__device__ void cudaCheckBounds(BODY body, int i, ARGS ... args){
-  if(i > INT_MIN){
+template <typename BODY, typename... ARGS>
+RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i, ARGS... args) {
+  if (i > INT_MIN) {
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
-  }  
+  }
 }
 
 template <typename BODY>
-RAJA_INLINE
-__device__ void cudaCheckBounds(BODY body, int i){
-  if(i > INT_MIN){
+RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i) {
+  if (i > INT_MIN) {
     body(i);
-  }  
+  }
 }
 
 // Launcher that uses execution policies to map blockIdx and threadIdx to map
 // to N-argument function
-template <typename BODY, typename ... CARGS>
-__global__ void cudaLauncherN(BODY body, CARGS ... cargs){
-  
+template <typename BODY, typename... CARGS>
+__global__ void cudaLauncherN(BODY body, CARGS... cargs) {
   // Compute indices and then pass through the bounds-checking mechanism
-  cudaCheckBounds(body, (cargs())... );
+  cudaCheckBounds(body, (cargs())...);
 }
-
 
 /*
  * The following is commented out.
@@ -299,70 +270,71 @@ __global__ void cudaLauncherN(BODY body, CARGS ... cargs){
  *
  */
 
-template<int ...> struct integer_sequence {};
+template <int...>
+struct integer_sequence {};
 
-template<int N, int ...S> struct gen_sequence : gen_sequence<N-1, N-1, S...> {};
+template <int N, int... S>
+struct gen_sequence : gen_sequence<N - 1, N - 1, S...> {};
 
-template<int ...S> struct gen_sequence<0, S...>{ typedef integer_sequence<S...> type; };
+template <int... S>
+struct gen_sequence<0, S...> {
+  typedef integer_sequence<S...> type;
+};
 
-template<typename CuARG0, typename ISET0,typename CuARG1, typename ISET1, typename ... CuARGS, typename ... ISETS>
-struct ForallN_Executor< 
-  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
-  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
-  ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>... > 
-{
-
-  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;  
-  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> iset1;  
+template <typename CuARG0,
+          typename ISET0,
+          typename CuARG1,
+          typename ISET1,
+          typename... CuARGS,
+          typename... ISETS>
+struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+                        ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
+                        ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> {
+  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;
+  ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> iset1;
   std::tuple<ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> isets;
-  
-  ForallN_Executor(
-    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_, 
-    ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const & iset1_, 
-    ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS> const & ...isets_) 
-    :  iset0(iset0_), iset1(iset1_), isets(isets_...) 
-  { }
 
-  template<typename BODY>
-  RAJA_INLINE
-  void operator()(BODY body) const {
-    unpackIndexSets(body, typename gen_sequence<sizeof...(CuARGS)>::type()); 
+  ForallN_Executor(
+      ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const &iset0_,
+      ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1> const &iset1_,
+      ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS> const &... isets_)
+      : iset0(iset0_), iset1(iset1_), isets(isets_...) {}
+
+  template <typename BODY>
+  RAJA_INLINE void operator()(BODY body) const {
+    unpackIndexSets(body, typename gen_sequence<sizeof...(CuARGS)>::type());
   }
-  
-  template<typename BODY, int ... N>
-  RAJA_INLINE
-  void unpackIndexSets(BODY body, integer_sequence<N...>) const {
-  
+
+  template <typename BODY, int... N>
+  RAJA_INLINE void unpackIndexSets(BODY body, integer_sequence<N...>) const {
     CudaDim dims;
-    
-    callLauncher(dims, body, CuARG0(dims, iset0), CuARG1(dims, iset1), CuARGS(dims, std::get<N>(isets))...);
+
+    callLauncher(dims,
+                 body,
+                 CuARG0(dims, iset0),
+                 CuARG1(dims, iset1),
+                 CuARGS(dims, std::get<N>(isets))...);
   }
-  
-  
-  template<typename BODY, typename ... CARGS>
-  RAJA_INLINE
-  void callLauncher(CudaDim const &dims, BODY body, CARGS const &... cargs) const {
+
+  template <typename BODY, typename... CARGS>
+  RAJA_INLINE void callLauncher(CudaDim const &dims,
+                                BODY body,
+                                CARGS const &... cargs) const {
     cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, cargs...);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
 };
 
-
-template<typename CuARG0, typename ISET0>
-struct ForallN_Executor< 
-  ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> > 
-{
+template <typename CuARG0, typename ISET0>
+struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   ISET0 iset0;
 
-  ForallN_Executor(
-    ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const & iset0_) 
-    :  iset0(iset0_) 
-  { }
+  ForallN_Executor(ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const &iset0_)
+      : iset0(iset0_) {}
 
-  template<typename BODY>
-  RAJA_INLINE
-  void operator()(BODY body) const {
+  template <typename BODY>
+  RAJA_INLINE void operator()(BODY body) const {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
@@ -372,11 +344,8 @@ struct ForallN_Executor<
   }
 };
 
+}  // namespace RAJA
 
-
-} // namespace RAJA
-  
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard
-

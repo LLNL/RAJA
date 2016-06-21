@@ -258,4 +258,4 @@ private:
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif  // closing endif for RAJA_BoxSegment_HXX include file guard

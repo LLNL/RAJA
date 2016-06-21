@@ -2900,7 +2900,7 @@ int main(int argc, char *argv[])
    RAJA::Timer timer_main;
    RAJA::Timer timer_cycle;
 
-   timer_main.start();
+   timer_main.start("timer_main");
 
    int maxIter = 1024*1024 ;
    Index_t edgeElems = 45 ;
@@ -3167,7 +3167,7 @@ int main(int argc, char *argv[])
 
 
    /* timestep to solution */
-   timer_cycle.start();
+   timer_cycle.start("timer_cycle");
    while((domain.time() < domain.stoptime()) && (domain.cycle() < maxIter)) {
       TimeIncrement() ;
       LagrangeLeapFrog() ;
@@ -3177,9 +3177,9 @@ int main(int argc, char *argv[])
                 double(domain.time()), double(domain.deltatime()) ) ;
       }
    }
-   timer_cycle.stop();
+   timer_cycle.stop("timer_cycle");
 
-   timer_main.stop();
+   timer_main.stop("timer_main");
 
    printf("Total Cycle Time (sec) = %Lf\n", timer_cycle.elapsed() );
    printf("Total main Time (sec) = %Lf\n", timer_main.elapsed() );
