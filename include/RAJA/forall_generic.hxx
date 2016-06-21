@@ -117,25 +117,6 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(const IndexSet& c,
-        LOOP_BODY loop_body)
-{
-
-   forall_Icount(EXEC_POLICY_T(),
-          c,
-          loop_body);
-}
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dispatch over containers with icount
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY>
 RAJA_INLINE
