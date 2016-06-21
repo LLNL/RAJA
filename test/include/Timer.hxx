@@ -55,7 +55,7 @@ public:
     void start() { tstart = clock::now(); }
     void stop()  {
         tstop = clock::now();
-        telapsed += std::chrono::duration_cast<std::chrono::seconds>(tstop - tstart);
+        telapsed += tstop - tstart;
     }
 
     Duration::rep elapsed()

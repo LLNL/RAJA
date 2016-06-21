@@ -73,7 +73,7 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class DepGraphNode
+class RAJA_ALIGNED_ATTR(256) DepGraphNode
 {
 public:
 
@@ -85,7 +85,7 @@ public:
    /// These values may need to be set differently for different
    /// algorithms and platforms. We haven't determined the best defaults yet!
    ///
-   static const int _MaxDepTasks_          = 8;
+   static const int _MaxDepTasks_             = 8;
 
    ///
    /// Default ctor initializes node to default state.
@@ -107,7 +107,7 @@ public:
    /// Get/set semaphore "reload" value; i.e., the total number of external
    /// task dependencies that must be satisfied before this task can execute.
    ///
-   std::atomic<int>& semaphoreReloadValue() {
+   int& semaphoreReloadValue() {
       return m_semaphore_reload_value ;
    }
 
@@ -165,7 +165,7 @@ private:
 
    int  m_dep_task[_MaxDepTasks_] ;
    int  m_num_dep_tasks ;
-   std::atomic<int> m_semaphore_reload_value;
+   int  m_semaphore_reload_value;
    std::atomic<int> m_semaphore_value;
 
 }; 

@@ -153,6 +153,15 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //     RAJA_SIMD - macro to express SIMD vectorization pragma to force
 //                 loop vectorization
 //
+//     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable alignments
+//
+
+#if defined(RAJA_COMPILER_GNU)
+#define RAJA_ALIGNED_ATTR(N) __attribute__((aligned(N)))
+#else
+#define RAJA_ALIGNED_ATTR(N) alignas(N)
+#endif
+
 
 #if defined(RAJA_COMPILER_ICC)
 //
