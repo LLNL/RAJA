@@ -105,7 +105,7 @@ Other contributors include:
   * David Beckingsale (beckingsale1@llnl.gov)
   * Holger Jones (jones19@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
-  * Olga Pearce (pearce8@llnl.gov)
+  * David Poliakoff (poliakoff1@llnl.gov)
   * Tom Scogland (scogland1@llnl.gov)
 
 

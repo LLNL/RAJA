@@ -13,7 +13,8 @@
 Index of RAJA Examples
 =======================
 
-.. warning:: This section will contain a list of RAJA code examples along with
+.. warning:: Under construction!
+             This section will contain a list of RAJA code examples along with
              a basic explanation for each that we will build up over time 
              (e.g., see note at top of the previous section :doc:`primer`). 
              We can also add a link to the source code for each example. If 
