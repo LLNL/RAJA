@@ -941,7 +941,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   // Operator to retrieve index value of min (before object is destroyed).
   //
   Index_type getMinLoc() {
-    cudaErrchk(cudaDeviceSynchronize());  // it would be good not to call this
+    cudaErrchk(cudaDeviceSynchronize());  
     m_reduced_idx = m_blockdata[m_blockoffset].idx;
     return m_reduced_idx;
   }
@@ -973,7 +973,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
     __syncthreads();
 
     sd[threadId].val = val;
-    sd[threadId].idx = idx;  // need to reconcile loc vs idx naming
+    sd[threadId].idx = idx; 
     __syncthreads();
 
     for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
@@ -1010,7 +1010,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
           RAJA_MINLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
       int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], (int)1);
-      lastBlock = (oldBlockCount == (gridDim.x - 1));
+      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
     }
     __syncthreads();
 
@@ -1019,10 +1019,10 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
         retiredBlocks[m_myID] = 0;
       }
 
-      CudaReductionLocBlockDataType lmin;
-      lmin.val = m_reduced_val;
-      lmin.idx = m_reduced_idx;
-      for (int i = threadId; i < gridDim.x; i += BLOCK_SIZE) {
+      CudaReductionLocBlockDataType lmin={m_reduced_val,m_reduced_idx};
+      int blocks = gridDim.x * gridDim.y * gridDim.z;
+      int threads = blockDim.x * blockDim.y * blockDim.z;
+      for (int i = threadId; i < blocks; i += threads) {
         lmin = RAJA_MINLOC(lmin, m_blockdata[m_blockoffset + i + 1]);
       }
       sd[threadId] = lmin;
@@ -1218,7 +1218,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
           RAJA_MAXLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
       unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], 1);
-      lastBlock = (oldBlockCount == (gridDim.x - 1));
+      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();
 
@@ -1227,10 +1227,10 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
         retiredBlocks[m_myID] = 0;
       }
 
-      CudaReductionLocBlockDataType lmax;
-      lmax.val = m_reduced_val;
-      lmax.idx = m_reduced_idx;
-      for (int i = threadId; i < gridDim.x; i += BLOCK_SIZE) {
+      CudaReductionLocBlockDataType lmax={m_reduced_val,m_reduced_idx};
+      int blocks = gridDim.x * gridDim.y * gridDim.z;
+      int threads = blockDim.x * blockDim.y * blockDim.z;
+      for (int i = threadId; i < blocks; i += threads) {
         lmax = RAJA_MAXLOC(lmax, m_blockdata[m_blockoffset + i + 1]);
       }
       sd[threadId] = lmax;

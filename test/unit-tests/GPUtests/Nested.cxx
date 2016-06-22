@@ -13,6 +13,7 @@
 //
 
 #include <cstdlib>
+#include <cfloat>
 #include <time.h>
 
 #include <string>
@@ -26,6 +27,12 @@ using namespace std;
 
 #include "Compare.hxx"
 
+
+typedef struct {
+  double val;
+  int idx;
+} minmaxloc_t;
+
 //
 // Global variables for counting tests executed/passed.
 //
@@ -34,6 +41,10 @@ unsigned s_ntests_passed_total = 0;
 
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
+
+// block_size is needed by the reduction variables to setup shared memory
+// Care should be used here to cover the maximum block dimensions used by this test
+const size_t block_size = 256;
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -71,6 +82,21 @@ void runLTimesTest(std::string const &policy,
   std::vector<double> psi_data(num_directions * num_groups * num_zones);
   std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
 
+  // setup CUDA Reduction variables to be exercised
+  ReduceSum<cuda_reduce<block_size>,double> pdsum(0.0);
+  ReduceMin<cuda_reduce<block_size>,double> pdmin(DBL_MAX);
+  ReduceMax<cuda_reduce<block_size>,double> pdmax(-DBL_MAX);
+  ReduceMinLoc<cuda_reduce<block_size>,double> pdminloc(DBL_MAX,-1);
+  ReduceMaxLoc<cuda_reduce<block_size>,double> pdmaxloc(-DBL_MAX,-1);
+
+  // setup local Reduction variables as a crosscheck
+  double lsum=0.0;
+  double lmin=DBL_MAX;
+  double lmax=-DBL_MAX;
+  minmaxloc_t lminloc={DBL_MAX,-1};
+  minmaxloc_t lmaxloc={-DBL_MAX,-1};
+
+  //
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
     ell_data[i] = drand48();
@@ -115,11 +141,17 @@ void runLTimesTest(std::string const &policy,
       RangeSegment(0, num_zones),
       [=] __device__(IMoment m, IDirection d, IGroup g, IZone z) {
         // printf("%d,%d,%d,%d\n", *m, *d, *g, *z);
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
+        double val = ell(m,d) * psi(d,g,z); 
+        phi(m,g,z) += val; 
+        pdsum += val;
+        pdmin.min(val);
+        pdmax.max(val);
+        int index = *d + (*m * num_directions) + (*g * num_directions * num_moments) + (*z * num_directions * num_moments * num_groups);
+        pdminloc.minloc(val,index);
+        pdmaxloc.maxloc(val,index);
       });
 
   cudaDeviceSynchronize();
-
   // Copy to host the result
   cudaMemcpy(&phi_data[0],
              d_phi,
@@ -140,15 +172,21 @@ void runLTimesTest(std::string const &policy,
   ell.data = &ell_data[0];
   phi.data = &phi_data[0];
   psi.data = &psi_data[0];
-
   for (IZone z(0); z < num_zones; ++z) {
     for (IGroup g(0); g < num_groups; ++g) {
       for (IMoment m(0); m < num_moments; ++m) {
         double total = 0.0;
         for (IDirection d(0); d < num_directions; ++d) {
-          total += ell(m, d) * psi(d, g, z);
+          double val = ell(m,d) * psi(d,g,z);
+          total += val;
+          lmin = RAJA_MIN(lmin,val);
+          lmax = RAJA_MAX(lmax,val);
+          int index = *d + (*m * num_directions) + (*g * num_directions * num_moments) + (*z * num_directions * num_moments * num_groups);
+          minmaxloc_t testMinMaxLoc={val,index};
+          lminloc = RAJA_MINLOC(lminloc,testMinMaxLoc);
+          lmaxloc = RAJA_MAXLOC(lmaxloc,testMinMaxLoc);
         }
-
+        lsum += total;
         // check answer with some reasonable tolerance
         if (std::abs(total - phi(m, g, z)) > 1e-12) {
           nfailed++;
@@ -156,10 +194,39 @@ void runLTimesTest(std::string const &policy,
       }
     }
   }
+  size_t reductionsFailed = 0;
+  std::string whichFailed;
 
-  if (nfailed) {
+  if (std::abs(lsum - double(pdsum)) > 1e-9) {
+    reductionsFailed++;
+    whichFailed += "[ReduceSum]";
+  }
+
+  if(lmin != double(pdmin)) {
+    reductionsFailed++;
+    whichFailed += "[ReduceMin]";
+  }  
+
+  if(lmax != double(pdmax)) {
+    reductionsFailed++;
+    whichFailed += "[ReduceMax]";
+  }
+
+  if((lminloc.val != double(pdminloc)) && (lminloc.idx != pdminloc.getMinLoc())) {
+    reductionsFailed++;
+    whichFailed += "[ReduceMinLoc]";
+  }
+
+  if((lmaxloc.val != double(pdmaxloc)) && (lmaxloc.idx != pdmaxloc.getMaxLoc())) {
+    reductionsFailed++;
+    whichFailed += "[ReduceMaxLoc]";
+  }
+
+  if (nfailed || reductionsFailed) {
     cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-
+    if(reductionsFailed) {
+      cout << "  REDUCTIONS FAILURE: " << whichFailed << endl; 
+    }
   } else {
     s_ntests_passed++;
     s_ntests_passed_total++;
