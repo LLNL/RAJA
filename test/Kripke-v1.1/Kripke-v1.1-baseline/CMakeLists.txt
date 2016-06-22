@@ -51,5 +51,5 @@ else()
   add_executable(Kripke-v1.1-baseline.exe "Kripke.cpp")
 endif()
 
-target_link_libraries(Kripke-v1.1-baseline.exe ${KRIPKE_LIBS} ${KRIPKE_LIBS})
+target_link_libraries(Kripke-v1.1-baseline.exe ${KRIPKE_LIBS} ${KRIPKE_LIBS} ${RT_LIBRARIES})
 
