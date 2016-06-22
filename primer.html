@@ -1,0 +1,293 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>RAJA Primer &mdash; RAJA 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="RAJA 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Index of RAJA Examples" href="basic_examples.html"/>
+        <link rel="prev" title="What is RAJA?" href="index.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> RAJA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="">RAJA Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_examples.html">Index of RAJA Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_examples.html">RAJA Proxy Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and Building RAJA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">RAJA</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>RAJA Primer</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/primer.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="raja-primer">
+<h1>RAJA Primer<a class="headerlink" href="#raja-primer" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Under construction!
+This section will be rewritten to introduce and describe RAJA
+concepts and features using simple illustrative examples
+(e.g., in increasing order of complexity: forall, exec policy,
+segments, index sets, etc.). The text below is from the original
+sphinx docs. I kept it so we can use bits that we want to keep.</p>
+</div>
+<p>The main conceptual abstraction in RAJA is a loop. A typical large
+multiphysics code may contain O(10K) loops and these are where most
+computational work is performed and where most fine-grained parallelism is
+available. RAJA defines a systematic loop encapsulation paradigm that helps
+insulate application developers from implementation details associated with
+software and hardware platform choices. Such details include: non-portable
+compiler and platform-specific directives, parallel programming model usage
+and constraints, and hardware-specific data management. RAJA can be used
+incrementally and selectively in an application and usually works
+seamlessly with native data structures and loop traversal patterns in a code.</p>
+<p>Typically, RAJA integration is a multi-step process involving steps of
+increasing complexity. First, basic transformation of loops to the &#8220;RAJA form&#8221;
+is reasonably straightforward and can be even mundane in many cases. The
+initial transformation makes the code portable by enabling it to execute
+on both CPU and GPU hardware by choosing an appropriate parallel programming
+model back-end at compile-time. Next, loop and performance analysis leads to
+refinement of <em>execution policy</em> choices. Careful categorization of loop
+patterns and workloads is key to selecting the best choices for mapping
+loop execution to hardware resources for high performance. Important
+considerations include: the relationship between data movement and
+computation (e.g., operations performed per byte moved), control flow
+branching intensity, and available parallelism in an algorithm. Earlier,
+we stated that large multiphysics codes contains O(10K) loops. However,
+such codes often contain only O(10) <em>loop patterns</em>. Thus, a goal of
+transforming a code to RAJA should be to assign loops to execution
+equivalence classes so that similar loops may be mapped to particular
+parallel execution choices or hardware resources in a consistent fashion.</p>
+<p>Like other C++-based portability abstraction approaches, RAJA relies
+on decoupling the body of a loop from the mechanism that executes the loop;
+i.e., its <em>traversal</em>. The decoupling allows a traversal method to be applied
+to many different loop bodies and different traversals to be explored for a
+given loop body for different execution scenarios. In RAJA, the decoupling is
+achieved by re-casting a loop into the generally-accepted &#8220;parallel for&#8221; idiom.
+For example, a traditional C-style for-loop construct is replaced by a call
+to a C++ traversal template method and the loop body is passed as a C++
+lambda function.</p>
+<p>RAJA contains several cooperating encapsulation features, which include:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>Traversals and execution policies.</strong> A traversal method specialized
+with an execution policy template parameter defines how a loop will
+execute; e.g., sequentially, multi-threaded using OpenMP, or run on
+a GPU as a CUDA kernel.</li>
+<li><strong>IndexSets.</strong>  IndexSets enable much more flexible and powerful ways
+to control loop iterations than simple for-loops. IndexSets allow
+iteration order to be changed in ways which can, for example, enable
+parallel execution of a non-data-parallel loop without rewriting the
+loop body. Typically, an IndexSet is used to partition an iteration
+space into <em>Segments</em>, or &#8220;chunks&#8221; of iterations. Then, different
+iteration subsets may be launched in parallel and dependencies among
+them can be managed. IndexSets also enable coordination between iteration
+and data placement; specifically, chunks of data and iterations can be
+mapped to hardware resources in an architecture-specific way. While
+IndexSets are defined at runtime, code that executes the <em>Segment types</em>
+they contain is generated at compile-time. This allows compilers to
+optimize execution of kernels for different <em>Segment type</em> implementations.
+For example, a Segment type that processes a contiguous (stride-1) index
+range can be optimized in ways that an indirection Segment type cannot.</li>
+<li><strong>Data type encapsulation.</strong> RAJA provides simple data and pointer types
+that can be used to hide non-portable compiler directives and data
+attributes, such as alignment, restrict, etc. These compiler-specific
+code decorations often enhance the ability of a compiler to optimize.
+While use of these types are not required to use RAJA, they are a good
+idea for HPC codes, in general. Using a centralized collection of
+types eliminates the need to litter application source code with detailed,
+non-portable syntax and enables architecture or compiler-specific
+information to be propagated easily the source code by making local
+changes in a header file. For any parallel reduction operation, RAJA
+requires a <em>reduction class template</em> to be used. Template specialization
+of a reduction in a manner similar to the way a traversal method is
+specialized on an execution policy type enables a portable reduction
+operation while hiding programming model-specific reduction constructs,
+such as OpenMP vs. CUDA, from application code.</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="basic_examples.html" class="btn btn-neutral float-right" title="Index of RAJA Examples" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral" title="What is RAJA?" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Rich Hornung and Jeff Keasler.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

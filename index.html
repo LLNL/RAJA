@@ -1,0 +1,291 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>What is RAJA? &mdash; RAJA 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="RAJA 0.1.0 documentation" href="#"/>
+        <link rel="next" title="RAJA Primer" href="primer.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="#" class="icon icon-home"> RAJA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">RAJA Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_examples.html">Index of RAJA Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_examples.html">RAJA Proxy Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and Building RAJA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="#">RAJA</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="#">Docs</a> &raquo;</li>
+      
+    <li>What is RAJA?</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/index.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="what-is-raja">
+<h1>What is RAJA?<a class="headerlink" href="#what-is-raja" title="Permalink to this headline">¶</a></h1>
+<p>RAJA is a collection of C++ software abstractions, being developed at
+Lawrence Livermore National Laboratory (LLNL), that enable architecture
+portability for HPC applications. The overarching goals of RAJA are to:</p>
+<blockquote>
+<div><ul class="simple">
+<li>Make existing (production) applications <em>portable with minimal disruption</em></li>
+<li>Provide a model for new applications so that they are portable from
+inception.</li>
+</ul>
+</div></blockquote>
+<p>RAJA uses standard C++11 &#8211; C++ is the predominant programming language in
+which many LLNL codes are written. RAJA is rooted in a perspective based on
+substantial experience working on production mesh-based multiphysics
+applications at LLNL. Another goal of RAJA is to enable application developers
+to adapt RAJA concepts and specialize them for different code implementation
+patterns and C++ usage, since data structures and algorithms vary widely
+across applications.</p>
+<p>RAJA shares goals and concepts found in
+other C++ portability abstraction approaches, such as
+<a class="reference external" href="https://github.com/kokkos/kokkos">Kokkos</a>
+and <a class="reference external" href="https://developer.nvidia.com/thrust">Thrust</a>.
+However, it includes concepts that are absent in other models and which are
+fundamental to LLNL codes.</p>
+<p>It is important to note that RAJA is very much a work-in-progress.
+The community of researchers and application developers at LLNL that are
+actively contributing to it and developing new capabilities is growing.
+The publicly-released version contains only core pieces of RAJA as they
+exist today. While the basic interfaces are fairly stable, the implementation
+of the underlying concepts is being refined. Additional features will appear
+in future releases.</p>
+<p>RAJA lives in a <a class="reference external" href="https://github.com/llnl/raja">github repository</a>.
+To clone the repo, use the command:</p>
+<div class="highlight-sh"><div class="highlight"><pre>$ git clone https://github.com/llnl/raja.git
+</pre></div>
+</div>
+<p>Then, you can build RAJA like any other CMake project, provided you have a C++
+compiler that supports the C++11 standard. The simplest way to build the code
+is to do the following in the top-level RAJA directory (in-source builds are
+not allowed!):</p>
+<div class="highlight-sh"><div class="highlight"><pre>$ mkdir build
+$ <span class="nb">cd</span> build
+$ cmake ../
+$ make
+</pre></div>
+</div>
+<p>For details about RAJA configuration and build options, please see
+<a class="reference internal" href="config_build.html"><em>Configuring and Building RAJA</em></a>.</p>
+<p>If you are interested in keeping up with RAJA development and communicating
+with developers and users, please join our mailing list over at Google Groups -
+<a class="reference external" href="https://groups.google.com/forum/#!forum/raja-users">RAJA Google Group</a>.</p>
+<p>If you have questions, find a bug, or have ideas about expanding the
+functionality or applicability of RAJA and are interested in contributing
+to its development, please do not hesitate to contact us. We are always
+interested in improving RAJA and exploring new ways to use it.</p>
+<div class="admonition seealso">
+<p class="first admonition-title">See also</p>
+<p>More detailed discussion of RAJA, including its use in proxy apps included
+in the RAJA source distribution can be found in these reports:</p>
+<p><a class="reference external" href="_static/RAJAStatus-09.2014_LLNL-TR-661403.pdf">The RAJA Portability Layer: Overview and Status (2014)</a></p>
+<p><a class="reference external" href="_static/RAJAOverview-Trilab-09.2015_LLNL-TR-677453.pdf">RAJA Overview (extracted from ASC Tri-lab Co-design Level 2 Milestone Report 2015)</a></p>
+<p class="last">Newer reports and other material will appear here over time.</p>
+</div>
+<p><strong>Contents:</strong></p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">RAJA Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_examples.html">Index of RAJA Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_examples.html">RAJA Proxy Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and Building RAJA</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="config_build.html#cmake-system">CMake System</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_build.html#configuration-options">Configuration Options</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_build.html#host-config-files">Host-Config Files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="config_build.html#did-i-build-raja-correctly">Did I build RAJA correctly?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide.html">Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide.html#code-structure">Code Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide.html#unit-testing">Unit Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="dev_guide.html#performance-testing">Performance Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
+</ul>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="primer.html" class="btn btn-neutral float-right" title="RAJA Primer" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Rich Hornung and Jeff Keasler.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

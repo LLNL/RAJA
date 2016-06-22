@@ -1,0 +1,283 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>RAJA Proxy Applications &mdash; RAJA 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="RAJA 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Configuring and Building RAJA" href="config_build.html"/>
+        <link rel="prev" title="Index of RAJA Examples" href="basic_examples.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> RAJA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="primer.html">RAJA Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_examples.html">Index of RAJA Examples</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">RAJA Proxy Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and Building RAJA</a></li>
+<li class="toctree-l1"><a class="reference internal" href="dev_guide.html">Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">RAJA</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>RAJA Proxy Applications</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/advanced_examples.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="raja-proxy-applications">
+<h1>RAJA Proxy Applications<a class="headerlink" href="#raja-proxy-applications" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">Under construction!
+We will break out the RAJA proxy apps (LULESH, Kripke, eventually
+CoMD, etc.) into a separate repo. We can point to it here. The
+text below is from the original docs. I kept it so we can
+use bits that we want to keep.</p>
+</div>
+<p>The directory &#8216;raja/test&#8217; has subdirectories containing examples of RAJA
+used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
+Reference versions of these applications are also included so that it is
+easy to compare them to the RAJA variants, in terms of source code
+differences and runtimes. Here is a brief explanation of the contents of
+the directories containing the proxy app examples.</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><strong>LULESH 1.0.</strong></p>
+<p>The directory &#8216;LULESH-v1.0_baseline&#8217; contains the reference version of
+LULESH 1.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v1.0_RAJA-variants&#8217; contains three RAJA variants of
+LULESH 1.0: serial-only, a highly-parametrized version that can be run
+using various execution patterns, and a version that shows a RAJA-based
+transient fault recovery capability. The names of the files indicate which
+version is which. The parametrized version of this code
+illustrates ten different execution patterns that can be enabled using
+RAJA. These patterns include sequential execution, six variants
+using OpenMP (using RAJA IndexSets for tiling, permuting elements,
+coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants
+that use CUDA. Some of these require specific initialization code
+for data and RAJA IndexSets. However, all variations use the same
+algorithm source code; different variations use different RAJA
+execution policies. To try different variants, simply change the
+definition of the macro constant</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">#define USE_CASE ....</span>
+</pre></div>
+</div>
+<p>in the header file called &#8216;luleshPolicy.hxx&#8217;. There you will find a listing
+of available options and the RAJA policies used for each.</p>
+</li>
+<li><p class="first"><strong>LULESH 2.0.</strong></p>
+<p>The directory &#8216;LULESH-v2.0_baseline&#8217; contains the reference version of
+LULESH 2.0 that is available at
+<a class="reference external" href="https://codesign.llnl.gov/lulesh.php">LULESH</a></p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-basic&#8217; contains a basic translation to
+RAJA that uses only RAJA forall traversals that take begin-end arguments or
+arrays of indirection indices.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-IndexSet&#8217; contains a version that uses
+RAJA IndexSets similarly to the parallel RAJA variant of LULESH 1.0.
+Similar to the RAJA version of LULESH 1.0, this variant is parametrized
+to run with different execution patterns. However, only three variants
+are available (we got tired...). As in the case of LULESH 1.0, change
+the definition of the &#8216;USE_CASE&#8217; macro constant in the &#8216;luleshPolicy.hxx&#8217;
+header file to change the variant.</p>
+<p>The directory &#8216;LULESH-v2.0_RAJA-MICfriendly&#8217; contains a version that
+uses RAJA IndexSets to permute data and loop iteration ordering in ways
+that can be beneficial in a manycore environment.</p>
+</li>
+<li><p class="first"><strong>Kripke.</strong></p>
+<p>The directory &#8216;Kripke-v1.1-baseline&#8217; contains the reference version of
+Kripke v1.1 that uses basic OpenMP threading and zone-sequential sweep
+traversals.  It is available at
+<a class="reference external" href="https://codesign.llnl.gov/kripke.php">Kripke</a></p>
+<p>The directory &#8216;Kripke-v1.1-RAJA&#8217; contains the RAJA version of Kripke v1.1
+that uses the nested-loop RAJA forallN traversals and
+IndexSets to perform hyperplane sweep traversals.</p>
+<p>Currently there are issues building with the Intel compiler which are being
+investigated.  As a result, building the RAJA version of Kripke with icpc
+will diable all but the DGZ data layouts, and disables complex execution
+policies.  Once a resolution to these issues have been found, this code will
+be updated.</p>
+</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="config_build.html" class="btn btn-neutral float-right" title="Configuring and Building RAJA" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="basic_examples.html" class="btn btn-neutral" title="Index of RAJA Examples" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Rich Hornung and Jeff Keasler.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>

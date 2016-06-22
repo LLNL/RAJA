@@ -1,0 +1,320 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Developer Guide &mdash; RAJA 0.1.0 documentation</title>
+  
+
+  
+  
+
+  
+
+  
+  
+    
+
+  
+
+  
+  
+    <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  
+
+  
+
+  
+    <link rel="top" title="RAJA 0.1.0 documentation" href="index.html"/>
+        <link rel="next" title="Future Development" href="future.html"/>
+        <link rel="prev" title="Configuring and Building RAJA" href="config_build.html"/> 
+
+  
+  <script src="_static/js/modernizr.min.js"></script>
+
+</head>
+
+<body class="wy-body-for-nav" role="document">
+
+  <div class="wy-grid-for-nav">
+
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search">
+          
+
+          
+            <a href="index.html" class="icon icon-home"> RAJA
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+                <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="primer.html">RAJA Primer</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_examples.html">Index of RAJA Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="advanced_examples.html">RAJA Proxy Applications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="config_build.html">Configuring and Building RAJA</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="">Developer Guide</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#code-structure">Code Structure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#unit-testing">Unit Testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#performance-testing">Performance Testing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="future.html">Future Development</a></li>
+<li class="toctree-l1"><a class="reference internal" href="raja_license.html">RAJA License</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" role="navigation" aria-label="top navigation">
+        <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+        <a href="index.html">RAJA</a>
+      </nav>
+
+
+      
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          
+
+ 
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+  <ul class="wy-breadcrumbs">
+    <li><a href="index.html">Docs</a> &raquo;</li>
+      
+    <li>Developer Guide</li>
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/dev_guide.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="developer-guide">
+<h1>Developer Guide<a class="headerlink" href="#developer-guide" title="Permalink to this headline">¶</a></h1>
+<div class="admonition warning">
+<p class="first admonition-title">Warning</p>
+<p class="last">This section will contain useful information for core developers
+and others who want to contribute (e.g., the RAJA code strucure,
+where to put new things, adding unit tests, etc. The text below is
+from the original sphinx docs. I kept it so we can use bits that
+we want to keep.</p>
+</div>
+<p>This guide is intended for people who want to work on RAJA and contribute
+to its development. It also contains some useful information for users
+who may need to look through the source code.</p>
+<div class="section" id="code-structure">
+<h2>Code Structure<a class="headerlink" href="#code-structure" title="Permalink to this headline">¶</a></h2>
+<p>The RAJA root directory has several subdirectories with contents as follows:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>cmake:</strong> modules used for the CMake-based build system.</li>
+<li><strong>docs:</strong> user documentation.</li>
+<li><strong>host-configs:</strong> configuration files to initialize the CMake cache
+for machines and compilers most commonly used in the Livermore Computing
+Center at Lawrence Livermore National Laboratory.</li>
+<li><strong>include:</strong> header files defining the RAJA API.</li>
+<li><strong>scripts:</strong> helper scripts, currently only contains a python script
+that simplifies the library configuration process.</li>
+<li><strong>src:</strong> source files that are compiled.</li>
+<li><strong>test:</strong> simple test codes and proxy-app examples that illustrate RAJA
+usage.</li>
+</ul>
+</div></blockquote>
+<p>For most users, the most important directories are &#8216;include&#8217; and &#8216;test&#8217;.
+RAJA is largely a header file library; the &#8216;include/RAJA&#8217; directory
+contains most of what you need to understand to start using RAJA in an
+application. We discuss the contents of the &#8216;test&#8217; directory in a later section.</p>
+<p>The main RAJA header &#8216;RAJA.hxx&#8217; is all that needs to be
+included in an application that uses RAJA. That is, the line</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="c1">#include &quot;RAJA/RAJA.hxx&quot;</span>
+</pre></div>
+</div>
+<p>in your application code will include all other RAJA header files that are
+needed for a particular configuration and build of the RAJA code.</p>
+<p>Header files that define general RAJA capabilities that don&#8217;t depend on the
+underlying programming model choice live in the &#8216;include/RAJA&#8217; directory.
+The directory contains header files for key RAJA classes, such as IndexSet and
+Segment types. Files that define generic RAJA traversals, which work for any
+IndexSet, Segment or execution policy type, also reside there; e.g.,
+&#8216;forall_generic.hxx&#8217;.</p>
+<p>RAJA traversals, reductions, and execution policies for individual programming
+models are defined in header files that live in subdirectories of
+the &#8216;include/RAJA&#8217; directory. Currently, these directories are as follows
+(their names are descriptive of the programming model supported by their
+contents):</p>
+<blockquote>
+<div><ul class="simple">
+<li>exec-cilk</li>
+<li>exec-cuda</li>
+<li>exec-openmp</li>
+<li>exec-sequential</li>
+<li>exec-simd</li>
+</ul>
+</div></blockquote>
+<p>Each of these directories contains files that defines traversal and
+reduction execution policies, <em>forall</em> traversal template specializations
+based on the execution policies, and <em>reduction operation</em> template
+specializations based on the reduction policies. For example, the OpenMP
+directory has the header files:</p>
+<blockquote>
+<div><ul class="simple">
+<li>raja_openmp.hxx</li>
+<li>forall_openmp.hxx</li>
+<li>forallN_openmp.hxx</li>
+<li>reduce_openmp.hxx</li>
+</ul>
+</div></blockquote>
+<p>Note that SIMD execution shares reduction types with sequential execution,
+so the &#8216;exec-simd&#8217; directory does not contain a reduction header file.</p>
+</div>
+<div class="section" id="unit-testing">
+<h2>Unit Testing<a class="headerlink" href="#unit-testing" title="Permalink to this headline">¶</a></h2>
+<p>The directory &#8216;raja/test/unit-tests&#8217; has two subdirectories, each of which
+contains files that run various traversal and reduction operations for RAJA
+IndexSets and Segments. All RAJA &#8220;forall&#8221; template and execution policy
+options that are available for a given compiler are included. Running these
+tests is a good sanity check that the code is built correctly and works. The
+two subdirectories are:</p>
+<blockquote>
+<div><ul class="simple">
+<li><strong>CPUtests.</strong> It contains codes to run traversl and reduction tests for
+sequential, OpenMP, and CilkPlus (if available) execution policies.</li>
+<li><strong>GPUtests.</strong> It contains codes to run traversl and reduction tests for
+GPU CUDA execution policies. Note that these tests use Unified Memory
+to simplify host-device memory transfers.</li>
+</ul>
+</div></blockquote>
+<p><strong>NOTE:</strong> RAJA must be built with CUDA enabled to generate GPU variants.
+When running CUDA variants of the tests and examples, we advise you to set the
+environment variable CUDA_VISIBLE_DEVICES to zero before running.</p>
+<p>For example, for C-shell users</p>
+<div class="highlight-python"><div class="highlight"><pre>$ setenv CUDA_VISIBLE_DEVICES 0
+</pre></div>
+</div>
+<p>We are using CUDA Unified Memory and we find that this environment setting
+greatly improves performance.</p>
+</div>
+<div class="section" id="performance-testing">
+<h2>Performance Testing<a class="headerlink" href="#performance-testing" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+           </div>
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="future.html" class="btn btn-neutral float-right" title="Future Development" accesskey="n">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="config_build.html" class="btn btn-neutral" title="Configuring and Building RAJA" accesskey="p"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2016, Rich Hornung and Jeff Keasler.
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/snide/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  
+
+    <script type="text/javascript">
+        var DOCUMENTATION_OPTIONS = {
+            URL_ROOT:'./',
+            VERSION:'0.1.0',
+            COLLAPSE_INDEX:false,
+            FILE_SUFFIX:'.html',
+            HAS_SOURCE:  true
+        };
+    </script>
+      <script type="text/javascript" src="_static/jquery.js"></script>
+      <script type="text/javascript" src="_static/underscore.js"></script>
+      <script type="text/javascript" src="_static/doctools.js"></script>
+      <script type="text/javascript" src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+  
+
+  
+  
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+  
+
+  
+  
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.StickyNav.enable();
+      });
+  </script>
+   
+
+</body>
+</html>
