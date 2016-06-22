@@ -2790,7 +2790,7 @@ int main(int argc, char *argv[])
             double(-lulesh_time_step)) ;
    }
    printf("\t Mesh size = %i x %i x %i\n", 
-          lulesh_edge_elems, lulesh_edge_elems, lulesh_edge_elems) ;
+          edgeElems, edgeElems, edgeElems) ;
 
    switch (lulesh_tiling_mode) {
       case Canonical:

@@ -13,14 +13,15 @@
 RAJA Proxy Applications
 -----------------------
 
-.. warning:: We will break out the RAJA proxy apps (LULESH, Kripke, eventually
+.. warning:: Under construction! 
+             We will break out the RAJA proxy apps (LULESH, Kripke, eventually
              CoMD, etc.) into a separate repo. We can point to it here. The
-             text below is from the original sphinx docs. I kept it so we can
+             text below is from the original docs. I kept it so we can
              use bits that we want to keep.
  
 
 The directory 'raja/test' has subdirectories containing examples of RAJA 
-used in the proxy apps LULLED (versions 1.0 and 2.0), Kripke, and CoMD.
+used in the proxy apps LULESH (versions 1.0 and 2.0), Kripke, and CoMD.
 Reference versions of these applications are also included so that it is 
 easy to compare them to the RAJA variants, in terms of source code 
 differences and runtimes. Here is a brief explanation of the contents of 
