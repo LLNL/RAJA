@@ -1009,6 +1009,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MINLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
+      __threadfence();
       int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], (int)1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
     }
@@ -1133,6 +1134,11 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
 #endif
       // OK to perform cudaFree of cudaMalloc vars if needed...
     }
+//    else{
+//#if defined(__CUDA_ARCH__)
+//      printf("~ReduceMaxLoc\n");
+//#endif
+//    }
   }
 
   //
@@ -1217,6 +1223,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MAXLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
+      __threadfence();
       unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], 1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
@@ -1230,6 +1237,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
       CudaReductionLocBlockDataType lmax={m_reduced_val,m_reduced_idx};
       int blocks = gridDim.x * gridDim.y * gridDim.z;
       int threads = blockDim.x * blockDim.y * blockDim.z;
+
       for (int i = threadId; i < blocks; i += threads) {
         lmax = RAJA_MAXLOC(lmax, m_blockdata[m_blockoffset + i + 1]);
       }
