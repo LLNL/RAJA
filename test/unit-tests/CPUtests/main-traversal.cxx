@@ -573,5 +573,12 @@ int main(int argc, char *argv[])
    cout << "\n DONE!!! " << endl;
 
    return 0 ;
+
+   if (s_ntests_passed_total == s_ntests_run_total) {
+     return 0 ;
+   } else {
+     return 1 ;
+   }
+
 }
 

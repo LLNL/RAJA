@@ -83,5 +83,9 @@ int main(int argc, char *argv[])
    printf("\n All Tests : # passed / # run = %d / %d\n\n DONE!!!\n",
           passed, run) ;
 
-   return 0 ;
+   if (passed == run) {
+     return 0 ;
+   } else {
+     return 1 ;
+   }
 }
