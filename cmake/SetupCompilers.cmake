@@ -65,8 +65,6 @@ if (RAJA_ENABLE_CUDA)
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
     set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
   endif()
-  MESSAGE("${RAJA_NVCC_FLAGS}")
-  STRING(REPLACE ";" " " RAJA_CONFIG_CUDA_FLAGS "${RAJA_NVCC_FLAGS}")
 endif()
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
