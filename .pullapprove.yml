@@ -4,10 +4,17 @@ reject_regex: ^Rejected
 reset_on_push: false
 author_approval: ignored
 reviewers:
-  members:
-  - ajkunen
-  - keasler
-  - rhornung67
-  - trws
-  name: pullapprove
-  required: 2
+  - name: czars
+    members:
+      - keasler
+      - rhornung67
+    required: 1
+  - name: everyone
+    members:
+    - ajkunen
+    - trws
+    - davidbeckingsale
+    - DavidPoliakoff
+    - keasler
+    - rhornung67
+    required: 1
