@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
     //        using an indexset with two range segments to check
     //        reduction object state is maintained properly across
     //        kernel invocations.
-    //
+    //        Also exercises the get function call
     {  // begin test 2
 
       s_ntests_run++;
@@ -182,18 +182,18 @@ int main(int argc, char *argv[]) {
       double dbase_chk_val = dinit_val * double(iset.getLength());
       int ibase_chk_val = iinit_val * (iset.getLength());
 
-      if (!equal(double(dsum0), dbase_chk_val + (dtinit * 1.0))
-          || !equal(int(isum1), 2 * ibase_chk_val + (itinit * 2))
-          || !equal(double(dsum2), 3 * dbase_chk_val + (dtinit * 3.0))
-          || !equal(int(isum3), 4 * ibase_chk_val + (itinit * 4))) {
+      if (!equal(dsum0.get(), dbase_chk_val + (dtinit * 1.0))
+          || !equal(isum1.get(), 2 * ibase_chk_val + (itinit * 2))
+          || !equal(dsum2.get(), 3 * dbase_chk_val + (dtinit * 3.0))
+          || !equal(isum3.get(), 4 * ibase_chk_val + (itinit * 4))) {
         cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
-        cout << setprecision(20) << "\tdsum0 = " << static_cast<double>(dsum0)
+        cout << setprecision(20) << "\tdsum0 = " << static_cast<double>(dsum0.get())
              << " (" << dbase_chk_val + (dtinit * 1.0) << ") " << endl;
-        cout << setprecision(20) << "\tisum1 = " << static_cast<double>(isum1)
+        cout << setprecision(20) << "\tisum1 = " << static_cast<double>(isum1.get())
              << " (" << 2 * ibase_chk_val + (itinit * 2) << ") " << endl;
-        cout << setprecision(20) << "\tdsum2 = " << static_cast<double>(dsum2)
+        cout << setprecision(20) << "\tdsum2 = " << static_cast<double>(dsum2.get())
              << " (" << 3 * dbase_chk_val + (dtinit * 3.0) << ") " << endl;
-        cout << setprecision(20) << "\tisum3 = " << static_cast<double>(isum3)
+        cout << setprecision(20) << "\tisum3 = " << static_cast<double>(isum3.get())
              << " (" << 4 * ibase_chk_val + (itinit * 4) << ") " << endl;
 
       } else {
