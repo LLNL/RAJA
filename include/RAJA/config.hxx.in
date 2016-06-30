@@ -85,6 +85,15 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_NESTED
 
+/*
+ * Timer options
+ */
+
+#cmakedefine RAJA_USE_CHRONO
+#cmakedefine RAJA_USE_GETTIME
+#cmakedefine RAJA_USE_CLOCK
+#cmakedefine RAJA_USE_CYCLE
+
 
 namespace RAJA {
 

@@ -53,7 +53,7 @@ if (RAJA_ENABLE_CUDA)
     lulesh-init.cc
     lulesh-util.cc
     lulesh-viz.cc)
-  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA)
+  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA ${RT_LIBRARIES})
 elseif(RAJA_ENABLE_OPENMP)
   add_executable(lulesh2.0_RAJA-ISet.exe
     lulesh.cc
@@ -61,5 +61,5 @@ elseif(RAJA_ENABLE_OPENMP)
     lulesh-init.cc
     lulesh-util.cc
     lulesh-viz.cc)
-  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA)
+  target_link_libraries(lulesh2.0_RAJA-ISet.exe RAJA ${RT_LIBRARIES})
 endif()

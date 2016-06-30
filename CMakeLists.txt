@@ -42,14 +42,14 @@
 
 cmake_minimum_required (VERSION 3.1)
 
-project(RAJA LANGUAGES CXX C)
+project(RAJA LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 
 # Set version number
-set(RAJA_VERSION_MAJOR 1)
-set(RAJA_VERSION_MINOR 0)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_MAJOR 0)
+set(RAJA_VERSION_MINOR 1)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
@@ -58,6 +58,7 @@ option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests and exmaple applications" On)
+option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
@@ -71,6 +72,8 @@ include(cmake/SetupRajaConfig.cmake)
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
+configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/RAJA-config.cmake.in
+  ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
@@ -79,7 +82,10 @@ include_directories(include)
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
+
 add_subdirectory(src)
+
+install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake DESTINATION share/cmake/raja)
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)

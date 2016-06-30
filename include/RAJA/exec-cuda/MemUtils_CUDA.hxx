@@ -62,11 +62,10 @@
 
 namespace RAJA {
 
-
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
 
 // Reduction Tallies are computed into a small block to minimize UM migration
-#define RAJA_CUDA_REDUCE_TALLY_LENGTH  RAJA_MAX_REDUCE_VARS
+#define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
 ///
 /// Typedef defining common data type for RAJA-Cuda reduction data blocks
@@ -74,11 +73,14 @@ namespace RAJA {
 ///
 typedef double CudaReductionBlockDataType;
 
-typedef struct{double val; Index_type idx;} CudaReductionLocBlockDataType; 
+typedef struct {
+  double val;
+  Index_type idx;
+} CudaReductionLocBlockDataType;
 
 typedef struct {
-    CudaReductionBlockDataType tally;
-    CudaReductionBlockDataType initVal;
+  CudaReductionBlockDataType tally;
+  CudaReductionBlockDataType initVal;
 } CudaReductionBlockTallyType;
 
 /*!
@@ -100,7 +102,6 @@ int getCudaReductionId();
 */
 void releaseCudaReductionId(int id);
 
-
 CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
 
 /*!
@@ -113,9 +114,6 @@ CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
 
 void freeCudaReductionTallyBlock();
 
-
-
-
 /*!
  ******************************************************************************
  *
@@ -126,7 +124,7 @@ void freeCudaReductionTallyBlock();
  *
  * NOTE: Block size will be:
  *
- *          sizeof(CudaReductionBlockDataType) * 
+ *          sizeof(CudaReductionBlockDataType) *
  *            RAJA_MAX_REDUCE_VARS * ( RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 )
  *
  *       For each reducer object, we want a chunk of managed memory that
@@ -138,7 +136,7 @@ void freeCudaReductionTallyBlock();
  */
 CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
 
-CudaReductionLocBlockDataType * getCudaReductionLocMemBlock(int id);
+CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id);
 
 /*!
  ******************************************************************************
@@ -151,9 +149,7 @@ void freeCudaReductionMemBlock();
 
 void freeCudaReductionLocMemBlock();
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for RAJA_ENABLE_CUDA
 

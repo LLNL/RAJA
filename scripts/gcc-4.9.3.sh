@@ -1,14 +1,13 @@
 #!/bin/bash
 
-rm -rf build-gnu-4.9.3-release 2>/dev/null
-mkdir build-gnu-4.9.3-release && cd build-gnu-4.9.3-release
+rm -rf build-gcc-4.9.3-release 2>/dev/null
+mkdir build-gcc-4.9.3-release && cd build-gcc-4.9.3-release
 
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -DCMAKE_C_COMPILER=/usr/apps/gnu/4.9.3/bin/gcc \
-  -DCMAKE_CXX_COMPILER=/usr/apps/gnu/4.9.3/bin/g++ \
+  -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
   -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=../install-gnu-4.9.3-release \
+  -DCMAKE_INSTALL_PREFIX=../install-gcc-4.9.3-release \
   "$@" \
   ${RAJA_DIR}

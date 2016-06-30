@@ -1,0 +1,20 @@
+approve_by_comment: true
+approve_regex: '^([Aa]pproved|:shipit:|:\+1:|I [Aa]pprove|LGTM)'
+reject_regex: ^Rejected
+reset_on_push: false
+author_approval: ignored
+reviewers:
+  - name: czars
+    members:
+      - keasler
+      - rhornung67
+    required: 1
+  - name: everyone
+    members:
+    - ajkunen
+    - trws
+    - davidbeckingsale
+    - DavidPoliakoff
+    - keasler
+    - rhornung67
+    required: 2
