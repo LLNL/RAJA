@@ -356,6 +356,8 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
     return m_reduced_val;
   }
 
+  T get() { return operator T(); }
+
   //
   // Updates reduced value in the proper shared memory block locations.
   //
@@ -488,6 +490,8 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
     m_reduced_val = static_cast<T>(m_tallydata->tally);
     return m_reduced_val;
   }
+
+  T get() { return operator T(); }
 
   //
   // Updates reduced value in the proper shared memory block locations.
@@ -647,6 +651,8 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
     return m_reduced_val;
   }
 
+  T get() { return operator T(); }
+  
   //
   // += operator to accumulate arg value in the proper shared
   // memory block location.
@@ -780,6 +786,8 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
     return m_reduced_val;
   }
 
+  T get() { return operator T(); }
+
   //
   // += operator to accumulate arg value in the proper shared
   // memory block location.
@@ -912,6 +920,8 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
     m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset].val);
     return m_reduced_val;
   }
+
+  T get() { return operator T(); }
 
   //
   // Operator to retrieve index value of min (before object is destroyed).
@@ -1114,6 +1124,8 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
     m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset].val);
     return m_reduced_val;
   }
+
+  T get() { return operator T(); }
 
   //
   // Operator to retrieve index value of min (before object is destroyed).
