@@ -77,7 +77,6 @@ struct tile_fixed {};
 template<typename ... PLIST>
 struct TileList{
   constexpr const static size_t num_loops = sizeof...(PLIST);
-  typedef std::tuple<PLIST...> tuple;
 };
 
 
@@ -103,8 +102,8 @@ struct Tile {
 
 
 // Forward declaration so the apply_tile's can recurse into peel_tile
-template<typename BODY, typename TilePolicy, int TIDX, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_peel_tile(BODY body, PI const &pi, PREST const &... prest);
+template<typename BODY, int TIDX, typename ... PREST, typename TilePolicy>
+RAJA_INLINE void forallN_peel_tile(TilePolicy, BODY body, PREST const &... prest);
 
 
 /*!
@@ -119,7 +118,7 @@ RAJA_INLINE void forallN_apply_tile(tile_none, BODY body, PI const &pi, PREST co
   BOUND new_body(body, pi);
 
   // Recurse to the next policy
-  forallN_peel_tile<BOUND, TilePolicy, TIDX+1>(new_body, prest...);
+  forallN_peel_tile<BOUND, TIDX+1>(TilePolicy{}, new_body, prest...);
 
 }
 
@@ -146,7 +145,7 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>, BODY body, PI const &p
     BOUND new_body(body, pi_tile);
 
     // Recurse to the next policy
-    forallN_peel_tile<BOUND, TilePolicy, TIDX+1>(new_body, prest...);
+    forallN_peel_tile<BOUND, TIDX+1>(TilePolicy{}, new_body, prest...);
   }
 }
 
@@ -178,8 +177,8 @@ struct ForallN_NextPolicyWrapper {
  * This just executes the built-up tiling function passed in by outer
  * forallN_peel_tile calls.
  */
-template<typename BODY, typename TilePolicy, int TIDX>
-RAJA_INLINE void forallN_peel_tile(BODY body){
+template<typename BODY, int TIDX, typename TilePolicy>
+RAJA_INLINE void forallN_peel_tile(TilePolicy, BODY body){
   // Termination case just calls the tiling function that was constructed
   body();
 }
@@ -192,11 +191,12 @@ RAJA_INLINE void forallN_peel_tile(BODY body){
  * This peels off the policy, and hands it off to the policy-overloaded
  * forallN_apply_tile function... which in turn recursively calls this function
  */
-template<typename BODY, typename TilePolicy, int TIDX, typename PI, typename ... PREST>
-RAJA_INLINE void forallN_peel_tile(BODY body, PI const &pi, PREST const &... prest){
+template<typename BODY, int TIDX, typename PI, typename ... PREST, typename...TilePolicies>
+RAJA_INLINE void forallN_peel_tile(TileList<TilePolicies...>, BODY body, PI const &pi, PREST const &... prest){
+  using TilePolicy = TileList<TilePolicies...>;
 
   // Extract the tiling policy for loop nest TIDX
-  using TP = typename std::tuple_element<TIDX, typename TilePolicy::tuple>::type;
+  using TP = typename VarOps::get_type_at<TIDX, TilePolicies...>::type;
 
   // Apply this index's policy, then recurse to remaining tile policies
   forallN_apply_tile<BODY, TilePolicy, TIDX>(TP(), body, pi, prest...);
@@ -227,7 +227,7 @@ RAJA_INLINE void forallN_policy(ForallN_Tile_Tag, BODY body, PARGS ... pargs){
   // Apply the tiling policies one-by-one with a peeling approach
   typedef ForallN_NextPolicyWrapper<NextPolicy, BODY, PARGS...> WRAPPER;
   WRAPPER wrapper(body);
-  forallN_peel_tile<WRAPPER, TilePolicy, 0>(wrapper, pargs...);
+  forallN_peel_tile<WRAPPER, 0>(TilePolicy{}, wrapper, pargs...);
 }
 
 

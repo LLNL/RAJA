@@ -11,9 +11,9 @@ struct DLayout : public RAJA::Layout<IdxLin, Perm, Idxs...>{
 
   
   inline DLayout(Grid_Data &domain, int sdom_id) :
-    RAJA::Layout<IdxLin, Perm, Idxs...>::Layout(
-          domain.indexSize<Idxs>(sdom_id)...)
-  {}
+    RAJA::Layout<IdxLin, Perm, Idxs...>(domain.indexSize<Idxs>(sdom_id)...)
+  {
+  }
 
   template<typename ... ARGS>
   RAJA_HOST_DEVICE
