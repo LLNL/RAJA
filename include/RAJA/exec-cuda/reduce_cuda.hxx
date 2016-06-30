@@ -59,7 +59,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
+#include <cassert>
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/reducers.hxx"
@@ -342,7 +342,6 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
   }
 
@@ -431,9 +430,9 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 /*!
@@ -480,7 +479,6 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
   }
 
@@ -568,9 +566,9 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
   
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 /*!
@@ -634,7 +632,6 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
   }
 
@@ -648,6 +645,7 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
     m_blockdata[m_blockoffset] = static_cast<T>(0);
 
     size_t grid_size = m_max_grid_size[0];
+    assert(grid_size < RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     for (size_t i = 1; i <= grid_size; ++i) {
       m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset + i];
     }
@@ -734,9 +732,9 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 /*!
@@ -785,7 +783,6 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
   }
 
@@ -866,9 +863,9 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 ///
@@ -923,7 +920,6 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
   }
 
@@ -1084,9 +1080,9 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 template <size_t BLOCK_SIZE, typename T>
@@ -1132,13 +1128,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
 #else
       releaseCudaReductionId(m_myID);
 #endif
-      // OK to perform cudaFree of cudaMalloc vars if needed...
     }
-//    else{
-//#if defined(__CUDA_ARCH__)
-//      printf("~ReduceMaxLoc\n");
-//#endif
-//    }
   }
 
   //
@@ -1155,7 +1145,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   // Operator to retrieve index value of min (before object is destroyed).
   //
   Index_type getMaxLoc() {
-    cudaErrchk(cudaDeviceSynchronize());  // it would be good not to call this
+    cudaErrchk(cudaDeviceSynchronize());  
     m_reduced_idx = m_blockdata[m_blockoffset].idx;
     return m_reduced_idx;
   }
@@ -1187,7 +1177,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
     __syncthreads();
 
     sd[threadId].val = val;
-    sd[threadId].idx = idx;  // need to reconcile loc vs idx naming
+    sd[threadId].idx = idx; 
     __syncthreads();
 
     for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
@@ -1299,9 +1289,9 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=2048));
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
   static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 2048");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
 }  // closing brace for RAJA namespace
