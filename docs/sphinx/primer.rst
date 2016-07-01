@@ -13,7 +13,8 @@
 RAJA Primer
 =============
 
-.. warning:: This section will be rewritten to introduce and describe RAJA 
+.. warning:: Under construction!
+             This section will be rewritten to introduce and describe RAJA 
              concepts and features using simple illustrative examples 
              (e.g., in increasing order of complexity: forall, exec policy, 
              segments, index sets, etc.). The text below is from the original 
