@@ -78,6 +78,7 @@ typedef struct {
   Index_type idx;
 } CudaReductionLocBlockDataType;
 
+
 typedef struct {
   CudaReductionBlockDataType tally;
   CudaReductionBlockDataType initVal;
