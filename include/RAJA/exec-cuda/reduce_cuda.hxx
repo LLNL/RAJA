@@ -890,6 +890,9 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
     m_myID = getCudaReductionId();
     retiredBlocks[m_myID] = 0;
     m_blockdata = getCudaReductionLocMemBlock(m_myID);
+    // we're adding max grid size calculation for an assert check in the accessor
+    m_max_grid_size = m_blockdata;
+    m_max_grid_size[0].val = 0;
     m_blockoffset = 1;
     m_blockdata[m_blockoffset].val = init_val;
     m_blockdata[m_blockoffset].idx = init_loc;
@@ -929,6 +932,8 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   //
   operator T() {
     cudaErrchk(cudaDeviceSynchronize());
+    size_t grid_size = m_max_grid_size[0].val;
+    assert(grid_size < RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset].val);
     return m_reduced_val;
   }
@@ -957,6 +962,11 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
+
+    if (blockId  + threadId == 0) {
+      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
+    }
+
     // initialize shared memory
     for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
       // this descends all the way to 1
@@ -1077,6 +1087,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   Index_type m_reduced_idx;
 
   CudaReductionLocBlockDataType *m_blockdata;
+  CudaReductionLocBlockDataType *m_max_grid_size;
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
@@ -1098,6 +1109,9 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
     m_myID = getCudaReductionId();
     retiredBlocks[m_myID] = 0;
     m_blockdata = getCudaReductionLocMemBlock(m_myID);
+    // we're adding max grid size calculation for an assert check in the accessor
+    m_max_grid_size = m_blockdata;
+    m_max_grid_size[0].val = 0;
     m_blockoffset = 1;
     m_blockdata[m_blockoffset].val = init_val;
     m_blockdata[m_blockoffset].idx = init_loc;
@@ -1137,6 +1151,8 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   //
   operator T() {
     cudaErrchk(cudaDeviceSynchronize());
+    size_t grid_size = m_max_grid_size[0].val;
+    assert(grid_size < RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     m_reduced_val = static_cast<T>(m_blockdata[m_blockoffset].val);
     return m_reduced_val;
   }
@@ -1165,6 +1181,11 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
+
+    if (blockId  + threadId == 0) {
+      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
+    }
+
     // initialize shared memory
     for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
       // this descends all the way to 1
@@ -1286,6 +1307,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   Index_type m_reduced_idx;
 
   CudaReductionLocBlockDataType *m_blockdata;
+  CudaReductionLocBlockDataType *m_max_grid_size;
 
   // Sanity checks for block size
   static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
