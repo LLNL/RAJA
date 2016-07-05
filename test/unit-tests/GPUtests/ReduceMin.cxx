@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     // test 1 runs 3 reductions over a range multiple times to check
     //        that reduction value can be retrieved and then subsequent
     //        reductions can be run with the same reduction objects.
-    //
+    //        Also exercises the get() function call
     {  // begin test 1
 
       double BIG_MIN = -500.0;
@@ -94,20 +94,21 @@ int main(int argc, char *argv[]) {
                                          dmin2.min(dvalue[i]);
                                        });
 
-        if (double(dmin0) != dcurrentMin || double(dmin1) != 2 * dcurrentMin
-            || double(dmin2) != BIG_MIN) {
+        if (dmin0.get() != dcurrentMin || dmin1.get() != 2 * dcurrentMin
+            || dmin2.get() != BIG_MIN) {
           cout << "\n TEST 1 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
           cout << "  droll = " << droll << endl;
-          cout << "\tdmin0 = " << static_cast<double>(dmin0) << " ("
+          cout << "\tdmin0 = " << static_cast<double>(dmin0.get()) << " ("
                << dcurrentMin << ") " << endl;
-          cout << "\tdmin1 = " << static_cast<double>(dmin1) << " ("
+          cout << "\tdmin1 = " << static_cast<double>(dmin1.get()) << " ("
                << 2 * dcurrentMin << ") " << endl;
-          cout << "\tdmin2 = " << static_cast<double>(dmin2) << " (" << BIG_MIN
+          cout << "\tdmin2 = " << static_cast<double>(dmin2.get()) << " (" << BIG_MIN
                << ") " << endl;
         } else {
           s_ntests_passed++;
         }
+
       }
 
     }  // end test 1
