@@ -93,18 +93,20 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
          break;
       }
 
-#if 0  // RDH RETHINK
-      case _RangeStrideSeg_ : {
-         const RangeStrideSegment* tseg =
-            static_cast<const RangeStrideSegment*>(iseg);
+#if defined(RAJA_USE_BOXSEGMENT)
+      case _BoxSeg_ : {
+         const BoxSegment* tseg =
+            static_cast<const BoxSegment*>(iseg);
          forall(
             SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+            *tseg,
+            // tseg->getCorner(), tseg->getDim(),
+            // tseg->getExtent(), tseg->getStride(),
             loop_body
          );
          break;
       }
-#endif
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
       case _ListSeg_ : {
          const ListSegment* tseg =
@@ -158,19 +160,21 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
          break;
       }
 
-#if 0  // RDH RETHINK
-      case _RangeStrideSeg_ : {
-         const RangeStrideSegment* tseg =
-            static_cast<const RangeStrideSegment*>(iseg);
+#if defined(RAJA_USE_BOXSEGMENT)
+      case _BoxSeg_ : {
+         const BoxSegment* tseg =
+            static_cast<const BoxSegment*>(iseg);
          forall_Icount(
             SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(), tseg->getStride(),
+            *tseg,
+            // tseg->getCorner(), tseg->getDim(),
+            // tseg->getExtent(), tseg->getStride(),
             icount,
             loop_body
          );
          break;
       }
-#endif
+#endif // defined(RAJA_USE_BOXSEGMENT)
 
       case _ListSeg_ : {
          const ListSegment* tseg =

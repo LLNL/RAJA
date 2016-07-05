@@ -87,6 +87,9 @@
 
 #include "RAJA/reducers.hxx"
 
+#if defined(RAJA_USE_BOXSEGMENT)
+#include "RAJA/BoxSegment.hxx"
+#endif
 #include "RAJA/RangeSegment.hxx"
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/IndexSet.hxx"

@@ -272,6 +272,279 @@ RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
   RAJA_FT_END;
 }
 
+#if defined(RAJA_USE_BOXSEGMENT)
+//
+////////////////////////////////////////////////////////////////////////
+//
+// Function templates for CUDA execution over Box Segments.
+//
+////////////////////////////////////////////////////////////////////////
+//
+
+template <typename LOOP_BODY>
+__global__ void forall_box1d_cuda_kernel(LOOP_BODY loop_body,
+                                       Index_type corner,
+                                       Index_type xExtent, Index_type xStride)
+{
+   Index_type xIdx = blockDim.x * blockIdx.x + threadIdx.x ;
+
+   if (xIdx < xExtent) {
+      Index_type ii = corner + xIdx*xStride ;
+      loop_body(ii);
+   }
+}
+
+template <typename LOOP_BODY>
+__global__ void forall_box1d_Icount_cuda_kernel(LOOP_BODY loop_body,
+                                       Index_type corner,
+                                       Index_type xExtent, Index_type xStride,
+                                       Index_type icount)
+{
+   Index_type xIdx = blockDim.x * blockIdx.x + threadIdx.x ;
+
+   if (xIdx < xExtent) {
+      Index_type i  = icount + xIdx ;
+      Index_type ii = corner + xIdx*xStride ;
+      loop_body(i, ii);
+   }
+}
+
+template <typename LOOP_BODY>
+__global__ void forall_box2d_cuda_kernel(LOOP_BODY loop_body,
+                                       Index_type corner,
+                                       Index_type xExtent, Index_type yExtent,
+                                       Index_type xStride, Index_type yStride)
+{
+   Index_type xIdx = blockDim.x * blockIdx.x + threadIdx.x ;
+   Index_type yIdx = blockDim.y * blockIdx.y + threadIdx.y ;
+
+   if ((xIdx < xExtent) && (yIdx < yExtent)) {
+      Index_type ii = corner + xIdx*xStride + yIdx*yStride ;
+      loop_body(ii);
+   }
+}
+
+template <typename LOOP_BODY>
+__global__ void forall_box2d_Icount_cuda_kernel(LOOP_BODY loop_body,
+                                       Index_type corner,
+                                       Index_type xExtent, Index_type yExtent,
+                                       Index_type xStride, Index_type yStride,
+                                       Index_type icount)
+{
+   Index_type xIdx = blockDim.x * blockIdx.x + threadIdx.x ;
+   Index_type yIdx = blockDim.y * blockIdx.y + threadIdx.y ;
+
+   if ((xIdx < xExtent) && (yIdx < yExtent)) {
+      Index_type i  = icount + yIdx*xExtent + xIdx ;
+      Index_type ii = corner + xIdx*xStride + yIdx*yStride ;
+      loop_body(i, ii);
+   }
+}
+
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
+RAJA_INLINE
+void forall(cuda_exec<BLOCK_SIZE>,
+            const BoxSegment& iseg,
+            LOOP_BODY loop_body)
+{
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      // dim3 dimBlock(32, 4, 1) ;
+      // dim3 dimGrid((xExtent + 31)/32, (yExtent+3)/4, 1) ;
+      dim3 dimBlock(BLOCK_SIZE, 1, 1) ;
+      dim3 dimGrid((xExtent + BLOCK_SIZE - 1)/BLOCK_SIZE, yExtent, 1) ;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box2d_cuda_kernel<<<dimGrid, dimBlock>>>(loop_body, corner,
+                                                      xExtent, yExtent,
+                                                      xStride, yStride);
+      cudaErrchk(cudaPeekAtLastError());
+      cudaErrchk(cudaDeviceSynchronize());
+
+      RAJA_FT_END ;
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      size_t gridSize = (xExtent + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box1d_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, corner,
+                                                         xExtent, xStride) ;
+      cudaErrchk(cudaPeekAtLastError());
+      cudaErrchk(cudaDeviceSynchronize());
+
+      RAJA_FT_END ;
+   }
+}
+
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
+RAJA_INLINE
+void forall(cuda_exec_async<BLOCK_SIZE>,
+            const BoxSegment& iseg,
+            LOOP_BODY loop_body)
+{
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      // dim3 dimBlock(32, 4, 1) ;
+      // dim3 dimGrid((xExtent + 31)/32, (yExtent+3)/4, 1) ;
+      dim3 dimBlock(BLOCK_SIZE, 1, 1) ;
+      dim3 dimGrid((xExtent + BLOCK_SIZE - 1)/BLOCK_SIZE, yExtent, 1) ;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box2d_cuda_kernel<<<dimGrid, dimBlock>>>(loop_body, corner,
+                                                      xExtent, yExtent,
+                                                      xStride, yStride);
+      cudaErrchk(cudaPeekAtLastError());
+
+      RAJA_FT_END ;
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      size_t gridSize = (xExtent + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box1d_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, corner,
+                                                         xExtent, xStride) ;
+      cudaErrchk(cudaPeekAtLastError());
+
+      RAJA_FT_END ;
+   }
+}
+
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(cuda_exec<BLOCK_SIZE>,
+                   const BoxSegment& iseg,
+                   Index_type icount,
+                   LOOP_BODY loop_body)
+{
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      // dim3 dimBlock(32, 4, 1) ;
+      // dim3 dimGrid((xExtent + 31)/32, (yExtent+3)/4, 1) ;
+      dim3 dimBlock(BLOCK_SIZE, 1, 1) ;
+      dim3 dimGrid((xExtent + BLOCK_SIZE - 1)/BLOCK_SIZE, yExtent, 1) ;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box2d_Icount_cuda_kernel<<<dimGrid, dimBlock>>>(loop_body, corner,
+                                                             xExtent, yExtent,
+                                                             xStride, yStride,
+                                                             icount);
+      cudaErrchk(cudaPeekAtLastError());
+      cudaErrchk(cudaDeviceSynchronize());
+
+      RAJA_FT_END ;
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      size_t gridSize = (xExtent + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box1d_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                                corner,
+                                                                xExtent,
+                                                                xStride,
+                                                                icount) ;
+      cudaErrchk(cudaPeekAtLastError());
+      cudaErrchk(cudaDeviceSynchronize());
+
+      RAJA_FT_END ;
+   }
+}
+
+template <size_t BLOCK_SIZE, typename LOOP_BODY>
+RAJA_INLINE
+void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
+                   const BoxSegment& iseg,
+                   Index_type icount,
+                   LOOP_BODY loop_body)
+{
+   Index_type  corner = iseg.getCorner();
+   Index_type  dim    = iseg.getDim();
+   Index_type const *extent = iseg.getExtent();
+   Index_type const *stride = iseg.getStride();
+
+   if (dim == 2) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+      Index_type yExtent = extent[1] ; /* slow stride */
+      Index_type yStride = stride[1] ;
+
+      // dim3 dimBlock(32, 4, 1) ;
+      // dim3 dimGrid((xExtent + 31)/32, (yExtent+3)/4, 1) ;
+      dim3 dimBlock(BLOCK_SIZE, 1, 1) ;
+      dim3 dimGrid((xExtent + BLOCK_SIZE - 1)/BLOCK_SIZE, yExtent, 1) ;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box2d_Icount_cuda_kernel<<<dimGrid, dimBlock>>>(loop_body, corner,
+                                                             xExtent, yExtent,
+                                                             xStride, yStride,
+                                                             icount);
+      cudaErrchk(cudaPeekAtLastError());
+
+      RAJA_FT_END ;
+   }
+   else if (dim == 1) {
+      Index_type xExtent = extent[0] ; /* fast stride */
+      Index_type xStride = stride[0] ;
+
+      size_t gridSize = (xExtent + BLOCK_SIZE - 1) / BLOCK_SIZE;
+
+      RAJA_FT_BEGIN ;
+
+      forall_box1d_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
+                                                                corner,
+                                                                xExtent,
+                                                                xStride,
+                                                                icount) ;
+      cudaErrchk(cudaPeekAtLastError());
+
+      RAJA_FT_END ;
+   }
+}
+#endif  // defined(RAJA_USE_BOXSEGMENT)
+
+
 //
 ////////////////////////////////////////////////////////////////////////
 //
