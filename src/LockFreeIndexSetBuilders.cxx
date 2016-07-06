@@ -236,7 +236,7 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
-                                int *domainToRange, int numEntity,
+                                int const *domainToRange, int numEntity,
                                 int numRangePerDomain, int numEntityRange,
                                 int *elemPermutation,
                                 int *ielemPermutation)
