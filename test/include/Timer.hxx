@@ -43,7 +43,7 @@ namespace RAJA {
  ******************************************************************************
  */
 class ChronoTimer {
-#if 0
+#if defined(__bgq__)
     using clock = std::chrono::system_clock;
 #else
     using clock = std::chrono::steady_clock;
@@ -87,7 +87,7 @@ class GettimeTimer
 {
 public:
    GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
-#if 0
+#if defined(__bgq__)
    void start() { clock_gettime(CLOCK_REALTIME, &tstart); }
    void stop()  { clock_gettime(CLOCK_REALTIME, &tstop); set_elapsed(); }
 #else
