@@ -48,8 +48,8 @@ class ChronoTimer {
 #else
     using clock = std::chrono::steady_clock;
 #endif
-    using Duration = std::chrono::duration<long double, std::ratio<1>>;
-    using TimeType = std::chrono::time_point<std::chrono::steady_clock, Duration>;
+    using TimeType = clock::time_point;
+    using Duration = std::chrono::duration<double>;
 public:
     ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0)  {}
     void start() { tstart = clock::now(); }
