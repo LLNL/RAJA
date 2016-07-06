@@ -124,7 +124,7 @@ void buildLockFreeBlockIndexset(IndexSet& iset,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(IndexSet& iset,
-                                int *domainToRange, int numEntity,
+                                int const *domainToRange, int numEntity,
                                 int numRangePerDomain, int numEntityRange,
                                 int *elemPermutation = 0l,
                                 int *ielemPermutation = 0l);
