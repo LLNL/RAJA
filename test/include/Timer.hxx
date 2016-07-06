@@ -49,7 +49,7 @@ class ChronoTimer {
     using clock = std::chrono::steady_clock;
 #endif
     using TimeType = clock::time_point;
-    using Duration = std::chrono::duration<double>;
+    using Duration = clock::duration;
 public:
     ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0)  {}
     void start() { tstart = clock::now(); }
@@ -59,7 +59,7 @@ public:
     }
 
     Duration::rep elapsed()
-    { return telapsed.count(); }
+    { return std::chrono::duration<double>(telapsed).count(); }
 
 private:
     TimeType tstart;
