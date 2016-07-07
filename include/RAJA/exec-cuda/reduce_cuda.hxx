@@ -175,6 +175,7 @@ __device__ inline void atomicMax(float *address, double value) {
   }
 }
 
+///
 __device__ void atomicAdd(double *address, double value) {
   unsigned long long oldval, newval, readback;
 
@@ -186,6 +187,7 @@ __device__ void atomicAdd(double *address, double value) {
     newval = __double_as_longlong(__longlong_as_double(oldval) + value);
   }
 }
+
 #elif defined(RAJA_USE_ATOMIC_TWO)
 
 /*!
@@ -215,6 +217,7 @@ __device__ inline void atomicMin(double *address, double value) {
     } while (assumed != oldval);
   }
 }
+
 ///
 __device__ inline void atomicMin(float *address, float value) {
   float temp = *(reinterpret_cast<float volatile *>(address));
@@ -231,6 +234,7 @@ __device__ inline void atomicMin(float *address, float value) {
     } while (assumed != oldval);
   }
 }
+
 ///
 __device__ inline void atomicMax(double *address, double value) {
   double temp = *(reinterpret_cast<double volatile *>(address));
@@ -249,6 +253,7 @@ __device__ inline void atomicMax(double *address, double value) {
     } while (assumed != oldval);
   }
 }
+
 ///
 __device__ inline void atomicMax(float *address, float value) {
   float temp = *(reinterpret_cast<float volatile *>(address));
@@ -266,6 +271,7 @@ __device__ inline void atomicMax(float *address, float value) {
   }
 }
 
+///
 __device__ inline void atomicAdd(double *address, double value) {
   unsigned long long int *address_as_ull = (unsigned long long int *)address;
   unsigned long long int oldval = *address_as_ull, assumed;
