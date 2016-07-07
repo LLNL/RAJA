@@ -72,7 +72,7 @@
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
-#define RAJA_SUPPRESS_HD_WARN #pragma nv_exec_check_disable
+#define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
 #else
 
 #define RAJA_HOST_DEVICE
