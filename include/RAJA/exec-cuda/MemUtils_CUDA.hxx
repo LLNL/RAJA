@@ -74,9 +74,10 @@ namespace RAJA {
 typedef double CudaReductionBlockDataType;
 
 typedef struct {
-  double val;
+  CudaReductionBlockDataType val;
   Index_type idx;
 } CudaReductionLocBlockDataType;
+
 
 typedef struct {
   CudaReductionBlockDataType tally;

@@ -69,10 +69,22 @@ else()
   
   add_executable(CPUnested-test.exe
     main-nested.cxx)
+
+  add_test(CPUtraversal
+    CPUtraversal-test.exe)
+
+  add_test(CPUreduce
+    CPUreduce-test.exe)
+
+  add_test(CPUnested
+    CPUnested-test.exe)
     
   if(RAJA_ENABLE_OPENMP)
     add_executable(CPUnested_reduce-test.exe
       main-nested-reduce.cxx)
+
+    add_test(CPUnested-reduce
+      CPUnested_reduce-test.exe)
   endif()
 
 endif()

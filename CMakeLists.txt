@@ -88,5 +88,6 @@ add_subdirectory(src)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake DESTINATION share/cmake/raja)
 
 if(RAJA_ENABLE_TESTS)
+  enable_testing()
   add_subdirectory(test)
 endif()
