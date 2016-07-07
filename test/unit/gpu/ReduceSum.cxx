@@ -276,5 +276,5 @@ int main(int argc, char *argv[]) {
   cudaFree(dvalue);
   cudaFree(ivalue);
 
-  return 0;
+  return !(s_ntests_passed == s_ntests_run);
 }
