@@ -140,6 +140,9 @@ struct cuda_reduce {};
 
 template <size_t BLOCK_SIZE>
 struct cuda_reduce_atomic {};
+
+template <size_t BLOCK_SIZE>
+struct cuda_reduce_atomic_box {};
 //
 // Operations in the included files are parametrized using the following
 // values.

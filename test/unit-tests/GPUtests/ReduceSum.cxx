@@ -230,7 +230,7 @@ int main(int argc, char *argv[]) {
 
       ReduceSum<cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
       ReduceSum<cuda_reduce<block_size>, int> isum1(itinit * 2);
-      ReduceSum<cuda_reduce_atomic<block_size>, double> dsum2(dtinit * 3.0);
+      ReduceSum<cuda_reduce_atomic_box<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(

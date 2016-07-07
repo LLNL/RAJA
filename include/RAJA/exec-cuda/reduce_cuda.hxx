@@ -876,6 +876,172 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
   static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Box Support Sum reduction Atomic Non-Deterministic Variant class template for use
+ *in CUDA kernel.
+ *
+ *         For usage example, see reducers.hxx.
+ *
+ ******************************************************************************
+ */
+
+
+__device__ __managed__ double *s_sd[RAJA_MAX_REDUCE_VARS];
+template <size_t BLOCK_SIZE, typename T>
+class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
+ public:
+  //
+  // Constructor takes initial reduction value (default ctor is disabled).
+  // Ctor only executes on the host.
+  //
+  explicit ReduceSum(T init_val) {
+    m_is_copy = false;
+    m_reduced_val = static_cast<T>(0);
+    m_init_val = init_val;
+    m_myID = getCudaReductionId();
+    m_tallydata = getCudaReductionTallyBlock(m_myID);
+    m_tallydata->tally = static_cast<T>(0);
+    m_tallydata->initVal = init_val;
+    testVal = 13.0;
+  }
+
+  //
+  // Copy ctor executes on both host and device.
+  //
+  __host__ __device__
+  ReduceSum(const ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> &other) {
+    *this = other;
+    m_is_copy = true;
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ T sd[];
+
+
+    int blockId = blockIdx.x 
+       + blockIdx.y * gridDim.x 
+       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+
+    // initialize shared memory
+    //for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+      // this descends all the way to 1
+     // if (threadId < i) {
+        // no need for __syncthreads()
+        //sd[threadId + i] = m_reduced_val;
+     // }
+   // }
+   //
+    sd[threadId] = 0.1;
+    __syncthreads();
+
+
+    if(blockId + threadId == 0) printf("In ctor sd= %f : value should be %f : address %p : blockdim %d\n",sd[1],0.1,&sd[0],blockDim.x*blockDim.y*blockDim.z);
+#else
+
+#endif
+  }
+
+  //
+  // Destructor executes on both host and device.
+  // Destruction on host releases the unique id for others to use.
+  //
+  __host__ __device__ ~ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>() {
+    if (!m_is_copy) {
+#if defined(__CUDA_ARCH__)
+#else
+      releaseCudaReductionId(m_myID);
+#endif
+    }
+  }
+
+  //
+  // Operator to retrieve reduced sum value (before object is destroyed).
+  // Accessor only operates on host.
+  //
+  operator T() {
+    cudaDeviceSynchronize();
+    m_reduced_val = m_init_val + static_cast<T>(m_tallydata->tally);
+    return m_reduced_val;
+  }
+
+  T get() { return operator T(); }
+
+  //
+  // += operator to accumulate arg value in the proper shared
+  // memory block location.
+  //
+  __device__ ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> operator+=(
+      T val) const {
+
+    extern __shared__ T sd[];
+
+    int blockId = blockIdx.x 
+       + blockIdx.y * gridDim.x 
+       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+    if(blockId + threadId == 0) printf("In operator+=  sd= %f : value should be %f : address %p\n",sd[1],0.1,&sd[0]);
+    sd[threadId] = val;
+
+    T temp = 0;
+    __syncthreads();
+
+    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+      if (threadId < i) {
+        sd[threadId] += sd[threadId + i];
+      }
+      __syncthreads();
+    }
+
+    if (threadId < WARP_SIZE) {
+      temp = sd[threadId];
+      for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+        temp += shfl_xor(temp, i);
+      }
+    }
+
+    // one thread adds to tally
+    if (threadId == 0) {
+      atomicAdd(&(m_tallydata->tally), temp);
+    }
+
+    return *this;
+  }
+
+ private:
+  //
+  // Default ctor is declared private and not implemented.
+  //
+  ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>();
+
+  bool m_is_copy;
+
+  int m_myID;
+
+  T m_init_val;
+  T m_reduced_val;
+  T *m_sd;
+  T testVal;
+  CudaReductionBlockTallyType *m_tallydata;
+
+  // Sanity checks for block size
+  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
+  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
+  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
+  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
+};
+
+
 ///
 /// each reduce variable involved in either ReduceMinLoc or ReduceMaxLoc
 /// uses retiredBlocks as a way to complete the reduction in a single pass
