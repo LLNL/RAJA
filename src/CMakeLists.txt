@@ -80,7 +80,3 @@ install(TARGETS RAJA EXPORT RAJA
 )
 
 install(EXPORT RAJA DESTINATION share/cmake/raja)
-
-if(RAJA_ENABLE_TESTS)
-  add_dependencies(RAJA googletest)
-endif()
