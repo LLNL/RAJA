@@ -234,5 +234,5 @@ int main(int argc, char *argv[]) {
 
   cout << "\n RAJA GPU ReduceMax tests DONE!!! " << endl;
 
-  return 0;
+  return !(s_ntests_passed == s_ntests_run);
 }

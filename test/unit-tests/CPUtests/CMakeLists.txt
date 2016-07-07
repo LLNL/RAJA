@@ -51,12 +51,14 @@ if (RAJA_ENABLE_CUDA)
   cuda_add_executable(CPUreduce-test.exe
     main-reduce.cxx
     buildIndexSet.cxx)
-    
+
   cuda_add_executable(CPUnested-test.exe
     main-nested.cxx)
-    
-  cuda_add_executable(CPUnested_reduce-test.exe
-    main-nested-reduce.cxx)
+
+  if(RAJA_ENABLE_OPENMP)
+      cuda_add_executable(CPUnested_reduce-test.exe
+        main-nested-reduce.cxx)
+  endif()
 
 else()
   add_executable(CPUtraversal-test.exe
@@ -70,23 +72,25 @@ else()
   add_executable(CPUnested-test.exe
     main-nested.cxx)
 
-  add_test(CPUtraversal
-    CPUtraversal-test.exe)
-
-  add_test(CPUreduce
-    CPUreduce-test.exe)
-
-  add_test(CPUnested
-    CPUnested-test.exe)
-    
   if(RAJA_ENABLE_OPENMP)
     add_executable(CPUnested_reduce-test.exe
       main-nested-reduce.cxx)
-
-    add_test(CPUnested-reduce
-      CPUnested_reduce-test.exe)
   endif()
 
+endif()
+
+add_test(CPUtraversal
+  CPUtraversal-test.exe)
+
+add_test(CPUreduce
+  CPUreduce-test.exe)
+
+add_test(CPUnested
+  CPUnested-test.exe)
+
+if(RAJA_ENABLE_OPENMP)
+    add_test(CPUnested-reduce
+        CPUnested_reduce-test.exe)
 endif()
 
 target_link_libraries(CPUtraversal-test.exe RAJA)

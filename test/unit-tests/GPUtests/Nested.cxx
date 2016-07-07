@@ -384,5 +384,5 @@ int main(int argc, char *argv[]) {
 
   cout << "\n DONE!!! " << endl;
 
-  return 0;
+  return !(s_ntests_passed_total == s_ntests_run_total);
 }

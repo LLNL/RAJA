@@ -48,23 +48,38 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 cuda_add_executable(reducemin.exe
   ReduceMin.cxx)
 
+add_test(reducemin
+    reducemin.exe)
+
 cuda_add_executable(reducemax.exe
   ReduceMax.cxx)
+add_test(reducemax
+    reducemax.exe)
 
 cuda_add_executable(reducesum.exe
   ReduceSum.cxx)
+add_test(reducesum
+    reducesum.exe)
 
 cuda_add_executable(traversal.exe
   Traversal.cxx)
+add_test(traversal
+    traversal.exe)
 
 cuda_add_executable(nested.exe
   Nested.cxx)
+add_test(nested
+    nested.exe)
 
 cuda_add_executable(reduceminloc.exe
   ReduceMinLoc.cxx)
+add_test(reduceminloc
+    reduceminloc.exe)
 
 cuda_add_executable(reducemaxloc.exe
   ReduceMaxLoc.cxx)
+add_test(reducemaxloc
+    reducemaxloc.exe)
 
 target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
