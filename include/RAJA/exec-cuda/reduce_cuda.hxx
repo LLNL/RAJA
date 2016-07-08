@@ -905,7 +905,6 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
     m_tallydata = getCudaReductionTallyBlock(m_myID);
     m_tallydata->tally = static_cast<T>(0);
     m_tallydata->initVal = init_val;
-    testVal = 13.0;
   }
 
   //
@@ -919,30 +918,20 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
 
     extern __shared__ T sd[];
 
-
-    int blockId = blockIdx.x 
-       + blockIdx.y * gridDim.x 
-       + gridDim.x * gridDim.y * blockIdx.z; 
-
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
-
     // initialize shared memory
-    //for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-     // if (threadId < i) {
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+       //this descends all the way to 1
+      if (threadId < i) {
         // no need for __syncthreads()
-        //sd[threadId + i] = m_reduced_val;
-     // }
-   // }
-   //
-    sd[threadId] = 0.1;
+        sd[threadId + i] = m_reduced_val;
+      }
+    }
     __syncthreads();
 
-
-    if(blockId + threadId == 0) printf("In ctor sd= %f : value should be %f : address %p : blockdim %d\n",sd[1],0.1,&sd[0],blockDim.x*blockDim.y*blockDim.z);
 #else
 
 #endif
@@ -955,10 +944,44 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   __host__ __device__ ~ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>() {
     if (!m_is_copy) {
 #if defined(__CUDA_ARCH__)
+
+
 #else
       releaseCudaReductionId(m_myID);
 #endif
     }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ T sd[];
+
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      T temp = 0;
+      __syncthreads();
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] += sd[threadId + i];
+        }
+        __syncthreads();
+      }
+
+      if (threadId < WARP_SIZE) {
+        temp = sd[threadId];
+        for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+          temp += shfl_xor(temp, i);
+        }
+      }
+
+      // one thread adds to tally
+      if (threadId == 0) {
+        atomicAdd(&(m_tallydata->tally), temp);
+      }
+#endif
+    }
+
   }
 
   //
@@ -977,43 +1000,17 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   // += operator to accumulate arg value in the proper shared
   // memory block location.
   //
-  __device__ ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> operator+=(
+  __device__ const ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>& operator+=(
       T val) const {
 
     extern __shared__ T sd[];
-
-    int blockId = blockIdx.x 
-       + blockIdx.y * gridDim.x 
-       + gridDim.x * gridDim.y * blockIdx.z; 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
-    if(blockId + threadId == 0) printf("In operator+=  sd= %f : value should be %f : address %p\n",sd[1],0.1,&sd[0]);
     sd[threadId] = val;
-
-    T temp = 0;
     __syncthreads();
-
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] += sd[threadId + i];
-      }
-      __syncthreads();
-    }
-
-    if (threadId < WARP_SIZE) {
-      temp = sd[threadId];
-      for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-        temp += shfl_xor(temp, i);
-      }
-    }
-
-    // one thread adds to tally
-    if (threadId == 0) {
-      atomicAdd(&(m_tallydata->tally), temp);
-    }
 
     return *this;
   }
@@ -1031,7 +1028,6 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   T m_init_val;
   T m_reduced_val;
   T *m_sd;
-  T testVal;
   CudaReductionBlockTallyType *m_tallydata;
 
   // Sanity checks for block size
