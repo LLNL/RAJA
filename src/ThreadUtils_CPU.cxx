@@ -64,7 +64,8 @@
 
 #include <algorithm>
 
-namespace RAJA {
+namespace RAJA
+{
 
 /*
 *************************************************************************
@@ -75,17 +76,17 @@ namespace RAJA {
 */
 int getMaxReduceThreadsCPU()
 {
-   int nthreads = 1;
+  int nthreads = 1;
 
 #if defined(_OPENMP)
-   nthreads = omp_get_max_threads();
+  nthreads = omp_get_max_threads();
 #endif
 #if defined(RAJA_ENABLE_CILK)
-   int nworkers = __cilkrts_get_nworkers();
-   nthreads = std::max(nthreads, nworkers);
+  int nworkers = __cilkrts_get_nworkers();
+  nthreads = std::max(nthreads, nworkers);
 #endif
 
-   return nthreads;
+  return nthreads;
 }
 
 /*
@@ -97,14 +98,13 @@ int getMaxReduceThreadsCPU()
 */
 int getMaxOMPThreadsCPU()
 {
-   int nthreads = 1;
+  int nthreads = 1;
 
 #if defined(_OPENMP)
-   nthreads = omp_get_max_threads();
+  nthreads = omp_get_max_threads();
 #endif
 
-   return nthreads;
+  return nthreads;
 }
-
 
 }  // closing brace for RAJA namespace

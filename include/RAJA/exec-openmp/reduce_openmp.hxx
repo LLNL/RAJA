@@ -70,7 +70,8 @@
 #include <omp.h>
 #endif
 
-namespace RAJA {
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
@@ -82,12 +83,14 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<omp_reduce, T> {
- public:
+class ReduceMin<omp_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val) {
+  explicit ReduceMin(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -106,25 +109,28 @@ class ReduceMin<omp_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<omp_reduce, T>& other) {
+  ReduceMin(const ReduceMin<omp_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMin<omp_reduce, T>() {
+  ~ReduceMin<omp_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       m_reduced_val = RAJA_MIN(m_reduced_val,
@@ -134,12 +140,16 @@ class ReduceMin<omp_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Min function that sets min for current thread.
+  // Method that updates min value for current thread.
   //
-  ReduceMin<omp_reduce, T> min(T val) const {
+  ReduceMin<omp_reduce, T> min(T val) const
+  {
     int tid = omp_get_thread_num();
     int idx = tid * s_block_offset;
     m_blockdata[idx] = RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
@@ -147,7 +157,7 @@ class ReduceMin<omp_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -174,12 +184,14 @@ class ReduceMin<omp_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMinLoc<omp_reduce, T> {
- public:
+class ReduceMinLoc<omp_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -200,25 +212,28 @@ class ReduceMinLoc<omp_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other) {
+  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMinLoc<omp_reduce, T>() {
+  ~ReduceMinLoc<omp_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
@@ -230,12 +245,16 @@ class ReduceMinLoc<omp_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve index value of min (before object is destroyed).
+  // Method that returns index corresponding to reduced min value.
   //
-  Index_type getMinLoc() {
+  Index_type getLoc()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
@@ -248,9 +267,10 @@ class ReduceMinLoc<omp_reduce, T> {
   }
 
   //
-  // Min-loc function that sets min for current thread.
+  // Method that updates min and index values for current thread.
   //
-  ReduceMinLoc<omp_reduce, T> minloc(T val, Index_type idx) const {
+  ReduceMinLoc<omp_reduce, T> minloc(T val, Index_type idx) const
+  {
     int tid = omp_get_thread_num();
     if (val <= static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
@@ -260,7 +280,7 @@ class ReduceMinLoc<omp_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -290,12 +310,14 @@ class ReduceMinLoc<omp_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<omp_reduce, T> {
- public:
+class ReduceMax<omp_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val) {
+  explicit ReduceMax(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -314,25 +336,28 @@ class ReduceMax<omp_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<omp_reduce, T>& other) {
+  ReduceMax(const ReduceMax<omp_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMax<omp_reduce, T>() {
+  ~ReduceMax<omp_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       m_reduced_val = RAJA_MAX(m_reduced_val,
@@ -342,12 +367,16 @@ class ReduceMax<omp_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Max function that sets max for current thread.
+  // Method that updates max value for current thread.
   //
-  ReduceMax<omp_reduce, T> max(T val) const {
+  ReduceMax<omp_reduce, T> max(T val) const
+  {
     int tid = omp_get_thread_num();
     int idx = tid * s_block_offset;
     m_blockdata[idx] = RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
@@ -355,7 +384,7 @@ class ReduceMax<omp_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -382,12 +411,14 @@ class ReduceMax<omp_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<omp_reduce, T> {
- public:
+class ReduceMaxLoc<omp_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -408,25 +439,28 @@ class ReduceMaxLoc<omp_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other) {
+  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMaxLoc<omp_reduce, T>() {
+  ~ReduceMaxLoc<omp_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
@@ -438,12 +472,16 @@ class ReduceMaxLoc<omp_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve index value of max (before object is destroyed).
+  // Method that returns index corresponding to reduced max value.
   //
-  Index_type getMaxLoc() {
+  Index_type getLoc()
+  {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
@@ -456,9 +494,10 @@ class ReduceMaxLoc<omp_reduce, T> {
   }
 
   //
-  // Max-loc function that sets max for current thread.
+  // Method that updates max and index values for current thread.
   //
-  ReduceMaxLoc<omp_reduce, T> maxloc(T val, Index_type idx) const {
+  ReduceMaxLoc<omp_reduce, T> maxloc(T val, Index_type idx) const
+  {
     int tid = omp_get_thread_num();
     if (val >= static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
@@ -468,7 +507,7 @@ class ReduceMaxLoc<omp_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -498,12 +537,14 @@ class ReduceMaxLoc<omp_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<omp_reduce, T> {
- public:
+class ReduceSum<omp_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val) {
+  explicit ReduceSum(T init_val)
+  {
     m_is_copy = false;
 
     m_init_val = init_val;
@@ -523,25 +564,28 @@ class ReduceSum<omp_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other) {
+  ReduceSum(const ReduceSum<omp_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceSum<omp_reduce, T>() {
+  ~ReduceSum<omp_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve sum value (before object is destroyed).
+  // Operator that returns reduced sum value.
   //
-  operator T() {
+  operator T()
+  {
     T tmp_reduced_val = static_cast<T>(0);
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
@@ -552,18 +596,22 @@ class ReduceSum<omp_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns sum value.
+  //
   T get() { return operator T(); }
 
   //
-  // += operator that performs accumulation for current thread.
+  // += operator that adds value to sum for current thread.
   //
-  ReduceSum<omp_reduce, T> operator+=(T val) const {
+  ReduceSum<omp_reduce, T> operator+=(T val) const
+  {
     int tid = omp_get_thread_num();
     m_blockdata[tid * s_block_offset] += val;
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
