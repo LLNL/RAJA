@@ -77,6 +77,25 @@ namespace RAJA {
 //////////////////////////////////////////////////////////////////////
 //
 
+/*!  
+ ******************************************************************************
+ *
+ * \brief calculate global thread index from 3D grid of 3D blocks 
+ *
+ ******************************************************************************
+ */
+
+__forceinline__ __device__ Index_type getGlobalIdx_3D_3D()
+{
+    Index_type blockId = blockIdx.x 
+      + blockIdx.y * gridDim.x 
+      + gridDim.x * gridDim.y * blockIdx.z; 
+    Index_type threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+      + (threadIdx.z * (blockDim.x * blockDim.y))
+      + (threadIdx.y * blockDim.x)
+      + threadIdx.x;
+    return threadId;
+}
 /*!
  ******************************************************************************
  *
@@ -89,7 +108,8 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    Index_type begin,
                                    Index_type len) {
   auto body = loop_body;
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
+
+  Index_type ii = getGlobalIdx_3D_3D();
   if (ii < len) {
     body(begin + ii);
   }
@@ -110,7 +130,8 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           Index_type len,
                                           Index_type icount) {
   auto body = loop_body;
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
+
+  Index_type ii = getGlobalIdx_3D_3D();
   if (ii < len) {
     body(ii + icount, ii + begin);
   }
@@ -129,7 +150,8 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    Index_type length) {
 
   auto body = loop_body;
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
+
+  Index_type ii = getGlobalIdx_3D_3D();
   if (ii < length) {
     body(idx[ii]);
   }
@@ -151,7 +173,8 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           Index_type icount) {
 
   auto body = loop_body;
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
+
+  Index_type ii = getGlobalIdx_3D_3D();
   if (ii < length) {
     body(ii + icount, idx[ii]);
   }
