@@ -358,7 +358,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -393,7 +393,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // Method that updates min value in proper shared memory block locations.
+  // Method that updates min value in proper device memory block locations.
   //
   // Note: only operates on device.
   //
@@ -514,7 +514,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -549,7 +549,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // Method that updates max value in proper shared memory block locations.
+  // Method that updates max value in proper device memory block locations.
   //
   // Note: only operates on device.
   //
@@ -662,7 +662,7 @@ public:
     m_blockdata = getCudaReductionMemBlock(m_myID);
     m_blockoffset = 1;
 
-    // Entire shared memory block must be initialized to zero so
+    // Entire global shared memory block must be initialized to zero so
     // sum reduction is correct.
     size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH;
     cudaErrchk(cudaMemset(&m_blockdata[m_blockoffset],
@@ -686,7 +686,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -730,7 +730,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // += operator that adds value to sum in the proper shared
+  // += operator that adds value to sum in the proper device shared
   // memory block locations.
   //
   // Note: only operates on device.
@@ -855,7 +855,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -890,7 +890,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // += operator that adds value to sum in the proper shared
+  // += operator that adds value to sum in the proper device 
   // memory block locations.
   //
   // Note: only operates on device.
@@ -1025,7 +1025,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -1074,7 +1074,7 @@ public:
   }
 
   //
-  // Method that updates min and index values in proper shared memory block
+  // Method that updates min and index values in proper device memory block
   // locations.
   //
   // Note: only operates on device.
@@ -1278,7 +1278,7 @@ public:
   }
 
   //
-  // Destruction on host releases the shared memory block chunk for
+  // Destruction on host releases the global shared memory block chunk for
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -1327,7 +1327,7 @@ public:
   }
 
   //
-  // Method that updates max and index values in proper shared memory block
+  // Method that updates max and index values in proper device memory block
   // locations.
   //
   // Note: only operates on device.
