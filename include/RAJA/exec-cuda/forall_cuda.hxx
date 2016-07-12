@@ -85,7 +85,7 @@ namespace RAJA {
  ******************************************************************************
  */
 
-__forceinline__ __device__ Index_type getGlobalIdx_3D_3D()
+static __device__ Index_type getGlobalIdx_3D_3D()
 {
     Index_type blockId = blockIdx.x 
       + blockIdx.y * gridDim.x 
