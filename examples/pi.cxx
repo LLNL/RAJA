@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
 
   RAJA::ReduceSum<reduce_policy, double> piSum(0.0) ;
 
-  RAJA::forall<execute_policy>( 0, numBins, [=] RAJA_DEVICE (int i) {
+  RAJA::forall<execute_policy>( 0, numBins, [=] (int i) {
       double x = (double(i) + 0.5)/numBins ;
       piSum += 4.0/(1.0 + x*x) ;
   } ) ;
