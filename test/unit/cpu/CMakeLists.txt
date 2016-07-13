@@ -100,7 +100,7 @@ add_executable(indexset-tests
 add_test(indexset-test
   indexset-tests)
 
-target_link_libraries(indexset-tests RAJA gtest gtest_main)
+target_link_libraries(indexset-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 add_executable(traversal-tests
   test-traversals.cxx
@@ -109,7 +109,7 @@ add_executable(traversal-tests
 add_test(traversal-test
   traversal-tests)
 
-target_link_libraries(traversal-tests RAJA gtest gtest_main)
+target_link_libraries(traversal-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 target_link_libraries(CPUtraversal-test.exe RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA)

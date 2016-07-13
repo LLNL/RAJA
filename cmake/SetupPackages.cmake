@@ -111,13 +111,8 @@ if (RAJA_ENABLE_TESTS)
   add_dependencies(gtest      googletest)
   add_dependencies(gtest_main googletest)
 
+  # GoogleTest requires threading
   find_package(Threads)
-
-  if (CMAKE_USE_PTHREADS_INIT)
-    target_link_libraries(gtest ${CMAKE_THREAD_LIBS_INIT})
-    target_link_libraries(gtest_main ${CMAKE_THREAD_LIBS_INIT})
-  endif()
-
 
   enable_testing()
 endif ()

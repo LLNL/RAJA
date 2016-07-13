@@ -42,7 +42,7 @@
 
 cmake_minimum_required (VERSION 3.1)
 
-project(RAJA LANGUAGES CXX)
+project(RAJA LANGUAGES CXX C)
 
 set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 
