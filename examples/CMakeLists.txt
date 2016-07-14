@@ -41,6 +41,8 @@
 #
 ###############################################################################
 
-include_directories(include)
 
-add_subdirectory(unit)
+add_executable(raja-pi
+  pi.cxx)
+
+target_link_libraries(raja-pi RAJA)
