@@ -68,7 +68,24 @@
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
-// The following atomic functions need to be outside of the RAJA namespace
+
+namespace RAJA {
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Method to shuffle 32b registers in sum reduction.
+ *
+ ******************************************************************************
+ */
+__device__ __forceinline__ double shfl_xor(double var, int laneMask) {
+  int lo = __shfl_xor(__double2loint(var), laneMask);
+  int hi = __shfl_xor(__double2hiint(var), laneMask);
+  return __hiloint2double(hi, lo);
+}
+
+
 //
 // Three different variants of min/max reductions can be run by choosing
 // one of these macros. Only one should be defined!!!
@@ -87,19 +104,6 @@
 
 #define double_to_ull(x) __double_as_longlong(x)
 #endif
-
-/*!
- ******************************************************************************
- *
- * \brief Method to shuffle 32b registers in sum reduction.
- *
- ******************************************************************************
- */
-__device__ __forceinline__ double shfl_xor(double var, int laneMask) {
-  int lo = __shfl_xor(__double2loint(var), laneMask);
-  int hi = __shfl_xor(__double2hiint(var), laneMask);
-  return __hiloint2double(hi, lo);
-}
 
 #if defined(RAJA_USE_ATOMIC_ONE)
 /*!
@@ -285,6 +289,7 @@ __device__ inline void atomicAdd(double *address, double value) {
   } while (assumed != oldval);
 }
 
+
 #elif defined(RAJA_USE_NO_ATOMICS)
 
 // Noting to do here...
@@ -295,7 +300,7 @@ __device__ inline void atomicAdd(double *address, double value) {
 
 #endif
 
-namespace RAJA {
+
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -1032,7 +1037,7 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
           RAJA_MINLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], (int)1);
+      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
     }
     __syncthreads();
@@ -1253,7 +1258,7 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
           RAJA_MAXLOC(sd[threadId],
                       m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], 1);
+      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();
