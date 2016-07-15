@@ -63,6 +63,7 @@
 
 #include "RAJA/config.hxx"
 
+
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
@@ -72,7 +73,11 @@
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
-#define RAJA_SUPPRESS_HD_WARN #pragma nv_exec_check_disable
+#if defined(_WIN32) //windows is non-compliant, yay
+    #define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
+#else
+    #define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#endif
 #else
 
 #define RAJA_HOST_DEVICE
