@@ -890,7 +890,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // += operator that adds value to sum in the proper device 
+  // += operator that adds value to sum in the proper device
   // memory block locations.
   //
   // Note: only operates on device.

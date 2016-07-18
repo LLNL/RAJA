@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing tiling policies and mechanics 
+ * \brief   RAJA header file containing tiling policies and mechanics
  *          for forallN templates.
  *
  ******************************************************************************

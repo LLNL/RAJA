@@ -1,7 +1,6 @@
 BasedOnStyle : google
 IndentWidth : 2
 BreakBeforeBraces : Linux
-#BreakBeforeBraces : Attach
 KeepEmptyLinesAtTheStartOfBlocks : true
 MaxEmptyLinesToKeep : 2
 AccessModifierOffset : -2
