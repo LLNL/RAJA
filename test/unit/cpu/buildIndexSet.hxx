@@ -19,22 +19,22 @@
 // Enum for different hybrid initialization procedures.
 //
 enum IndexSetBuildMethod {
-   AddSegments = 0,
-   AddSegmentsReverse,
-   AddSegmentsNoCopy,
-   AddSegmentsNoCopyReverse,
-   MakeViewRange,
-   MakeViewArray,
+  AddSegments = 0,
+  AddSegmentsReverse,
+  AddSegmentsNoCopy,
+  AddSegmentsNoCopyReverse,
+  MakeViewRange,
+  MakeViewArray,
 #if defined(RAJA_USE_STL)
-   MakeViewVector,
+  MakeViewVector,
 #endif
 
-   NumBuildMethods
+  NumBuildMethods
 };
 
 //
 //  Initialize index set by adding segments as indicated by enum value.
 //  Return last index in IndexSet.
 //
-RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex, 
+RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex,
                                IndexSetBuildMethod use_vector);

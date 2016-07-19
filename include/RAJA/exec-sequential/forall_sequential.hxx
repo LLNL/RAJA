@@ -64,9 +64,8 @@
 
 #include "RAJA/segment_exec.hxx"
 
-
-namespace RAJA {
-
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -84,19 +83,19 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            Index_type begin, Index_type end, 
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(seq_exec,
+                        Index_type begin,
+                        Index_type end,
+                        LOOP_BODY loop_body)
 {
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
+  for (Index_type ii = begin; ii < end; ++ii) {
+    loop_body(ii);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -109,29 +108,28 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   Index_type begin, Index_type end,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               Index_type begin,
+                               Index_type end,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   Index_type loop_end = end - begin;
+  Index_type loop_end = end - begin;
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, ii+begin );
-   }
+  for (Index_type ii = 0; ii < loop_end; ++ii) {
+    loop_body(ii + icount, ii + begin);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// Function templates that iterate over range segments. 
+// Function templates that iterate over range segments.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -144,22 +142,19 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(seq_exec, const RangeSegment& iseg, LOOP_BODY loop_body)
 {
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
+  Index_type begin = iseg.getBegin();
+  Index_type end = iseg.getEnd();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
+  for (Index_type ii = begin; ii < end; ++ii) {
+    loop_body(ii);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -172,25 +167,23 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   const RangeSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               const RangeSegment& iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   Index_type begin = iseg.getBegin();
-   Index_type loop_end = iseg.getEnd() - begin;
+  Index_type begin = iseg.getBegin();
+  Index_type loop_end = iseg.getEnd() - begin;
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, ii+begin );
-   }
+  for (Index_type ii = 0; ii < loop_end; ++ii) {
+    loop_body(ii + icount, ii + begin);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -208,20 +201,20 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            Index_type begin, Index_type end,
-            Index_type stride,
-            LOOP_BODY loop_body)
-{  
-   RAJA_FT_BEGIN ;
+RAJA_INLINE void forall(seq_exec,
+                        Index_type begin,
+                        Index_type end,
+                        Index_type stride,
+                        LOOP_BODY loop_body)
+{
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
+  for (Index_type ii = begin; ii < end; ii += stride) {
+    loop_body(ii);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -234,26 +227,25 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               Index_type begin,
+                               Index_type end,
+                               Index_type stride,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
+  Index_type loop_end = (end - begin) / stride;
+  if ((end - begin) % stride != 0) loop_end++;
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
+  for (Index_type ii = 0; ii < loop_end; ++ii) {
+    loop_body(ii + icount, begin + ii * stride);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -271,29 +263,28 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(seq_exec,
+                        const RangeStrideSegment& iseg,
+                        LOOP_BODY loop_body)
 {
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
+  Index_type begin = iseg.getBegin();
+  Index_type end = iseg.getEnd();
+  Index_type stride = iseg.getStride();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
+  for (Index_type ii = begin; ii < end; ii += stride) {
+    loop_body(ii);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over range-stride segment object 
+ * \brief  Sequential iteration over range-stride segment object
  *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -301,27 +292,25 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               const RangeStrideSegment& iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
+  Index_type begin = iseg.getBegin();
+  Index_type stride = iseg.getStride();
+  Index_type loop_end = (iseg.getEnd() - begin) / stride;
+  if ((iseg.getEnd() - begin) % stride != 0) loop_end++;
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
+  for (Index_type ii = 0; ii < loop_end; ++ii) {
+    loop_body(ii + icount, begin + ii * stride);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -339,25 +328,25 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const Index_type* __restrict__ idx, Index_type len,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(seq_exec,
+                        const Index_type* __restrict__ idx,
+                        Index_type len,
+                        LOOP_BODY loop_body)
 {
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  Sequential iteration over indices in indirection array 
+ * \brief  Sequential iteration over indices in indirection array
  *         with index count.
  *
  *         NOTE: lambda loop body requires two args (icount, index).
@@ -365,22 +354,21 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   const Index_type* __restrict__ idx, Index_type len,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               const Index_type* __restrict__ idx,
+                               Index_type len,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+icount, idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(k + icount, idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -398,22 +386,19 @@ void forall_Icount(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(seq_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(seq_exec, const ListSegment& iseg, LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type* __restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -426,25 +411,23 @@ void forall(seq_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(seq_exec,
-                   const ListSegment& iseg,
-                   Index_type icount, 
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(seq_exec,
+                               const ListSegment& iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type* __restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+icount, idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(k + icount, idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -464,20 +447,17 @@ void forall_Icount(seq_exec,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-             const IndexSet& iset, 
-             LOOP_BODY loop_body )
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+                        const IndexSet& iset,
+                        LOOP_BODY loop_body)
 {
-   int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
+  int num_seg = iset.getNumSegments();
+  for (int isi = 0; isi < num_seg; ++isi) {
+    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
+    executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
+  }  // iterate over segments of index set
 }
 
 /*!
@@ -492,28 +472,25 @@ void forall( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
-                    const IndexSet& iset, 
-                    LOOP_BODY loop_body )
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(
+    IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
 {
-   int num_seg = iset.getNumSegments();
-   for ( int isi = 0; isi < num_seg; ++isi ) {
+  int num_seg = iset.getNumSegments();
+  for (int isi = 0; isi < num_seg; ++isi) {
+    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
+    executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
-      const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-      executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(seg_info, loop_body);
-
-   } // iterate over segments of index set
+  }  // iterate over segments of index set
 }
-
 
 /*!
  ******************************************************************************
  *
- * \brief  Special segment iteration using sequential segment iteration loop 
- *         (no dependency graph used or needed). Individual segment execution 
+ * \brief  Special segment iteration using sequential segment iteration loop
+ *         (no dependency graph used or needed). Individual segment execution
  *         is defined in loop body.
  *
  *         NOTE: IndexSet must contain only RangeSegments.
@@ -521,36 +498,31 @@ void forall_Icount( IndexSet::ExecPolicy<seq_segit, SEG_EXEC_POLICY_T>,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_segments(seq_segit,
-                     const IndexSet& iset,
-                     LOOP_BODY loop_body)
+RAJA_INLINE void forall_segments(seq_segit,
+                                 const IndexSet& iset,
+                                 LOOP_BODY loop_body)
 {
-   IndexSet& ncis = (*const_cast<IndexSet *>(&iset)) ;
-   int num_seg = ncis.getNumSegments();
+  IndexSet& ncis = (*const_cast<IndexSet*>(&iset));
+  int num_seg = ncis.getNumSegments();
 
-   /* Create a temporary IndexSet with one Segment */
-   IndexSet is_tmp;
-   is_tmp.push_back( RangeSegment(0, 0) ) ; // create a dummy range segment
+  /* Create a temporary IndexSet with one Segment */
+  IndexSet is_tmp;
+  is_tmp.push_back(RangeSegment(0, 0));  // create a dummy range segment
 
-   RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
+  RangeSegment* segTmp = static_cast<RangeSegment*>(is_tmp.getSegment(0));
 
-   for ( int isi = 0; isi < num_seg; ++isi ) {
+  for (int isi = 0; isi < num_seg; ++isi) {
+    RangeSegment* isetSeg = static_cast<RangeSegment*>(ncis.getSegment(isi));
 
-      RangeSegment* isetSeg = 
-         static_cast<RangeSegment*>(ncis.getSegment(isi));
+    segTmp->setBegin(isetSeg->getBegin());
+    segTmp->setEnd(isetSeg->getEnd());
+    segTmp->setPrivate(isetSeg->getPrivate());
 
-      segTmp->setBegin(isetSeg->getBegin()) ;
-      segTmp->setEnd(isetSeg->getEnd()) ;
-      segTmp->setPrivate(isetSeg->getPrivate()) ;
+    loop_body(&is_tmp);
 
-      loop_body(&is_tmp) ;
-
-   } // loop over index set segments
+  }  // loop over index set segments
 }
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

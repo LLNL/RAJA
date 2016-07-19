@@ -69,7 +69,8 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 
-namespace RAJA {
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
@@ -81,12 +82,14 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<cilk_reduce, T> {
- public:
+class ReduceMin<cilk_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val) {
+  explicit ReduceMin(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -96,7 +99,8 @@ class ReduceMin<cilk_reduce, T> {
     m_blockdata = getCPUReductionMemBlock(m_myID);
 
     int nthreads = __cilkrts_get_nworkers();
-    cilk_for(int i = 0; i < nthreads; ++i) {
+    cilk_for(int i = 0; i < nthreads; ++i)
+    {
       m_blockdata[i * s_block_offset] = init_val;
     }
   }
@@ -104,25 +108,28 @@ class ReduceMin<cilk_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<cilk_reduce, T>& other) {
+  ReduceMin(const ReduceMin<cilk_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMin<cilk_reduce, T>() {
+  ~ReduceMin<cilk_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       m_reduced_val = RAJA_MIN(m_reduced_val,
@@ -132,12 +139,16 @@ class ReduceMin<cilk_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Min function that sets min for current thread.
+  // Method that updates min value for current thread.
   //
-  ReduceMin<cilk_reduce, T> min(T val) const {
+  ReduceMin<cilk_reduce, T> min(T val) const
+  {
     int tid = __cilkrts_get_worker_number();
     int idx = tid * s_block_offset;
     m_blockdata[idx] = RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
@@ -145,7 +156,7 @@ class ReduceMin<cilk_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -172,12 +183,14 @@ class ReduceMin<cilk_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMinLoc<cilk_reduce, T> {
- public:
+class ReduceMinLoc<cilk_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -188,7 +201,8 @@ class ReduceMinLoc<cilk_reduce, T> {
     m_idxdata = getCPUReductionLocBlock(m_myID);
 
     int nthreads = __cilkrts_get_nworkers();
-    cilk_for(int i = 0; i < nthreads; ++i) {
+    cilk_for(int i = 0; i < nthreads; ++i)
+    {
       m_blockdata[i * s_block_offset] = init_val;
       m_idxdata[i * s_idx_offset] = init_loc;
     }
@@ -197,25 +211,28 @@ class ReduceMinLoc<cilk_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<cilk_reduce, T>& other) {
+  ReduceMinLoc(const ReduceMinLoc<cilk_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMinLoc<cilk_reduce, T>() {
+  ~ReduceMinLoc<cilk_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
@@ -227,12 +244,16 @@ class ReduceMinLoc<cilk_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve index value of min (before object is destroyed).
+  // Method that returns index of reduced min value.
   //
-  Index_type getMinLoc() {
+  Index_type getLoc()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
@@ -245,9 +266,10 @@ class ReduceMinLoc<cilk_reduce, T> {
   }
 
   //
-  // Min-loc function that sets min for current thread.
+  // Method that updates min and index values for current thread.
   //
-  ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const {
+  ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
+  {
     int tid = __cilkrts_get_worker_number();
     if (val <= static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
@@ -257,7 +279,7 @@ class ReduceMinLoc<cilk_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -287,12 +309,14 @@ class ReduceMinLoc<cilk_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<cilk_reduce, T> {
- public:
+class ReduceMax<cilk_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val) {
+  explicit ReduceMax(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -302,7 +326,8 @@ class ReduceMax<cilk_reduce, T> {
     m_blockdata = getCPUReductionMemBlock(m_myID);
 
     int nthreads = __cilkrts_get_nworkers();
-    cilk_for(int i = 0; i < nthreads; ++i) {
+    cilk_for(int i = 0; i < nthreads; ++i)
+    {
       m_blockdata[i * s_block_offset] = init_val;
     }
   }
@@ -310,25 +335,28 @@ class ReduceMax<cilk_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<cilk_reduce, T>& other) {
+  ReduceMax(const ReduceMax<cilk_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMax<cilk_reduce, T>() {
+  ~ReduceMax<cilk_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       m_reduced_val = RAJA_MAX(m_reduced_val,
@@ -338,12 +366,16 @@ class ReduceMax<cilk_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Max function that sets max for current thread.
+  // Method that updates max value for current thread.
   //
-  ReduceMax<cilk_reduce, T> max(T val) const {
+  ReduceMax<cilk_reduce, T> max(T val) const
+  {
     int tid = __cilkrts_get_worker_number();
     int idx = tid * s_block_offset;
     m_blockdata[idx] = RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
@@ -351,7 +383,7 @@ class ReduceMax<cilk_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -378,12 +410,14 @@ class ReduceMax<cilk_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<cilk_reduce, T> {
- public:
+class ReduceMaxLoc<cilk_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -394,7 +428,8 @@ class ReduceMaxLoc<cilk_reduce, T> {
     m_idxdata = getCPUReductionLocBlock(m_myID);
 
     int nthreads = __cilkrts_get_nworkers();
-    cilk_for(int i = 0; i < nthreads; ++i) {
+    cilk_for(int i = 0; i < nthreads; ++i)
+    {
       m_blockdata[i * s_block_offset] = init_val;
       m_idxdata[i * s_idx_offset] = init_loc;
     }
@@ -403,25 +438,28 @@ class ReduceMaxLoc<cilk_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<cilk_reduce, T>& other) {
+  ReduceMaxLoc(const ReduceMaxLoc<cilk_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMaxLoc<cilk_reduce, T>() {
+  ~ReduceMaxLoc<cilk_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
@@ -433,12 +471,16 @@ class ReduceMaxLoc<cilk_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve index value of max (before object is destroyed).
+  // Method that returns index of reduced max value.
   //
-  Index_type getMaxLoc() {
+  Index_type getLoc()
+  {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
       if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
@@ -451,9 +493,10 @@ class ReduceMaxLoc<cilk_reduce, T> {
   }
 
   //
-  // Max-loc function that sets max for current thread.
+  // Method that updates max and index values for current thread.
   //
-  ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const {
+  ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
+  {
     int tid = __cilkrts_get_worker_number();
     if (val >= static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
@@ -463,7 +506,7 @@ class ReduceMaxLoc<cilk_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -493,12 +536,14 @@ class ReduceMaxLoc<cilk_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<cilk_reduce, T> {
- public:
+class ReduceSum<cilk_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val) {
+  explicit ReduceSum(T init_val)
+  {
     m_is_copy = false;
 
     m_init_val = init_val;
@@ -509,7 +554,8 @@ class ReduceSum<cilk_reduce, T> {
     m_blockdata = getCPUReductionMemBlock(m_myID);
 
     int nthreads = __cilkrts_get_nworkers();
-    cilk_for(int i = 0; i < nthreads; ++i) {
+    cilk_for(int i = 0; i < nthreads; ++i)
+    {
       m_blockdata[i * s_block_offset] = 0;
     }
   }
@@ -517,25 +563,28 @@ class ReduceSum<cilk_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<cilk_reduce, T>& other) {
+  ReduceSum(const ReduceSum<cilk_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceSum<cilk_reduce, T>() {
+  ~ReduceSum<cilk_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve sum value (before object is destroyed).
+  // Operator that returns reduced sum value.
   //
-  operator T() {
+  operator T()
+  {
     T tmp_reduced_val = static_cast<T>(0);
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
@@ -546,18 +595,22 @@ class ReduceSum<cilk_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced sum value.
+  //
   T get() { return operator T(); }
 
   //
-  // += operator that performs accumulation for current thread.
+  // += operator that adds value to sum for current thread.
   //
-  ReduceSum<cilk_reduce, T> operator+=(T val) const {
+  ReduceSum<cilk_reduce, T> operator+=(T val) const
+  {
     int tid = __cilkrts_get_worker_number();
     m_blockdata[tid * s_block_offset] += val;
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //

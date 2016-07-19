@@ -8,11 +8,11 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <cstdio>
 #include <cfloat>
+#include <cstdio>
+#include <iostream>
 #include <random>
+#include <string>
 
 #include "RAJA/RAJA.hxx"
 
@@ -31,7 +31,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   cout << "\n Begin RAJA GPU ReduceMaxLoc tests!!! " << endl;
 
   const int test_repeat = 10;
@@ -95,19 +96,16 @@ int main(int argc, char *argv[]) {
 
         // printf("droll[%d] =  %lf : dcurrentMax[%d] =
         // %lf\n",lmax.idx,lmax.val,dcurrentMax.idx,dcurrentMax.val);
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-                                         dmax0.maxloc(dvalue[i], i);
-                                         dmax1.maxloc(2 * dvalue[i], i);
-                                         dmax2.maxloc(dvalue[i], i);
-                                       });
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dmax0.maxloc(dvalue[i], i);
+          dmax1.maxloc(2 * dvalue[i], i);
+          dmax2.maxloc(dvalue[i], i);
+        });
 
-        if (dmax0.get() != dcurrentMax.val
-            || dmax1.get() != 2 * dcurrentMax.val
+        if (dmax0.get() != dcurrentMax.val || dmax1.get() != 2 * dcurrentMax.val
             || dmax2.get() != BIG_MAX
-            || dmax0.getMaxLoc() != dcurrentMax.idx
-            || dmax1.getMaxLoc() != dcurrentMax.idx) {
+            || dmax0.getLoc() != dcurrentMax.idx
+            || dmax1.getLoc() != dcurrentMax.idx) {
           cout << "\n TEST 1 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
           cout << "  droll = " << droll << endl;
@@ -115,8 +113,8 @@ int main(int argc, char *argv[]) {
                << dcurrentMax.val << ") " << endl;
           cout << "\tdmax1 = " << static_cast<double>(dmax1.get()) << " ("
                << 2 * dcurrentMax.val << ") " << endl;
-          cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " (" << BIG_MAX
-               << ") " << endl;
+          cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " ("
+               << BIG_MAX << ") " << endl;
         } else {
           s_ntests_passed++;
         }
@@ -154,16 +152,15 @@ int main(int argc, char *argv[]) {
       dcurrentMax = RAJA_MAXLOC(dcurrentMax, lmax);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmax0.maxloc(dvalue[i], i);
             dmax1.maxloc(2 * dvalue[i], i);
           });
 
       if (double(dmax0) != dcurrentMax.val
           || double(dmax1) != 2 * dcurrentMax.val
-          || dmax0.getMaxLoc() != dcurrentMax.idx
-          || dmax1.getMaxLoc() != dcurrentMax.idx) {
+          || dmax0.getLoc() != dcurrentMax.idx
+          || dmax1.getLoc() != dcurrentMax.idx) {
         cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
         cout << "  droll = " << droll << endl;
         cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
@@ -221,16 +218,15 @@ int main(int argc, char *argv[]) {
       dcurrentMax = RAJA_MAXLOC(dcurrentMax, lmax);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmax0.maxloc(dvalue[i], i);
             dmax1.maxloc(2 * dvalue[i], i);
           });
 
       if (double(dmax0) != dcurrentMax.val
           || double(dmax1) != 2 * dcurrentMax.val
-          || dmax0.getMaxLoc() != dcurrentMax.idx
-          || dmax1.getMaxLoc() != dcurrentMax.idx) {
+          || dmax0.getLoc() != dcurrentMax.idx
+          || dmax1.getLoc() != dcurrentMax.idx) {
         cout << "\n TEST 3 FAILURE: tcount = " << tcount << endl;
         cout << "  droll = " << droll << endl;
         cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("

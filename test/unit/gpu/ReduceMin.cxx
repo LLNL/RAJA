@@ -8,11 +8,11 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <cstdio>
 #include <cfloat>
+#include <cstdio>
+#include <iostream>
 #include <random>
+#include <string>
 
 #include "RAJA/RAJA.hxx"
 
@@ -27,7 +27,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   cout << "\n Begin RAJA GPU ReduceMin tests!!! " << endl;
 
   const int test_repeat = 10;
@@ -86,13 +87,11 @@ int main(int argc, char *argv[]) {
         dvalue[index] = droll;
         dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-                                         dmin0.min(dvalue[i]);
-                                         dmin1.min(2 * dvalue[i]);
-                                         dmin2.min(dvalue[i]);
-                                       });
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dmin0.min(dvalue[i]);
+          dmin1.min(2 * dvalue[i]);
+          dmin2.min(dvalue[i]);
+        });
 
         if (dmin0.get() != dcurrentMin || dmin1.get() != 2 * dcurrentMin
             || dmin2.get() != BIG_MIN) {
@@ -103,12 +102,11 @@ int main(int argc, char *argv[]) {
                << dcurrentMin << ") " << endl;
           cout << "\tdmin1 = " << static_cast<double>(dmin1.get()) << " ("
                << 2 * dcurrentMin << ") " << endl;
-          cout << "\tdmin2 = " << static_cast<double>(dmin2.get()) << " (" << BIG_MIN
-               << ") " << endl;
+          cout << "\tdmin2 = " << static_cast<double>(dmin2.get()) << " ("
+               << BIG_MIN << ") " << endl;
         } else {
           s_ntests_passed++;
         }
-
       }
 
     }  // end test 1
@@ -142,8 +140,7 @@ int main(int argc, char *argv[]) {
       dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmin0.min(dvalue[i]);
             dmin1.min(2 * dvalue[i]);
           });
@@ -204,8 +201,7 @@ int main(int argc, char *argv[]) {
       dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmin0.min(dvalue[i]);
             dmin1.min(2 * dvalue[i]);
           });

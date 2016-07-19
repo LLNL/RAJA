@@ -8,11 +8,11 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <cstdio>
 #include <cfloat>
+#include <cstdio>
+#include <iostream>
 #include <random>
+#include <string>
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
@@ -28,7 +28,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   //
   //  Build vector of integers for creating List segments.
   //
@@ -143,7 +144,8 @@ int main(int argc, char *argv[]) {
   const Index_type array_length = last_idx + 1;
 
   cout << "\n\n GPU Traversal tests: last_idx = " << last_idx << " ( "
-       << array_length << " )\n\n" << endl;
+       << array_length << " )\n\n"
+       << endl;
 
   //
   // Allocate and initialize managed data arrays.
@@ -239,8 +241,7 @@ int main(int argc, char *argv[]) {
   }
 
   forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset,
-      [=] __device__(Index_type idx) {
+      iset, [=] __device__(Index_type idx) {
         test_array[idx] = parent[idx] * parent[idx];
       });
 
@@ -286,14 +287,10 @@ int main(int argc, char *argv[]) {
     ref_array[i] = parent[i] * parent[i];
   }
 
-  forall_Icount<cuda_exec<block_size> >(0,
-                                        array_length,
-                                        0,
-                                        [=] __device__(Index_type icount,
-                                                       Index_type idx) {
-                                          test_array[icount] =
-                                              parent[idx] * parent[idx];
-                                        });
+  forall_Icount<cuda_exec<block_size> >(
+      0, array_length, 0, [=] __device__(Index_type icount, Index_type idx) {
+        test_array[icount] = parent[idx] * parent[idx];
+      });
 
   s_ntests_run++;
   if (!array_equal(ref_array, test_array, array_length)) {
@@ -329,8 +326,7 @@ int main(int argc, char *argv[]) {
   }
 
   forall_Icount<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-      iset,
-      [=] __device__(Index_type icount, Index_type idx) {
+      iset, [=] __device__(Index_type icount, Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
       });
 

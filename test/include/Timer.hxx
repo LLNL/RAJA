@@ -13,9 +13,9 @@
  *
  * \file
  *
- * \brief   RAJA header file for simple class that can be used to 
+ * \brief   RAJA header file for simple class that can be used to
  *          time code sections.
- *     
+ *
  ******************************************************************************
  */
 
@@ -34,7 +34,8 @@
 #include <sys/time.h>
 #include <chrono>
 
-namespace RAJA {
+namespace RAJA
+{
 /*!
  ******************************************************************************
  *
@@ -42,37 +43,41 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class BGQTimer {
-    using TimeType = timeval;
-    using Duration = double;
-public:
-    BGQTimer() : tstart(), tstop(), telapsed(0)  {}
-    void start() { gettimeofday(&tstart, 0); }
-    void stop()  {
-        gettimeofday(&tstop, 0);
-        auto start = std::chrono::seconds(tstart.tv_sec) + std::chrono::microseconds(tstart.tv_usec);
-        auto stop = std::chrono::seconds(tstop.tv_sec) + std::chrono::microseconds(tstop.tv_usec);
-        telapsed += std::chrono::duration<double>(stop - start).count();
-    }
+class BGQTimer
+{
+  using TimeType = timeval;
+  using Duration = double;
 
-    Duration elapsed()
-    { return telapsed; }
+public:
+  BGQTimer() : tstart(), tstop(), telapsed(0) {}
+  void start() { gettimeofday(&tstart, 0); }
+  void stop()
+  {
+    gettimeofday(&tstop, 0);
+    auto start = std::chrono::seconds(tstart.tv_sec)
+                 + std::chrono::microseconds(tstart.tv_usec);
+    auto stop = std::chrono::seconds(tstop.tv_sec)
+                + std::chrono::microseconds(tstop.tv_usec);
+    telapsed += std::chrono::duration<double>(stop - start).count();
+  }
+
+  Duration elapsed() { return telapsed; }
 
 private:
-    TimeType tstart;
-    TimeType tstop;
-    Duration telapsed;
+  TimeType tstart;
+  TimeType tstop;
+  Duration telapsed;
 };
 
 using TimerBase = BGQTimer;
 }
 
-
 #elif defined(RAJA_USE_CHRONO)
 
 #include <chrono>
 
-namespace RAJA {
+namespace RAJA
+{
 /*!
  ******************************************************************************
  *
@@ -80,25 +85,27 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-class ChronoTimer {
-    using clock = std::chrono::steady_clock;
-    using TimeType = clock::time_point;
-    using Duration = std::chrono::duration<double>;
-public:
-    ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0)  {}
-    void start() { tstart = clock::now(); }
-    void stop()  {
-        tstop = clock::now();
-        telapsed += tstop - tstart;
-    }
+class ChronoTimer
+{
+  using clock = std::chrono::steady_clock;
+  using TimeType = clock::time_point;
+  using Duration = std::chrono::duration<double>;
 
-    Duration::rep elapsed()
-    { return telapsed.count(); }
+public:
+  ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0) {}
+  void start() { tstart = clock::now(); }
+  void stop()
+  {
+    tstop = clock::now();
+    telapsed += tstop - tstart;
+  }
+
+  Duration::rep elapsed() { return telapsed.count(); }
 
 private:
-    TimeType tstart;
-    TimeType tstop;
-    Duration telapsed;
+  TimeType tstart;
+  TimeType tstop;
+  Duration telapsed;
 };
 
 using TimerBase = ChronoTimer;
@@ -107,7 +114,8 @@ using TimerBase = ChronoTimer;
 #elif defined(RAJA_USE_GETTIME)
 #include <time.h>
 
-namespace RAJA {
+namespace RAJA
+{
 typedef timespec TimeType;
 
 /*!
@@ -120,26 +128,30 @@ typedef timespec TimeType;
 class GettimeTimer
 {
 public:
-   GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
-   void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
-   void stop()  { clock_gettime(CLOCK_MONOTONIC, &tstop); set_elapsed(); }
+  GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
+  void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
+  void stop()
+  {
+    clock_gettime(CLOCK_MONOTONIC, &tstop);
+    set_elapsed();
+  }
 
-   long double elapsed()
-      { return (stime_elapsed + nstime_elapsed); }
+  long double elapsed() { return (stime_elapsed + nstime_elapsed); }
 
 private:
-   TimeType tstart;
-   TimeType tstop;
-   long double telapsed;
+  TimeType tstart;
+  TimeType tstop;
+  long double telapsed;
 
-   long double stime_elapsed;
-   long double nstime_elapsed;
+  long double stime_elapsed;
+  long double nstime_elapsed;
 
-   void set_elapsed() { stime_elapsed += static_cast<long double>(
-                                         tstop.tv_sec - tstart.tv_sec);
-                        nstime_elapsed += static_cast<long double>(
-                                          tstop.tv_nsec - tstart.tv_nsec ) /
-                                          1000000000.0; }
+  void set_elapsed()
+  {
+    stime_elapsed += static_cast<long double>(tstop.tv_sec - tstart.tv_sec);
+    nstime_elapsed +=
+        static_cast<long double>(tstop.tv_nsec - tstart.tv_nsec) / 1000000000.0;
+  }
 };
 
 using TimerBase = GettimeTimer;
@@ -147,7 +159,8 @@ using TimerBase = GettimeTimer;
 
 #elif defined(RAJA_USE_CYCLE)
 #include "./cycle.h"
-namespace RAJA {
+namespace RAJA
+{
 typedef ticks TimeType;
 
 /*!
@@ -160,19 +173,22 @@ typedef ticks TimeType;
 class CycleTimer
 {
 public:
-   CycleTimer() : telapsed(0) { ; }
-   void start() { tstart = getticks(); }
-   void stop()  { tstop = getticks();  set_elapsed(); }
+  CycleTimer() : telapsed(0) { ; }
+  void start() { tstart = getticks(); }
+  void stop()
+  {
+    tstop = getticks();
+    set_elapsed();
+  }
 
-   long double elapsed()
-      { return static_cast<long double>(telapsed); }
+  long double elapsed() { return static_cast<long double>(telapsed); }
 
 private:
-   TimeType tstart;
-   TimeType tstop;
-   long double telapsed;
+  TimeType tstart;
+  TimeType tstop;
+  long double telapsed;
 
-   void set_elapsed() { telapsed += (tstop - tstart); }
+  void set_elapsed() { telapsed += (tstop - tstart); }
 };
 
 using TimerBase = CycleTimer;
@@ -180,7 +196,8 @@ using TimerBase = CycleTimer;
 
 #elif defined(RAJA_USE_CLOCK)
 #include <time.h>
-namespace RAJA {
+namespace RAJA
+{
 typedef clock_t TimeType;
 
 /*!
@@ -193,21 +210,26 @@ typedef clock_t TimeType;
 class ClockTimer
 {
 public:
-   ClockTimer() : telapsed(0) { ; }
+  ClockTimer() : telapsed(0) { ; }
 
-   void start() { tstart = clock(); }
-   void stop()  { tstop = clock();  set_elapsed(); }
+  void start() { tstart = clock(); }
+  void stop()
+  {
+    tstop = clock();
+    set_elapsed();
+  }
 
-   long double elapsed()
-      { return static_cast<long double>(telapsed) / CLOCKS_PER_SEC; }
+  long double elapsed()
+  {
+    return static_cast<long double>(telapsed) / CLOCKS_PER_SEC;
+  }
 
 private:
-   TimeType tstart;
-   TimeType tstop;
-   long double telapsed;
+  TimeType tstart;
+  TimeType tstop;
+  long double telapsed;
 
-   void set_elapsed() { telapsed += (tstop - tstart); }
-
+  void set_elapsed() { telapsed += (tstop - tstart); }
 };
 
 using TimerBase = ClockTimer;
@@ -219,27 +241,21 @@ using TimerBase = ClockTimer;
 
 #endif
 
-namespace RAJA {
+namespace RAJA
+{
 
-class Timer : public TimerBase {
-    public:
-    using TimerBase::start;
-    using TimerBase::stop;
+class Timer : public TimerBase
+{
+public:
+  using TimerBase::start;
+  using TimerBase::stop;
 
 #if defined(RAJA_USE_CALIPER)
-    void start(const char* name){
-        cali::Annotation(name).begin(); 
-    }
-    void stop(const char* name){
-        cali::Annotation(name).end();
-    }
+  void start(const char* name) { cali::Annotation(name).begin(); }
+  void stop(const char* name) { cali::Annotation(name).end(); }
 #else
-    void start(const char*){
-        start();
-    }
-    void stop(const char*){
-        stop();
-    }
+  void start(const char*) { start(); }
+  void stop(const char*) { stop(); }
 #endif
 };
 
