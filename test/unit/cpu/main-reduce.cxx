@@ -13,13 +13,13 @@
 // and execution and methods.
 //
 
-#include <cstdlib>
 #include <time.h>
 #include <cmath>
+#include <cstdlib>
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "RAJA/RAJA.hxx"
 
@@ -58,7 +58,8 @@ void runBasicMinReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
                               const IndexSet& iset,
-                              const RAJAVec<Index_type>& is_indices) {
+                              const RAJAVec<Index_type>& is_indices)
+{
   Real_ptr test_array;
   posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
 
@@ -97,11 +98,10 @@ void runBasicMinReductionTest(const string& policy,
 
     //    cout << "k = " << k << endl;
 
-    forall<ISET_POLICY_T>(iset,
-                          [=](Index_type idx) {
-                            tmin0.min(k * test_array[idx]);
-                            tmin1.min(test_array[idx]);
-                          });
+    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tmin0.min(k * test_array[idx]);
+      tmin1.min(test_array[idx]);
+    });
     // exercise both Real_type(reduceVar) and reduceVar.get() accessor functions
     if (Real_type(tmin0) != Real_type(k * ref_min_val)
         || tmin1.get() != Real_type(-200.0)) {
@@ -126,7 +126,8 @@ void runBasicMinReductionTest(const string& policy,
 void runMinReduceTests(Real_ptr in_array,
                        Index_type alen,
                        const IndexSet& iset,
-                       const RAJAVec<Index_type>& is_indices) {
+                       const RAJAVec<Index_type>& is_indices)
+{
   cout << "\n\n   BEGIN RAJA::forall MIN REDUCE tests...." << endl;
 
   // initialize test counters for this test set
@@ -204,7 +205,8 @@ void runBasicMinLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
                                  const IndexSet& iset,
-                                 const RAJAVec<Index_type>& is_indices) {
+                                 const RAJAVec<Index_type>& is_indices)
+{
   Real_ptr test_array;
   posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
 
@@ -243,22 +245,20 @@ void runBasicMinLocReductionTest(const string& policy,
 
     //    cout << "k = " << k << endl;
 
-    forall<ISET_POLICY_T>(iset,
-                          [=](Index_type idx) {
-                            tmin0.minloc(k * test_array[idx], idx);
-                            tmin1.minloc(test_array[idx], idx);
-                          });
+    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tmin0.minloc(k * test_array[idx], idx);
+      tmin1.minloc(test_array[idx], idx);
+    });
 
     // exercise both Real_type(reduceVar) and reduceVar.get() accessor functions
     if (Real_type(tmin0) != Real_type(k * ref_min_val)
-        || tmin0.getMinLoc() != ref_min_indx
+        || tmin0.getLoc() != ref_min_indx
         || tmin1.get() != Real_type(-200.0)
-        || tmin1.getMinLoc() != -1) {
+        || tmin1.getLoc() != -1) {
       cout << "\n TEST FAILURE: k = " << k << endl;
-      cout << "\ttmin0, loc = " << Real_type(tmin0) << " , "
-           << tmin0.getMinLoc() << " (" << k * ref_min_val << ", "
-           << ref_min_indx << " ) " << endl;
-      cout << "\ttmin1, loc = " << tmin1.get() << " , " << tmin1.getMinLoc()
+      cout << "\ttmin0, loc = " << Real_type(tmin0) << " , " << tmin0.getLoc()
+           << " (" << k * ref_min_val << ", " << ref_min_indx << " ) " << endl;
+      cout << "\ttmin1, loc = " << tmin1.get() << " , " << tmin1.getLoc()
            << " (" << -200.0 << ", " << -1 << " ) " << endl;
     } else {
       s_ntests_passed++;
@@ -277,7 +277,8 @@ void runBasicMinLocReductionTest(const string& policy,
 void runMinLocReduceTests(Real_ptr in_array,
                           Index_type alen,
                           const IndexSet& iset,
-                          const RAJAVec<Index_type>& is_indices) {
+                          const RAJAVec<Index_type>& is_indices)
+{
   cout << "\n\n   BEGIN RAJA::forall MIN-LOC REDUCE tests...." << endl;
 
   // initialize test counters for this test set
@@ -356,7 +357,8 @@ void runBasicMaxReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
                               const IndexSet& iset,
-                              const RAJAVec<Index_type>& is_indices) {
+                              const RAJAVec<Index_type>& is_indices)
+{
   Real_ptr test_array;
   posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
 
@@ -395,11 +397,10 @@ void runBasicMaxReductionTest(const string& policy,
 
     //    cout << "k = " << k << endl;
 
-    forall<ISET_POLICY_T>(iset,
-                          [=](Index_type idx) {
-                            tmax0.max(k * test_array[idx]);
-                            tmax1.max(test_array[idx]);
-                          });
+    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tmax0.max(k * test_array[idx]);
+      tmax1.max(test_array[idx]);
+    });
 
     // exercise both Real_type(reduceVar) and reduceVar.get() accessor functions
     if (Real_type(tmax0) != Real_type(k * ref_max_val)
@@ -425,7 +426,8 @@ void runBasicMaxReductionTest(const string& policy,
 void runMaxReduceTests(Real_ptr in_array,
                        Index_type alen,
                        const IndexSet& iset,
-                       const RAJAVec<Index_type>& is_indices) {
+                       const RAJAVec<Index_type>& is_indices)
+{
   cout << "\n\n   BEGIN RAJA::forall MAX REDUCE tests...." << endl;
 
   // initialize test counters for this test set
@@ -503,7 +505,8 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
                                  const IndexSet& iset,
-                                 const RAJAVec<Index_type>& is_indices) {
+                                 const RAJAVec<Index_type>& is_indices)
+{
   Real_ptr test_array;
   posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
 
@@ -542,22 +545,20 @@ void runBasicMaxLocReductionTest(const string& policy,
 
     //    cout << "k = " << k << endl;
 
-    forall<ISET_POLICY_T>(iset,
-                          [=](Index_type idx) {
-                            tmax0.maxloc(k * test_array[idx], idx);
-                            tmax1.maxloc(test_array[idx], idx);
-                          });
+    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tmax0.maxloc(k * test_array[idx], idx);
+      tmax1.maxloc(test_array[idx], idx);
+    });
 
     // exercise both Real_type(reduceVar) and reduceVar.get() accessor functions
     if (Real_type(tmax0) != Real_type(k * ref_max_val)
-        || tmax0.getMaxLoc() != ref_max_indx
+        || tmax0.getLoc() != ref_max_indx
         || tmax1.get() != Real_type(200.0)
-        || tmax1.getMaxLoc() != -1) {
+        || tmax1.getLoc() != -1) {
       cout << "\n TEST FAILURE: k = " << k << endl;
-      cout << "\ttmax0, loc = " << Real_type(tmax0) << " , "
-           << tmax0.getMaxLoc() << " (" << k * ref_max_val << ", "
-           << ref_max_indx << " ) " << endl;
-      cout << "\ttmax1, loc = " << tmax1.get() << " , " << tmax1.getMaxLoc()
+      cout << "\ttmax0, loc = " << Real_type(tmax0) << " , " << tmax0.getLoc()
+           << " (" << k * ref_max_val << ", " << ref_max_indx << " ) " << endl;
+      cout << "\ttmax1, loc = " << tmax1.get() << " , " << tmax1.getLoc()
            << " (" << 200.0 << ", " << -1 << " ) " << endl;
     } else {
       s_ntests_passed++;
@@ -576,7 +577,8 @@ void runBasicMaxLocReductionTest(const string& policy,
 void runMaxLocReduceTests(Real_ptr in_array,
                           Index_type alen,
                           const IndexSet& iset,
-                          const RAJAVec<Index_type>& is_indices) {
+                          const RAJAVec<Index_type>& is_indices)
+{
   cout << "\n\n   BEGIN RAJA::forall MAX-LOC REDUCE tests...." << endl;
 
   // initialize test counters for this test set
@@ -655,7 +657,8 @@ void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
                               const IndexSet& iset,
-                              const RAJAVec<Index_type>& is_indices) {
+                              const RAJAVec<Index_type>& is_indices)
+{
   //
   // Generate reference result for sum
   //
@@ -682,11 +685,10 @@ void runBasicSumReductionTest(const string& policy,
 
     //    cout << "k = " << k << endl;
 
-    forall<ISET_POLICY_T>(iset,
-                          [=](Index_type idx) {
-                            tsum0 += in_array[idx];
-                            tsum1 += 1.0;
-                          });
+    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tsum0 += in_array[idx];
+      tsum1 += 1.0;
+    });
 
     // exercise both Real_type(reduceVar) and reduceVar.get() accessor functions
     if (!equal(Real_type(tsum0), Real_type(k * ref_sum))
@@ -711,7 +713,8 @@ void runBasicSumReductionTest(const string& policy,
 void runSumReduceTests(Real_ptr in_array,
                        Index_type alen,
                        const IndexSet& iset,
-                       const RAJAVec<Index_type>& is_indices) {
+                       const RAJAVec<Index_type>& is_indices)
+{
   cout << "\n\n   BEGIN RAJA::forall SUM REDUCE tests...." << endl;
 
   // initialize test counters for this test set
@@ -783,7 +786,8 @@ void runSumReduceTests(Real_ptr in_array,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   //
   // Record maximum index in IndexSets for proper array allocation later.
   //
@@ -901,9 +905,9 @@ int main(int argc, char* argv[]) {
 
   cout << "\n DONE!!! " << endl;
 
-   if (s_ntests_passed_total == s_ntests_run_total) {
-     return 0 ;
-   } else {
-     return 1 ;
-   }
+  if (s_ntests_passed_total == s_ntests_run_total) {
+    return 0;
+  } else {
+    return 1;
+  }
 }

@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining view layout class.
+ * \brief   RAJA header file defining view class used in forallN templates.
  *
  ******************************************************************************
  */
@@ -52,36 +52,32 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-  
+
 #include "RAJA/foralln/Layout.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
-
-template<typename DataType, typename LayoutT>
+template <typename DataType, typename LayoutT>
 struct View {
   LayoutT const layout;
   DataType *data;
 
-  template<typename ...Args>
-  RAJA_INLINE
-  constexpr View(DataType *data_ptr, Args... dim_sizes )
-          : layout(dim_sizes...), data(data_ptr)
-          { }
+  template <typename... Args>
+  RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
+      : layout(dim_sizes...), data(data_ptr)
+  {
+  }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
-  template<typename ...Args>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  DataType &operator()(Args... args) const {
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
+  {
     return data[convertIndex<Index_type>(layout(args...))];
   }
 };
 
-
-
-} // namespace RAJA
+}  // namespace RAJA
 
 #endif
-

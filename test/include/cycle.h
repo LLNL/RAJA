@@ -23,7 +23,6 @@
  *
  */
 
-
 /* machine-dependent cycle counters code. Needs to be inlined. */
 
 /***************************************************************************/
@@ -52,25 +51,28 @@
    defined according to whether the corresponding function/type/header
    is available on your system.  The necessary macros are most
    conveniently defined if you are using GNU autoconf, via the tests:
-   
+
    dnl ---------------------------------------------------------------------
 
    AC_C_INLINE
    AC_HEADER_TIME
    AC_CHECK_HEADERS([sys/time.h c_asm.h intrinsics.h mach/mach_time.h])
 
-   AC_CHECK_TYPE([hrtime_t],[AC_DEFINE(HAVE_HRTIME_T, 1, [Define to 1 if hrtime_t is defined in <sys/time.h>])],,[#if HAVE_SYS_TIME_H
+   AC_CHECK_TYPE([hrtime_t],[AC_DEFINE(HAVE_HRTIME_T, 1, [Define to 1 if
+hrtime_t is defined in <sys/time.h>])],,[#if HAVE_SYS_TIME_H
 #include <sys/time.h>
 #endif])
 
-   AC_CHECK_FUNCS([gethrtime read_real_time time_base_to_time clock_gettime mach_absolute_time])
+   AC_CHECK_FUNCS([gethrtime read_real_time time_base_to_time clock_gettime
+mach_absolute_time])
 
    dnl Cray UNICOS _rtc() (real-time clock) intrinsic
    AC_MSG_CHECKING([for _rtc intrinsic])
    rtc_ok=yes
    AC_TRY_LINK([#ifdef HAVE_INTRINSICS_H
 #include <intrinsics.h>
-#endif], [_rtc()], [AC_DEFINE(HAVE__RTC,1,[Define if you have the UNICOS _rtc() intrinsic.])], [rtc_ok=no])
+#endif], [_rtc()], [AC_DEFINE(HAVE__RTC,1,[Define if you have the UNICOS _rtc()
+intrinsic.])], [rtc_ok=no])
    AC_MSG_RESULT($rtc_ok)
 
    dnl ---------------------------------------------------------------------
@@ -79,24 +81,26 @@
 /***************************************************************************/
 
 #if TIME_WITH_SYS_TIME
-# include <sys/time.h>
-# include <time.h>
+#include <sys/time.h>
+#include <time.h>
 #else
-# if HAVE_SYS_TIME_H
-#  include <sys/time.h>
-# else
-#  include <time.h>
-# endif
+#if HAVE_SYS_TIME_H
+#include <sys/time.h>
+#else
+#include <time.h>
+#endif
 #endif
 
-#define INLINE_ELAPSED(INL) static INL double elapsed(ticks t1, ticks t0) \
-{									  \
-     return (double)t1 - (double)t0;					  \
-}
+#define INLINE_ELAPSED(INL)                     \
+  static INL double elapsed(ticks t1, ticks t0) \
+  {                                             \
+    return (double)t1 - (double)t0;             \
+  }
 
 /*----------------------------------------------------------------*/
 /* Solaris */
-#if defined(HAVE_GETHRTIME) && defined(HAVE_HRTIME_T) && !defined(HAVE_TICK_COUNTER)
+#if defined(HAVE_GETHRTIME) && defined(HAVE_HRTIME_T) \
+    && !defined(HAVE_TICK_COUNTER)
 typedef hrtime_t ticks;
 
 #define getticks gethrtime
@@ -108,22 +112,23 @@ INLINE_ELAPSED(inline)
 
 /*----------------------------------------------------------------*/
 /* AIX v. 4+ routines to read the real-time clock or time-base register */
-#if defined(HAVE_READ_REAL_TIME) && defined(HAVE_TIME_BASE_TO_TIME) && !defined(HAVE_TICK_COUNTER)
+#if defined(HAVE_READ_REAL_TIME) && defined(HAVE_TIME_BASE_TO_TIME) \
+    && !defined(HAVE_TICK_COUNTER)
 typedef timebasestruct_t ticks;
 
 static __inline ticks getticks(void)
 {
-     ticks t;
-     read_real_time(&t, TIMEBASE_SZ);
-     return t;
+  ticks t;
+  read_real_time(&t, TIMEBASE_SZ);
+  return t;
 }
 
 static __inline double elapsed(ticks t1, ticks t0) /* time in nanoseconds */
 {
-     time_base_to_time(&t1, TIMEBASE_SZ);
-     time_base_to_time(&t0, TIMEBASE_SZ);
-     return (((double)t1.tb_high - (double)t0.tb_high) * 1.0e9 + 
-	     ((double)t1.tb_low - (double)t0.tb_low));
+  time_base_to_time(&t1, TIMEBASE_SZ);
+  time_base_to_time(&t0, TIMEBASE_SZ);
+  return (((double)t1.tb_high - (double)t0.tb_high) * 1.0e9
+          + ((double)t1.tb_low - (double)t0.tb_low));
 }
 
 #define HAVE_TICK_COUNTER
@@ -133,20 +138,24 @@ static __inline double elapsed(ticks t1, ticks t0) /* time in nanoseconds */
 /*
  * PowerPC ``cycle'' counter using the time base register.
  */
-#if ((((defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))) || (defined(__MWERKS__) && defined(macintosh)))) || (defined(__IBM_GCC_ASM) && (defined(__powerpc__) || defined(__ppc__))))  && !defined(HAVE_TICK_COUNTER)
+#if ((((defined(__GNUC__) && (defined(__powerpc__) || defined(__ppc__))) \
+       || (defined(__MWERKS__) && defined(macintosh))))                  \
+     || (defined(__IBM_GCC_ASM)                                          \
+         && (defined(__powerpc__) || defined(__ppc__))))                 \
+    && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     unsigned int tbl, tbu0, tbu1;
+  unsigned int tbl, tbu0, tbu1;
 
-     do {
-	  __asm__ __volatile__ ("mftbu %0" : "=r"(tbu0));
-	  __asm__ __volatile__ ("mftb %0" : "=r"(tbl));
-	  __asm__ __volatile__ ("mftbu %0" : "=r"(tbu1));
-     } while (tbu0 != tbu1);
+  do {
+    __asm__ __volatile__("mftbu %0" : "=r"(tbu0));
+    __asm__ __volatile__("mftb %0" : "=r"(tbl));
+    __asm__ __volatile__("mftbu %0" : "=r"(tbu1));
+  } while (tbu0 != tbu1);
 
-     return (((unsigned long long)tbu0) << 32) | tbl;
+  return (((unsigned long long)tbu0) << 32) | tbl;
 }
 
 INLINE_ELAPSED(__inline__)
@@ -156,7 +165,8 @@ INLINE_ELAPSED(__inline__)
 
 /* MacOS/Mach (Darwin) time-base register interface (unlike UpTime,
    from Carbon, requires no additional libraries to be linked). */
-#if defined(HAVE_MACH_ABSOLUTE_TIME) && defined(HAVE_MACH_MACH_TIME_H) && !defined(HAVE_TICK_COUNTER)
+#if defined(HAVE_MACH_ABSOLUTE_TIME) && defined(HAVE_MACH_MACH_TIME_H) \
+    && !defined(HAVE_TICK_COUNTER)
 #include <mach/mach_time.h>
 typedef uint64_t ticks;
 #define getticks mach_absolute_time
@@ -166,24 +176,25 @@ INLINE_ELAPSED(__inline__)
 
 /*----------------------------------------------------------------*/
 /*
- * Pentium cycle counter 
+ * Pentium cycle counter
  */
-#if (defined(__GNUC__) || defined(__ICC)) && defined(__i386__)  && !defined(HAVE_TICK_COUNTER)
+#if (defined(__GNUC__) || defined(__ICC)) && defined(__i386__) \
+    && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     ticks ret;
+  ticks ret;
 
-     __asm__ __volatile__("rdtsc": "=A" (ret));
-     /* no input, nothing else clobbered */
-     return ret;
+  __asm__ __volatile__("rdtsc" : "=A"(ret));
+  /* no input, nothing else clobbered */
+  return ret;
 }
 
 INLINE_ELAPSED(__inline__)
 
 #define HAVE_TICK_COUNTER
-#define TIME_MIN 5000.0   /* unreliable pentium IV cycle counter */
+#define TIME_MIN 5000.0 /* unreliable pentium IV cycle counter */
 #endif
 
 /* Visual C++ -- thanks to Morten Nissov for his help with this */
@@ -194,37 +205,38 @@ typedef LARGE_INTEGER ticks;
 
 static __inline ticks getticks(void)
 {
-     ticks retval;
+  ticks retval;
 
-     __asm {
+  __asm {
 	  RDTSC
 	  mov retval.HighPart, edx
 	  mov retval.LowPart, eax
-     }
-     return retval;
+  }
+  return retval;
 }
 
 static __inline double elapsed(ticks t1, ticks t0)
-{  
-     return (double)t1.QuadPart - (double)t0.QuadPart;
-}  
+{
+  return (double)t1.QuadPart - (double)t0.QuadPart;
+}
 
 #define HAVE_TICK_COUNTER
-#define TIME_MIN 5000.0   /* unreliable pentium IV cycle counter */
+#define TIME_MIN 5000.0 /* unreliable pentium IV cycle counter */
 #endif
 
 /*----------------------------------------------------------------*/
 /*
  * X86-64 cycle counter
  */
-#if (defined(__GNUC__) || defined(__ICC) || defined(__SUNPRO_C)) && defined(__x86_64__)  && !defined(HAVE_TICK_COUNTER)
+#if (defined(__GNUC__) || defined(__ICC) || defined(__SUNPRO_C)) \
+    && defined(__x86_64__) && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     unsigned a, d; 
-     __asm__ volatile("rdtsc" : "=a" (a), "=d" (d)); 
-     return ((ticks)a) | (((ticks)d) << 32); 
+  unsigned a, d;
+  __asm__ volatile("rdtsc" : "=a"(a), "=d"(d));
+  return ((ticks)a) | (((ticks)d) << 32);
 }
 
 INLINE_ELAPSED(__inline__)
@@ -235,18 +247,19 @@ INLINE_ELAPSED(__inline__)
 /* PGI compiler, courtesy Cristiano Calonaci, Andrea Tarsi, & Roberto Gori.
    NOTE: this code will fail to link unless you use the -Masmkeyword compiler
    option (grrr). */
-#if defined(__PGI) && defined(__x86_64__) && !defined(HAVE_TICK_COUNTER) 
+#if defined(__PGI) && defined(__x86_64__) && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long long ticks;
 static ticks getticks(void)
 {
-    asm(" rdtsc; shl    $0x20,%rdx; mov    %eax,%eax; or     %rdx,%rax;    ");
+  asm(" rdtsc; shl    $0x20,%rdx; mov    %eax,%eax; or     %rdx,%rax;    ");
 }
 INLINE_ELAPSED(__inline__)
 #define HAVE_TICK_COUNTER
 #endif
 
 /* Visual C++, courtesy of Dirk Michaelis */
-#if _MSC_VER >= 1400 && (defined(_M_AMD64) || defined(_M_X64)) && !defined(HAVE_TICK_COUNTER)
+#if _MSC_VER >= 1400 && (defined(_M_AMD64) || defined(_M_X64)) \
+    && !defined(HAVE_TICK_COUNTER)
 
 #include <intrin.h>
 #pragma intrinsic(__rdtsc)
@@ -263,17 +276,15 @@ INLINE_ELAPSED(__inline)
  */
 
 /* intel's icc/ecc compiler */
-#if (defined(__EDG_VERSION) || defined(__ECC)) && defined(__ia64__) && !defined(HAVE_TICK_COUNTER)
+#if (defined(__EDG_VERSION) || defined(__ECC)) && defined(__ia64__) \
+    && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long ticks;
 #include <ia64intrin.h>
 
-static __inline__ ticks getticks(void)
-{
-     return __getReg(_IA64_REG_AR_ITC);
-}
- 
+static __inline__ ticks getticks(void) { return __getReg(_IA64_REG_AR_ITC); }
+
 INLINE_ELAPSED(__inline__)
- 
+
 #define HAVE_TICK_COUNTER
 #endif
 
@@ -283,10 +294,10 @@ typedef unsigned long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     ticks ret;
+  ticks ret;
 
-     __asm__ __volatile__ ("mov %0=ar.itc" : "=r"(ret));
-     return ret;
+  __asm__ __volatile__("mov %0=ar.itc" : "=r"(ret));
+  return ret;
 }
 
 INLINE_ELAPSED(__inline__)
@@ -301,10 +312,10 @@ typedef unsigned long ticks;
 
 static inline ticks getticks(void)
 {
-     ticks ret;
+  ticks ret;
 
-     ret = _Asm_mov_from_ar (_AREG_ITC);
-     return ret;
+  ret = _Asm_mov_from_ar(_AREG_ITC);
+  return ret;
 }
 
 INLINE_ELAPSED(inline)
@@ -316,17 +327,18 @@ INLINE_ELAPSED(inline)
 #if defined(_MSC_VER) && defined(_M_IA64) && !defined(HAVE_TICK_COUNTER)
 typedef unsigned __int64 ticks;
 
-#  ifdef __cplusplus
+#ifdef __cplusplus
 extern "C"
-#  endif
-ticks __getReg(int whichReg);
+#endif
+    ticks
+    __getReg(int whichReg);
 #pragma intrinsic(__getReg)
 
 static __inline ticks getticks(void)
 {
-     volatile ticks temp;
-     temp = __getReg(3116);
-     return temp;
+  volatile ticks temp;
+  temp = __getReg(3116);
+  return temp;
 }
 
 INLINE_ELAPSED(inline)
@@ -336,29 +348,29 @@ INLINE_ELAPSED(inline)
 
 /*----------------------------------------------------------------*/
 /*
- * PA-RISC cycle counter 
+ * PA-RISC cycle counter
  */
 #if defined(__hppa__) || defined(__hppa) && !defined(HAVE_TICK_COUNTER)
 typedef unsigned long ticks;
 
-#  ifdef __GNUC__
+#ifdef __GNUC__
 static __inline__ ticks getticks(void)
 {
-     ticks ret;
+  ticks ret;
 
-     __asm__ __volatile__("mfctl 16, %0": "=r" (ret));
-     /* no input, nothing else clobbered */
-     return ret;
+  __asm__ __volatile__("mfctl 16, %0" : "=r"(ret));
+  /* no input, nothing else clobbered */
+  return ret;
 }
-#  else
-#  include <machine/inline.h>
+#else
+#include <machine/inline.h>
 static inline unsigned long getticks(void)
 {
-     register ticks ret;
-     _MFCTL(16, ret);
-     return ret;
+  register ticks ret;
+  _MFCTL(16, ret);
+  return ret;
 }
-#  endif
+#endif
 
 INLINE_ELAPSED(inline)
 
@@ -372,9 +384,9 @@ typedef unsigned long long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     ticks cycles;
-     __asm__("stck 0(%0)" : : "a" (&(cycles)) : "memory", "cc");
-     return cycles;
+  ticks cycles;
+  __asm__("stck 0(%0)" : : "a"(&(cycles)) : "memory", "cc");
+  return cycles;
 }
 
 INLINE_ELAPSED(__inline__)
@@ -384,16 +396,16 @@ INLINE_ELAPSED(__inline__)
 /*----------------------------------------------------------------*/
 #if defined(__GNUC__) && defined(__alpha__) && !defined(HAVE_TICK_COUNTER)
 /*
- * The 32-bit cycle counter on alpha overflows pretty quickly, 
+ * The 32-bit cycle counter on alpha overflows pretty quickly,
  * unfortunately.  A 1GHz machine overflows in 4 seconds.
  */
 typedef unsigned int ticks;
 
 static __inline__ ticks getticks(void)
 {
-     unsigned long cc;
-     __asm__ __volatile__ ("rpcc %0" : "=r"(cc));
-     return (cc & 0xFFFFFFFF);
+  unsigned long cc;
+  __asm__ __volatile__("rpcc %0" : "=r"(cc));
+  return (cc & 0xFFFFFFFF);
 }
 
 INLINE_ELAPSED(__inline__)
@@ -407,9 +419,9 @@ typedef unsigned long ticks;
 
 static __inline__ ticks getticks(void)
 {
-     ticks ret;
-     __asm__ __volatile__("rd %%tick, %0" : "=r" (ret));
-     return ret;
+  ticks ret;
+  __asm__ __volatile__("rd %%tick, %0" : "=r"(ret));
+  return ret;
 }
 
 INLINE_ELAPSED(__inline__)
@@ -418,15 +430,16 @@ INLINE_ELAPSED(__inline__)
 #endif
 
 /*----------------------------------------------------------------*/
-#if (defined(__DECC) || defined(__DECCXX)) && defined(__alpha) && defined(HAVE_C_ASM_H) && !defined(HAVE_TICK_COUNTER)
-#  include <c_asm.h>
+#if (defined(__DECC) || defined(__DECCXX)) && defined(__alpha) \
+    && defined(HAVE_C_ASM_H) && !defined(HAVE_TICK_COUNTER)
+#include <c_asm.h>
 typedef unsigned int ticks;
 
 static __inline ticks getticks(void)
 {
-     unsigned long cc;
-     cc = asm("rpcc %v0");
-     return (cc & 0xFFFFFFFF);
+  unsigned long cc;
+  cc = asm("rpcc %v0");
+  return (cc & 0xFFFFFFFF);
 }
 
 INLINE_ELAPSED(__inline)
@@ -435,20 +448,21 @@ INLINE_ELAPSED(__inline)
 #endif
 /*----------------------------------------------------------------*/
 /* SGI/Irix */
-#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_SGI_CYCLE) && !defined(HAVE_TICK_COUNTER)
+#if defined(HAVE_CLOCK_GETTIME) && defined(CLOCK_SGI_CYCLE) \
+    && !defined(HAVE_TICK_COUNTER)
 typedef struct timespec ticks;
 
 static inline ticks getticks(void)
 {
-     struct timespec t;
-     clock_gettime(CLOCK_SGI_CYCLE, &t);
-     return t;
+  struct timespec t;
+  clock_gettime(CLOCK_SGI_CYCLE, &t);
+  return t;
 }
 
 static inline double elapsed(ticks t1, ticks t0)
 {
-     return ((double)t1.tv_sec - (double)t0.tv_sec) * 1.0E9 +
-	  ((double)t1.tv_nsec - (double)t0.tv_nsec);
+  return ((double)t1.tv_sec - (double)t0.tv_sec) * 1.0E9
+         + ((double)t1.tv_nsec - (double)t0.tv_nsec);
 }
 #define HAVE_TICK_COUNTER
 #endif
@@ -457,7 +471,7 @@ static inline double elapsed(ticks t1, ticks t0)
 /* Cray UNICOS _rtc() intrinsic function */
 #if defined(HAVE__RTC) && !defined(HAVE_TICK_COUNTER)
 #ifdef HAVE_INTRINSICS_H
-#  include <intrinsics.h>
+#include <intrinsics.h>
 #endif
 
 typedef long long ticks;
@@ -473,9 +487,9 @@ INLINE_ELAPSED(inline)
 /* MIPS ZBus */
 #if HAVE_MIPS_ZBUS_TIMER
 #if defined(__mips__) && !defined(HAVE_TICK_COUNTER)
+#include <fcntl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 typedef uint64_t ticks;
 
@@ -483,21 +497,20 @@ static inline ticks getticks(void)
 {
   static uint64_t* addr = 0;
 
-  if (addr == 0)
-  {
+  if (addr == 0) {
     uint32_t rq_addr = 0x10030000;
     int fd;
     int pgsize;
 
     pgsize = getpagesize();
-    fd = open ("/dev/mem", O_RDONLY | O_SYNC, 0);
+    fd = open("/dev/mem", O_RDONLY | O_SYNC, 0);
     if (fd < 0) {
       perror("open");
       return NULL;
     }
     addr = mmap(0, pgsize, PROT_READ, MAP_SHARED, fd, rq_addr);
     close(fd);
-    if (addr == (uint64_t *)-1) {
+    if (addr == (uint64_t*)-1) {
       perror("mmap");
       return NULL;
     }
@@ -511,4 +524,3 @@ INLINE_ELAPSED(inline)
 #define HAVE_TICK_COUNTER
 #endif
 #endif /* HAVE_MIPS_ZBUS_TIMER */
-

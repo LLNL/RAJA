@@ -8,11 +8,11 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <cstdio>
 #include <cfloat>
+#include <cstdio>
+#include <iostream>
 #include <random>
+#include <string>
 
 #include "RAJA/RAJA.hxx"
 
@@ -32,7 +32,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   cout << "\n Begin RAJA GPU ReduceMinLoc tests!!! " << endl;
 
   const int test_repeat = 10;
@@ -98,19 +99,16 @@ int main(int argc, char *argv[]) {
         dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
         // printf("droll %lf : dcurrentMin %lf : index
         // %d\n",droll,dcurrentMin,index);
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-                                         dmin0.minloc(dvalue[i], i);
-                                         dmin1.minloc(2 * dvalue[i], i);
-                                         dmin2.minloc(dvalue[i], i);
-                                       });
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dmin0.minloc(dvalue[i], i);
+          dmin1.minloc(2 * dvalue[i], i);
+          dmin2.minloc(dvalue[i], i);
+        });
 
-        if (dmin0.get() != dcurrentMin.val
-            || dmin1.get() != 2 * dcurrentMin.val
+        if (dmin0.get() != dcurrentMin.val || dmin1.get() != 2 * dcurrentMin.val
             || dmin2.get() != BIG_MIN
-            || dmin0.getMinLoc() != dcurrentMin.idx
-            || dmin1.getMinLoc() != dcurrentMin.idx) {
+            || dmin0.getLoc() != dcurrentMin.idx
+            || dmin1.getLoc() != dcurrentMin.idx) {
           cout << "\n TEST 1 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
           cout << "  droll = " << droll << endl;
@@ -118,8 +116,8 @@ int main(int argc, char *argv[]) {
                << dcurrentMin.val << ") " << endl;
           cout << "\tdmin1 = " << static_cast<double>(dmin1.get()) << " ("
                << 2 * dcurrentMin.val << ") " << endl;
-          cout << "\tdmin2 = " << static_cast<double>(dmin2.get()) << " (" << BIG_MIN
-               << ") " << endl;
+          cout << "\tdmin2 = " << static_cast<double>(dmin2.get()) << " ("
+               << BIG_MIN << ") " << endl;
         } else {
           s_ntests_passed++;
         }
@@ -157,16 +155,15 @@ int main(int argc, char *argv[]) {
       dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmin0.minloc(dvalue[i], i);
             dmin1.minloc(2 * dvalue[i], i);
           });
 
       if (double(dmin0) != dcurrentMin.val
           || double(dmin1) != 2 * dcurrentMin.val
-          || dmin0.getMinLoc() != dcurrentMin.idx
-          || dmin1.getMinLoc() != dcurrentMin.idx) {
+          || dmin0.getLoc() != dcurrentMin.idx
+          || dmin1.getLoc() != dcurrentMin.idx) {
         cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
         cout << "   droll = " << droll << endl;
         cout << "\tdmin0 = " << static_cast<double>(dmin0) << " ("
@@ -226,16 +223,15 @@ int main(int argc, char *argv[]) {
       dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmin0.minloc(dvalue[i], i);
             dmin1.minloc(2 * dvalue[i], i);
           });
 
       if (double(dmin0) != dcurrentMin.val
           || double(dmin1) != 2 * dcurrentMin.val
-          || dmin0.getMinLoc() != dcurrentMin.idx
-          || dmin1.getMinLoc() != dcurrentMin.idx) {
+          || dmin0.getLoc() != dcurrentMin.idx
+          || dmin1.getLoc() != dcurrentMin.idx) {
         cout << "\n TEST 3 FAILURE: tcount = " << tcount << endl;
         cout << "   droll = " << droll << endl;
         cout << "\tdmin0 = " << static_cast<double>(dmin0) << " ("
