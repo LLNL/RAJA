@@ -69,7 +69,7 @@ int main(int argc, char *argv[]) {
     // test 1 runs 3 reductions over a range multiple times to check
     //        that reduction value can be retrieved and then subsequent
     //        reductions can be run with the same reduction objects.
-    //
+    //        Also exercises the get function call
     {  // begin test 1
 
       double BIG_MAX = 500.0;
@@ -94,16 +94,16 @@ int main(int argc, char *argv[]) {
                                          dmax2.max(dvalue[i]);
                                        });
 
-        if (double(dmax0) != dcurrentMax || double(dmax1) != 2 * dcurrentMax
-            || double(dmax2) != BIG_MAX) {
+        if (dmax0.get() != dcurrentMax || dmax1.get() != 2 * dcurrentMax
+            || dmax2.get() != BIG_MAX) {
           cout << "\n TEST 1 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
           cout << "  droll = " << droll << endl;
-          cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
+          cout << "\tdmax0 = " << static_cast<double>(dmax0.get()) << " ("
                << dcurrentMax << ") " << endl;
-          cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
+          cout << "\tdmax1 = " << static_cast<double>(dmax1.get()) << " ("
                << 2 * dcurrentMax << ") " << endl;
-          cout << "\tdmax2 = " << static_cast<double>(dmax2) << " (" << BIG_MAX
+          cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " (" << BIG_MAX
                << ") " << endl;
         } else {
           s_ntests_passed++;

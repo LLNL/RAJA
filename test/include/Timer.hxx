@@ -28,9 +28,47 @@
 #include <caliper/Annotation.h>
 #endif
 
+// libstdc++ on BGQ only has gettimeofday for some reason
+#if defined(__bgq__) && (!defined(_LIBCPP_VERSION))
+
+#include <sys/time.h>
+#include <chrono>
+
+namespace RAJA {
+/*!
+ ******************************************************************************
+ *
+ * \brief  Simple timer class to time code sections.
+ *
+ ******************************************************************************
+ */
+class BGQTimer {
+    using TimeType = timeval;
+    using Duration = double;
+public:
+    BGQTimer() : tstart(), tstop(), telapsed(0)  {}
+    void start() { gettimeofday(&tstart, 0); }
+    void stop()  {
+        gettimeofday(&tstop, 0);
+        auto start = std::chrono::seconds(tstart.tv_sec) + std::chrono::microseconds(tstart.tv_usec);
+        auto stop = std::chrono::seconds(tstop.tv_sec) + std::chrono::microseconds(tstop.tv_usec);
+        telapsed += std::chrono::duration<double>(stop - start).count();
+    }
+
+    Duration elapsed()
+    { return telapsed; }
+
+private:
+    TimeType tstart;
+    TimeType tstop;
+    Duration telapsed;
+};
+
+using TimerBase = BGQTimer;
+}
 
 
-#if defined(RAJA_USE_CHRONO)
+#elif defined(RAJA_USE_CHRONO)
 
 #include <chrono>
 
@@ -43,19 +81,15 @@ namespace RAJA {
  ******************************************************************************
  */
 class ChronoTimer {
-#if 0
-    using clock = std::chrono::system_clock;
-#else
     using clock = std::chrono::steady_clock;
-#endif
     using TimeType = clock::time_point;
-    using Duration = std::chrono::duration<long double, std::ratio<1>>;
+    using Duration = std::chrono::duration<double>;
 public:
     ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0)  {}
     void start() { tstart = clock::now(); }
     void stop()  {
         tstop = clock::now();
-        telapsed += std::chrono::duration_cast<std::chrono::seconds>(tstop - tstart);
+        telapsed += tstop - tstart;
     }
 
     Duration::rep elapsed()
@@ -87,13 +121,8 @@ class GettimeTimer
 {
 public:
    GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
-#if 0
-   void start() { clock_gettime(CLOCK_REALTIME, &tstart); }
-   void stop()  { clock_gettime(CLOCK_REALTIME, &tstop); set_elapsed(); }
-#else
    void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
    void stop()  { clock_gettime(CLOCK_MONOTONIC, &tstop); set_elapsed(); }
-#endif
 
    long double elapsed()
       { return (stime_elapsed + nstime_elapsed); }
