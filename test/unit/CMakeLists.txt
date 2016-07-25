@@ -41,8 +41,8 @@
 #
 ###############################################################################
 
-add_subdirectory(CPUtests)
+add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)
-  add_subdirectory(GPUtests)
+  add_subdirectory(gpu)
 endif()

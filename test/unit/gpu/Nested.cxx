@@ -12,13 +12,13 @@
 // Main program illustrating RAJA nested-loop execution
 //
 
-#include <cstdlib>
-#include <cfloat>
 #include <time.h>
+#include <cfloat>
+#include <cstdlib>
 
+#include <iostream>
 #include <string>
 #include <vector>
-#include <iostream>
 
 #include "RAJA/RAJA.hxx"
 
@@ -26,7 +26,6 @@ using namespace RAJA;
 using namespace std;
 
 #include "Compare.hxx"
-
 
 typedef struct {
   double val;
@@ -43,7 +42,8 @@ unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
 // block_size is needed by the reduction variables to setup shared memory
-// Care should be used here to cover the maximum block dimensions used by this test
+// Care should be used here to cover the maximum block dimensions used by this
+// test
 const size_t block_size = 256;
 
 ///////////////////////////////////////////////////////////////////////////
@@ -67,7 +67,8 @@ void runLTimesTest(std::string const &policy,
                    Index_type num_moments,
                    Index_type num_directions,
                    Index_type num_groups,
-                   Index_type num_zones) {
+                   Index_type num_zones)
+{
   cout << "\n TestLTimes " << num_moments << " moments, " << num_directions
        << " directions, " << num_groups << " groups, and " << num_zones
        << " zones"
@@ -83,18 +84,18 @@ void runLTimesTest(std::string const &policy,
   std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
 
   // setup CUDA Reduction variables to be exercised
-  ReduceSum<cuda_reduce<block_size>,double> pdsum(0.0);
-  ReduceMin<cuda_reduce<block_size>,double> pdmin(DBL_MAX);
-  ReduceMax<cuda_reduce<block_size>,double> pdmax(-DBL_MAX);
-  ReduceMinLoc<cuda_reduce<block_size>,double> pdminloc(DBL_MAX,-1);
-  ReduceMaxLoc<cuda_reduce<block_size>,double> pdmaxloc(-DBL_MAX,-1);
+  ReduceSum<cuda_reduce<block_size>, double> pdsum(0.0);
+  ReduceMin<cuda_reduce<block_size>, double> pdmin(DBL_MAX);
+  ReduceMax<cuda_reduce<block_size>, double> pdmax(-DBL_MAX);
+  ReduceMinLoc<cuda_reduce<block_size>, double> pdminloc(DBL_MAX, -1);
+  ReduceMaxLoc<cuda_reduce<block_size>, double> pdmaxloc(-DBL_MAX, -1);
 
   // setup local Reduction variables as a crosscheck
-  double lsum=0.0;
-  double lmin=DBL_MAX;
-  double lmax=-DBL_MAX;
-  minmaxloc_t lminloc={DBL_MAX,-1};
-  minmaxloc_t lmaxloc={-DBL_MAX,-1};
+  double lsum = 0.0;
+  double lmin = DBL_MAX;
+  double lmax = -DBL_MAX;
+  minmaxloc_t lminloc = {DBL_MAX, -1};
+  minmaxloc_t lmaxloc = {-DBL_MAX, -1};
 
   //
   // randomize data
@@ -141,14 +142,16 @@ void runLTimesTest(std::string const &policy,
       RangeSegment(0, num_zones),
       [=] __device__(IMoment m, IDirection d, IGroup g, IZone z) {
         // printf("%d,%d,%d,%d\n", *m, *d, *g, *z);
-        double val = ell(m,d) * psi(d,g,z); 
-        phi(m,g,z) += val; 
+        double val = ell(m, d) * psi(d, g, z);
+        phi(m, g, z) += val;
         pdsum += val;
         pdmin.min(val);
         pdmax.max(val);
-        int index = *d + (*m * num_directions) + (*g * num_directions * num_moments) + (*z * num_directions * num_moments * num_groups);
-        pdminloc.minloc(val,index);
-        pdmaxloc.maxloc(val,index);
+        int index = *d + (*m * num_directions)
+                    + (*g * num_directions * num_moments)
+                    + (*z * num_directions * num_moments * num_groups);
+        pdminloc.minloc(val, index);
+        pdmaxloc.maxloc(val, index);
       });
 
   cudaDeviceSynchronize();
@@ -177,14 +180,16 @@ void runLTimesTest(std::string const &policy,
       for (IMoment m(0); m < num_moments; ++m) {
         double total = 0.0;
         for (IDirection d(0); d < num_directions; ++d) {
-          double val = ell(m,d) * psi(d,g,z);
+          double val = ell(m, d) * psi(d, g, z);
           total += val;
-          lmin = RAJA_MIN(lmin,val);
-          lmax = RAJA_MAX(lmax,val);
-          int index = *d + (*m * num_directions) + (*g * num_directions * num_moments) + (*z * num_directions * num_moments * num_groups);
-          minmaxloc_t testMinMaxLoc={val,index};
-          lminloc = RAJA_MINLOC(lminloc,testMinMaxLoc);
-          lmaxloc = RAJA_MAXLOC(lmaxloc,testMinMaxLoc);
+          lmin = RAJA_MIN(lmin, val);
+          lmax = RAJA_MAX(lmax, val);
+          int index = *d + (*m * num_directions)
+                      + (*g * num_directions * num_moments)
+                      + (*z * num_directions * num_moments * num_groups);
+          minmaxloc_t testMinMaxLoc = {val, index};
+          lminloc = RAJA_MINLOC(lminloc, testMinMaxLoc);
+          lmaxloc = RAJA_MAXLOC(lmaxloc, testMinMaxLoc);
         }
         lsum += total;
         // check answer with some reasonable tolerance
@@ -202,30 +207,30 @@ void runLTimesTest(std::string const &policy,
     whichFailed += "[ReduceSum]";
   }
 
-  if(lmin != double(pdmin)) {
+  if (lmin != double(pdmin)) {
     reductionsFailed++;
     whichFailed += "[ReduceMin]";
-  }  
+  }
 
-  if(lmax != double(pdmax)) {
+  if (lmax != double(pdmax)) {
     reductionsFailed++;
     whichFailed += "[ReduceMax]";
   }
 
-  if((lminloc.val != double(pdminloc)) && (lminloc.idx != pdminloc.getMinLoc())) {
+  if ((lminloc.val != double(pdminloc)) && (lminloc.idx != pdminloc.getLoc())) {
     reductionsFailed++;
     whichFailed += "[ReduceMinLoc]";
   }
 
-  if((lmaxloc.val != double(pdmaxloc)) && (lmaxloc.idx != pdmaxloc.getMaxLoc())) {
+  if ((lmaxloc.val != double(pdmaxloc)) && (lmaxloc.idx != pdmaxloc.getLoc())) {
     reductionsFailed++;
     whichFailed += "[ReduceMaxLoc]";
   }
 
   if (nfailed || reductionsFailed) {
     cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-    if(reductionsFailed) {
-      cout << "  REDUCTIONS FAILURE: " << whichFailed << endl; 
+    if (reductionsFailed) {
+      cout << "  REDUCTIONS FAILURE: " << whichFailed << endl;
     }
   } else {
     s_ntests_passed++;
@@ -239,7 +244,8 @@ struct PolLTimesA_GPU {
   typedef NestedPolicy<ExecList<seq_exec,
                                 seq_exec,
                                 cuda_threadblock_x_exec<32>,
-                                cuda_threadblock_y_exec<32>>> EXEC;
+                                cuda_threadblock_y_exec<32>>>
+      EXEC;
 
   // psi[direction, group, zone]
   typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
@@ -261,7 +267,8 @@ struct PolLTimesB_GPU {
                                 seq_exec,
                                 cuda_thread_z_exec,
                                 cuda_block_y_exec>,
-                       Permute<PERM_JILK>> EXEC;
+                       Permute<PERM_JILK>>
+      EXEC;
 
   // psi[direction, group, zone]
   typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
@@ -283,7 +290,8 @@ struct PolLTimesC_GPU {
                                 seq_exec,
                                 omp_for_nowait_exec,
                                 cuda_threadblock_y_exec<32>>,
-                       OMP_Parallel<>> EXEC;
+                       OMP_Parallel<>>
+      EXEC;
 
   // psi[direction, group, zone]
   typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
@@ -301,7 +309,8 @@ struct PolLTimesC_GPU {
 void runLTimesTests(Index_type num_moments,
                     Index_type num_directions,
                     Index_type num_groups,
-                    Index_type num_zones) {
+                    Index_type num_zones)
+{
   runLTimesTest<PolLTimesA_GPU>(
       "PolLTimesA_GPU", num_moments, num_directions, num_groups, num_zones);
   runLTimesTest<PolLTimesB_GPU>(
@@ -310,7 +319,8 @@ void runLTimesTests(Index_type num_moments,
       "PolLTimesC_GPU", num_moments, num_directions, num_groups, num_zones);
 }
 
-void runNegativeRange() {
+void runNegativeRange()
+{
   s_ntests_run++;
   s_ntests_run_total++;
 
@@ -327,9 +337,7 @@ void runNegativeRange() {
 
   forallN<NestedPolicy<ExecList<cuda_threadblock_y_exec<16>,
                                 cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(-2, 8),
-      RangeSegment(-2, 8),
-      [=] RAJA_DEVICE(int k, int j) {
+      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
         const int idx = ((k - -2) * 10) + (j - -2);
         data[idx] = idx * 1.0;
       });
@@ -358,7 +366,8 @@ void runNegativeRange() {
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   ///////////////////////////////////////////////////////////////////////////
   //
   // Run RAJA::forall nested loop tests...
@@ -384,5 +393,5 @@ int main(int argc, char *argv[]) {
 
   cout << "\n DONE!!! " << endl;
 
-  return 0;
+  return !(s_ntests_passed_total == s_ntests_run_total);
 }

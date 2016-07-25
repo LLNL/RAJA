@@ -59,12 +59,12 @@
 
 #include "RAJA/ThreadUtils_CPU.hxx"
 
+#include <algorithm>
+#include <iostream>
+#include <string>
 
-#include<algorithm>
-#include<string>
-#include<iostream>
-
-namespace RAJA {
+namespace RAJA
+{
 
 //
 // Static array used to keep track of which unique ids
@@ -72,17 +72,16 @@ namespace RAJA {
 //
 static bool cpu_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
-// 
+//
 // Pointer to hold shared memory block for RAJA-CPU reductions.
 //
 CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
 
 //
-// Pointer to hold shared memory block for index locations in RAJA-CPU 
+// Pointer to hold shared memory block for index locations in RAJA-CPU
 // "loc" reductions.
 //
 Index_type* s_cpu_reduction_loc_block = 0;
-
 
 /*
 *************************************************************************
@@ -94,72 +93,70 @@ Index_type* s_cpu_reduction_loc_block = 0;
 */
 int getCPUReductionId()
 {
-   static int first_time_called = true;
+  static int first_time_called = true;
 
-   if (first_time_called) {
+  if (first_time_called) {
+    for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
+      cpu_reduction_id_used[id] = false;
+    }
 
-      for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
-         cpu_reduction_id_used[id] = false;
-      }
+    first_time_called = false;
+  }
 
-      first_time_called = false;
-   }
+  int id = 0;
+  while (id < RAJA_MAX_REDUCE_VARS && cpu_reduction_id_used[id]) {
+    id++;
+  }
 
-   int id = 0;
-   while ( id < RAJA_MAX_REDUCE_VARS && cpu_reduction_id_used[id] ) {
-     id++;
-   }
+  if (id >= RAJA_MAX_REDUCE_VARS) {
+    std::cerr << "\n Exceeded allowable RAJA CPU reduction count, "
+              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+    exit(1);
+  }
 
-   if ( id >= RAJA_MAX_REDUCE_VARS ) {
-      std::cerr << "\n Exceeded allowable RAJA CPU reduction count, "
-                << "FILE: "<< __FILE__ << " line: "<< __LINE__ << std::endl;
-      exit(1);
-   }
+  cpu_reduction_id_used[id] = true;
 
-   cpu_reduction_id_used[id] = true;
-
-   return id;
+  return id;
 }
 
 /*
 *************************************************************************
 *
-* Release given redution id and make inactive.  
+* Release given redution id and make inactive.
 *
 *************************************************************************
 */
 void releaseCPUReductionId(int id)
 {
-   if ( id < RAJA_MAX_REDUCE_VARS ) {
-      cpu_reduction_id_used[id] = false;
-   }
+  if (id < RAJA_MAX_REDUCE_VARS) {
+    cpu_reduction_id_used[id] = false;
+  }
 }
 
 /*
 *************************************************************************
 *
-* Return pointer into shared RAJA-CPU reduction memory block for 
-* reduction object with given id. Allocates block if not alreay allocated. 
+* Return pointer into shared RAJA-CPU reduction memory block for
+* reduction object with given id. Allocates block if not alreay allocated.
 *
 *************************************************************************
 */
 CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 {
-   int nthreads = getMaxReduceThreadsCPU();
+  int nthreads = getMaxReduceThreadsCPU();
 
-   int block_offset = COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType);
+  int block_offset = COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
-   if (s_cpu_reduction_mem_block == 0) {
-      int len = nthreads * RAJA_MAX_REDUCE_VARS;
-      s_cpu_reduction_mem_block = 
-         new CPUReductionBlockDataType[len*block_offset];
+  if (s_cpu_reduction_mem_block == 0) {
+    int len = nthreads * RAJA_MAX_REDUCE_VARS;
+    s_cpu_reduction_mem_block =
+        new CPUReductionBlockDataType[len * block_offset];
 
-      atexit(freeCPUReductionMemBlock);
-   }
+    atexit(freeCPUReductionMemBlock);
+  }
 
-   return &(s_cpu_reduction_mem_block[nthreads * id * block_offset]) ;
+  return &(s_cpu_reduction_mem_block[nthreads * id * block_offset]);
 }
-
 
 /*
 *************************************************************************
@@ -170,10 +167,10 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 */
 void freeCPUReductionMemBlock()
 {
-   if ( s_cpu_reduction_mem_block != 0 ) {
-      delete [] s_cpu_reduction_mem_block;
-      s_cpu_reduction_mem_block = 0; 
-   }
+  if (s_cpu_reduction_mem_block != 0) {
+    delete[] s_cpu_reduction_mem_block;
+    s_cpu_reduction_mem_block = 0;
+  }
 }
 
 /*
@@ -186,21 +183,19 @@ void freeCPUReductionMemBlock()
 */
 Index_type* getCPUReductionLocBlock(int id)
 {
-   int nthreads = getMaxReduceThreadsCPU();
+  int nthreads = getMaxReduceThreadsCPU();
 
-   int block_offset = COHERENCE_BLOCK_SIZE/sizeof(Index_type);
+  int block_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
 
-   if (s_cpu_reduction_loc_block == 0) {
-      int len = nthreads * RAJA_MAX_REDUCE_VARS;
-      s_cpu_reduction_loc_block =
-         new Index_type[len*block_offset];
+  if (s_cpu_reduction_loc_block == 0) {
+    int len = nthreads * RAJA_MAX_REDUCE_VARS;
+    s_cpu_reduction_loc_block = new Index_type[len * block_offset];
 
-      atexit(freeCPUReductionLocBlock);
-   }
+    atexit(freeCPUReductionLocBlock);
+  }
 
-   return &(s_cpu_reduction_loc_block[nthreads * id * block_offset]) ;
+  return &(s_cpu_reduction_loc_block[nthreads * id * block_offset]);
 }
-
 
 /*
 *************************************************************************
@@ -211,11 +206,10 @@ Index_type* getCPUReductionLocBlock(int id)
 */
 void freeCPUReductionLocBlock()
 {
-   if ( s_cpu_reduction_loc_block != 0 ) {
-      delete [] s_cpu_reduction_loc_block;
-      s_cpu_reduction_loc_block = 0;
-   }
+  if (s_cpu_reduction_loc_block != 0) {
+    delete[] s_cpu_reduction_loc_block;
+    s_cpu_reduction_loc_block = 0;
+  }
 }
-
 
 }  // closing brace for RAJA namespace

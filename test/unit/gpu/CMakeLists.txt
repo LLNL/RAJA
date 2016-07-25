@@ -43,55 +43,48 @@
 
 add_definitions(-DRAJA_ENABLE_NESTED)
 
-if (RAJA_ENABLE_CUDA)
-  cuda_add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
-  cuda_add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
-    
-  cuda_add_executable(CPUnested-test.exe
-    main-nested.cxx)
-    
-  cuda_add_executable(CPUnested_reduce-test.exe
-    main-nested-reduce.cxx)
+cuda_add_executable(reducemin.exe
+  ReduceMin.cxx)
 
-else()
-  add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+add_test(reducemin
+    reducemin.exe)
 
-  add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
-  
-  add_executable(CPUnested-test.exe
-    main-nested.cxx)
+cuda_add_executable(reducemax.exe
+  ReduceMax.cxx)
+add_test(reducemax
+    reducemax.exe)
 
-  add_test(CPUtraversal
-    CPUtraversal-test.exe)
+cuda_add_executable(reducesum.exe
+  ReduceSum.cxx)
+add_test(reducesum
+    reducesum.exe)
 
-  add_test(CPUreduce
-    CPUreduce-test.exe)
+cuda_add_executable(traversal.exe
+  Traversal.cxx)
+add_test(traversal
+    traversal.exe)
 
-  add_test(CPUnested
-    CPUnested-test.exe)
-    
-  if(RAJA_ENABLE_OPENMP)
-    add_executable(CPUnested_reduce-test.exe
-      main-nested-reduce.cxx)
+cuda_add_executable(nested.exe
+  Nested.cxx)
+add_test(nested
+    nested.exe)
 
-    add_test(CPUnested-reduce
-      CPUnested_reduce-test.exe)
-  endif()
+cuda_add_executable(reduceminloc.exe
+  ReduceMinLoc.cxx)
+add_test(reduceminloc
+    reduceminloc.exe)
 
-endif()
+cuda_add_executable(reducemaxloc.exe
+  ReduceMaxLoc.cxx)
+add_test(reducemaxloc
+    reducemaxloc.exe)
 
-target_link_libraries(CPUtraversal-test.exe RAJA)
-target_link_libraries(CPUreduce-test.exe RAJA)
-target_link_libraries(CPUnested-test.exe RAJA)
-if(RAJA_ENABLE_OPENMP)
-  target_link_libraries(CPUnested_reduce-test.exe RAJA)
-endif()
+target_link_libraries(reducemin.exe RAJA)
+target_link_libraries(reducemax.exe RAJA)
+target_link_libraries(reducesum.exe RAJA)
+target_link_libraries(traversal.exe RAJA)
+target_link_libraries(nested.exe RAJA)
+target_link_libraries(reduceminloc.exe RAJA)
+target_link_libraries(reducemaxloc.exe RAJA)

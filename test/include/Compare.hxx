@@ -14,7 +14,7 @@
  * \file
  *
  * \brief   RAJA header file for simple comparison operations used in tests.
- *     
+ *
  ******************************************************************************
  */
 
@@ -23,7 +23,8 @@
 
 #define rcabs(val) (((val) < 0) ? (-val) : (val))
 
-namespace RAJA {
+namespace RAJA
+{
 
 //
 // Test approximate equality of floating point numbers. Borrowed from Knuth.
@@ -31,30 +32,25 @@ namespace RAJA {
 template <typename T>
 bool equal(T a, T b)
 {
-   return (rcabs(a-b) <= ( ( rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b) ) * T(1.0e-12) ) );
+  return (rcabs(a - b)
+          <= ((rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b)) * T(1.0e-12)));
 }
 
 //
 // Equality for integers.  Mainly here for consistent usage with above.
 //
-bool equal(int a, int b)
-{
-   return a == b ;
-}
+bool equal(int a, int b) { return a == b; }
 
 template <typename T>
-bool array_equal(T ref_result,
-                 T to_check,
-                 Index_type alen)
+bool array_equal(T ref_result, T to_check, Index_type alen)
 {
-   bool is_correct = true;
-   for (Index_type i = 0 ; i < alen && is_correct; ++i) {
-      is_correct &= equal(ref_result[i], to_check[i]);
-   }
+  bool is_correct = true;
+  for (Index_type i = 0; i < alen && is_correct; ++i) {
+    is_correct &= equal(ref_result[i], to_check[i]);
+  }
 
-   return is_correct;
+  return is_correct;
 }
-
 
 }  // closing brace for RAJA namespace
 

@@ -1,7 +1,9 @@
 BasedOnStyle : google
 IndentWidth : 2
-# BreakBeforeBraces : Linux
-BreakBeforeBraces : Attach
+BreakBeforeBraces : Linux
+KeepEmptyLinesAtTheStartOfBlocks : true
+MaxEmptyLinesToKeep : 2
+AccessModifierOffset : -2
 UseTab: Never
 AllowShortIfStatementsOnASingleLine : true
 ConstructorInitializerAllOnOneLineOrOnePerLine : true

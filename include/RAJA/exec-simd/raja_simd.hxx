@@ -63,20 +63,19 @@
 //////////////////////////////////////////////////////////////////////
 //
 
-
 ///
 /// Segment execution policies
 ///
-namespace RAJA {
+namespace RAJA
+{
 
-struct simd_exec {};
-
+struct simd_exec {
+};
 }
 
 //
 // NOTE: There is no Index set segment iteration policy for SIMD
 //
-
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -93,4 +92,3 @@ struct simd_exec {};
 #include "RAJA/exec-simd/forall_simd.hxx"
 
 #endif  // closing endif for header file include guard
-
