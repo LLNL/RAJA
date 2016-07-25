@@ -61,6 +61,8 @@ option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 
+set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
+
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
 # Setup vendor-specific compiler flags
