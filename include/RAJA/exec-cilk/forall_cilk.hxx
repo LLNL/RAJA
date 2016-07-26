@@ -404,7 +404,7 @@ RAJA_INLINE void forall_Icount(cilk_for_exec,
                                Index_type icount,
                                LOOP_BODY loop_body)
 {
-  const Index_type* RAJA_RESTRICTre idx = iseg.getIndex();
+  const Index_type* RAJA_RESTRICT idx = iseg.getIndex();
   Index_type len = iseg.getLength();
 
   RAJA_FT_BEGIN;
