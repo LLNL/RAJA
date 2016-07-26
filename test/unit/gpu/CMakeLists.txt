@@ -70,11 +70,14 @@ add_test(
     NAME traversal
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal.exe>)
 
-cuda_add_executable(nested.exe
-  Nested.cxx)
-add_test(
-    NAME nested
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
+if(RAJA_ENABLE_OPENMP)
+    cuda_add_executable(nested.exe
+      Nested.cxx)
+    add_test(
+        NAME nested
+        COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
+    target_link_libraries(nested.exe RAJA)
+endif()
 
 cuda_add_executable(reduceminloc.exe
   ReduceMinLoc.cxx)
@@ -92,6 +95,5 @@ target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
 target_link_libraries(reducesum.exe RAJA)
 target_link_libraries(traversal.exe RAJA)
-target_link_libraries(nested.exe RAJA)
 target_link_libraries(reduceminloc.exe RAJA)
 target_link_libraries(reducemaxloc.exe RAJA)
