@@ -66,7 +66,7 @@ if (RAJA_ENABLE_CUDA)
     test-traversals.cxx)
 
 else()
-  cuda_add_library(bis buildIndexSet.cxx)
+  add_library(bis buildIndexSet.cxx)
   add_executable(CPUtraversal-test.exe
     main-traversal.cxx)
 
