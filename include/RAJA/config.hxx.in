@@ -160,7 +160,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_RESTRICT __restrict__
 #endif
 
-#if defined(RAJA_COMPILER_INTEL)
+#if defined(RAJA_COMPILER_ICC)
 //
 // Configuration options for Intel compilers
 //
