@@ -95,27 +95,33 @@ else()
 
 endif()
 
-add_test(CPUtraversal
-  CPUtraversal-test.exe)
+add_test(
+  NAME CPUtraversal
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUtraversal-test.exe>)
 
-add_test(CPUreduce
-  CPUreduce-test.exe)
+add_test(
+  NAME CPUreduce
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUreduce-test.exe>)
 
-add_test(CPUnested
-  CPUnested-test.exe)
+add_test(
+  NAME CPUnested
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested-test.exe>)
 
 if(RAJA_ENABLE_OPENMP)
-  add_test(CPUnested-reduce
-      CPUnested_reduce-test.exe)
+    add_test(
+      NAME CPUnested-reduce
+      COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested_reduce-test.exe>)
 endif()
 
-add_test(indexset-test
-  indexset-tests)
+add_test(
+    NAME indexset-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:indexset-tests>)
 
 target_link_libraries(indexset-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-add_test(traversal-test
-  traversal-tests)
+add_test(
+    NAME traversal-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
 
 target_link_libraries(traversal-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 

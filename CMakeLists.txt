@@ -40,7 +40,7 @@
 # 
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.1)
+cmake_minimum_required (VERSION 3.0)
 
 project(RAJA LANGUAGES CXX C)
 
@@ -60,6 +60,8 @@ option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+
+set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)

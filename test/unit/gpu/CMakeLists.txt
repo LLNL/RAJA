@@ -48,38 +48,45 @@ SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 cuda_add_executable(reducemin.exe
   ReduceMin.cxx)
 
-add_test(reducemin
-    reducemin.exe)
+add_test(
+    NAME reducemin
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemin.exe>)
 
 cuda_add_executable(reducemax.exe
   ReduceMax.cxx)
-add_test(reducemax
-    reducemax.exe)
+add_test(
+    NAME reducemax
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemax.exe>)
 
 cuda_add_executable(reducesum.exe
   ReduceSum.cxx)
-add_test(reducesum
-    reducesum.exe)
+add_test(
+    NAME reducesum
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducesum.exe>)
 
 cuda_add_executable(traversal.exe
   Traversal.cxx)
-add_test(traversal
-    traversal.exe)
+add_test(
+    NAME traversal
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal.exe>)
 
 cuda_add_executable(nested.exe
   Nested.cxx)
-add_test(nested
-    nested.exe)
+add_test(
+    NAME nested
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
 
 cuda_add_executable(reduceminloc.exe
   ReduceMinLoc.cxx)
-add_test(reduceminloc
-    reduceminloc.exe)
+add_test(
+    NAME reduceminloc
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reduceminloc.exe>)
 
 cuda_add_executable(reducemaxloc.exe
   ReduceMaxLoc.cxx)
-add_test(reducemaxloc
-    reducemaxloc.exe)
+add_test(
+    NAME reducemaxloc
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemaxloc.exe>)
 
 target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
