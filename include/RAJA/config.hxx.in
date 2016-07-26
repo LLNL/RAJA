@@ -154,12 +154,21 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //                 loop vectorization
 //
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined (_WIN32)
+#define RAJA_RESTRICT __restrict
+#else
+#define RAJA_RESTRICT __restrict__
+#endif
+
+#if defined(RAJA_COMPILER_INTEL)
 //
 // Configuration options for Intel compilers
 //
-
+#if defined (_WIN32)
+#define RAJA_INLINE inline
+#else
 #define RAJA_INLINE inline  __attribute__((always_inline))
+#endif
 
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)

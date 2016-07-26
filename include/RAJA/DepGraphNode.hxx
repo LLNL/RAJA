@@ -92,10 +92,17 @@ public:
   DepGraphNode()
       : m_num_dep_tasks(0), m_semaphore_reload_value(0), m_semaphore_value(0)
   {
-    posix_memalign((void**)(&m_semaphore_value),
-                   _SemaphoreValueAlign_,
-                   sizeof(int));
-    *m_semaphore_value = 0;
+#ifdef _WIN32
+#if USE_ALIGNED
+	   m_semaphore_value = (int *)_aligned_malloc(sizeof(int), _SemaphoreValueAlign_);
+#else
+	   m_semaphore_value = (int *)malloc(sizeof(int));
+#endif
+#else
+	   posix_memalign((void **)(&m_semaphore_value),
+		   _SemaphoreValueAlign_, sizeof(int));
+#endif
+      *m_semaphore_value = 0 ;     
   }
 
   ///
@@ -103,7 +110,17 @@ public:
   ///
   ~DepGraphNode()
   {
-    if (m_semaphore_value) free(m_semaphore_value);
+    if (m_semaphore_value) { 
+#if _WIN32
+#if USE_ALIGNED
+         _aligned_free(m_semaphore_value);
+#else
+         free(m_semaphore_value);
+#endif
+#else
+         free(m_semaphore_value);
+#endif
+}
   }
 
   ///

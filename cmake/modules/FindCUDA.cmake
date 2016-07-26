@@ -833,6 +833,7 @@ set(CUDA_SDK_SEARCH_PATH
 
 #############################
 # Check for required components
+include(FindPackageHandleStandardArgs)
 set(CUDA_FOUND TRUE)
 
 set(CUDA_TOOLKIT_ROOT_DIR_INTERNAL "${CUDA_TOOLKIT_ROOT_DIR}" CACHE INTERNAL
