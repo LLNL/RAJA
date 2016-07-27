@@ -10,7 +10,8 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.7.0/bin/clang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.8.0/bin/clang++" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.8.0/bin/clang" CACHE PATH "")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
