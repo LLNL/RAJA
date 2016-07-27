@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
   double dinit_val = 0.1;
   int iinit_val = 1;
   double *dvalue;
+  double *rand_dvalue;
 
   int *ivalue;
 
@@ -59,6 +60,10 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < TEST_VEC_LEN; ++i) {
     ivalue[i] = iinit_val;
   }
+
+  cudaMallocManaged((void **)&rand_dvalue,
+                    sizeof(double) * TEST_VEC_LEN,
+                    cudaMemAttachGlobal);
 
   ///
   /// Define thread block size for CUDA exec policy
@@ -230,7 +235,7 @@ int main(int argc, char *argv[]) {
 
       ReduceSum<cuda_reduce<block_size>, double> dsum0(dtinit * 1.0);
       ReduceSum<cuda_reduce<block_size>, int> isum1(itinit * 2);
-      ReduceSum<cuda_reduce_atomic_box<block_size>, double> dsum2(dtinit * 3.0);
+      ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
@@ -264,7 +269,51 @@ int main(int argc, char *argv[]) {
       }
 
     }  // end test 3
+    {// Begin test4
 
+      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
+      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
+      double neg_chk_val, pos_chk_val;
+
+      neg_chk_val = pos_chk_val = 0.0;  
+
+      int loops = 3;
+      for (int k = 0; k < loops; k++) {
+        s_ntests_run++;
+
+        for (int i = 0; i < TEST_VEC_LEN; ++i) {
+          rand_dvalue[i] = drand48() - 0.5;
+          if(rand_dvalue[i] < 0.0) {
+            neg_chk_val += rand_dvalue[i];
+          }
+          else {
+            pos_chk_val += rand_dvalue[i];
+          } 
+        }
+        forall<cuda_exec<block_size> >(0,
+                                       TEST_VEC_LEN,
+                                       [=] __device__(int i) {
+          if(rand_dvalue[i] < 0.0) {
+            dsumN += rand_dvalue[i];
+          }
+          else {
+            dsumP += rand_dvalue[i];
+          }
+        });
+
+        //fprintf(stderr,"pos_chk_val %0.12lf : dsumP %0.12lf : EPS %0.12lf\n",pos_chk_val,double(dsumP),std::abs(pos_chk_val - double(dsumP)));
+        //fprintf(stderr,"neg_chk_val %0.12lf : dsumN %0.12lf : EPS %0.12lf\n",neg_chk_val,double(dsumN),std::abs(neg_chk_val - double(dsumN)));
+        if (!(std::abs(double(dsumN) - neg_chk_val) < 4e-8)
+            || !(std::abs(double(dsumP) - pos_chk_val) < 4e-8)) {
+
+          cout << "\n TEST 4 FAILURE: tcount, k = " << tcount << " , " << k
+               << endl;
+
+        } else {
+          s_ntests_passed++;
+        }
+      }
+    } //end test4
   }  // end test repeat loop
 
   ///

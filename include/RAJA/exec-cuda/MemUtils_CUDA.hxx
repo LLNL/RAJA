@@ -81,7 +81,6 @@ typedef struct {
 
 typedef struct {
   CudaReductionBlockDataType tally;
-  CudaReductionBlockDataType initVal;
 } CudaReductionBlockTallyType;
 
 /*!

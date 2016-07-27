@@ -317,10 +317,10 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   explicit ReduceMin(T init_val) {
     m_is_copy = false;
     m_reduced_val = init_val;
+    m_init_val = init_val;
     m_myID = getCudaReductionId();
     m_tallydata = getCudaReductionTallyBlock(m_myID);
     m_tallydata->tally = init_val;
-    m_tallydata->initVal = init_val;
   }
 
   //
@@ -330,6 +330,30 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   ReduceMin(const ReduceMin<cuda_reduce<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ T ssd[];
+
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+    // initialize shared memory
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+       //this descends all the way to 1
+      if (threadId < i) {
+        // no need for __syncthreads()
+        sd[threadId + i] = m_init_val;
+      }
+    }
+    if(threadId == 0) sd[0] = m_init_val; 
+    __syncthreads();
+
+#else
+
+#endif
   }
 
   //
@@ -341,6 +365,53 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
 #if defined(__CUDA_ARCH__)
 #else
       releaseCudaReductionId(m_myID);
+#endif
+    }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ T ssd[];
+
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      //int blockId = blockIdx.x 
+      //   + blockIdx.y * gridDim.x 
+      //   + gridDim.x * gridDim.y * blockIdx.z; 
+
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + i]);
+        }
+        __syncthreads();
+      }
+
+      if (threadId < 16) {
+        sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 16]);
+      }
+      __syncthreads();
+
+      if (threadId < 8) {
+        sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 8]);
+      }
+      __syncthreads();
+
+      if (threadId < 4) {
+        sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 4]);
+      }
+      __syncthreads();
+
+      if (threadId < 2) {
+        sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 2]);
+      }
+      __syncthreads();
+
+      if (threadId < 1) {
+        sd[0] = RAJA_MIN(sd[0], sd[1]);
+        atomicMin(&(m_tallydata->tally), sd[0]);
+      }
 #endif
     }
   }
@@ -360,58 +431,17 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   //
   // Updates reduced value in the proper shared memory block locations.
   //
-  __device__ ReduceMin<cuda_reduce<BLOCK_SIZE>, T> min(T val) const {
-    __shared__ T sd[BLOCK_SIZE];
-
+  __device__ const ReduceMin<cuda_reduce<BLOCK_SIZE>, T>& min(T val) const {
+    extern __shared__ T ssd[];
+ 
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
-      }
-    }
+    sd[threadId] = val; 
     __syncthreads();
-
-    sd[threadId] = val;
-    __syncthreads();
-
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + i]);
-      }
-      __syncthreads();
-    }
-
-    if (threadId < 16) {
-      sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 16]);
-    }
-    __syncthreads();
-
-    if (threadId < 8) {
-      sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 8]);
-    }
-    __syncthreads();
-
-    if (threadId < 4) {
-      sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 4]);
-    }
-    __syncthreads();
-
-    if (threadId < 2) {
-      sd[threadId] = RAJA_MIN(sd[threadId], sd[threadId + 2]);
-    }
-    __syncthreads();
-
-    if (threadId < 1) {
-      sd[0] = RAJA_MIN(sd[0], sd[1]);
-      atomicMin(&(m_tallydata->tally), sd[0]);
-    }
 
     return *this;
   }
@@ -426,6 +456,7 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
 
   int m_myID;
 
+  T m_init_val;
   T m_reduced_val;
 
   CudaReductionBlockTallyType *m_tallydata;
@@ -456,19 +487,43 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
   explicit ReduceMax(T init_val) {
     m_is_copy = false;
     m_reduced_val = init_val;
+    m_init_val = init_val;
     m_myID = getCudaReductionId();
     m_tallydata = getCudaReductionTallyBlock(m_myID);
     m_tallydata->tally = init_val;
-    m_tallydata->initVal = init_val;
   }
 
   //
   // Copy ctor executes on both host and device.
   //
-  __host__ __device__
+  __host__ __device__  
   ReduceMax(const ReduceMax<cuda_reduce<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ T ssd[];
+
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+    // initialize shared memory
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+       //this descends all the way to 1
+      if (threadId < i) {
+        // no need for __syncthreads()
+        sd[threadId + i] = m_init_val;
+      }
+    }
+    if(threadId == 0) sd[0] = m_init_val; 
+    __syncthreads();
+
+#else
+
+#endif
   }
 
   //
@@ -480,6 +535,52 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
 #if defined(__CUDA_ARCH__)
 #else
       releaseCudaReductionId(m_myID);
+#endif
+    }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ T ssd[];
+
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      //int blockId = blockIdx.x 
+      //   + blockIdx.y * gridDim.x 
+      //   + gridDim.x * gridDim.y * blockIdx.z; 
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + i]);
+        }
+        __syncthreads();
+      }
+
+      if (threadId < 16) {
+        sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 16]);
+      }
+      __syncthreads();
+
+      if (threadId < 8) {
+        sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 8]);
+      }
+      __syncthreads();
+
+      if (threadId < 4) {
+        sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 4]);
+      }
+      __syncthreads();
+
+      if (threadId < 2) {
+        sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 2]);
+      }
+      __syncthreads();
+
+      if (threadId < 1) {
+        sd[0] = RAJA_MAX(sd[0], sd[1]);
+        atomicMax(&(m_tallydata->tally), sd[0]);
+      }
 #endif
     }
   }
@@ -499,57 +600,17 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
   //
   // Updates reduced value in the proper shared memory block locations.
   //
-  __device__ ReduceMax<cuda_reduce<BLOCK_SIZE>, T> max(T val) const {
-    __shared__ T sd[BLOCK_SIZE];
+  __device__ const ReduceMax<cuda_reduce<BLOCK_SIZE>, T>& max(T val) const {
+    extern __shared__ T ssd[];
+ 
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
-      }
-    }
-    __syncthreads();
-
     sd[threadId] = val;
     __syncthreads();
-
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + i]);
-      }
-      __syncthreads();
-    }
-
-    if (threadId < 16) {
-      sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 16]);
-    }
-    __syncthreads();
-
-    if (threadId < 8) {
-      sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 8]);
-    }
-    __syncthreads();
-
-    if (threadId < 4) {
-      sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 4]);
-    }
-    __syncthreads();
-
-    if (threadId < 2) {
-      sd[threadId] = RAJA_MAX(sd[threadId], sd[threadId + 2]);
-    }
-    __syncthreads();
-
-    if (threadId < 1) {
-      sd[0] = RAJA_MAX(sd[0], sd[1]);
-      atomicMax(&(m_tallydata->tally), sd[0]);
-    }
 
     return *this;
   }
@@ -564,6 +625,7 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
 
   int m_myID;
 
+  T m_init_val;
   T m_reduced_val;
 
   CudaReductionBlockTallyType *m_tallydata;
@@ -743,6 +805,7 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
   static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
 };
 
+
 /*!
  ******************************************************************************
  *
@@ -767,7 +830,6 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
     m_myID = getCudaReductionId();
     m_tallydata = getCudaReductionTallyBlock(m_myID);
     m_tallydata->tally = static_cast<T>(0);
-    m_tallydata->initVal = init_val;
   }
 
   //
@@ -777,146 +839,11 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
   ReduceSum(const ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
-  }
-
-  //
-  // Destructor executes on both host and device.
-  // Destruction on host releases the unique id for others to use.
-  //
-  __host__ __device__ ~ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>() {
-    if (!m_is_copy) {
-#if defined(__CUDA_ARCH__)
-#else
-      releaseCudaReductionId(m_myID);
-#endif
-    }
-  }
-
-  //
-  // Operator to retrieve reduced sum value (before object is destroyed).
-  // Accessor only operates on host.
-  //
-  operator T() {
-    cudaDeviceSynchronize();
-    m_reduced_val = m_init_val + static_cast<T>(m_tallydata->tally);
-    return m_reduced_val;
-  }
-
-  T get() { return operator T(); }
-
-  //
-  // += operator to accumulate arg value in the proper shared
-  // memory block location.
-  //
-  __device__ ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> operator+=(
-      T val) const {
-    __shared__ T sd[BLOCK_SIZE];
-
-    int threadId = threadIdx.x + 
-               blockDim.x * threadIdx.y + 
-               (blockDim.x * blockDim.y) * threadIdx.z;
-
-
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
-      }
-    }
-    __syncthreads();
-
-    sd[threadId] = val;
-
-    T temp = 0;
-    __syncthreads();
-
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] += sd[threadId + i];
-      }
-      __syncthreads();
-    }
-
-    if (threadId < WARP_SIZE) {
-      temp = sd[threadId];
-      for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-        temp += shfl_xor(temp, i);
-      }
-    }
-
-    // one thread adds to tally
-    if (threadId == 0) {
-      atomicAdd(&(m_tallydata->tally), temp);
-    }
-
-    return *this;
-  }
-
- private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>();
-
-  bool m_is_copy;
-
-  int m_myID;
-
-  T m_init_val;
-  T m_reduced_val;
-
-  CudaReductionBlockTallyType *m_tallydata;
-
-  // Sanity checks for block size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE&(BLOCK_SIZE-1))); 
-  static constexpr bool reasonableRangeCheck = ((BLOCK_SIZE>=32) && (BLOCK_SIZE<=1024));
-  static_assert(powerOfTwoCheck,"Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,"Error: block sizes must be between 32 and 1024");
-};
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Box Support Sum reduction Atomic Non-Deterministic Variant class template for use
- *in CUDA kernel.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-
-
-__device__ __managed__ double *s_sd[RAJA_MAX_REDUCE_VARS];
-template <size_t BLOCK_SIZE, typename T>
-class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
- public:
-  //
-  // Constructor takes initial reduction value (default ctor is disabled).
-  // Ctor only executes on the host.
-  //
-  explicit ReduceSum(T init_val) {
-    m_is_copy = false;
-    m_reduced_val = static_cast<T>(0);
-    m_init_val = init_val;
-    m_myID = getCudaReductionId();
-    m_tallydata = getCudaReductionTallyBlock(m_myID);
-    m_tallydata->tally = static_cast<T>(0);
-    m_tallydata->initVal = init_val;
-  }
-
-  //
-  // Copy ctor executes on both host and device.
-  //
-  __host__ __device__
-  ReduceSum(const ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> &other) {
-    *this = other;
-    m_is_copy = true;
 #if defined(__CUDA_ARCH__)
 
-    extern __shared__ T sd[];
+    extern __shared__ T ssd[];
+
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -927,9 +854,10 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
        //this descends all the way to 1
       if (threadId < i) {
         // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
+        sd[threadId + i] = m_init_val;
       }
     }
+    if(threadId == 0) sd[0] = m_init_val; 
     __syncthreads();
 
 #else
@@ -941,7 +869,7 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   // Destructor executes on both host and device.
   // Destruction on host releases the unique id for others to use.
   //
-  __host__ __device__ ~ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>() {
+  __host__ __device__ ~ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>() {
     if (!m_is_copy) {
 #if defined(__CUDA_ARCH__)
 
@@ -952,8 +880,9 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
     }
     else {
 #if defined(__CUDA_ARCH__)
-      extern __shared__ T sd[];
+      extern __shared__ T ssd[];
 
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
       int threadId = threadIdx.x + 
                  blockDim.x * threadIdx.y + 
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -981,7 +910,6 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
       }
 #endif
     }
-
   }
 
   //
@@ -1000,10 +928,11 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   // += operator to accumulate arg value in the proper shared
   // memory block location.
   //
-  __device__ const ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>& operator+=(
+  __device__ const ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>& operator+=(
       T val) const {
-
-    extern __shared__ T sd[];
+    extern __shared__ T ssd[];
+ 
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -1019,7 +948,7 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T>();
+  ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>();
 
   bool m_is_copy;
 
@@ -1027,7 +956,6 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
 
   T m_init_val;
   T m_reduced_val;
-  T *m_sd;
   CudaReductionBlockTallyType *m_tallydata;
 
   // Sanity checks for block size
@@ -1045,7 +973,7 @@ class ReduceSum<cuda_reduce_atomic_box<BLOCK_SIZE>, T> {
 /// actual
 /// reduction values do not use atomics and require a finsihing stage performed
 /// by the last block
-__device__ __managed__ int retiredBlocks[RAJA_MAX_REDUCE_VARS];
+static __device__ __managed__ int retiredBlocks[RAJA_MAX_REDUCE_VARS];
 
 template <size_t BLOCK_SIZE, typename T>
 class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
