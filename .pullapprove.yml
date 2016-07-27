@@ -4,9 +4,10 @@ reject_regex: ^Rejected
 reset_on_push: false
 author_approval: ignored
 reviewers:
-  - name: czars
+  - name: core
     members:
       - keasler
+      - trws
       - rhornung67
     required: 1
   - name: everyone

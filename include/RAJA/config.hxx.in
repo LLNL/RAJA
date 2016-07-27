@@ -233,6 +233,14 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_SIMD  // TODO: Define this...
 
+#else
+
+#pragma message("RAJA_COMPILER unknown, using default empty macros.")
+
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d)
+#define RAJA_SIMD
+
 #endif
 
 }  // closing brace for RAJA namespace

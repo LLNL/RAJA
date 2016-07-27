@@ -58,8 +58,8 @@
 
 #include "RAJA/int_datatypes.hxx"
 
-
-namespace RAJA {
+namespace RAJA
+{
 
 ///
 /// Typedef defining common data type for RAJA-CPU reduction data blocks
@@ -96,8 +96,8 @@ void releaseCPUReductionId(int id);
  *
  * NOTE: Block size will be of one of the following sizes:
  *
- *       When compiled with OpenMP : 
- * 
+ *       When compiled with OpenMP :
+ *
  *          omp_get_max_threads() * MAX_REDUCE_VARS_CPU *
  *          COHERENCE_BLOCK_SIZE/sizeof(CPUReductionBlockDataType)
  *
@@ -136,7 +136,7 @@ void freeCPUReductionMemBlock();
  *
  *       When compiled without OpenMP :
  *
- *          MAX_REDUCE_VARS_CPU *  
+ *          MAX_REDUCE_VARS_CPU *
  *          COHERENCE_BLOCK_SIZE/sizeof(Index_type)
  *
  ******************************************************************************
@@ -152,8 +152,6 @@ Index_type* getCPUReductionLocBlock(int id);
  */
 void freeCPUReductionLocBlock();
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

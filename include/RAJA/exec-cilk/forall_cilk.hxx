@@ -3,10 +3,10 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set and segment iteration 
+ * \brief   Header file containing RAJA index set and segment iteration
  *          template methods for Intel Cilk Plus execution.
  *
- *          These methods work only on platforms that support Cilk Plus. 
+ *          These methods work only on platforms that support Cilk Plus.
  *
  ******************************************************************************
  */
@@ -69,8 +69,8 @@
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
 
-
-namespace RAJA {
+namespace RAJA
+{
 
 
 //
@@ -81,28 +81,30 @@ namespace RAJA {
 //////////////////////////////////////////////////////////////////////
 //
 
-template<typename Iterable,
-         typename Func>
-RAJA_INLINE
-void forall(const cilk_for_exec&, Iterable &&iter, Func &&loop_body) {
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
-    auto distance = std::distance(begin, end);
-    cilk_for ( Index_type i = 0; i < distance ; ++i ) {
-        loop_body(begin[i]);
-    }
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const cilk_for_exec &,
+                        Iterable &&iter,
+                        Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  cilk_for(Index_type i = 0; i < distance; ++i) { loop_body(begin[i]); }
 }
 
-template<typename Iterable,
-         typename Func>
-RAJA_INLINE
-void forall_Icount(const cilk_for_exec&, Iterable &&iter, Index_type icount, Func &&loop_body) {
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
-    auto distance = std::distance(begin, end);
-    cilk_for ( Index_type i = 0; i < distance ; ++i ) {
-        loop_body(i + icount, begin[i]);
-    }
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const cilk_for_exec &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  cilk_for(Index_type i = 0; i < distance; ++i)
+  {
+    loop_body(i + icount, begin[i]);
+  }
 }
 
 }  // closing brace for RAJA namespace
@@ -110,4 +112,3 @@ void forall_Icount(const cilk_for_exec&, Iterable &&iter, Index_type icount, Fun
 #endif  // closing endif for RAJA_ENABLE_CILK guard
 
 #endif  // closing endif for header file include guard
-

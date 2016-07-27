@@ -57,7 +57,8 @@
 
 #include "RAJA/PolicyBase.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -70,12 +71,14 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-struct seq_exec : public PolicyBase {};
+struct seq_exec : public PolicyBase {
+};
 
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit : public seq_exec {};
+struct seq_segit : public seq_exec {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -84,13 +87,12 @@ struct seq_segit : public seq_exec {};
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce {};
+struct seq_reduce {
+};
 
 }  // closing brace for RAJA namespace
 
-
-#include "RAJA/exec-sequential/reduce_sequential.hxx"
 #include "RAJA/exec-sequential/forall_sequential.hxx"
+#include "RAJA/exec-sequential/reduce_sequential.hxx"
 
 #endif  // closing endif for header file include guard
-

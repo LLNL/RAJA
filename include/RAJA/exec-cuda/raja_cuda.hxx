@@ -62,43 +62,49 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-namespace RAJA {
+namespace RAJA
+{
 
-//
+///
 /////////////////////////////////////////////////////////////////////
-//
-// Generalization of CUDA dim3 x, y and z used to describe
-// sizes and indices for threads and blocks.
-//
+///
+/// Generalizations of CUDA dim3 x, y and z used to describe
+/// sizes and indices for threads and blocks.
+///
 /////////////////////////////////////////////////////////////////////
-//
-
+///
 struct Dim3x {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  {
     return dim.x;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  {
     return dim.x;
   }
 };
-
+///
 struct Dim3y {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  {
     return dim.y;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  {
     return dim.y;
   }
 };
-
+///
 struct Dim3z {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim) {
+  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  {
     return dim.z;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim) {
+  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  {
     return dim.z;
   }
 };
@@ -116,10 +122,12 @@ struct Dim3z {
 ///
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec { };
+struct cuda_exec {
+};
 
 template <size_t BLOCK_SIZE>
-struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> { };
+struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> {
+};
 
 //
 //
@@ -137,13 +145,16 @@ struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> { };
 ///////////////////////////////////////////////////////////////////////
 ///
 template <size_t BLOCK_SIZE>
-struct cuda_reduce {};
-
+struct cuda_reduce {
+};
+///
 template <size_t BLOCK_SIZE>
-struct cuda_reduce_atomic {};
+struct cuda_reduce_atomic {
+};
+
 //
 // Operations in the included files are parametrized using the following
-// values.
+// values for CUDA warp size and max block size.
 //
 const int WARP_SIZE = 32;
 const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
@@ -153,8 +164,8 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 //
 // Headers containing traversal and reduction templates
 //
-#include "RAJA/exec-cuda/reduce_cuda.hxx"
 #include "RAJA/exec-cuda/forall_cuda.hxx"
+#include "RAJA/exec-cuda/reduce_cuda.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-cuda/forallN_cuda.hxx"

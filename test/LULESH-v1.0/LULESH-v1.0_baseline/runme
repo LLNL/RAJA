@@ -1,3 +1,0 @@
-date; 
-srun -N 1 -p pdebug --exclusive time ./lulesh-OMP.exe;
-date

@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   RAJA header file defining range segment classes.
- *     
+ *
  ******************************************************************************
  */
 
@@ -61,10 +61,8 @@
 #include <algorithm>
 #include <iosfwd>
 
-
-namespace RAJA {
-
-
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
@@ -72,7 +70,7 @@ namespace RAJA {
  * \brief  Segment class representing a contiguous range of indices.
  *
  *         Range is specified by begin and end values.
- *         Traversal executes as:  
+ *         Traversal executes as:
  *            for (i = m_begin; i < m_end; ++i) {
  *               expression using i as array index.
  *            }
@@ -82,168 +80,162 @@ namespace RAJA {
 class RangeSegment : public BaseSegment
 {
 public:
+  ///
+  /// Default range segment ctor.
+  ///
+  /// Segment undefined until begin/end values set.
+  ///
+  RangeSegment()
+      : BaseSegment(_RangeSeg_), m_begin(UndefinedValue), m_end(UndefinedValue)
+  {
+    ;
+  }
 
-   ///
-   /// Default range segment ctor.
-   ///
-   /// Segment undefined until begin/end values set.
-   ///
-   RangeSegment()
-   : BaseSegment( _RangeSeg_ ), 
-     m_begin(UndefinedValue), 
-     m_end(UndefinedValue) { ; }
+  ///
+  /// Construct range segment with [begin, end) specified.
+  ///
+  RangeSegment(Index_type begin, Index_type end)
+      : BaseSegment(_RangeSeg_), m_begin(begin), m_end(end)
+  {
+    ;
+  }
 
-   ///
-   /// Construct range segment with [begin, end) specified.
-   ///
-   RangeSegment(Index_type begin, Index_type end) 
-   : BaseSegment( _RangeSeg_ ), 
-     m_begin(begin), 
-     m_end(end) { ; }
+  ///
+  /// Destructor defined because some compilers don't appear to inline the
+  /// one they generate.
+  ///
+  ~RangeSegment() { ; }
 
-   ///
-   /// Destructor defined because some compilers don't appear to inline the
-   /// one they generate.
-   ///
-   ~RangeSegment() {;}
+  ///
+  /// Copy ctor defined because some compilers don't appear to inline the
+  /// one they generate.
+  ///
+  RangeSegment(const RangeSegment& other)
+      : BaseSegment(_RangeSeg_), m_begin(other.m_begin), m_end(other.m_end)
+  {
+    ;
+  }
 
-   ///
-   /// Copy ctor defined because some compilers don't appear to inline the
-   /// one they generate.
-   ///
-   RangeSegment(const RangeSegment& other) 
-   : BaseSegment( _RangeSeg_ ),
-     m_begin(other.m_begin),
-     m_end(other.m_end) { ; }
+  ///
+  /// Copy assignment operator defined because some compilers don't
+  /// appear to inline the one they generate.
+  ///
+  RangeSegment& operator=(const RangeSegment& rhs)
+  {
+    if (&rhs != this) {
+      RangeSegment copy(rhs);
+      this->swap(copy);
+    }
+    return *this;
+  }
 
-   ///
-   /// Copy assignment operator defined because some compilers don't 
-   /// appear to inline the one they generate.
-   ///
-   RangeSegment& operator=(const RangeSegment& rhs)
-   {
-      if ( &rhs != this ) {
-         RangeSegment copy(rhs);
-         this->swap(copy);
-      }
-      return *this;
-   }
+  ///
+  /// Swap function for copy-and-swap idiom.
+  ///
+  void swap(RangeSegment& other)
+  {
+    using std::swap;
+    swap(m_begin, other.m_begin);
+    swap(m_end, other.m_end);
+  }
 
-   ///
-   /// Swap function for copy-and-swap idiom.
-   ///
-   void swap(RangeSegment& other)
-   {
-      using std::swap;
-      swap(m_begin, other.m_begin);
-      swap(m_end, other.m_end);
-   }
+  ///
+  /// Return starting index for range.
+  ///
+  Index_type getBegin() const { return m_begin; }
 
+  ///
+  /// Set starting index for range.
+  ///
+  void setBegin(Index_type begin) { m_begin = begin; }
 
-   ///
-   /// Return starting index for range. 
-   ///
-   Index_type getBegin() const { return m_begin; }
+  ///
+  /// Return one past last index for range.
+  ///
+  Index_type getEnd() const { return m_end; }
 
-   ///
-   /// Set starting index for range. 
-   ///
-   void setBegin(Index_type begin) { m_begin = begin; }
+  ///
+  /// Set one past last index for range.
+  ///
+  void setEnd(Index_type end) { m_end = end; }
 
-   ///
-   /// Return one past last index for range. 
-   ///
-   Index_type getEnd() const { return m_end; }
+  ///
+  /// Return number of indices represented by range.
+  ///
+  Index_type getLength() const { return (m_end - m_begin); }
 
-   ///
-   /// Set one past last index for range.
-   ///
-   void setEnd(Index_type end) { m_end = end; }
+  ///
+  /// Return 'Owned' indicating that segment object owns the data
+  /// representing its indices.
+  ///
+  IndexOwnership getIndexOwnership() const { return Owned; }
 
-   ///
-   /// Return number of indices represented by range.
-   ///
-   Index_type getLength() const { return (m_end-m_begin); }
+  ///
+  /// Equality operator returns true if segments are equal; else false.
+  ///
+  bool operator==(const RangeSegment& other) const
+  {
+    return ((m_begin == other.m_begin) && (m_end == other.m_end));
+  }
 
-   ///
-   /// Return 'Owned' indicating that segment object owns the data
-   /// representing its indices.
-   ///
-   IndexOwnership getIndexOwnership() const { return Owned; }
+  ///
+  /// Inequality operator returns true if segments are not equal, else false.
+  ///
+  bool operator!=(const RangeSegment& other) const
+  {
+    return (!(*this == other));
+  }
 
-   ///
-   /// Equality operator returns true if segments are equal; else false.
-   ///
-   bool operator ==(const RangeSegment& other) const
-   {
-      return ( (m_begin == other.m_begin) && (m_end == other.m_end) );
-   }
+  ///
+  /// Equality operator returns true if segments are equal; else false.
+  /// (Implements pure virtual method in BaseSegment class).
+  ///
+  bool operator==(const BaseSegment& other) const
+  {
+    const RangeSegment* o_ptr = dynamic_cast<const RangeSegment*>(&other);
+    if (o_ptr) {
+      return (*this == *o_ptr);
+    } else {
+      return false;
+    }
+  }
 
-   ///
-   /// Inequality operator returns true if segments are not equal, else false.
-   ///
-   bool operator !=(const RangeSegment& other) const
-   {
-      return ( !(*this == other) );
-   }
+  ///
+  /// Inquality operator returns true if segments are not equal; else false.
+  /// (Implements pure virtual method in BaseSegment class).
+  ///
+  bool operator!=(const BaseSegment& other) const
+  {
+    return (!(*this == other));
+  }
 
-   ///
-   /// Equality operator returns true if segments are equal; else false.
-   /// (Implements pure virtual method in BaseSegment class).
-   ///
-   bool operator ==(const BaseSegment& other) const
-   {
-      const RangeSegment* o_ptr = dynamic_cast<const RangeSegment*>(&other);
-      if ( o_ptr ) {
-        return ( *this == *o_ptr );
-      } else {
-        return false;
-      }
-   }
+  ///
+  /// Print segment data to given output stream.
+  ///
+  void print(std::ostream& os) const;
 
-   ///
-   /// Inquality operator returns true if segments are not equal; else false.
-   /// (Implements pure virtual method in BaseSegment class).
-   ///
-   bool operator !=(const BaseSegment& other) const
-   {
-      return ( !(*this == other) );
-   }
+  using iterator = Iterators::numeric_iterator<Index_type>;
 
-   ///
-   /// Print segment data to given output stream.
-   ///
-   void print(std::ostream& os) const;
+  ///
+  /// Get an iterator to the end.
+  ///
+  iterator end() const { return iterator(m_end); }
 
-   using iterator = Iterators::numeric_iterator<Index_type>;
+  ///
+  /// Get an iterator to the beginning.
+  ///
+  iterator begin() const { return iterator(m_begin); }
 
-   ///
-   /// Get an iterator to the end.
-   ///
-   iterator end() const {
-       return iterator(m_end);
-   }
-
-   ///
-   /// Get an iterator to the beginning.
-   ///
-   iterator begin() const {
-       return iterator(m_begin);
-   }
-
-   ///
-   /// Return the number of elements in the range.
-   ///
-   Index_type size() const {
-       return m_end - m_begin;
-   }
+  ///
+  /// Return the number of elements in the range.
+  ///
+  Index_type size() const { return m_end - m_begin; }
 
 
 private:
-   Index_type m_begin;
-   Index_type m_end;
+  Index_type m_begin;
+  Index_type m_end;
 };
-
 
 /*!
  ******************************************************************************
@@ -261,194 +253,195 @@ private:
 class RangeStrideSegment : public BaseSegment
 {
 public:
+  ///
+  /// Default range segment with stride ctor.
+  ///
+  /// Segment undefined until begin/end/stride values set.
+  ///
+  RangeStrideSegment()
+      : BaseSegment(_RangeStrideSeg_),
+        m_begin(UndefinedValue),
+        m_end(UndefinedValue),
+        m_stride(UndefinedValue)
+  {
+    ;
+  }
 
-   ///
-   /// Default range segment with stride ctor.
-   ///
-   /// Segment undefined until begin/end/stride values set.
-   ///
-   RangeStrideSegment()
-   : BaseSegment( _RangeStrideSeg_ ),
-     m_begin(UndefinedValue), 
-     m_end(UndefinedValue), 
-     m_stride(UndefinedValue) { ; }
+  ///
+  /// Construct range segment [begin, end) and stride specified.
+  ///
+  RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
+      : BaseSegment(_RangeStrideSeg_),
+        m_begin(begin),
+        m_end(end),
+        m_stride(stride)
+  {
+    ;
+  }
 
-   ///
-   /// Construct range segment [begin, end) and stride specified.
-   ///
-   RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
-   : BaseSegment( _RangeStrideSeg_ ), 
-     m_begin(begin), 
-     m_end(end), 
-     m_stride(stride) { ; }
+  ///
+  /// Destructor defined because some compilers don't appear to inline the
+  /// one they generate.
+  ///
+  ~RangeStrideSegment() { ; }
 
-   ///
-   /// Destructor defined because some compilers don't appear to inline the
-   /// one they generate.
-   ///
-   ~RangeStrideSegment() {;}
+  ///
+  /// Copy ctor defined because some compilers don't appear to inline the
+  /// one they generate.
+  ///
+  RangeStrideSegment(const RangeStrideSegment& other)
+      : BaseSegment(_RangeStrideSeg_),
+        m_begin(other.m_begin),
+        m_end(other.m_end),
+        m_stride(other.m_stride)
+  {
+    ;
+  }
 
-   ///
-   /// Copy ctor defined because some compilers don't appear to inline the
-   /// one they generate.
-   ///
-   RangeStrideSegment(const RangeStrideSegment& other)
-   : BaseSegment( _RangeStrideSeg_ ),
-     m_begin(other.m_begin),
-     m_end(other.m_end),
-     m_stride(other.m_stride) { ; }
+  ///
+  /// Copy assignment operator defined because some compilers don't
+  /// appear to inline the one they generate.
+  ///
+  RangeStrideSegment& operator=(const RangeStrideSegment& rhs)
+  {
+    if (&rhs != this) {
+      RangeStrideSegment copy(rhs);
+      this->swap(copy);
+    }
+    return *this;
+  }
 
-   ///
-   /// Copy assignment operator defined because some compilers don't
-   /// appear to inline the one they generate.
-   ///
-   RangeStrideSegment& operator=(const RangeStrideSegment& rhs)
-   {
-      if ( &rhs != this ) {
-         RangeStrideSegment copy(rhs);
-         this->swap(copy);
-      }
-      return *this;
-   }
+  ///
+  /// Swap function for copy-and-swap idiom.
+  ///
+  void swap(RangeStrideSegment& other)
+  {
+    using std::swap;
+    swap(m_begin, other.m_begin);
+    swap(m_end, other.m_end);
+    swap(m_stride, other.m_stride);
+  }
 
-   ///
-   /// Swap function for copy-and-swap idiom.
-   ///
-   void swap(RangeStrideSegment& other)
-   {
-      using std::swap;
-      swap(m_begin, other.m_begin);
-      swap(m_end, other.m_end);
-      swap(m_stride, other.m_stride);
-   }
+  ///
+  /// Return starting index for range.
+  ///
+  Index_type getBegin() const { return m_begin; }
 
+  ///
+  /// Set starting index for range.
+  ///
+  void setBegin(Index_type begin) { m_begin = begin; }
 
-   ///
-   /// Return starting index for range. 
-   ///
-   Index_type getBegin() const { return m_begin; }
+  ///
+  /// Return one past last index for range.
+  ///
+  Index_type getEnd() const { return m_end; }
 
-   ///
-   /// Set starting index for range.
-   ///
-   void setBegin(Index_type begin) { m_begin = begin; }
+  ///
+  /// Set one past last index for range.
+  ///
+  void setEnd(Index_type end) { m_end = end; }
 
-   ///
-   /// Return one past last index for range. 
-   ///
-   Index_type getEnd() const { return m_end; }
+  ///
+  /// Return stride for range.
+  ///
+  Index_type getStride() const { return m_stride; }
 
-   ///
-   /// Set one past last index for range.
-   ///
-   void setEnd(Index_type end) { m_end = end; }
+  ///
+  /// Set stride for range.
+  ///
+  void setStride(Index_type stride) { m_stride = stride; }
 
-   /// 
-   /// Return stride for range. 
-   ///
-   Index_type getStride() const { return m_stride; }
+  ///
+  /// Return number of indices represented by range.
+  ///
+  Index_type getLength() const
+  {
+    return (m_end - m_begin) >= m_stride
+               ? (m_end - m_begin) % m_stride ? (m_end - m_begin) / m_stride + 1
+                                              : (m_end - m_begin) / m_stride
+               : 0;
+  }
 
-   ///
-   /// Set stride for range.
-   ///
-   void setStride(Index_type stride) { m_stride = stride; }
+  ///
+  /// Return 'Owned' indicating that segment object owns the data
+  /// representing its indices.
+  ///
+  IndexOwnership getIndexOwnership() const { return Owned; }
 
-   ///
-   /// Return number of indices represented by range.
-   ///
-   Index_type getLength() const { return (m_end-m_begin) >= m_stride ?
-                                             (m_end-m_begin) % m_stride ?
-                                                 (m_end-m_begin)/m_stride + 1
-                                                :(m_end-m_begin)/m_stride
-                                            : 0; }
+  ///
+  /// Equality operator returns true if segments are equal; else false.
+  ///
+  bool operator==(const RangeStrideSegment& other) const
+  {
+    return ((m_begin == other.m_begin) && (m_end == other.m_end)
+            && (m_stride == other.m_stride));
+  }
 
-   ///
-   /// Return 'Owned' indicating that segment object owns the data
-   /// representing its indices.
-   ///
-   IndexOwnership getIndexOwnership() const { return Owned; }
+  ///
+  /// Inequality operator returns true if segments are not equal, else false.
+  ///
+  bool operator!=(const RangeStrideSegment& other) const
+  {
+    return (!(*this == other));
+  }
 
-   ///
-   /// Equality operator returns true if segments are equal; else false.
-   ///
-   bool operator ==(const RangeStrideSegment& other) const
-   {
-      return ( (m_begin == other.m_begin) && 
-               (m_end == other.m_end) &&
-               (m_stride == other.m_stride) );
-   }
+  ///
+  /// Equality operator returns true if segments are equal; else false.
+  /// (Implements pure virtual method in BaseSegment class).
+  ///
+  bool operator==(const BaseSegment& other) const
+  {
+    const RangeStrideSegment* o_ptr =
+        dynamic_cast<const RangeStrideSegment*>(&other);
+    if (o_ptr) {
+      return (*this == *o_ptr);
+    } else {
+      return false;
+    }
+  }
 
-   ///
-   /// Inequality operator returns true if segments are not equal, else false.
-   ///
-   bool operator !=(const RangeStrideSegment& other) const
-   {
-      return ( !(*this == other) );
-   }
+  ///
+  /// Inquality operator returns true if segments are not equal; else false.
+  /// (Implements pure virtual method in BaseSegment class).
+  ///
+  bool operator!=(const BaseSegment& other) const
+  {
+    return (!(*this == other));
+  }
 
-   ///
-   /// Equality operator returns true if segments are equal; else false.
-   /// (Implements pure virtual method in BaseSegment class).
-   ///
-   bool operator ==(const BaseSegment& other) const
-   {
-      const RangeStrideSegment* o_ptr = 
-            dynamic_cast<const RangeStrideSegment*>(&other);
-      if ( o_ptr ) {
-        return ( *this == *o_ptr );
-      } else {
-        return false;
-      }
-   }
+  ///
+  /// Print segment data to given output stream.
+  ///
+  void print(std::ostream& os) const;
 
-   ///
-   /// Inquality operator returns true if segments are not equal; else false.
-   /// (Implements pure virtual method in BaseSegment class).
-   ///
-   bool operator !=(const BaseSegment& other) const
-   {
-      return ( !(*this == other) );
-   }
+  using iterator = Iterators::strided_numeric_iterator<Index_type>;
 
-   ///
-   /// Print segment data to given output stream.
-   ///
-   void print(std::ostream& os) const;
+  ///
+  /// Get an iterator to the end.
+  ///
+  iterator end() const { return iterator(m_end, m_stride); }
 
-   using iterator = Iterators::strided_numeric_iterator<Index_type>;
+  ///
+  /// Get an iterator to the beginning.
+  ///
+  iterator begin() const { return iterator(m_begin, m_stride); }
 
-   ///
-   /// Get an iterator to the end.
-   ///
-   iterator end() const {
-       return iterator(m_end, m_stride);
-   }
-
-   ///
-   /// Get an iterator to the beginning.
-   ///
-   iterator begin() const {
-       return iterator(m_begin, m_stride);
-   }
-
-   ///
-   /// Return the number of elements in the range.
-   ///
-   Index_type size() const {
-       return getLength();
-   }
+  ///
+  /// Return the number of elements in the range.
+  ///
+  Index_type size() const { return getLength(); }
 
 private:
-   Index_type m_begin;
-   Index_type m_end;
-   Index_type m_stride;
+  Index_type m_begin;
+  Index_type m_end;
+  Index_type m_stride;
 };
 
 //
-// TODO: Add multi-dim'l ranges, and ability to easily repeat segments using 
-//       an offset in an index set, others? 
+// TODO: Add multi-dim'l ranges, and ability to easily repeat segments using
+//       an offset in an index set, others?
 //
-
 
 }  // closing brace for RAJA namespace
 

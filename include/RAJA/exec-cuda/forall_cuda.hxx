@@ -67,7 +67,8 @@
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -86,7 +87,8 @@ namespace RAJA {
 template <typename Iterator, typename LOOP_BODY>
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
-                                   Index_type length) {
+                                   Index_type length)
+{
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < length) {
     loop_body(idx[ii]);
@@ -106,7 +108,8 @@ template <typename Iterator, typename LOOP_BODY>
 __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           const Iterator idx,
                                           Index_type length,
-                                          Index_type icount) {
+                                          Index_type icount)
+{
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < length) {
     loop_body(ii + icount, idx[ii]);
@@ -124,7 +127,8 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
 template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
 RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
                         Iterable&& iter,
-                        LOOP_BODY loop_body) {
+                        LOOP_BODY loop_body)
+{
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   Index_type len = std::distance(begin, end);
@@ -148,7 +152,8 @@ template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
                                Iterable&& iter,
                                Index_type icount,
-                               LOOP_BODY loop_body) {
+                               LOOP_BODY loop_body)
+{
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   Index_type len = std::distance(begin, end);
@@ -190,7 +195,8 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE>>,
                         const IndexSet& iset,
-                        LOOP_BODY loop_body) {
+                        LOOP_BODY loop_body)
+{
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
@@ -218,7 +224,8 @@ template <size_t BLOCK_SIZE, typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(
     IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE>>,
     const IndexSet& iset,
-    LOOP_BODY loop_body) {
+    LOOP_BODY loop_body)
+{
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);

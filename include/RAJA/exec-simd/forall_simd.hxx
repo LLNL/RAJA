@@ -63,31 +63,32 @@
 
 #include "RAJA/fault_tolerance.hxx"
 
+namespace RAJA
+{
 
-namespace RAJA {
-
-template<typename Iterable,
-         typename Func>
-RAJA_INLINE
-void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)  {
-    auto end = std::end(iter);
-    RAJA_SIMD
-    for ( auto ii = std::begin(iter) ; ii < end ; ++ii ) {
-        loop_body( *ii );
-    }
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
+{
+  auto end = std::end(iter);
+  RAJA_SIMD
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
 }
 
-template<typename Iterable,
-         typename Func>
-RAJA_INLINE
-void forall_Icount(const simd_exec &, Iterable &&iter, Index_type icount, Func &&loop_body)  {
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
-    auto distance = std::distance(begin, end);
-    RAJA_SIMD
-    for ( Index_type i = 0; i < distance ; ++i ) {
-        loop_body(i + icount, begin[i] );
-    }
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const simd_exec &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  RAJA_SIMD
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
+  }
 }
 
 //
@@ -109,22 +110,19 @@ void forall_Icount(const simd_exec &, Iterable &&iter, Index_type icount, Func &
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type *__restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -137,38 +135,34 @@ void forall(simd_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const ListSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(simd_exec,
+                               const ListSegment &iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type *__restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+icount, idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(k + icount, idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// SIMD execution policy does not apply to iteration over index 
+// SIMD execution policy does not apply to iteration over index
 // set segments, only to execution of individual segments. So there
 // are no index set traversal methods in this file.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

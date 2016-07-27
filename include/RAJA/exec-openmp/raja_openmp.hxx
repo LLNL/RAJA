@@ -5,7 +5,7 @@
  *
  * \brief   Header file containing RAJA headers for OpenMP execution.
  *
- *          These methods work only on platforms that support OpenMP. 
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
@@ -61,11 +61,12 @@
 
 #include "RAJA/PolicyBase.hxx"
 
-#include <thread>
-#include <iostream>
 #include <omp.h>
+#include <iostream>
+#include <thread>
 
-namespace RAJA {
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -78,23 +79,34 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-template<typename InnerPolicy>
-struct omp_parallel_exec { };
-struct omp_for_exec { };
-struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> { };
-template<size_t ChunkSize>
-struct omp_for_static { };
-template<size_t ChunkSize>
-struct omp_parallel_for_static : public omp_parallel_exec<omp_for_static<ChunkSize>> { };
-struct omp_for_nowait_exec { };
+template <typename InnerPolicy>
+struct omp_parallel_exec {
+};
+struct omp_for_exec {
+};
+struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
+};
+template <size_t ChunkSize>
+struct omp_for_static {
+};
+template <size_t ChunkSize>
+struct omp_parallel_for_static
+    : public omp_parallel_exec<omp_for_static<ChunkSize>> {
+};
+struct omp_for_nowait_exec {
+};
 
 ///
 /// Index set segment iteration policies
 ///
-struct omp_parallel_for_segit : public omp_parallel_for_exec {};
-struct omp_parallel_segit : public omp_parallel_for_segit {};
-struct omp_taskgraph_segit {};
-struct omp_taskgraph_interval_segit {};
+struct omp_parallel_for_segit : public omp_parallel_for_exec {
+};
+struct omp_parallel_segit : public omp_parallel_for_segit {
+};
+struct omp_taskgraph_segit {
+};
+struct omp_taskgraph_interval_segit {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -103,13 +115,13 @@ struct omp_taskgraph_interval_segit {};
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct omp_reduce {};
+struct omp_reduce {
+};
 
 }  // closing brace for RAJA namespace
 
-
-#include "RAJA/exec-openmp/reduce_openmp.hxx"
 #include "RAJA/exec-openmp/forall_openmp.hxx"
+#include "RAJA/exec-openmp/reduce_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-openmp/forallN_openmp.hxx"
@@ -118,4 +130,3 @@ struct omp_reduce {};
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
-

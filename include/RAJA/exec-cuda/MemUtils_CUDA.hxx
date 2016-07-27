@@ -60,11 +60,14 @@
 
 #include "RAJA/int_datatypes.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
+/// Size of reduction memory block for each reducer object (value based on
+/// rough estimate of "worst case" -- need to think more about this...
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
 
-// Reduction Tallies are computed into a small block to minimize UM migration
+/// Reduction Tallies are computed into a small block to minimize UM migration
 #define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
 ///
@@ -73,15 +76,22 @@ namespace RAJA {
 ///
 typedef double CudaReductionBlockDataType;
 
-typedef struct {
-  double val;
+///
+/// Struct used to hold current reduced value and corresponding index
+/// for "loc" reduction operations.
+///
+struct CudaReductionLocBlockDataType {
+  CudaReductionBlockDataType val;
   Index_type idx;
-} CudaReductionLocBlockDataType;
+};
 
-typedef struct {
+///
+/// Struct used to hold current reduction tally value for reduction operations.
+///
+struct CudaReductionBlockTallyType {
   CudaReductionBlockDataType tally;
   CudaReductionBlockDataType initVal;
-} CudaReductionBlockTallyType;
+};
 
 /*!
 *************************************************************************
@@ -117,7 +127,7 @@ void freeCudaReductionTallyBlock();
 /*!
  ******************************************************************************
  *
- * \brief  Return pointer into shared memory block for RAJA-Cuda reduction
+ * \brief  Return pointers into shared memory blocks for RAJA-CUDA reduction
  *         with given id.
  *
  *         Allocates data block if it isn't allocated already.
@@ -135,18 +145,18 @@ void freeCudaReductionTallyBlock();
  ******************************************************************************
  */
 CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
-
+///
 CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id);
 
 /*!
  ******************************************************************************
  *
- * \brief  Free managed memory block used in RAJA-Cuda reductions.
+ * \brief  Free managed memory blocks used in RAJA-Cuda reductions.
  *
  ******************************************************************************
  */
 void freeCudaReductionMemBlock();
-
+///
 void freeCudaReductionLocMemBlock();
 
 }  // closing brace for RAJA namespace
