@@ -1,4 +1,14 @@
 *.pyc
 *.o
 *.exe
-
+*.swp
+*.swo
+*.a
+*Makefile
+*.cmake
+*.make
+test/CMakeFiles
+CMakeFiles
+CMakeCache.txt
+install_manifest.txt
+include/RAJA/config.hxx
