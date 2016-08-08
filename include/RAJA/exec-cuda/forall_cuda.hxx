@@ -205,7 +205,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
   cudaErrchk(cudaPeekAtLastError());
   cudaErrchk(cudaDeviceSynchronize());
 
@@ -230,7 +230,7 @@ RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
   cudaErrchk(cudaPeekAtLastError());
 
   RAJA_FT_END;
@@ -258,7 +258,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       begin,
                                                       len,
                                                       icount);
@@ -292,7 +292,7 @@ RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       begin,
                                                       len,
                                                       icount);
@@ -328,7 +328,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
 
   cudaErrchk(cudaPeekAtLastError());
   cudaErrchk(cudaDeviceSynchronize());
@@ -356,7 +356,7 @@ RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, begin, len);
   cudaErrchk(cudaPeekAtLastError());
 
   RAJA_FT_END;
@@ -384,7 +384,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       begin,
                                                       len,
                                                       icount);
@@ -418,7 +418,7 @@ RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       begin,
                                                       len,
                                                       icount);
@@ -451,7 +451,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
 
   cudaErrchk(cudaPeekAtLastError());
   cudaErrchk(cudaDeviceSynchronize());
@@ -476,7 +476,7 @@ RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
   cudaErrchk(cudaPeekAtLastError());
 
   RAJA_FT_END;
@@ -502,7 +502,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       idx,
                                                       len,
                                                       icount);
@@ -534,7 +534,7 @@ RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       idx,
                                                       len,
                                                       icount);
@@ -569,7 +569,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE, BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
 
   cudaErrchk(cudaPeekAtLastError());
   cudaErrchk(cudaDeviceSynchronize());
@@ -596,7 +596,7 @@ RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body, idx, len);
   cudaErrchk(cudaPeekAtLastError());
 
   RAJA_FT_END;
@@ -624,7 +624,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       idx,
                                                       len,
                                                       icount);
@@ -658,7 +658,7 @@ RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(double)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE,BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(loop_body,
                                                       idx,
                                                       len,
                                                       icount);

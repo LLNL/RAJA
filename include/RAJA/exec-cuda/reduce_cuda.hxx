@@ -332,9 +332,9 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
     m_is_copy = true;
 #if defined(__CUDA_ARCH__)
 
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
 
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -369,9 +369,10 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
     }
     else {
 #if defined(__CUDA_ARCH__)
-      extern __shared__ T ssd[];
+      extern __shared__ char ssd[];
 
-      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
       int threadId = threadIdx.x + 
                  blockDim.x * threadIdx.y + 
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -432,9 +433,9 @@ class ReduceMin<cuda_reduce<BLOCK_SIZE>, T> {
   // Updates reduced value in the proper shared memory block locations.
   //
   __device__ const ReduceMin<cuda_reduce<BLOCK_SIZE>, T>& min(T val) const {
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
  
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -502,9 +503,9 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
     m_is_copy = true;
 #if defined(__CUDA_ARCH__)
 
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
 
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -539,9 +540,10 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
     }
     else {
 #if defined(__CUDA_ARCH__)
-      extern __shared__ T ssd[];
+      extern __shared__ char ssd[];
 
-      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
       int threadId = threadIdx.x + 
                  blockDim.x * threadIdx.y + 
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -601,9 +603,9 @@ class ReduceMax<cuda_reduce<BLOCK_SIZE>, T> {
   // Updates reduced value in the proper shared memory block locations.
   //
   __device__ const ReduceMax<cuda_reduce<BLOCK_SIZE>, T>& max(T val) const {
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
  
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -686,6 +688,40 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
   ReduceSum(const ReduceSum<cuda_reduce<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
+
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ char ssd[];
+
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+    int blockId = blockIdx.x 
+       + blockIdx.y * gridDim.x 
+       + gridDim.x * gridDim.y * blockIdx.z; 
+
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+
+    if (blockId  + threadId == 0) {
+      m_max_grid_size[0] = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0]);
+    }
+
+    // initialize shared memory
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+      // this descends all the way to 1
+      if (threadId < i) {
+        // no need for __syncthreads()
+        sd[threadId + i] = m_reduced_val;
+      }
+    }
+    if(threadId == 0) sd[0] = m_reduced_val; 
+    __syncthreads();
+#else
+
+#endif
   }
 
   //
@@ -697,6 +733,44 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
 #if defined(__CUDA_ARCH__)
 #else
       releaseCudaReductionId(m_myID);
+#endif
+    }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ char ssd[];
+
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      int blockId = blockIdx.x 
+         + blockIdx.y * gridDim.x 
+         + gridDim.x * gridDim.y * blockIdx.z; 
+
+      T temp = 0;
+      __syncthreads();
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] += sd[threadId + i];
+        }
+        __syncthreads();
+      }
+
+      if (threadId < WARP_SIZE) {
+        temp = sd[threadId];
+        for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
+          temp += shfl_xor(temp, i);
+        }
+      }
+
+      // one thread adds to gmem, we skip m_blockdata[m_blockoffset]
+      // because we will be accumlating into this
+      if (threadId == 0) {
+        m_blockdata[m_blockoffset + blockId + 1] += temp;
+      }
 #endif
     }
   }
@@ -722,61 +796,20 @@ class ReduceSum<cuda_reduce<BLOCK_SIZE>, T> {
 
   T get() { return operator T(); }
   
-  //
-  // += operator to accumulate arg value in the proper shared
-  // memory block location.
-  //
-  __device__ ReduceSum<cuda_reduce<BLOCK_SIZE>, T> operator+=(T val) const {
-    __shared__ T sd[BLOCK_SIZE];
 
-    int blockId = blockIdx.x 
-       + blockIdx.y * gridDim.x 
-       + gridDim.x * gridDim.y * blockIdx.z; 
+  __device__ const ReduceSum<cuda_reduce<BLOCK_SIZE>, T>& operator+=(T val) const {
 
+    extern __shared__ char ssd[];
+ 
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
 
-    if (blockId  + threadId == 0) {
-      m_max_grid_size[0] = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0]);
-    }
-
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
-      }
-    }
-    __syncthreads();
-
     sd[threadId] = val;
-
-    T temp = 0;
     __syncthreads();
-
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] += sd[threadId + i];
-      }
-      __syncthreads();
-    }
-
-    if (threadId < WARP_SIZE) {
-      temp = sd[threadId];
-      for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-        temp += shfl_xor(temp, i);
-      }
-    }
-
-    // one thread adds to gmem, we skip m_blockdata[m_blockoffset]
-    // because we will be accumlating into this
-    if (threadId == 0) {
-      m_blockdata[m_blockoffset + blockId + 1] += temp;
-    }
 
     return *this;
   }
@@ -841,9 +874,9 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
     m_is_copy = true;
 #if defined(__CUDA_ARCH__)
 
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
 
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -880,9 +913,10 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
     }
     else {
 #if defined(__CUDA_ARCH__)
-      extern __shared__ T ssd[];
+      extern __shared__ char ssd[];
 
-      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+      T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
       int threadId = threadIdx.x + 
                  blockDim.x * threadIdx.y + 
                  (blockDim.x * blockDim.y) * threadIdx.z;
@@ -930,9 +964,9 @@ class ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T> {
   //
   __device__ const ReduceSum<cuda_reduce_atomic<BLOCK_SIZE>, T>& operator+=(
       T val) const {
-    extern __shared__ T ssd[];
+    extern __shared__ char ssd[];
  
-    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(double))); // accommodate for worst case block size which is of type double
+    T* sd = (T*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
 
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
@@ -1009,6 +1043,37 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   ReduceMinLoc(const ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ char ssd[];
+
+    CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+    int blockId = blockIdx.x 
+       + blockIdx.y * gridDim.x 
+       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+    if (blockId  + threadId == 0) {
+      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
+    }
+
+    // initialize shared memory
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+      // this descends all the way to 1
+      if (threadId < i) {
+        // no need for __syncthreads()
+        sd[threadId + i].val = m_reduced_val;
+        sd[threadId + i].idx = m_reduced_idx;
+      }
+    }
+    __syncthreads();
+#else
+
+#endif
   }
 
   //
@@ -1020,6 +1085,110 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
 #if defined(__CUDA_ARCH__)
 #else
       releaseCudaReductionId(m_myID);
+#endif
+    }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ char ssd[];
+      __shared__ bool lastBlock;
+
+
+      CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      int blockId = blockIdx.x 
+         + blockIdx.y * gridDim.x 
+         + gridDim.x * gridDim.y * blockIdx.z; 
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + i]);
+        }
+        __syncthreads();
+      }
+
+      if (threadId < 16) {
+        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 16]);
+      }
+      __syncthreads();
+
+      if (threadId < 8) {
+        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 8]);
+      }
+      __syncthreads();
+
+      if (threadId < 4) {
+        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 4]);
+      }
+      __syncthreads();
+
+      if (threadId < 2) {
+        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 2]);
+      }
+      __syncthreads();
+
+      if (threadId < 1) {
+        lastBlock = false;
+        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 1]);
+        m_blockdata[m_blockoffset + blockId + 1] =
+            RAJA_MINLOC(sd[threadId],
+                        m_blockdata[m_blockoffset + blockId + 1]);
+        __threadfence();
+        int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], (int)1);
+        lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
+      }
+      __syncthreads();
+
+      if (lastBlock) {
+        if (threadId == 0) {
+          retiredBlocks[m_myID] = 0;
+        }
+
+        CudaReductionLocBlockDataType lmin={m_reduced_val,m_reduced_idx};
+        int blocks = gridDim.x * gridDim.y * gridDim.z;
+        int threads = blockDim.x * blockDim.y * blockDim.z;
+        for (int i = threadId; i < blocks; i += threads) {
+          lmin = RAJA_MINLOC(lmin, m_blockdata[m_blockoffset + i + 1]);
+        }
+        sd[threadId] = lmin;
+        __syncthreads();
+
+        for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+          if (threadId < i) {
+            sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + i]);
+          }
+          __syncthreads();
+        }
+
+        if (threadId < 16) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 16]);
+        }
+        __syncthreads();
+
+        if (threadId < 8) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 8]);
+        }
+        __syncthreads();
+
+        if (threadId < 4) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 4]);
+        }
+        __syncthreads();
+
+        if (threadId < 2) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 2]);
+        }
+        __syncthreads();
+
+        if (threadId < 1) {
+          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 1]);
+          m_blockdata[m_blockoffset] =
+              RAJA_MINLOC(m_blockdata[m_blockoffset], sd[threadId]);
+        }
+      }
 #endif
     }
   }
@@ -1050,124 +1219,23 @@ class ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> {
   //
   // Min-loc function
   //
-  __device__ ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T> minloc(
+  __device__ const ReduceMinLoc<cuda_reduce<BLOCK_SIZE>, T>& minloc(
       T val,
       Index_type idx) const {
-    __shared__ CudaReductionLocBlockDataType sd[BLOCK_SIZE];
-    __shared__ bool lastBlock;
 
-    int blockId = blockIdx.x 
-       + blockIdx.y * gridDim.x 
-       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    extern __shared__ char ssd[];
+
+    CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
-
-    if (blockId  + threadId == 0) {
-      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
-    }
-
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i].val = m_reduced_val;
-        sd[threadId + i].idx = m_reduced_idx;
-      }
-    }
-    __syncthreads();
 
     sd[threadId].val = val;
     sd[threadId].idx = idx; 
     __syncthreads();
 
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + i]);
-      }
-      __syncthreads();
-    }
-
-    if (threadId < 16) {
-      sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 16]);
-    }
-    __syncthreads();
-
-    if (threadId < 8) {
-      sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 8]);
-    }
-    __syncthreads();
-
-    if (threadId < 4) {
-      sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 4]);
-    }
-    __syncthreads();
-
-    if (threadId < 2) {
-      sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 2]);
-    }
-    __syncthreads();
-
-    if (threadId < 1) {
-      lastBlock = false;
-      sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 1]);
-      m_blockdata[m_blockoffset + blockId + 1] =
-          RAJA_MINLOC(sd[threadId],
-                      m_blockdata[m_blockoffset + blockId + 1]);
-      __threadfence();
-      int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], (int)1);
-      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
-    }
-    __syncthreads();
-
-    if (lastBlock) {
-      if (threadId == 0) {
-        retiredBlocks[m_myID] = 0;
-      }
-
-      CudaReductionLocBlockDataType lmin={m_reduced_val,m_reduced_idx};
-      int blocks = gridDim.x * gridDim.y * gridDim.z;
-      int threads = blockDim.x * blockDim.y * blockDim.z;
-      for (int i = threadId; i < blocks; i += threads) {
-        lmin = RAJA_MINLOC(lmin, m_blockdata[m_blockoffset + i + 1]);
-      }
-      sd[threadId] = lmin;
-      __syncthreads();
-
-      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-        if (threadId < i) {
-          sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + i]);
-        }
-        __syncthreads();
-      }
-
-      if (threadId < 16) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 16]);
-      }
-      __syncthreads();
-
-      if (threadId < 8) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 8]);
-      }
-      __syncthreads();
-
-      if (threadId < 4) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 4]);
-      }
-      __syncthreads();
-
-      if (threadId < 2) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 2]);
-      }
-      __syncthreads();
-
-      if (threadId < 1) {
-        sd[threadId] = RAJA_MINLOC(sd[threadId], sd[threadId + 1]);
-        m_blockdata[m_blockoffset] =
-            RAJA_MINLOC(m_blockdata[m_blockoffset], sd[threadId]);
-      }
-    }
     return *this;
   }
 
@@ -1230,6 +1298,37 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   ReduceMaxLoc(const ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> &other) {
     *this = other;
     m_is_copy = true;
+#if defined(__CUDA_ARCH__)
+
+    extern __shared__ char ssd[];
+
+    CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+    int blockId = blockIdx.x 
+       + blockIdx.y * gridDim.x 
+       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    int threadId = threadIdx.x + 
+               blockDim.x * threadIdx.y + 
+               (blockDim.x * blockDim.y) * threadIdx.z;
+
+    if (blockId  + threadId == 0) {
+      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
+    }
+
+    // initialize shared memory
+    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
+      // this descends all the way to 1
+      if (threadId < i) {
+        // no need for __syncthreads()
+        sd[threadId + i].val = m_reduced_val;
+        sd[threadId + i].idx = m_reduced_idx;
+      }
+    }
+    __syncthreads();
+#else
+
+#endif
   }
 
   //
@@ -1241,6 +1340,110 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
 #if defined(__CUDA_ARCH__)
 #else
       releaseCudaReductionId(m_myID);
+#endif
+    }
+    else {
+#if defined(__CUDA_ARCH__)
+      extern __shared__ char ssd[];
+      __shared__ bool lastBlock;
+
+      CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
+      int threadId = threadIdx.x + 
+                 blockDim.x * threadIdx.y + 
+                 (blockDim.x * blockDim.y) * threadIdx.z;
+
+      int blockId = blockIdx.x 
+         + blockIdx.y * gridDim.x 
+         + gridDim.x * gridDim.y * blockIdx.z; 
+
+      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+        if (threadId < i) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + i]);
+        }
+        __syncthreads();
+      }
+
+      if (threadId < 16) {
+        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 16]);
+      }
+      __syncthreads();
+
+      if (threadId < 8) {
+        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 8]);
+      }
+      __syncthreads();
+
+      if (threadId < 4) {
+        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 4]);
+      }
+      __syncthreads();
+
+      if (threadId < 2) {
+        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 2]);
+      }
+      __syncthreads();
+
+      if (threadId < 1) {
+        lastBlock = false;
+        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 1]);
+        m_blockdata[m_blockoffset + blockId + 1] =
+            RAJA_MAXLOC(sd[threadId],
+                        m_blockdata[m_blockoffset + blockId + 1]);
+        __threadfence();
+        unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], 1);
+        lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
+      }
+      __syncthreads();
+
+      if (lastBlock) {
+        if (threadId == 0) {
+          retiredBlocks[m_myID] = 0;
+        }
+
+        CudaReductionLocBlockDataType lmax={m_reduced_val,m_reduced_idx};
+        int blocks = gridDim.x * gridDim.y * gridDim.z;
+        int threads = blockDim.x * blockDim.y * blockDim.z;
+
+        for (int i = threadId; i < blocks; i += threads) {
+          lmax = RAJA_MAXLOC(lmax, m_blockdata[m_blockoffset + i + 1]);
+        }
+        sd[threadId] = lmax;
+        __syncthreads();
+
+        for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
+          if (threadId < i) {
+            sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + i]);
+          }
+          __syncthreads();
+        }
+
+        if (threadId < 16) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 16]);
+        }
+        __syncthreads();
+
+        if (threadId < 8) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 8]);
+        }
+        __syncthreads();
+
+        if (threadId < 4) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 4]);
+        }
+        __syncthreads();
+
+        if (threadId < 2) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 2]);
+        }
+        __syncthreads();
+
+        if (threadId < 1) {
+          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 1]);
+          m_blockdata[m_blockoffset] =
+              RAJA_MAXLOC(m_blockdata[m_blockoffset], sd[threadId]);
+        }
+      }
 #endif
     }
   }
@@ -1271,125 +1474,24 @@ class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> {
   //
   // Max-loc function
   //
-  __device__ ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T> maxloc(
+  __device__ const ReduceMaxLoc<cuda_reduce<BLOCK_SIZE>, T>& maxloc(
       T val,
       Index_type idx) const {
-    __shared__ CudaReductionLocBlockDataType sd[BLOCK_SIZE];
-    __shared__ bool lastBlock;
 
-    int blockId = blockIdx.x 
-       + blockIdx.y * gridDim.x 
-       + gridDim.x * gridDim.y * blockIdx.z; 
+
+    extern __shared__ char ssd[];
+
+    CudaReductionLocBlockDataType* sd = (CudaReductionLocBlockDataType*)((char*)&ssd[0] + (m_myID * BLOCK_SIZE*sizeof(CudaReductionLocBlockDataType))); // accommodate for worst case block size 
+
     int threadId = threadIdx.x + 
                blockDim.x * threadIdx.y + 
                (blockDim.x * blockDim.y) * threadIdx.z;
 
-    if (blockId  + threadId == 0) {
-      m_max_grid_size[0].val = RAJA_MAX(gridDim.x*gridDim.y*gridDim.z, m_max_grid_size[0].val);
-    }
-
-    // initialize shared memory
-    for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
-      // this descends all the way to 1
-      if (threadId < i) {
-        // no need for __syncthreads()
-        sd[threadId + i].val = m_reduced_val;
-        sd[threadId + i].idx = m_reduced_idx;
-      }
-    }
-    __syncthreads();
 
     sd[threadId].val = val;
     sd[threadId].idx = idx; 
     __syncthreads();
 
-    for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-      if (threadId < i) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + i]);
-      }
-      __syncthreads();
-    }
-
-    if (threadId < 16) {
-      sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 16]);
-    }
-    __syncthreads();
-
-    if (threadId < 8) {
-      sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 8]);
-    }
-    __syncthreads();
-
-    if (threadId < 4) {
-      sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 4]);
-    }
-    __syncthreads();
-
-    if (threadId < 2) {
-      sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 2]);
-    }
-    __syncthreads();
-
-    if (threadId < 1) {
-      lastBlock = false;
-      sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 1]);
-      m_blockdata[m_blockoffset + blockId + 1] =
-          RAJA_MAXLOC(sd[threadId],
-                      m_blockdata[m_blockoffset + blockId + 1]);
-      __threadfence();
-      unsigned int oldBlockCount = atomicAdd(&retiredBlocks[m_myID], 1);
-      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
-    }
-    __syncthreads();
-
-    if (lastBlock) {
-      if (threadId == 0) {
-        retiredBlocks[m_myID] = 0;
-      }
-
-      CudaReductionLocBlockDataType lmax={m_reduced_val,m_reduced_idx};
-      int blocks = gridDim.x * gridDim.y * gridDim.z;
-      int threads = blockDim.x * blockDim.y * blockDim.z;
-
-      for (int i = threadId; i < blocks; i += threads) {
-        lmax = RAJA_MAXLOC(lmax, m_blockdata[m_blockoffset + i + 1]);
-      }
-      sd[threadId] = lmax;
-      __syncthreads();
-
-      for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
-        if (threadId < i) {
-          sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + i]);
-        }
-        __syncthreads();
-      }
-
-      if (threadId < 16) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 16]);
-      }
-      __syncthreads();
-
-      if (threadId < 8) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 8]);
-      }
-      __syncthreads();
-
-      if (threadId < 4) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 4]);
-      }
-      __syncthreads();
-
-      if (threadId < 2) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 2]);
-      }
-      __syncthreads();
-
-      if (threadId < 1) {
-        sd[threadId] = RAJA_MAXLOC(sd[threadId], sd[threadId + 1]);
-        m_blockdata[m_blockoffset] =
-            RAJA_MAXLOC(m_blockdata[m_blockoffset], sd[threadId]);
-      }
-    }
     return *this;
   }
 
