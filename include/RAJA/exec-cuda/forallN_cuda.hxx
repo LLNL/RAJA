@@ -59,6 +59,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/int_datatypes.hxx"
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
 #include <climits>
 
@@ -71,12 +72,12 @@ namespace RAJA {
  */
 template <typename BODY>
 struct ForallN_BindFirstArg_Device {
-  BODY const body;
+  BODY const& body; // changed const to const&
   size_t i;
 
   RAJA_INLINE
   RAJA_DEVICE
-  constexpr ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
+  constexpr ForallN_BindFirstArg_Device(BODY& b, size_t i0) : body(b), i(i0) {} // changed BODY b to BODY &B
 
   template <typename... ARGS>
   RAJA_INLINE RAJA_DEVICE void operator()(ARGS... args) const {
@@ -240,7 +241,7 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 // Function to check indices for out-of-bounds
 template <typename BODY, typename... ARGS>
-RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i, ARGS... args) {
+RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i, ARGS... args) { 
   if (i > INT_MIN) {
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
     cudaCheckBounds(bound, args...);
@@ -320,7 +321,9 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   RAJA_INLINE void callLauncher(CudaDim const &dims,
                                 BODY body,
                                 CARGS const &... cargs) const {
-    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, cargs...);
+    //int totalNumThreads = dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
+    //printf("totalNumThreads = %d\n",totalNumThreads);
+    cudaLauncherN<<<dims.num_blocks, dims.num_threads,256*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(body, cargs...);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
@@ -338,7 +341,9 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0);
+    //int totalNumThreads = dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
+    //printf("totalNumThreads = %d\n",totalNumThreads);
+    cudaLauncherN<<<dims.num_blocks, dims.num_threads,256*sizeof(CudaReductionLocBlockDataType)*RAJA_MAX_REDUCE_VARS>>>(body, c0);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
