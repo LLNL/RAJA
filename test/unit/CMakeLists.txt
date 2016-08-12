@@ -41,35 +41,8 @@
 #
 ###############################################################################
 
-add_definitions(-DRAJA_ENABLE_NESTED)
+add_subdirectory(cpu)
 
-SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
-
-cuda_add_executable(reducemin.exe
-  ReduceMin.cxx)
-
-cuda_add_executable(reducemax.exe
-  ReduceMax.cxx)
-
-cuda_add_executable(reducesum.exe
-  ReduceSum.cxx)
-
-cuda_add_executable(traversal.exe
-  Traversal.cxx)
-
-cuda_add_executable(nested.exe
-  Nested.cxx)
-
-cuda_add_executable(reduceminloc.exe
-  ReduceMinLoc.cxx)
-
-cuda_add_executable(reducemaxloc.exe
-  ReduceMaxLoc.cxx)
-
-target_link_libraries(reducemin.exe RAJA)
-target_link_libraries(reducemax.exe RAJA)
-target_link_libraries(reducesum.exe RAJA)
-target_link_libraries(traversal.exe RAJA)
-target_link_libraries(nested.exe RAJA)
-target_link_libraries(reduceminloc.exe RAJA)
-target_link_libraries(reducemaxloc.exe RAJA)
+if(RAJA_ENABLE_CUDA)
+  add_subdirectory(gpu)
+endif()

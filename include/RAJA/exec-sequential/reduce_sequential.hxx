@@ -64,7 +64,8 @@
 
 #include "RAJA/MemUtils_CPU.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
@@ -76,12 +77,14 @@ namespace RAJA {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMin<seq_reduce, T> {
- public:
+class ReduceMin<seq_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val) {
+  explicit ReduceMin(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -96,41 +99,48 @@ class ReduceMin<seq_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<seq_reduce, T>& other) {
+  ReduceMin(const ReduceMin<seq_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMin<seq_reduce, T>() {
+  ~ReduceMin<seq_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
 
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Min function that sets object min to minimum of current value and arg.
+  // Method that updates min value.
   //
-  ReduceMin<seq_reduce, T> min(T val) const {
+  ReduceMin<seq_reduce, T> min(T val) const
+  {
     m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -154,12 +164,14 @@ class ReduceMin<seq_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMinLoc<seq_reduce, T> {
- public:
+class ReduceMinLoc<seq_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -176,25 +188,28 @@ class ReduceMinLoc<seq_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other) {
+  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMinLoc<seq_reduce, T>() {
+  ~ReduceMinLoc<seq_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve min value (before object is destroyed).
+  // Operator that returns reduced min value.
   //
-  operator T() {
+  operator T()
+  {
     if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
@@ -202,12 +217,16 @@ class ReduceMinLoc<seq_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced min value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve index value of min (before object is destroyed).
+  // Method that returns index corresponding to reduced min value.
   //
-  Index_type getMinLoc() {
+  Index_type getLoc()
+  {
     if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
@@ -216,10 +235,10 @@ class ReduceMinLoc<seq_reduce, T> {
   }
 
   //
-  // Min-loc function that sets object min to minimum of current value
-  // and value arg and updates location index accordingly.
+  // Method that updates min and index values.
   //
-  ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const {
+  ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const
+  {
     if (val <= static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
@@ -227,7 +246,7 @@ class ReduceMinLoc<seq_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -253,12 +272,14 @@ class ReduceMinLoc<seq_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMax<seq_reduce, T> {
- public:
+class ReduceMax<seq_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val) {
+  explicit ReduceMax(T init_val)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -273,41 +294,48 @@ class ReduceMax<seq_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<seq_reduce, T>& other) {
+  ReduceMax(const ReduceMax<seq_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMax<seq_reduce, T>() {
+  ~ReduceMax<seq_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     m_reduced_val = RAJA_MAX(m_reduced_val, static_cast<T>(m_blockdata[0]));
 
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Max function that sets object max to maximum of current value and arg.
+  // Method that updates max value.
   //
-  ReduceMax<seq_reduce, T> max(T val) const {
+  ReduceMax<seq_reduce, T> max(T val) const
+  {
     m_blockdata[0] = RAJA_MAX(static_cast<T>(m_blockdata[0]), val);
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -331,12 +359,14 @@ class ReduceMax<seq_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<seq_reduce, T> {
- public:
+class ReduceMaxLoc<seq_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc) {
+  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+  {
     m_is_copy = false;
 
     m_reduced_val = init_val;
@@ -353,25 +383,28 @@ class ReduceMaxLoc<seq_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other) {
+  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceMaxLoc<seq_reduce, T>() {
+  ~ReduceMaxLoc<seq_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Operator that returns reduced max value.
   //
-  operator T() {
+  operator T()
+  {
     if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
@@ -379,12 +412,16 @@ class ReduceMaxLoc<seq_reduce, T> {
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced max value.
+  //
   T get() { return operator T(); }
 
   //
-  // Operator to retrieve max value (before object is destroyed).
+  // Method that returns index corresponding to reduced max value.
   //
-  Index_type getMaxLoc() {
+  Index_type getLoc()
+  {
     if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
@@ -393,10 +430,10 @@ class ReduceMaxLoc<seq_reduce, T> {
   }
 
   //
-  // Max-loc function that sets object max to maximum of current value
-  // and value arg and updates location index accordingly.
+  // Method that updates max and index values.
   //
-  ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const {
+  ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const
+  {
     if (val >= static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
@@ -404,7 +441,7 @@ class ReduceMaxLoc<seq_reduce, T> {
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //
@@ -430,12 +467,14 @@ class ReduceMaxLoc<seq_reduce, T> {
  ******************************************************************************
  */
 template <typename T>
-class ReduceSum<seq_reduce, T> {
- public:
+class ReduceSum<seq_reduce, T>
+{
+public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val) {
+  explicit ReduceSum(T init_val)
+  {
     m_is_copy = false;
 
     m_init_val = init_val;
@@ -451,41 +490,48 @@ class ReduceSum<seq_reduce, T> {
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<seq_reduce, T>& other) {
+  ReduceSum(const ReduceSum<seq_reduce, T>& other)
+  {
     *this = other;
     m_is_copy = true;
   }
 
   //
-  // Destructor.
+  // Destruction releases the shared memory block chunk for reduction id
+  // and id itself for others to use.
   //
-  ~ReduceSum<seq_reduce, T>() {
+  ~ReduceSum<seq_reduce, T>()
+  {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
-      // free any data owned by reduction object
     }
   }
 
   //
-  // Operator to retrieve sum value (before object is destroyed).
+  // Operator that returns reduced sum value.
   //
-  operator T() {
+  operator T()
+  {
     m_reduced_val = m_init_val + static_cast<T>(m_blockdata[0]);
 
     return m_reduced_val;
   }
 
+  //
+  // Method that returns reduced sum value.
+  //
   T get() { return operator T(); }
 
   //
-  // += operator that performs accumulation into object min val.
+  // += operator that adds value to sum.
   //
-  ReduceSum<seq_reduce, T> operator+=(T val) const {
+  ReduceSum<seq_reduce, T> operator+=(T val) const
+  {
     m_blockdata[0] += val;
     return *this;
   }
 
- private:
+private:
   //
   // Default ctor is declared private and not implemented.
   //

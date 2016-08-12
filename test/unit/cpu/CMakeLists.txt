@@ -44,53 +44,83 @@
 add_definitions(-DRAJA_ENABLE_NESTED)
 
 if (RAJA_ENABLE_CUDA)
+  cuda_add_library(bis buildIndexSet.cxx)
   cuda_add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+    main-traversal.cxx)
 
   cuda_add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
-    
+    main-reduce.cxx)
+
   cuda_add_executable(CPUnested-test.exe
     main-nested.cxx)
-    
-  cuda_add_executable(CPUnested_reduce-test.exe
-    main-nested-reduce.cxx)
+
+  if(RAJA_ENABLE_OPENMP)
+      cuda_add_executable(CPUnested_reduce-test.exe
+        main-nested-reduce.cxx)
+  endif()
+
+  cuda_add_executable(indexset-tests
+    test-indexsets.cxx)
+
+  cuda_add_executable(traversal-tests
+    test-traversals.cxx)
 
 else()
+  add_library(bis buildIndexSet.cxx)
   add_executable(CPUtraversal-test.exe
-    main-traversal.cxx
-    buildIndexSet.cxx)
+    main-traversal.cxx)
 
   add_executable(CPUreduce-test.exe
-    main-reduce.cxx
-    buildIndexSet.cxx)
+    main-reduce.cxx)
   
   add_executable(CPUnested-test.exe
     main-nested.cxx)
 
-  add_test(CPUtraversal
-    CPUtraversal-test.exe)
-
-  add_test(CPUreduce
-    CPUreduce-test.exe)
-
-  add_test(CPUnested
-    CPUnested-test.exe)
-    
   if(RAJA_ENABLE_OPENMP)
     add_executable(CPUnested_reduce-test.exe
       main-nested-reduce.cxx)
-
-    add_test(CPUnested-reduce
-      CPUnested_reduce-test.exe)
   endif()
+
+  add_executable(indexset-tests
+    test-indexsets.cxx)
+
+  add_executable(traversal-tests
+    test-traversals.cxx)
 
 endif()
 
-target_link_libraries(CPUtraversal-test.exe RAJA)
-target_link_libraries(CPUreduce-test.exe RAJA)
+add_test(
+  NAME CPUtraversal
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUtraversal-test.exe>)
+
+add_test(
+  NAME CPUreduce
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUreduce-test.exe>)
+
+add_test(
+  NAME CPUnested
+  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested-test.exe>)
+
+if(RAJA_ENABLE_OPENMP)
+    add_test(
+      NAME CPUnested-reduce
+      COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested_reduce-test.exe>)
+endif()
+
+add_test(
+    NAME indexset-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:indexset-tests>)
+
+target_link_libraries(indexset-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
+add_test(
+    NAME traversal-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
+
+target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
+target_link_libraries(CPUtraversal-test.exe RAJA bis)
+target_link_libraries(CPUreduce-test.exe RAJA bis)
 target_link_libraries(CPUnested-test.exe RAJA)
 if(RAJA_ENABLE_OPENMP)
   target_link_libraries(CPUnested_reduce-test.exe RAJA)

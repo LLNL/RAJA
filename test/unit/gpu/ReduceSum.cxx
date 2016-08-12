@@ -8,13 +8,13 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-#include <cfloat>
-#include <random>
 #include <math.h>
+#include <cfloat>
+#include <cstdio>
+#include <iomanip>
+#include <iostream>
+#include <random>
+#include <string>
 
 #include "RAJA/RAJA.hxx"
 
@@ -31,7 +31,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   cout << "\n Begin RAJA GPU ReduceSum tests!!! " << endl;
 
   const int test_repeat = 10;
@@ -99,18 +100,16 @@ int main(int argc, char *argv[]) {
       for (int k = 0; k < loops; k++) {
         s_ntests_run++;
 
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-                                         dsum0 += dvalue[i];
-                                         dsum1 += dvalue[i] * 2.0;
-                                         dsum2 += dvalue[i] * 3.0;
-                                         dsum3 += dvalue[i] * 4.0;
-                                         dsum4 += dvalue[i] * 5.0;
-                                         dsum5 += dvalue[i] * 6.0;
-                                         dsum6 += dvalue[i] * 7.0;
-                                         dsum7 += dvalue[i] * 8.0;
-                                       });
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dsum0 += dvalue[i];
+          dsum1 += dvalue[i] * 2.0;
+          dsum2 += dvalue[i] * 3.0;
+          dsum3 += dvalue[i] * 4.0;
+          dsum4 += dvalue[i] * 5.0;
+          dsum5 += dvalue[i] * 6.0;
+          dsum6 += dvalue[i] * 7.0;
+          dsum7 += dvalue[i] * 8.0;
+        });
 
         double base_chk_val = dinit_val * double(TEST_VEC_LEN) * (k + 1);
 
@@ -176,8 +175,7 @@ int main(int argc, char *argv[]) {
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
             dsum2 += 3 * dvalue[i];
@@ -192,14 +190,18 @@ int main(int argc, char *argv[]) {
           || !equal(dsum2.get(), 3 * dbase_chk_val + (dtinit * 3.0))
           || !equal(isum3.get(), 4 * ibase_chk_val + (itinit * 4))) {
         cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
-        cout << setprecision(20) << "\tdsum0 = " << static_cast<double>(dsum0.get())
-             << " (" << dbase_chk_val + (dtinit * 1.0) << ") " << endl;
-        cout << setprecision(20) << "\tisum1 = " << static_cast<double>(isum1.get())
-             << " (" << 2 * ibase_chk_val + (itinit * 2) << ") " << endl;
-        cout << setprecision(20) << "\tdsum2 = " << static_cast<double>(dsum2.get())
-             << " (" << 3 * dbase_chk_val + (dtinit * 3.0) << ") " << endl;
-        cout << setprecision(20) << "\tisum3 = " << static_cast<double>(isum3.get())
-             << " (" << 4 * ibase_chk_val + (itinit * 4) << ") " << endl;
+        cout << setprecision(20)
+             << "\tdsum0 = " << static_cast<double>(dsum0.get()) << " ("
+             << dbase_chk_val + (dtinit * 1.0) << ") " << endl;
+        cout << setprecision(20)
+             << "\tisum1 = " << static_cast<double>(isum1.get()) << " ("
+             << 2 * ibase_chk_val + (itinit * 2) << ") " << endl;
+        cout << setprecision(20)
+             << "\tdsum2 = " << static_cast<double>(dsum2.get()) << " ("
+             << 3 * dbase_chk_val + (dtinit * 3.0) << ") " << endl;
+        cout << setprecision(20)
+             << "\tisum3 = " << static_cast<double>(isum3.get()) << " ("
+             << 4 * ibase_chk_val + (itinit * 4) << ") " << endl;
 
       } else {
         s_ntests_passed++;
@@ -239,8 +241,7 @@ int main(int argc, char *argv[]) {
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
             dsum2 += 3 * dvalue[i];
@@ -325,5 +326,5 @@ int main(int argc, char *argv[]) {
   cudaFree(dvalue);
   cudaFree(ivalue);
 
-  return 0;
+  return !(s_ntests_passed == s_ntests_run);
 }

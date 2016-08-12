@@ -8,11 +8,11 @@
  * For release details and restrictions, please see raja/README-license.txt
  */
 
-#include <string>
-#include <iostream>
-#include <cstdio>
 #include <cfloat>
+#include <cstdio>
+#include <iostream>
 #include <random>
+#include <string>
 
 #include "RAJA/RAJA.hxx"
 
@@ -27,7 +27,8 @@ using namespace std;
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
   cout << "\n Begin RAJA GPU ReduceMax tests!!! " << endl;
 
   const int test_repeat = 10;
@@ -86,13 +87,11 @@ int main(int argc, char *argv[]) {
         dvalue[index] = droll;
         dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-                                         dmax0.max(dvalue[i]);
-                                         dmax1.max(2 * dvalue[i]);
-                                         dmax2.max(dvalue[i]);
-                                       });
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          dmax0.max(dvalue[i]);
+          dmax1.max(2 * dvalue[i]);
+          dmax2.max(dvalue[i]);
+        });
 
         if (dmax0.get() != dcurrentMax || dmax1.get() != 2 * dcurrentMax
             || dmax2.get() != BIG_MAX) {
@@ -103,8 +102,8 @@ int main(int argc, char *argv[]) {
                << dcurrentMax << ") " << endl;
           cout << "\tdmax1 = " << static_cast<double>(dmax1.get()) << " ("
                << 2 * dcurrentMax << ") " << endl;
-          cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " (" << BIG_MAX
-               << ") " << endl;
+          cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " ("
+               << BIG_MAX << ") " << endl;
         } else {
           s_ntests_passed++;
         }
@@ -141,8 +140,7 @@ int main(int argc, char *argv[]) {
       dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmax0.max(dvalue[i]);
             dmax1.max(2 * dvalue[i]);
           });
@@ -203,8 +201,7 @@ int main(int argc, char *argv[]) {
       dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
-          iset,
-          [=] __device__(int i) {
+          iset, [=] __device__(int i) {
             dmax0.max(dvalue[i]);
             dmax1.max(2 * dvalue[i]);
           });
@@ -234,5 +231,5 @@ int main(int argc, char *argv[]) {
 
   cout << "\n RAJA GPU ReduceMax tests DONE!!! " << endl;
 
-  return 0;
+  return !(s_ntests_passed == s_ntests_run);
 }

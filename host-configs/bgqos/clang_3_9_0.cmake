@@ -12,6 +12,8 @@ set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
 set(CMAKE_CXX_COMPILER "/usr/apps/gnu/clang/r266865-stable/bin/bgclang++" CACHE PATH "")
 
+set(TEST_DRIVER srun CACHE STRING "use slurm to launch on BGQ")
+
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -std=c++11 -stdlib=libc++" CACHE STRING "")
