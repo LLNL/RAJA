@@ -9,6 +9,9 @@ reviewers:
       - keasler
       - trws
       - rhornung67
+      - davidbeckingsale
+      - DavidPoliakoff
+      - jonesholger
     required: 1
   - name: everyone
     members:
