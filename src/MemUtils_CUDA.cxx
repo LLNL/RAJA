@@ -65,6 +65,7 @@
 
 #include <iostream>
 #include <string>
+#include <cassert>
 
 namespace RAJA
 {
@@ -73,16 +74,30 @@ namespace RAJA
 // Static array used to keep track of which unique ids
 // for CUDA reduction objects are used and which are not.
 //
-static bool cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
+static bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
 //
 // Pointer to hold shared managed memory block for RAJA-Cuda reductions.
 //
-CudaReductionBlockDataType* s_cuda_reduction_mem_block = 0;
+static CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
 
-CudaReductionLocBlockDataType* s_cuda_reduction_loc_mem_block = 0;
+//
+// Tally cache on the CPU
+//
+static CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
 
-CudaReductionBlockTallyType* s_cuda_reduction_tally_block = 0;
+//
+// Tally blocks on the device
+//
+static CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
+
+static bool s_tally_valid = true;
+static int s_tally_dirty = 0;
+static bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
+
+static bool s_in_raja_forall = false;
+static int s_shared_memory_amount_total = 0;
+static int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
 /*
 *************************************************************************
 *
@@ -97,14 +112,14 @@ int getCudaReductionId()
 
   if (first_time_called) {
     for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
-      cuda_reduction_id_used[id] = false;
+      s_cuda_reduction_id_used[id] = false;
     }
 
     first_time_called = false;
   }
 
   int id = 0;
-  while (id < RAJA_MAX_REDUCE_VARS && cuda_reduction_id_used[id]) {
+  while (id < RAJA_MAX_REDUCE_VARS && s_cuda_reduction_id_used[id]) {
     id++;
   }
 
@@ -114,7 +129,7 @@ int getCudaReductionId()
     exit(1);
   }
 
-  cuda_reduction_id_used[id] = true;
+  s_cuda_reduction_id_used[id] = true;
 
   return id;
 }
@@ -129,7 +144,8 @@ int getCudaReductionId()
 void releaseCudaReductionId(int id)
 {
   if (id < RAJA_MAX_REDUCE_VARS) {
-    cuda_reduction_id_used[id] = false;
+    s_cuda_reduction_id_used[id] = false;
+    s_tally_block_dirty[id] = false;
   }
 }
 
@@ -141,7 +157,7 @@ void releaseCudaReductionId(int id)
 *
 *************************************************************************
 */
-CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
+void getCudaReductionMemBlock(int id, void** device_memblock)
 {
   //
   // For each reducer object, we want a chunk of managed memory that
@@ -149,23 +165,15 @@ CudaReductionBlockDataType* getCudaReductionMemBlock(int id)
   // value for each thread, a single slot for the global reduced value
   // across grid blocks, and a single slot for the max grid size.
   //
-  int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
 
   if (s_cuda_reduction_mem_block == 0) {
-    int len = RAJA_MAX_REDUCE_VARS * block_offset;
-
-    cudaErrchk(cudaMallocManaged((void**)&s_cuda_reduction_mem_block,
-                                 sizeof(CudaReductionBlockDataType) * len,
-                                 cudaMemAttachGlobal));
-    cudaErrchk(cudaMemset(s_cuda_reduction_mem_block,
-                          0,
-                          sizeof(CudaReductionBlockDataType) * len));
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_mem_block,
+                          sizeof(CudaReductionDummyBlockType) * RAJA_MAX_REDUCE_VARS));
 
     atexit(freeCudaReductionMemBlock);
   }
 
-  return &(s_cuda_reduction_mem_block[id * block_offset]);
+  *device_memblock = &(s_cuda_reduction_mem_block[id]);
 }
 
 /*
@@ -183,87 +191,173 @@ void freeCudaReductionMemBlock()
   }
 }
 
-/*
-*************************************************************************
-*
-* Return pointer into shared RAJA-CUDA managed reduction memory block
-* for reducer object with given id. Allocate block if not already allocated.
-*
-*************************************************************************
-*/
-CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id)
-{
-  //
-  // For each reducer object, we want a chunk of managed memory that
-  // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
-  // value for each thread, a single slot for the global reduced value
-  // across grid blocks, and a single slot for the max grid size.
-  //
-  int block_offset = RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 + 1;
 
-  if (s_cuda_reduction_loc_mem_block == 0) {
-    int len = RAJA_MAX_REDUCE_VARS * block_offset;
-
-    cudaErrchk(cudaMallocManaged((void**)&s_cuda_reduction_loc_mem_block,
-                                 sizeof(CudaReductionLocBlockDataType) * len,
-                                 cudaMemAttachGlobal));
-    cudaErrchk(cudaMemset(s_cuda_reduction_loc_mem_block,
-                          0,
-                          sizeof(CudaReductionLocBlockDataType) * len));
-    cudaErrchk(cudaDeviceSynchronize());
-
-    atexit(freeCudaReductionLocMemBlock);
-  }
-
-  return &(s_cuda_reduction_loc_mem_block[id * block_offset]);
-}
 
 /*
 *************************************************************************
 *
-* Free managed memory blocks used in RAJA-Cuda reductions.
+* Return pointer into shared RAJA-CUDA reduction tally block
+* for reducer object with given id. Return pointer to device tally block
+* in device_tally.
+* Allocate blocks if not already allocated.
 *
 *************************************************************************
 */
-void freeCudaReductionLocMemBlock()
+void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 {
-  if (s_cuda_reduction_loc_mem_block != 0) {
-    cudaErrchk(cudaFree(s_cuda_reduction_loc_mem_block));
-    s_cuda_reduction_loc_mem_block = 0;
-  }
-}
+  if (s_cuda_reduction_tally_block_host == 0) {
+    s_cuda_reduction_tally_block_host = new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
 
-/*
-*************************************************************************
-*
-* Return pointer into shared RAJA-CUDA managed reduction memory block
-* for reducer object with given id. Allocate block if not already allocated.
-*
-*************************************************************************
-*/
-CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id)
-{
-  if (s_cuda_reduction_tally_block == 0) {
-    int len = RAJA_CUDA_REDUCE_TALLY_LENGTH;
+    cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
+                          sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH));
 
-    cudaError_t cudaerr =
-        cudaMallocManaged((void**)&s_cuda_reduction_tally_block,
-                          sizeof(CudaReductionBlockTallyType) * len,
-                          cudaMemAttachGlobal);
-
-    if (cudaerr != cudaSuccess) {
-      std::cerr << "\n ERROR in cudaMallocManaged call, FILE: " << __FILE__
-                << " line " << __LINE__ << std::endl;
-      exit(1);
+    s_tally_valid = true;
+    s_tally_dirty = 0;
+    for (int i = 0; i < RAJA_CUDA_REDUCE_TALLY_LENGTH; ++i) {
+      s_tally_block_dirty[i] = false;
     }
-    cudaMemset(s_cuda_reduction_tally_block,
-               0,
-               sizeof(CudaReductionBlockTallyType) * len);
 
     atexit(freeCudaReductionTallyBlock);
   }
 
-  return &(s_cuda_reduction_tally_block[id]);
+  s_tally_dirty += 1;
+  // set block dirty
+  s_tally_block_dirty[id] = true;
+
+  *host_tally   = &(s_cuda_reduction_tally_block_host[id]);
+  *device_tally = &(s_cuda_reduction_tally_block_device[id]);
+}
+
+/*
+*************************************************************************
+*
+* Write back dirty tally blocks to device tally blocks.
+* Can be called before tally blocks have been allocated.
+*
+*************************************************************************
+*/
+static void writeBackCudaReductionTallyBlock()
+{
+  if (s_tally_dirty > 0) {
+    int first = 0;
+    while (first < RAJA_CUDA_REDUCE_TALLY_LENGTH) {
+      if (s_tally_block_dirty[first]) {
+        int end = first + 1;
+        while (end < RAJA_CUDA_REDUCE_TALLY_LENGTH
+               && s_tally_block_dirty[end]) {
+          end++;
+        }
+        cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_device[first],
+                                    &s_cuda_reduction_tally_block_host[first],
+                                    sizeof(CudaReductionDummyTallyType) * (end - first),
+                                    cudaMemcpyHostToDevice, 0 ));
+        
+        for (int i = first; i < end; ++i) {
+          s_tally_block_dirty[i] = false;
+        }
+        first = end + 1;
+      } else {
+        first++;
+      }
+    }
+    s_tally_dirty = 0;
+  }
+}
+
+/*
+*************************************************************************
+*
+* Read tally block from device if invalid on host.
+* Must be called after tally blocks have been allocated.
+* This is synchronous if s_cuda_reduction_tally_block_host is allocated
+* in pageable memory and not in pinned memory or managed.
+*
+*************************************************************************
+*/
+static void readCudaReductionTallyBlockAsync()
+{
+  if (!s_tally_valid) {
+    cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_host[0],
+                                &s_cuda_reduction_tally_block_device[0],
+                                sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                                cudaMemcpyDeviceToHost, 0 ));
+    s_tally_valid = true;
+  }
+}
+
+static void readCudaReductionTallyBlock()
+{
+  if (!s_tally_valid) {
+    cudaErrchk(cudaMemcpy(  &s_cuda_reduction_tally_block_host[0],
+                            &s_cuda_reduction_tally_block_device[0],
+                            sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                            cudaMemcpyDeviceToHost));
+    s_tally_valid = true;
+  }
+}
+
+/*
+*************************************************************************
+*
+* Must be called before each RAJA cuda kernel.
+* Ensures all updates to teh tally block are visible on the gpu.
+* Invalidates the tally on the CPU.
+*
+*************************************************************************
+*/
+void beforeCudaKernelLaunch()
+{
+  s_in_raja_forall = true;
+  s_shared_memory_amount_total = 0;
+  for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+    s_shared_memory_offsets[i] = -1;
+  }
+
+  s_tally_valid = false;
+  writeBackCudaReductionTallyBlock();
+}
+
+void afterCudaKernelLaunch()
+{
+  s_in_raja_forall = false;
+  s_shared_memory_amount_total = 0;
+}
+
+/*
+*************************************************************************
+*
+* Must be called before reading a tally block on the CPU.
+* Writes any CPU changes to the tally block back before updating the 
+* CPU tally blocks with the values on the GPU.
+*
+*************************************************************************
+*/
+void beforeCudaReadTallyBlockAsync()
+{
+  writeBackCudaReductionTallyBlock();
+  readCudaReductionTallyBlockAsync();
+}
+
+void beforeCudaReadTallyBlock()
+{
+  writeBackCudaReductionTallyBlock();
+  readCudaReductionTallyBlock();
+}
+
+
+/*
+*************************************************************************
+*
+* Release given redution tally block.
+*
+*************************************************************************
+*/
+void releaseCudaReductionTallyBlock(int id)
+{
+  if (s_tally_block_dirty[id]) {
+    s_tally_block_dirty[id] = false;
+    s_tally_dirty -= 1;
+  }
 }
 
 /*
@@ -273,18 +367,43 @@ CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id)
 *
 *************************************************************************
 */
-
 void freeCudaReductionTallyBlock()
 {
-  if (s_cuda_reduction_tally_block != 0) {
-    cudaError_t cudaerr = cudaFree(s_cuda_reduction_tally_block);
-    s_cuda_reduction_tally_block = 0;
-    if (cudaerr != cudaSuccess) {
-      std::cerr << "\n ERROR in cudaFree call, FILE: " << __FILE__ << " line "
-                << __LINE__ << std::endl;
-      exit(1);
-    }
+  if (s_cuda_reduction_tally_block_host != 0) {
+    delete[] s_cuda_reduction_tally_block_host;
+    cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
+    s_cuda_reduction_tally_block_host = 0;
   }
+}
+
+/*
+*************************************************************************
+*
+* Get offset into shared memory 
+*
+*************************************************************************
+*/
+int getCudaSharedmemOffset(int id, int amount)
+{
+  assert(id < RAJA_MAX_REDUCE_VARS);
+
+  if (s_in_raja_forall) {
+    if (s_shared_memory_offsets[id] < 0) {
+      // in a forall and have not yet gotten shared memory
+
+      s_shared_memory_offsets[id] = s_shared_memory_amount_total;
+
+      s_shared_memory_amount_total += amount;
+    }
+    return s_shared_memory_offsets[id];
+  } else {
+    return -1;
+  }
+}
+
+int getCudaSharedmemAmount()
+{
+  return s_shared_memory_amount_total;
 }
 
 }  // closing brace for RAJA namespace

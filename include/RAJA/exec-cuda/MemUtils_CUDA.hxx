@@ -62,36 +62,89 @@
 
 namespace RAJA
 {
+/// Maximum number of blocks that RAJA will launch
+/// threads are reused to finish all work
+#define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
 
 /// Size of reduction memory block for each reducer object (value based on
 /// rough estimate of "worst case" -- need to think more about this...
-#define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
+#define RAJA_CUDA_REDUCE_BLOCK_LENGTH RAJA_CUDA_MAX_NUM_BLOCKS
 
 /// Reduction Tallies are computed into a small block to minimize UM migration
 #define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
-///
-/// Typedef defining common data type for RAJA-Cuda reduction data blocks
-/// (use this in all cases to avoid type confusion).
-///
-typedef double CudaReductionBlockDataType;
+/// Should be large enough for all types for which cuda atomics exist
+/// includes the size of the index variable for Loc reductions
+#define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
 
+#define STR(x) #x
+#define MACROSTR(x) STR(x)
+
+#define RAJA_STRUCT_ALIGNAS alignas(DATA_ALIGN)
+
+
+/// dummy types for use in allocating arrays and distributing array segments
+struct CudaReductionDummyDataType {
+  unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
+};
+
+struct RAJA_STRUCT_ALIGNAS CudaReductionDummyBlockType {
+  CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+struct CudaReductionDummyTallyType {
+  CudaReductionDummyDataType dummy_val;
+  CudaReductionDummyDataType dummy_idx;
+};
+
+typedef unsigned int GridSizeType;
+
+/// types used to simplify typed memory use in reductions
+/// these types fit within the dummy types, checked in static asserts in
+/// reduction classes
 ///
-/// Struct used to hold current reduced value and corresponding index
-/// for "loc" reduction operations.
+/// Each ReduceSum, ReduceMinLoc, or ReduceMaxLoc object uses retiredBlocks
+/// as a way to complete the reduction in a single pass. Although the algorithm
+/// updates retiredBlocks via an atomicAdd(int) the actual reduction values
+/// do not use atomics and require a finishing stage performed
+/// by the last block.
 ///
-typedef struct {
-  CudaReductionBlockDataType val;
+template <typename T>
+struct RAJA_STRUCT_ALIGNAS CudaReductionBlockType {
+  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+template <typename T>
+struct CudaReductionLocType {
+  T val;
   Index_type idx;
-} CudaReductionLocBlockDataType;
+};
 
+template <typename T>
+struct RAJA_STRUCT_ALIGNAS CudaReductionLocBlockType {
+  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+  Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
 
-///
-/// Struct used to hold current reduction tally value for reduction operations.
-///
-typedef struct CudaReductionBlockTallyType {
-  CudaReductionBlockDataType tally;
-} CudaReductionBlockTallyType;
+template <typename T>
+struct CudaReductionTallyType {
+  T tally;
+  GridSizeType maxGridSize;
+  GridSizeType retiredBlocks;
+};
+
+template <typename T>
+struct CudaReductionTallyTypeAtomic {
+  T tally;
+};
+
+template <typename T>
+struct CudaReductionLocTallyType {
+  CudaReductionLocType<T> tally;
+  GridSizeType maxGridSize;
+  GridSizeType retiredBlocks;
+};
+
 
 /*!
 *************************************************************************
@@ -112,7 +165,37 @@ int getCudaReductionId();
 */
 void releaseCudaReductionId(int id);
 
-CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
+void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
+
+void releaseCudaReductionTallyBlock(int id);
+
+void beforeCudaKernelLaunch();
+
+void afterCudaKernelLaunch();
+
+void beforeCudaReadTallyBlockAsync();
+
+void beforeCudaReadTallyBlock();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Earmark amount of device shared memory and get byte offset into
+ *         device shared memory if in a RAJA forall.
+ *
+ ******************************************************************************
+ */
+int getCudaSharedmemOffset(int id, int amount);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Get the amount in bytes of shared memory required for thie current
+ *         kernel launch.
+ *
+ ******************************************************************************
+ */
+int getCudaSharedmemAmount();
 
 /*!
  ******************************************************************************
@@ -144,9 +227,8 @@ void freeCudaReductionTallyBlock();
  *
  ******************************************************************************
  */
-CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
-///
-CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id);
+
+void getCudaReductionMemBlock(int id, void** device_memblock);
 
 /*!
  ******************************************************************************
@@ -156,8 +238,6 @@ CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id);
  ******************************************************************************
  */
 void freeCudaReductionMemBlock();
-///
-void freeCudaReductionLocMemBlock();
 
 }  // closing brace for RAJA namespace
 
