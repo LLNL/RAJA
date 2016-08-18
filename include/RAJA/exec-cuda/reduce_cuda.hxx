@@ -15,6 +15,7 @@
 #define RAJA_reduce_cuda_HXX
 
 #include "RAJA/config.hxx"
+#include "RAJA/RAJAVec.hxx"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -71,7 +72,8 @@
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
-namespace RAJA {
+namespace RAJA
+{
 
 
 /*!
@@ -81,7 +83,8 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-__device__ __forceinline__ double shfl_xor(double var, int laneMask) {
+__device__ __forceinline__ double shfl_xor(double var, int laneMask)
+{
   int lo = __shfl_xor(__double2loint(var), laneMask);
   int hi = __shfl_xor(__double2hiint(var), laneMask);
   return __hiloint2double(hi, lo);
@@ -287,7 +290,14 @@ __device__ inline void atomicMax(float *address, float value)
 }
 
 ///
-__device__ inline void atomicAdd(double *address, double value)
+template <typename T>
+__device__ inline T aAdd(T *address, T value)
+{
+  return atomicAdd(address, value);
+  ;
+}
+template <>
+__device__ inline double aAdd<double>(double *address, double value)
 {
   unsigned long long int *address_as_ull = (unsigned long long int *)address;
   unsigned long long int oldval = *address_as_ull, assumed;
@@ -299,6 +309,7 @@ __device__ inline void atomicAdd(double *address, double value)
                   assumed,
                   __double_as_longlong(__longlong_as_double(oldval) + value));
   } while (assumed != oldval);
+  return oldval;
 }
 
 
@@ -645,6 +656,8 @@ private:
 template <size_t BLOCK_SIZE, typename T>
 class ReduceSum<cuda_reduce<BLOCK_SIZE>, T>
 {
+  const ReduceSum<cuda_reduce<BLOCK_SIZE>, T> *parent;
+
 public:
   //
   // Constructor takes initial reduction value (default ctor is disabled).
@@ -652,29 +665,17 @@ public:
   // Note: Ctor only executes on the host.
   //
   explicit ReduceSum(T init_val)
+      : parent(NULL), m_init_val(init_val), m_reduced_val(0)
   {
-    m_is_copy = false;
-
-    m_init_val = init_val;
-    m_reduced_val = static_cast<T>(0);
-
-    m_myID = getCudaReductionId();
-    //    std::cout << "ReduceSum id = " << m_myID << std::endl;
-
-    m_blockdata = getCudaReductionMemBlock(m_myID);
     m_blockoffset = 1;
 
     // Entire global shared memory block must be initialized to zero so
     // sum reduction is correct.
-    size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH;
-    cudaErrchk(cudaMemset(&m_blockdata[m_blockoffset],
-                          0,
-                          sizeof(CudaReductionBlockDataType) * len));
+    size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * sizeof(CudaReductionBlockDataType) + m_blockoffset;
+    cudaMalloc(&m_blockdata, len);
+    cudaErrchk(cudaMemsetAsync(m_blockdata, 0, len));
 
     m_max_grid_size = m_blockdata;
-    m_max_grid_size[0] = 0;
-
-    cudaErrchk(cudaDeviceSynchronize());
   }
 
   //
@@ -682,9 +683,13 @@ public:
   //
   __host__ __device__
   ReduceSum(const ReduceSum<cuda_reduce<BLOCK_SIZE>, T> &other)
+      : parent(&other),
+        m_init_val(other.m_init_val),
+        m_reduced_val(0),
+        m_max_grid_size(other.m_max_grid_size),
+        m_blockdata(other.m_blockdata),
+        m_blockoffset(other.m_blockoffset)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -695,50 +700,7 @@ public:
   //
   __host__ __device__ ~ReduceSum<cuda_reduce<BLOCK_SIZE>, T>()
   {
-    if (!m_is_copy) {
 #if defined(__CUDA_ARCH__)
-#else
-      releaseCudaReductionId(m_myID);
-#endif
-    }
-  }
-
-  //
-  // Operator that returns reduced sum value.
-  //
-  // Note: accessor only executes on host.
-  //
-  operator T()
-  {
-    cudaErrchk(cudaDeviceSynchronize());
-
-    m_blockdata[m_blockoffset] = static_cast<T>(0);
-
-    size_t grid_size = m_max_grid_size[0];
-    assert(grid_size < RAJA_CUDA_REDUCE_BLOCK_LENGTH);
-    for (size_t i = 1; i <= grid_size; ++i) {
-      m_blockdata[m_blockoffset] += m_blockdata[m_blockoffset + i];
-    }
-    m_reduced_val = m_init_val + static_cast<T>(m_blockdata[m_blockoffset]);
-
-    return m_reduced_val;
-  }
-
-  //
-  // Method that returns reduced sum value.
-  //
-  // Note: accessor only executes on host.
-  //
-  T get() { return operator T(); }
-
-  //
-  // += operator that adds value to sum in the proper device shared
-  // memory block locations.
-  //
-  // Note: only operates on device.
-  //
-  __device__ ReduceSum<cuda_reduce<BLOCK_SIZE>, T> operator+=(T val) const
-  {
     __shared__ T sd[BLOCK_SIZE];
 
     int blockId = blockIdx.x + blockIdx.y * gridDim.x
@@ -757,12 +719,12 @@ public:
       // this descends all the way to 1
       if (threadId < i) {
         // no need for __syncthreads()
-        sd[threadId + i] = m_reduced_val;
+        sd[threadId + i] = 0;
       }
     }
     __syncthreads();
 
-    sd[threadId] = val;
+    sd[threadId] = m_reduced_val;
 
     T temp = 0;
     __syncthreads();
@@ -787,6 +749,53 @@ public:
       m_blockdata[m_blockoffset + blockId + 1] += temp;
     }
 
+#else
+    if (!parent) {
+      cudaFree(m_blockdata);
+    }
+#endif
+  }
+
+  //
+  // Operator that returns reduced sum value.
+  //
+  // Note: accessor only executes on host.
+  //
+  operator T()
+  {
+
+    size_t len = RAJA_CUDA_REDUCE_BLOCK_LENGTH * sizeof(CudaReductionBlockDataType) + m_blockoffset;
+    RAJA::RAJAVec<CudaReductionBlockDataType> h_blockdata(RAJA_CUDA_REDUCE_BLOCK_LENGTH + m_blockoffset);
+    cudaMemcpy(&h_blockdata[0], m_blockdata, len, cudaMemcpyDeviceToHost);
+    h_blockdata[m_blockoffset] = static_cast<T>(0);
+
+    size_t grid_size = h_blockdata[0];
+    assert(grid_size < RAJA_CUDA_REDUCE_BLOCK_LENGTH);
+    for (size_t i = 1; i <= grid_size; ++i) {
+      h_blockdata[m_blockoffset] += h_blockdata[m_blockoffset + i];
+    }
+    m_reduced_val = m_init_val + static_cast<T>(h_blockdata[m_blockoffset]);
+
+    return m_reduced_val;
+  }
+
+  //
+  // Method that returns reduced sum value.
+  //
+  // Note: accessor only executes on host.
+  //
+  T get() { return operator T(); }
+
+  //
+  // += operator that adds value to sum in the proper device shared
+  // memory block locations.
+  //
+  // Note: only operates on device.
+  //
+  __device__ const ReduceSum<cuda_reduce<BLOCK_SIZE>, T> &operator+=(
+      T val) const
+  {
+    m_reduced_val += val;
     return *this;
   }
 
@@ -796,11 +805,10 @@ private:
   //
   ReduceSum<cuda_reduce<BLOCK_SIZE>, T>();
 
-  bool m_is_copy;
-  int m_myID;
 
+  int m_myID;
   T m_init_val;
-  T m_reduced_val;
+  T mutable m_reduced_val;
 
   CudaReductionBlockDataType *m_blockdata;
   int m_blockoffset;
@@ -936,7 +944,7 @@ public:
 
     // one thread adds to tally
     if (threadId == 0) {
-      atomicAdd(&(m_tallydata->tally), temp);
+      aAdd(&(m_tallydata->tally), temp);
     }
 
     return *this;
@@ -1146,8 +1154,9 @@ public:
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MINLOC(sd[threadId], m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
-      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
+      unsigned int oldBlockCount =
+          ::atomicAdd((unsigned int *)&retiredBlocks[m_myID], (unsigned int)1);
+      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();
 
@@ -1399,7 +1408,8 @@ public:
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MAXLOC(sd[threadId], m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
+      unsigned int oldBlockCount =
+          ::atomicAdd((unsigned int *)&retiredBlocks[m_myID], (unsigned int)1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();

@@ -15,6 +15,7 @@
 #define RAJA_forall_omp_HXX
 
 #include "RAJA/config.hxx"
+#include <iostream>
 
 #if defined(RAJA_ENABLE_OPENMP)
 
@@ -539,92 +540,80 @@ private:
 template <typename T>
 class ReduceSum<omp_reduce, T>
 {
+    using my_type = ReduceSum<omp_reduce, T>;
 public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceSum(T init_val)
-  {
-    m_is_copy = false;
+   //
+   // Constructor takes default value (default ctor is disabled).
+   //
+   explicit ReduceSum(T init_val, T initializer=0) 
+       : parent(NULL), val(init_val), custom_init(initializer)
+   {
+   }
 
-    m_init_val = init_val;
-    m_reduced_val = static_cast<T>(0);
+   //
+   // Copy ctor.
+   //
+   ReduceSum( const ReduceSum<omp_reduce, T>& other ) 
+       : parent(other.parent ? other.parent : &other),
+         val(other.custom_init),
+         custom_init(other.custom_init)
+   {
+//        static int ctr = 0;
+// #pragma omp critical
+//        std::cout << "copy constructor #" << ++ctr << " of object @" << this << " parent @" << parent << " thread #" << omp_get_thread_num() << std:: endl;
+   }
 
-    m_myID = getCPUReductionId();
+   //
+   // Destructor.
+   //
+   ~ReduceSum<omp_reduce, T>() 
+   {
+// #pragma omp critical
+//        std::cout << "destructor of object @" << this << " thread #" << omp_get_thread_num() << std:: endl;
+      if (parent) {
+#pragma omp critical
+          {
+              // std::cout << "folding " << val << " into parent's value " << parent->val << std::endl;
+              *parent += val;
+              // std::cout << "new parent value " << parent->val << std::endl;
+          }
+      }
+   }
 
-    m_blockdata = getCPUReductionMemBlock(m_myID);
+   //
+   // Operator to retrieve sum value (before object is destroyed).
+   //
+   operator T()
+   {
+       return val;
+   }
 
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = 0;
-    }
-  }
+   //
+   // += operator that performs accumulation for current thread.
+   //
+   const ReduceSum<omp_reduce, T>& operator+=(T rhs) const 
+   {
+       this->val += rhs;
+      return *this ;
+   }
 
-  //
-  // Copy ctor.
-  //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other)
-  {
-    *this = other;
-    m_is_copy = true;
-  }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceSum<omp_reduce, T>()
-  {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
-    }
-  }
-
-  //
-  // Operator that returns reduced sum value.
-  //
-  operator T()
-  {
-    T tmp_reduced_val = static_cast<T>(0);
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      tmp_reduced_val += static_cast<T>(m_blockdata[i * s_block_offset]);
-    }
-    m_reduced_val = m_init_val + tmp_reduced_val;
-
-    return m_reduced_val;
-  }
-
-  //
-  // Method that returns sum value.
-  //
-  T get() { return operator T(); }
-
-  //
-  // += operator that adds value to sum for current thread.
-  //
-  ReduceSum<omp_reduce, T> operator+=(T val) const
-  {
-    int tid = omp_get_thread_num();
-    m_blockdata[tid * s_block_offset] += val;
-    return *this;
-  }
+   ReduceSum<omp_reduce, T>& operator+=(T rhs) 
+   {
+       this->val += rhs;
+      return *this ;
+   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<omp_reduce, T>();
+   //
+   // Default ctor is declared private and not implemented.
+   //
+   ReduceSum<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
+   const my_type * parent;
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_init_val;
-  T m_reduced_val;
+   mutable T val;
+   T custom_init;
+} ;
 
   CPUReductionBlockDataType* m_blockdata;
 };

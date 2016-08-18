@@ -98,7 +98,7 @@ RAJA_INLINE void forall(omp_parallel_for_exec,
 {
   RAJA_FT_BEGIN;
 
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) firstprivate(loop_body)
   for (Index_type ii = begin; ii < end; ++ii) {
     loop_body(ii);
   }
@@ -210,7 +210,7 @@ RAJA_INLINE void forall(omp_parallel_for_exec,
 
   RAJA_FT_BEGIN;
 
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) firstprivate(loop_body)
   for (Index_type ii = begin; ii < end; ++ii) {
     loop_body(ii);
   }
@@ -264,7 +264,7 @@ RAJA_INLINE void forall_Icount(omp_parallel_for_exec,
 
   RAJA_FT_BEGIN;
 
-#pragma omp parallel for schedule(static)
+#pragma omp parallel for schedule(static) firstprivate(loop_body)
   for (Index_type ii = 0; ii < loop_end; ++ii) {
     loop_body(ii + icount, ii + begin);
   }
