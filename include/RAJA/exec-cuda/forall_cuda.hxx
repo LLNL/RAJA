@@ -86,10 +86,11 @@ namespace RAJA
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
+__global__ void forall_cuda_kernel(LOOP_BODY loop_body_in,
                                    Index_type begin,
                                    Index_type len)
 {
+  auto loop_body = loop_body_in;
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < len) {
     loop_body(begin + ii);
@@ -106,11 +107,12 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
+__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body_in,
                                           Index_type begin,
                                           Index_type len,
                                           Index_type icount)
 {
+  auto loop_body = loop_body_in;
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < len) {
     loop_body(ii + icount, ii + begin);
@@ -125,10 +127,11 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
+__global__ void forall_cuda_kernel(LOOP_BODY loop_body_in,
                                    const Index_type* idx,
                                    Index_type length)
 {
+  auto loop_body = loop_body_in;
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < length) {
     loop_body(idx[ii]);
@@ -145,11 +148,12 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
+__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body_in,
                                           const Index_type* idx,
                                           Index_type length,
                                           Index_type icount)
 {
+  auto loop_body = loop_body_in;
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
   if (ii < length) {
     loop_body(ii + icount, idx[ii]);
