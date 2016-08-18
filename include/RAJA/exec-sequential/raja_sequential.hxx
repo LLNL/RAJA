@@ -55,7 +55,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-namespace RAJA {
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -68,12 +69,14 @@ namespace RAJA {
 ///
 /// Segment execution policies
 ///
-struct seq_exec {};
+struct seq_exec {
+};
 
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit {};
+struct seq_segit {
+};
 
 ///
 ///////////////////////////////////////////////////////////////////////
@@ -82,13 +85,12 @@ struct seq_segit {};
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce {};
+struct seq_reduce {
+};
 
 }  // closing brace for RAJA namespace
 
-
-#include "RAJA/exec-sequential/reduce_sequential.hxx"
 #include "RAJA/exec-sequential/forall_sequential.hxx"
+#include "RAJA/exec-sequential/reduce_sequential.hxx"
 
 #endif  // closing endif for header file include guard
-

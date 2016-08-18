@@ -40,9 +40,11 @@
 # 
 ###############################################################################
 
-cmake_minimum_required (VERSION 2.8)
+cmake_minimum_required (VERSION 3.0)
 
-project(RAJA LANGUAGES CXX)
+project(RAJA LANGUAGES CXX C)
+
+set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
@@ -55,8 +57,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH}
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
-option(RAJA_ENABLE_TESTS "Build tests and exmaple applications" On)
+option(RAJA_ENABLE_TESTS "Build tests" On)
+option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+
+set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
@@ -87,4 +92,8 @@ install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake DESTINATION s
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
+endif()
+
+if(RAJA_ENABLE_EXAMPLES)
+  add_subdirectory(examples)
 endif()
