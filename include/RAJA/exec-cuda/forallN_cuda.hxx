@@ -255,7 +255,10 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
-// Function to check indices for out-of-bounds
+/*!
+ * \brief  Function to check indices for out-of-bounds
+ *
+ */
 template <typename BODY, typename... ARGS>
 RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i, ARGS... args)
 {
@@ -273,8 +276,10 @@ RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i)
   }
 }
 
-// Launcher that uses execution policies to map blockIdx and threadIdx to map
-// to N-argument function
+/*!
+ * \brief Launcher that uses execution policies to map blockIdx and threadIdx to map
+ * to N-argument function
+ */
 template <typename BODY, typename... CARGS>
 __global__ void cudaLauncherN(BODY loop_body, CARGS... cargs)
 {

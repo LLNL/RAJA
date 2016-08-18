@@ -62,24 +62,45 @@
 
 namespace RAJA
 {
-/// Maximum number of blocks that RAJA will launch
-/// threads are reused to finish all work
+/*!
+ * \def RAJA_CUDA_MAX_NUM_BLOCKS
+ * Maximum number of blocks that RAJA will launch
+ */ 
 #define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
 
-/// Size of reduction memory block for each reducer object (value based on
-/// rough estimate of "worst case" -- need to think more about this...
+/*!
+ * \def RAJA_CUDA_REDUCE_BLOCK_LENGTH
+ * Size of reduction memory block for each reducer object (value based on
+ * rough estimate of "worst case" maximum numvber of blocks)
+ */
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH RAJA_CUDA_MAX_NUM_BLOCKS
 
-/// Reduction Tallies are computed into a small block to minimize UM migration
+/*!
+ * \def RAJA_CUDA_REDUCE_TALLY_LENGTH
+ * Reduction Tallies are computed into a small block to minimize UM migration
+ * Set to Max Number of Reduction Variables
+ */
 #define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
-/// Should be large enough for all types for which cuda atomics exist
-/// includes the size of the index variable for Loc reductions
+/*!
+ * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
+ * Used in CudaReductionDummyDataType to allocate arrays and accommodate all the Reduction types
+ * includes the size of the index variable for Loc reductions
+ */
 #define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
 
+/*!
+ * \def MACROSTR(x)
+ * Used in the static_assert macros  
+ *
+ */
 #define STR(x) #x
 #define MACROSTR(x) STR(x)
 
+/*!
+ * \def RAJA_STRUCT_ALIGNAS
+ * abstracts the alignas keyword with DATA_ALIGN alignment size
+ */  
 #define RAJA_STRUCT_ALIGNAS alignas(DATA_ALIGN)
 
 
@@ -99,16 +120,17 @@ struct CudaReductionDummyTallyType {
 
 typedef unsigned int GridSizeType;
 
-/// types used to simplify typed memory use in reductions
-/// these types fit within the dummy types, checked in static asserts in
-/// reduction classes
-///
-/// Each ReduceSum, ReduceMinLoc, or ReduceMaxLoc object uses retiredBlocks
-/// as a way to complete the reduction in a single pass. Although the algorithm
-/// updates retiredBlocks via an atomicAdd(int) the actual reduction values
-/// do not use atomics and require a finishing stage performed
-/// by the last block.
-///
+/*!
+ *\brief types used to simplify typed memory use in reductions
+ * these types fit within the dummy types, checked in static asserts in
+ * reduction classes
+ *
+ * Each ReduceSum, ReduceMinLoc, or ReduceMaxLoc object uses retiredBlocks
+ * as a way to complete the reduction in a single pass. Although the algorithm
+ * updates retiredBlocks via an atomicAdd(int) the actual reduction values
+ * do not use atomics and require a finishing stage performed
+ * by the last block.
+ */
 template <typename T>
 struct RAJA_STRUCT_ALIGNAS CudaReductionBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
@@ -165,14 +187,53 @@ int getCudaReductionId();
 */
 void releaseCudaReductionId(int id);
 
+/*!
+*************************************************************************
+*
+* \brief Return pointer into shared RAJA-CUDA reduction tally block
+* for reducer object with given id. Return pointer to device tally block
+* in device_tally.
+* Allocate blocks if not already allocated.
+*
+*************************************************************************
+*/
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
 
+/*!
+*************************************************************************
+*
+* \brief Release given reduction tally block.
+* resets dirty bit
+*************************************************************************
+*/
 void releaseCudaReductionTallyBlock(int id);
 
+/*!
+*************************************************************************
+*
+* Must be called before each RAJA cuda kernel.
+* Ensures all updates to the tally block are visible on the gpu.
+* Invalidates the tally on the CPU.
+* Resets dynamic shared memory amount and offsets
+*
+*************************************************************************
+*/
 void beforeCudaKernelLaunch();
 
+/*!
+ * \brief resets state variables after kernel launch
+ */ 
 void afterCudaKernelLaunch();
 
+/*!
+*************************************************************************
+*
+* Must be called before reading a tally block on the CPU.
+* Writes any CPU changes to the tally block back before updating the 
+* CPU tally blocks with the values on the GPU.
+*
+*************************************************************************
+*/
 void beforeCudaReadTallyBlockAsync();
 
 void beforeCudaReadTallyBlock();

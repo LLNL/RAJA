@@ -70,34 +70,38 @@
 namespace RAJA
 {
 
-//
-// Static array used to keep track of which unique ids
-// for CUDA reduction objects are used and which are not.
-//
-static bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
+namespace
+{  
+  //
+  // Static array used to keep track of which unique ids
+  // for CUDA reduction objects are used and which are not.
+  //
+  bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
-//
-// Pointer to hold shared managed memory block for RAJA-Cuda reductions.
-//
-static CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
+  //
+  // Pointer to hold shared managed memory block for RAJA-Cuda reductions.
+  //
+  CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
 
-//
-// Tally cache on the CPU
-//
-static CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
+  //
+  // Tally cache on the CPU
+  //
+  CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
 
-//
-// Tally blocks on the device
-//
-static CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
+  //
+  // Tally blocks on the device
+  //
+  CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
-static bool s_tally_valid = true;
-static int s_tally_dirty = 0;
-static bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
+  bool s_tally_valid = true;
+  int s_tally_dirty = 0;
+  bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
 
-static bool s_in_raja_forall = false;
-static int s_shared_memory_amount_total = 0;
-static int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
+  bool s_in_raja_forall = false;
+  int s_shared_memory_amount_total = 0;
+  int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
+
+}
 /*
 *************************************************************************
 *
@@ -300,7 +304,7 @@ static void readCudaReductionTallyBlock()
 *************************************************************************
 *
 * Must be called before each RAJA cuda kernel.
-* Ensures all updates to teh tally block are visible on the gpu.
+* Ensures all updates to the tally block are visible on the gpu.
 * Invalidates the tally on the CPU.
 *
 *************************************************************************
@@ -348,7 +352,7 @@ void beforeCudaReadTallyBlock()
 /*
 *************************************************************************
 *
-* Release given redution tally block.
+* Release given reduction tally block.
 *
 *************************************************************************
 */

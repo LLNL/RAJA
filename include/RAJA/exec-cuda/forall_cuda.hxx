@@ -87,15 +87,17 @@ namespace RAJA
  *
  ******************************************************************************
  */
-
-static __device__ Index_type getGlobalIdx_3D_3D()
+namespace
 {
-  Index_type blockId =
-      blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  Index_type threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-                        + (threadIdx.z * (blockDim.x * blockDim.y))
-                        + (threadIdx.y * blockDim.x) + threadIdx.x;
-  return threadId;
+  __device__ Index_type getGlobalIdx_3D_3D()
+  {
+    Index_type blockId =
+        blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
+    Index_type threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+                          + (threadIdx.z * (blockDim.x * blockDim.y))
+                          + (threadIdx.y * blockDim.x) + threadIdx.x;
+    return threadId;
+  }
 }
 /*!
  ******************************************************************************
