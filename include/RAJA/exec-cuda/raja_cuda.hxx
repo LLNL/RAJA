@@ -120,12 +120,13 @@ struct Dim3z {
 ///
 /// Segment execution policies
 ///
-template <size_t BLOCK_SIZE>
+
+template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec {
 };
-///
+
 template <size_t BLOCK_SIZE>
-struct cuda_exec_async {
+struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> {
 };
 
 //

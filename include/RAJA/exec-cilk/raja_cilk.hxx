@@ -79,7 +79,7 @@ struct cilk_for_exec {
 ///
 /// Index set segment iteration policies
 ///
-struct cilk_for_segit {
+struct cilk_for_segit : public cilk_for_exec {
 };
 
 ///

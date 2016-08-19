@@ -71,7 +71,8 @@
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
 
-namespace RAJA {
+namespace RAJA
+{
 
 
 /*!
@@ -81,12 +82,15 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-__device__ __forceinline__ double shfl_xor(double var, int laneMask) {
+__device__ __forceinline__ double shfl_xor(double var, int laneMask)
+{
   int lo = __shfl_xor(__double2loint(var), laneMask);
   int hi = __shfl_xor(__double2hiint(var), laneMask);
   return __hiloint2double(hi, lo);
 }
 
+// The following atomic functions need to be outside of the RAJA namespace
+#include <cuda.h>
 
 //
 // Three different variants of min/max reductions can be run by choosing
@@ -856,8 +860,8 @@ public:
     m_is_copy = true;
   }
 
-  //
   // Destruction on host releases the global shared memory block chunk for
+  //
   // reduction id and id itself for others to use.
   //
   // Note: destructor executes on both host and device.
@@ -1146,8 +1150,9 @@ public:
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MINLOC(sd[threadId], m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
-      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z)- 1));
+      unsigned int oldBlockCount =
+          ::atomicAdd((unsigned int *)&retiredBlocks[m_myID], (unsigned int)1);
+      lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();
 
@@ -1399,7 +1404,8 @@ public:
       m_blockdata[m_blockoffset + blockId + 1] =
           RAJA_MAXLOC(sd[threadId], m_blockdata[m_blockoffset + blockId + 1]);
       __threadfence();
-      unsigned int oldBlockCount = ::atomicAdd((unsigned int*)&retiredBlocks[m_myID], (unsigned int)1);
+      unsigned int oldBlockCount =
+          ::atomicAdd((unsigned int *)&retiredBlocks[m_myID], (unsigned int)1);
       lastBlock = (oldBlockCount == ((gridDim.x * gridDim.y * gridDim.z) - 1));
     }
     __syncthreads();

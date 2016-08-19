@@ -58,8 +58,10 @@
 
 #include "RAJA/int_datatypes.hxx"
 
+#include <atomic>
 #include <cstdlib>
 #include <iosfwd>
+#include <thread>
 
 namespace RAJA
 {
@@ -72,7 +74,7 @@ namespace RAJA
  *
  ******************************************************************************
  */
-class DepGraphNode
+class RAJA_ALIGNED_ATTR(256) DepGraphNode
 {
 public:
   ///
@@ -84,7 +86,6 @@ public:
   /// algorithms and platforms. We haven't determined the best defaults yet!
   ///
   static const int _MaxDepTasks_ = 8;
-  static const int _SemaphoreValueAlign_ = 256;
 
   ///
   /// Default ctor initializes node to default state.
@@ -92,31 +93,46 @@ public:
   DepGraphNode()
       : m_num_dep_tasks(0), m_semaphore_reload_value(0), m_semaphore_value(0)
   {
-    posix_memalign((void**)(&m_semaphore_value),
-                   _SemaphoreValueAlign_,
-                   sizeof(int));
-    *m_semaphore_value = 0;
-  }
-
-  ///
-  /// Dependency graph node dtor.
-  ///
-  ~DepGraphNode()
-  {
-    if (m_semaphore_value) free(m_semaphore_value);
   }
 
   ///
   /// Get/set semaphore value; i.e., the current number of (unsatisfied)
   /// dependencies that must be satisfied before this task can execute.
   ///
-  int& semaphoreValue() { return *m_semaphore_value; }
+  std::atomic<int>& semaphoreValue() { return m_semaphore_value; }
 
   ///
   /// Get/set semaphore "reload" value; i.e., the total number of external
   /// task dependencies that must be satisfied before this task can execute.
   ///
   int& semaphoreReloadValue() { return m_semaphore_reload_value; }
+
+  ///
+  /// Ready this task to be used again
+  ///
+  void reset() { m_semaphore_value.store(m_semaphore_reload_value); }
+
+  ///
+  /// Satisfy one incoming dependency
+  ///
+  void satisfyOne()
+  {
+    if (m_semaphore_value > 0) {
+      int val = --m_semaphore_value;
+    }
+  }
+
+  ///
+  /// Wait for all dependencies to be satisfied
+  ///
+  void wait()
+  {
+    while (m_semaphore_value > 0) {
+      // TODO: an efficient wait would be better here, but the standard
+      // promise/future is not good enough
+      std::this_thread::yield();
+    }
+  }
 
   ///
   /// Get/set the number of "forward-dependencies" for this task; i.e., the
@@ -140,7 +156,7 @@ private:
   int m_dep_task[_MaxDepTasks_];
   int m_num_dep_tasks;
   int m_semaphore_reload_value;
-  int* m_semaphore_value;
+  std::atomic<int> m_semaphore_value;
 };
 
 }  // closing brace for RAJA namespace

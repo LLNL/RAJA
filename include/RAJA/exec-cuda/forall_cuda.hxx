@@ -77,46 +77,6 @@ namespace RAJA
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-/*!
- ******************************************************************************
- *
- * \brief CUDA kernal forall template for index range.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   Index_type begin,
-                                   Index_type len)
-{
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
-  if (ii < len) {
-    loop_body(begin + ii);
-  }
-}
-
-/*!
- ******************************************************************************
- *
- * \brief CUDA kernal forall_Icount template for index range.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
-                                          Index_type begin,
-                                          Index_type len,
-                                          Index_type icount)
-{
-  Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
-  if (ii < len) {
-    loop_body(ii + icount, ii + begin);
-  }
-}
-
 /*!
  ******************************************************************************
  *
@@ -124,9 +84,9 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <typename Iterator, typename LOOP_BODY>
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Index_type* idx,
+                                   const Iterator idx,
                                    Index_type length)
 {
   Index_type ii = blockDim.x * blockIdx.x + threadIdx.x;
@@ -144,9 +104,9 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <typename Iterator, typename LOOP_BODY>
 __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
-                                          const Index_type* idx,
+                                          const Iterator idx,
                                           Index_type length,
                                           Index_type icount)
 {
@@ -159,502 +119,57 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
 //
 ////////////////////////////////////////////////////////////////////////
 //
-// Function templates for CUDA execution over index ranges.
+// Function templates for CUDA execution over iterables.
 //
 ////////////////////////////////////////////////////////////////////////
 //
 
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over index range via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
-                        Index_type begin,
-                        Index_type end,
+template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
+RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
+                        Iterable&& iter,
                         LOOP_BODY loop_body)
 {
-  Index_type len = end - begin;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  Index_type len = std::distance(begin, end);
+
   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, begin, len);
+  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(std::move(loop_body),
+                                               std::move(begin),
+                                               len);
   cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
+  if (!Async) {
+    cudaErrchk(cudaDeviceSynchronize());
+  }
 
   RAJA_FT_END;
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over index range via CUDA kernal launch
- *         without call to cudaDeviceSynchronize() after kernel completes.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
-                        Index_type begin,
-                        Index_type end,
-                        LOOP_BODY loop_body)
-{
-  Index_type len = end - begin;
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, begin, len);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over index range with index count,
- *         via CUDA kernal launch.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
-                               Index_type begin,
-                               Index_type end,
+template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
+                               Iterable&& iter,
                                Index_type icount,
                                LOOP_BODY loop_body)
 {
-  Index_type len = end - begin;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  Index_type len = std::distance(begin, end);
 
   size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      begin,
-                                                      len,
-                                                      icount);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over index range with index count,
- *         via CUDA kernal launch without call to cudaDeviceSynchronize()
- *         after kernel completes.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
-                               Index_type begin,
-                               Index_type end,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  Index_type len = end - begin;
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      begin,
+  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(std::move(loop_body),
+                                                      std::move(begin),
                                                       len,
                                                       icount);
   cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-//
-////////////////////////////////////////////////////////////////////////
-//
-// Function templates for CUDA execution over range segments.
-//
-////////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over range segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
-                        const RangeSegment& iseg,
-                        LOOP_BODY loop_body)
-{
-  Index_type begin = iseg.getBegin();
-  Index_type end = iseg.getEnd();
-  Index_type len = end - begin;
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, begin, len);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over range segment object via CUDA kernal launch
- *         without call to cudaDeviceSynchronize() after kernel completes.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
-                        const RangeSegment& iseg,
-                        LOOP_BODY loop_body)
-{
-  Index_type begin = iseg.getBegin();
-  Index_type end = iseg.getEnd();
-  Index_type len = end - begin;
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, begin, len);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over range segment object with index count
- *         via CUDA kernal launch.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
-                               const RangeSegment& iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  Index_type begin = iseg.getBegin();
-  Index_type len = iseg.getEnd() - begin;
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      begin,
-                                                      len,
-                                                      icount);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over range segment object with index count
- *         via CUDA kernal launch without call to cudaDeviceSynchronize()
- *         after kernel completes.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
-                               const RangeSegment& iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  Index_type begin = iseg.getBegin();
-  Index_type len = iseg.getEnd() - begin;
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      begin,
-                                                      len,
-                                                      icount);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-//
-////////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over indirection arrays.
-//
-////////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution for indirection array via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
-                        const Index_type* idx,
-                        Index_type len,
-                        LOOP_BODY loop_body)
-{
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, idx, len);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution for indirection array via CUDA kernal launch
- *         without call to cudaDeviceSynchronize() after kernel completes.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
-                        const Index_type* idx,
-                        Index_type len,
-                        LOOP_BODY loop_body)
-{
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, idx, len);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over indirection array with index count
- *         via CUDA kernal launch.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
-                               const Index_type* idx,
-                               Index_type len,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      idx,
-                                                      len,
-                                                      icount);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over indirection array with index count
- *         via CUDA kernal launch without call to cudaDeviceSynchronize()
- *         after kernel completes.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
-                               const Index_type* idx,
-                               Index_type len,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      idx,
-                                                      len,
-                                                      icount);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-//
-////////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over list segments.
-//
-////////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution for list segment object via CUDA kernal launch.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE>,
-                        const ListSegment& iseg,
-                        LOOP_BODY loop_body)
-{
-  const Index_type* idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, idx, len);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution for list segment object via CUDA kernal launch
- *         without call to cudaDeviceSynchronize() after kernel completes.
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec_async<BLOCK_SIZE>,
-                        const ListSegment& iseg,
-                        LOOP_BODY loop_body)
-{
-  const Index_type* idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body, idx, len);
-  cudaErrchk(cudaPeekAtLastError());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over list segment object with index count
- *         via CUDA kernal launch.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE>,
-                               const ListSegment& iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  const Index_type* idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      idx,
-                                                      len,
-                                                      icount);
-
-  cudaErrchk(cudaPeekAtLastError());
-  cudaErrchk(cudaDeviceSynchronize());
-
-  RAJA_FT_END;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  Forall execution over list segment object with index count
- *         via CUDA kernal launch without call to cudaDeviceSynchronize()
- *         after kernel completes.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <size_t BLOCK_SIZE, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec_async<BLOCK_SIZE>,
-                               const ListSegment& iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
-{
-  const Index_type* idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  size_t gridSize = (len + BLOCK_SIZE - 1) / BLOCK_SIZE;
-
-  RAJA_FT_BEGIN;
-
-  forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE>>>(loop_body,
-                                                      idx,
-                                                      len,
-                                                      icount);
-  cudaErrchk(cudaPeekAtLastError());
+  if (!Async) {
+    cudaErrchk(cudaDeviceSynchronize());
+  }
 
   RAJA_FT_END;
 }

@@ -59,6 +59,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/PolicyBase.hxx"
+
+#include <omp.h>
+#include <iostream>
+#include <thread>
+
 namespace RAJA
 {
 
@@ -73,18 +79,29 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct omp_parallel_for_exec {
+template <typename InnerPolicy>
+struct omp_parallel_exec {
 };
-// struct omp_parallel_for_nowait_exec {};
+struct omp_for_exec {
+};
+struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
+};
+template <size_t ChunkSize>
+struct omp_for_static {
+};
+template <size_t ChunkSize>
+struct omp_parallel_for_static
+    : public omp_parallel_exec<omp_for_static<ChunkSize>> {
+};
 struct omp_for_nowait_exec {
 };
 
 ///
 /// Index set segment iteration policies
 ///
-struct omp_parallel_for_segit {
+struct omp_parallel_for_segit : public omp_parallel_for_exec {
 };
-struct omp_parallel_segit {
+struct omp_parallel_segit : public omp_parallel_for_segit {
 };
 struct omp_taskgraph_segit {
 };

@@ -80,7 +80,7 @@ RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
   switch (segtype) {
     case _RangeSeg_: {
       const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
-      forall(SEG_EXEC_POLICY_T(), tseg->getBegin(), tseg->getEnd(), loop_body);
+      forall<SEG_EXEC_POLICY_T>(*tseg, loop_body);
       break;
     }
 
@@ -99,10 +99,7 @@ RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
 
     case _ListSeg_: {
       const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
-      forall(SEG_EXEC_POLICY_T(),
-             tseg->getIndex(),
-             tseg->getLength(),
-             loop_body);
+      forall<SEG_EXEC_POLICY_T>(*tseg, loop_body);
       break;
     }
 
@@ -133,11 +130,7 @@ RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
   switch (segtype) {
     case _RangeSeg_: {
       const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
-      forall_Icount(SEG_EXEC_POLICY_T(),
-                    tseg->getBegin(),
-                    tseg->getEnd(),
-                    icount,
-                    loop_body);
+      forall_Icount<SEG_EXEC_POLICY_T>(*tseg, icount, loop_body);
       break;
     }
 
@@ -157,11 +150,7 @@ RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
 
     case _ListSeg_: {
       const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
-      forall_Icount(SEG_EXEC_POLICY_T(),
-                    tseg->getIndex(),
-                    tseg->getLength(),
-                    icount,
-                    loop_body);
+      forall_Icount<SEG_EXEC_POLICY_T>(*tseg, icount, loop_body);
       break;
     }
 
@@ -170,6 +159,83 @@ RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
 
   }  // switch on segment type
 }
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Generic wrapper for IndexSet policies to allow the use of normal
+ * policies with them.
+ *
+ ******************************************************************************
+ */
+// TODO: this should be with the IndexSet class, really it should be part of
+// its built-in iterator, but we need to address the include snarl first
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+struct rangeListExecutor {
+  constexpr rangeListExecutor(LOOP_BODY&& body) : body(body) {}
+  RAJA_INLINE
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
+    executeRangeList_forall<SEG_EXEC_POLICY_T>(&seg_info, body);
+  }
+
+private:
+  LOOP_BODY body;
+};
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+constexpr RAJA_INLINE rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
+makeRangeListExecutor(LOOP_BODY&& body)
+{
+  return rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
+}
+
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE void forall(
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
+  forall<SEG_IT_POLICY_T>(iset,
+                          makeRangeListExecutor<SEG_EXEC_POLICY_T>(loop_body));
+}
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+struct rangeListIcountExecutor {
+  constexpr rangeListIcountExecutor(LOOP_BODY&& body) : body(body) {}
+  RAJA_INLINE
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
+    executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(&seg_info, body);
+  }
+
+private:
+  LOOP_BODY body;
+};
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+constexpr RAJA_INLINE rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
+makeRangeListIcountExecutor(LOOP_BODY&& body)
+{
+  return rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
+}
+
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
+  // no need for icount variant here
+  forall<SEG_IT_POLICY_T>(iset,
+                          makeRangeListIcountExecutor<SEG_EXEC_POLICY_T>(
+                              loop_body));
+}
+
 
 }  // closing brace for RAJA namespace
 

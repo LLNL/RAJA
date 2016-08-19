@@ -30,6 +30,7 @@ unsigned s_ntests_passed = 0;
 
 int main(int argc, char *argv[])
 {
+
   //
   //  Build vector of integers for creating List segments.
   //
@@ -135,6 +136,7 @@ int main(int argc, char *argv[])
   RAJAVec<Index_type> is_indices;
   getIndices(is_indices, iset);
 
+
   ///////////////////////////////////////////////////////////////////////////
   //
   // Set up data and reference solution for tests...
@@ -173,10 +175,12 @@ int main(int argc, char *argv[])
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
+
   ///
   /// Define thread block size for CUDA exec policy
   ///
   const size_t block_size = 256;
+
 
   ///////////////////////////////////////////////////////////////////////////
   //
@@ -295,15 +299,13 @@ int main(int argc, char *argv[])
   s_ntests_run++;
   if (!array_equal(ref_array, test_array, array_length)) {
     cout << "\n TEST FAILURE " << endl;
-#if 0
-      cout << endl << endl;
-      for (Index_type i = 0; i < is_indices.size(); ++i) {
-         cout << "test_array[" << is_indices[i] << "] = "
-                   << test_array[ is_indices[i] ]
-                   << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
-      }
-      cout << endl;
-#endif
+    cout << endl << endl;
+    for (Index_type i = 0; i < is_indices.size(); ++i) {
+      cout << "test_array[" << is_indices[i]
+           << "] = " << test_array[is_indices[i]] << " ( "
+           << ref_array[is_indices[i]] << " ) " << endl;
+    }
+    cout << endl;
   } else {
     s_ntests_passed++;
   }
@@ -333,15 +335,13 @@ int main(int argc, char *argv[])
   s_ntests_run++;
   if (!array_equal(ref_array, test_array, test_alen)) {
     cout << "\n TEST FAILURE " << endl;
-#if 0
-      cout << endl << endl;
-      for (Index_type i = 0; i < test_alen; ++i) {
-         cout << "test_array[" << is_indices[i] << "] = "
-                   << test_array[ is_indices[i] ]
-                   << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
-      }
-      cout << endl;
-#endif
+    cout << endl << endl;
+    for (Index_type i = 0; i < test_alen; ++i) {
+      cout << "test_array[" << is_indices[i]
+           << "] = " << test_array[is_indices[i]] << " ( "
+           << ref_array[is_indices[i]] << " ) " << endl;
+    }
+    cout << endl;
   } else {
     s_ntests_passed++;
   }
