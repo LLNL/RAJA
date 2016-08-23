@@ -93,10 +93,25 @@ namespace
   //
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
+  //
+  // State of tally block cache on the CPU
+  // If valid then all tally blocks are up to date and can be read 
+  // from the cache. Dirty hold the number of dirty blocks that should
+  // be written back to the gpu tally blocks, and the block_dirty array
+  // holds the status of each block.
+  //
   bool s_tally_valid = true;
   int s_tally_dirty = 0;
   bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
 
+  //
+  // State of shared memory usage
+  // in_raja_forall is true if the cpu is within a raja forall function.
+  // shared_memory_amount_total is the amount of shared memory currently
+  // earmarked for use in this kernel and is only valid in a raja forall.
+  // shared_memory_offsets hold the byte offset into dynamic shared memory 
+  // for each reduction variable. -1 indicates a reduction variable that
+  // is not using shared memory.
   bool s_in_raja_forall = false;
   int s_shared_memory_amount_total = 0;
   int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
@@ -149,14 +164,13 @@ void releaseCudaReductionId(int id)
 {
   if (id < RAJA_MAX_REDUCE_VARS) {
     s_cuda_reduction_id_used[id] = false;
-    s_tally_block_dirty[id] = false;
   }
 }
 
 /*
 *************************************************************************
 *
-* Return pointer into shared RAJA-CUDA managed reduction memory block
+* Return pointer into shared RAJA-CUDA device reduction memory block
 * for reducer object with given id. Allocate block if not already allocated.
 *
 *************************************************************************
@@ -164,10 +178,9 @@ void releaseCudaReductionId(int id)
 void getCudaReductionMemBlock(int id, void** device_memblock)
 {
   //
-  // For each reducer object, we want a chunk of managed memory that
+  // For each reducer object, we want a chunk of device memory that
   // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
-  // value for each thread, a single slot for the global reduced value
-  // across grid blocks, and a single slot for the max grid size.
+  // value for each thread.
   //
 
   if (s_cuda_reduction_mem_block == 0) {
@@ -183,7 +196,7 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
 /*
 *************************************************************************
 *
-* Free managed memory blocks used in RAJA-Cuda reductions.
+* Free device memory blocks used in RAJA-Cuda reductions.
 *
 *************************************************************************
 */
