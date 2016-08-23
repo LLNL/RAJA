@@ -55,6 +55,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/PolicyBase.hxx"
+
 namespace RAJA
 {
 
@@ -69,13 +71,13 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct seq_exec {
+struct seq_exec : public PolicyBase {
 };
 
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit {
+struct seq_segit : public seq_exec {
 };
 
 ///

@@ -1,1 +1,1 @@
-clang_3_7_0.cmake
+clang_3_8_0.cmake

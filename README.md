@@ -95,19 +95,20 @@ develop branch into the `master` branch and tag a new release.
 Authors
 -----------
 
-The main RAJA developers are:
+The original developers of RAJA are:
 
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Other contributors include:
+Contributors include:
 
   * David Beckingsale (beckingsale1@llnl.gov)
+  * Jason Burmark (burmark1@llnl.gov)
   * Holger Jones (jones19@llnl.gov)
+  * Will Killian (killian4@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
   * David Poliakoff (poliakoff1@llnl.gov)
   * Tom Scogland (scogland1@llnl.gov)
-
 
 
 Release

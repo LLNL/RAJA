@@ -9,13 +9,18 @@ reviewers:
       - keasler
       - trws
       - rhornung67
+      - davidbeckingsale
+      - DavidPoliakoff
+      - jonesholger
     required: 1
   - name: everyone
     members:
-    - ajkunen
-    - trws
-    - davidbeckingsale
-    - DavidPoliakoff
-    - keasler
-    - rhornung67
+      - ajkunen
+      - trws
+      - davidbeckingsale
+      - DavidPoliakoff
+      - keasler
+      - rhornung67
+      - jonesholger
+      - willkill07
     required: 2
