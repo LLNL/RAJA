@@ -79,22 +79,29 @@ namespace
   bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
   //
-  // Pointer to hold shared managed memory block for RAJA-Cuda reductions.
+  // Pointer to hold device memory block for RAJA-Cuda reductions.
   //
   CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
 
   //
-  // Tally cache on the CPU
-  //
-  CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
-
-  //
-  // Tally blocks on the device
+  // Tally blocks on the device, store results of all reduction variables
+  // in one place, copy back to host with one cudaMemcpyAsync.
   //
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
   //
-  // State of tally block cache on the CPU
+  // Tally block cache on the CPU, acts as a cache to 
+  // s_cuda_reduction_tally_block_device.
+  // This must be in allocated in pageable memory (not pinned).
+  // Managed Memory has overheads associated with synchronization.
+  // cudaMemcpyAsync is asynchronous to managed memory, but synchronous to 
+  // the host if the target buffer is host pageable memory.
+  //
+  CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
+
+  //
+  // Variables representing the state of the tally block cache on the CPU.
+  //
   // If valid then all tally blocks are up to date and can be read 
   // from the cache. Dirty hold the number of dirty blocks that should
   // be written back to the gpu tally blocks, and the block_dirty array
@@ -105,25 +112,28 @@ namespace
   bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
 
   //
-  // State of shared memory usage
-  // in_raja_forall is true if the cpu is within a raja forall function.
+  // Variables representing the state of dynamic shared memory usage.
+  //
+  // If in_raja_forall is true then the host code is executing a raja
+  // forall function.
   // shared_memory_amount_total is the amount of shared memory currently
-  // earmarked for use in this kernel and is only valid in a raja forall.
+  // earmarked for use in this forall.
   // shared_memory_offsets hold the byte offset into dynamic shared memory 
-  // for each reduction variable. -1 indicates a reduction variable that
-  // is not using shared memory.
+  // for each reduction variable, with -1 indicating a reduction variable that
+  // is not participating in this forall.
+  //
   bool s_in_raja_forall = false;
   int s_shared_memory_amount_total = 0;
   int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
 
 }
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Return next available valid reduction id, or complain and exit if
 * no valid id is available.
 *
-*************************************************************************
+*******************************************************************************
 */
 int getCudaReductionId()
 {
@@ -154,11 +164,11 @@ int getCudaReductionId()
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Release given redution id and make inactive.
+* Release given reduction id and make inactive.
 *
-*************************************************************************
+*******************************************************************************
 */
 void releaseCudaReductionId(int id)
 {
@@ -168,24 +178,19 @@ void releaseCudaReductionId(int id)
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Return pointer into shared RAJA-CUDA device reduction memory block
+* Return pointer into RAJA-CUDA reduction device memory block
 * for reducer object with given id. Allocate block if not already allocated.
 *
-*************************************************************************
+*******************************************************************************
 */
 void getCudaReductionMemBlock(int id, void** device_memblock)
 {
-  //
-  // For each reducer object, we want a chunk of device memory that
-  // holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
-  // value for each thread.
-  //
-
   if (s_cuda_reduction_mem_block == 0) {
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                          sizeof(CudaReductionDummyBlockType) * RAJA_MAX_REDUCE_VARS));
+                          sizeof(CudaReductionDummyBlockType) *
+                            RAJA_MAX_REDUCE_VARS));
 
     atexit(freeCudaReductionMemBlock);
   }
@@ -194,11 +199,11 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Free device memory blocks used in RAJA-Cuda reductions.
 *
-*************************************************************************
+*******************************************************************************
 */
 void freeCudaReductionMemBlock()
 {
@@ -211,22 +216,23 @@ void freeCudaReductionMemBlock()
 
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Return pointer into shared RAJA-CUDA reduction tally block
-* for reducer object with given id. Return pointer to device tally block
-* in device_tally.
+* Return pointer into RAJA-CUDA reduction host tally block cache
+* and device tally block for reducer object with given id.
 * Allocate blocks if not already allocated.
 *
-*************************************************************************
+*******************************************************************************
 */
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 {
   if (s_cuda_reduction_tally_block_host == 0) {
-    s_cuda_reduction_tally_block_host = new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
+    s_cuda_reduction_tally_block_host = 
+        new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
 
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
-                          sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH));
+                          sizeof(CudaReductionDummyTallyType) *
+                            RAJA_CUDA_REDUCE_TALLY_LENGTH));
 
     s_tally_valid = true;
     s_tally_dirty = 0;
@@ -246,12 +252,12 @@ void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Write back dirty tally blocks to device tally blocks.
 * Can be called before tally blocks have been allocated.
 *
-*************************************************************************
+*******************************************************************************
 */
 static void writeBackCudaReductionTallyBlock()
 {
@@ -264,10 +270,11 @@ static void writeBackCudaReductionTallyBlock()
                && s_tally_block_dirty[end]) {
           end++;
         }
-        cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_device[first],
-                                    &s_cuda_reduction_tally_block_host[first],
-                                    sizeof(CudaReductionDummyTallyType) * (end - first),
-                                    cudaMemcpyHostToDevice, 0 ));
+        int len = (end - first);
+        cudaErrchk(cudaMemcpyAsync(&s_cuda_reduction_tally_block_device[first],
+                                   &s_cuda_reduction_tally_block_host[first],
+                                   sizeof(CudaReductionDummyTallyType) * len,
+                                   cudaMemcpyHostToDevice));
         
         for (int i = first; i < end; ++i) {
           s_tally_block_dirty[i] = false;
@@ -282,22 +289,24 @@ static void writeBackCudaReductionTallyBlock()
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Read tally block from device if invalid on host.
 * Must be called after tally blocks have been allocated.
-* This is synchronous if s_cuda_reduction_tally_block_host is allocated
-* in pageable memory and not in pinned memory or managed.
+* The Async version is actually synchronous to the host if 
+* s_cuda_reduction_tally_block_host is allocated in pageable host memory 
+* and not if allocated as pinned host memory or managed memory.
 *
-*************************************************************************
+*******************************************************************************
 */
 static void readCudaReductionTallyBlockAsync()
 {
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_host[0],
                                 &s_cuda_reduction_tally_block_device[0],
-                                sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH,
-                                cudaMemcpyDeviceToHost, 0 ));
+                                sizeof(CudaReductionDummyTallyType) *
+                                  RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                                cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
 }
@@ -307,20 +316,23 @@ static void readCudaReductionTallyBlock()
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpy(  &s_cuda_reduction_tally_block_host[0],
                             &s_cuda_reduction_tally_block_device[0],
-                            sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                            sizeof(CudaReductionDummyTallyType) *
+                              RAJA_CUDA_REDUCE_TALLY_LENGTH,
                             cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Must be called before each RAJA cuda kernel.
-* Ensures all updates to the tally block are visible on the gpu.
-* Invalidates the tally on the CPU.
+* beforeCudaKernelLaunch must be called before each RAJA cuda kernel.
+* The loop_body must be copied before the kernel invocation to capture the 
+* sizes of dynamic shared memory.
+* Also ensures all updates to the tally block are visible on the device by 
+* writing back dirty cache lines; this invalidates the tally cache on the host.
 *
-*************************************************************************
+*******************************************************************************
 */
 void beforeCudaKernelLaunch()
 {
@@ -334,6 +346,14 @@ void beforeCudaKernelLaunch()
   writeBackCudaReductionTallyBlock();
 }
 
+/*
+*******************************************************************************
+*
+* afterCudaKernelLaunch must be called after each RAJA cuda kernel.
+* This resets the state of shared memory variables.
+*
+*******************************************************************************
+*/
 void afterCudaKernelLaunch()
 {
   s_in_raja_forall = false;
@@ -341,13 +361,18 @@ void afterCudaKernelLaunch()
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Must be called before reading a tally block on the CPU.
-* Writes any CPU changes to the tally block back before updating the 
-* CPU tally blocks with the values on the GPU.
+* beforeCudaReadTallyBlock must be called before reading the tally block cache
+* on the host.
+* Ensures that the host tally block cache for cuda reduction variable id can 
+* be read on the host.
+* Writes any host changes to the tally block cache to the device before 
+* updating the host tally blocks with the values on the GPU.
+* The Async version is only asynchronous to managed memory and is synchronous
+* to host code.
 *
-*************************************************************************
+*******************************************************************************
 */
 void beforeCudaReadTallyBlockAsync(int id)
 {
@@ -365,13 +390,12 @@ void beforeCudaReadTallyBlock(int id)
   }
 }
 
-
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Release given reduction tally block.
 *
-*************************************************************************
+*******************************************************************************
 */
 void releaseCudaReductionTallyBlock(int id)
 {
@@ -382,11 +406,11 @@ void releaseCudaReductionTallyBlock(int id)
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
 * Free managed memory blocks used in RAJA-Cuda reductions.
 *
-*************************************************************************
+*******************************************************************************
 */
 void freeCudaReductionTallyBlock()
 {
@@ -398,11 +422,11 @@ void freeCudaReductionTallyBlock()
 }
 
 /*
-*************************************************************************
+*******************************************************************************
 *
-* Get offset into shared memory 
+* Get offset into dynamic shared memory.
 *
-*************************************************************************
+*******************************************************************************
 */
 int getCudaSharedmemOffset(int id, int amount)
 {
@@ -422,6 +446,13 @@ int getCudaSharedmemOffset(int id, int amount)
   }
 }
 
+/*
+*******************************************************************************
+*
+* Get size in bytes of dynamic shared memory.
+*
+*******************************************************************************
+*/
 int getCudaSharedmemAmount()
 {
   return s_shared_memory_amount_total;

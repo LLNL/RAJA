@@ -78,16 +78,35 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief Method to shuffle 32b registers in sum reduction.
+ * \brief Method to shuffle 32b registers in sum reduction for arbitrary type.
  *
  ******************************************************************************
  */
+#if 0
 __device__ __forceinline__ double shfl_xor(double var, int laneMask)
 {
   int lo = __shfl_xor(__double2loint(var), laneMask);
   int hi = __shfl_xor(__double2hiint(var), laneMask);
   return __hiloint2double(hi, lo);
 }
+#else
+template<typename T>
+__device__ __forceinline__ T shfl_xor(T var, int laneMask)
+{
+  const int uint_sizeof_T = 
+      (sizeof(T) + sizeof(unsigned int) - 1) / sizeof(unsigned int);
+  union {
+    T var;
+    unsigned int arr[uint_sizeof_T];
+  } Tunion;
+  Tunion.var = var;
+
+  for(int i = 0; i < uint_sizeof_T; ++i) {
+    Tunion.arr[i] = __shfl_xor(Tunion.arr[i], laneMask);
+  }
+  return Tunion.var;
+}
+#endif
 
 // The following atomic functions need to be outside of the RAJA namespace
 #include <cuda.h>
@@ -757,7 +776,8 @@ public:
   //
   // Note: only operates on device.
   //
-  __device__ ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T> const &max(T val) const
+  __device__ ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T> const &max(T val)
+   const
   {
     extern __shared__ unsigned char sd_block[];
     T *sd = reinterpret_cast<T *>(&sd_block[m_smem_offset]);
@@ -913,7 +933,7 @@ public:
     if (threadId < WARP_SIZE) {
       temp = sd[threadId];
       for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-        temp += shfl_xor(temp, i);
+        temp += shfl_xor<T>(temp, i);
       }
     }
 
@@ -956,7 +976,7 @@ public:
       if (threadId < WARP_SIZE) {
         temp = sd[threadId];
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-          temp += shfl_xor(temp, i);
+          temp += shfl_xor<T>(temp, i);
         }
       }
 
@@ -1153,7 +1173,7 @@ public:
     if (threadId < WARP_SIZE) {
       temp = sd[threadId];
       for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-        temp += shfl_xor(temp, i);
+        temp += shfl_xor<T>(temp, i);
       }
     }
 
@@ -1201,8 +1221,8 @@ public:
   //
   // Note: only operates on device.
   //
-  __device__ ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T> const &operator+=(
-      T val) const
+  __device__ ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T> const &
+  operator+=(T val) const
   {
     extern __shared__ unsigned char sd_block[];
     T *sd = reinterpret_cast<T *>(&sd_block[m_smem_offset]);

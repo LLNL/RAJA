@@ -169,73 +169,77 @@ struct CudaReductionLocTallyType {
 
 
 /*!
-*************************************************************************
-*
-* Return next available valid reduction id, or complain and exit if
-* no valid id is available.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * Return next available valid reduction id, or complain and exit if
+ * no valid id is available.
+ *
+ ******************************************************************************
+ */
 int getCudaReductionId();
 
 /*!
-*************************************************************************
-*
-* Release given reduction id and make inactive.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * Release given reduction id and make inactive.
+ *
+ ******************************************************************************
+ */
 void releaseCudaReductionId(int id);
 
 /*!
-*************************************************************************
-*
-* \brief Return pointer into shared RAJA-CUDA reduction tally block
-* for reducer object with given id. Return pointer to device tally block
-* in device_tally.
-* Allocate blocks if not already allocated.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * \brief Return pointer into shared RAJA-CUDA reduction tally block
+ * for reducer object with given id. Return pointer to device tally block
+ * in device_tally.
+ * Allocate blocks if not already allocated.
+ *
+ ******************************************************************************
+ */
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
 
 /*!
-*************************************************************************
-*
-* \brief Release given reduction tally block.
-* resets dirty bit
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * \brief Release given reduction tally block.
+ * resets dirty bit
+ ******************************************************************************
+ */
 void releaseCudaReductionTallyBlock(int id);
 
 /*!
-*************************************************************************
-*
-* Must be called before each RAJA cuda kernel.
-* Must be called before copying the loop_body.
-* Ensures all updates to the tally block are visible on the gpu.
-* Invalidates the tally on the CPU.
-* Resets dynamic shared memory amount and offsets.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * Must be called before each RAJA cuda kernel.
+ * Must be called before copying the loop_body.
+ * Ensures all updates to the tally block are visible on the gpu.
+ * Invalidates the tally on the CPU.
+ * Resets dynamic shared memory amount and offsets.
+ *
+ ******************************************************************************
+ */
 void beforeCudaKernelLaunch();
 
 /*!
+ ******************************************************************************
+ *
  * \brief resets state variables after kernel launch
+ *
+ ******************************************************************************
  */ 
 void afterCudaKernelLaunch();
 
 /*!
-*************************************************************************
-*
-* Must be called before reading a tally block on the CPU.
-* Writes any CPU changes to the tally block back before updating the 
-* CPU tally blocks with the values on the GPU. Does nothing if reduction
-* variable with id has not been used to avoid data roundtrip.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * Must be called before reading a tally block on the CPU.
+ * Writes any CPU changes to the tally block back before updating the 
+ * CPU tally blocks with the values on the GPU. Does nothing if reduction
+ * variable with id has not been used to avoid data roundtrip.
+ *
+ ******************************************************************************
+ */
 void beforeCudaReadTallyBlockAsync(int id);
 
 void beforeCudaReadTallyBlock(int id);
