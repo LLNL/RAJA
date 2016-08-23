@@ -144,20 +144,20 @@ struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-template <size_t BLOCK_SIZE>
+template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_reduce {
 };
 ///
-template <size_t BLOCK_SIZE>
+template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_reduce_atomic {
 };
 
 template <size_t BLOCK_SIZE>
-struct cuda_reduce_async {
+struct cuda_reduce_async : public cuda_reduce<BLOCK_SIZE, true> {
 };
 ///
 template <size_t BLOCK_SIZE>
-struct cuda_reduce_async_atomic {
+struct cuda_reduce_atomic_async : public cuda_reduce_atomic<BLOCK_SIZE, true> {
 };
 
 //
