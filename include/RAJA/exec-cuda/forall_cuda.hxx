@@ -156,7 +156,7 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
 template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
 RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
                         Iterable&& iter,
-                        LOOP_BODY loop_body)
+                        LOOP_BODY&& loop_body)
 {
   beforeCudaKernelLaunch();
 
