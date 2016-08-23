@@ -77,7 +77,7 @@ namespace RAJA
 
 /*!
  * \def RAJA_CUDA_REDUCE_TALLY_LENGTH
- * Reduction Tallies are computed into a small block to minimize UM migration
+ * Reduction Tallies are computed into a small block to minimize memory motion
  * Set to Max Number of Reduction Variables
  */
 #define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
@@ -100,7 +100,7 @@ namespace RAJA
 /*!
  * \def RAJA_STRUCT_ALIGNAS
  * abstracts the alignas keyword with DATA_ALIGN alignment size
- */  
+ */
 #define RAJA_STRUCT_ALIGNAS alignas(DATA_ALIGN)
 
 
@@ -127,7 +127,7 @@ typedef unsigned int GridSizeType;
  *
  * Each ReduceSum, ReduceMinLoc, or ReduceMaxLoc object uses retiredBlocks
  * as a way to complete the reduction in a single pass. Although the algorithm
- * updates retiredBlocks via an atomicAdd(int) the actual reduction values
+ * updates retiredBlocks via an atomicInc(unsigned int) the actual reduction values
  * do not use atomics and require a finishing stage performed
  * by the last block.
  */
@@ -181,7 +181,7 @@ int getCudaReductionId();
 /*!
 *************************************************************************
 *
-* Release given redution id and make inactive.
+* Release given reduction id and make inactive.
 *
 *************************************************************************
 */
@@ -212,9 +212,10 @@ void releaseCudaReductionTallyBlock(int id);
 *************************************************************************
 *
 * Must be called before each RAJA cuda kernel.
+* Must be called before copying the loop_body.
 * Ensures all updates to the tally block are visible on the gpu.
 * Invalidates the tally on the CPU.
-* Resets dynamic shared memory amount and offsets
+* Resets dynamic shared memory amount and offsets.
 *
 *************************************************************************
 */
@@ -230,19 +231,20 @@ void afterCudaKernelLaunch();
 *
 * Must be called before reading a tally block on the CPU.
 * Writes any CPU changes to the tally block back before updating the 
-* CPU tally blocks with the values on the GPU.
+* CPU tally blocks with the values on the GPU. Does nothing if reduction
+* variable with id has not been used to avoid data roundtrip.
 *
 *************************************************************************
 */
-void beforeCudaReadTallyBlockAsync();
+void beforeCudaReadTallyBlockAsync(int id);
 
-void beforeCudaReadTallyBlock();
+void beforeCudaReadTallyBlock(int id);
 
 /*!
  ******************************************************************************
  *
  * \brief  Earmark amount of device shared memory and get byte offset into
- *         device shared memory if in a RAJA forall.
+ *         device shared memory if called in a RAJA forall.
  *
  ******************************************************************************
  */
@@ -251,7 +253,7 @@ int getCudaSharedmemOffset(int id, int amount);
 /*!
  ******************************************************************************
  *
- * \brief  Get the amount in bytes of shared memory required for thie current
+ * \brief  Get the amount in bytes of shared memory required for the current
  *         kernel launch.
  *
  ******************************************************************************
@@ -271,20 +273,19 @@ void freeCudaReductionTallyBlock();
 /*!
  ******************************************************************************
  *
- * \brief  Return pointers into shared memory blocks for RAJA-CUDA reduction
+ * \brief  Return pointer into device memory blocks for RAJA-CUDA reduction
  *         with given id.
  *
  *         Allocates data block if it isn't allocated already.
  *
- * NOTE: Block size will be:
+ * NOTE: Total Block size will be:
  *
- *          sizeof(CudaReductionBlockDataType) *
- *            RAJA_MAX_REDUCE_VARS * ( RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 )
+ *          sizeof(CudaReductionDummyDataType) *
+ *            RAJA_MAX_REDUCE_VARS * RAJA_CUDA_REDUCE_BLOCK_LENGTH
  *
- *       For each reducer object, we want a chunk of managed memory that
+ *       For each reducer object, we want a chunk of device memory that
  *       holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
- *       value for each thread, a single slot for the global reduced value
- *       across grid blocks, and a single slot for the max grid size
+ *       value for each thread block.
  *
  ******************************************************************************
  */
@@ -294,7 +295,7 @@ void getCudaReductionMemBlock(int id, void** device_memblock);
 /*!
  ******************************************************************************
  *
- * \brief  Free managed memory blocks used in RAJA-Cuda reductions.
+ * \brief  Free device memory blocks used in RAJA-Cuda reductions.
  *
  ******************************************************************************
  */

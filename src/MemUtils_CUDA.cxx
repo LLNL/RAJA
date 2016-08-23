@@ -336,16 +336,20 @@ void afterCudaKernelLaunch()
 *
 *************************************************************************
 */
-void beforeCudaReadTallyBlockAsync()
+void beforeCudaReadTallyBlockAsync(int id)
 {
-  writeBackCudaReductionTallyBlock();
-  readCudaReductionTallyBlockAsync();
+  if (!s_tally_block_dirty[id]) {
+    writeBackCudaReductionTallyBlock();
+    readCudaReductionTallyBlockAsync();
+  }
 }
 
-void beforeCudaReadTallyBlock()
+void beforeCudaReadTallyBlock(int id)
 {
-  writeBackCudaReductionTallyBlock();
-  readCudaReductionTallyBlock();
+  if (!s_tally_block_dirty[id]) {
+    writeBackCudaReductionTallyBlock();
+    readCudaReductionTallyBlock();
+  }
 }
 
 
