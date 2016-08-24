@@ -70,11 +70,15 @@
 
 #include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
 
+#include <cuda.h>
+
 
 namespace RAJA
 {
 
-
+// unnamed namespace to encapsulate helper functions
+namespace
+{
 /*!
  ******************************************************************************
  *
@@ -99,8 +103,6 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
   return Tunion.var;
 }
 
-// The following atomic functions need to be outside of the RAJA namespace
-#include <cuda.h>
 
 //
 // Three different variants of min/max reductions can be run by choosing
@@ -121,6 +123,15 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
 #define double_to_ull(x) __double_as_longlong(x)
 #endif
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Generics of atomic update methods used in reduction variables.
+ *
+ * The generic version just uses wraps the nvidia cuda atomics.
+ *
+ ******************************************************************************
+ */
 template <typename T>
 __device__ inline T _atomicMin(T *address, T value)
 {
@@ -139,6 +150,10 @@ __device__ inline T _atomicAdd(T *address, T value)
   return atomicAdd(address, value);
 }
 
+//
+// Template specializations for atomic update methods not defined by nvidia
+// cuda.
+//
 #if defined(RAJA_USE_ATOMIC_ONE)
 /*!
  ******************************************************************************
@@ -226,9 +241,9 @@ __device__ inline float _atomicMax(float *address, float value)
   return temp;
 }
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-/// don't specialize for 64-bit min/max if they exist
+// don't specialize for 64-bit min/max if they exist
 #else
-/// implement 64-bit min/max if they don't exist
+// implement 64-bit min/max if they don't exist
 template <>
 __device__ inline unsigned long long int _atomicMin(
                                   unsigned long long int *address,
@@ -271,7 +286,7 @@ __device__ inline unsigned long long int _atomicMax(
 #endif
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-/// don't specialize for 64-bit add if it exists
+// don't specialize for 64-bit add if it exists
 #else
 ///
 template <>
@@ -387,7 +402,7 @@ __device__ inline float _atomicMax(float *address, float value)
 }
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-/// don't specialize for 64-bit min/max if they exist
+// don't specialize for 64-bit min/max if they exist
 #else
 ///
 template <>
@@ -430,7 +445,7 @@ __device__ inline unsigned long long int _atomicMax(
 #endif
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-/// don't specialize for doubles if they exist
+// don't specialize for doubles if they exist
 #else
 ///
 template <>
@@ -459,6 +474,8 @@ __device__ inline double _atomicAdd(double *address, double value)
 #error one of the options for using/not using atomics must be specified
 
 #endif
+
+} // end unnamed namespace for helper functions
 
 //
 //////////////////////////////////////////////////////////////////////
