@@ -889,7 +889,6 @@ public:
                                (void **)&m_tally_host,
                                (void **)&m_tally_device);
     m_tally_host->tally = init_val;
-    m_tally_host->maxGridSize = static_cast<GridSizeType>(0);
     m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
@@ -914,12 +913,9 @@ public:
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
     int threads = blockDim.x * blockDim.y * blockDim.z;
-    int blocks = gridDim.x * gridDim.y * gridDim.z;
 
     if (blockId + threadId == 0) {
       assert(threads <= BLOCK_SIZE);
-      m_tally_device->maxGridSize =
-          RAJA_MAX(blocks, m_tally_device->maxGridSize);
     }
 
     // initialize shared memory
@@ -1050,7 +1046,6 @@ public:
     } else {
       beforeCudaReadTallyBlock(m_myID);
     }
-    assert(m_tally_host->maxGridSize <= RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     return m_tally_host->tally;
   }
 
@@ -1351,7 +1346,6 @@ public:
                                (void **)&m_tally_device);
     m_tally_host->tally.val = init_val;
     m_tally_host->tally.idx = init_loc;
-    m_tally_host->maxGridSize = static_cast<GridSizeType>(0);
     m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
@@ -1378,12 +1372,9 @@ public:
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
     int threads = blockDim.x * blockDim.y * blockDim.z;
-    int blocks = gridDim.x * gridDim.y * gridDim.z;
 
     if (blockId + threadId == 0) {
       assert(threads <= BLOCK_SIZE);
-      m_tally_device->maxGridSize =
-          RAJA_MAX(blocks, m_tally_device->maxGridSize);
     }
 
     // initialize shared memory
@@ -1542,7 +1533,6 @@ public:
     } else {
       beforeCudaReadTallyBlock(m_myID);
     }
-    assert(m_tally_host->maxGridSize <= RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     return m_tally_host->tally.val;
   }
 
@@ -1565,7 +1555,6 @@ public:
     } else {
       beforeCudaReadTallyBlock(m_myID);
     }
-    assert(m_tally_host->maxGridSize <= RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     return m_tally_host->tally.idx;
   }
 
@@ -1661,7 +1650,6 @@ public:
                                (void **)&m_tally_device);
     m_tally_host->tally.val = init_val;
     m_tally_host->tally.idx = init_loc;
-    m_tally_host->maxGridSize = static_cast<GridSizeType>(0);
     m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
@@ -1688,12 +1676,9 @@ public:
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
     int threads = blockDim.x * blockDim.y * blockDim.z;
-    int blocks = gridDim.x * gridDim.y * gridDim.z;
 
     if (blockId + threadId == 0) {
       assert(threads <= BLOCK_SIZE);
-      m_tally_device->maxGridSize =
-          RAJA_MAX(blocks, m_tally_device->maxGridSize);
     }
 
     // initialize shared memory
@@ -1852,7 +1837,6 @@ public:
     } else {
       beforeCudaReadTallyBlock(m_myID);
     }
-    assert(m_tally_host->maxGridSize <= RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     return m_tally_host->tally.val;
   }
 
@@ -1875,7 +1859,6 @@ public:
     } else {
       beforeCudaReadTallyBlock(m_myID);
     }
-    assert(m_tally_host->maxGridSize <= RAJA_CUDA_REDUCE_BLOCK_LENGTH);
     return m_tally_host->tally.idx;
   }
 

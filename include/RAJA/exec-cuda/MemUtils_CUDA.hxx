@@ -91,18 +91,21 @@ namespace RAJA
 
 /*!
  * \def MACROSTR(x)
- * Used in the static_assert macros  
- *
+ * Used in the static_assert macros
  */
 #define STR(x) #x
 #define MACROSTR(x) STR(x)
 
 /*!
  * \def RAJA_STRUCT_ALIGNAS
- * abstracts the alignas keyword with DATA_ALIGN alignment size
+ * abstracts the alignas keyword
  */
-#define RAJA_STRUCT_ALIGNAS alignas(DATA_ALIGN)
+#define RAJA_STRUCT_ALIGNAS(dalign) alignas(dalign)
 
+/*!
+ * \brief Type used to keep track of the grid size on the device
+ */
+typedef unsigned int GridSizeType;
 
 /*!
  ******************************************************************************
@@ -113,22 +116,16 @@ namespace RAJA
  *
  ******************************************************************************
  */
-struct CudaReductionDummyDataType {
+struct RAJA_STRUCT_ALIGNAS(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataType {
   unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
 };
-struct RAJA_STRUCT_ALIGNAS CudaReductionDummyBlockType {
+struct RAJA_STRUCT_ALIGNAS(DATA_ALIGN) CudaReductionDummyBlockType {
   CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 struct CudaReductionDummyTallyType {
   CudaReductionDummyDataType dummy_val;
-  CudaReductionDummyDataType dummy_idx;
+  GridSizeType dummy_retiredBlocks;
 };
-
-/*!
- * \brief Type used to keep track of the grid size on the device
- */
-typedef unsigned int GridSizeType;
-
 
 /*!
  ******************************************************************************
@@ -141,16 +138,16 @@ typedef unsigned int GridSizeType;
  ******************************************************************************
  */
 template <typename T>
-struct RAJA_STRUCT_ALIGNAS CudaReductionBlockType {
+struct CudaReductionBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 template <typename T>
-struct RAJA_STRUCT_ALIGNAS CudaReductionLocBlockType {
+struct CudaReductionLocBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
   Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 
-template <typename T>
+template  <typename T>
 struct CudaReductionLocType {
   T val;
   Index_type idx;
@@ -167,7 +164,6 @@ struct CudaReductionLocType {
 template <typename T>
 struct CudaReductionTallyType {
   T tally;
-  GridSizeType maxGridSize;
   GridSizeType retiredBlocks;
 };
 template <typename T>
@@ -177,7 +173,6 @@ struct CudaReductionTallyTypeAtomic {
 template <typename T>
 struct CudaReductionLocTallyType {
   CudaReductionLocType<T> tally;
-  GridSizeType maxGridSize;
   GridSizeType retiredBlocks;
 };
 
