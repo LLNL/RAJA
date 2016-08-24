@@ -82,31 +82,22 @@ namespace RAJA
  *
  ******************************************************************************
  */
-#if 0
-__device__ __forceinline__ double shfl_xor(double var, int laneMask)
-{
-  int lo = __shfl_xor(__double2loint(var), laneMask);
-  int hi = __shfl_xor(__double2hiint(var), laneMask);
-  return __hiloint2double(hi, lo);
-}
-#else
 template<typename T>
 __device__ __forceinline__ T shfl_xor(T var, int laneMask)
 {
-  const int uint_sizeof_T = 
-      (sizeof(T) + sizeof(unsigned int) - 1) / sizeof(unsigned int);
+  const int int_sizeof_T = 
+      (sizeof(T) + sizeof(int) - 1) / sizeof(int);
   union {
     T var;
-    unsigned int arr[uint_sizeof_T];
+    int arr[int_sizeof_T];
   } Tunion;
   Tunion.var = var;
 
-  for(int i = 0; i < uint_sizeof_T; ++i) {
+  for(int i = 0; i < int_sizeof_T; ++i) {
     Tunion.arr[i] = __shfl_xor(Tunion.arr[i], laneMask);
   }
   return Tunion.var;
 }
-#endif
 
 // The following atomic functions need to be outside of the RAJA namespace
 #include <cuda.h>
@@ -131,21 +122,21 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
 #endif
 
 template <typename T>
-__device__ inline void _atomicMin(T *address, T value)
+__device__ inline T _atomicMin(T *address, T value)
 {
-  atomicMin(address, value);
+  return atomicMin(address, value);
 }
 
 template <typename T>
-__device__ inline void _atomicMax(T *address, T value)
+__device__ inline T _atomicMax(T *address, T value)
 {
-  atomicMax(address, value);
+  return atomicMax(address, value);
 }
 
 template <typename T>
-__device__ inline void _atomicAdd(T *address, T value)
+__device__ inline T _atomicAdd(T *address, T value)
 {
-  atomicAdd(address, value);
+  return atomicAdd(address, value);
 }
 
 #if defined(RAJA_USE_ATOMIC_ONE)
@@ -158,7 +149,7 @@ __device__ inline void _atomicAdd(T *address, T value)
  ******************************************************************************
  */
 template <>
-__device__ inline void _atomicMin(double *address, double value)
+__device__ inline double _atomicMin(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -172,11 +163,13 @@ __device__ inline void _atomicMin(double *address, double value)
       oldval = readback;
       newval = double_to_ull(RAJA_MIN(ull_to_double(oldval), value));
     }
+    temp = ull_to_double(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMin(float *address, float value)
+__device__ inline float _atomicMin(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -189,11 +182,13 @@ __device__ inline void _atomicMin(float *address, float value)
       oldval = readback;
       newval = __float_as_int(RAJA_MIN(__int_as_float(oldval), value));
     }
+    temp = __int_as_float(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMax(double *address, double value)
+__device__ inline double _atomicMax(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -207,11 +202,13 @@ __device__ inline void _atomicMax(double *address, double value)
       oldval = readback;
       newval = double_to_ull(RAJA_MAX(ull_to_double(oldval), value));
     }
+    temp = ull_to_double(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMax(float *address, float value)
+__device__ inline float _atomicMax(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -224,14 +221,17 @@ __device__ inline void _atomicMax(float *address, float value)
       oldval = readback;
       newval = __float_as_int(RAJA_MAX(__int_as_float(oldval), value));
     }
+    temp = __int_as_float(oldval);
   }
+  return temp;
 }
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
 /// don't specialize for 64-bit min/max if they exist
 #else
 /// implement 64-bit min/max if they don't exist
 template <>
-__device__ inline void _atomicMin(unsigned long long int *address,
+__device__ inline unsigned long long int _atomicMin(
+                                  unsigned long long int *address,
                                   unsigned long long int value)
 {
   unsigned long long int temp =
@@ -250,7 +250,8 @@ __device__ inline void _atomicMin(unsigned long long int *address,
 }
 ///
 template <>
-__device__ inline void _atomicMax(unsigned long long int *address,
+__device__ inline unsigned long long int _atomicMax(
+                                  unsigned long long int *address,
                                   unsigned long long int value)
 {
   unsigned long long int readback =
@@ -274,7 +275,7 @@ __device__ inline void _atomicMax(unsigned long long int *address,
 #else
 ///
 template <>
-__device__ inline void _atomicAdd(double *address, double value)
+__device__ inline double _atomicAdd(double *address, double value)
 {
   unsigned long long oldval, newval, readback;
 
@@ -285,6 +286,7 @@ __device__ inline void _atomicAdd(double *address, double value)
     oldval = readback;
     newval = __double_as_longlong(__longlong_as_double(oldval) + value);
   }
+  return __longlong_as_double(oldval);
 }
 #endif
 
@@ -301,7 +303,7 @@ __device__ inline void _atomicAdd(double *address, double value)
  ******************************************************************************
  */
 template <>
-__device__ inline void _atomicMin(double *address, double value)
+__device__ inline double _atomicMin(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -317,11 +319,13 @@ __device__ inline void _atomicMin(double *address, double value)
                     assumed,
                     double_to_ull(RAJA_MIN(ull_to_double(assumed), value)));
     } while (assumed != oldval);
+    temp = ull_to_double(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMin(float *address, float value)
+__device__ inline float _atomicMin(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -335,11 +339,13 @@ __device__ inline void _atomicMin(float *address, float value)
                     assumed,
                     __float_as_int(RAJA_MIN(__int_as_float(assumed), value)));
     } while (assumed != oldval);
+    temp = __int_as_float(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMax(double *address, double value)
+__device__ inline double _atomicMax(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -355,11 +361,13 @@ __device__ inline void _atomicMax(double *address, double value)
                     assumed,
                     double_to_ull(RAJA_MAX(ull_to_double(assumed), value)));
     } while (assumed != oldval);
+    temp = ull_to_double(oldval);
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMax(float *address, float value)
+__device__ inline float _atomicMax(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -373,7 +381,9 @@ __device__ inline void _atomicMax(float *address, float value)
                     assumed,
                     __float_as_int(RAJA_MAX(__int_as_float(assumed), value)));
     } while (assumed != oldval);
+    temp = __int_as_float(oldval);
   }
+  return temp;
 }
 
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
@@ -381,7 +391,8 @@ __device__ inline void _atomicMax(float *address, float value)
 #else
 ///
 template <>
-__device__ inline void _atomicMin(unsigned long long int *address,
+__device__ inline unsigned long long int _atomicMin(
+                                  unsigned long long int *address,
                                   unsigned long long int value)
 {
   unsigned long long int temp =
@@ -393,11 +404,14 @@ __device__ inline void _atomicMin(unsigned long long int *address,
       assumed = oldval;
       oldval = atomicCAS(address, assumed, RAJA_MIN(assumed, value));
     } while (assumed != oldval);
+    temp = oldval;
   }
+  return temp;
 }
 ///
 template <>
-__device__ inline void _atomicMax(unsigned long long int *address,
+__device__ inline unsigned long long int _atomicMax(
+                                  unsigned long long int *address,
                                   unsigned long long int value)
 {
   unsigned long long int temp =
@@ -409,7 +423,9 @@ __device__ inline void _atomicMax(unsigned long long int *address,
       assumed = oldval;
       oldval = atomicCAS(address, assumed, RAJA_MAX(assumed, value));
     } while (assumed != oldval);
+    temp = oldval;
   }
+  return temp;
 }
 #endif
 
@@ -418,7 +434,7 @@ __device__ inline void _atomicMax(unsigned long long int *address,
 #else
 ///
 template <>
-__device__ inline void _atomicAdd(double *address, double value)
+__device__ inline double _atomicAdd(double *address, double value)
 {
   unsigned long long int *address_as_ull = (unsigned long long int *)address;
   unsigned long long int oldval = *address_as_ull, assumed;
@@ -430,6 +446,7 @@ __device__ inline void _atomicAdd(double *address, double value)
                   assumed,
                   __double_as_longlong(__longlong_as_double(oldval) + value));
   } while (assumed != oldval);
+  return __longlong_as_double(oldval);
 }
 #endif
 
@@ -482,6 +499,8 @@ public:
   //
   // Copy ctor executes on both host and device.
   //
+  // On device initializes dynamic shared memory.
+  //
   __host__ __device__
   ReduceMin(const ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
   {
@@ -519,8 +538,9 @@ public:
   }
 
   //
-  // Destruction on host releases the global shared memory block chunk for
+  // Destruction on host releases the device memory chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completes the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -705,8 +725,9 @@ public:
   }
 
   //
-  // Destruction on host releases the global shared memory block chunk for
+  // Destruction on host releases the device memory chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completed the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -858,6 +879,8 @@ public:
   //
   // Copy ctor executes on both host and device.
   //
+  // On Device initializes dynamic shared memory
+  //
   __host__ __device__
   ReduceSum(const ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
   {
@@ -901,8 +924,9 @@ public:
   }
 
   //
-  // Destruction on host releases the global shared memory block chunk for
+  // Destruction on host releases the device memory chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completes the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -1021,8 +1045,8 @@ public:
   T get() { return operator T(); }
 
   //
-  // += operator that adds value to sum in the proper device shared
-  // memory block locations.
+  // += operator that adds value to sum in the proper shared
+  // memory locations.
   //
   // Note: only operates on device.
   //
@@ -1145,9 +1169,10 @@ public:
 #endif
   }
 
-  // Destruction on host releases the global shared memory block chunk for
   //
+  // Destruction on host releases the device memory chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completes the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -1216,7 +1241,7 @@ public:
   T get() { return operator T(); }
 
   //
-  // += operator that adds value to sum in the proper device
+  // += operator that adds value to sum in the proper shared
   // memory block locations.
   //
   // Note: only operates on device.
@@ -1316,6 +1341,8 @@ public:
   //
   // Copy ctor executes on both host and device.
   //
+  // On device initialises synamic shared memory.
+  //
   __host__ __device__
   ReduceMinLoc(const ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
   {
@@ -1366,8 +1393,9 @@ public:
   }
 
   //
-  // Destruction on host releases the global shared memory block chunk for
+  // Destruction on host releases the device memory chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completes the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -1525,7 +1553,7 @@ public:
   }
 
   //
-  // Method that updates min and index values in proper device memory block
+  // Method that updates min and index values in proper shared memory
   // locations.
   //
   // Note: only operates on device.
@@ -1623,6 +1651,8 @@ public:
   //
   // Copy ctor executes on both host and device.
   //
+  // On Device initializes dynamic shared memory.
+  //
   __host__ __device__
   ReduceMaxLoc(const ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
   {
@@ -1673,8 +1703,9 @@ public:
   }
 
   //
-  // Destruction on host releases the global shared memory block chunk for
+  // Destruction on host releases the global memory block chunk for
   // reduction id and id itself for others to use.
+  // Destruction on device completes the reduction.
   //
   // Note: destructor executes on both host and device.
   //
@@ -1832,7 +1863,7 @@ public:
   }
 
   //
-  // Method that updates max and index values in proper device memory block
+  // Method that updates max and index values in proper shared memory block
   // locations.
   //
   // Note: only operates on device.
