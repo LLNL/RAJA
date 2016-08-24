@@ -293,8 +293,8 @@ static void writeBackCudaReductionTallyBlock()
 *
 * Read tally block from device if invalid on host.
 * Must be called after tally blocks have been allocated.
-* The Async version is actually synchronous to the host if 
-* s_cuda_reduction_tally_block_host is allocated in pageable host memory 
+* The Async version is synchronous on the host if 
+* s_cuda_reduction_tally_block_host is allocated as pageable host memory 
 * and not if allocated as pinned host memory or managed memory.
 *
 *******************************************************************************
@@ -310,7 +310,6 @@ static void readCudaReductionTallyBlockAsync()
     s_tally_valid = true;
   }
 }
-
 static void readCudaReductionTallyBlock()
 {
   if (!s_tally_valid) {
@@ -326,10 +325,9 @@ static void readCudaReductionTallyBlock()
 /*
 *******************************************************************************
 *
-* beforeCudaKernelLaunch must be called before each RAJA cuda kernel.
-* The loop_body must be copied before the kernel invocation to capture the 
-* sizes of dynamic shared memory.
-* Also ensures all updates to the tally block are visible on the device by 
+* Must be called before each RAJA cuda kernel, and before the copy of the 
+* loop body to setup state of the dynamic shared memory variables.
+* Ensures that all updates to the tally block are visible on the device by 
 * writing back dirty cache lines; this invalidates the tally cache on the host.
 *
 *******************************************************************************
@@ -349,8 +347,8 @@ void beforeCudaKernelLaunch()
 /*
 *******************************************************************************
 *
-* afterCudaKernelLaunch must be called after each RAJA cuda kernel.
-* This resets the state of shared memory variables.
+* Must be called after each RAJA cuda kernel.
+* This resets the state of the dynamic shared memory variables.
 *
 *******************************************************************************
 */
@@ -363,14 +361,13 @@ void afterCudaKernelLaunch()
 /*
 *******************************************************************************
 *
-* beforeCudaReadTallyBlock must be called before reading the tally block cache
-* on the host.
+* Must be called before reading the tally block cache on the host.
 * Ensures that the host tally block cache for cuda reduction variable id can 
-* be read on the host.
+* be read.
 * Writes any host changes to the tally block cache to the device before 
 * updating the host tally blocks with the values on the GPU.
-* The Async version is only asynchronous to managed memory and is synchronous
-* to host code.
+* The Async version is only asynchronous with regards to managed memory and 
+* is synchronous to host code.
 *
 *******************************************************************************
 */
@@ -381,7 +378,6 @@ void beforeCudaReadTallyBlockAsync(int id)
     readCudaReductionTallyBlockAsync();
   }
 }
-
 void beforeCudaReadTallyBlock(int id)
 {
   if (!s_tally_block_dirty[id]) {
@@ -393,7 +389,7 @@ void beforeCudaReadTallyBlock(int id)
 /*
 *******************************************************************************
 *
-* Release given reduction tally block.
+* Release tally block of reduction variable with id.
 *
 *******************************************************************************
 */
@@ -424,7 +420,7 @@ void freeCudaReductionTallyBlock()
 /*
 *******************************************************************************
 *
-* Get offset into dynamic shared memory.
+* Earmark amount bytes of dynamic shared memory and get the byte offset.
 *
 *******************************************************************************
 */
