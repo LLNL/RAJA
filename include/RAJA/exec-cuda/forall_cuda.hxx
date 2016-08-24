@@ -181,9 +181,10 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 
   forall_cuda_kernel<<<gridSize, 
                        BLOCK_SIZE, 
-                       getCudaSharedmemAmount()>>>(std::move(body),
-                                                   std::move(begin),
-                                                   len);
+                       getCudaSharedmemAmount(BLOCK_SIZE)
+                       >>>(std::move(body), 
+                           std::move(begin),
+                           len);
 
   cudaErrchk(cudaPeekAtLastError());
   if (!Async) {
@@ -217,10 +218,11 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 
   forall_Icount_cuda_kernel<<<gridSize,
                               BLOCK_SIZE,
-                              getCudaSharedmemAmount()>>>(std::move(body),
-                                                          std::move(begin),
-                                                          len,
-                                                          icount);
+                              getCudaSharedmemAmount(BLOCK_SIZE)
+                              >>>(std::move(body),
+                                  std::move(begin),
+                                  len,
+                                  icount);
 
   cudaErrchk(cudaPeekAtLastError());
   if (!Async) {

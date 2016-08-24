@@ -125,7 +125,7 @@ namespace
   bool s_in_raja_forall = false;
   int s_shared_memory_amount_total = 0;
   int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
-
+  int s_cuda_reduction_block_sizes[RAJA_MAX_REDUCE_VARS] = {-1};
 }
 /*
 *******************************************************************************
@@ -339,6 +339,9 @@ void beforeCudaKernelLaunch()
   for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
     s_shared_memory_offsets[i] = -1;
   }
+  for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+    s_cuda_reduction_block_sizes[i] = -1;
+  }
 
   s_tally_valid = false;
   writeBackCudaReductionTallyBlock();
@@ -420,11 +423,12 @@ void freeCudaReductionTallyBlock()
 /*
 *******************************************************************************
 *
-* Earmark amount bytes of dynamic shared memory and get the byte offset.
+* Earmark num_threads * size bytes of dynamic shared memory and get the byte 
+* offset.
 *
 *******************************************************************************
 */
-int getCudaSharedmemOffset(int id, int amount)
+int getCudaSharedmemOffset(int id, int num_threads, int size)
 {
   assert(id < RAJA_MAX_REDUCE_VARS);
 
@@ -434,7 +438,10 @@ int getCudaSharedmemOffset(int id, int amount)
 
       s_shared_memory_offsets[id] = s_shared_memory_amount_total;
 
-      s_shared_memory_amount_total += amount;
+      // ignore reduction variables that don't use dynamic shared memory
+      s_cuda_reduction_block_sizes[id] = (size > 0) ? num_threads : 0;
+
+      s_shared_memory_amount_total += num_threads * size;
     }
     return s_shared_memory_offsets[id];
   } else {
@@ -446,11 +453,25 @@ int getCudaSharedmemOffset(int id, int amount)
 *******************************************************************************
 *
 * Get size in bytes of dynamic shared memory.
+* Check that execution policy num_threads is consistent with active reduction
+* policy num_threads
 *
 *******************************************************************************
 */
-int getCudaSharedmemAmount()
+int getCudaSharedmemAmount(int launch_num_threads)
 {
+  for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+    int reducer_num_threads = s_cuda_reduction_block_sizes[i];
+
+    if (reducer_num_threads > 0 && reducer_num_threads < launch_num_threads) {
+      std::cerr << "\n Cuda execution, reduction policy mismatch: "
+                << "reduction policy with BLOCK_SIZE " << reducer_num_threads
+                << " can't be used with execution policy with BLOCK_SIZE "
+                << launch_num_threads << ", "
+                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+      exit(1);
+    }
+  }
   return s_shared_memory_amount_total;
 }
 

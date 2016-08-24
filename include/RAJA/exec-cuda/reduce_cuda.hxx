@@ -60,8 +60,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cassert>
-
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/reducers.hxx"
@@ -530,12 +528,6 @@ public:
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
-
     // initialize shared memory
     T val = m_tally_device->tally;
     for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
@@ -550,7 +542,7 @@ public:
 
     __syncthreads();
 #else
-    m_smem_offset = getCudaSharedmemOffset(m_myID, sizeof(T) * BLOCK_SIZE);
+    m_smem_offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
 #endif
   }
 
@@ -717,12 +709,6 @@ public:
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
-
     // initialize shared memory
     T val = m_tally_device->tally;
     for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
@@ -737,7 +723,7 @@ public:
 
     __syncthreads();
 #else
-    m_smem_offset = getCudaSharedmemOffset(m_myID, sizeof(T) * BLOCK_SIZE);
+    m_smem_offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
 #endif
   }
 
@@ -906,17 +892,8 @@ public:
     extern __shared__ unsigned char sd_block[];
     T *sd = reinterpret_cast<T *>(&sd_block[m_smem_offset]);
 
-    int blockId = blockIdx.x + blockIdx.y * gridDim.x
-                  + gridDim.x * gridDim.y * blockIdx.z;
-
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (blockId + threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
 
     // initialize shared memory
     T val = static_cast<T>(0);
@@ -932,7 +909,7 @@ public:
 
     __syncthreads();
 #else
-    m_smem_offset = getCudaSharedmemOffset(m_myID, sizeof(T) * BLOCK_SIZE);
+    m_smem_offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
 #endif
   }
 
@@ -1157,12 +1134,6 @@ public:
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
-
     // initialize shared memory
     T val = static_cast<T>(0);
     for (int i = BLOCK_SIZE / 2; i > 0; i /= 2) {
@@ -1177,7 +1148,7 @@ public:
 
     __syncthreads();
 #else
-    m_smem_offset = getCudaSharedmemOffset(m_myID, sizeof(T) * BLOCK_SIZE);
+    m_smem_offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
 #endif
   }
 
@@ -1365,17 +1336,8 @@ public:
     Index_type *sd_idx = reinterpret_cast<Index_type *>(
         &sd_block[m_smem_offset + sizeof(T) * BLOCK_SIZE]);
 
-    int blockId = blockIdx.x + blockIdx.y * gridDim.x
-                  + gridDim.x * gridDim.y * blockIdx.z;
-
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (blockId + threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
 
     // initialize shared memory
     T val = m_tally_device->tally.val;
@@ -1395,8 +1357,8 @@ public:
     __syncthreads();
 #else
     m_smem_offset =
-        getCudaSharedmemOffset(m_myID,
-                               (sizeof(T) + sizeof(Index_type)) * BLOCK_SIZE);
+        getCudaSharedmemOffset(m_myID, BLOCK_SIZE, 
+                               (sizeof(T) + sizeof(Index_type)));
 #endif
   }
 
@@ -1669,17 +1631,8 @@ public:
     Index_type *sd_idx = reinterpret_cast<Index_type *>(
         &sd_block[m_smem_offset + sizeof(T) * BLOCK_SIZE]);
 
-    int blockId = blockIdx.x + blockIdx.y * gridDim.x
-                  + gridDim.x * gridDim.y * blockIdx.z;
-
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int threads = blockDim.x * blockDim.y * blockDim.z;
-
-    if (blockId + threadId == 0) {
-      assert(threads <= BLOCK_SIZE);
-    }
 
     // initialize shared memory
     T val = m_tally_device->tally.val;
@@ -1699,8 +1652,8 @@ public:
     __syncthreads();
 #else
     m_smem_offset =
-        getCudaSharedmemOffset(m_myID,
-                               (sizeof(T) + sizeof(Index_type)) * BLOCK_SIZE);
+        getCudaSharedmemOffset(m_myID, BLOCK_SIZE, 
+                               (sizeof(T) + sizeof(Index_type)));
 #endif
   }
 

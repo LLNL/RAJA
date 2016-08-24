@@ -59,7 +59,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cassert>
- 
+
 #include "RAJA/int_datatypes.hxx"
 
 #include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
@@ -359,10 +359,12 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   {
     assert(dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z <=
                RAJA_CUDA_MAX_NUM_BLOCKS);
+    auto num_threads = 
+        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
 
     cudaLauncherN<<<dims.num_blocks,
                     dims.num_threads,
-                    getCudaSharedmemAmount()>>>(body, cargs...);
+                    getCudaSharedmemAmount(num_threads)>>>(body, cargs...);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
@@ -385,10 +387,12 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
 
     assert(dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z <=
                RAJA_CUDA_MAX_NUM_BLOCKS);
+    auto num_threads = 
+        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
 
     cudaLauncherN<<<dims.num_blocks,
                     dims.num_threads,
-                    getCudaSharedmemAmount()>>>(body, c0);
+                    getCudaSharedmemAmount(num_threads)>>>(body, c0);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
