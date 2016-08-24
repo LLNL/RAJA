@@ -264,25 +264,26 @@ void beforeCudaReadTallyBlock(int id);
  *
  * \return int Byte offset into dynamic shared memory.
  *
- * /param[in] num_threads number of threads expected by this reduction variable.
- * \param[in] size Size of shared memory in bytes needed for each thread.
+ * \param[in] reductionBlockDim Dimensions of blocks expected by this
+ *                              reduction variable.
+ * \param[in] size Size of shared memory in bytes for each thread.
  *
  ******************************************************************************
  */
-int getCudaSharedmemOffset(int id, int num_threads, int size);
+int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size);
 
 /*!
  ******************************************************************************
  *
  * \brief  Get the amount in bytes of shared memory required for the current
- *         kernel launch and check reduction policy num_threads match launch 
- *         num_threads.
+ *         kernel launch and checks the launch parameters.
  *
- * \param[in] num_threads number of threads launched in this kernel invocation.
+ * \param[in] launchGridDim GridDim kernel launch parameter.
+ * \param[in] launchBlockDim BlockDim kernel launch parameter.
  *
  ******************************************************************************
  */
-int getCudaSharedmemAmount(int launch_num_threads);
+int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim);
 
 /*!
  ******************************************************************************

@@ -357,14 +357,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    assert(dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z <=
-               RAJA_CUDA_MAX_NUM_BLOCKS);
-    auto num_threads = 
-        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
-
     cudaLauncherN<<<dims.num_blocks,
                     dims.num_threads,
-                    getCudaSharedmemAmount(num_threads)>>>(body, cargs...);
+                    getCudaSharedmemAmount(dims.num_blocks, dims.num_threads)
+                    >>>(body, cargs...);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }
@@ -385,14 +381,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    assert(dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z <=
-               RAJA_CUDA_MAX_NUM_BLOCKS);
-    auto num_threads = 
-        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z;
-
     cudaLauncherN<<<dims.num_blocks,
                     dims.num_threads,
-                    getCudaSharedmemAmount(num_threads)>>>(body, c0);
+                    getCudaSharedmemAmount(dims.num_blocks, dims.num_threads)
+                    >>>(body, c0);
     cudaErrchk(cudaPeekAtLastError());
     cudaErrchk(cudaDeviceSynchronize());
   }

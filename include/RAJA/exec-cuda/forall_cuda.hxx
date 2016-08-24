@@ -181,7 +181,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 
   forall_cuda_kernel<<<gridSize, 
                        BLOCK_SIZE, 
-                       getCudaSharedmemAmount(BLOCK_SIZE)
+                       getCudaSharedmemAmount(gridSize, BLOCK_SIZE)
                        >>>(std::move(body), 
                            std::move(begin),
                            len);
@@ -218,7 +218,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 
   forall_Icount_cuda_kernel<<<gridSize,
                               BLOCK_SIZE,
-                              getCudaSharedmemAmount(BLOCK_SIZE)
+                              getCudaSharedmemAmount(gridSize, BLOCK_SIZE)
                               >>>(std::move(body),
                                   std::move(begin),
                                   len,
