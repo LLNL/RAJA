@@ -71,60 +71,113 @@ namespace RAJA
 {
 
 namespace
-{  
-  //
-  // Static array used to keep track of which unique ids
-  // for CUDA reduction objects are used and which are not.
-  //
+{
+  /*!
+   * \brief Static array used to keep track of which unique ids
+   * for CUDA reduction objects are used and which are not.
+   */
   bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
-  //
-  // Pointer to hold device memory block for RAJA-Cuda reductions.
-  //
+  /*!
+   * \brief Pointer to device memory block for RAJA-Cuda reductions.
+   */
   CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
 
-  //
-  // Tally blocks on the device, store results of all reduction variables
-  // in one place, copy back to host with one cudaMemcpyAsync.
-  //
+  /*!
+   * \brief Pointer to the tally block on the device.
+   * 
+   * The tally block is a number of contiguous slots in memory where the 
+   * results of cuda reduction variables are stored. This is done so all 
+   * results may be copied back to the host with one memcpy.
+   */
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
-  //
-  // Tally block cache on the CPU, acts as a cache to 
-  // s_cuda_reduction_tally_block_device.
-  // This must be in allocated in pageable memory (not pinned).
-  // Managed Memory has overheads associated with synchronization.
-  // cudaMemcpyAsync is asynchronous to managed memory, but synchronous to 
-  // the host if the target buffer is host pageable memory.
-  //
+  /*!
+   * \brief Pointer to the tally block cache on the host.
+   * 
+   * This cache allows multiple reads from the tally cache on the host to 
+   * incur only one memcpy from device memory. This cache also allows 
+   * multiple cuda reduction variables to be initialized without writing to
+   * device memory. Changes to this cache are written back to the device 
+   * tally block in the next forall, before kernel launch so they are visible
+   * on the device when needed.
+   *
+   * Note: This buffer must be allocated in pageable memory (not pinned).
+   * CudaMemcpyAsync is always asynchronous with respect to managed memory.
+   * However, while cudaMemcpyAsync is asynchronous to the host when used with
+   * pinned or managed memory, it is synchronous to the host if the target 
+   * buffer is host pageable memory. Due to overheads associated with 
+   * synchronization of managed memory, using cudaMemcpyAsync with pageable 
+   * memory takes less time overall than using a synchronous routine. If 
+   * synchronizing managed memory incurs a smaller penalty inthe future, then
+   * using other memory types could take less time.
+   */
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
 
   //
-  // Variables representing the state of the tally block cache on the CPU.
+  /////////////////////////////////////////////////////////////////////////////
   //
-  // If valid then all tally blocks are up to date and can be read 
-  // from the cache. Dirty hold the number of dirty blocks that should
-  // be written back to the gpu tally blocks, and the block_dirty array
-  // holds the status of each block.
+  // Variables representing the state of the tally block cache on the host.
   //
+  /////////////////////////////////////////////////////////////////////////////
+  //
+
+  /*!
+   * \brief Validity of host tally block cache.
+   *
+   * Valid means that all slots are up to date and can be read from the cache.
+   * Invalid means that only dirty slots are up to date.
+   */
   bool s_tally_valid = true;
+  /*
+   * \brief The number of slots that should be written back to the device 
+   *        tally block.
+   */
   int s_tally_dirty = 0;
+  /*
+   * \brief Holds the dirty status of each slot.
+   *
+   * True indicates a slot written to by the host, but not copied back to
+   * the device tally block.
+   */
   bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
 
   //
+  /////////////////////////////////////////////////////////////////////////////
+  //
   // Variables representing the state of dynamic shared memory usage.
   //
-  // If in_raja_forall is true then the host code is executing a raja
-  // forall function.
-  // shared_memory_amount_total is the amount of shared memory currently
-  // earmarked for use in this forall.
-  // shared_memory_offsets hold the byte offset into dynamic shared memory 
-  // for each reduction variable, with -1 indicating a reduction variable that
-  // is not participating in this forall.
+  /////////////////////////////////////////////////////////////////////////////
   //
+
+  /*!
+   * \brief State of the host code, whether it is currently in a raja
+   *        forall function or not.
+   */
   bool s_in_raja_forall = false;
+  /*!
+   * \brief The amount of shared memory currently earmarked for use in
+   *        the current forall.
+   */
   int s_shared_memory_amount_total = 0;
+  /*!
+   * \brief shared_memory_offsets holds the byte offsets into dynamic shared 
+   *        memory for each reduction variable.
+   * 
+   * Note: -1 indicates a reduction variable that is not participating in
+   * the current forall.
+   */
   int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
+  /*!
+   * \brief Holds the number of threads expected by each reduction variable.
+   * 
+   * This is used to check the execution policy against the reduction policies
+   * of participating reduction varaibles. 
+   *
+   * Note: -1 indicates a reduction variable that is not participating in the 
+   * current forall and 0 represents a reduction variable whose execution does
+   * not depend on the number of threads used by the execution policy.
+   */
   int s_cuda_reduction_num_threads[RAJA_MAX_REDUCE_VARS] = {-1};
 }
 /*

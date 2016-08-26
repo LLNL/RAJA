@@ -110,18 +110,34 @@ typedef unsigned int GridSizeType;
 /*!
  ******************************************************************************
  *
- * \brief Types used to simplify memory allocation for cuda reductions.
+ * \brief Type representing a single typed value for a cuda reduction.
  *
- * These dummy types are designed to fit types of size 16 bytes or less.
+ * Enough space for a double value and an index value.
  *
  ******************************************************************************
  */
 struct RAJA_STRUCT_ALIGNAS(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataType {
   unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
 };
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type representing a memory block for a cuda reduction.
+ *
+ ******************************************************************************
+ */
 struct RAJA_STRUCT_ALIGNAS(DATA_ALIGN) CudaReductionDummyBlockType {
   CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type representing enough memory to hold a slot in the tally block.
+ *
+ ******************************************************************************
+ */
 struct CudaReductionDummyTallyType {
   CudaReductionDummyDataType dummy_val;
   GridSizeType dummy_retiredBlocks;
@@ -130,10 +146,10 @@ struct CudaReductionDummyTallyType {
 /*!
  ******************************************************************************
  *
- * \brief Types used to simplify typed memory use in reductions.
+ * \brief Type used to simplify typed memory block use in cuda reductions.
  *
- * These types fit within the dummy types, and that is checked in static 
- * asserts in the reduction classes.
+ * Must fit within the dummy block type (checked in static assert in the
+ * reduction classes).
  *
  ******************************************************************************
  */
@@ -141,12 +157,33 @@ template <typename T>
 struct CudaReductionBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify typed memory block use in cuda Loc reductions.
+ *
+ * Must fit within the dummy block type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
 template <typename T>
 struct CudaReductionLocBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
   Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold value and location in cuda Loc reductions.
+ *
+ * Must fit within the dummy type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
 template  <typename T>
 struct CudaReductionLocType {
   T val;
@@ -156,8 +193,13 @@ struct CudaReductionLocType {
 /*!
  ******************************************************************************
  *
- * \brief Types used in the device tally and host tally cache to hold reduced
- *        values.
+ * \brief Type used to simplify hold tally value in cuda reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ * Note: Retired blocks is used to count the number of blocks that finished
+ * and wrote their portion of the reduction to the memory block.
  *
  ******************************************************************************
  */
@@ -166,10 +208,35 @@ struct CudaReductionTallyType {
   T tally;
   GridSizeType retiredBlocks;
 };
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold tally value in cuda atomic reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
 template <typename T>
 struct CudaReductionTallyTypeAtomic {
   T tally;
 };
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold tally value in cuda Loc reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ * Note: Retired blocks is used to count the number of blocks that finished
+ * and wrote their portion of the reduction to the memory block.
+ *
+ ******************************************************************************
+ */
 template <typename T>
 struct CudaReductionLocTallyType {
   CudaReductionLocType<T> tally;

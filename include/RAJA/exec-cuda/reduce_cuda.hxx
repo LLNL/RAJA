@@ -622,7 +622,7 @@ public:
   T get() { return operator T(); }
 
   /*!
-   * \brief Method that updates min value in proper device memory block locations.
+   * \brief Method that updates min value.
    *
    * Note: only operates on device.
    */
@@ -828,7 +828,7 @@ public:
   T get() { return operator T(); }
 
   /*!
-   * \brief Method that updates max value in proper device memory block locations.
+   * \brief Method that updates max value.
    *
    * Note: only operates on device.
    */
@@ -1087,7 +1087,7 @@ public:
   T get() { return operator T(); }
 
   /*!
-   * \brief += operator that adds value to sum.
+   * \brief Operator that adds value to sum.
    *
    * Note: only operates on device.
    */
@@ -1306,8 +1306,7 @@ public:
   T get() { return operator T(); }
 
   /*!
-   * \brief += operator that adds value to sum in the proper shared
-   *        memory block locations.
+   * \brief Operator that adds value to sum.
    *
    * Note: only operates on device.
    */
