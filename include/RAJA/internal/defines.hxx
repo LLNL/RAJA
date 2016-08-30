@@ -23,4 +23,15 @@
 #define RAJA_SUPPRESS_HD_WARN
 #endif
 
+/*!
+ * \def RAJA_STRINGIFY_HELPER(x)
+ * Helper for RAJA_STRINGIFY_MACRO
+ */
+#define RAJA_STRINGIFY_HELPER(x) #x
+/*!
+ * \def RAJA_STRINGIFY_MACRO(x)
+ * Used in static_assert macros to print values of defines
+ */
+#define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
+
 #endif /* RAJA_INTERNAL_DEFINES_HXX */

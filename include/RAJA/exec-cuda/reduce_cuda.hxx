@@ -687,7 +687,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -894,7 +895,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1159,7 +1161,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1372,7 +1375,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 
@@ -1704,7 +1708,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -2025,7 +2030,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " MACROSTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+      "Error: type must be of size <= " 
+      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 }  // closing brace for RAJA namespace

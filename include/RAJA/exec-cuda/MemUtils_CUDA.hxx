@@ -90,19 +90,6 @@ namespace RAJA
 #define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
 
 /*!
- * \def MACROSTR(x)
- * Used in the static_assert macros
- */
-#define STR(x) #x
-#define MACROSTR(x) STR(x)
-
-/*!
- * \def RAJA_STRUCT_ALIGNAS
- * abstracts the alignas keyword
- */
-#define RAJA_STRUCT_ALIGNAS(dalign) alignas(dalign)
-
-/*!
  * \brief Type used to keep track of the grid size on the device
  */
 typedef unsigned int GridSizeType;
@@ -116,7 +103,7 @@ typedef unsigned int GridSizeType;
  *
  ******************************************************************************
  */
-struct RAJA_STRUCT_ALIGNAS(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataType {
+struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataType {
   unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
 };
 
@@ -127,7 +114,7 @@ struct RAJA_STRUCT_ALIGNAS(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataT
  *
  ******************************************************************************
  */
-struct RAJA_STRUCT_ALIGNAS(DATA_ALIGN) CudaReductionDummyBlockType {
+struct RAJA_ALIGNED_ATTR(DATA_ALIGN) CudaReductionDummyBlockType {
   CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 
