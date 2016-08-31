@@ -434,7 +434,8 @@ void beforeCudaReadTallyBlockAsync(int id)
     readCudaReductionTallyBlockAsync();
   }
 }
-void beforeCudaReadTallyBlock(int id)
+///
+void beforeCudaReadTallyBlockSync(int id)
 {
   if (!s_tally_block_dirty[id]) {
     writeBackCudaReductionTallyBlock();

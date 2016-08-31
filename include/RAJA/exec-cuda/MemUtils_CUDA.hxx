@@ -71,7 +71,7 @@ namespace RAJA
 /*!
  * \def RAJA_CUDA_REDUCE_BLOCK_LENGTH
  * Size of reduction memory block for each reducer object (value based on
- * rough estimate of "worst case" maximum numvber of blocks)
+ * rough estimate of "worst case" maximum number of blocks)
  */
 #define RAJA_CUDA_REDUCE_BLOCK_LENGTH RAJA_CUDA_MAX_NUM_BLOCKS
 
@@ -84,8 +84,10 @@ namespace RAJA
 
 /*!
  * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
- * Used in CudaReductionDummyDataType to allocate arrays and accommodate all the Reduction types
- * includes the size of the index variable for Loc reductions
+ * Size in bytes used in CudaReductionDummyDataType for array allocation to 
+ * accommodate the template type used in reductions.
+ * 
+ * Note: Includes the size of the index variable for Loc reductions.
  */
 #define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
 
@@ -103,7 +105,8 @@ typedef unsigned int GridSizeType;
  *
  ******************************************************************************
  */
-struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE) CudaReductionDummyDataType {
+struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
+CudaReductionDummyDataType {
   unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
 };
 
@@ -302,13 +305,40 @@ void afterCudaKernelLaunch();
 /*!
  ******************************************************************************
  *
- * \brief Updates host tally cache for read by reduction varaible with id.
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * an asynchronous reduction policy.
  *
  ******************************************************************************
  */
 void beforeCudaReadTallyBlockAsync(int id);
 
-void beforeCudaReadTallyBlock(int id);
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * a synchronous reduction policy.
+ *
+ ******************************************************************************
+ */
+void beforeCudaReadTallyBlockSync(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * templated on Async from the reduction policy.
+ *
+ ******************************************************************************
+ */
+template<bool Async>
+void beforeCudaReadTallyBlock(int id)
+{
+  if (Async) {
+    beforeCudaReadTallyBlockAsync(id);
+  } else {
+    beforeCudaReadTallyBlockSync(id);
+  }
+}
 
 /*!
  ******************************************************************************
@@ -346,7 +376,6 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim);
  *
  ******************************************************************************
  */
-
 void freeCudaReductionTallyBlock();
 
 /*!

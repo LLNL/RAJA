@@ -127,7 +127,7 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
  * \brief Generics of atomic update methods used in reduction variables.
  *
  * The generic version just wraps the nvidia cuda atomics.
- * Specializations implement other more atomics using atomic CAS.
+ * Specializations implement other atomics using atomic CAS.
  *
  ******************************************************************************
  */
@@ -136,13 +136,13 @@ __device__ inline T _atomicMin(T *address, T value)
 {
   return atomicMin(address, value);
 }
-
+///
 template <typename T>
 __device__ inline T _atomicMax(T *address, T value)
 {
   return atomicMax(address, value);
 }
-
+///
 template <typename T>
 __device__ inline T _atomicAdd(T *address, T value)
 {
@@ -242,7 +242,7 @@ __device__ inline float _atomicMax(float *address, float value)
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
 // don't specialize for 64-bit min/max if they exist
 #else
-// implement 64-bit min/max if they don't exist
+///
 template <>
 __device__ inline unsigned long long int _atomicMin(
                                   unsigned long long int *address,
@@ -287,7 +287,13 @@ __device__ inline unsigned long long int _atomicMax(
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
 // don't specialize for 64-bit add if it exists
 #else
-///
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic add update methods used to accumulate to memory locations.
+ *
+ ******************************************************************************
+ */
 template <>
 __device__ inline double _atomicAdd(double *address, double value)
 {
@@ -446,7 +452,13 @@ __device__ inline unsigned long long int _atomicMax(
 #if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
 // don't specialize for doubles if they exist
 #else
-///
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic add update methods used to accumulate to memory locations.
+ *
+ ******************************************************************************
+ */
 template <>
 __device__ inline double _atomicAdd(double *address, double value)
 {
@@ -606,11 +618,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally;
   }
 
@@ -813,11 +821,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally;
   }
 
@@ -1073,11 +1077,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally;
   }
 
@@ -1293,11 +1293,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally;
   }
 
@@ -1598,11 +1594,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally.val;
   }
 
@@ -1620,11 +1612,7 @@ public:
    */
   Index_type getLoc()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally.idx;
   }
 
@@ -1921,11 +1909,7 @@ public:
    */
   operator T()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally.val;
   }
 
@@ -1943,11 +1927,7 @@ public:
    */
   Index_type getLoc()
   {
-    if (Async) {
-      beforeCudaReadTallyBlockAsync(m_myID);
-    } else {
-      beforeCudaReadTallyBlock(m_myID);
-    }
+    beforeCudaReadTallyBlock<Async>(m_myID);
     return m_tally_host->tally.idx;
   }
 

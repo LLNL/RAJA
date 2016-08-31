@@ -57,7 +57,6 @@
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
-#else
 #endif
 
 namespace RAJA
@@ -365,7 +364,6 @@ RAJA_INLINE void forallN(Ts &&... args)
   // this call should be moved into a cuda file
   // but must be made before loop_body is copied
   beforeCudaKernelLaunch();
-#else
 #endif
 
   fun_unpacker<POLICY, Indices...>(
@@ -375,7 +373,6 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #ifdef RAJA_ENABLE_CUDA
   afterCudaKernelLaunch();
-#else
 #endif
 }
 

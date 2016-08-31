@@ -357,12 +357,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    cudaLauncherN<<<dims.num_blocks,
-                    dims.num_threads,
-                    getCudaSharedmemAmount(dims.num_blocks, dims.num_threads)
-                    >>>(body, cargs...);
-    cudaErrchk(cudaPeekAtLastError());
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                 >>>(body, cargs...);
+                 
+    RAJA_CUDA_CHECK_AND_SYNC(true);
   }
 };
 
@@ -381,12 +379,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<dims.num_blocks,
-                    dims.num_threads,
-                    getCudaSharedmemAmount(dims.num_blocks, dims.num_threads)
-                    >>>(body, c0);
-    cudaErrchk(cudaPeekAtLastError());
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                 >>>(body, c0);
+
+    RAJA_CUDA_CHECK_AND_SYNC(true);
   }
 };
 

@@ -167,6 +167,13 @@ struct cuda_reduce_atomic_async : public cuda_reduce_atomic<BLOCK_SIZE, true> {
 const int WARP_SIZE = 32;
 const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 
+/*!
+ * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize)
+ * Macro that generates kernel launch parameters.
+ */ 
+#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
+  gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
+
 }  // closing brace for RAJA namespace
 
 //

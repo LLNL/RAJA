@@ -69,6 +69,8 @@
 
 #include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
+#include "RAJA/internal/defines.hxx"
+
 namespace RAJA
 {
 
@@ -174,22 +176,15 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
   auto end = std::end(iter);
   Index_type len = std::distance(begin, end);
 
-  size_t gridSize = 
-      RAJA_MIN((len + BLOCK_SIZE - 1) / BLOCK_SIZE, RAJA_CUDA_MAX_NUM_BLOCKS);
+  size_t gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+  gridSize = RAJA_MIN(gridSize, RAJA_CUDA_MAX_NUM_BLOCKS);
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<gridSize, 
-                       BLOCK_SIZE, 
-                       getCudaSharedmemAmount(gridSize, BLOCK_SIZE)
-                       >>>(std::move(body), 
-                           std::move(begin),
-                           len);
+  forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
+                    >>>(std::move(body), std::move(begin), len);
 
-  cudaErrchk(cudaPeekAtLastError());
-  if (!Async) {
-    cudaErrchk(cudaDeviceSynchronize());
-  }
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 
   RAJA_FT_END;
 
@@ -211,23 +206,15 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
   auto end = std::end(iter);
   Index_type len = std::distance(begin, end);
 
-  size_t gridSize = 
-      RAJA_MIN((len + BLOCK_SIZE - 1) / BLOCK_SIZE, RAJA_CUDA_MAX_NUM_BLOCKS);
+  size_t gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+  gridSize = RAJA_MIN(gridSize, RAJA_CUDA_MAX_NUM_BLOCKS);
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<gridSize,
-                              BLOCK_SIZE,
-                              getCudaSharedmemAmount(gridSize, BLOCK_SIZE)
-                              >>>(std::move(body),
-                                  std::move(begin),
-                                  len,
-                                  icount);
+  forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
+                           >>>(std::move(body), std::move(begin), len, icount);
 
-  cudaErrchk(cudaPeekAtLastError());
-  if (!Async) {
-    cudaErrchk(cudaDeviceSynchronize());
-  }
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 
   RAJA_FT_END;
 
@@ -265,10 +252,7 @@ RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, As
 
   }  // iterate over segments of index set
 
-  cudaErrchk(cudaPeekAtLastError());
-  if (!Async) {
-    cudaErrchk(cudaDeviceSynchronize());
-  }
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
@@ -296,10 +280,7 @@ RAJA_INLINE void forall_Icount(
 
   }  // iterate over segments of index set
 
-  cudaErrchk(cudaPeekAtLastError());
-  if (!Async) {
-    cudaErrchk(cudaDeviceSynchronize());
-  }
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 }  // closing brace for RAJA namespace
