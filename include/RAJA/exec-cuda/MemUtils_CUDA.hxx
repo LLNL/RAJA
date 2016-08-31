@@ -399,7 +399,6 @@ void freeCudaReductionTallyBlock();
  *
  ******************************************************************************
  */
-
 void getCudaReductionMemBlock(int id, void** device_memblock);
 
 /*!
