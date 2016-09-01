@@ -120,18 +120,12 @@ struct Dim3z {
 ///
 /// Segment execution policies
 ///
-
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec {
 };
-
+///
 template <size_t BLOCK_SIZE>
-struct cuda_exec_async : public cuda_exec<BLOCK_SIZE, true> {
-};
-
-//
-//
-//
+using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -151,14 +145,13 @@ struct cuda_reduce {
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_reduce_atomic {
 };
-
-template <size_t BLOCK_SIZE>
-struct cuda_reduce_async : public cuda_reduce<BLOCK_SIZE, true> {
-};
 ///
 template <size_t BLOCK_SIZE>
-struct cuda_reduce_atomic_async : public cuda_reduce_atomic<BLOCK_SIZE, true> {
-};
+using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
+///
+template <size_t BLOCK_SIZE>
+using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
+
 
 //
 // Operations in the included files are parametrized using the following
