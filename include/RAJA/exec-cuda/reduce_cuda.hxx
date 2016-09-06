@@ -74,8 +74,8 @@
 namespace RAJA
 {
 
-// unnamed namespace to encapsulate helper functions
-namespace
+// HIDDEN namespace to encapsulate helper functions
+namespace HIDDEN
 {
 /*!
  ******************************************************************************
@@ -101,7 +101,7 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
   return Tunion.var;
 }
 
-} // end unnamed namespace for helper functions
+} // end HIDDEN namespace for helper functions
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -626,7 +626,7 @@ public:
       if (threadId < WARP_SIZE) {
         temp = sd[threadId];
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-          temp += shfl_xor<T>(temp, i);
+          temp += HIDDEN::shfl_xor<T>(temp, i);
         }
       }
 
@@ -667,7 +667,7 @@ public:
         if (threadId < WARP_SIZE) {
           temp = sd[threadId];
           for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-            temp += shfl_xor<T>(temp, i);
+            temp += HIDDEN::shfl_xor<T>(temp, i);
           }
         }
 
@@ -882,7 +882,7 @@ public:
       if (threadId < WARP_SIZE) {
         temp = sd[threadId];
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-          temp += shfl_xor<T>(temp, i);
+          temp += HIDDEN::shfl_xor<T>(temp, i);
         }
       }
 
