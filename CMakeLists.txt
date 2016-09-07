@@ -76,7 +76,7 @@ include(cmake/SetupRajaConfig.cmake)
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/RAJA-config.cmake.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake)
+  ${PROJECT_BINARY_DIR}/include/RAJA/RAJA-config.cmake)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
@@ -88,7 +88,7 @@ install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include
 
 add_subdirectory(src)
 
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake 
+install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/RAJA-config.cmake 
   DESTINATION cmake/)
 
 if(RAJA_ENABLE_TESTS)
