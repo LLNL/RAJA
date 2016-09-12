@@ -41,6 +41,8 @@
 #
 ###############################################################################
 
+add_definitions(-DRAJA_ENABLE_NESTED)
+
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 cuda_add_executable(reducemin.exe
@@ -68,15 +70,13 @@ add_test(
     NAME traversal
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal.exe>)
 
-if (RAJA_ENABLE_NESTED)
-  if(RAJA_ENABLE_OPENMP)
-      cuda_add_executable(nested.exe
-        Nested.cxx)
-      add_test(
-          NAME nested
-          COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
-      target_link_libraries(nested.exe RAJA)
-  endif()
+if(RAJA_ENABLE_OPENMP)
+    cuda_add_executable(nested.exe
+      Nested.cxx)
+    add_test(
+        NAME nested
+        COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
+    target_link_libraries(nested.exe RAJA)
 endif()
 
 cuda_add_executable(reduceminloc.exe
