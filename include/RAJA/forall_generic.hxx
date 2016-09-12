@@ -274,7 +274,7 @@ RAJA_INLINE void forall(const Index_type* idx,
                         LOOP_BODY loop_body)
 {
   // turn into an iterator
-  forall<EXEC_POLICY_T>(ListSegment(idx, len), loop_body);
+  forall<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), loop_body);
 }
 
 /*!
@@ -293,7 +293,7 @@ RAJA_INLINE void forall_Icount(const Index_type* idx,
                                LOOP_BODY loop_body)
 {
   // turn into an iterator
-  forall_Icount<EXEC_POLICY_T>(ListSegment(idx, len), icount, loop_body);
+  forall_Icount<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), icount, loop_body);
 }
 
 
