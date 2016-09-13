@@ -67,119 +67,113 @@ namespace scan
 namespace inplace
 {
 
-struct upsweep <seq_exec> {
+struct upsweep<seq_exec> {
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		Value agg { v };
-		for (Iter i { begin }; i != end; ++i) {
-			*i = agg = f (*i, agg);
-		}
-	}
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    Value agg{v};
+    for (Iter i{begin}; i != end; ++i) {
+      *i = agg = f(*i, agg);
+    }
+  }
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		Value agg { v };
-		for (Iter i { begin }; i != end - 1; ++i) {
-			std::tie (*i, agg) = std::make_tuple (agg, f (*i, agg));
-		}
-	}
-
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    Value agg{v};
+    for (Iter i{begin}; i != end - 1; ++i) {
+      std::tie(*i, agg) = std::make_tuple(agg, f(*i, agg));
+    }
+  }
 };
 
-struct downsweep <seq_exec> {
+struct downsweep<seq_exec> {
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (Iter, Iter, size_t, BinFn, const Value) {
-		// do nothing
-	}
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(Iter, Iter, size_t, BinFn, const Value)
+  {
+    // do nothing
+  }
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (Iter, Iter, size_t, BinFn, const Value) {
-		// do nothing
-	}
-
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(Iter, Iter, size_t, BinFn, const Value)
+  {
+    // do nothing
+  }
 };
 
-} // namespace inplace
+}  // namespace inplace
 
-struct upsweep <seq_exec> {
+struct upsweep<seq_exec> {
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		Value agg { v };
-		OutIter o { out };
-		for (Iter i { begin }; i != end; ++i) {
-			*o++ = agg = f (*i, agg);
-		}
-	}
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    Value agg{v};
+    OutIter o{out};
+    for (Iter i{begin}; i != end; ++i) {
+      *o++ = agg = f(*i, agg);
+    }
+  }
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		Value agg { v };
-		OutIter o { out };
-		*o++ = v;
-		for (Iter i { begin }; i != end - 1; ++i, ++o) {
-			*o = agg = f (*i, agg);
-		}
-	}
-
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    Value agg{v};
+    OutIter o{out};
+    *o++ = v;
+    for (Iter i{begin}; i != end - 1; ++i, ++o) {
+      *o = agg = f(*i, agg);
+    }
+  }
 };
 
-struct downsweep <seq_exec, Iter, OutIter> {
+struct downsweep<seq_exec, Iter, OutIter> {
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (const Iter, const Iter, OutIter, size_t, BinFn, const Value) {
-		// do nothing
-	}
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(const Iter,
+                                    const Iter,
+                                    OutIter,
+                                    size_t,
+                                    BinFn,
+                                    const Value)
+  {
+    // do nothing
+  }
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (const Iter, const Iter, OutIter, size_t, BinFn, const Value) {
-		// do nothing
-	}
-
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(const Iter,
+                                    const Iter,
+                                    OutIter,
+                                    size_t,
+                                    BinFn,
+                                    const Value)
+  {
+    // do nothing
+  }
 };
 
-} // namespace scan
-} // namespace internal
-} // namespace RAJA
+}  // namespace scan
+}  // namespace internal
+}  // namespace RAJA
 
 #endif

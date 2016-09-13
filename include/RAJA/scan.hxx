@@ -72,24 +72,28 @@ namespace inplace
 {
 
 template <typename ExecPolicy>
-struct upsweep { };
+struct upsweep {
+};
 
 template <typename ExecPolicy>
-struct downsweep { };
+struct downsweep {
+};
 
-} // inplace
-
-template <typename ExecPolicy>
-struct upsweep { };
+}  // inplace
 
 template <typename ExecPolicy>
-struct downsweep { };
+struct upsweep {
+};
 
-} // scan
+template <typename ExecPolicy>
+struct downsweep {
+};
 
-} // internal
+}  // scan
 
-	/*!
+}  // internal
+
+/*!
 ******************************************************************************
 *
 * \brief  inclusive in-place scan execution policy
@@ -98,37 +102,37 @@ struct downsweep { };
 *
 * \verbatim
 
-  inclusive_scan_inplace <upsweep_policy, downsweep_policy> (a, a + n, f, 0);
+inclusive_scan_inplace <upsweep_policy, downsweep_policy> (a, a + n, f, 0);
 
-	// or
+// or
 
-	inclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
+inclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
 
 * \endverbatim
 *
 ******************************************************************************
-  */
+*/
 
 template <typename UpsweepPolicy,
-					typename DownsweepPolicy = UpsweepPolicy,
-					typename Iter,
-					typename Value = typename std::decay <
-						typename std::remove_pointer <Iter>::type>::type,
-					typename BinaryFn>
-void inclusive_scan_inplace (
-	Iter begin,
-	Iter end,
-	BinaryFn f = std::plus <Value, Value> { },
-	Value v = Value { 0 }) {
+          typename DownsweepPolicy = UpsweepPolicy,
+          typename Iter,
+          typename Value = typename std::decay<
+              typename std::remove_pointer<Iter>::type>::type,
+          typename BinaryFn>
+void inclusive_scan_inplace(Iter begin,
+                            Iter end,
+                            BinaryFn f = std::plus<Value, Value>{},
+                            Value v = Value{0})
+{
 
-	// TODO: add check for begin < end, Iter must be random-access
-	const size_t size { end - begin };
-	namespace scan = RAJA::internal::scan::inplace;
-	scan::upsweep <UpsweepPolicy>::inclusive (begin, end, size, f, v);
-	scan::downsweep <DownsweepPolicy>::inclusive (begin, end, size, f, v);
+  // TODO: add check for begin < end, Iter must be random-access
+  const size_t size{end - begin};
+  namespace scan = RAJA::internal::scan::inplace;
+  scan::upsweep<UpsweepPolicy>::inclusive(begin, end, size, f, v);
+  scan::downsweep<DownsweepPolicy>::inclusive(begin, end, size, f, v);
 }
 
-	/*!
+/*!
 ******************************************************************************
 *
 * \brief  exclusive in-place scan execution policy
@@ -137,37 +141,37 @@ void inclusive_scan_inplace (
 *
 * \verbatim
 
-  exclusive_scan_inplace <upsweep_policy, downsweep_policy> (a, a + n, f, 0);
+exclusive_scan_inplace <upsweep_policy, downsweep_policy> (a, a + n, f, 0);
 
-	// or
+// or
 
-	exclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
+exclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
 
 * \endverbatim
 *
 ******************************************************************************
-  */
+*/
 
 template <typename UpsweepPolicy,
-					typename DownsweepPolicy = UpsweepPolicy,
-					typename Iter,
-					typename Value = typename std::decay <
-						typename std::remove_pointer <Iter>::type>::type,
-					typename BinaryFn>
-void exclusive_scan_inplace (
-	Iter begin,
-	Iter end,
-	BinaryFn f = std::plus <Value, Value> { },
-	Value v = Value { 0 }) {
+          typename DownsweepPolicy = UpsweepPolicy,
+          typename Iter,
+          typename Value = typename std::decay<
+              typename std::remove_pointer<Iter>::type>::type,
+          typename BinaryFn>
+void exclusive_scan_inplace(Iter begin,
+                            Iter end,
+                            BinaryFn f = std::plus<Value, Value>{},
+                            Value v = Value{0})
+{
 
-	// TODO: add check for begin < end, Iter must be random-access
-	const size_t size { end - begin };
-	namespace scan = RAJA::internal::scan::inplace;
-	scan::upsweep <UpsweepPolicy>::exclusive (begin, end, size, f, v);
-	scan::downsweep <DownsweepPolicy>::exclusive (begin, end, size, f, v);
+  // TODO: add check for begin < end, Iter must be random-access
+  const size_t size{end - begin};
+  namespace scan = RAJA::internal::scan::inplace;
+  scan::upsweep<UpsweepPolicy>::exclusive(begin, end, size, f, v);
+  scan::downsweep<DownsweepPolicy>::exclusive(begin, end, size, f, v);
 }
 
-	/*!
+/*!
 ******************************************************************************
 *
 * \brief  inclusive scan execution policy
@@ -176,39 +180,39 @@ void exclusive_scan_inplace (
 *
 * \verbatim
 
-  inclusive_scan <upsweep_policy, downsweep_policy> (a, a + n, b, f, 0);
+inclusive_scan <upsweep_policy, downsweep_policy> (a, a + n, b, f, 0);
 
-	// or
+// or
 
-	inclusive_scan <exec_pol> (a, a + n, b, f, 0);
+inclusive_scan <exec_pol> (a, a + n, b, f, 0);
 
 * \endverbatim
 *
 ******************************************************************************
-  */
+*/
 
 template <typename UpsweepPolicy,
-					typename DownsweepPolicy = UpsweepPolicy,
-					typename Iter,
-					typename IterOut,
-					typename Value = typename std::decay <
-						typename std::remove_pointer <Iter>::type>::type,
-					typename BinaryFn>
-void inclusive_scan (
-	const Iter begin,
-	const Iter end,
-	IterOut out,
-	BinaryFn f = std::plus <Value, Value> { },
-	Value v = Value { 0 }) {
+          typename DownsweepPolicy = UpsweepPolicy,
+          typename Iter,
+          typename IterOut,
+          typename Value = typename std::decay<
+              typename std::remove_pointer<Iter>::type>::type,
+          typename BinaryFn>
+void inclusive_scan(const Iter begin,
+                    const Iter end,
+                    IterOut out,
+                    BinaryFn f = std::plus<Value, Value>{},
+                    Value v = Value{0})
+{
 
-	// TODO: add check for begin < end, Iter must be random-access
-	const size_t size { end - begin };
-	namespace scan = RAJA::internal::scan;
-	scan::upsweep <UpsweepPolicy>::inclusive (begin, end, out, size, f, v);
-	scan::downsweep <DownsweepPolicy>::inclusive (begin, end, out, size, f, v);
+  // TODO: add check for begin < end, Iter must be random-access
+  const size_t size{end - begin};
+  namespace scan = RAJA::internal::scan;
+  scan::upsweep<UpsweepPolicy>::inclusive(begin, end, out, size, f, v);
+  scan::downsweep<DownsweepPolicy>::inclusive(begin, end, out, size, f, v);
 }
 
-	/*!
+/*!
 ******************************************************************************
 *
 * \brief  exclusive scan execution policy
@@ -217,36 +221,36 @@ void inclusive_scan (
 *
 * \verbatim
 
-  exclusive_scan <upsweep_policy, downsweep_policy> (a, a + n, b, f, 0);
+exclusive_scan <upsweep_policy, downsweep_policy> (a, a + n, b, f, 0);
 
-	// or
+// or
 
-	exclusive_scan <exec_pol> (a, a + n, b, f, 0);
+exclusive_scan <exec_pol> (a, a + n, b, f, 0);
 
 * \endverbatim
 *
 ******************************************************************************
-  */
+*/
 
 template <typename UpsweepPolicy,
-					typename DownsweepPolicy = UpsweepPolicy,
-					typename Iter,
-					typename IterOut,
-					typename Value = typename std::decay <
-						typename std::remove_pointer <Iter>::type>::type,
-					typename BinaryFn>
-void exclusive_scan (
-	const Iter begin,
-	const Iter end,
-	IterOut out,
-	BinaryFn f = std::plus <Value, Value> { },
-	Value v = Value { 0 }) {
+          typename DownsweepPolicy = UpsweepPolicy,
+          typename Iter,
+          typename IterOut,
+          typename Value = typename std::decay<
+              typename std::remove_pointer<Iter>::type>::type,
+          typename BinaryFn>
+void exclusive_scan(const Iter begin,
+                    const Iter end,
+                    IterOut out,
+                    BinaryFn f = std::plus<Value, Value>{},
+                    Value v = Value{0})
+{
 
-	// TODO: add check for begin < end, Iter must be random-access
-	const size_t size { end - begin };
-	namespace scan = RAJA::internal::scan;
-	scan::upsweep <UpsweepPolicy>::exclusive (begin, end, out, size, f, v);
-	scan::downsweep <DownsweepPolicy>::exclusive (begin, end, out, size, f, v);
+  // TODO: add check for begin < end, Iter must be random-access
+  const size_t size{end - begin};
+  namespace scan = RAJA::internal::scan;
+  scan::upsweep<UpsweepPolicy>::exclusive(begin, end, out, size, f, v);
+  scan::downsweep<DownsweepPolicy>::exclusive(begin, end, out, size, f, v);
 }
 
 }  // closing brace for RAJA namespace

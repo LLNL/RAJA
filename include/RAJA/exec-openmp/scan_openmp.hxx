@@ -67,133 +67,125 @@ namespace scan
 namespace inplace
 {
 
-struct upsweep <omp_parallel_for_exec> {
+struct upsweep<omp_parallel_for_exec> {
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		// TODO
-		Value agg { v };
-		for (Iter i { begin }; i != end; ++i) {
-			*i = agg = f (*i, agg);
-		}
-	}
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+    Value agg{v};
+    for (Iter i{begin}; i != end; ++i) {
+      *i = agg = f(*i, agg);
+    }
+  }
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		// TODO
-		Value agg { v };
-		for (Iter i { begin }; i != end - 1; ++i) {
-			std::tie (*i, agg) = std::make_tuple (agg, f (*i, agg));
-		}
-	}
-
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+    Value agg{v};
+    for (Iter i{begin}; i != end - 1; ++i) {
+      std::tie(*i, agg) = std::make_tuple(agg, f(*i, agg));
+    }
+  }
 };
 
-struct downsweep <omp_parallel_for_exec> {
+struct downsweep<omp_parallel_for_exec> {
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		// TODO
-	}
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+  }
 
-	template <typename Iter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (Iter begin, Iter end, size_t n, BinFn f, const Value v) {
-		// TODO
-	}
-
+  template <typename Iter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(Iter begin,
+                                    Iter end,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+  }
 };
 
-} // namespace inplace
+}  // namespace inplace
 
-struct upsweep <omp_parallel_for_exec> {
+struct upsweep<omp_parallel_for_exec> {
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		// TODO
-		Value agg { v };
-		OutIter o { out };
-		for (Iter i { begin }; i != end; ++i) {
-			*o++ = agg = f (*i, agg);
-		}
-	}
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+    Value agg{v};
+    OutIter o{out};
+    for (Iter i{begin}; i != end; ++i) {
+      *o++ = agg = f(*i, agg);
+    }
+  }
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		// TODO
-		Value agg { v };
-		OutIter o { out };
-		*o++ = v;
-		for (Iter i { begin }; i != end - 1; ++i, ++o) {
-			*o = agg = f (*i, agg);
-		}
-	}
-
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // TODO
+    Value agg{v};
+    OutIter o{out};
+    *o++ = v;
+    for (Iter i{begin}; i != end - 1; ++i, ++o) {
+      *o = agg = f(*i, agg);
+    }
+  }
 };
 
-struct downsweep <omp_parallel_for_exec, Iter, OutIter> {
+struct downsweep<omp_parallel_for_exec, Iter, OutIter> {
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void inclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		// do nothing
-	}
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void inclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // do nothing
+  }
 
-	template <typename Iter,
-						typename OutIter,
-						typename BinFn,
-						typename Value>
-	static RAJA_INLINE
-	void exclusive (const Iter begin,
-									const Iter end,
-									OutIter out,
-									size_t n,
-									BinFn f,
-									const Value v) {
-		// do nothing
-	}
-
+  template <typename Iter, typename OutIter, typename BinFn, typename Value>
+  static RAJA_INLINE void exclusive(const Iter begin,
+                                    const Iter end,
+                                    OutIter out,
+                                    size_t n,
+                                    BinFn f,
+                                    const Value v)
+  {
+    // do nothing
+  }
 };
 
-} // namespace scan
-} // namespace internal
-} // namespace RAJA
+}  // namespace scan
+}  // namespace internal
+}  // namespace RAJA
 
 #endif
