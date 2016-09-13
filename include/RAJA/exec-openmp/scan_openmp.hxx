@@ -62,129 +62,107 @@ namespace RAJA
 {
 namespace internal
 {
-namespace scan
+
+RAJA_INLINE
+int firstIndex(int n, int p, int pid)
 {
-namespace inplace
+  return static_cast<size_t>(n * pid) / p;
+}
+
+template <typename Iter, typename BinFn, typename Value>
+static RAJA_INLINE void inclusive_scan_inplace(::RAJA::omp_parallel_for_exec&,
+                                               Iter begin,
+                                               Iter end,
+                                               size_t n,
+                                               BinFn f,
+                                               const Value v)
 {
-
-struct upsweep<omp_parallel_for_exec> {
-
-  template <typename Iter, typename BinFn, typename Value>
-  static RAJA_INLINE void inclusive(Iter begin,
-                                    Iter end,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
+  int p = omp_get_num_threads();
+  std::vector<Value> sums(v, p);
+#pragma omp parallel
   {
-    // TODO
-    Value agg{v};
-    for (Iter i{begin}; i != end; ++i) {
-      *i = agg = f(*i, agg);
+#pragma omp for schedule(static)
+    for (int pid = 0; pid < p; ++pid) {
+      const int i0 = firstIndex(n, p, pid);
+      const int i1 = firstIndex(n, p, pid + 1);
+      inclusive_scan_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f, v);
+      sums[pid] = begin[i1 - 1];
+    }
+
+#pragma omp single
+    exclusive_scan_inplace(::RAJA::seq_exec{}, sums.begin(), sums.end(), f, v);
+
+#pragma omp for schedule(static)
+    for (int pid = 0; pid < p; ++pid) {
+      const int i0 = firstIndex(n, p, pid);
+      const int i1 = firstIndex(n, p, pid + 1);
+      for (int i = i0; i < i1; ++i) {
+        *i = f(*i, sums[pid]);
+      }
     }
   }
+}
 
-  template <typename Iter, typename BinFn, typename Value>
-  static RAJA_INLINE void exclusive(Iter begin,
-                                    Iter end,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
+template <typename Iter, typename BinFn, typename Value>
+static RAJA_INLINE void exclusive_scan_inplace(::RAJA::omp_parallel_for_exec&,
+                                               Iter begin,
+                                               Iter end,
+                                               size_t n,
+                                               BinFn f,
+                                               const Value v)
+{
+  int p = omp_get_num_threads();
+  std::vector<Value> sums(v, p);
+#pragma omp parallel
   {
-    // TODO
-    Value agg{v};
-    for (Iter i{begin}; i != end - 1; ++i) {
-      std::tie(*i, agg) = std::make_tuple(agg, f(*i, agg));
+#pragma omp for schedule(static)
+    for (int pid = 0; pid < p; ++pid) {
+      const int i0 = firstIndex(n, p, pid);
+      const int i1 = firstIndex(n, p, pid + 1);
+      exclusive_scan_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f, v);
+      sums[pid] = begin[i1 - 1];
+    }
+
+#pragma omp single
+    exclusive_scan_inplace(::RAJA::seq_exec{}, sums.begin(), sums.end(), f, v);
+
+#pragma omp for schedule(static)
+    for (int pid = 0; pid < p; ++pid) {
+      const int i0 = firstIndex(n, p, pid);
+      const int i1 = firstIndex(n, p, pid + 1);
+      for (int i = i0; i < i1; ++i) {
+        *i = f(*i, sums[pid]);
+      }
     }
   }
-};
+}
 
-struct downsweep<omp_parallel_for_exec> {
+template <typename Iter, typename OutIter, typename BinFn, typename Value>
+static RAJA_INLINE void inclusive_scan(::RAJA::omp_parallel_for_exec& exec,
+                                       Iter begin,
+                                       Iter end,
+                                       OutIter out,
+                                       size_t n,
+                                       BinFn f,
+                                       const Value v)
+{
+  std::copy(begin, end, out);
+  inclusive_scan(exec, out, out + n, n, f, v);
+}
 
-  template <typename Iter, typename BinFn, typename Value>
-  static RAJA_INLINE void inclusive(Iter begin,
-                                    Iter end,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // TODO
-  }
+template <typename Iter, typename OutIter, typename BinFn, typename Value>
+static RAJA_INLINE void exclusive_scan(::RAJA::omp_parallel_for_exec& exec,
+                                       Iter begin,
+                                       Iter end,
+                                       OutIter out,
+                                       size_t n,
+                                       BinFn f,
+                                       const Value v)
+{
+  std::copy(begin, end, out);
+  exclusive_scan_inplace(exec, out, out + n, n, f, v);
+}
 
-  template <typename Iter, typename BinFn, typename Value>
-  static RAJA_INLINE void exclusive(Iter begin,
-                                    Iter end,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // TODO
-  }
-};
-
-}  // namespace inplace
-
-struct upsweep<omp_parallel_for_exec> {
-
-  template <typename Iter, typename OutIter, typename BinFn, typename Value>
-  static RAJA_INLINE void inclusive(const Iter begin,
-                                    const Iter end,
-                                    OutIter out,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // TODO
-    Value agg{v};
-    OutIter o{out};
-    for (Iter i{begin}; i != end; ++i) {
-      *o++ = agg = f(*i, agg);
-    }
-  }
-
-  template <typename Iter, typename OutIter, typename BinFn, typename Value>
-  static RAJA_INLINE void exclusive(const Iter begin,
-                                    const Iter end,
-                                    OutIter out,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // TODO
-    Value agg{v};
-    OutIter o{out};
-    *o++ = v;
-    for (Iter i{begin}; i != end - 1; ++i, ++o) {
-      *o = agg = f(*i, agg);
-    }
-  }
-};
-
-struct downsweep<omp_parallel_for_exec, Iter, OutIter> {
-
-  template <typename Iter, typename OutIter, typename BinFn, typename Value>
-  static RAJA_INLINE void inclusive(const Iter begin,
-                                    const Iter end,
-                                    OutIter out,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // do nothing
-  }
-
-  template <typename Iter, typename OutIter, typename BinFn, typename Value>
-  static RAJA_INLINE void exclusive(const Iter begin,
-                                    const Iter end,
-                                    OutIter out,
-                                    size_t n,
-                                    BinFn f,
-                                    const Value v)
-  {
-    // do nothing
-  }
-};
-
-}  // namespace scan
 }  // namespace internal
 }  // namespace RAJA
 

@@ -62,37 +62,6 @@
 namespace RAJA
 {
 
-namespace internal
-{
-
-namespace scan
-{
-
-namespace inplace
-{
-
-template <typename ExecPolicy>
-struct upsweep {
-};
-
-template <typename ExecPolicy>
-struct downsweep {
-};
-
-}  // inplace
-
-template <typename ExecPolicy>
-struct upsweep {
-};
-
-template <typename ExecPolicy>
-struct downsweep {
-};
-
-}  // scan
-
-}  // internal
-
 /*!
 ******************************************************************************
 *
@@ -113,8 +82,7 @@ inclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
 ******************************************************************************
 */
 
-template <typename UpsweepPolicy,
-          typename DownsweepPolicy = UpsweepPolicy,
+template <typename ExecPolicy,
           typename Iter,
           typename Value = typename std::decay<
               typename std::remove_pointer<Iter>::type>::type,
@@ -124,12 +92,9 @@ void inclusive_scan_inplace(Iter begin,
                             BinaryFn f = std::plus<Value, Value>{},
                             Value v = Value{0})
 {
-
   // TODO: add check for begin < end, Iter must be random-access
   const size_t size{end - begin};
-  namespace scan = RAJA::internal::scan::inplace;
-  scan::upsweep<UpsweepPolicy>::inclusive(begin, end, size, f, v);
-  scan::downsweep<DownsweepPolicy>::inclusive(begin, end, size, f, v);
+  RAJA::internal::inclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
 }
 
 /*!
@@ -152,8 +117,7 @@ exclusive_scan_inplace <exec_pol> (a, a + n, f, 0);
 ******************************************************************************
 */
 
-template <typename UpsweepPolicy,
-          typename DownsweepPolicy = UpsweepPolicy,
+template <typename ExecPolicy,
           typename Iter,
           typename Value = typename std::decay<
               typename std::remove_pointer<Iter>::type>::type,
@@ -163,12 +127,9 @@ void exclusive_scan_inplace(Iter begin,
                             BinaryFn f = std::plus<Value, Value>{},
                             Value v = Value{0})
 {
-
   // TODO: add check for begin < end, Iter must be random-access
   const size_t size{end - begin};
-  namespace scan = RAJA::internal::scan::inplace;
-  scan::upsweep<UpsweepPolicy>::exclusive(begin, end, size, f, v);
-  scan::downsweep<DownsweepPolicy>::exclusive(begin, end, size, f, v);
+  RAJA::internal::exclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
 }
 
 /*!
@@ -191,9 +152,7 @@ inclusive_scan <exec_pol> (a, a + n, b, f, 0);
 ******************************************************************************
 */
 
-template <typename UpsweepPolicy,
-          typename DownsweepPolicy = UpsweepPolicy,
-          typename Iter,
+template <typename ExecPolicy typename Iter,
           typename IterOut,
           typename Value = typename std::decay<
               typename std::remove_pointer<Iter>::type>::type,
@@ -207,9 +166,7 @@ void inclusive_scan(const Iter begin,
 
   // TODO: add check for begin < end, Iter must be random-access
   const size_t size{end - begin};
-  namespace scan = RAJA::internal::scan;
-  scan::upsweep<UpsweepPolicy>::inclusive(begin, end, out, size, f, v);
-  scan::downsweep<DownsweepPolicy>::inclusive(begin, end, out, size, f, v);
+  RAJA::internal::inclusive_scan(ExecPolicy{}, begin, end, out, size, f, v);
 }
 
 /*!
@@ -232,9 +189,8 @@ exclusive_scan <exec_pol> (a, a + n, b, f, 0);
 ******************************************************************************
 */
 
-template <typename UpsweepPolicy,
-          typename DownsweepPolicy = UpsweepPolicy,
-          typename Iter,
+
+template <typename ExecPolicy typename Iter,
           typename IterOut,
           typename Value = typename std::decay<
               typename std::remove_pointer<Iter>::type>::type,
@@ -248,9 +204,7 @@ void exclusive_scan(const Iter begin,
 
   // TODO: add check for begin < end, Iter must be random-access
   const size_t size{end - begin};
-  namespace scan = RAJA::internal::scan;
-  scan::upsweep<UpsweepPolicy>::exclusive(begin, end, out, size, f, v);
-  scan::downsweep<DownsweepPolicy>::exclusive(begin, end, out, size, f, v);
+  RAJA::internal::exclusive_scan(ExecPolicy{}, begin, end, out, size, f, v);
 }
 
 }  // closing brace for RAJA namespace
