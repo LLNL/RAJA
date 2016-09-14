@@ -69,37 +69,21 @@ namespace RAJA
 ******************************************************************************
 */
 
-template <typename ExecPolicy, typename T, typename BinaryFunction>
-void inclusive_scan_inplace(T* begin, T* end, BinaryFunction f, T v)
-{
-  // TODO: add check for begin < end, Iter must be random-access
-  const size_t size = end - begin;
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
-}
-
-template <typename ExecPolicy, typename T>
-void inclusive_scan_inplace(T* begin, T* end)
-{
-  inclusive_scan_inplace<ExecPolicy>(begin, end, std::plus<T>{}, T{0});
-}
-
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type,
+          typename T,
           typename BinaryFunction>
 void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
 {
-  // TODO: add check for begin < end, Iter must be random-access
-  const size_t size = end - begin;
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
+  inclusive_scan_inplace(ExecPolicy{}, begin, end, f, v);
 }
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type>
 void inclusive_scan_inplace(Iter begin, Iter end)
 {
-  inclusive_scan_inplace<ExecPolicy>(begin, end, std::plus<T>{}, T{0});
+  inclusive_scan_inplace(ExecPolicy{}, begin, end, std::plus<T>{}, T{0});
 }
 
 /*!
@@ -110,34 +94,19 @@ void inclusive_scan_inplace(Iter begin, Iter end)
 ******************************************************************************
 */
 
-template <typename ExecPolicy, typename T, typename BinaryFunction>
-void exclusive_scan_inplace(T* begin, T* end, BinaryFunction f, T v)
-{
-  // TODO: add check for begin < end, Iter must be random-access
-  const size_t size = end - begin;
-  exclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
-}
-
-template <typename ExecPolicy, typename T>
-void exclusive_scan_inplace(T* begin, T* end)
-{
-  exclusive_scan_inplace<ExecPolicy>(begin, end, std::plus<T>{}, T{0});
-}
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type,
+          typename T,
           typename BinaryFunction>
 void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
 {
-  // TODO: add check for begin < end, Iter must be random-access
-  const size_t size = end - begin;
-  exclusive_scan_inplace(ExecPolicy{}, begin, end, size, f, v);
+  exclusive_scan_inplace(ExecPolicy{}, begin, end, f, v);
 }
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type>
 void exclusive_scan_inplace(Iter begin, Iter end)
 {
   exclusive_scan_inplace(ExecPolicy{}, begin, end, std::plus<T>{}, T{0});
@@ -151,47 +120,24 @@ void exclusive_scan_inplace(Iter begin, Iter end)
 ******************************************************************************
 */
 
-template <typename ExecPolicy, typename T, typename BinaryFunction>
-RAJA_INLINE void inclusive_scan(const T* begin,
-                                const T* end,
-                                T* out,
-                                BinaryFunction f,
-                                T v)
-{
-  inclusive_scan(ExecPolicy{}, begin, end, out, end - begin, f, v);
-}
-
-template <typename ExecPolicy, typename T>
-RAJA_INLINE void inclusive_scan(const T* begin, const T* end, T* out)
-{
-  inclusive_scan(
-      ExecPolicy{}, begin, end, out, end - begin, std::plus<T>{}, T{0});
-}
-
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type,
           typename IterOut,
-          typename BinaryFunction>
-RAJA_INLINE void inclusive_scan(const Iter begin,
-                                const Iter end,
-                                IterOut out,
-                                BinaryFunction f,
-                                T v)
+          typename BinaryFunction,
+          typename T>
+void inclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out, end - begin, f, v);
+  inclusive_scan(ExecPolicy{}, begin, end, out, f, v);
 }
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type,
-          typename IterOut>
-RAJA_INLINE void inclusive_scan(const Iter begin, const Iter end, IterOut out)
+          typename IterOut,
+          typename T = typename std::iterator_traits<Iter>::value_type>
+void inclusive_scan(Iter begin, Iter end, IterOut out)
 {
-  inclusive_scan(
-      ExecPolicy{}, begin, end, out, end - begin, std::plus<T>{}, T{0});
+  inclusive_scan(ExecPolicy{}, begin, end, out, std::plus<T>{}, T{0});
 }
-
 
 /*!
 ******************************************************************************
@@ -201,45 +147,23 @@ RAJA_INLINE void inclusive_scan(const Iter begin, const Iter end, IterOut out)
 ******************************************************************************
 */
 
-template <typename ExecPolicy, typename T>
-RAJA_INLINE void exclusive_scan(const T* begin, const T* end, T* out)
-{
-  exclusive_scan(
-      ExecPolicy{}, begin, end, out, end - begin, std::plus<T>{}, T{0});
-}
-
-template <typename ExecPolicy, typename T, typename BinaryFunction>
-RAJA_INLINE void exclusive_scan(const T* begin,
-                                const T* end,
-                                T* out,
-                                BinaryFunction f,
-                                T v)
-{
-  exclusive_scan(ExecPolicy{}, begin, end, out, end - begin, f, v);
-}
-
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename Iter::value_type,
-          typename IterOut>
-RAJA_INLINE void exclusive_scan(const Iter begin, const Iter end, IterOut out)
-{
-  exclusive_scan(
-      ExecPolicy{}, begin, end, out, end - begin, std::plus<T>{}, T{0});
-}
-
-template <typename ExecPolicy,
-          typename Iter,
-          typename T = typename Iter::value_type,
           typename IterOut,
-          typename BinaryFunction>
-RAJA_INLINE void exclusive_scan(const Iter begin,
-                                const Iter end,
-                                IterOut out,
-                                BinaryFunction f,
-                                T v)
+          typename BinaryFunction,
+          typename T>
+void exclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
 {
-  exclusive_scan(ExecPolicy{}, begin, end, out, end - begin, f, v);
+  exclusive_scan(ExecPolicy{}, begin, end, out, f, v);
+}
+
+template <typename ExecPolicy,
+          typename Iter,
+          typename IterOut,
+          typename T = typename std::iterator_traits<Iter>::value_type>
+void exclusive_scan(Iter begin, Iter end, IterOut out)
+{
+  exclusive_scan(ExecPolicy{}, begin, end, out, std::plus<T>{}, T{0});
 }
 
 }  // closing brace for RAJA namespace

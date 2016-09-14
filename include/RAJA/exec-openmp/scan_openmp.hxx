@@ -76,10 +76,10 @@ template <typename Iter, typename BinFn, typename Value>
 void inclusive_scan_inplace(omp_parallel_for_exec,
                             Iter begin,
                             Iter end,
-                            size_t n,
                             BinFn f,
-                            const Value v)
+                            Value v)
 {
+  int n = end - begin;
   int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
 #pragma omp parallel
@@ -88,12 +88,12 @@ void inclusive_scan_inplace(omp_parallel_for_exec,
     for (int pid = 0; pid < p; ++pid) {
       const int i0 = firstIndex(n, p, pid);
       const int i1 = firstIndex(n, p, pid + 1);
-      inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, p, f, v);
+      inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
       sums[pid] = *(begin + i1 - 1);
     }
 
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, p, f, v);
+    exclusive_scan_inplace(seq_exec{}, sums.begin(), sums.end(), f, v);
 
 #pragma omp for schedule(static)
     for (int pid = 0; pid < p; ++pid) {
@@ -110,10 +110,10 @@ template <typename Iter, typename BinFn, typename Value>
 void exclusive_scan_inplace(omp_parallel_for_exec,
                             Iter begin,
                             Iter end,
-                            size_t n,
                             BinFn f,
-                            const Value v)
+                            Value v)
 {
+  int n = end - begin;
   int p = omp_get_num_threads();
   std::vector<Value> sums(p, v);
 #pragma omp parallel
@@ -122,12 +122,12 @@ void exclusive_scan_inplace(omp_parallel_for_exec,
     for (int pid = 0; pid < p; ++pid) {
       const int i0 = firstIndex(n, p, pid);
       const int i1 = firstIndex(n, p, pid + 1);
-      exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, p, f, v);
+      exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
       sums[pid] = begin[i1 - 1];
     }
 
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, p, f, v);
+    exclusive_scan_inplace(seq_exec{}, sums.begin(), sums.end(), f, v);
 
 #pragma omp for schedule(static)
     for (int pid = 0; pid < p; ++pid) {
@@ -145,12 +145,11 @@ void inclusive_scan(omp_parallel_for_exec exec,
                     Iter begin,
                     Iter end,
                     OutIter out,
-                    size_t n,
                     BinFn f,
-                    const Value v)
+                    Value v)
 {
   std::copy(begin, end, out);
-  inclusive_scan_inplace(exec, out, out + n, n, f, v);
+  inclusive_scan_inplace(exec, out, out + (end - begin), f, v);
 }
 
 template <typename Iter, typename OutIter, typename BinFn, typename Value>
@@ -158,12 +157,11 @@ void exclusive_scan(omp_parallel_for_exec exec,
                     Iter begin,
                     Iter end,
                     OutIter out,
-                    size_t n,
                     BinFn f,
-                    const Value v)
+                    Value v)
 {
   std::copy(begin, end, out);
-  exclusive_scan_inplace(exec, out, out + n, n, f, v);
+  exclusive_scan_inplace(exec, out, out + (end - begin), f, v);
 }
 
 }  // namespace RAJA

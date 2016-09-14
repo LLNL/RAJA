@@ -121,8 +121,11 @@ struct Dim3z {
 /// Segment execution policies
 ///
 
+struct cuda_exec_base {
+};
+
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec {
+struct cuda_exec : public cuda_exec_base {
 };
 
 template <size_t BLOCK_SIZE>

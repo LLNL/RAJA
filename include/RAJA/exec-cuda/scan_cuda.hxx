@@ -8,8 +8,12 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_sequential_HXX
-#define RAJA_scan_sequential_HXX
+#ifndef RAJA_scan_cuda_HXX
+#define RAJA_scan_cuda_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,112 +57,104 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
-
-#include <algorithm>
-#include <functional>
+#include <thrust/execution_policy.h>
+#include <thrust/functional.h>
+#include <thrust/scan.h>
 
 namespace RAJA
 {
 
-namespace cpu_scan
+namespace cuda_scan
 {
 
-// pull in all associative operators found in C++ standard library (for CPU)
+// pull in all associative operators found in thrust
 
 template <typename T>
-struct plus : public ::std::plus<T> {
+struct plus : public ::thrust::plus<T> {
 };
 
 template <typename T>
-struct multiplies : public ::std::multiplies<T> {
+struct multiplies : public ::thrust::multiplies<T> {
 };
 
 template <typename T>
-struct logical_and : public ::std::logical_and<T> {
+struct logical_and : public ::thrust::logical_and<T> {
 };
 
 template <typename T>
-struct logical_or : public ::std::logical_or<T> {
+struct logical_or : public ::thrust::logical_or<T> {
 };
 
 template <typename T>
-struct bit_and : public ::std::bit_and<T> {
+struct bit_and : public ::thrust::bit_and<T> {
 };
 
 template <typename T>
-struct bit_or : public ::std::bit_or<T> {
-};
-
-// create minimum and maximum
-
-template <typename T>
-struct maximum {
-  T operator()(const T& a, const T& b) { return ::std::max(a, b); }
+struct bit_or : public ::thrust::bit_or<T> {
 };
 
 template <typename T>
-struct minimum {
-  T operator()(const T& a, const T& b) { return ::std::min(a, b); }
+struct maximum : public ::thrust::maximum<T> {
 };
 
-}  // closing brace for cpu_scan namespace
+template <typename T>
+struct minimum : public ::thrust::minimum<T> {
+};
 
+}  // closing brace for cuda_scan namespace
 
-template <typename Iter, typename BinFn, typename Value>
-void inclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
+template <typename InputIter, typename Function, typename T>
+void inclusive_scan_inplace(cuda_exec_base,
+                            InputIter begin,
+                            InputIter end,
+                            Function binary_op,
+                            T init)
 {
-  Value agg = *begin;
-  while (++begin != end) {
-    agg = f(*begin, agg);
-    *begin = agg;
-  }
+  ::thrust::inclusive_scan(
+      ::thrust::device, begin, end, begin, init, binary_op);
 }
 
-template <typename Iter, typename BinFn, typename Value>
-void exclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
+template <typename InputIter, typename Function, typename T>
+void exclusive_scan_inplace(cuda_exec_base,
+                            InputIter begin,
+                            InputIter end,
+                            Function binary_op,
+                            T init)
 {
-  *begin = v;
-  Value agg = v;
-  for (Iter i = begin + 1; i != end; ++i) {
-    agg = f(agg, *i);
-    *i = agg;
-  }
+  ::thrust::exclusive_scan(
+      ::thrust::device, begin, end, begin, init, binary_op);
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void inclusive_scan(seq_exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out,
-                    BinFn f,
-                    Value v)
+template <typename InputIter,
+          typename OutputIter,
+          typename Function,
+          typename T>
+void inclusive_scan_inplace(cuda_exec_base,
+                            InputIter begin,
+                            InputIter end,
+                            OutputIter out,
+                            Function binary_op,
+                            T init)
 {
-  Value agg = *begin;
-  *out++ = agg;
-  for (Iter i = begin + 1; i != end; ++i) {
-    agg = f(agg, *i);
-    *out++ = agg;
-  }
+  ::thrust::inclusive_scan(::thrust::device, begin, end, out, init, binary_op);
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void exclusive_scan(seq_exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out,
-                    BinFn f,
-                    Value v)
+template <typename InputIter,
+          typename OutputIter,
+          typename Function,
+          typename T>
+void exclusive_scan_inplace(cuda_exec_base,
+                            InputIter begin,
+                            InputIter end,
+                            OutputIter out,
+                            Function binary_op,
+                            T init)
 {
-  Value agg = v;
-  OutIter o = out;
-  *o++ = v;
-  for (Iter i = begin; i != end - 1; ++i, ++o) {
-    agg = f(*i, agg);
-    *o = agg;
-  }
+  ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
 }
 
-}  // namespace RAJA
+}  // closing brace for RAJA namespace
 
-#endif
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
+
+#endif  // closing endif for header file include guard
