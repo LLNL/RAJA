@@ -169,6 +169,7 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 //
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
+#include "RAJA/exec-cuda/scan_cuda.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-cuda/forallN_cuda.hxx"
