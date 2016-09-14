@@ -53,68 +53,69 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/scan.hxx"
+#include "RAJA/config.hxx"
 
 #include <tuple>
 #include <utility>
 
 namespace RAJA
 {
-namespace internal
-{
 
 template <typename Iter, typename BinFn, typename Value>
-static RAJA_INLINE void inclusive_scan_inplace(::RAJA::seq_exec &,
-                                               Iter begin,
-                                               Iter end,
-                                               size_t n,
-                                               BinFn f,
-                                               const Value v)
+void inclusive_scan_inplace(seq_exec,
+                            Iter begin,
+                            Iter end,
+                            size_t n,
+                            BinFn f,
+                            const Value v)
 {
-  Value agg = v;
-  for (Iter i = begin; i != end; ++i) {
-    *i = agg = f(*i, agg);
+  Value agg = *begin;
+  while (++begin != end) {
+    agg = f(*begin, agg);
+    *begin = agg;
   }
 }
 
 template <typename Iter, typename BinFn, typename Value>
-static RAJA_INLINE void exclusive_scan_inplace(::RAJA::seq_exec &,
-                                               Iter begin,
-                                               Iter end,
-                                               size_t n,
-                                               BinFn f,
-                                               const Value v)
+void exclusive_scan_inplace(seq_exec,
+                            Iter begin,
+                            Iter end,
+                            size_t n,
+                            BinFn f,
+                            const Value v)
 {
   Value agg = v;
-  for (Iter i = begin; i != end - 1; ++i) {
+  for (Iter i = begin; i != end; ++i) {
     std::tie(*i, agg) = std::make_tuple(agg, f(*i, agg));
   }
 }
 
 template <typename Iter, typename OutIter, typename BinFn, typename Value>
-static RAJA_INLINE void inclusive_scan(::RAJA::seq_exec &,
-                                       const Iter begin,
-                                       const Iter end,
-                                       OutIter out,
-                                       size_t n,
-                                       BinFn f,
-                                       const Value v)
+void inclusive_scan(seq_exec,
+                    const Iter begin,
+                    const Iter end,
+                    OutIter out,
+                    size_t n,
+                    BinFn f,
+                    const Value v)
 {
-  Value agg = v;
+  Value agg = *begin;
   OutIter o = out;
-  for (Iter i = begin; i != end; ++i) {
-    *o++ = agg = f(*i, agg);
+  for (Iter i = begin + 1; i != end; ++i) {
+    *o++ = agg;
+    agg = f(*i, agg);
   }
+  *o = agg;
 }
 
 template <typename Iter, typename OutIter, typename BinFn, typename Value>
-static RAJA_INLINE void exclusive_scan(::RAJA::seq_exec &,
-                                       const Iter begin,
-                                       const Iter end,
-                                       OutIter out,
-                                       size_t n,
-                                       BinFn f,
-                                       const Value v)
+void exclusive_scan(seq_exec,
+                    const Iter begin,
+                    const Iter end,
+                    OutIter out,
+                    size_t n,
+                    BinFn f,
+                    const Value v)
 {
   Value agg = v;
   OutIter o = out;
@@ -124,7 +125,6 @@ static RAJA_INLINE void exclusive_scan(::RAJA::seq_exec &,
   }
 }
 
-}  // namespace internal
 }  // namespace RAJA
 
 #endif

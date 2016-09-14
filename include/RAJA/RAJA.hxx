@@ -74,8 +74,6 @@
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 
-#include "RAJA/scan.hxx"
-
 //
 // Strongly typed index class.
 //
@@ -152,5 +150,7 @@
 #include "RAJA/foralln/Permute.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
+
+#include "RAJA/scan.hxx"
 
 #endif  // closing endif for header file include guard
