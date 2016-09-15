@@ -61,6 +61,15 @@
 namespace RAJA
 {
 
+namespace scan
+{
+template <typename ExecPolicy, typename T>
+struct defaults {
+  using binary_op = ::RAJA::cpu_scan::plus<T>;
+  static constexpr const T init = 0;
+};
+}
+
 /*!
 ******************************************************************************
 *
@@ -80,10 +89,12 @@ void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type,
+          typename Defaults = typename scan::defaults<ExecPolicy, T>,
+          typename BinaryOp = typename Defaults::binary_op>
 void inclusive_scan_inplace(Iter begin, Iter end)
 {
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, std::plus<T>{}, T{0});
+  inclusive_scan_inplace(ExecPolicy{}, begin, end, BinaryOp{}, Defaults::init);
 }
 
 /*!
@@ -93,7 +104,6 @@ void inclusive_scan_inplace(Iter begin, Iter end)
 *
 ******************************************************************************
 */
-
 
 template <typename ExecPolicy,
           typename Iter,
@@ -106,10 +116,12 @@ void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
 
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type,
+          typename Defaults = typename scan::defaults<ExecPolicy, T>,
+          typename BinaryOp = typename Defaults::binary_op>
 void exclusive_scan_inplace(Iter begin, Iter end)
 {
-  exclusive_scan_inplace(ExecPolicy{}, begin, end, std::plus<T>{}, T{0});
+  exclusive_scan_inplace(ExecPolicy{}, begin, end, BinaryOp{}, Defaults::init);
 }
 
 /*!
@@ -133,10 +145,12 @@ void inclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type,
+          typename Defaults = typename scan::defaults<ExecPolicy, T>,
+          typename BinaryOp = typename Defaults::binary_op>
 void inclusive_scan(Iter begin, Iter end, IterOut out)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out, std::plus<T>{}, T{0});
+  inclusive_scan(ExecPolicy{}, begin, end, out, BinaryOp{}, Defaults::init);
 }
 
 /*!
@@ -160,10 +174,12 @@ void exclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type>
+          typename T = typename std::iterator_traits<Iter>::value_type,
+          typename Defaults = typename scan::defaults<ExecPolicy, T>,
+          typename BinaryOp = typename Defaults::binary_op>
 void exclusive_scan(Iter begin, Iter end, IterOut out)
 {
-  exclusive_scan(ExecPolicy{}, begin, end, out, std::plus<T>{}, T{0});
+  exclusive_scan(ExecPolicy{}, begin, end, out, BinaryOp{}, Defaults::init);
 }
 
 }  // closing brace for RAJA namespace

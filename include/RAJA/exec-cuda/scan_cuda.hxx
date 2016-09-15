@@ -103,6 +103,16 @@ struct minimum : public ::thrust::minimum<T> {
 
 }  // closing brace for cuda_scan namespace
 
+namespace scan
+{
+
+template <typename T>
+struct defaults <cuda_exec, T> {
+  using binary_op = ::RAJA::cuda_scan::plus<T>;
+  static constexpr const T init = 0;
+};
+}
+
 template <typename InputIter, typename Function, typename T>
 void inclusive_scan_inplace(cuda_exec_base,
                             InputIter begin,
