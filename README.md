@@ -3,6 +3,7 @@ RAJA v0.1.0
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
 [![Join the chat at https://gitter.im/llnl/raja](https://badges.gitter.im/llnl/raja.svg)](https://gitter.im/llnl/raja?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Static Analysis Status](https://scan.coverity.com/projects/8825/badge.svg?flat=1)](https://scan.coverity.com/projects/llnl-raja)
 
 RAJA is a collection of C++ software abstractions, being developed at
 Lawrence Livermore National Laboratory (LLNL), that enable architecture
