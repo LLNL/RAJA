@@ -63,6 +63,8 @@
 #include <utility>
 #include <vector>
 
+#include <sstream>
+
 namespace RAJA
 {
 
@@ -79,29 +81,21 @@ void inclusive_scan_inplace(omp_parallel_for_exec,
                             BinFn f,
                             Value v)
 {
-  int n = end - begin;
-  int p = omp_get_max_threads();
+  const int n = end - begin;
+  const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
 #pragma omp parallel
   {
-#pragma omp for schedule(static)
-    for (int pid = 0; pid < p; ++pid) {
-      const int i0 = firstIndex(n, p, pid);
-      const int i1 = firstIndex(n, p, pid + 1);
-      inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
-      sums[pid] = *(begin + i1 - 1);
-    }
-
+    const int pid = omp_get_thread_num();
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
+    inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
+    sums[pid] = *(begin + i1 - 1);
+#pragma omp barrier
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.begin(), sums.end(), f, v);
-
-#pragma omp for schedule(static)
-    for (int pid = 0; pid < p; ++pid) {
-      const int i0 = firstIndex(n, p, pid);
-      const int i1 = firstIndex(n, p, pid + 1);
-      for (int i = i0; i < i1; ++i) {
-        begin[i] = f(*(begin + i), sums[pid]);
-      }
+    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
+    for (int i = i0; i < i1; ++i) {
+      *(begin + i) = f(*(begin + i), sums[pid]);
     }
   }
 }
@@ -113,29 +107,24 @@ void exclusive_scan_inplace(omp_parallel_for_exec,
                             BinFn f,
                             Value v)
 {
-  int n = end - begin;
-  int p = omp_get_num_threads();
+  const int n = end - begin;
+  const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
 #pragma omp parallel
   {
-#pragma omp for schedule(static)
-    for (int pid = 0; pid < p; ++pid) {
-      const int i0 = firstIndex(n, p, pid);
-      const int i1 = firstIndex(n, p, pid + 1);
+    const int pid = omp_get_thread_num();
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
+    if (pid == 0)
       exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
-      sums[pid] = begin[i1 - 1];
-    }
-
+    else
+      inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
+    sums[pid] = *(begin + i1 - 1);
+#pragma omp barrier
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.begin(), sums.end(), f, v);
-
-#pragma omp for schedule(static)
-    for (int pid = 0; pid < p; ++pid) {
-      const int i0 = firstIndex(n, p, pid);
-      const int i1 = firstIndex(n, p, pid + 1);
-      for (int i = i0; i < i1; ++i) {
-        *(begin + i) = f(*(begin + i), sums[pid]);
-      }
+    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
+    for (int i = i0; i < i1; ++i) {
+      *(begin + i) = f(*(begin + i), sums[pid]);
     }
   }
 }

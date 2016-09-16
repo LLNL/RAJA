@@ -118,11 +118,12 @@ void inclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
 template <typename Iter, typename BinFn, typename Value>
 void exclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
 {
-  *begin = v;
+  const int n = end - begin;
   Value agg = v;
-  for (Iter i = begin + 1; i != end; ++i) {
-    agg = f(agg, *i);
-    *i = agg;
+  for (int i = 0; i < n; ++i) {
+    Value t = *(begin + i);
+    *(begin + i) = agg;
+    agg = f(agg, t);
   }
 }
 

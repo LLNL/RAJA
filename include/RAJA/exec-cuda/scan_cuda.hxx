@@ -107,7 +107,7 @@ namespace scan
 {
 
 template <typename T>
-struct defaults <cuda_exec, T> {
+struct defaults<cuda_exec, T> {
   using binary_op = ::RAJA::cuda_scan::plus<T>;
   static constexpr const T init = 0;
 };
