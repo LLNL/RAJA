@@ -63,6 +63,14 @@ namespace RAJA
 
 namespace scan
 {
+/*
+******************************************************************************
+*
+* \brief default binary_op and init value for scan. Special ExecPolicys should
+*overload
+*
+******************************************************************************
+*/
 template <typename ExecPolicy, typename T>
 struct defaults {
   using binary_op = ::RAJA::cpu_scan::plus<T>;
@@ -75,26 +83,21 @@ struct defaults {
 *
 * \brief  inclusive in-place scan execution policy
 *
+* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
+* \param[in,out] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[in] binop binary function to apply for scan
+* \param[in] value identity value for binary function, binop
+*
 ******************************************************************************
 */
-
 template <typename ExecPolicy,
           typename Iter,
-          typename T,
-          typename BinaryFunction>
-void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
+          typename BinaryFunction,
+          typename T>
+void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
 {
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, f, v);
-}
-
-template <typename ExecPolicy,
-          typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename Defaults = typename scan::defaults<ExecPolicy, T>,
-          typename BinaryOp = typename Defaults::binary_op>
-void inclusive_scan_inplace(Iter begin, Iter end)
-{
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, BinaryOp{}, Defaults::init);
+  inclusive_scan_inplace(ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -102,25 +105,64 @@ void inclusive_scan_inplace(Iter begin, Iter end)
 *
 * \brief  inclusive in-place scan execution policy
 *
+* Function defaults to addition
+*
+* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
+* \param[in,out] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+*
 ******************************************************************************
 */
-
-template <typename ExecPolicy,
-          typename Iter,
-          typename T,
-          typename BinaryFunction>
-void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction f, T v)
+template <typename ExecPolicy, typename Iter>
+void inclusive_scan_inplace(Iter begin, Iter end)
 {
-  exclusive_scan_inplace(ExecPolicy{}, begin, end, f, v);
+  using T = typename std::iterator_traits<Iter>::value_type;
+  using Defaults = typename scan::defaults<ExecPolicy, T>;
+  using BinaryOp = typename Defaults::binary_op;
+  inclusive_scan_inplace(ExecPolicy{}, begin, end, BinaryOp{}, Defaults::init);
 }
 
+/*!
+******************************************************************************
+*
+* \brief  exclusive in-place scan execution policy
+*
+* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
+* \param[in,out] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[in] binop binary function to apply for scan
+* \param[in] value identity for binary function, binop
+*
+******************************************************************************
+*/
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename Defaults = typename scan::defaults<ExecPolicy, T>,
-          typename BinaryOp = typename Defaults::binary_op>
+          typename BinaryFunction,
+          typename T>
+void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
+{
+  exclusive_scan_inplace(ExecPolicy{}, begin, end, binop, value);
+}
+
+/*!
+******************************************************************************
+*
+* \brief  exclusive in-place scan execution policy
+*
+* Function defaults to addition
+*
+* \param[in,out] begin Pointer or Random-Access Iterator to start of data range
+* \param[in,out] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+*
+******************************************************************************
+*/
+template <typename ExecPolicy, typename Iter>
 void exclusive_scan_inplace(Iter begin, Iter end)
 {
+  using T = typename std::iterator_traits<Iter>::value_type;
+  using Defaults = typename scan::defaults<ExecPolicy, T>;
+  using BinaryOp = typename Defaults::binary_op;
   exclusive_scan_inplace(ExecPolicy{}, begin, end, BinaryOp{}, Defaults::init);
 }
 
@@ -129,28 +171,88 @@ void exclusive_scan_inplace(Iter begin, Iter end)
 *
 * \brief  inclusive scan execution policy
 *
+* \param[in] begin Pointer or Random-Access Iterator to start of data range
+* \param[in] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[out] out Pointer or Random-Access Iterator to start of output data
+*range
+* \param[in] binop binary function to apply for scan
+* \param[in] value identity value for binary function, binop
+*
+* \note{The range of [begin, end) must be separate from [out, out + (end -
+*begin))}
 ******************************************************************************
 */
-
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
           typename BinaryFunction,
           typename T>
-void inclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
+void inclusive_scan(Iter begin,
+                    Iter end,
+                    IterOut out,
+                    BinaryFunction binop,
+                    T value)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out, f, v);
+  inclusive_scan(ExecPolicy{}, begin, end, out, binop, value);
 }
 
+/*!
+******************************************************************************
+*
+* \brief  inclusive scan execution policy
+*
+* Function defaults to addition
+*
+* \param[in] begin Pointer or Random-Access Iterator to start of data range
+* \param[in] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[out] out Pointer or Random-Access Iterator to start of output data
+*range
+*
+* \note{The range of [begin, end) must be separate from [out, out + (end -
+*begin))}
+******************************************************************************
+*/
+template <typename ExecPolicy, typename Iter, typename IterOut>
+void inclusive_scan(Iter begin, Iter end, IterOut out)
+{
+  using T = typename std::iterator_traits<Iter>::value_type;
+  using Defaults = typename scan::defaults<ExecPolicy, T>;
+  using BinaryOp = typename Defaults::binary_op;
+  inclusive_scan(ExecPolicy{}, begin, end, out, BinaryOp{}, Defaults::init);
+}
+
+
+/*!
+******************************************************************************
+*
+* \brief  inclusive scan execution policy
+*
+* \param[in] begin Pointer or Random-Access Iterator to start of data range
+* \param[in] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[out] out Pointer or Random-Access Iterator to start of output data
+*range
+* \param[in] binop binary function to apply for scan
+* \param[in] value identity value for binary function, binop
+*
+* \note{The range of [begin, end) must be separate from [out, out + (end -
+*begin))}
+******************************************************************************
+*/
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename Defaults = typename scan::defaults<ExecPolicy, T>,
-          typename BinaryOp = typename Defaults::binary_op>
-void inclusive_scan(Iter begin, Iter end, IterOut out)
+          typename BinaryFunction,
+          typename T>
+void exclusive_scan(Iter begin,
+                    Iter end,
+                    IterOut out,
+                    BinaryFunction binop,
+                    T value)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out, BinaryOp{}, Defaults::init);
+  exclusive_scan(ExecPolicy{}, begin, end, out, binop, value);
 }
 
 /*!
@@ -158,27 +260,24 @@ void inclusive_scan(Iter begin, Iter end, IterOut out)
 *
 * \brief  exclusive scan execution policy
 *
+* Function defaults to addition
+*
+* \param[in] begin Pointer or Random-Access Iterator to start of data range
+* \param[in] end Pointer or Random-Access Iterator to end of data range
+*(exclusive)
+* \param[out] out Pointer or Random-Access Iterator to start of output data
+*range
+*
+* \note{The range of [begin, end) must be separate from [out, out + (end -
+*begin))}
 ******************************************************************************
 */
-
-template <typename ExecPolicy,
-          typename Iter,
-          typename IterOut,
-          typename BinaryFunction,
-          typename T>
-void exclusive_scan(Iter begin, Iter end, IterOut out, BinaryFunction f, T v)
-{
-  exclusive_scan(ExecPolicy{}, begin, end, out, f, v);
-}
-
-template <typename ExecPolicy,
-          typename Iter,
-          typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename Defaults = typename scan::defaults<ExecPolicy, T>,
-          typename BinaryOp = typename Defaults::binary_op>
+template <typename ExecPolicy, typename Iter, typename IterOut>
 void exclusive_scan(Iter begin, Iter end, IterOut out)
 {
+  using T = typename std::iterator_traits<Iter>::value_type;
+  using Defaults = typename scan::defaults<ExecPolicy, T>;
+  using BinaryOp = typename Defaults::binary_op;
   exclusive_scan(ExecPolicy{}, begin, end, out, BinaryOp{}, Defaults::init);
 }
 
