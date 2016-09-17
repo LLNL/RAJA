@@ -1,6 +1,8 @@
 #include <algorithm>
 #include <iostream>
 #include <iterator>
+#include <numeric>
+#include <random>
 #include <tuple>
 #include <type_traits>
 
@@ -67,8 +69,8 @@ void compareInclusive(Data original, Storage data, Fn function, T init)
   while ((out + index) != data->oend()) {
     ASSERT_EQ(sum, *(out + index)) << "Expected value differs at index "
                                    << index;
-    sum = function(sum, *(++in));
     ++index;
+    sum = function(sum, *(in + index));
   }
 }
 
@@ -95,7 +97,10 @@ protected:
   {
     data = new Storage{N};
     original = new Storage{N};
-    std::fill(data->ibegin(), data->iend(), 1);
+    std::iota(data->ibegin(), data->iend(), 1);
+    std::shuffle(data->ibegin(),
+                 data->iend(),
+                 std::mt19937{std::random_device{}()});
     std::copy(data->ibegin(), data->iend(), original->ibegin());
     inclusive<Exec>(*data, InPlace);
   }
@@ -146,7 +151,7 @@ void compareExclusive(Data original, Storage data, Fn function, T init)
   while ((out + index) != data->oend()) {
     ASSERT_EQ(sum, *(out + index)) << "Expected value differs at index "
                                    << index;
-    sum = function(sum, *(++in));
+    sum = function(sum, *(in + index));
     ++index;
   }
 }
@@ -174,7 +179,10 @@ protected:
   {
     data = new Storage{N};
     original = new Storage{N};
-    std::fill(data->ibegin(), data->iend(), 1);
+    std::iota(data->ibegin(), data->iend(), 1);
+    std::shuffle(data->ibegin(),
+                 data->iend(),
+                 std::mt19937{std::random_device{}()});
     std::copy(data->ibegin(), data->iend(), original->ibegin());
     exclusive<Exec>(*data, InPlace);
   }

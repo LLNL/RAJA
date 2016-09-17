@@ -115,10 +115,9 @@ void exclusive_scan_inplace(omp_parallel_for_exec,
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
-    if (pid == 0)
-      exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
-    else
-      inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
+    const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
+#pragma omp barrier
+    exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, init);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
