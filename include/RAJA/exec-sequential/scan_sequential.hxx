@@ -61,7 +61,10 @@
 namespace RAJA
 {
 
-namespace cpu_scan
+namespace scan
+{
+
+namespace cpu
 {
 
 // pull in all associative operators found in C++ standard library (for CPU)
@@ -102,8 +105,36 @@ struct minimum {
   T operator()(const T& a, const T& b) { return ::std::min(a, b); }
 };
 
-}  // closing brace for cpu_scan namespace
+}  // closing brace for cpu namespace
 
+namespace internal
+{
+
+namespace detail
+{
+/*
+******************************************************************************
+*
+* \brief default binary_op and init value for scan. Special ExecPolicys should
+*overload
+*
+******************************************************************************
+*/
+template <typename Exec, typename T, bool GPU = false>
+struct defaults {
+};
+
+template <typename T>
+struct defaults<seq_exec, T> {
+  using binary_op = ::RAJA::scan::cpu::plus<T>;
+  static constexpr const T init = 0;
+};
+
+}  // closing brace for detail namespace
+
+}  // closing brace for internal namespace
+
+}  // closing brace for scan namespace
 
 template <typename Iter, typename BinFn, typename Value>
 void inclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)

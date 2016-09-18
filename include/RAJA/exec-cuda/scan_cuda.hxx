@@ -57,14 +57,16 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
 #include <thrust/functional.h>
 #include <thrust/scan.h>
 
 namespace RAJA
 {
-
-namespace cuda_scan
+namespace scan
+{
+namespace gpu
 {
 
 // pull in all associative operators found in thrust
@@ -101,17 +103,25 @@ template <typename T>
 struct minimum : public ::thrust::minimum<T> {
 };
 
-}  // closing brace for cuda_scan namespace
+}  // closing brace for gpu namespace
 
-namespace scan
+namespace internal
 {
 
-template <typename T>
-struct defaults<cuda_exec, T> {
-  using binary_op = ::RAJA::cuda_scan::plus<T>;
+namespace detail
+{
+
+template <typename Exec, typename T>
+struct defaults<Exec, T, true> {
+  using binary_op = ::RAJA::scan::gpu::plus<T>;
   static constexpr const T init = 0;
 };
-}
+
+}  // closing brace for detail namespace
+
+}  // closing brace for internal namespace
+
+}  // closing brace for scan namespace
 
 template <typename InputIter, typename Function, typename T>
 void inclusive_scan_inplace(cuda_exec_base,
@@ -120,8 +130,12 @@ void inclusive_scan_inplace(cuda_exec_base,
                             Function binary_op,
                             T init)
 {
-  ::thrust::inclusive_scan(
-      ::thrust::device, begin, end, begin, init, binary_op);
+  ::thrust::inclusive_scan(::thrust::device,
+                           ::thrust::device_pointer_cast(begin),
+                           ::thrust::device_pointer_cast(end),
+                           ::thrust::device_pointer_cast(begin),
+                           init,
+                           binary_op);
 }
 
 template <typename InputIter, typename Function, typename T>
@@ -131,8 +145,12 @@ void exclusive_scan_inplace(cuda_exec_base,
                             Function binary_op,
                             T init)
 {
-  ::thrust::exclusive_scan(
-      ::thrust::device, begin, end, begin, init, binary_op);
+  ::thrust::exclusive_scan(::thrust::device,
+                           ::thrust::device_pointer_cast(begin),
+                           ::thrust::device_pointer_cast(end),
+                           ::thrust::device_pointer_cast(begin),
+                           init,
+                           binary_op);
 }
 
 template <typename InputIter,
@@ -146,7 +164,12 @@ void inclusive_scan_inplace(cuda_exec_base,
                             Function binary_op,
                             T init)
 {
-  ::thrust::inclusive_scan(::thrust::device, begin, end, out, init, binary_op);
+  ::thrust::inclusive_scan(::thrust::device,
+                           ::thrust::device_pointer_cast(begin),
+                           ::thrust::device_pointer_cast(end),
+                           ::thrust::device_pointer_cast(out),
+                           init,
+                           binary_op);
 }
 
 template <typename InputIter,
@@ -160,7 +183,12 @@ void exclusive_scan_inplace(cuda_exec_base,
                             Function binary_op,
                             T init)
 {
-  ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
+  ::thrust::exclusive_scan(::thrust::device,
+                           ::thrust::device_pointer_cast(begin),
+                           ::thrust::device_pointer_cast(end),
+                           ::thrust::device_pointer_cast(out),
+                           init,
+                           binary_op);
 }
 
 }  // closing brace for RAJA namespace

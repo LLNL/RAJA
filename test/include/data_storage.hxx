@@ -8,7 +8,7 @@
 namespace internal
 {
 
-template <typename ExecPolicy, typename T>
+template <typename ExecPolicy, typename T, bool gpu = false>
 struct storage {
   using type = T;
 
@@ -26,8 +26,8 @@ struct storage {
 
 #ifdef RAJA_USE_CUDA
 
-template <typename T>
-struct storage<cuda_exec_base, T> {
+template <typename Exec, typename T>
+struct storage<Exec, T, true> {
   using type = T;
 
   static T* alloc(int n)
@@ -53,17 +53,29 @@ struct storage : public storage_base {
 template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
-  storage(int n) : data{internal::storage<ExecPolicy, T>::alloc(n)}, elems{n}
+
+#ifdef RAJA_ENABLE_CUDA
+  using StorageType =
+      typename internal::storage<ExecPolicy,
+                                 T,
+                                 std::is_base_of<RAJA::cuda_exec_base,
+                                                 ExecPolicy>::value>;
+#else
+  using StorageType = typename internal::storage<ExecPolicy, T>;
+#endif
+
+  storage(int n) : data{StorageType::alloc(n)}, elems{n}
   {
-    internal::storage<ExecPolicy, T>::ready();
+    StorageType::ready();
   }
-  ~storage() { internal::storage<ExecPolicy, T>::free(data); }
+
+  ~storage() { StorageType::free(data); }
   T* ibegin() { return data; }
   T* iend() { return data + elems; }
   T* obegin() { return data; }
   T* oend() { return data + elems; }
   int size() { return elems; }
-  void update() { internal::storage<ExecPolicy, T>::ready(); }
+  void update() { StorageType::ready(); }
 private:
   T* data;
   int elems;
@@ -72,24 +84,33 @@ private:
 template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
+
+#ifdef RAJA_ENABLE_CUDA
+  using StorageType =
+      typename internal::storage<ExecPolicy,
+                                 T,
+                                 std::is_base_of<RAJA::cuda_exec_base,
+                                                 ExecPolicy>::value>;
+#else
+  using StorageType = typename internal::storage<ExecPolicy, T>;
+#endif
+
   storage(int n)
-      : in{internal::storage<ExecPolicy, T>::alloc(n)},
-        out{internal::storage<ExecPolicy, T>::alloc(n)},
-        elems{n}
+      : in{StorageType::alloc(n)}, out{StorageType::alloc(n)}, elems{n}
   {
-    internal::storage<ExecPolicy, T>::ready();
+    StorageType::ready();
   }
   ~storage()
   {
-    internal::storage<ExecPolicy, T>::free(in);
-    internal::storage<ExecPolicy, T>::free(out);
+    StorageType::free(in);
+    StorageType::free(out);
   }
   T* ibegin() { return in; }
   T* iend() { return in + elems; }
   T* obegin() { return out; }
   T* oend() { return out + elems; }
   int size() { return elems; }
-  void update() { internal::storage<ExecPolicy, T>::ready(); }
+  void update() { StorageType::ready(); }
 private:
   T* in;
   T* out;

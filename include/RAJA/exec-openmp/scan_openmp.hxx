@@ -63,10 +63,29 @@
 #include <utility>
 #include <vector>
 
-#include <sstream>
-
 namespace RAJA
 {
+
+namespace scan
+{
+
+namespace internal
+{
+
+namespace detail
+{
+
+template <typename T>
+struct defaults<omp_parallel_for_exec, T> {
+  using binary_op = ::RAJA::scan::cpu::plus<T>;
+  static constexpr const T init = 0;
+};
+
+}  // closes detail namespace
+
+}  // closes internal namespace
+
+}  // closes scan namespace
 
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
