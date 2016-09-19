@@ -18,12 +18,7 @@ const int N = 1024;
 
 // Unit Test Space Exploration
 
-using ExecTypes = std::tuple<RAJA::seq_exec
-#ifdef RAJA_ENABLE_OPENMP
-                             ,
-                             RAJA::omp_parallel_for_exec
-#endif
-                             >;
+using ExecTypes = std::tuple<RAJA::cuda_exec<128>>;
 
 using DataTypes = std::tuple<int, float, double>;
 using InOrderTypes = std::tuple<std::false_type, std::true_type>;

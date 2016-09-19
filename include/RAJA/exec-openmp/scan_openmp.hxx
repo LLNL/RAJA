@@ -82,6 +82,7 @@ void inclusive_scan_inplace(const omp_parallel_for_exec&,
                             ValueT v)
 {
   using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
+  // using Value = typename std::iterator_traits <Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
