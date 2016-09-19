@@ -87,16 +87,6 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
 }
 
 /*!
-        \brief inclusive inplace scan given range
-*/
-template <typename Iter>
-void inclusive_inplace(const ::RAJA::seq_exec& exec, Iter begin, Iter end)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  inclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
-}
-
-/*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
@@ -115,16 +105,6 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
     *(begin + i) = agg;
     agg = f(agg, t);
   }
-}
-
-/*!
-        \brief exclusive inplace scan given range
-*/
-template <typename Iter>
-void exclusive_inplace(const ::RAJA::seq_exec& exec, Iter begin, Iter end)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  exclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
 /*!
@@ -149,16 +129,6 @@ void inclusive(const ::RAJA::seq_exec&,
 }
 
 /*!
-        \brief inclusive scan given input range and output
-*/
-template <typename Iter, typename OutIter>
-void inclusive(const ::RAJA::seq_exec& exec, Iter begin, Iter end, OutIter out)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  inclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
-}
-
-/*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
@@ -178,16 +148,6 @@ void exclusive(const ::RAJA::seq_exec&,
     agg = f(*i, agg);
     *o = agg;
   }
-}
-
-/*!
-        \brief exclusive scan given input range and output
-*/
-template <typename Iter, typename OutIter>
-void exclusive(const ::RAJA::seq_exec& exec, Iter begin, Iter end, OutIter out)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  exclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
 }  // namespace scan

@@ -102,23 +102,12 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, v);
+    exclusive_inplace(
+        ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
   }
-}
-
-/*!
-        \brief inclusive inplace scan given range
-*/
-template <typename Iter>
-void inclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
-                       Iter begin,
-                       Iter end)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  inclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
 /*!
@@ -147,23 +136,12 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
-    exclusive_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
+    exclusive_inplace(
+        seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
   }
-}
-
-/*!
-        \brief exclusive inplace scan given range
-*/
-template <typename Iter>
-void exclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
-                       Iter begin,
-                       Iter end)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  exclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
 /*!
@@ -183,19 +161,6 @@ void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
 }
 
 /*!
-        \brief inclusive scan given input range and output
-*/
-template <typename Iter, typename OutIter>
-void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
-               Iter begin,
-               Iter end,
-               OutIter out)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  inclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
-}
-
-/*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
@@ -209,19 +174,6 @@ void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
 {
   ::std::copy(begin, end, out);
   exclusive_inplace(exec, out, out + (end - begin), f, v);
-}
-
-/*!
-        \brief exclusive scan given input range and output
-*/
-template <typename Iter, typename OutIter>
-void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
-               Iter begin,
-               Iter end,
-               OutIter out)
-{
-  using Value = typename ::std::iterator_traits<Iter>::value_type;
-  exclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
 }  // namespace scan

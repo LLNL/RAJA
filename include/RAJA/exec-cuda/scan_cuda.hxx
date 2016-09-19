@@ -90,20 +90,6 @@ inclusive_inplace(const Exec&,
 }
 
 /*!
-        \brief inclusive inplace scan given range
-*/
-template <typename Exec, typename InputIter>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-inclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
-{
-  using Value = typename ::std::iterator_traits<InputIter>::value_type;
-  ::thrust::inclusive_scan(
-      ::thrust::device, begin, end, begin, ::thrust::plus<Value>{});
-  cudaDeviceSynchronize();
-}
-
-/*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
@@ -118,20 +104,6 @@ exclusive_inplace(const Exec&,
 {
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, init, binary_op);
-  cudaDeviceSynchronize();
-}
-
-/*!
-        \brief exclusive inplace scan given range
-*/
-template <typename Exec, typename InputIter>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-exclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
-{
-  using Value = typename ::std::iterator_traits<InputIter>::value_type;
-  ::thrust::exclusive_scan(
-      ::thrust::device, begin, end, begin, Value{0}, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
 }
 
@@ -158,20 +130,6 @@ inclusive(const Exec&,
 }
 
 /*!
-        \brief inclusive scan given input range and output
-*/
-template <typename Exec, typename InputIter, typename OutputIter>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-inclusive(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
-{
-  using Value = typename ::std::iterator_traits<InputIter>::value_type;
-  ::thrust::inclusive_scan(
-      ::thrust::device, begin, end, out, ::thrust::plus<Value>{});
-  cudaDeviceSynchronize();
-}
-
-/*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
@@ -190,20 +148,6 @@ exclusive(const Exec& exec,
           T init)
 {
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
-  cudaDeviceSynchronize();
-}
-
-/*!
-        \brief exclusive scan given input range and output
-*/
-template <typename Exec, typename InputIter, typename OutputIter>
-typename ::std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
-                                          Exec>::value>::type
-exclusive(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
-{
-  using Value = typename ::std::iterator_traits<InputIter>::value_type;
-  ::thrust::exclusive_scan(
-      ::thrust::device, begin, end, out, Value{0}, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
 }
 
