@@ -72,7 +72,7 @@ namespace RAJA
  */
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                                         LOOP_BODY loop_body)
+                                         LOOP_BODY&& loop_body)
 {
   const BaseSegment* iseg = seg_info->getSegment();
   SegmentType segtype = iseg->getType();
@@ -120,7 +120,7 @@ RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
  */
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
-                                                LOOP_BODY loop_body)
+                                                LOOP_BODY&& loop_body)
 {
   const BaseSegment* iseg = seg_info->getSegment();
   SegmentType segtype = iseg->getType();
