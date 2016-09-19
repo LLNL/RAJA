@@ -19,12 +19,12 @@ struct storage {
     return ptr;
   }
 
-  static void free(T* ptr) { free(ptr); }
+  static void free(T* ptr) { ::free(ptr); }
 
   static void ready() {}
 };
 
-#ifdef RAJA_USE_CUDA
+#ifdef RAJA_ENABLE_CUDA
 
 template <typename Exec, typename T>
 struct storage<Exec, T, true> {
@@ -33,11 +33,13 @@ struct storage<Exec, T, true> {
   static T* alloc(int n)
   {
     T* ptr;
-    cudaMallocManaged(&ptr, n * sizeof(T));
+    ::cudaMallocManaged(&ptr, n * sizeof(T));
     return ptr;
   }
-  static void free(T* ptr) { cudaFree(ptr); }
-  static void ready() { cudaDeviceSynchronize(); }
+
+  static void free(T* ptr) { ::cudaFree(ptr); }
+
+  static void ready() { ::cudaDeviceSynchronize(); }
 };
 
 #endif

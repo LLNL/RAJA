@@ -60,6 +60,8 @@
 #include <omp.h>
 
 #include <algorithm>
+#include <iterator>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -79,7 +81,7 @@ void inclusive_scan_inplace(const omp_parallel_for_exec&,
                             BinFn f,
                             ValueT v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
@@ -104,7 +106,7 @@ void inclusive_scan_inplace(const omp_parallel_for_exec& exec,
                             Iter begin,
                             Iter end)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
   inclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
 }
 
@@ -115,7 +117,7 @@ void exclusive_scan_inplace(const omp_parallel_for_exec&,
                             BinFn f,
                             ValueT v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter>())>::type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
@@ -142,7 +144,7 @@ void exclusive_scan_inplace(const omp_parallel_for_exec& exec,
                             Iter begin,
                             Iter end)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
   exclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
 }
 
@@ -154,7 +156,6 @@ void inclusive_scan(const omp_parallel_for_exec& exec,
                     BinFn f,
                     ValueT v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
   std::copy(begin, end, out);
   inclusive_scan_inplace(exec, out, out + (end - begin), f, v);
 }
@@ -165,7 +166,7 @@ void inclusive_scan(const omp_parallel_for_exec& exec,
                     Iter end,
                     OutIter out)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
   inclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
 }
 
@@ -177,7 +178,6 @@ void exclusive_scan(const omp_parallel_for_exec& exec,
                     BinFn f,
                     ValueT v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
   std::copy(begin, end, out);
   exclusive_scan_inplace(exec, out, out + (end - begin), f, v);
 }
@@ -188,7 +188,7 @@ void exclusive_scan(const omp_parallel_for_exec& exec,
                     Iter end,
                     OutIter out)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
   exclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
 }
 

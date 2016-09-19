@@ -14,18 +14,21 @@
 #include "data_storage.hxx"
 #include "type_helper.hxx"
 
-const int N = 2048;
+const int N = 1024;
 
 // Unit Test Space Exploration
 
 using ExecTypes = std::tuple<
 #ifdef RAJA_ENABLE_CUDA
-    RAJA::cuda_exec<128>,
+    RAJA::cuda_exec<128>
+#else
+    RAJA::seq_exec
 #endif
 #ifdef RAJA_ENABLE_OPENMP
-    RAJA::omp_parallel_for_exec,
+    ,
+    RAJA::omp_parallel_for_exec
 #endif
-    RAJA::seq_exec>;
+    >;
 
 using DataTypes = std::tuple<int, float, double>;
 using InOrderTypes = std::tuple<std::false_type, std::true_type>;
@@ -98,11 +101,15 @@ protected:
     data = new Storage{N};
     original = new Storage{N};
     std::iota(data->ibegin(), data->iend(), 1);
+    data->update();
     std::shuffle(data->ibegin(),
                  data->iend(),
                  std::mt19937{std::random_device{}()});
+    data->update();
     std::copy(data->ibegin(), data->iend(), original->ibegin());
+    original->update();
     inclusive<Exec>(*data, InPlace);
+    data->update();
   }
 
   virtual void TearDown()
@@ -180,11 +187,15 @@ protected:
     data = new Storage{N};
     original = new Storage{N};
     std::iota(data->ibegin(), data->iend(), 1);
+    data->update();
     std::shuffle(data->ibegin(),
                  data->iend(),
                  std::mt19937{std::random_device{}()});
+    data->update();
     std::copy(data->ibegin(), data->iend(), original->ibegin());
+    original->update();
     exclusive<Exec>(*data, InPlace);
+    data->update();
   }
 
   virtual void TearDown()
