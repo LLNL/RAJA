@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hxx"
 
-#include <functional>
+#include <iterator>
 #include <type_traits>
 
 namespace RAJA
@@ -80,7 +80,7 @@ template <typename ExecPolicy,
           typename T>
 void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
 {
-  inclusive_scan_inplace(ExecPolicy{}, begin, end, binop, value);
+  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -99,7 +99,7 @@ void inclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
 template <typename ExecPolicy, typename Iter>
 void inclusive_scan_inplace(Iter begin, Iter end)
 {
-  inclusive_scan_inplace(ExecPolicy{}, begin, end);
+  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end);
 }
 
 /*!
@@ -121,7 +121,7 @@ template <typename ExecPolicy,
           typename T>
 void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
 {
-  exclusive_scan_inplace(ExecPolicy{}, begin, end, binop, value);
+  detail::scan::exclusive_inplace(ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -140,7 +140,7 @@ void exclusive_scan_inplace(Iter begin, Iter end, BinaryFunction binop, T value)
 template <typename ExecPolicy, typename Iter>
 void exclusive_scan_inplace(Iter begin, Iter end)
 {
-  exclusive_scan_inplace(ExecPolicy{}, begin, end);
+  detail::scan::exclusive_inplace(ExecPolicy{}, begin, end);
 }
 
 /*!
@@ -171,7 +171,7 @@ void inclusive_scan(Iter begin,
                     BinaryFunction binop,
                     T value)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out, binop, value);
+  detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop, value);
 }
 
 /*!
@@ -194,7 +194,7 @@ void inclusive_scan(Iter begin,
 template <typename ExecPolicy, typename Iter, typename IterOut>
 void inclusive_scan(Iter begin, Iter end, IterOut out)
 {
-  inclusive_scan(ExecPolicy{}, begin, end, out);
+  detail::scan::inclusive(ExecPolicy{}, begin, end, out);
 }
 
 
@@ -226,7 +226,7 @@ void exclusive_scan(Iter begin,
                     BinaryFunction binop,
                     T value)
 {
-  exclusive_scan(ExecPolicy{}, begin, end, out, binop, value);
+  detail::scan::exclusive(ExecPolicy{}, begin, end, out, binop, value);
 }
 
 /*!
@@ -249,7 +249,7 @@ void exclusive_scan(Iter begin,
 template <typename ExecPolicy, typename Iter, typename IterOut>
 void exclusive_scan(Iter begin, Iter end, IterOut out)
 {
-  exclusive_scan(ExecPolicy{}, begin, end, out);
+  detail::scan::exclusive(ExecPolicy{}, begin, end, out);
 }
 
 }  // closing brace for RAJA namespace

@@ -60,12 +60,16 @@
 #include <omp.h>
 
 #include <algorithm>
+#include <functional>
 #include <iterator>
 #include <type_traits>
-#include <utility>
 #include <vector>
 
 namespace RAJA
+{
+namespace detail
+{
+namespace scan
 {
 
 RAJA_INLINE
@@ -75,27 +79,26 @@ int firstIndex(int n, int p, int pid)
 }
 
 template <typename Iter, typename BinFn, typename ValueT>
-void inclusive_scan_inplace(const omp_parallel_for_exec&,
-                            Iter begin,
-                            Iter end,
-                            BinFn f,
-                            ValueT v)
+void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f,
+                       ValueT v)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
-  // using Value = typename std::iterator_traits <Iter>::value_type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
-  std::vector<Value> sums(p, v);
+  ::std::vector<Value> sums(p, v);
 #pragma omp parallel
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
-    inclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, v);
+    inclusive_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f, v);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
+    exclusive_inplace(::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, v);
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
@@ -103,25 +106,25 @@ void inclusive_scan_inplace(const omp_parallel_for_exec&,
 }
 
 template <typename Iter>
-void inclusive_scan_inplace(const omp_parallel_for_exec& exec,
-                            Iter begin,
-                            Iter end)
+void inclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
+                       Iter begin,
+                       Iter end)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
-  inclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  inclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
 template <typename Iter, typename BinFn, typename ValueT>
-void exclusive_scan_inplace(const omp_parallel_for_exec&,
-                            Iter begin,
-                            Iter end,
-                            BinFn f,
-                            ValueT v)
+void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f,
+                       ValueT v)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter>())>::type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
-  std::vector<Value> sums(p, v);
+  ::std::vector<Value> sums(p, v);
 #pragma omp parallel
   {
     const int pid = omp_get_thread_num();
@@ -129,11 +132,11 @@ void exclusive_scan_inplace(const omp_parallel_for_exec&,
     const int i1 = firstIndex(n, p, pid + 1);
     const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
 #pragma omp barrier
-    exclusive_scan_inplace(seq_exec{}, begin + i0, begin + i1, f, init);
+    exclusive_inplace(seq_exec{}, begin + i0, begin + i1, f, init);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
-    exclusive_scan_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
+    exclusive_inplace(seq_exec{}, sums.data(), sums.data() + p, f, v);
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
@@ -141,57 +144,61 @@ void exclusive_scan_inplace(const omp_parallel_for_exec&,
 }
 
 template <typename Iter>
-void exclusive_scan_inplace(const omp_parallel_for_exec& exec,
-                            Iter begin,
-                            Iter end)
+void exclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
+                       Iter begin,
+                       Iter end)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
-  exclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  exclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
 template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
-void inclusive_scan(const omp_parallel_for_exec& exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out,
-                    BinFn f,
-                    ValueT v)
+void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f,
+               ValueT v)
 {
-  std::copy(begin, end, out);
-  inclusive_scan_inplace(exec, out, out + (end - begin), f, v);
+  ::std::copy(begin, end, out);
+  inclusive_inplace(exec, out, out + (end - begin), f, v);
 }
 
 template <typename Iter, typename OutIter>
-void inclusive_scan(const omp_parallel_for_exec& exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out)
+void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
-  inclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  inclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
 template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
-void exclusive_scan(const omp_parallel_for_exec& exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out,
-                    BinFn f,
-                    ValueT v)
+void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f,
+               ValueT v)
 {
-  std::copy(begin, end, out);
-  exclusive_scan_inplace(exec, out, out + (end - begin), f, v);
+  ::std::copy(begin, end, out);
+  exclusive_inplace(exec, out, out + (end - begin), f, v);
 }
 
 template <typename Iter, typename OutIter>
-void exclusive_scan(const omp_parallel_for_exec& exec,
-                    Iter begin,
-                    Iter end,
-                    OutIter out)
+void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out)
 {
-  using Value = typename std::decay<decltype(*std::declval<Iter&>())>::type;
-  exclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  exclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
+
+}  // namespace scan
+
+}  // namespace detail
 
 }  // namespace RAJA
 

@@ -57,6 +57,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <iterator>
+#include <type_traits>
+
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
 #include <thrust/functional.h>
@@ -64,36 +67,43 @@
 
 namespace RAJA
 {
+namespace detail
+{
+namespace scan
+{
 
 template <typename Exec, typename InputIter, typename Function, typename T>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-inclusive_scan_inplace(const Exec&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op,
-                       T init)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+inclusive_inplace(const Exec&,
+                  InputIter begin,
+                  InputIter end,
+                  Function binary_op,
+                  T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
   cudaDeviceSynchronize();
 }
 
 template <typename Exec, typename InputIter>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-inclusive_scan_inplace(const Exec& exec, InputIter begin, InputIter end)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+inclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
 {
-  using Value = typename std::iterator_traits<InputIter>::value_type;
+  using Value = typename ::std::iterator_traits<InputIter>::value_type;
   ::thrust::inclusive_scan(
       ::thrust::device, begin, end, begin, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
 }
 
 template <typename Exec, typename InputIter, typename Function, typename T>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-exclusive_scan_inplace(const Exec&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op,
-                       T init)
+typename std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
+                                        Exec>::value>::type
+exclusive_inplace(const Exec&,
+                  InputIter begin,
+                  InputIter end,
+                  Function binary_op,
+                  T init)
 {
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, init, binary_op);
@@ -101,10 +111,11 @@ exclusive_scan_inplace(const Exec&,
 }
 
 template <typename Exec, typename InputIter>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-exclusive_scan_inplace(const Exec& exec, InputIter begin, InputIter end)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+exclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
 {
-  using Value = typename std::iterator_traits<InputIter>::value_type;
+  using Value = typename ::std::iterator_traits<InputIter>::value_type;
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, Value{0}, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
@@ -115,23 +126,25 @@ template <typename Exec,
           typename OutputIter,
           typename Function,
           typename T>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-inclusive_scan(const Exec&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op,
-               T init)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+inclusive(const Exec&,
+          InputIter begin,
+          InputIter end,
+          OutputIter out,
+          Function binary_op,
+          T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
   cudaDeviceSynchronize();
 }
 
 template <typename Exec, typename InputIter, typename OutputIter>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-inclusive_scan(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+inclusive(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
 {
-  using Value = typename std::iterator_traits<InputIter>::value_type;
+  using Value = typename ::std::iterator_traits<InputIter>::value_type;
   ::thrust::inclusive_scan(
       ::thrust::device, begin, end, out, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
@@ -142,27 +155,33 @@ template <typename Exec,
           typename OutputIter,
           typename Function,
           typename T>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-exclusive_scan(const Exec& exec,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op,
-               T init)
+typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
+                                            Exec>::value>::type
+exclusive(const Exec& exec,
+          InputIter begin,
+          InputIter end,
+          OutputIter out,
+          Function binary_op,
+          T init)
 {
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
   cudaDeviceSynchronize();
 }
 
 template <typename Exec, typename InputIter, typename OutputIter>
-typename std::enable_if<std::is_base_of<cuda_exec_base, Exec>::value>::type
-exclusive_scan(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
+typename ::std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
+                                          Exec>::value>::type
+exclusive(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
 {
-  using Value = typename std::iterator_traits<InputIter>::value_type;
+  using Value = typename ::std::iterator_traits<InputIter>::value_type;
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, out, Value{0}, ::thrust::plus<Value>{});
   cudaDeviceSynchronize();
 }
+
+}  // closing brace for scan namespace
+
+}  // closing brace for detail namespace
 
 }  // closing brace for RAJA namespace
 
