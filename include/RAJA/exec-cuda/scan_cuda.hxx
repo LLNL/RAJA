@@ -76,14 +76,12 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Exec, typename InputIter, typename Function, typename T>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-inclusive_inplace(const Exec&,
-                  InputIter begin,
-                  InputIter end,
-                  Function binary_op,
-                  T init)
+template <typename InputIter, typename Function, typename T>
+void inclusive_inplace(const ::RAJA::cuda_exec_base&,
+                       InputIter begin,
+                       InputIter end,
+                       Function binary_op,
+                       T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
   cudaDeviceSynchronize();
@@ -93,14 +91,12 @@ inclusive_inplace(const Exec&,
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename Exec, typename InputIter, typename Function, typename T>
-typename std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
-                                        Exec>::value>::type
-exclusive_inplace(const Exec&,
-                  InputIter begin,
-                  InputIter end,
-                  Function binary_op,
-                  T init)
+template <typename InputIter, typename Function, typename T>
+void exclusive_inplace(const ::RAJA::cuda_exec_base&,
+                       InputIter begin,
+                       InputIter end,
+                       Function binary_op,
+                       T init)
 {
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, init, binary_op);
@@ -111,19 +107,16 @@ exclusive_inplace(const Exec&,
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Exec,
-          typename InputIter,
+template <typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-inclusive(const Exec&,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op,
-          T init)
+void inclusive(const ::RAJA::cuda_exec_base&,
+               InputIter begin,
+               InputIter end,
+               OutputIter out,
+               Function binary_op,
+               T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
   cudaDeviceSynchronize();
@@ -133,19 +126,16 @@ inclusive(const Exec&,
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename Exec,
-          typename InputIter,
+template <typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
-                                            Exec>::value>::type
-exclusive(const Exec& exec,
-          InputIter begin,
-          InputIter end,
-          OutputIter out,
-          Function binary_op,
-          T init)
+void exclusive(const ::RAJA::cuda_exec_base&,
+               InputIter begin,
+               InputIter end,
+               OutputIter out,
+               Function binary_op,
+               T init)
 {
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
   cudaDeviceSynchronize();
