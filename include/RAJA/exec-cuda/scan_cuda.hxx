@@ -72,6 +72,10 @@ namespace detail
 namespace scan
 {
 
+/*!
+        \brief explicit inclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Exec, typename InputIter, typename Function, typename T>
 typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
                                             Exec>::value>::type
@@ -85,6 +89,9 @@ inclusive_inplace(const Exec&,
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief inclusive inplace scan given range
+*/
 template <typename Exec, typename InputIter>
 typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
                                             Exec>::value>::type
@@ -96,6 +103,10 @@ inclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief explicit exclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Exec, typename InputIter, typename Function, typename T>
 typename std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
                                         Exec>::value>::type
@@ -110,6 +121,9 @@ exclusive_inplace(const Exec&,
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief exclusive inplace scan given range
+*/
 template <typename Exec, typename InputIter>
 typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
                                             Exec>::value>::type
@@ -121,6 +135,10 @@ exclusive_inplace(const Exec& exec, InputIter begin, InputIter end)
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief explicit inclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Exec,
           typename InputIter,
           typename OutputIter,
@@ -139,6 +157,9 @@ inclusive(const Exec&,
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief inclusive scan given input range and output
+*/
 template <typename Exec, typename InputIter, typename OutputIter>
 typename ::std::enable_if<::std::is_base_of<::RAJA::cuda_exec_base,
                                             Exec>::value>::type
@@ -150,6 +171,10 @@ inclusive(const Exec& exec, InputIter begin, InputIter end, OutputIter out)
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief explicit exclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Exec,
           typename InputIter,
           typename OutputIter,
@@ -168,6 +193,9 @@ exclusive(const Exec& exec,
   cudaDeviceSynchronize();
 }
 
+/*!
+        \brief exclusive scan given input range and output
+*/
 template <typename Exec, typename InputIter, typename OutputIter>
 typename ::std::enable_if<std::is_base_of<::RAJA::cuda_exec_base,
                                           Exec>::value>::type

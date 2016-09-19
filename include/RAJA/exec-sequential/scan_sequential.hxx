@@ -67,6 +67,10 @@ namespace detail
 namespace scan
 {
 
+/*!
+        \brief explicit inclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Iter, typename BinFn, typename T>
 void inclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
@@ -74,7 +78,7 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
                        BinFn f,
                        T v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
   while (++begin != end) {
     agg = f(*begin, agg);
@@ -82,13 +86,20 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
   }
 }
 
+/*!
+        \brief inclusive inplace scan given range
+*/
 template <typename Iter>
 void inclusive_inplace(const ::RAJA::seq_exec& exec, Iter begin, Iter end)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
-  inclusive_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  inclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit exclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Iter, typename BinFn, typename T>
 void exclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
@@ -96,7 +107,7 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
                        BinFn f,
                        T v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   Value agg = v;
   for (int i = 0; i < n; ++i) {
@@ -106,13 +117,20 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
   }
 }
 
+/*!
+        \brief exclusive inplace scan given range
+*/
 template <typename Iter>
 void exclusive_inplace(const ::RAJA::seq_exec& exec, Iter begin, Iter end)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
-  exclusive_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  exclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit inclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Iter, typename OutIter, typename BinFn, typename T>
 void inclusive(const ::RAJA::seq_exec&,
                Iter begin,
@@ -121,7 +139,7 @@ void inclusive(const ::RAJA::seq_exec&,
                BinFn f,
                T v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
   *out++ = agg;
   for (Iter i = begin + 1; i != end; ++i) {
@@ -130,13 +148,20 @@ void inclusive(const ::RAJA::seq_exec&,
   }
 }
 
+/*!
+        \brief inclusive scan given input range and output
+*/
 template <typename Iter, typename OutIter>
 void inclusive(const ::RAJA::seq_exec& exec, Iter begin, Iter end, OutIter out)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
-  inclusive(exec, begin, end, out, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  inclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit exclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Iter, typename OutIter, typename BinFn, typename T>
 void exclusive(const ::RAJA::seq_exec&,
                Iter begin,
@@ -145,7 +170,7 @@ void exclusive(const ::RAJA::seq_exec&,
                BinFn f,
                T v)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = v;
   OutIter o = out;
   *o++ = v;
@@ -155,11 +180,14 @@ void exclusive(const ::RAJA::seq_exec&,
   }
 }
 
+/*!
+        \brief exclusive scan given input range and output
+*/
 template <typename Iter, typename OutIter>
 void exclusive(const ::RAJA::seq_exec& exec, Iter begin, Iter end, OutIter out)
 {
-  using Value = typename std::iterator_traits<Iter>::value_type;
-  exclusive(exec, begin, end, out, std::plus<Value>{}, Value{0});
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  exclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
 }  // namespace scan

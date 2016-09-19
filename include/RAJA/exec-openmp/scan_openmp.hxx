@@ -78,6 +78,10 @@ int firstIndex(int n, int p, int pid)
   return static_cast<size_t>(n * pid) / p;
 }
 
+/*!
+        \brief explicit inclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Iter, typename BinFn, typename ValueT>
 void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        Iter begin,
@@ -105,6 +109,9 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
   }
 }
 
+/*!
+        \brief inclusive inplace scan given range
+*/
 template <typename Iter>
 void inclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
                        Iter begin,
@@ -114,6 +121,10 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
   inclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit exclusive inplace scan given range, function, and
+   initial value
+*/
 template <typename Iter, typename BinFn, typename ValueT>
 void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        Iter begin,
@@ -143,6 +154,9 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
   }
 }
 
+/*!
+        \brief exclusive inplace scan given range
+*/
 template <typename Iter>
 void exclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
                        Iter begin,
@@ -152,6 +166,10 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec& exec,
   exclusive_inplace(exec, begin, end, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit inclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
 void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
@@ -164,6 +182,9 @@ void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
   inclusive_inplace(exec, out, out + (end - begin), f, v);
 }
 
+/*!
+        \brief inclusive scan given input range and output
+*/
 template <typename Iter, typename OutIter>
 void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
@@ -174,6 +195,10 @@ void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
   inclusive(exec, begin, end, out, ::std::plus<Value>{}, Value{0});
 }
 
+/*!
+        \brief explicit exclusive scan given input range, output, function, and
+   initial value
+*/
 template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
 void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
@@ -186,6 +211,9 @@ void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
   exclusive_inplace(exec, out, out + (end - begin), f, v);
 }
 
+/*!
+        \brief exclusive scan given input range and output
+*/
 template <typename Iter, typename OutIter>
 void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
