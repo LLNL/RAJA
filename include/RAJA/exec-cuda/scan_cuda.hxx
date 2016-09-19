@@ -64,67 +64,9 @@
 
 namespace RAJA
 {
-namespace scan
-{
-namespace gpu
-{
-
-// pull in all associative operators found in thrust
-
-template <typename T>
-struct plus : public ::thrust::plus<T> {
-};
-
-template <typename T>
-struct multiplies : public ::thrust::multiplies<T> {
-};
-
-template <typename T>
-struct logical_and : public ::thrust::logical_and<T> {
-};
-
-template <typename T>
-struct logical_or : public ::thrust::logical_or<T> {
-};
-
-template <typename T>
-struct bit_and : public ::thrust::bit_and<T> {
-};
-
-template <typename T>
-struct bit_or : public ::thrust::bit_or<T> {
-};
-
-template <typename T>
-struct maximum : public ::thrust::maximum<T> {
-};
-
-template <typename T>
-struct minimum : public ::thrust::minimum<T> {
-};
-
-}  // closing brace for gpu namespace
-
-namespace internal
-{
-
-namespace detail
-{
-
-template <typename Exec, typename T>
-struct defaults<Exec, T, true> {
-  using binary_op = ::RAJA::scan::gpu::plus<T>;
-  static constexpr const T init = 0;
-};
-
-}  // closing brace for detail namespace
-
-}  // closing brace for internal namespace
-
-}  // closing brace for scan namespace
 
 template <typename InputIter, typename Function, typename T>
-void inclusive_scan_inplace(cuda_exec_base,
+void inclusive_scan_inplace(const cuda_exec_base&,
                             InputIter begin,
                             InputIter end,
                             Function binary_op,
@@ -138,8 +80,17 @@ void inclusive_scan_inplace(cuda_exec_base,
                            binary_op);
 }
 
+template <typename InputIter>
+void inclusive_scan_inplace(const cuda_exec_base& exec,
+                            InputIter begin,
+                            InputIter end)
+{
+  using Value = typename std::iterator_traits<InputIter>::value_type;
+  inclusive_scan_inplace(exec, begin, end, ::thrust::plus<Value>{}, Value{0});
+}
+
 template <typename InputIter, typename Function, typename T>
-void exclusive_scan_inplace(cuda_exec_base,
+void exclusive_scan_inplace(const cuda_exec_base&,
                             InputIter begin,
                             InputIter end,
                             Function binary_op,
@@ -153,11 +104,20 @@ void exclusive_scan_inplace(cuda_exec_base,
                            binary_op);
 }
 
+template <typename InputIter>
+void exclusive_scan_inplace(const cuda_exec_base& exec,
+                            InputIter begin,
+                            InputIter end)
+{
+  using Value = typename std::iterator_traits<InputIter>::value_type;
+  exclusive_scan_inplace(exec, begin, end, ::thrust::plus<Value>{}, Value{0});
+}
+
 template <typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-void inclusive_scan_inplace(cuda_exec_base,
+void inclusive_scan_inplace(const cuda_exec_base&,
                             InputIter begin,
                             InputIter end,
                             OutputIter out,
@@ -172,11 +132,21 @@ void inclusive_scan_inplace(cuda_exec_base,
                            binary_op);
 }
 
+template <typename InputIter, typename OutputIter>
+void inclusive_scan_inplace(const cuda_exec_base& exec,
+                            InputIter begin,
+                            InputIter end,
+                            OutputIter out)
+{
+  using Value = typename std::iterator_traits<InputIter>::value_type;
+  inclusive_scan(exec, begin, out, ::thrust::plus<Value>{}, Value{0});
+}
+
 template <typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-void exclusive_scan_inplace(cuda_exec_base,
+void exclusive_scan_inplace(const cuda_exec_base& exec,
                             InputIter begin,
                             InputIter end,
                             OutputIter out,
@@ -189,6 +159,17 @@ void exclusive_scan_inplace(cuda_exec_base,
                            ::thrust::device_pointer_cast(out),
                            init,
                            binary_op);
+}
+
+
+template <typename InputIter, typename OutputIter>
+void exclusive_scan_inplace(const cuda_exec_base& exec,
+                            InputIter begin,
+                            InputIter end,
+                            OutputIter out)
+{
+  using Value = typename std::iterator_traits<InputIter>::value_type;
+  exclusive_scan(exec, begin, out, ::thrust::plus<Value>{}, Value{0});
 }
 
 }  // closing brace for RAJA namespace

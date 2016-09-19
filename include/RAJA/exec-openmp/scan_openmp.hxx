@@ -66,40 +66,20 @@
 namespace RAJA
 {
 
-namespace scan
-{
-
-namespace internal
-{
-
-namespace detail
-{
-
-template <typename T>
-struct defaults<omp_parallel_for_exec, T> {
-  using binary_op = ::RAJA::scan::cpu::plus<T>;
-  static constexpr const T init = 0;
-};
-
-}  // closes detail namespace
-
-}  // closes internal namespace
-
-}  // closes scan namespace
-
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
 {
   return static_cast<size_t>(n * pid) / p;
 }
 
-template <typename Iter, typename BinFn, typename Value>
-void inclusive_scan_inplace(omp_parallel_for_exec,
+template <typename Iter, typename BinFn, typename ValueT>
+void inclusive_scan_inplace(const omp_parallel_for_exec&,
                             Iter begin,
                             Iter end,
                             BinFn f,
-                            Value v)
+                            ValueT v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
@@ -119,13 +99,23 @@ void inclusive_scan_inplace(omp_parallel_for_exec,
   }
 }
 
-template <typename Iter, typename BinFn, typename Value>
-void exclusive_scan_inplace(omp_parallel_for_exec,
+template <typename Iter>
+void inclusive_scan_inplace(const omp_parallel_for_exec& exec,
+                            Iter begin,
+                            Iter end)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  inclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename BinFn, typename ValueT>
+void exclusive_scan_inplace(const omp_parallel_for_exec&,
                             Iter begin,
                             Iter end,
                             BinFn f,
-                            Value v)
+                            ValueT v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
   std::vector<Value> sums(p, v);
@@ -147,28 +137,59 @@ void exclusive_scan_inplace(omp_parallel_for_exec,
   }
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void inclusive_scan(omp_parallel_for_exec exec,
+template <typename Iter>
+void exclusive_scan_inplace(const omp_parallel_for_exec& exec,
+                            Iter begin,
+                            Iter end)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  exclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
+void inclusive_scan(const omp_parallel_for_exec& exec,
                     Iter begin,
                     Iter end,
                     OutIter out,
                     BinFn f,
-                    Value v)
+                    ValueT v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   std::copy(begin, end, out);
   inclusive_scan_inplace(exec, out, out + (end - begin), f, v);
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void exclusive_scan(omp_parallel_for_exec exec,
+template <typename Iter, typename OutIter>
+void inclusive_scan(const omp_parallel_for_exec& exec,
+                    Iter begin,
+                    Iter end,
+                    OutIter out)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  inclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
+void exclusive_scan(const omp_parallel_for_exec& exec,
                     Iter begin,
                     Iter end,
                     OutIter out,
                     BinFn f,
-                    Value v)
+                    ValueT v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   std::copy(begin, end, out);
   exclusive_scan_inplace(exec, out, out + (end - begin), f, v);
+}
+
+template <typename Iter, typename OutIter>
+void exclusive_scan(const omp_parallel_for_exec& exec,
+                    Iter begin,
+                    Iter end,
+                    OutIter out)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  exclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
 }
 
 }  // namespace RAJA

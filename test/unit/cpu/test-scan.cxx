@@ -27,7 +27,7 @@ using ExecTypes = std::tuple<
 #endif
     RAJA::seq_exec>;
 
-using DataTypes = std::tuple<int, long, float, double>;
+using DataTypes = std::tuple<int, float, double>;
 using InOrderTypes = std::tuple<std::false_type, std::true_type>;
 
 template <typename T1, typename T2>

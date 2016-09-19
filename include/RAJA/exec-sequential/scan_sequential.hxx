@@ -61,84 +61,10 @@
 namespace RAJA
 {
 
-namespace scan
+template <typename Iter, typename BinFn, typename T>
+void inclusive_scan_inplace(const seq_exec&, Iter begin, Iter end, BinFn f, T v)
 {
-
-namespace cpu
-{
-
-// pull in all associative operators found in C++ standard library (for CPU)
-
-template <typename T>
-struct plus : public ::std::plus<T> {
-};
-
-template <typename T>
-struct multiplies : public ::std::multiplies<T> {
-};
-
-template <typename T>
-struct logical_and : public ::std::logical_and<T> {
-};
-
-template <typename T>
-struct logical_or : public ::std::logical_or<T> {
-};
-
-template <typename T>
-struct bit_and : public ::std::bit_and<T> {
-};
-
-template <typename T>
-struct bit_or : public ::std::bit_or<T> {
-};
-
-// create minimum and maximum
-
-template <typename T>
-struct maximum {
-  T operator()(const T& a, const T& b) { return ::std::max(a, b); }
-};
-
-template <typename T>
-struct minimum {
-  T operator()(const T& a, const T& b) { return ::std::min(a, b); }
-};
-
-}  // closing brace for cpu namespace
-
-namespace internal
-{
-
-namespace detail
-{
-/*
-******************************************************************************
-*
-* \brief default binary_op and init value for scan. Special ExecPolicys should
-*overload
-*
-******************************************************************************
-*/
-template <typename Exec, typename T, bool GPU = false>
-struct defaults {
-};
-
-template <typename T>
-struct defaults<seq_exec, T> {
-  using binary_op = ::RAJA::scan::cpu::plus<T>;
-  static constexpr const T init = 0;
-};
-
-}  // closing brace for detail namespace
-
-}  // closing brace for internal namespace
-
-}  // closing brace for scan namespace
-
-template <typename Iter, typename BinFn, typename Value>
-void inclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
-{
+  using Value = typename std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
   while (++begin != end) {
     agg = f(*begin, agg);
@@ -146,9 +72,17 @@ void inclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
   }
 }
 
-template <typename Iter, typename BinFn, typename Value>
-void exclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
+template <typename Iter>
+void inclusive_scan_inplace(const seq_exec& exec, Iter begin, Iter end)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  inclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename BinFn, typename T>
+void exclusive_scan_inplace(const seq_exec&, Iter begin, Iter end, BinFn f, T v)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   Value agg = v;
   for (int i = 0; i < n; ++i) {
@@ -158,14 +92,22 @@ void exclusive_scan_inplace(seq_exec, Iter begin, Iter end, BinFn f, Value v)
   }
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void inclusive_scan(seq_exec,
+template <typename Iter>
+void exclusive_scan_inplace(const seq_exec& exec, Iter begin, Iter end)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  exclusive_scan_inplace(exec, begin, end, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename OutIter, typename BinFn, typename T>
+void inclusive_scan(const seq_exec&,
                     Iter begin,
                     Iter end,
                     OutIter out,
                     BinFn f,
-                    Value v)
+                    T v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
   *out++ = agg;
   for (Iter i = begin + 1; i != end; ++i) {
@@ -174,14 +116,22 @@ void inclusive_scan(seq_exec,
   }
 }
 
-template <typename Iter, typename OutIter, typename BinFn, typename Value>
-void exclusive_scan(seq_exec,
+template <typename Iter, typename OutIter>
+void inclusive_scan(const seq_exec& exec, Iter begin, Iter end, OutIter out)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  inclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
+}
+
+template <typename Iter, typename OutIter, typename BinFn, typename T>
+void exclusive_scan(const seq_exec&,
                     Iter begin,
                     Iter end,
                     OutIter out,
                     BinFn f,
-                    Value v)
+                    T v)
 {
+  using Value = typename std::iterator_traits<Iter>::value_type;
   Value agg = v;
   OutIter o = out;
   *o++ = v;
@@ -189,6 +139,13 @@ void exclusive_scan(seq_exec,
     agg = f(*i, agg);
     *o = agg;
   }
+}
+
+template <typename Iter, typename OutIter>
+void exclusive_scan(const seq_exec& exec, Iter begin, Iter end, OutIter out)
+{
+  using Value = typename std::iterator_traits<Iter>::value_type;
+  exclusive_scan(exec, begin, end, out, std::plus<Value>{}, Value{0});
 }
 
 }  // namespace RAJA
