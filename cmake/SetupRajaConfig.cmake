@@ -100,7 +100,7 @@ install(FILES ${PROJECT_BINARY_DIR}/share/raja/cmake/raja-config.cmake
   DESTINATION share/raja/cmake/)
 
 # Setup pkg-config
-include(FindPkgConfig QUIET)
+find_package(PkgConfig QUIET)
 if(PKG_CONFIG_FOUND)
   # convert lists of link libraries into -lstdc++ -lm etc..
   foreach(LIB ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES} ${PLATFORM_LIBS} ${CUDA_LIBRARIES})
@@ -119,7 +119,7 @@ if(PKG_CONFIG_FOUND)
     endforeach()
   endif()
   # Produce a pkg-config file for linking against the shared lib
-  configure_file("pkg-config/RAJA.pc.in" "RAJA.pc" @ONLY)
+  configure_file("share/raja/pkg-config/RAJA.pc.in" "RAJA.pc" @ONLY)
   install(FILES       "${CMAKE_CURRENT_BINARY_DIR}/RAJA.pc"
           DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 endif()
