@@ -72,11 +72,6 @@ include(cmake/SetupPackages.cmake)
 # Setup internal RAJA configuration options
 include(cmake/SetupRajaConfig.cmake)
 
-# Configure a header file with all the variables we found.
-configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
-configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/RAJA-config.cmake.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake)
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
@@ -85,11 +80,8 @@ include_directories(include)
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
-
 add_subdirectory(src)
 
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/raja-config.cmake
-  DESTINATION cmake/)
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
@@ -97,28 +89,4 @@ endif()
 
 if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
-endif()
-
-include(FindPkgConfig QUIET)
-if(PKG_CONFIG_FOUND)
-  # convert lists of link libraries into -lstdc++ -lm etc..
-  foreach(LIB ${CMAKE_CXX_IMPLICIT_LINK_LIBRARIES} ${PLATFORM_LIBS} ${CUDA_LIBRARIES})
-    set(PRIVATE_LIBS "${PRIVATE_LIBS} -l${LIB}")
-  endforeach()
-  foreach(INCDIR ${INCLUDE_DIRECTORIES} ${CUDA_INCLUDE_DIRS})
-    set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
-  endforeach()
-  if(RAJA_ENABLE_CUDA)
-    foreach(FLAG ${RAJA_NVCC_FLAGS})
-      set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")
-    endforeach()
-  else()
-    foreach(FLAG ${CMAKE_CXX_FLAGS_RELEASE} ${CMAKE_CXX_FLAGS})
-      set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")
-    endforeach()
-  endif()
-  # Produce a pkg-config file for linking against the shared lib
-  configure_file("pkg-config/RAJA.pc.in" "RAJA.pc" @ONLY)
-  install(FILES       "${CMAKE_CURRENT_BINARY_DIR}/RAJA.pc"
-          DESTINATION "${CMAKE_INSTALL_PREFIX}/lib/pkgconfig")
 endif()

@@ -80,4 +80,4 @@ install(TARGETS RAJA EXPORT RAJA
 )
 
 install(EXPORT RAJA 
-  DESTINATION cmake/)
+  DESTINATION share/raja/cmake/)

@@ -93,5 +93,5 @@ if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_USE_DOUBLE    ${RAJA_USE_DOUBLE})
   set(RAJA_USE_FLOAT     ${RAJA_USE_FLOAT})
   # Library targets imported from file
-  include(@CMAKE_INSTALL_PREFIX@/cmake/RAJA.cmake)
+  include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
 endif()
