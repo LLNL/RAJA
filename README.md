@@ -61,7 +61,7 @@ Example Applications
 
 The RAJA-examples repository contains three proxy applications that use the RAJA
 programming model. These applications can be built along with the rest of the
-RAJA framework by seting `-DRAJA_ENABLE_APPLICATIONS=On` when running CMake.
+RAJA framework by setting `-DRAJA_ENABLE_APPLICATIONS=On` when running CMake.
 
 
 User Documentation
