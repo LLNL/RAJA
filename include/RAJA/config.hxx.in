@@ -154,94 +154,11 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //                 loop vectorization
 //
 //     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable alignments
-//
 
-#if defined(RAJA_COMPILER_GNU)
-#define RAJA_ALIGNED_ATTR(N) __attribute__((aligned(N)))
-#else
-#define RAJA_ALIGNED_ATTR(N) alignas(N)
-#endif
-
-
-#if defined(RAJA_COMPILER_ICC)
-//
-// Configuration options for Intel compilers
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#if defined(RAJA_ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
-#else
-
-#if __ICC < 1300  // use alignment intrinsic
-#define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
-#else
-#define RAJA_ALIGN_DATA(d)  // TODO: Define this...
-#endif
-
-#endif
-
-#define RAJA_SIMD  // TODO: Define this...
-
-
-#elif defined(RAJA_COMPILER_GNU) 
-//
-// Configuration options for GNU compilers
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#if defined(RAJA_ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
-#else
-
-#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
-
-#endif
-
-#define RAJA_SIMD  // TODO: Define this...
-
-
-#elif defined(RAJA_COMPILER_XLC12)
-//
-// Configuration options for xlc v12 compiler (i.e., bgq/sequoia).
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
-
-//#define RAJA_SIMD  _Pragma("simd_level(10)")
-#define RAJA_SIMD   // TODO: Define this... 
-
-
-#elif defined(RAJA_COMPILER_CLANG)
-//
-// Configuration options for clang compilers
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#if defined(RAJA_ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
-#else
-
-#define RAJA_ALIGN_DATA(d) // TODO: Define this...
-
-#endif
-
-#define RAJA_SIMD  // TODO: Define this...
-
-#else
-
-#pragma message("RAJA_COMPILER unknown, using default empty macros.")
-
-#define RAJA_INLINE inline
-#define RAJA_ALIGN_DATA(d)
-#define RAJA_SIMD
-
-#endif
+#define RAJA_ALIGNED_ATTR(N) @RAJA_ALIGNED_ATTR@
+#define RAJA_ALIGN_DATA(N) @RAJA_ALIGN_DATA@
+#define RAJA_INLINE @RAJA_INLINE@
+#define RAJA_SIMD @RAJA_SIMD@
 
 }  // closing brace for RAJA namespace
 
