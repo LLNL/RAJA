@@ -101,11 +101,15 @@ void runLTimesTest(std::string const &policy,
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
     ell_data[i] = drand48();
+    //ell_data[i] = 0.0;
   }
+  //ell_data[0] = 2.0;
+
   for (size_t i = 0; i < psi_data.size(); ++i) {
     psi_data[i] = drand48();
+    //psi_data[i] = 0.0;
   }
-
+  //psi_data[0] = 5.0;
   // create device memory
   double *d_ell, *d_phi, *d_psi;
   cudaErrchk(cudaMalloc(&d_ell, sizeof(double) * ell_data.size()));
@@ -202,9 +206,10 @@ void runLTimesTest(std::string const &policy,
   size_t reductionsFailed = 0;
   std::string whichFailed;
 
-  if (std::abs(lsum - double(pdsum)) > 1e-9) {
+  if (std::abs(lsum - double(pdsum)) > 5e-9) {
     reductionsFailed++;
     whichFailed += "[ReduceSum]";
+    //printf("ReduceSum failed : EPS =  %g\n",std::abs(lsum - double(pdsum)));
   }
 
   if (lmin != double(pdmin)) {
@@ -376,6 +381,7 @@ int main(int argc, char *argv[])
   cout << "Starting GPU nested tests" << endl << endl;
   // Run some LTimes example tests (directions, groups, zones)
   runLTimesTests(2, 3, 7, 3);
+  runLTimesTests(2, 3, 32, 4);
   runLTimesTests(25, 96, 8, 32);
   runLTimesTests(100, 15, 7, 13);
   runNegativeRange();

@@ -76,6 +76,17 @@ namespace RAJA
 #define RAJA_MINLOC(a, b) (((b.val) < (a.val)) ? (b) : (a))
 ///
 #define RAJA_MAXLOC(a, b) (((b.val) > (a.val)) ? (b) : (a))
+
+///
+///Macros to support unstructured minmaxloc operations
+#define RAJA_MINLOC_UNSTRUCTURED(set_val, set_idx, a_val, a_idx, b_val, b_idx) \
+  set_idx = ((b_val) < (a_val) ? (b_idx) : (a_idx)); \
+  set_val = ((b_val) < (a_val) ? (b_val) : (a_val));
+///
+#define RAJA_MAXLOC_UNSTRUCTURED(set_val, set_idx, a_val, a_idx, b_val, b_idx) \
+  set_idx = ((b_val) > (a_val) ? (b_idx) : (a_idx)); \
+  set_val = ((b_val) > (a_val) ? (b_val) : (a_val));
+
 //
 // Forward declarations for reduction templates.
 // Actual classes appear in forall_*.hxx header files.
