@@ -1,0 +1,8 @@
+libdir=@CMAKE_INSTALL_PREFIX@/lib
+includedir=@CMAKE_INSTALL_PREFIX@/include
+
+Name: @CMAKE_PROJECT_NAME@
+Description: RAJA Portability Layer
+Version: @RAJA_VERSION_MAJOR@.@RAJA_VERSION_MINOR@.@RAJA_VERSION_PATCHLEVEL@
+Libs: -rdynamic ${libdir}/libRAJA.a  @PRIVATE_LIBS@
+Cflags: @PC_C_FLAGS@ -I${includedir}
