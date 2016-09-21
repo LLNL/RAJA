@@ -122,6 +122,7 @@ struct omp_reduce {
 
 #include "RAJA/exec-openmp/forall_openmp.hxx"
 #include "RAJA/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/exec-openmp/scan_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-openmp/forallN_openmp.hxx"

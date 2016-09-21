@@ -68,6 +68,7 @@
 #include "RAJA/int_datatypes.hxx"
 #include "RAJA/real_datatypes.hxx"
 
+#include "RAJA/operators.hxx"
 #include "RAJA/reducers.hxx"
 
 #include "RAJA/IndexSet.hxx"
@@ -150,5 +151,7 @@
 #include "RAJA/foralln/Permute.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
+
+#include "RAJA/scan.hxx"
 
 #endif  // closing endif for header file include guard

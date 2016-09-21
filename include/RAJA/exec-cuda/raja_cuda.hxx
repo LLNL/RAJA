@@ -120,9 +120,14 @@ struct Dim3z {
 ///
 /// Segment execution policies
 ///
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec {
+
+struct cuda_exec_base {
 };
+
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_exec : public cuda_exec_base {
+};
+
 ///
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
@@ -163,7 +168,7 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 /*!
  * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize)
  * Macro that generates kernel launch parameters.
- */ 
+ */
 #define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
   gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
 
@@ -310,8 +315,8 @@ __device__ inline float _atomicMax(float *address, float value)
 ///
 template <>
 __device__ inline unsigned long long int _atomicMin(
-                                  unsigned long long int *address,
-                                  unsigned long long int value)
+    unsigned long long int *address,
+    unsigned long long int value)
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -330,8 +335,8 @@ __device__ inline unsigned long long int _atomicMin(
 ///
 template <>
 __device__ inline unsigned long long int _atomicMax(
-                                  unsigned long long int *address,
-                                  unsigned long long int value)
+    unsigned long long int *address,
+    unsigned long long int value)
 {
   unsigned long long int readback =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -477,8 +482,8 @@ __device__ inline float _atomicMax(float *address, float value)
 ///
 template <>
 __device__ inline unsigned long long int _atomicMin(
-                                  unsigned long long int *address,
-                                  unsigned long long int value)
+    unsigned long long int *address,
+    unsigned long long int value)
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -496,8 +501,8 @@ __device__ inline unsigned long long int _atomicMin(
 ///
 template <>
 __device__ inline unsigned long long int _atomicMax(
-                                  unsigned long long int *address,
-                                  unsigned long long int value)
+    unsigned long long int *address,
+    unsigned long long int value)
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -558,6 +563,7 @@ __device__ inline double _atomicAdd(double *address, double value)
 //
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
+#include "RAJA/exec-cuda/scan_cuda.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-cuda/forallN_cuda.hxx"
