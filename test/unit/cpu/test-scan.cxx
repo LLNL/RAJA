@@ -24,9 +24,9 @@ using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
 using ExecTypes = std::tuple<RAJA::seq_exec>;
 #endif
 
-using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
-                               RAJA::operators::plus<float>,
-                               RAJA::operators::plus<double>,
+using ReduceTypes = std::tuple<RAJA::operators::safe_plus<int>,
+                               RAJA::operators::safe_plus<float>,
+                               RAJA::operators::safe_plus<double>,
                                RAJA::operators::minimum<int>,
                                RAJA::operators::minimum<float>,
                                RAJA::operators::minimum<double>,
