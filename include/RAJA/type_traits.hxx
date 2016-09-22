@@ -53,7 +53,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/Iterator.hxx"
+#include "RAJA/Iterators.hxx"
 
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
@@ -61,25 +61,31 @@
 namespace RAJA
 {
 
-template <typename Iter>
-struct is_random_access_iterator {
-  static const bool value = std::
-      is_same<std::random_access_iterator_tag,
-              typename std::iterator_traits<Iter>::iterator_category>::value;
+namespace meta
+{
+template <class...>
+struct voider {
+  using type = void;
+};
+template <class... T0toN>
+using void_t = typename voider<T0toN...>::type;
+
+template <bool Statement, typename WhenTrue, typename WhenFalse>
+struct if_;
+
+template <typename WhenTrue, typename WhenFalse>
+struct if_<true, WhenTrue, WhenFalse> {
+  using type = WhenTrue;
 };
 
-template <typename Iter,
-          typename = typename std::enable_if<is_random_access_iterator<Iter>>>
-struct value_of {
-  using type = std::iterator_traits<Iter>::value_type;
+template <typename WhenTrue, typename WhenFalse>
+struct if_<false, WhenTrue, WhenFalse> {
+  using type = WhenFalse;
 };
 
-template <typename Container,
-          typename =
-              typename std::enable_if<Iterators::OffersRAI<Container>::value>>
-struct value_of {
-  using type = typename value_of<typename OutContainer::iterator>::type;
-};
+template <bool Statement, typename WhenTrue, typename WhenFalse>
+using if_t = typename if_<Statement, WhenTrue, WhenFalse>::type;
+}
 
 template <typename T>
 struct is_iterable {
@@ -95,9 +101,33 @@ struct is_iterable {
   static std::false_type test_end(...);
   using begin_type = decltype(test_begin<T>(nullptr));
   using end_type = decltype(test_end<T>(nullptr));
-        static const bool value =
-		std::is_same<std::true_type, begin_type)>::value &&
-		std::is_same<std::true_type, end_type)>::value;
+  static const bool value = std::is_same<std::true_type, begin_type>::value
+                            && std::is_same<std::true_type, end_type>::value;
+};
+
+template <typename Iter>
+struct is_random_access_iterator {
+  static const bool value = std::
+      is_same<std::random_access_iterator_tag,
+              typename std::iterator_traits<Iter>::iterator_category>::value;
+};
+
+template <typename Container, typename = meta::void_t<>>
+struct has_iterator : std::false_type {
+};
+
+template <typename Container>
+struct has_iterator<Container, meta::void_t<typename Container::iterator>>
+    : std::true_type {
+};
+
+template <typename T,
+          bool hasIter = has_iterator<T>::value,
+          bool isRAI = is_random_access_iterator<T>::value,
+          typename = typename std::enable_if<hasIter || isRAI>>
+struct value_of {
+  using type = typename std::
+      iterator_traits<meta::if_t<isRAI, T, typename T::iterator>>::value_type;
 };
 
 template <typename SegmentT>
@@ -113,7 +143,8 @@ struct is_range_segment {
       || std::is_base_of<RAJA::RangeStrideSegment, SegmentT>::value;
 };
 
-tempate<typename SegmentT> struct is_list_segment {
+template <typename SegmentT>
+struct is_list_segment {
   constexpr static const bool value =
       std::is_base_of<RAJA::ListSegment, SegmentT>::value;
 };

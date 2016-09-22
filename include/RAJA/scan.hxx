@@ -277,12 +277,12 @@ template <typename ExecPolicy,
           typename InContainer,
           typename OutContainer,
           typename T = typename value_of<OutContainer>::type,
-          typename BinaryFunction = operators::plus<TOut>>
+          typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
 inclusive_scan_inplace(const InContainer& in,
                        OutContainer& out,
                        BinaryFunction binop = BinaryFunction{},
-                       TOut value = BinaryFunction::identity)
+                       T value = BinaryFunction::identity)
 {
   detail::scan::container::inclusive_inplace(
       ExecPolicy{}, in, out, binop, value);
@@ -292,12 +292,12 @@ template <typename ExecPolicy,
           typename InContainer,
           typename OutContainer,
           typename T = typename value_of<OutContainer>::type,
-          typename BinaryFunction = operators::plus<TOut>>
+          typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
 exclusive_scan_inplace(const InContainer& in,
                        OutContainer& out,
                        BinaryFunction binop = BinaryFunction{},
-                       TOut value = BinaryFunction::identity)
+                       T value = BinaryFunction::identity)
 {
   detail::scan::container::exclusive_inplace(
       ExecPolicy{}, in, out, binop, value);
