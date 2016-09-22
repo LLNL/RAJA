@@ -58,6 +58,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include "RAJA/type_traits.hxx"
+
 namespace RAJA
 {
 
@@ -76,14 +78,16 @@ namespace RAJA
 */
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename BinaryFunction = ::RAJA::operators::plus<T>>
-void inclusive_scan_inplace(Iter begin,
-                            Iter end,
-                            BinaryFunction binop = BinaryFunction{},
-                            T value = BinaryFunction::identity)
+          typename T = typename value_of<Iter>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_random_access_iterator<Iter>::value>::type
+inclusive_scan_inplace(Iter begin,
+                       Iter end,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
 {
-  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop, value);
+  detail::scan::iterators::inclusive_inplace(
+      ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -101,14 +105,16 @@ void inclusive_scan_inplace(Iter begin,
 */
 template <typename ExecPolicy,
           typename Iter,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename BinaryFunction = ::RAJA::operators::plus<T>>
-void exclusive_scan_inplace(Iter begin,
-                            Iter end,
-                            BinaryFunction binop = BinaryFunction{},
-                            T value = BinaryFunction::identity)
+          typename T = typename value_of<Iter>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_random_access_iterator<Iter>::value>::type
+exclusive_scan_inplace(Iter begin,
+                       Iter end,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
 {
-  detail::scan::exclusive_inplace(ExecPolicy{}, begin, end, binop, value);
+  detail::scan::iterators::exclusive_inplace(
+      ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -131,15 +137,18 @@ void exclusive_scan_inplace(Iter begin,
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename BinaryFunction = ::RAJA::operators::plus<T>>
-void inclusive_scan(Iter begin,
-                    Iter end,
-                    IterOut out,
-                    BinaryFunction binop = BinaryFunction{},
-                    T value = BinaryFunction::identity)
+          typename T = typename value_of<IterOut>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_random_access_iterator<Iter>::value
+                        && is_random_access_iterator<IterOut>::value>::type
+inclusive_scan(Iter begin,
+               Iter end,
+               IterOut out,
+               BinaryFunction binop = BinaryFunction{},
+               T value = BinaryFunction::identity)
 {
-  detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop, value);
+  detail::scan::iterators::inclusive(
+      ExecPolicy{}, begin, end, out, binop, value);
 }
 
 /*!
@@ -162,15 +171,136 @@ void inclusive_scan(Iter begin,
 template <typename ExecPolicy,
           typename Iter,
           typename IterOut,
-          typename T = typename std::iterator_traits<Iter>::value_type,
-          typename BinaryFunction = ::RAJA::operators::plus<T>>
-void exclusive_scan(Iter begin,
-                    Iter end,
-                    IterOut out,
-                    BinaryFunction binop = BinaryFunction{},
-                    T value = BinaryFunction::identity)
+          typename T = typename value_of<IterOut>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_random_access_iterator<Iter>::value
+                        && is_random_access_iterator<IterOut>::value>::type
+exclusive_scan(Iter begin,
+               Iter end,
+               IterOut out,
+               BinaryFunction binop = BinaryFunction{},
+               T value = BinaryFunction::identity)
 {
-  detail::scan::exclusive(ExecPolicy{}, begin, end, out, binop, value);
+  detail::scan::iterators::exclusive(
+      ExecPolicy{}, begin, end, out, binop, value);
+}
+
+
+/******************************************************************************/
+
+template <typename ExecPolicy,
+          typename Iterable,
+          typename T,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_iterable<Iterable>::value>::type
+inclusive_scan_inplace(Iterable range,
+                       T* in,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
+{
+  detail::scan::iterable::inclusive_inplace(
+      ExecPolicy{}, range, in, binop, value);
+}
+
+template <typename ExecPolicy,
+          typename Iterable,
+          typename T,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<is_iterable<Iterable>::value>::type
+exclusive_scan_inplace(Iterable range,
+                       T* in,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
+{
+  detail::scan::iterable::exclusive_inplace(
+      ExecPolicy{}, range, in, binop, value);
+}
+
+template <typename ExecPolicy,
+          typename Iterable,
+          typename TIn,
+          typename TOut,
+          typename BinaryFunction = operators::plus<TOut>>
+typename std::enable_if<is_iterable<Iterable>::value>::type inclusive_scan(
+    Iterable range,
+    const TIn* in,
+    TOut out,
+    BinaryFunction binop = BinaryFunction{},
+    TOut value = BinaryFunction::identity)
+{
+  detail::scan::iterable::inclusive(ExecPolicy{}, range, in, out, binop, value);
+}
+
+template <typename ExecPolicy,
+          typename Iterable,
+          typename TIn,
+          typename TOut,
+          typename BinaryFunction = operators::plus<TOut>>
+typename std::enable_if<is_iterable<Iterable>::value>::type exclusive_scan(
+    Iterable range,
+    const TIn* in,
+    TOut* out,
+    BinaryFunction binop = BinaryFunction{},
+    TOut value = BinaryFunction::identity)
+{
+  detail::scan::iterable::exclusive(ExecPolicy{}, range, in, out, binop, value);
+}
+
+/******************************************************************************/
+
+template <typename ExecPolicy,
+          typename Container,
+          typename T = typename value_of<Container>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
+inclusive_scan_inplace(Container& con,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
+{
+  detail::scan::container::inclusive_inplace(ExecPolicy{}, con, binop, value);
+}
+
+
+template <typename ExecPolicy,
+          typename Container,
+          typename T = typename value_of<Container>::type,
+          typename BinaryFunction = operators::plus<T>>
+typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
+exclusive_scan_inplace(Container& con,
+                       BinaryFunction binop = BinaryFunction{},
+                       T value = BinaryFunction::identity)
+{
+  detail::scan::container::exclusive_inplace(ExecPolicy{}, con, binop, value);
+}
+
+template <typename ExecPolicy,
+          typename InContainer,
+          typename OutContainer,
+          typename T = typename value_of<OutContainer>::type,
+          typename BinaryFunction = operators::plus<TOut>>
+typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
+inclusive_scan_inplace(const InContainer& in,
+                       OutContainer& out,
+                       BinaryFunction binop = BinaryFunction{},
+                       TOut value = BinaryFunction::identity)
+{
+  detail::scan::container::inclusive_inplace(
+      ExecPolicy{}, in, out, binop, value);
+}
+
+template <typename ExecPolicy,
+          typename InContainer,
+          typename OutContainer,
+          typename T = typename value_of<OutContainer>::type,
+          typename BinaryFunction = operators::plus<TOut>>
+typename std::enable_if<Iterators::OffersRAI<Container>::value>::type
+exclusive_scan_inplace(const InContainer& in,
+                       OutContainer& out,
+                       BinaryFunction binop = BinaryFunction{},
+                       TOut value = BinaryFunction::identity)
+{
+  detail::scan::container::exclusive_inplace(
+      ExecPolicy{}, in, out, binop, value);
 }
 
 }  // closing brace for RAJA namespace

@@ -71,6 +71,8 @@ namespace detail
 {
 namespace scan
 {
+namespace iterators
+{
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and
@@ -140,6 +142,8 @@ void exclusive(const ::RAJA::cuda_exec_base&,
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
   cudaDeviceSynchronize();
 }
+
+}  // closing brace for iterators namespace
 
 }  // closing brace for scan namespace
 

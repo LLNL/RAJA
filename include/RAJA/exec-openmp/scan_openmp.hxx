@@ -78,6 +78,9 @@ int firstIndex(int n, int p, int pid)
   return static_cast<size_t>(n * pid) / p;
 }
 
+namespace iterators
+{
+
 /*!
         \brief explicit inclusive inplace scan given range, function, and
    initial value
@@ -175,6 +178,8 @@ void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
   ::std::copy(begin, end, out);
   exclusive_inplace(exec, out, out + (end - begin), f, v);
 }
+
+}  // namespace iterators
 
 }  // namespace scan
 

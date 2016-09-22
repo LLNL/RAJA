@@ -66,6 +66,8 @@ namespace detail
 {
 namespace scan
 {
+namespace iterators
+{
 
 /*!
         \brief explicit inclusive inplace scan given range, function, and
@@ -149,6 +151,8 @@ void exclusive(const ::RAJA::seq_exec&,
     *o = agg;
   }
 }
+
+}  // namespace iterators
 
 }  // namespace scan
 
