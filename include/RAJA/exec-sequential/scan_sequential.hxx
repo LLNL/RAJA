@@ -110,7 +110,7 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
 }
 
 /*!
-        \brief explicit inclusive scan given input range, output, function, and
+        \brief explicit inclusive scan given range, input, output, function, and
    initial value
 */
 template <typename Iter, typename OutIter, typename BinFn, typename T>
@@ -153,6 +153,163 @@ void exclusive(const ::RAJA::seq_exec&,
 }
 
 }  // namespace iterators
+
+namespace iterable
+{
+
+/*!
+        \brief explicit inclusive inplace scan given range, pointer, function,
+   and
+   initial value
+*/
+template <typename Iterable, typename BinFn, typename T>
+void inclusive_inplace(const ::RAJA::seq_exec&,
+                       Iterable range,
+                       T* in,
+                       BinFn f,
+                       T v)
+{
+  auto begin = range.begin();
+  auto end = range.end();
+  T agg = in[*begin];
+  while (++begin != end) {
+    agg = f(in[*begin], agg);
+    in[*begin] = agg;
+  }
+}
+
+/*!
+        \brief explicit exclusive inplace scan given range, pointer, function,
+   and
+   initial value
+*/
+template <typename Iterable, typename BinFn, typename T>
+void exclusive_inplace(const ::RAJA::seq_exec&,
+                       Iterable range,
+                       T* in,
+                       BinFn f,
+                       T v)
+{
+  auto begin = range.begin();
+  auto end = range.end();
+  T agg = v;
+  while (begin != end) {
+    T t = in[*begin];
+    in[*begin] = agg;
+    agg = f(agg, t);
+    ++begin;
+  }
+}
+
+/*!
+        \brief explicit inclusive scan given range, input, output, function, and
+   initial value
+*/
+template <typename Iterable, typename TIn, typename TOut, typename BinFn>
+void inclusive(const ::RAJA::seq_exec&,
+               Iterable range,
+               TIn* in,
+               TOut* out,
+               BinFn f,
+               TOut v)
+{
+  auto begin = range.begin();
+  auto end = range.end();
+  TOut agg = in[*begin];
+  out[*begin] = agg;
+  while (++begin != end) {
+    agg = f(agg, in[*begin]);
+    out[*begin] = agg;
+  }
+}
+
+/*!
+        \brief explicit exclusive scan given range, input, output, function, and
+   initial value
+*/
+template <typename Iterable, typename TIn, typename TOut, typename BinFn>
+void exclusive(const ::RAJA::seq_exec&,
+               Iterable range,
+               TIn* in,
+               TOut* out,
+               BinFn f,
+               TOut v)
+{
+  auto begin = range.begin();
+  auto end = range.end();
+  TOut agg = v;
+  out[*begin] = agg;
+  while (++begin != end) {
+    agg = f(agg, in[*(begin - 1)]);
+    out[*begin] = agg;
+  }
+}
+
+}  // namespace iterable
+
+namespace container
+{
+/*!
+        \brief explicit in-place inclusive scan given container, function, and
+   initial value
+*/
+template <typename Container, typename BinFn, typename T>
+void inclusive_inplace(const ::RAJA::seq_exec& exec, Container& c, BinFn f, T v)
+{
+  ::RAJA::detail::scan::iterators::inclusive_inplace(
+      exec, c.begin(), c.end(), f, v);
+}
+
+/*!
+        \brief explicit in-place exclusive scan given container, function, and
+   initial value
+*/
+template <typename Container, typename BinFn, typename T>
+void exclusive_inplace(const ::RAJA::seq_exec& exec, Container& c, BinFn f, T v)
+{
+  ::RAJA::detail::scan::iterators::exclusive_inplace(
+      exec, c.begin(), c.end(), f, v);
+}
+
+/*!
+\brief explicit inclusive scan given input container, output container,
+function, and
+initial value
+*/
+template <typename ContainerIn,
+          typename ContainerOut,
+          typename BinFn,
+          typename T>
+void inclusive(const ::RAJA::seq_exec& e,
+               const ContainerIn& in,
+               ContainerOut& out,
+               BinFn f,
+               T v)
+{
+  ::RAJA::detail::scan::iterators::inclusive(
+      e, in.begin(), in.end(), out.begin(), f, v);
+}
+
+/*!
+\brief explicit exclusive scan given input container, output container,
+function, and
+initial value
+*/
+template <typename ContainerIn,
+          typename ContainerOut,
+          typename BinFn,
+          typename T>
+void exclusive(const ::RAJA::seq_exec& e,
+               const ContainerIn& in,
+               ContainerOut& out,
+               BinFn f,
+               T v)
+{
+  ::RAJA::detail::scan::iterators::exclusive(
+      e, in.begin(), in.end(), out.begin(), f, v);
+}
+
+}  // namespace container
 
 }  // namespace scan
 

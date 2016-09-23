@@ -45,6 +45,16 @@ struct storage<Exec, T, true> {
 #endif
 }
 
+template <typename T>
+struct container {
+  T* _begin;
+  int _size;
+  explicit container(T* begin, int size) : _begin{begin}, _size{size} {}
+  T* begin() { return _begin; }
+  T* end() { return _begin + _size; }
+  int size() { return _size; }
+};
+
 struct storage_base {
 };
 
@@ -66,21 +76,22 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   using StorageType = typename internal::storage<ExecPolicy, T>;
 #endif
 
-  storage(int n) : data{StorageType::alloc(n)}, elems{n}
+  storage(int n)
+      : data{StorageType::alloc(n)}, elems{n}, in{data, n}, out{data, n}
   {
     StorageType::ready();
   }
 
   ~storage() { StorageType::free(data); }
-  T* ibegin() { return data; }
-  T* iend() { return data + elems; }
-  T* obegin() { return data; }
-  T* oend() { return data + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
 private:
   T* data;
   int elems;
+
+public:
+  container<T> in;
+  container<T> out;
 };
 
 template <typename ExecPolicy, typename T>
@@ -98,25 +109,30 @@ struct storage<ExecPolicy, T, false> : public storage_base {
 #endif
 
   storage(int n)
-      : in{StorageType::alloc(n)}, out{StorageType::alloc(n)}, elems{n}
+      : _in{StorageType::alloc(n)},
+        _out{StorageType::alloc(n)},
+        elems{n},
+        in{_in, n},
+        out{_out, n}
   {
     StorageType::ready();
   }
+
   ~storage()
   {
-    StorageType::free(in);
-    StorageType::free(out);
+    StorageType::free(_in);
+    StorageType::free(_out);
   }
-  T* ibegin() { return in; }
-  T* iend() { return in + elems; }
-  T* obegin() { return out; }
-  T* oend() { return out + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
 private:
-  T* in;
-  T* out;
+  T* _in;
+  T* _out;
   int elems;
+
+public:
+  container<T> in;
+  container<T> out;
 };
 
 #endif

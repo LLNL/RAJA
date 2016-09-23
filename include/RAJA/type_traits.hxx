@@ -112,7 +112,10 @@ struct is_random_access_iterator {
               typename std::iterator_traits<Iter>::iterator_category>::value;
 };
 
-template <typename Container, typename = meta::void_t<>>
+template <typename Container,
+          typename = meta::void_t<>,
+          typename = typename std::enable_if<is_random_access_iterator<
+              typename Container::iterator>::value>>
 struct has_iterator : std::false_type {
 };
 
@@ -139,14 +142,14 @@ struct is_segment {
 template <typename SegmentT>
 struct is_range_segment {
   constexpr static const bool value =
-      std::is_base_of<RAJA::RangeSegment, SegmentT>::value
-      || std::is_base_of<RAJA::RangeStrideSegment, SegmentT>::value;
+      std::is_same<RAJA::RangeSegment, SegmentT>::value
+      || std::is_same<RAJA::RangeStrideSegment, SegmentT>::value;
 };
 
 template <typename SegmentT>
 struct is_list_segment {
   constexpr static const bool value =
-      std::is_base_of<RAJA::ListSegment, SegmentT>::value;
+      std::is_same<RAJA::ListSegment, SegmentT>::value;
 };
 
 }  // closing bracket for RAJA namespace
