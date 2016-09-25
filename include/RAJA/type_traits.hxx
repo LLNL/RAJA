@@ -63,6 +63,7 @@ namespace RAJA
 
 namespace meta
 {
+
 template <class...>
 struct voider {
   using type = void;
@@ -86,6 +87,16 @@ struct if_<false, WhenTrue, WhenFalse> {
 template <bool Statement, typename WhenTrue, typename WhenFalse>
 using if_t = typename if_<Statement, WhenTrue, WhenFalse>::type;
 }
+
+template <typename value_type, bool is_pointer>
+struct add_const_pointer {
+  typedef const value_type type;
+};
+
+template <typename value_type>
+struct add_const_pointer<value_type, true> {
+  typedef const value_type *type;
+};
 
 template <typename T>
 struct is_iterable {

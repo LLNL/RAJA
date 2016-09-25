@@ -47,12 +47,15 @@ struct storage<Exec, T, true> {
 
 template <typename T>
 struct container {
+  using iterator = T*;
   T* _begin;
   int _size;
   explicit container(T* begin, int size) : _begin{begin}, _size{size} {}
   T* begin() { return _begin; }
   T* end() { return _begin + _size; }
-  int size() { return _size; }
+  const T* begin() const { return _begin; }
+  const T* end() const { return _begin + _size; }
+  int size() const { return _size; }
 };
 
 struct storage_base {
@@ -65,6 +68,7 @@ struct storage : public storage_base {
 template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
+  using data_type = container<T>;
 
 #ifdef RAJA_ENABLE_CUDA
   using StorageType =
@@ -76,27 +80,36 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   using StorageType = typename internal::storage<ExecPolicy, T>;
 #endif
 
+
   storage(int n)
-      : data{StorageType::alloc(n)}, elems{n}, in{data, n}, out{data, n}
+      : data{StorageType::alloc(n)}, elems{n}, _in{data, n}, _out{data, n}
   {
     StorageType::ready();
   }
 
   ~storage() { StorageType::free(data); }
-  int size() { return elems; }
-  void update() { StorageType::ready(); }
+  int size() const { return elems; }
+  void update() const { StorageType::ready(); }
 private:
   T* data;
   int elems;
+  container<T> _in;
+  container<T> _out;
 
 public:
-  container<T> in;
-  container<T> out;
+  const container<T>& cin() const { return _in; }
+
+  const container<T>& cout() const { return _out; }
+
+  container<T>& in() { return _in; }
+
+  container<T>& out() { return _out; }
 };
 
 template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
+  using data_type = container<T>;
 
 #ifdef RAJA_ENABLE_CUDA
   using StorageType =
@@ -109,30 +122,39 @@ struct storage<ExecPolicy, T, false> : public storage_base {
 #endif
 
   storage(int n)
-      : _in{StorageType::alloc(n)},
-        _out{StorageType::alloc(n)},
+      : __in{StorageType::alloc(n)},
+        __out{StorageType::alloc(n)},
         elems{n},
-        in{_in, n},
-        out{_out, n}
+        _in{__in, n},
+        _out{__out, n}
   {
     StorageType::ready();
   }
 
   ~storage()
   {
-    StorageType::free(_in);
-    StorageType::free(_out);
+    StorageType::free(__in);
+    StorageType::free(__out);
   }
-  int size() { return elems; }
-  void update() { StorageType::ready(); }
+  int size() const { return elems; }
+  void update() const { StorageType::ready(); }
 private:
-  T* _in;
-  T* _out;
+  T* __in;
+  T* __out;
   int elems;
 
+  container<T> _in;
+  container<T> _out;
+
 public:
-  container<T> in;
-  container<T> out;
+public:
+  const container<T>& cin() const { return _in; }
+
+  const container<T>& cout() const { return _out; }
+
+  container<T>& in() { return _in; }
+
+  container<T>& out() { return _out; }
 };
 
 #endif

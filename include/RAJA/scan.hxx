@@ -141,8 +141,8 @@ template <typename ExecPolicy,
           typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<is_random_access_iterator<Iter>::value
                         && is_random_access_iterator<IterOut>::value>::type
-inclusive_scan(Iter begin,
-               Iter end,
+inclusive_scan(const Iter begin,
+               const Iter end,
                IterOut out,
                BinaryFunction binop = BinaryFunction{},
                T value = BinaryFunction::identity)
@@ -175,8 +175,8 @@ template <typename ExecPolicy,
           typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<is_random_access_iterator<Iter>::value
                         && is_random_access_iterator<IterOut>::value>::type
-exclusive_scan(Iter begin,
-               Iter end,
+exclusive_scan(const Iter begin,
+               const Iter end,
                IterOut out,
                BinaryFunction binop = BinaryFunction{},
                T value = BinaryFunction::identity)
@@ -193,7 +193,7 @@ template <typename ExecPolicy,
           typename T,
           typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<is_iterable<Iterable>::value>::type
-inclusive_scan_inplace(Iterable range,
+inclusive_scan_inplace(const Iterable range,
                        T* in,
                        BinaryFunction binop = BinaryFunction{},
                        T value = BinaryFunction::identity)
@@ -207,7 +207,7 @@ template <typename ExecPolicy,
           typename T,
           typename BinaryFunction = operators::plus<T>>
 typename std::enable_if<is_iterable<Iterable>::value>::type
-exclusive_scan_inplace(Iterable range,
+exclusive_scan_inplace(const Iterable range,
                        T* in,
                        BinaryFunction binop = BinaryFunction{},
                        T value = BinaryFunction::identity)
@@ -222,9 +222,9 @@ template <typename ExecPolicy,
           typename TOut,
           typename BinaryFunction = operators::plus<TOut>>
 typename std::enable_if<is_iterable<Iterable>::value>::type inclusive_scan(
-    Iterable range,
+    const Iterable range,
     const TIn* in,
-    TOut out,
+    TOut* out,
     BinaryFunction binop = BinaryFunction{},
     TOut value = BinaryFunction::identity)
 {
@@ -237,7 +237,7 @@ template <typename ExecPolicy,
           typename TOut,
           typename BinaryFunction = operators::plus<TOut>>
 typename std::enable_if<is_iterable<Iterable>::value>::type exclusive_scan(
-    Iterable range,
+    const Iterable range,
     const TIn* in,
     TOut* out,
     BinaryFunction binop = BinaryFunction{},
@@ -278,14 +278,13 @@ template <typename ExecPolicy,
           typename OutContainer,
           typename T = typename value_of<OutContainer>::type,
           typename BinaryFunction = operators::plus<T>>
-typename std::enable_if<has_iterator<InContainer>::value>::type
-inclusive_scan_inplace(const InContainer& in,
-                       OutContainer& out,
-                       BinaryFunction binop = BinaryFunction{},
-                       T value = BinaryFunction::identity)
+typename std::enable_if<has_iterator<InContainer>::value>::type inclusive_scan(
+    const InContainer& in,
+    OutContainer& out,
+    BinaryFunction binop = BinaryFunction{},
+    T value = BinaryFunction::identity)
 {
-  detail::scan::container::inclusive_inplace(
-      ExecPolicy{}, in, out, binop, value);
+  detail::scan::container::inclusive(ExecPolicy{}, in, out, binop, value);
 }
 
 template <typename ExecPolicy,
@@ -293,14 +292,13 @@ template <typename ExecPolicy,
           typename OutContainer,
           typename T = typename value_of<OutContainer>::type,
           typename BinaryFunction = operators::plus<T>>
-typename std::enable_if<has_iterator<InContainer>::value>::type
-exclusive_scan_inplace(const InContainer& in,
-                       OutContainer& out,
-                       BinaryFunction binop = BinaryFunction{},
-                       T value = BinaryFunction::identity)
+typename std::enable_if<has_iterator<InContainer>::value>::type exclusive_scan(
+    const InContainer& in,
+    OutContainer& out,
+    BinaryFunction binop = BinaryFunction{},
+    T value = BinaryFunction::identity)
 {
-  detail::scan::container::exclusive_inplace(
-      ExecPolicy{}, in, out, binop, value);
+  detail::scan::container::exclusive(ExecPolicy{}, in, out, binop, value);
 }
 
 }  // closing brace for RAJA namespace

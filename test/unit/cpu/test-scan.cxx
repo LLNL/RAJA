@@ -9,7 +9,6 @@
 #include <cstdlib>
 
 #include <gtest/gtest.h>
-#include <RAJA/LegacyCompatibility.hxx>
 #include <RAJA/RAJA.hxx>
 
 #include "data_storage.hxx"
@@ -19,8 +18,8 @@ const int N = 1024;
 
 // Unit Test Space Exploration
 
-#if 0
 //#ifdef RAJA_ENABLE_OPENMP
+#if 0
 using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
 #else
 using ExecTypes = std::tuple<RAJA::seq_exec>;
@@ -39,19 +38,8 @@ struct Containers : type {
 
 using APITypes = std::tuple<API::Iterators, API::Iterables, API::Containers>;
 
-/*
-        using ReduceTypes = std::tuple<RAJA::operators::safe_plus<int>,
-                               RAJA::operators::safe_plus<float>,
-                               RAJA::operators::safe_plus<double>,
-                               RAJA::operators::minimum<int>,
-                               RAJA::operators::minimum<float>,
-                               RAJA::operators::minimum<double>,
-                               RAJA::operators::maximum<int>,
-                               RAJA::operators::maximum<float>,
-                               RAJA::operators::maximum<double>>;
-*/
-using ReduceTypes = std::tuple<RAJA::operators::safe_plus<float>,
-                               RAJA::operators::maximum<int>>;
+using ReduceTypes =
+    std::tuple<RAJA::operators::plus<float>, RAJA::operators::maximum<int>>;
 
 using InPlaceTypes = std::tuple<std::false_type, std::true_type>;
 
@@ -72,99 +60,96 @@ struct ForTesting<std::tuple<Ts...>> {
 
 using CrossTypes = ForTesting<Types>::type;
 
-template <typename APIType, bool inPlace>
+
+template <typename APIType, bool inPlace, typename Fn, typename Storage>
 struct Params {
 };
-template <>
-struct Params<API::Iterators, true> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data)
-      -> decltype(std::make_tuple(data->in.begin(), data->in.end(), Fn{}))
+
+template <typename Fn, typename Storage>
+struct Params<API::Iterators, true, Fn, Storage> {
+  using T = typename Storage::type;
+  using type = T*;
+  using fn_type = void (*)(type, type, Fn, decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
   {
-    return std::make_tuple(data->in.begin(), data->in.end(), Fn{});
-  }
-};
-template <>
-struct Params<API::Iterators, false> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data) -> decltype(std::make_tuple(data->in.begin(),
-                                                             data->in.end(),
-                                                             data->out.begin(),
-                                                             Fn{}))
-  {
-    return std::make_tuple(data->in.begin(),
-                           data->in.end(),
-                           data->out.begin(),
-                           Fn{});
-  }
-};
-template <>
-struct Params<API::Iterables, true> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data)
-      -> decltype(std::make_tuple(RAJA::RangeSegment{0, data->in.size()},
-                                  data->in.begin(),
-                                  Fn{},
-                                  Fn::identity))
-  {
-    return std::make_tuple(RAJA::RangeSegment{0, data->in.size()},
-                           data->in.begin(),
-                           Fn{},
-                           Fn::identity);
+    fn(data->in().begin(), data->in().end(), Fn{}, Fn::identity);
   }
 };
 
-template <>
-struct Params<API::Iterables, false> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data)
-      -> decltype(std::make_tuple(RAJA::RangeSegment{0, data->in.size()},
-                                  data->in.begin(),
-                                  data->out.begin(),
-                                  Fn{},
-                                  Fn::identity))
+template <typename Fn, typename Storage>
+struct Params<API::Iterators, false, Fn, Storage> {
+  using T = typename Storage::type;
+  using type = T*;
+  using const_type = const T*;
+  using fn_type =
+      void (*)(const_type, const_type, type, Fn, decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
   {
-    return std::make_tuple(RAJA::RangeSegment{0, data->in.size()},
-                           data->in.begin(),
-                           data->out.begin(),
-                           Fn{},
-                           Fn::identity);
-  }
-};
-template <>
-struct Params<API::Containers, true> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data)
-      -> decltype(std::make_tuple(data->in, Fn{}, Fn::identity))
-  {
-    return std::make_tuple(data->in, Fn{}, Fn::identity);
+    fn(data->cin().begin(),
+       data->cin().end(),
+       data->out().begin(),
+       Fn{},
+       Fn::identity);
   }
 };
 
-template <>
-struct Params<API::Containers, false> {
-  template <typename Fn, typename Storage>
-  static auto get(Storage* data)
-      -> decltype(std::make_tuple(data->in, data->out, Fn{}, Fn::identity))
+template <typename Fn, typename Storage>
+struct Params<API::Iterables, true, Fn, Storage> {
+  using T = typename Storage::type;
+  using type = T*;
+  using fn_type = void (*)(const RAJA::RangeSegment,
+                           type,
+                           Fn,
+                           decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
   {
-    return std::make_tuple(data->in, data->out, Fn{}, Fn::identity);
+    fn(RAJA::RangeSegment{0, data->in().size()},
+       data->in().begin(),
+       Fn{},
+       Fn::identity);
   }
 };
 
-template <typename Fn, typename... Args>
-void dispatch(Fn&& f, std::tuple<Args...>&& t)
-{
-  VarOps::invoke(t, f);
+template <typename Fn, typename Storage>
+struct Params<API::Iterables, false, Fn, Storage> {
+  using T = typename Storage::type;
+  using type = T*;
+  using const_type = const T*;
+  using fn_type = void (*)(const RAJA::RangeSegment,
+                           const_type,
+                           type,
+                           Fn,
+                           decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
+  {
+    fn(RAJA::RangeSegment{0, data->cin().size()},
+       data->in().begin(),
+       data->out().begin(),
+       Fn{},
+       Fn::identity);
+  }
 };
 
-template <typename T>
-struct getFunType {
+template <typename Fn, typename Storage>
+struct Params<API::Containers, true, Fn, Storage> {
+  using type = typename Storage::data_type;
+  using fn_type = void (*)(type&, Fn, decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
+  {
+    fn(std::ref(data->in()), Fn{}, Fn::identity);
+  }
 };
 
-template <typename... Args>
-struct getFunType<std::tuple<Args...>> {
-  using type = void(Args...);
+template <typename Fn, typename Storage>
+struct Params<API::Containers, false, Fn, Storage> {
+  using type = typename Storage::data_type;
+  using fn_type = void (*)(const type&, type&, Fn, decltype(Fn::identity));
+  static void invoke(fn_type&& fn, Storage* data)
+  {
+    fn(std::cref(data->in()), std::ref(data->out()), Fn{}, Fn::identity);
+  }
 };
+
 
 template <bool inPlace>
 struct inclusive {
@@ -175,11 +160,8 @@ struct inclusive<true> {
   template <typename Exec, typename Fn, typename APIType, typename Storage>
   static void exec(Storage* data)
   {
-    auto&& args = Params<APIType, true>::template get<Fn>(data);
-    using Args = typename std::decay<decltype(args)>::type;
-    using FnType = typename getFunType<Args>::type;
-    dispatch((FnType*)RAJA::inclusive_scan_inplace<Exec>,
-             std::forward<Args>(args));
+    using Lookup = Params<APIType, true, Fn, Storage>;
+    Lookup::invoke(RAJA::inclusive_scan_inplace<Exec>, data);
   }
 };
 
@@ -188,10 +170,8 @@ struct inclusive<false> {
   template <typename Exec, typename Fn, typename APIType, typename Storage>
   static void exec(Storage* data)
   {
-    auto&& args = Params<APIType, true>::template get<Fn>(data);
-    using Args = typename std::decay<decltype(args)>::type;
-    using FnType = typename getFunType<Args>::type;
-    dispatch((FnType*)RAJA::inclusive_scan<Exec>, std::forward<Args>(args));
+    using Lookup = Params<APIType, false, Fn, Storage>;
+    Lookup::invoke(RAJA::inclusive_scan<Exec>, data);
   }
 };
 
@@ -204,11 +184,8 @@ struct exclusive<true> {
   template <typename Exec, typename Fn, typename APIType, typename Storage>
   static void exec(Storage* data)
   {
-    auto&& args = Params<APIType, true>::template get<Fn>(data);
-    using Args = typename std::decay<decltype(args)>::type;
-    using FnType = typename getFunType<Args>::type;
-    dispatch((FnType*)RAJA::exclusive_scan_inplace<Exec>,
-             std::forward<Args>(args));
+    using Lookup = Params<APIType, true, Fn, Storage>;
+    Lookup::invoke(RAJA::exclusive_scan_inplace<Exec>, data);
   }
 };
 
@@ -217,10 +194,8 @@ struct exclusive<false> {
   template <typename Exec, typename Fn, typename APIType, typename Storage>
   static void exec(Storage* data)
   {
-    auto&& args = Params<APIType, true>::template get<Fn>(data);
-    using Args = typename std::decay<decltype(args)>::type;
-    using FnType = typename getFunType<Args>::type;
-    dispatch((FnType*)RAJA::exclusive_scan<Exec>, std::forward<Args>(args));
+    using Lookup = Params<APIType, false, Fn, Storage>;
+    Lookup::invoke(RAJA::exclusive_scan<Exec>, data);
   }
 };
 
@@ -228,13 +203,13 @@ template <typename Data,
           typename Storage,
           typename Fn,
           typename T = typename std::remove_pointer<Data>::type::type>
-void compareInclusive(Data original, Storage data, Fn function, T init)
+void compareInclusive(Data* original, Storage* data, Fn function, T init)
 {
-  auto in = original->in.begin();
-  auto out = data->out.begin();
+  auto in = original->cin().begin();
+  auto out = data->out().begin();
   T sum = *in;
   int index = 0;
-  while ((out + index) != data->out.end()) {
+  while ((out + index) != data->out().end()) {
     ASSERT_EQ(sum, *(out + index)) << "Expected value differs at index "
                                    << index;
     ++index;
@@ -246,13 +221,13 @@ template <typename Data,
           typename Storage,
           typename Fn,
           typename T = typename std::remove_pointer<Data>::type::type>
-void compareExclusive(Data original, Storage data, Fn function, T init)
+void compareExclusive(Data* original, Storage* data, Fn function, T init)
 {
-  auto in = original->in.begin();
-  auto out = data->out.begin();
+  auto in = original->in().begin();
+  auto out = data->out().begin();
   T sum = init;
   int index = 0;
-  while ((out + index) != data->out.end()) {
+  while ((out + index) != data->out().end()) {
     ASSERT_EQ(sum, *(out + index)) << "Expected value differs at index "
                                    << index;
     sum = function(sum, *(in + index));
@@ -277,11 +252,11 @@ public:
 protected:
   virtual void SetUp()
   {
-    std::iota(data->in.begin(), data->in.end(), 1);
-    std::shuffle(data->in.begin(),
-                 data->in.end(),
+    std::iota(data->in().begin(), data->in().end(), 1);
+    std::shuffle(data->in().begin(),
+                 data->in().end(),
                  std::mt19937{std::random_device{}()});
-    std::copy(data->in.begin(), data->in.end(), original->in.begin());
+    std::copy(data->cin().begin(), data->cin().end(), original->in().begin());
   }
   // eventually replace with std::make_unique<Storage>(N)
   std::unique_ptr<Storage> data = std::unique_ptr<Storage>(new Storage{N});

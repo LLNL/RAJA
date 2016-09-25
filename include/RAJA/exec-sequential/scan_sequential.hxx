@@ -115,8 +115,8 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
 */
 template <typename Iter, typename OutIter, typename BinFn, typename T>
 void inclusive(const ::RAJA::seq_exec&,
-               Iter begin,
-               Iter end,
+               const Iter begin,
+               const Iter end,
                OutIter out,
                BinFn f,
                T v)
@@ -136,8 +136,8 @@ void inclusive(const ::RAJA::seq_exec&,
 */
 template <typename Iter, typename OutIter, typename BinFn, typename T>
 void exclusive(const ::RAJA::seq_exec&,
-               Iter begin,
-               Iter end,
+               const Iter begin,
+               const Iter end,
                OutIter out,
                BinFn f,
                T v)
@@ -164,7 +164,7 @@ namespace iterable
 */
 template <typename Iterable, typename BinFn, typename T>
 void inclusive_inplace(const ::RAJA::seq_exec&,
-                       Iterable range,
+                       const Iterable range,
                        T* in,
                        BinFn f,
                        T v)
@@ -185,7 +185,7 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
 */
 template <typename Iterable, typename BinFn, typename T>
 void exclusive_inplace(const ::RAJA::seq_exec&,
-                       Iterable range,
+                       const Iterable range,
                        T* in,
                        BinFn f,
                        T v)
@@ -205,21 +205,27 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
         \brief explicit inclusive scan given range, input, output, function, and
    initial value
 */
-template <typename Iterable, typename TIn, typename TOut, typename BinFn>
+
+template <typename Iterable,
+          typename TIn,
+          typename TOut,
+          typename BinFn,
+          typename T = typename std::remove_pointer<
+              typename std::decay<TOut>::type>::type>
 void inclusive(const ::RAJA::seq_exec&,
-               Iterable range,
-               TIn* in,
+               const Iterable range,
+               const TIn* in,
                TOut* out,
                BinFn f,
-               TOut v)
+               T v)
 {
   auto begin = range.begin();
   auto end = range.end();
-  TOut agg = in[*begin];
-  out[*begin] = agg;
+  T agg = *(in + *begin);
+  *(out + *begin) = agg;
   while (++begin != end) {
-    agg = f(agg, in[*begin]);
-    out[*begin] = agg;
+    agg = f(agg, *(in + *begin));
+    *(out + *begin) = agg;
   }
 }
 
@@ -227,20 +233,26 @@ void inclusive(const ::RAJA::seq_exec&,
         \brief explicit exclusive scan given range, input, output, function, and
    initial value
 */
-template <typename Iterable, typename TIn, typename TOut, typename BinFn>
+template <typename Iterable,
+          typename TIn,
+          typename TOut,
+          typename BinFn,
+          typename T = typename std::remove_pointer<
+              typename std::decay<TOut>::type>::type>
 void exclusive(const ::RAJA::seq_exec&,
-               Iterable range,
-               TIn* in,
+               const Iterable range,
+               const TIn* in,
                TOut* out,
                BinFn f,
-               TOut v)
+               T v)
 {
   auto begin = range.begin();
   auto end = range.end();
-  TOut agg = v;
+  T agg = v;
   out[*begin] = agg;
-  while (++begin != end) {
-    agg = f(agg, in[*(begin - 1)]);
+  while ((begin + 1) != end) {
+    agg = f(agg, in[*begin]);
+    ++begin;
     out[*begin] = agg;
   }
 }
