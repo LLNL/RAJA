@@ -18,8 +18,7 @@ const int N = 1024;
 
 // Unit Test Space Exploration
 
-//#ifdef RAJA_ENABLE_OPENMP
-#if 0
+#ifdef RAJA_ENABLE_OPENMP
 using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
 #else
 using ExecTypes = std::tuple<RAJA::seq_exec>;
