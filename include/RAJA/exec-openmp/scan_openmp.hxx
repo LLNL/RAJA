@@ -54,6 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hxx"
+#include "RAJA/type_traits.hxx"
 
 #include "RAJA/exec-sequential/scan_sequential.hxx"
 
@@ -189,7 +190,11 @@ namespace iterable
    and
    initial value
 */
-template <typename Iterable, typename BinFn, typename T>
+template <typename Iterable,
+          typename BinFn,
+          typename T,
+          typename = typename std::
+              enable_if<::RAJA::is_range_segment<Iterable>::value>::type>
 void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        const Iterable range,
                        T* in,
@@ -226,7 +231,11 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
    and
    initial value
 */
-template <typename Iterable, typename BinFn, typename T>
+template <typename Iterable,
+          typename BinFn,
+          typename T,
+          typename = typename std::
+              enable_if<::RAJA::is_range_segment<Iterable>::value>::type>
 void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        const Iterable range,
                        T* in,
@@ -270,7 +279,9 @@ template <typename Iterable,
           typename TOut,
           typename BinFn,
           typename T = typename std::remove_pointer<
-              typename std::decay<TOut>::type>::type>
+              typename std::decay<TOut>::type>::type,
+          typename = typename std::
+              enable_if<::RAJA::is_range_segment<Iterable>::value>::type>
 void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
                const Iterable range,
                const TIn* in,
@@ -293,7 +304,9 @@ template <typename Iterable,
           typename TOut,
           typename BinFn,
           typename T = typename std::remove_pointer<
-              typename std::decay<TOut>::type>::type>
+              typename std::decay<TOut>::type>::type,
+          typename = typename std::
+              enable_if<::RAJA::is_range_segment<Iterable>::value>::type>
 void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
                const Iterable range,
                const TIn* in,
