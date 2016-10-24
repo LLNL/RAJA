@@ -94,6 +94,8 @@ struct seq_reduce {
 
 #include "RAJA/exec-sequential/forall_sequential.hxx"
 #include "RAJA/exec-sequential/reduce_sequential.hxx"
+#if defined(RAJA_ENABLE_SCAN)
 #include "RAJA/exec-sequential/scan_sequential.hxx"
+#endif
 
 #endif  // closing endif for header file include guard

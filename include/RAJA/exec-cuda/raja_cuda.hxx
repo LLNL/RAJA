@@ -65,6 +65,12 @@
 namespace RAJA
 {
 
+#if defined(RAJA_ENABLE_CLANG_CUDA)
+  using cuda_dim_t = uint3;
+#else
+  using cuda_dim_t = dim3;
+#endif
+
 ///
 /////////////////////////////////////////////////////////////////////
 ///
@@ -74,36 +80,36 @@ namespace RAJA
 /////////////////////////////////////////////////////////////////////
 ///
 struct Dim3x {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  __host__ __device__ inline unsigned int &operator()(cuda_dim_t &dim)
   {
     return dim.x;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  __host__ __device__ inline unsigned int operator()(cuda_dim_t const &dim)
   {
     return dim.x;
   }
 };
 ///
 struct Dim3y {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  __host__ __device__ inline unsigned int &operator()(cuda_dim_t &dim)
   {
     return dim.y;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  __host__ __device__ inline unsigned int operator()(cuda_dim_t const &dim)
   {
     return dim.y;
   }
 };
 ///
 struct Dim3z {
-  __host__ __device__ inline unsigned int &operator()(dim3 &dim)
+  __host__ __device__ inline unsigned int &operator()(cuda_dim_t &dim)
   {
     return dim.z;
   }
 
-  __host__ __device__ inline unsigned int operator()(dim3 const &dim)
+  __host__ __device__ inline unsigned int operator()(cuda_dim_t const &dim)
   {
     return dim.z;
   }
@@ -563,7 +569,10 @@ __device__ inline double _atomicAdd(double *address, double value)
 //
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
+
+#if defined(RAJA_ENABLE_SCAN)
 #include "RAJA/exec-cuda/scan_cuda.hxx"
+#endif
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/exec-cuda/forallN_cuda.hxx"

@@ -67,7 +67,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_FT 
 
 #define @RAJA_FP@
@@ -83,7 +82,9 @@
 #cmakedefine RAJA_ENABLE_OPENMP
 #cmakedefine RAJA_ENABLE_CILK
 #cmakedefine RAJA_ENABLE_CUDA
+#cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_NESTED
+#cmakedefine RAJA_ENABLE_SCAN
 
 /*
  * Timer options

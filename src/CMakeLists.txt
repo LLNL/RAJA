@@ -66,7 +66,8 @@ else()
     )
 endif()
 
-if (NOT CMAKE_CXX_COMPILER_ID MATCHES Intel)
+if (NOT (CMAKE_CXX_COMPILER_ID MATCHES Intel
+    OR RAJA_ENABLE_CLANG_CUDA) )
   set_target_properties(RAJA
     PROPERTIES
     CXX_STANDARD 11

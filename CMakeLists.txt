@@ -44,8 +44,6 @@ cmake_minimum_required (VERSION 3.0)
 
 project(RAJA LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
-
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 1)
@@ -56,10 +54,12 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH}
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
+option(RAJA_ENABLE_CLANG_CUDA "Build Clang CUDA support" Off)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+option(RAJA_ENABLE_SCAN "Enable scan" On)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 

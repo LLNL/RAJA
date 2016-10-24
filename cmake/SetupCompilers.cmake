@@ -40,7 +40,9 @@
 # 
 ###############################################################################
 
-set(CMAKE_CXX_STANDARD 14)
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  set(CMAKE_CXX_STANDARD 14)
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")

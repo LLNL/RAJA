@@ -93,11 +93,13 @@ add_test(
     NAME reducemaxloc
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemaxloc.exe>)
 
-cuda_add_executable(scan.exe
-  test-scan.cxx)
-add_test(
-    NAME scan
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan.exe>)
+if (RAJA_ENABLE_SCAN)
+  cuda_add_executable(scan.exe
+    test-scan.cxx)
+  add_test(
+      NAME scan
+      COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan.exe>)
+endif ()
 
 target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
@@ -105,4 +107,6 @@ target_link_libraries(reducesum.exe RAJA)
 target_link_libraries(traversal.exe RAJA)
 target_link_libraries(reduceminloc.exe RAJA)
 target_link_libraries(reducemaxloc.exe RAJA)
-target_link_libraries(scan.exe RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+if (RAJA_ENABLE_SCAN)
+  target_link_libraries(scan.exe RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif ()

@@ -152,6 +152,10 @@
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 
+#if defined(RAJA_ENABLE_SCAN)
+
 #include "RAJA/scan.hxx"
+
+#endif
 
 #endif  // closing endif for header file include guard
