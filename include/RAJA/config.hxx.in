@@ -84,7 +84,6 @@
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_NESTED
-#cmakedefine RAJA_ENABLE_SCAN
 
 /*
  * Timer options

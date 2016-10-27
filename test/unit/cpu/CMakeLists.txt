@@ -67,10 +67,8 @@ if (RAJA_ENABLE_CUDA)
   cuda_add_executable(traversal-tests
     test-traversals.cxx)
 
-  if (RAJA_ENABLE_SCAN)
-    cuda_add_executable(scan-tests
-      test-scan.cxx)
-  endif()
+  cuda_add_executable(scan-tests
+    test-scan.cxx)
 
 else()
   add_library(bis buildIndexSet.cxx)
@@ -94,10 +92,8 @@ else()
   add_executable(traversal-tests
     test-traversals.cxx)
 
-  if (RAJA_ENABLE_SCAN)
-    add_executable(scan-tests
-      test-scan.cxx)
-  endif()
+  add_executable(scan-tests
+    test-scan.cxx)
 
 endif()
 
@@ -131,13 +127,11 @@ add_test(
 
 target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-if (RAJA_ENABLE_SCAN)
-  add_test(
-      NAME scan-test
-      COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
+add_test(
+    NAME scan-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
 
-  target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-endif ()
+target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 target_link_libraries(CPUtraversal-test.exe RAJA bis)
 target_link_libraries(CPUreduce-test.exe RAJA bis)

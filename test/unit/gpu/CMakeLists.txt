@@ -93,7 +93,7 @@ add_test(
     NAME reducemaxloc
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemaxloc.exe>)
 
-if (RAJA_ENABLE_SCAN)
+if (NOT RAJA_ENABLE_CLANG_CUDA)
   cuda_add_executable(scan.exe
     test-scan.cxx)
   add_test(
@@ -107,6 +107,6 @@ target_link_libraries(reducesum.exe RAJA)
 target_link_libraries(traversal.exe RAJA)
 target_link_libraries(reduceminloc.exe RAJA)
 target_link_libraries(reducemaxloc.exe RAJA)
-if (RAJA_ENABLE_SCAN)
+if (NOT RAJA_ENABLE_CLANG_CUDA)
   target_link_libraries(scan.exe RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif ()

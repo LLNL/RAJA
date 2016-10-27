@@ -570,7 +570,7 @@ __device__ inline double _atomicAdd(double *address, double value)
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
 
-#if defined(RAJA_ENABLE_SCAN)
+#if defined(__NVCC__)
 #include "RAJA/exec-cuda/scan_cuda.hxx"
 #endif
 

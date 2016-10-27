@@ -59,7 +59,6 @@ option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
-option(RAJA_ENABLE_SCAN "Enable scan" On)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
