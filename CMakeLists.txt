@@ -40,7 +40,7 @@
 #
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.3)
 
 project(RAJA LANGUAGES CXX C)
 
@@ -65,6 +65,8 @@ set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
+# Include RAJA CMake macros
+include(cmake/RAJAMacros.cmake)
 # Setup vendor-specific compiler flags
 include(cmake/SetupCompilers.cmake)
 # Find third-party packages
