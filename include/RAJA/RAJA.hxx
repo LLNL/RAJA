@@ -71,10 +71,6 @@
 #include "RAJA/operators.hxx"
 #include "RAJA/reducers.hxx"
 
-#include "RAJA/internal/IndexSet.hxx"
-#include "RAJA/internal/ListSegment.hxx"
-#include "RAJA/internal/RangeSegment.hxx"
-
 //
 // Strongly typed index class.
 //
