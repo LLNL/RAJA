@@ -87,13 +87,13 @@
 //
 // Multidimensional layouts and views.
 //
-#include "RAJA/internal/foralln/Layout.hxx"
-#include "RAJA/internal/foralln/View.hxx"
+#include "RAJA/Layout.hxx"
+#include "RAJA/View.hxx"
 
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "RAJA/internal/foralln/Generic.hxx"
+#include "RAJA/forallN.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 
