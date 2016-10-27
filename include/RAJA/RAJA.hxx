@@ -68,7 +68,7 @@
 #include "RAJA/internal/int_datatypes.hxx"
 #include "RAJA/internal/real_datatypes.hxx"
 
-#include "RAJA/internal/operators.hxx"
+#include "RAJA/operators.hxx"
 #include "RAJA/reducers.hxx"
 
 #include "RAJA/internal/IndexSet.hxx"
