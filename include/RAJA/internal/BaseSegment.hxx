@@ -3,10 +3,13 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   RAJA header file defining segment base class.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_BaseSegment_HXX
+#define RAJA_BaseSegment_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +53,99 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
+#include "RAJA/config.hxx"
 
-#include <iostream>
+#include "RAJA/internal/int_datatypes.hxx"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
-
-void RangeSegment::print(std::ostream& os) const
+/*!
+ ******************************************************************************
+ *
+ * \brief  Base class for all segment classes.
+ *
+ ******************************************************************************
+ */
+class BaseSegment
 {
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
+public:
+  ///
+  /// Ctor for base segment type.
+  ///
+  explicit BaseSegment(SegmentType type) : m_type(type), m_private(0) { ; }
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+  /*
+   * Using compiler-generated copy ctor, copy assignment.
+   */
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+  ///
+  /// Virtual dtor.
+  ///
+  virtual ~BaseSegment() { ; }
+
+  ///
+  /// Get index count associated with start of segment.
+  ///
+  SegmentType getType() const { return m_type; }
+
+  ///
+  /// Retrieve pointer to private data. Must be cast to proper type by user.
+  ///
+  void* getPrivate() const { return m_private; }
+
+  ///
+  /// Set pointer to private data. Can be used to associate any data
+  /// to segment.
+  ///
+  /// NOTE: Caller retains ownership of data object.
+  ///
+  void setPrivate(void* ptr) { m_private = ptr; }
+
+  //
+  // Pure virtual methods that must be provided by concrete segment classes.
+  //
+
+  ///
+  /// Get segment length (i.e., number of indices in segment).
+  ///
+  virtual Index_type getLength() const = 0;
+
+  ///
+  /// Return enum value indicating whether segment owns the data rapresenting
+  /// its indices.
+  ///
+  virtual IndexOwnership getIndexOwnership() const = 0;
+
+  ///
+  /// Pure virtual equality operator returns true if segments are equal;
+  /// else false.
+  ///
+  virtual bool operator==(const BaseSegment& other) const = 0;
+
+  ///
+  /// Pure virtual inequality operator returns true if segments are not
+  /// equal, else false.
+  ///
+  virtual bool operator!=(const BaseSegment& other) const = 0;
+
+private:
+  ///
+  /// The default ctor is not implemented.
+  ///
+  BaseSegment();
+
+  ///
+  /// Enum value indicating segment type.
+  ///
+  SegmentType m_type;
+
+  ///
+  /// Pointer that can be used to hold arbitrary data associated with segment.
+  ///
+  void* m_private;
+};
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

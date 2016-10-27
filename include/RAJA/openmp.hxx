@@ -3,10 +3,19 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   Header file containing RAJA headers for OpenMP execution.
+ *
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_openmp_HXX
+#define RAJA_openmp_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +59,75 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
+#include "RAJA/internal/PolicyBase.hxx"
 
+#include <omp.h>
 #include <iostream>
+#include <thread>
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
 
-void RangeSegment::print(std::ostream& os) const
-{
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
+///
+/// Segment execution policies
+///
+template <typename InnerPolicy>
+struct omp_parallel_exec {
+};
+struct omp_for_exec {
+};
+struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
+};
+template <size_t ChunkSize>
+struct omp_for_static {
+};
+template <size_t ChunkSize>
+struct omp_parallel_for_static
+    : public omp_parallel_exec<omp_for_static<ChunkSize>> {
+};
+struct omp_for_nowait_exec {
+};
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+///
+/// Index set segment iteration policies
+///
+struct omp_parallel_for_segit : public omp_parallel_for_exec {
+};
+struct omp_parallel_segit : public omp_parallel_for_segit {
+};
+struct omp_taskgraph_segit {
+};
+struct omp_taskgraph_interval_segit {
+};
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct omp_reduce {
+};
 
 }  // closing brace for RAJA namespace
+
+#include "RAJA/internal/exec-openmp/forall_openmp.hxx"
+#include "RAJA/internal/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/internal/exec-openmp/scan_openmp.hxx"
+
+#if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/internal/exec-openmp/forallN_openmp.hxx"
+#endif
+
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+
+#endif  // closing endif for header file include guard

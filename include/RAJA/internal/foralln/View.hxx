@@ -3,10 +3,13 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   RAJA header file defining view class used in forallN templates.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_VIEW_HXX__
+#define RAJA_VIEW_HXX__
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +53,31 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
-
-#include <iostream>
+#include "RAJA/internal/foralln/Layout.hxx"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
+template <typename DataType, typename LayoutT>
+struct View {
+  LayoutT const layout;
+  DataType *data;
 
-void RangeSegment::print(std::ostream& os) const
-{
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
+  template <typename... Args>
+  RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
+      : layout(dim_sizes...), data(data_ptr)
+  {
+  }
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+  // making this specifically typed would require unpacking the layout,
+  // this is easier to maintain
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
+  {
+    return data[convertIndex<Index_type>(layout(args...))];
+  }
+};
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+}  // namespace RAJA
 
-}  // closing brace for RAJA namespace
+#endif

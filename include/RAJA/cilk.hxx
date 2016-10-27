@@ -3,10 +3,19 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   Header file containing RAJA headers for Intel CilkPlus execution.
+ *
+ *          These methods work only on platforms that support Cilk Plus.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_cilk_HXX
+#define RAJA_cilk_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +59,44 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
-
-#include <iostream>
-
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
 
-void RangeSegment::print(std::ostream& os) const
-{
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
+///
+/// Segment execution policies
+///
+struct cilk_for_exec {
+};
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+///
+/// Index set segment iteration policies
+///
+struct cilk_for_segit : public cilk_for_exec {
+};
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct cilk_reduce {
+};
 
 }  // closing brace for RAJA namespace
+
+#include "RAJA/internal/exec-cilk/forall_cilk.hxx"
+#include "RAJA/internal/exec-cilk/reduce_cilk.hxx"
+
+#endif  // closing endif for if defined(RAJA_ENABLE_CILK)
+
+#endif  // closing endif for header file include guard

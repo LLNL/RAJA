@@ -3,10 +3,15 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   Header file containing RAJA headers for SIMD segment execution.
+ *
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_simd_HXX
+#define RAJA_simd_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +55,40 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
 
-#include <iostream>
-
+///
+/// Segment execution policies
+///
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
-
-void RangeSegment::print(std::ostream& os) const
-{
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
+struct simd_exec {
+};
 }
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+//
+// NOTE: There is no Index set segment iteration policy for SIMD
+//
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
 
-}  // closing brace for RAJA namespace
+//
+// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
+//
+
+#include "RAJA/internal/exec-simd/forall_simd.hxx"
+
+#endif  // closing endif for header file include guard

@@ -3,10 +3,15 @@
  *
  * \file
  *
- * \brief   Implementation file for range segment classes
+ * \brief   Header file containing RAJA headers for sequential execution.
+ *
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_sequential_HXX
+#define RAJA_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -50,40 +55,45 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/RangeSegment.hxx"
-
-#include <iostream>
+#include "RAJA/internal/PolicyBase.hxx"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
 
-void RangeSegment::print(std::ostream& os) const
-{
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
+///
+/// Segment execution policies
+///
+struct seq_exec : public PolicyBase {
+};
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+///
+/// Index set segment iteration policies
+///
+struct seq_segit : public seq_exec {
+};
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct seq_reduce {
+};
 
 }  // closing brace for RAJA namespace
+
+#include "RAJA/internal/exec-sequential/forall_sequential.hxx"
+#include "RAJA/internal/exec-sequential/reduce_sequential.hxx"
+#include "RAJA/internal/exec-sequential/scan_sequential.hxx"
+
+#endif  // closing endif for header file include guard

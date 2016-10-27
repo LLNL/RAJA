@@ -50,9 +50,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/IndexSet.hxx"
-#include "RAJA/ListSegment.hxx"
-#include "RAJA/RangeSegment.hxx"
+#include "RAJA/internal/IndexSet.hxx"
+#include "RAJA/internal/ListSegment.hxx"
+#include "RAJA/internal/RangeSegment.hxx"
 
 namespace RAJA
 {
