@@ -45,9 +45,16 @@
 if (RAJA_ENABLE_CUDA)
     cuda_add_executable(raja-pi
       pi.cxx)
+
+    cuda_add_executable(raja-includes
+      includes.cxx)
 else ()
     add_executable(raja-pi
       pi.cxx)
+
+    add_executable(raja-includes
+      includes.cxx)
 endif ()
 
 target_link_libraries(raja-pi RAJA)
+# target_link_libraries(raja-includes RAJA)

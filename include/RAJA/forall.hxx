@@ -91,6 +91,11 @@
 
 #include "RAJA/internal/Iterators.hxx"
 #include "RAJA/internal/PolicyBase.hxx"
+
+#include "RAJA/internal/IndexSet.hxx"
+#include "RAJA/internal/RangeSegment.hxx"
+#include "RAJA/internal/ListSegment.hxx"
+
 #include "RAJA/internal/fault_tolerance.hxx"
 #include "RAJA/internal/int_datatypes.hxx"
 
