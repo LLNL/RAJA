@@ -82,9 +82,29 @@ namespace RAJA
 //////////////////////////////////////////////////////////////////////
 //
 
-// HIDDEN namespace to encapsulate helper functions
-namespace HIDDEN
+// INTERNAL namespace to encapsulate helper functions
+namespace INTERNAL
 {
+
+/*!
+ ******************************************************************************
+ *
+ * \brief calculate global thread index from 1D grid of 1D blocks
+ *
+ ******************************************************************************
+ */
+__device__ __forceinline__ Index_type getGlobalIdx_1D_1D()
+{
+  Index_type blockId  = blockIdx.x;
+  Index_type threadId = blockId * blockDim.x + threadIdx.x;
+  return threadId;
+}
+__device__ __forceinline__ Index_type getGlobalNumThreads_1D_1D()
+{
+  Index_type numThreads = blockDim.x * gridDim.x;
+  return numThreads;
+}
+
 /*!
  ******************************************************************************
  *
@@ -108,7 +128,7 @@ __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
   return numThreads;
 }
 
-} // end HIDDEN namespace for helper functions
+} // end INTERNAL namespace for helper functions
 
 
 /*!
@@ -126,8 +146,8 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 
   auto body = loop_body;
 
-  Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
-  Index_type numThreads = HIDDEN::getGlobalNumThreads_3D_3D();
+  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
+  Index_type numThreads = INTERNAL::getGlobalNumThreads_1D_1D();
   for (; ii < length; ii += numThreads) {
     body(idx[ii]);
   }
@@ -151,8 +171,8 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
 
   auto body = loop_body;
 
-  Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
-  Index_type numThreads = HIDDEN::getGlobalNumThreads_3D_3D();
+  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
+  Index_type numThreads = INTERNAL::getGlobalNumThreads_1D_1D();
   for (; ii < length; ii += numThreads) {
     body(ii + icount, idx[ii]);
   }
