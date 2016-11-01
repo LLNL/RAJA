@@ -79,6 +79,12 @@ namespace
   bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
 
   /*!
+   * \brief Static array used to keep track of which reduction
+   * memblocks are in use.
+   */
+  bool s_cuda_reduction_memblock_used[RAJA_MAX_REDUCE_VARS];
+
+  /*!
    * \brief Pointer to device memory block for RAJA-Cuda reductions.
    */
   CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
@@ -227,6 +233,7 @@ void releaseCudaReductionId(int id)
 {
   if (id < RAJA_MAX_REDUCE_VARS) {
     s_cuda_reduction_id_used[id] = false;
+    s_cuda_reduction_memblock_used[id] = false;
   }
 }
 
@@ -245,8 +252,14 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
                           sizeof(CudaReductionDummyBlockType) *
                             RAJA_MAX_REDUCE_VARS));
 
+    for (int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+      s_cuda_reduction_memblock_used[i] = false;
+    }
+
     atexit(freeCudaReductionMemBlock);
   }
+
+  s_cuda_reduction_memblock_used[id] = true;
 
   *device_memblock = &(s_cuda_reduction_mem_block[id]);
 }
@@ -522,28 +535,34 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
   int launch_num_blocks = 
       launchGridDim.x * launchGridDim.y * launchGridDim.z;
 
-  if (launch_num_blocks > RAJA_CUDA_MAX_NUM_BLOCKS) {
-    std::cerr << "\n Cuda execution error: "
-              << "Can't launch " << launch_num_blocks << " blocks, " 
-              << "RAJA_CUDA_MAX_NUM_BLOCKS = " << RAJA_CUDA_MAX_NUM_BLOCKS
-              << ", "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
-  }
-
   int launch_num_threads = 
       launchBlockDim.x * launchBlockDim.y * launchBlockDim.z;
 
   for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
     int reducer_num_threads = s_cuda_reduction_num_threads[i];
 
-    if (reducer_num_threads > 0 && launch_num_threads > reducer_num_threads) {
-      std::cerr << "\n Cuda execution, reduction policy mismatch: "
-                << "reduction policy with BLOCK_SIZE " << reducer_num_threads
-                << " can't be used with execution policy with BLOCK_SIZE "
-                << launch_num_threads << ", "
-                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-      exit(1);
+    // check if reducer is active
+    if (reducer_num_threads >= 0) {
+      
+      // check if reducer cares about number of blocks
+      if (s_cuda_reduction_memblock_used[i] && launch_num_blocks > RAJA_CUDA_MAX_NUM_BLOCKS) {
+        std::cerr << "\n Cuda execution error: "
+                  << "Can't launch " << launch_num_blocks << " blocks, " 
+                  << "RAJA_CUDA_MAX_NUM_BLOCKS = " << RAJA_CUDA_MAX_NUM_BLOCKS
+                  << ", "
+                  << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+        exit(1);
+      }
+      
+      // check if reducer cares about number of threads
+      if (reducer_num_threads > 0 && launch_num_threads > reducer_num_threads) {
+        std::cerr << "\n Cuda execution, reduction policy mismatch: "
+                  << "reduction policy with BLOCK_SIZE " << reducer_num_threads
+                  << " can't be used with execution policy with BLOCK_SIZE "
+                  << launch_num_threads << ", "
+                  << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+        exit(1);
+      }
     }
   }
   return s_shared_memory_amount_total;
