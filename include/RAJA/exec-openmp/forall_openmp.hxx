@@ -86,7 +86,7 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-#pragma omp parallel
+#pragma omp parallel firstprivate(loop_body)
   forall<InnerPolicy>(std::forward<Iterable>(iter),
                       std::forward<Func>(loop_body));
 }
@@ -97,7 +97,7 @@ RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
                                Index_type icount,
                                Func&& loop_body)
 {
-#pragma omp parallel
+#pragma omp parallel firstprivate(loop_body)
   forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                              icount,
                              std::forward<Func>(loop_body));
