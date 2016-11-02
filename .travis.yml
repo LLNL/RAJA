@@ -65,6 +65,8 @@ cache:
 before_install:
   - sudo apt-get update -qq
   - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ; fi
+  - CMAKE_URL="http://www.cmake.org/files/v3.5/cmake-3.5.2-Linux-x86_64.tar.gz" 
+  - mkdir cmake && travis_retry wget --no-check-certificate --quiet -O - ${CMAKE_URL} | tar --strip-components=1 -xz -C cmake && export PATH=${PWD}/cmake/bin:${PATH}
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
