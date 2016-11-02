@@ -92,8 +92,10 @@ else()
   add_executable(traversal-tests
     test-traversals.cxx)
 
-  add_executable(scan-tests
-    test-scan.cxx)
+  if (NOT MSVC)
+    add_executable(scan-tests
+      test-scan.cxx)
+endif ()
 
 endif()
 
@@ -127,11 +129,13 @@ add_test(
 
 target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-add_test(
-    NAME scan-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
+if (NOT MSVC)
+  add_test(
+      NAME scan-test
+      COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
 
-target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif ()
 
 target_link_libraries(CPUtraversal-test.exe RAJA bis)
 target_link_libraries(CPUreduce-test.exe RAJA bis)

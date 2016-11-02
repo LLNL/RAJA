@@ -15,7 +15,8 @@ struct storage {
   static T* alloc(int n)
   {
     T* ptr;
-    ::posix_memalign((void**)&ptr, 64, n * sizeof(T));
+    ptr = allocate_aligned(64, n * sizeof(T));
+
     return ptr;
   }
 

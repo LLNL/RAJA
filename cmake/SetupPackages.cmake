@@ -78,6 +78,7 @@ if (RT_LIBRARIES STREQUAL "RT_LIBRARIES-NOTFOUND")
   message(WARNING "librt not found, some test applications might not link")
   set(RT_LIBRARIES "" CACHE STRING "timing libraries" FORCE)
 endif ()
+
 if (CALIPER_FOUND)
     set(RT_LIBRARIES "${RT_LIBRARIES} ${caliper_LIB_DIR}/libcaliper.so" CACHE STRING "testing libraries" FORCE)
 endif()
@@ -92,6 +93,7 @@ if (RAJA_ENABLE_TESTS)
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG release-1.7.0
       CMAKE_ARGS                
+          -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
@@ -107,12 +109,22 @@ if (RAJA_ENABLE_TESTS)
   ExternalProject_Get_Property(googletest binary_dir)
   add_library(gtest      UNKNOWN IMPORTED)
   add_library(gtest_main UNKNOWN IMPORTED)
-  set_target_properties(gtest PROPERTIES
-    IMPORTED_LOCATION ${binary_dir}/libgtest.a
-  )
-  set_target_properties(gtest_main PROPERTIES
-    IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
-  )
+
+  if ( UNIX )
+    set_target_properties(gtest PROPERTIES
+      IMPORTED_LOCATION ${binary_dir}/libgtest.a
+    )
+    set_target_properties(gtest_main PROPERTIES
+      IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
+    )
+  elseif( WIN32 )
+    set_target_properties(gtest PROPERTIES
+      IMPORTED_LOCATION ${binary_dir}/${CMAKE_BUILD_TYPE}/gtest.lib
+    )
+    set_target_properties(gtest_main PROPERTIES
+      IMPORTED_LOCATION ${binary_dir}/${CMAKE_BUILD_TYPE}/gtest_main.lib
+    )
+  endif ()
   add_dependencies(gtest      googletest)
   add_dependencies(gtest_main googletest)
 

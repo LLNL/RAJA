@@ -100,7 +100,23 @@ public:
   /// The object must provide methods: begin(), end(), size().
   ///
   template <typename T>
-  explicit ListSegment(const T& indx);
+  explicit ListSegment(const T& indx)
+    : BaseSegment(_ListSeg_), m_indx(0), m_indx_own(Unowned), m_len(indx.size())
+{
+  if (!indx.empty()) {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaErrchk(cudaMallocManaged((void**)&m_indx,
+                                 m_len * sizeof(Index_type),
+                                 cudaMemAttachGlobal));
+    cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
+    cudaErrchk(cudaDeviceSynchronize());
+#else
+    m_indx = new Index_type[indx.size()];
+#endif
+    std::copy(indx.begin(), indx.end(), m_indx);
+    m_indx_own = Owned;
+  }
+}
 
   ///
   /// Copy-constructor for list segment.
@@ -219,36 +235,10 @@ private:
                      Index_type len,
                      IndexOwnership indx_own);
 
-  Index_type* __restrict__ m_indx;
+  Index_type* RAJA_RESTRICT m_indx;
   Index_type m_len;
   IndexOwnership m_indx_own;
 };
-
-/*!
- ******************************************************************************
- *
- *  \brief Implementation of generic constructor template.
- *
- ******************************************************************************
- */
-template <typename T>
-ListSegment::ListSegment(const T& indx)
-    : BaseSegment(_ListSeg_), m_indx(0), m_indx_own(Unowned), m_len(indx.size())
-{
-  if (!indx.empty()) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void**)&m_indx,
-                                 m_len * sizeof(Index_type),
-                                 cudaMemAttachGlobal));
-    cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
-    cudaErrchk(cudaDeviceSynchronize());
-#else
-    m_indx = new Index_type[indx.size()];
-#endif
-    std::copy(indx.begin(), indx.end(), m_indx);
-    m_indx_own = Owned;
-  }
-}
 
 }  // closing brace for RAJA namespace
 

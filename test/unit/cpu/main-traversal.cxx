@@ -52,8 +52,8 @@ void runBasicForallTest(const string& policy,
 {
   Real_ptr test_array;
   Real_ptr ref_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
-  posix_memalign((void**)&ref_array, DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  ref_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   for (Index_type i = 0; i < alen; ++i) {
     test_array[i] = 0.0;
@@ -181,10 +181,8 @@ void runBasicForall_IcountTest(const string& policy,
   Index_type test_alen = is_indices.size();
   Real_ptr test_array;
   Real_ptr ref_array;
-  posix_memalign((void**)&test_array,
-                 DATA_ALIGN,
-                 test_alen * sizeof(Real_type));
-  posix_memalign((void**)&ref_array, DATA_ALIGN, test_alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, test_alen * sizeof(Real_type));
+  ref_array = (Real_ptr) allocate_aligned(DATA_ALIGN, test_alen * sizeof(Real_type));
 
   for (Index_type i = 0; i < test_alen; ++i) {
     test_array[i] = 0.0;
@@ -429,7 +427,7 @@ int main(int argc, char* argv[])
   // Allocate "parent" array for traversal tests and initialize to...
   //
   Real_ptr parent;
-  posix_memalign((void**)&parent, DATA_ALIGN, array_length * sizeof(Real_type));
+  parent = (Real_ptr) allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);

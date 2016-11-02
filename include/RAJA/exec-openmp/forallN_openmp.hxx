@@ -119,7 +119,9 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 
+#if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
+#endif
     for (int i = begin_i; i < end_i; ++i) {
       for (int j = begin_j; j < end_j; ++j) {
         outer(i, j);

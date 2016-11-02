@@ -62,6 +62,11 @@ namespace RAJA
 {
 
 ///
+/// Portable aligned memory allocation
+///
+void * allocate_aligned(size_t alignment, size_t size);
+
+///
 /// Typedef defining common data type for RAJA-CPU reduction data blocks
 /// (use this in all cases to avoid type confusion).
 ///

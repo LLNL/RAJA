@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 
+#include "RAJA/RAJA.hxx"
+#include "RAJA/MemUtils_CPU.hxx"
+
 #include "buildIndexSet.hxx"
 
 template <typename T>
@@ -14,14 +17,11 @@ protected:
 
     RAJA::getIndices(is_indices, index_sets_[0]);
 
-    posix_memalign((void **)&test_array,
-                   RAJA::DATA_ALIGN,
+    test_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
                    array_length * sizeof(RAJA::Real_type));
-    posix_memalign((void **)&ref_array,
-                   RAJA::DATA_ALIGN,
+    ref_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
                    array_length * sizeof(RAJA::Real_type));
-    posix_memalign((void **)&in_array,
-                   RAJA::DATA_ALIGN,
+    in_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
                    array_length * sizeof(RAJA::Real_type));
 
     for (RAJA::Index_type i = 0; i < array_length; ++i) {
