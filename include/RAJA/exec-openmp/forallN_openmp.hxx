@@ -191,7 +191,7 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag,
   typedef typename POLICY::NextPolicy NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
-#pragma omp parallel
+#pragma omp parallel firstprivate(body)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }
