@@ -87,34 +87,24 @@ namespace RAJA
 template <typename T>
 class ReduceMin<omp_reduce, T>
 {
+  using my_type = ReduceMin<omp_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val)
+  explicit ReduceMin(T init_val):
+    parent(NULL), val(init_val)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = init_val;
-    }
   }
 
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<omp_reduce, T>& other)
+  ReduceMin(const ReduceMin<omp_reduce, T>& other):
+    parent(other.parent ? other.parent : &other),
+    val(other.val)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -123,8 +113,11 @@ public:
   //
   ~ReduceMin<omp_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (parent) {
+#pragma omp critical
+      {
+        parent->min(val);
+      }
     }
   }
 
@@ -133,13 +126,7 @@ public:
   //
   operator T()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      m_reduced_val = RAJA_MIN(m_reduced_val,
-                               static_cast<T>(m_blockdata[i * s_block_offset]));
-    }
-
-    return m_reduced_val;
+    return val;
   }
 
   //
@@ -150,12 +137,14 @@ public:
   //
   // Method that updates min value for current thread.
   //
-  ReduceMin<omp_reduce, T> min(T val) const
+  const ReduceMin<omp_reduce, T>& min(T rhs) const
   {
-    int tid = omp_get_thread_num();
-    int idx = tid * s_block_offset;
-    m_blockdata[idx] = RAJA_MIN(static_cast<T>(m_blockdata[idx]), val);
+    val = RAJA_MIN(val, rhs);
+    return *this;
+  }
 
+  ReduceMin<omp_reduce, T>& min(T rhs) {
+    val = RAJA_MIN(val, rhs);
     return *this;
   }
 
@@ -165,15 +154,8 @@ private:
   //
   ReduceMin<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
-
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  const my_type * parent;
+  mutable T val;
 };
 
 /*!
@@ -370,6 +352,12 @@ public:
     return *this;
   }
 
+  ReduceMax<omp_reduce, T>& max(T rhs)
+  {
+    val = RAJA_MAX(val, rhs);
+    return *this;
+  }
+
 private:
   //
   // Default ctor is declared private and not implemented.
@@ -379,7 +367,6 @@ private:
   const my_type * parent;
 
   mutable T val;
-  T custom_init;
 };
 
 /*!
