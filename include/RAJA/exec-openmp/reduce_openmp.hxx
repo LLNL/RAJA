@@ -539,35 +539,25 @@ private:
 template <typename T>
 class ReduceSum<omp_reduce, T>
 {
+  using my_type = ReduceSum<omp_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val)
+  explicit ReduceSum(T init_val, T initializer = 0)
+    : parent(NULL), val(init_val), custom_init(initializer)
   {
-    m_is_copy = false;
-
-    m_init_val = init_val;
-    m_reduced_val = static_cast<T>(0);
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = 0;
-    }
   }
 
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other)
+  ReduceSum(const ReduceSum<omp_reduce, T>& other) :
+    parent(other.parent ? other.parent : &other),
+    val(other.custom_init),
+    custom_init(other.custom_init)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -576,9 +566,14 @@ public:
   //
   ~ReduceSum<omp_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (parent) {
+#pragma omp critical
+      {
+        *parent += val;
+      }
+
     }
+
   }
 
   //
@@ -586,14 +581,7 @@ public:
   //
   operator T()
   {
-    T tmp_reduced_val = static_cast<T>(0);
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      tmp_reduced_val += static_cast<T>(m_blockdata[i * s_block_offset]);
-    }
-    m_reduced_val = m_init_val + tmp_reduced_val;
-
-    return m_reduced_val;
+    return val;
   }
 
   //
@@ -604,10 +592,15 @@ public:
   //
   // += operator that adds value to sum for current thread.
   //
-  ReduceSum<omp_reduce, T> operator+=(T val) const
+  const ReduceSum<omp_reduce, T>& operator+=(T rhs) const
   {
-    int tid = omp_get_thread_num();
-    m_blockdata[tid * s_block_offset] += val;
+    this->val += rhs;
+    return *this;
+  }
+
+  ReduceSum<omp_reduce, T>& operator+=(T rhs)
+  {
+    this->val += rhs;
     return *this;
   }
 
@@ -617,16 +610,11 @@ private:
   //
   ReduceSum<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
+  const my_type * parent;
 
-  bool m_is_copy;
-  int m_myID;
+  mutable T val;
+  T custom_init;
 
-  T m_init_val;
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
 };
 
 }  // closing brace for RAJA namespace
