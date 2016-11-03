@@ -320,8 +320,8 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val, T initializer=std::numeric_limits<T>::min()):
-    parent(NULL), val(init_val), custom_init(initializer)
+  explicit ReduceMax(T init_val):
+    parent(NULL), val(init_val)
   {
   }
 
@@ -330,8 +330,7 @@ public:
   //
   ReduceMax(const ReduceMax<omp_reduce, T>& other) :
     parent(other.parent ? other.parent : &other),
-    val(other.custom_init),
-    custom_init(other.custom_init)
+    val(other.val)
   {
   }
 
@@ -365,7 +364,7 @@ public:
   //
   // Method that updates max value for current thread.
   //
-  ReduceMax<omp_reduce, T> max(T rhs) const
+  ReduceMax<omp_reduce, T>& max(T rhs) const
   {
     val = RAJA_MAX(val, rhs);
     return *this;
