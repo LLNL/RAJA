@@ -70,6 +70,8 @@
 #include <omp.h>
 #endif
 
+#include <limits>
+
 namespace RAJA
 {
 
@@ -318,8 +320,8 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val, T initializer=numeric_limits<T>::min()):
-    parent(NULL), val(init_val), custom_init(initializer);
+  explicit ReduceMax(T init_val, T initializer=std::numeric_limits<T>::min()):
+    parent(NULL), val(init_val), custom_init(initializer)
   {
   }
 
@@ -342,7 +344,7 @@ public:
     if (parent) {
 #pragma omp critical
       {
-          *parent.max(val);
+          parent->max(val);
       }
     }
   }
@@ -365,7 +367,7 @@ public:
   //
   ReduceMax<omp_reduce, T> max(T rhs) const
   {
-    val = RAJA_MAX(static_cast<T>(val, rhs);
+    val = RAJA_MAX(val, rhs);
     return *this;
   }
 
@@ -377,7 +379,7 @@ private:
 
   const my_type * parent;
 
-  T val;
+  mutable T val;
   T custom_init;
 };
 

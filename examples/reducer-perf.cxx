@@ -4,7 +4,7 @@
 #include <vector>
 #include <chrono>
 
-int test_sum(int argc, char *argv[])
+int test_sum()
 {
   std::cout << "Testing ReduceSum...";
 
@@ -34,7 +34,7 @@ int test_sum(int argc, char *argv[])
   return 0;
 }
 
-int test_max(int argc, char *argv[])
+int test_max()
 {
   std::cout << "Testing ReduceMax...";
 
@@ -64,8 +64,10 @@ int test_max(int argc, char *argv[])
   return 0;
 }
 
-int maint(int argc, char* argv[])
+int main(int argc, char* argv[])
 {
   test_sum();
   test_max();
+
+  return 0;
 }
