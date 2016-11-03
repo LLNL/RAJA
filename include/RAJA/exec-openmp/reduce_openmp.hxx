@@ -312,34 +312,25 @@ private:
 template <typename T>
 class ReduceMax<omp_reduce, T>
 {
+  using my_type = ReduceMax<omp_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val)
+  explicit ReduceMax(T init_val, T initializer=numeric_limits<T>::min()):
+    parent(NULL), val(init_val), custom_init(initializer);
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = init_val;
-    }
   }
 
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<omp_reduce, T>& other)
+  ReduceMax(const ReduceMax<omp_reduce, T>& other) :
+    parent(other.parent ? other.parent : &other),
+    val(other.custom_init),
+    custom_init(other.custom_init)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -348,8 +339,11 @@ public:
   //
   ~ReduceMax<omp_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (parent) {
+#pragma omp critical
+      {
+          *parent.max(val);
+      }
     }
   }
 
@@ -358,13 +352,7 @@ public:
   //
   operator T()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      m_reduced_val = RAJA_MAX(m_reduced_val,
-                               static_cast<T>(m_blockdata[i * s_block_offset]));
-    }
-
-    return m_reduced_val;
+    return val;
   }
 
   //
@@ -375,12 +363,9 @@ public:
   //
   // Method that updates max value for current thread.
   //
-  ReduceMax<omp_reduce, T> max(T val) const
+  ReduceMax<omp_reduce, T> max(T rhs) const
   {
-    int tid = omp_get_thread_num();
-    int idx = tid * s_block_offset;
-    m_blockdata[idx] = RAJA_MAX(static_cast<T>(m_blockdata[idx]), val);
-
+    val = RAJA_MAX(static_cast<T>(val, rhs);
     return *this;
   }
 
@@ -390,15 +375,10 @@ private:
   //
   ReduceMax<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
+  const my_type * parent;
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  T val;
+  T custom_init;
 };
 
 /*!
