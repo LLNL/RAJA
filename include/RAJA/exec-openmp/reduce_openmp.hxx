@@ -174,32 +174,19 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+  explicit ReduceMinLoc(T init_val, Index_type init_loc):
+    parent(NULL), val(init_val), idx(init_loc)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-    m_idxdata = getCPUReductionLocBlock(m_myID);
-
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = init_val;
-      m_idxdata[i * s_idx_offset] = init_loc;
-    }
   }
 
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other):
+    parent(other.parent ? other.parent : &other),
+    val(other.val),
+    idx(other.idx)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -208,8 +195,11 @@ public:
   //
   ~ReduceMinLoc<omp_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (parent) {
+#pragma omp critical
+      {
+        parent->minloc(val, idx);
+      }
     }
   }
 
@@ -218,15 +208,7 @@ public:
   //
   operator T()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
-        m_reduced_val = m_blockdata[i * s_block_offset];
-        m_reduced_idx = m_idxdata[i * s_idx_offset];
-      }
-    }
-
-    return m_reduced_val;
+    return val;
   }
 
   //
@@ -239,28 +221,27 @@ public:
   //
   Index_type getLoc()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
-        m_reduced_val = m_blockdata[i * s_block_offset];
-        m_reduced_idx = m_idxdata[i * s_idx_offset];
-      }
-    }
-
-    return m_reduced_idx;
+    return idx;
   }
 
   //
   // Method that updates min and index values for current thread.
   //
-  ReduceMinLoc<omp_reduce, T> minloc(T val, Index_type idx) const
+  const ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
   {
-    int tid = omp_get_thread_num();
-    if (val <= static_cast<T>(m_blockdata[tid * s_block_offset])) {
-      m_blockdata[tid * s_block_offset] = val;
-      m_idxdata[tid * s_idx_offset] = idx;
+    if (rhs <= val) {
+      val = rhs;
+      idx = rhs_idx;
     }
+    return *this;
+  }
 
+  ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx)
+  {
+    if (rhs <= val) {
+      val = rhs;
+      idx = rhs_idx;
+    }
     return *this;
   }
 
@@ -270,18 +251,10 @@ private:
   //
   ReduceMinLoc<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
-  static const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
+  const my_type * parent;
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-  Index_type m_reduced_idx;
-
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  mutable T val;
+  mutable Index_type idx;
 };
 
 /*!
@@ -381,36 +354,24 @@ private:
 template <typename T>
 class ReduceMaxLoc<omp_reduce, T>
 {
+  using my_type ReduceMaxLoc<omp_reduce, T>;
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+  explicit ReduceMaxLoc(T init_val, Index_type init_loc):
+    parent(NULL), val(init_val), loc(init_loc)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-    m_idxdata = getCPUReductionLocBlock(m_myID);
-
-    int nthreads = omp_get_max_threads();
-#pragma omp parallel for schedule(static, 1)
-    for (int i = 0; i < nthreads; ++i) {
-      m_blockdata[i * s_block_offset] = init_val;
-      m_idxdata[i * s_idx_offset] = init_loc;
-    }
   }
 
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other):
+    parent(other.parent ? other.parent : &other),
+    val(other.val),
+    idx(other.idx)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -419,8 +380,11 @@ public:
   //
   ~ReduceMaxLoc<omp_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (parent) {
+#pragma omp critical
+      {
+        parent->maxloc(val, idx);
+      }
     }
   }
 
@@ -429,15 +393,7 @@ public:
   //
   operator T()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
-        m_reduced_val = m_blockdata[i * s_block_offset];
-        m_reduced_idx = m_idxdata[i * s_idx_offset];
-      }
-    }
-
-    return m_reduced_val;
+    return val;
   }
 
   //
@@ -450,28 +406,27 @@ public:
   //
   Index_type getLoc()
   {
-    int nthreads = omp_get_max_threads();
-    for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
-        m_reduced_val = m_blockdata[i * s_block_offset];
-        m_reduced_idx = m_idxdata[i * s_idx_offset];
-      }
-    }
-
-    return m_reduced_idx;
+    return idx;
   }
 
   //
   // Method that updates max and index values for current thread.
   //
-  ReduceMaxLoc<omp_reduce, T> maxloc(T val, Index_type idx) const
+  const ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
   {
-    int tid = omp_get_thread_num();
-    if (val >= static_cast<T>(m_blockdata[tid * s_block_offset])) {
-      m_blockdata[tid * s_block_offset] = val;
-      m_idxdata[tid * s_idx_offset] = idx;
+    if (rhs >= val) {
+      val = rhs;
+      idx = rhs_idx;
     }
+    return *this;
+  }
 
+  ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx)
+  {
+    if (rhs >= val) {
+      val = rhs;
+      idx = rhs_idx;
+    }
     return *this;
   }
 
@@ -481,18 +436,10 @@ private:
   //
   ReduceMaxLoc<omp_reduce, T>();
 
-  static const int s_block_offset =
-      COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
-  static const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
+  const my_type* parent;
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-  Index_type m_reduced_idx;
-
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  mutable T val;
+  mutable Index_type idx;
 };
 
 /*!
