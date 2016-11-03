@@ -88,9 +88,9 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel 
   {
-    typename std::remove_reference<decltype(loop_body)>::type loop_body = loop_body;
+    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall<InnerPolicy>(std::forward<Iterable>(iter),
-                        std::forward<Func>(loop_body));
+                        std::forward<Func>(body));
   }
 }
 
@@ -102,10 +102,10 @@ RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel 
   { 
-    typename std::remove_reference<decltype(loop_body)>::type loop_body = loop_body;
+    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                                icount,
-                               std::forward<Func>(loop_body));
+                               std::forward<Func>(body));
   }
 }
 

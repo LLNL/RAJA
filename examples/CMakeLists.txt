@@ -51,3 +51,8 @@ else ()
 endif ()
 
 target_link_libraries(raja-pi RAJA)
+
+add_executable(reducer-perf
+  reducer-perf.cxx)
+
+target_link_libraries(reducer-perf RAJA)

@@ -571,9 +571,7 @@ public:
       {
         *parent += val;
       }
-
     }
-
   }
 
   //
