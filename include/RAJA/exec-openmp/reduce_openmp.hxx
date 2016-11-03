@@ -364,7 +364,7 @@ public:
   //
   // Method that updates max value for current thread.
   //
-  ReduceMax<omp_reduce, T>& max(T rhs) const
+  const ReduceMax<omp_reduce, T>& max(T rhs) const
   {
     val = RAJA_MAX(val, rhs);
     return *this;
