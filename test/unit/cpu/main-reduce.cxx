@@ -115,7 +115,7 @@ void runBasicMinReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -266,7 +266,7 @@ void runBasicMinLocReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -415,7 +415,7 @@ void runBasicMaxReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -566,7 +566,7 @@ void runBasicMaxLocReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -901,7 +901,7 @@ int main(int argc, char* argv[])
   //
   // Clean up....
   //
-  free(parent);
+  free_aligned(parent);
 
   cout << "\n DONE!!! " << endl;
 

@@ -41,9 +41,9 @@ protected:
 
   virtual void TearDown()
   {
-    free(test_array);
-    free(ref_array);
-    free(in_array);
+    RAJA::free_aligned(test_array);
+    RAJA::free_aligned(ref_array);
+    RAJA::free_aligned(in_array);
   }
 
   RAJA::IndexSet index_sets_[1];

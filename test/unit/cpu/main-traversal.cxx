@@ -94,8 +94,8 @@ void runBasicForallTest(const string& policy,
     s_ntests_passed_total++;
   }
 
-  free(test_array);
-  free(ref_array);
+  free_aligned(test_array);
+  free_aligned(ref_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -221,8 +221,8 @@ void runBasicForall_IcountTest(const string& policy,
     s_ntests_passed_total++;
   }
 
-  free(test_array);
-  free(ref_array);
+  free_aligned(test_array);
+  free_aligned(ref_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -539,7 +539,7 @@ int main(int argc, char* argv[])
   //
   // Clean up....
   //
-  free(parent);
+  free_aligned(parent);
 
   cout << "\n DONE!!! " << endl;
 

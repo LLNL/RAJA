@@ -100,6 +100,18 @@ void * allocate_aligned(size_t alignment, size_t size) {
     return ret;
 }
 
+
+void free_aligned(void* ptr) {
+#if _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
+    free(ptr);
+#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    //on windows
+    _aligned_free(ptr);
+#else
+    #error No known aligned allocator available
+#endif
+}
+
 /*
 *************************************************************************
 *

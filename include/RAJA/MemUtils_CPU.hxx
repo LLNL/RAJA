@@ -66,6 +66,12 @@ namespace RAJA
 ///
 void * allocate_aligned(size_t alignment, size_t size);
 
+
+///
+/// Portable aligned memory free - required for Windows
+///
+void free_aligned(void* ptr);
+
 ///
 /// Typedef defining common data type for RAJA-CPU reduction data blocks
 /// (use this in all cases to avoid type confusion).
