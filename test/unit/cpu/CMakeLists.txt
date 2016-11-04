@@ -129,7 +129,7 @@ target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_L
 
 add_test(
     NAME scan-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan-tests>)
 
 target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
