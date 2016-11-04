@@ -28,6 +28,16 @@ matrix:
          packages:
            - g++-6
      env: COMPILER=g++-6
+   - compiler: gcc-6-warnings
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-6
+     env: 
+       - COMPILER=g++-6
+       - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror'"
    - compiler: clang-3.6
      addons:
        apt:
@@ -68,6 +78,6 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake ../ -DCMAKE_CXX_COMPILER="$COMPILER"
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" ${CMAKE_EXTRA_FLAGS} ../
   - make -j
   - make test # currently does nothing, this is how testing should be done
