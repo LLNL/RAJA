@@ -296,29 +296,6 @@ RAJA_INLINE void forall_Icount(const Index_type* idx,
   forall_Icount<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), icount, loop_body);
 }
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index sets or segments
-// according to execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dependency-graph segment iteration over index set segments.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void forall_segments(const IndexSet& iset, LOOP_BODY loop_body)
-{
-  forall_segments(EXEC_POLICY_T(), iset, loop_body);
-}
-
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
