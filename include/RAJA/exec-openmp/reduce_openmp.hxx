@@ -70,9 +70,6 @@
 #include <omp.h>
 #endif
 
-#include <limits>
-#include <iostream>
-
 namespace RAJA
 {
 
@@ -109,8 +106,7 @@ public:
   }
 
   //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
+  // Destruction folds value into parent object.
   //
   ~ReduceMin<omp_reduce, T>()
   {
@@ -136,7 +132,8 @@ public:
   T get() { return operator T(); }
 
   //
-  // Method that updates min value for current thread.
+  // Method that updates min value for current object, assumes each thread
+  // has its own copy of the object.
   //
   const ReduceMin<omp_reduce, T>& min(T rhs) const
   {
@@ -371,14 +368,11 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other):
+  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other):
     parent(other.parent ? other.parent : &other),
     val(other.val),
     idx(other.idx)
   {
-static int ctr = 0;
-#pragma omp critical
-        std::cout << "copy constructor #" << ++ctr << " of object @" << this << " parent @" << parent << " thread #" << omp_get_thread_num() << std:: endl;
   }
 
   //
@@ -387,16 +381,10 @@ static int ctr = 0;
   //
   ~ReduceMaxLoc<omp_reduce, T>()
   {
-#pragma omp critical
-    std::cout << "destructor of object @" << this << " thread #" << omp_get_thread_num() << std:: endl;
     if (parent) {
 #pragma omp critical
       {
-        std::cout << "folding " << val << " into parent's value " << parent->val << std::endl;
-        std::cout << "folding " << idx << " into parent's index " << parent->idx << std::endl;
         parent->maxloc(val, idx);
-        std::cout << "parent's new value " << parent->val << std::endl;
-        std::cout << "parent's new index " << parent->idx << std::endl;
       }
     }
   }
@@ -449,7 +437,7 @@ private:
   //
   ReduceMaxLoc<omp_reduce, T>();
 
-  const my_type* parent;
+  const my_type * parent;
 
   mutable T val;
   mutable Index_type idx;
