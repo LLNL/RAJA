@@ -37,7 +37,7 @@ matrix:
            - g++-6
      env:
          - COMPILER=g++-6
-         - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror'"
+         - CMAKE_EXTRA_FLAGS=" -DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror'"
    - compiler: clang-3.6
      addons:
        apt:
