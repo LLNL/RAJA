@@ -71,6 +71,7 @@
 #endif
 
 #include <limits>
+#include <iostream>
 
 namespace RAJA
 {
@@ -170,6 +171,8 @@ private:
 template <typename T>
 class ReduceMinLoc<omp_reduce, T>
 {
+  using my_type = ReduceMinLoc<omp_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
@@ -354,13 +357,14 @@ private:
 template <typename T>
 class ReduceMaxLoc<omp_reduce, T>
 {
-  using my_type ReduceMaxLoc<omp_reduce, T>;
+  using my_type = ReduceMaxLoc<omp_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMaxLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), loc(init_loc)
+    parent(NULL), val(init_val), idx(init_loc)
   {
   }
 
@@ -372,6 +376,9 @@ public:
     val(other.val),
     idx(other.idx)
   {
+static int ctr = 0;
+#pragma omp critical
+        std::cout << "copy constructor #" << ++ctr << " of object @" << this << " parent @" << parent << " thread #" << omp_get_thread_num() << std:: endl;
   }
 
   //
@@ -380,10 +387,16 @@ public:
   //
   ~ReduceMaxLoc<omp_reduce, T>()
   {
+#pragma omp critical
+    std::cout << "destructor of object @" << this << " thread #" << omp_get_thread_num() << std:: endl;
     if (parent) {
 #pragma omp critical
       {
+        std::cout << "folding " << val << " into parent's value " << parent->val << std::endl;
+        std::cout << "folding " << idx << " into parent's index " << parent->idx << std::endl;
         parent->maxloc(val, idx);
+        std::cout << "parent's new value " << parent->val << std::endl;
+        std::cout << "parent's new index " << parent->idx << std::endl;
       }
     }
   }
