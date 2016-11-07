@@ -58,7 +58,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <cassert>
+
 #include "RAJA/int_datatypes.hxx"
+
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
 #include <climits>
 
@@ -72,12 +76,12 @@ namespace RAJA
  */
 template <typename BODY>
 struct ForallN_BindFirstArg_Device {
-  BODY const body;
+  BODY const &body;
   size_t i;
 
   RAJA_INLINE
   RAJA_DEVICE
-  constexpr ForallN_BindFirstArg_Device(BODY b, size_t i0) : body(b), i(i0) {}
+  constexpr ForallN_BindFirstArg_Device(BODY &b, size_t i0) : body(b), i(i0) {}
 
   template <typename... ARGS>
   RAJA_INLINE RAJA_DEVICE void operator()(ARGS... args) const
@@ -253,9 +257,12 @@ using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
-// Function to check indices for out-of-bounds
+/*!
+ * \brief  Function to check indices for out-of-bounds
+ *
+ */
 template <typename BODY, typename... ARGS>
-RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i, ARGS... args)
+RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i, ARGS... args)
 {
   if (i > INT_MIN) {
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
@@ -264,18 +271,23 @@ RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i, ARGS... args)
 }
 
 template <typename BODY>
-RAJA_INLINE __device__ void cudaCheckBounds(BODY body, int i)
+RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i)
 {
   if (i > INT_MIN) {
     body(i);
   }
 }
 
-// Launcher that uses execution policies to map blockIdx and threadIdx to map
-// to N-argument function
+/*!
+ * \brief Launcher that uses execution policies to map blockIdx and threadIdx to map
+ * to N-argument function
+ */
 template <typename BODY, typename... CARGS>
-__global__ void cudaLauncherN(BODY body, CARGS... cargs)
+__global__ void cudaLauncherN(BODY loop_body, CARGS... cargs)
 {
+  // force reduction object copy constructors and destructors to run
+  auto body = loop_body;
+
   // Compute indices and then pass through the bounds-checking mechanism
   cudaCheckBounds(body, (cargs())...);
 }
@@ -345,9 +357,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, cargs...);
-    cudaErrchk(cudaPeekAtLastError());
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                 >>>(body, cargs...);
+                 
+    RAJA_CUDA_CHECK_AND_SYNC(true);
   }
 };
 
@@ -366,9 +379,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<dims.num_blocks, dims.num_threads>>>(body, c0);
-    cudaErrchk(cudaPeekAtLastError());
-    cudaErrchk(cudaDeviceSynchronize());
+    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                 >>>(body, c0);
+
+    RAJA_CUDA_CHECK_AND_SYNC(true);
   }
 };
 

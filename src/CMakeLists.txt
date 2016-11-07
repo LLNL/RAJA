@@ -79,4 +79,5 @@ install(TARGETS RAJA EXPORT RAJA
   LIBRARY DESTINATION lib
 )
 
-install(EXPORT RAJA DESTINATION share/cmake/raja)
+install(EXPORT RAJA 
+  DESTINATION share/raja/cmake/)

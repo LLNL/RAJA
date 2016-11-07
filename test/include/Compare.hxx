@@ -21,7 +21,7 @@
 #ifndef RAJA_Compare_HXX
 #define RAJA_Compare_HXX
 
-#define rcabs(val) (((val) < 0) ? (-val) : (val))
+#define rcabs(val) (((val) < 0) ? (-(val)) : (val))
 
 namespace RAJA
 {

@@ -72,7 +72,7 @@ if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_INSTALL_PREFIX @CMAKE_INSTALL_PREFIX@)
   set(RAJA_INCLUDE_DIR    @CMAKE_INSTALL_PREFIX@/include)
   set(RAJA_LIB_DIR        @CMAKE_INSTALL_PREFIX@/lib)
-  set(RAJA_CMAKE_DIR      @CMAKE_INSTALL_PREFIX@/share/cmake/raja)
+  set(RAJA_CMAKE_DIR      @CMAKE_INSTALL_PREFIX@/share/raja/cmake)
 
   # Includes needed to use RAJA
   set(RAJA_INCLUDE_PATH @CMAKE_INSTALL_PREFIX@/include)
@@ -93,5 +93,5 @@ if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_USE_DOUBLE    ${RAJA_USE_DOUBLE})
   set(RAJA_USE_FLOAT     ${RAJA_USE_FLOAT})
   # Library targets imported from file
-  include(@CMAKE_INSTALL_PREFIX@/share/cmake/raja/RAJA.cmake)
+  include(@CMAKE_INSTALL_PREFIX@/share/raja/cmake/RAJA.cmake)
 endif()

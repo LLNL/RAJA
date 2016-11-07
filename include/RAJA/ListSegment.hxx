@@ -132,6 +132,23 @@ public:
   ///
   Index_type getLength() const { return m_len; }
 
+  using iterator = Index_type*;
+
+  ///
+  /// Get an iterator to the end.
+  ///
+  iterator end() const { return m_indx + m_len; }
+
+  ///
+  /// Get an iterator to the beginning.
+  ///
+  Index_type* begin() const { return m_indx; }
+
+  ///
+  /// Return the number of elements in the range.
+  ///
+  Index_type size() const { return m_len; }
+
   ///
   /// Return enum value indicating whether segment object owns the data
   /// representing its indices.

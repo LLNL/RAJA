@@ -148,7 +148,9 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
     if (rowsPerSegment == 0) {
       // printf("%d %d\n", 0, fastDim*midDim*slowDim) ;
       iset.push_back(RAJA::RangeSegment(0, fastDim * midDim * slowDim));
-      printf("Failure to create lockfree indexset\n");
+      printf(
+          "Failure to create lockfree indexset - not enough rows per "
+          "segment\n");
       exit(-1);
     } else {
       /* This just sets up the schedule -- a truly safe */
