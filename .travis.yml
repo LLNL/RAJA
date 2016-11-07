@@ -59,7 +59,6 @@ cache:
   - "$HOME/llvm"
 before_install:
 - sudo apt-get update -qq
-- pip install --user cpp-coveralls
 - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o
   tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ;
   fi
@@ -71,4 +70,3 @@ script:
 - make test
 after_success:
     - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
-    - if [[ -n "${COVERAGE}" ]] ; then coveralls -r "$TRAVIS_BUILD_DIR" --exclude tpl --exclude CMakeFiles --gcov-options '\-lp' ; fi
