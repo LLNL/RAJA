@@ -119,19 +119,6 @@ typedef const Real_type* __restrict__
 #endif
 
 #elif defined(RAJA_COMPILER_GNU)
-//
-// Nothing here for now because alignment attribute is not working...
-//
-
-#elif defined(RAJA_COMPILER_XLC12)
-#ifndef RAJA_COMPILER_XLC_POWER8
-extern
-#ifdef __cplusplus
-    "builtin"
-#endif
-    void
-    __alignx(int n, const void* addr);
-#endif
 
 #elif defined(RAJA_COMPILER_CLANG)
 typedef Real_type aligned_real_type __attribute__((aligned(RAJA::DATA_ALIGN)));
@@ -139,9 +126,6 @@ typedef Real_type aligned_real_type __attribute__((aligned(RAJA::DATA_ALIGN)));
 typedef aligned_real_type* __restrict__ TDRAReal_ptr;
 
 typedef const aligned_real_type* __restrict__ const_TDRAReal_ptr;
-
-#else
-#error RAJA compiler is undefined!
 
 #endif
 
@@ -349,7 +333,7 @@ public:
 #endif
   }
 
-#elif defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC)
   const Real_type& operator[](Index_type i) const
   {
     RAJA_ALIGN_DATA(dptr);
@@ -484,7 +468,7 @@ public:
 #endif
   }
 
-#elif defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC)
   ///
   Real_type& operator[](Index_type i)
   {
