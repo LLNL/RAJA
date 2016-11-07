@@ -87,6 +87,9 @@ public:
     typedef SEG_EXEC_POLICY_T seg_exec;
   };
 
+  using SegVecT = RAJAVec<IndexSetSegInfo>;
+
+
   //@{
   //!  @name Constructor and destructor methods
 
@@ -217,6 +220,23 @@ public:
   /// Note: No error-checking on segment index.
   ///
   IndexSetSegInfo* getSegmentInfo(unsigned i) { return &(m_segments[i]); }
+
+  using iterator = SegVecT::iterator;
+
+  ///
+  /// Get an iterator to the end.
+  ///
+  iterator end() const { return m_segments.end(); }
+
+  ///
+  /// Get an iterator to the beginning.
+  ///
+  iterator begin() const { return m_segments.begin(); }
+
+  ///
+  /// Return the number of elements in the range.
+  ///
+  size_t size() const { return m_segments.size(); }
 
   //@}
 
@@ -388,7 +408,7 @@ private:
   ///
   /// Collection of IndexSet segment info objects.
   ///
-  RAJAVec<IndexSetSegInfo> m_segments;
+  SegVecT m_segments;
 
   ///
   /// Vectors holding user defined segment intervals; each is [begin, end).

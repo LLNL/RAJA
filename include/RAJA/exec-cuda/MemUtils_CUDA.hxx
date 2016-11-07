@@ -62,57 +62,312 @@
 
 namespace RAJA
 {
+/*!
+ * \def RAJA_CUDA_MAX_NUM_BLOCKS
+ * Maximum number of blocks that RAJA will launch
+ */ 
+#define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
 
-/// Size of reduction memory block for each reducer object (value based on
-/// rough estimate of "worst case" -- need to think more about this...
-#define RAJA_CUDA_REDUCE_BLOCK_LENGTH (1024 + 8) * 16
+/*!
+ * \def RAJA_CUDA_REDUCE_BLOCK_LENGTH
+ * Size of reduction memory block for each reducer object (value based on
+ * rough estimate of "worst case" maximum number of blocks)
+ */
+#define RAJA_CUDA_REDUCE_BLOCK_LENGTH RAJA_CUDA_MAX_NUM_BLOCKS
 
-/// Reduction Tallies are computed into a small block to minimize UM migration
+/*!
+ * \def RAJA_CUDA_REDUCE_TALLY_LENGTH
+ * Reduction Tallies are computed into a small block to minimize memory motion
+ * Set to Max Number of Reduction Variables
+ */
 #define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
-///
-/// Typedef defining common data type for RAJA-Cuda reduction data blocks
-/// (use this in all cases to avoid type confusion).
-///
-typedef double CudaReductionBlockDataType;
+/*!
+ * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
+ * Size in bytes used in CudaReductionDummyDataType for array allocation to 
+ * accommodate the template type used in reductions.
+ * 
+ * Note: Includes the size of the index variable for Loc reductions.
+ */
+#define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
 
-///
-/// Struct used to hold current reduced value and corresponding index
-/// for "loc" reduction operations.
-///
-struct CudaReductionLocBlockDataType {
-  CudaReductionBlockDataType val;
+/*!
+ * \brief Type used to keep track of the grid size on the device
+ */
+typedef unsigned int GridSizeType;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type representing a single typed value for a cuda reduction.
+ *
+ * Enough space for a double value and an index value.
+ *
+ ******************************************************************************
+ */
+struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
+CudaReductionDummyDataType {
+  unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type representing a memory block for a cuda reduction.
+ *
+ ******************************************************************************
+ */
+struct RAJA_ALIGNED_ATTR(DATA_ALIGN) CudaReductionDummyBlockType {
+  CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type representing enough memory to hold a slot in the tally block.
+ *
+ ******************************************************************************
+ */
+struct CudaReductionDummyTallyType {
+  CudaReductionDummyDataType dummy_val;
+  GridSizeType dummy_retiredBlocks;
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify typed memory block use in cuda reductions.
+ *
+ * Must fit within the dummy block type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
+template <typename T>
+struct CudaReductionBlockType {
+  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify typed memory block use in cuda Loc reductions.
+ *
+ * Must fit within the dummy block type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
+template <typename T>
+struct CudaReductionLocBlockType {
+  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+  Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold value and location in cuda Loc reductions.
+ *
+ * Must fit within the dummy type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
+template  <typename T>
+struct CudaReductionLocType {
+  T val;
   Index_type idx;
 };
 
-///
-/// Struct used to hold current reduction tally value for reduction operations.
-///
-struct CudaReductionBlockTallyType {
-  CudaReductionBlockDataType tally;
-  CudaReductionBlockDataType initVal;
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold tally value in cuda reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ * Note: Retired blocks is used to count the number of blocks that finished
+ * and wrote their portion of the reduction to the memory block.
+ *
+ ******************************************************************************
+ */
+template <typename T>
+struct CudaReductionTallyType {
+  T tally;
+  GridSizeType retiredBlocks;
 };
 
 /*!
-*************************************************************************
-*
-* Return next available valid reduction id, or complain and exit if
-* no valid id is available.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold tally value in cuda atomic reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ ******************************************************************************
+ */
+template <typename T>
+struct CudaReductionTallyTypeAtomic {
+  T tally;
+};
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Type used to simplify hold tally value in cuda Loc reductions.
+ *
+ * Must fit within the dummy tally type (checked in static assert in the
+ * reduction classes).
+ *
+ * Note: Retired blocks is used to count the number of blocks that finished
+ * and wrote their portion of the reduction to the memory block.
+ *
+ ******************************************************************************
+ */
+template <typename T>
+struct CudaReductionLocTallyType {
+  CudaReductionLocType<T> tally;
+  GridSizeType retiredBlocks;
+};
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Get a valid reduction id, or complain and exit if no valid id is 
+ *        available.
+ *
+ * \return int the next available valid reduction id.
+ *
+ ******************************************************************************
+ */
 int getCudaReductionId();
 
 /*!
-*************************************************************************
-*
-* Release given redution id and make inactive.
-*
-*************************************************************************
-*/
+ ******************************************************************************
+ *
+ * \brief Release given reduction id and make inactive.
+ *
+ ******************************************************************************
+ */
 void releaseCudaReductionId(int id);
 
-CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
+/*!
+ ******************************************************************************
+ *
+ * \brief Get tally block for reducer object with given id.
+ *
+ * \param[out] host_tally pointer to host tally cache slot.
+ * \param[out] device_tally pointer to device tally slot.
+ *
+ * NOTE: Tally Block size will be:
+ *
+ *          sizeof(CudaReductionDummyTallyType) * RAJA_MAX_REDUCE_VARS
+ *
+ *       For each reducer object, we want a chunk of device memory that
+ *       holds the reduced value and a small number of anciliary variables.
+ *
+ ******************************************************************************
+ */
+void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Release tally block for reducer object with given id.
+ * 
+ ******************************************************************************
+ */
+void releaseCudaReductionTallyBlock(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Sets up state variales before the loop body is copied and the kernel
+ *        is launched.
+ *
+ ******************************************************************************
+ */
+void beforeCudaKernelLaunch();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Resets state variables after kernel launch.
+ *
+ ******************************************************************************
+ */ 
+void afterCudaKernelLaunch();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * an asynchronous reduction policy.
+ *
+ ******************************************************************************
+ */
+void beforeCudaReadTallyBlockAsync(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * a synchronous reduction policy.
+ *
+ ******************************************************************************
+ */
+void beforeCudaReadTallyBlockSync(int id);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read by reduction variable with id and 
+ * templated on Async from the reduction policy.
+ *
+ ******************************************************************************
+ */
+template<bool Async>
+void beforeCudaReadTallyBlock(int id)
+{
+  if (Async) {
+    beforeCudaReadTallyBlockAsync(id);
+  } else {
+    beforeCudaReadTallyBlockSync(id);
+  }
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Earmark amount of device shared memory and get byte offset into
+ *         device shared memory.
+ *
+ * \return int Byte offset into dynamic shared memory.
+ *
+ * \param[in] reductionBlockDim Dimensions of blocks expected by this
+ *                              reduction variable.
+ * \param[in] size Size of shared memory in bytes for each thread.
+ *
+ ******************************************************************************
+ */
+int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Get the amount in bytes of shared memory required for the current
+ *         kernel launch and checks the launch parameters.
+ *
+ * \param[in] launchGridDim GridDim kernel launch parameter.
+ * \param[in] launchBlockDim BlockDim kernel launch parameter.
+ *
+ ******************************************************************************
+ */
+int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim);
 
 /*!
  ******************************************************************************
@@ -121,43 +376,39 @@ CudaReductionBlockTallyType* getCudaReductionTallyBlock(int id);
  *
  ******************************************************************************
  */
-
 void freeCudaReductionTallyBlock();
 
 /*!
  ******************************************************************************
  *
- * \brief  Return pointers into shared memory blocks for RAJA-CUDA reduction
- *         with given id.
+ * \brief  Get device memory block for RAJA-CUDA reduction variable  with
+ *         given id.
  *
  *         Allocates data block if it isn't allocated already.
  *
- * NOTE: Block size will be:
+ * \param[out] device_memblock Pointer to device memory block.
  *
- *          sizeof(CudaReductionBlockDataType) *
- *            RAJA_MAX_REDUCE_VARS * ( RAJA_CUDA_REDUCE_BLOCK_LENGTH + 1 + 1 )
+ * NOTE: Total Block size will be:
  *
- *       For each reducer object, we want a chunk of managed memory that
+ *          sizeof(CudaReductionDummyDataType) *
+ *            RAJA_MAX_REDUCE_VARS * RAJA_CUDA_REDUCE_BLOCK_LENGTH
+ *
+ *       For each reducer object, we want a chunk of device memory that
  *       holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
- *       value for each thread, a single slot for the global reduced value
- *       across grid blocks, and a single slot for the max grid size
+ *       value for each thread block.
  *
  ******************************************************************************
  */
-CudaReductionBlockDataType* getCudaReductionMemBlock(int id);
-///
-CudaReductionLocBlockDataType* getCudaReductionLocMemBlock(int id);
+void getCudaReductionMemBlock(int id, void** device_memblock);
 
 /*!
  ******************************************************************************
  *
- * \brief  Free managed memory blocks used in RAJA-Cuda reductions.
+ * \brief  Free device memory blocks used in RAJA-Cuda reductions.
  *
  ******************************************************************************
  */
 void freeCudaReductionMemBlock();
-///
-void freeCudaReductionLocMemBlock();
 
 }  // closing brace for RAJA namespace
 

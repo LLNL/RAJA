@@ -41,7 +41,9 @@
 #
 ###############################################################################
 
-add_definitions(-DRAJA_ENABLE_NESTED)
+if (NOT RAJA_ENABLE_NESTED)
+  add_definitions(-DRAJA_ENABLE_NESTED)
+endif()
 
 if (RAJA_ENABLE_CUDA)
   cuda_add_library(bis buildIndexSet.cxx)
@@ -65,6 +67,9 @@ if (RAJA_ENABLE_CUDA)
   cuda_add_executable(traversal-tests
     test-traversals.cxx)
 
+  cuda_add_executable(scan-tests
+    test-scan.cxx)
+
 else()
   add_library(bis buildIndexSet.cxx)
   add_executable(CPUtraversal-test.exe
@@ -72,7 +77,7 @@ else()
 
   add_executable(CPUreduce-test.exe
     main-reduce.cxx)
-  
+
   add_executable(CPUnested-test.exe
     main-nested.cxx)
 
@@ -86,6 +91,9 @@ else()
 
   add_executable(traversal-tests
     test-traversals.cxx)
+
+  add_executable(scan-tests
+    test-scan.cxx)
 
 endif()
 
@@ -118,6 +126,12 @@ add_test(
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
 
 target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
+add_test(
+    NAME scan-test
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan-tests>)
+
+target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 target_link_libraries(CPUtraversal-test.exe RAJA bis)
 target_link_libraries(CPUreduce-test.exe RAJA bis)
