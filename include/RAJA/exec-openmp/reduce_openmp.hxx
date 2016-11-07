@@ -111,10 +111,8 @@ public:
   ~ReduceMin<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp critical
-      {
-        parent->min(val);
-      }
+#pragma omp atomic
+      parent->val = RAJA_MIN(parent->val, val);
     }
   }
 
@@ -296,10 +294,8 @@ public:
   ~ReduceMax<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp critical
-      {
-          parent->max(val);
-      }
+#pragma omp atomic
+      parent->val = RAJA_MAX(parent->val, val);
     }
   }
 
@@ -483,10 +479,8 @@ public:
   ~ReduceSum<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp critical
-      {
-        *parent += val;
-      }
+#pragma omp atomic
+      *parent += val;
     }
   }
 
