@@ -36,7 +36,7 @@ matrix:
          packages:
            - g++-6
      env:
-         - COMPILER=g++-6
+         - COMPILER=g++-6 
          - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS='-Wall -Wextra -Werror'"
    - compiler: clang-3.6
      addons:
@@ -78,7 +78,6 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - echo "cmake -DCMAKE_CXX_COMPILER=$COMPILER ${CMAKE_EXTRA_FLAGS} ../"
   - cmake -DCMAKE_CXX_COMPILER="$COMPILER" ${CMAKE_EXTRA_FLAGS} ../
   - make -j
   - make test # currently does nothing, this is how testing should be done
