@@ -1,9 +1,6 @@
 sudo: required
 dist: trusty
 language: cpp
-env:
-  global:
-    secure: kcpn6LpbDRcTV9jUizxYMesHm8fjxc7wmoAauLye44VxSyRzdHa2wRQ/xdK3VFpl2QwWhFM8MvwdANuAzTdMt6Id6cWJ7+LC0sv+A/lT2reGRKxth76Nq2hfWlu/z9rTCkHNteoROGvUcdTG3OtWNXL5jNUq51FDHazRm1Lsww/pXfVQ68C4+7VqgCrgBLpo1uIJbOB7QADXdjx9A2kO/0URNxJAOc5glCUMAn6GwbN3zTlXGNDURaWM3GC5UnHPnwGbQ0Xkuf4qjW/mZKVxoGcVYrKdlB6wNxe6esj63NQVirFa0RPV3MzwsnHFiD5nqWMrA0cdCxr9PuZxkldRM+9Env9sluh8nNu9yMDejLaxP1UdbDS/1VmWPbGt/Git6/xb+/TCYJvxnC+2yzOBL/UZwbI/R/DJ2ulJJfYBKcM/ToHdrevd9YcZOAd2C8z4qzPSNNkJ0YpM50CLvlBmVzOwzEBDgfvuY+Oi0UdLexaTxCbfx9DtS1UTwetO4u0Uoe5QXytqzV7TEHUJERsz/dZIxqem/L5dAqtBOoD6bYbqjnIrPxQC6LJGudU7NjydNqXw4VNuh1IY/cu8emOAe6z9ACYyElzMbVN6pztDZia4Ts2nTHPF9pcWAxU4yHRzUICrqu98CioXlboyfjMcCDvPZWf4b1yfleS16beJmcA=
 matrix:
   include:
   - compiler: gcc-4
