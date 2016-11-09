@@ -64,7 +64,7 @@ void runBasicForallTest(const string& policy,
   // Generate reference result to check correctness.
   // Note: Reference does not use RAJA!!!
   //
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_array[is_indices[i]] =
         in_array[is_indices[i]] * in_array[is_indices[i]];
   }
@@ -195,7 +195,7 @@ void runBasicForall_IcountTest(const string& policy,
   // Generate reference result to check correctness.
   // Note: Reference does not use RAJA!!!
   //
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_array[i] = in_array[is_indices[i]] * in_array[is_indices[i]];
   }
 
@@ -484,7 +484,7 @@ int main(int argc, char* argv[])
   });
 
   RAJAVec<Index_type> ref_even_indices;
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     Index_type idx = is_indices[i];
     if (idx % 2 == 0) ref_even_indices.push_back(idx);
   }
@@ -510,7 +510,7 @@ int main(int argc, char* argv[])
   });
 
   RAJAVec<Index_type> ref_lt300_indices;
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     Index_type idx = is_indices[i];
     if (idx < 300) ref_lt300_indices.push_back(idx);
   }

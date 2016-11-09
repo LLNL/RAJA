@@ -33,7 +33,7 @@ protected:
       ref_array[i] = 0.0;
     }
 
-    for (RAJA::Index_type i = 0; i < is_indices.size(); ++i) {
+    for (size_t i = 0; i < is_indices.size(); ++i) {
       ref_array[is_indices[i]] =
           in_array[is_indices[i]] * in_array[is_indices[i]];
     }

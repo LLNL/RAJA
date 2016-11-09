@@ -231,7 +231,6 @@ template <typename POLICY, typename BODY, typename... PARGS>
 RAJA_INLINE void forallN_policy(ForallN_Tile_Tag, BODY body, PARGS... pargs)
 {
   typedef typename POLICY::NextPolicy NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
   // Extract the list of tiling policies from the policy
   using TilePolicy = typename POLICY::TilePolicy;

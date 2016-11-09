@@ -664,7 +664,7 @@ void runBasicSumReductionTest(const string& policy,
   //
   Real_type ref_sum = 0.0;
 
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_sum += in_array[is_indices[i]];
   }
 
