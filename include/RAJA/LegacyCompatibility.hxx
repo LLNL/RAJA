@@ -327,7 +327,7 @@ struct get_offset
 template <size_t index>
 struct get_arg_at {
   template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& first,
+  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&&,
                                                            Rest&&... rest)
       -> decltype(VarOps::forward<
                   typename VarOps::get_type_at<index - 1, Rest...>::type>(
