@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -428,7 +429,7 @@ void runLTimesTests(Index_type num_moments,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[])
+int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
 {
   ///////////////////////////////////////////////////////////////////////////
   //

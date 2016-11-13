@@ -20,6 +20,7 @@
 #include <string>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -174,7 +175,7 @@ void runForallTests(unsigned ibuild,
 template <typename ISET_POLICY_T>
 void runBasicForall_IcountTest(const string& policy,
                                Real_ptr in_array,
-                               Index_type alen,
+                               Index_type RAJA_NOT_USED(alen),
                                const IndexSet& iset,
                                const RAJAVec<Index_type>& is_indices)
 {
@@ -302,7 +303,8 @@ void runForall_IcountTests(unsigned ibuild,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.

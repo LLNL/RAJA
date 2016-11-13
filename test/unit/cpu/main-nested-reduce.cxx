@@ -15,7 +15,9 @@
 #include <stdio.h>
 #include "RAJA/RAJA.hxx"
 
-int main(int argc, char *argv[])
+#include "RAJA/internal/defines.hxx"
+
+int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
 {
   int run = 0;
   int passed = 0;

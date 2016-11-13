@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -655,7 +656,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
 template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
-                              Index_type alen,
+                              Index_type RAJA_NOT_USED(alen),
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
@@ -786,7 +787,8 @@ void runSumReduceTests(Real_ptr in_array,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.
