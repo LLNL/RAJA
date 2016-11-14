@@ -62,7 +62,9 @@ void runBasicMinReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  (void) posix_memalign((void**)&test_array, 
+                        DATA_ALIGN, 
+                        alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -209,7 +211,9 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  (void) posix_memalign((void**)&test_array, 
+                        DATA_ALIGN, 
+                        alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -361,7 +365,9 @@ void runBasicMaxReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  (void) posix_memalign((void**)&test_array, 
+                        DATA_ALIGN, 
+                        alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -509,7 +515,9 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  (void) posix_memalign((void**)&test_array, 
+                        DATA_ALIGN, 
+                        alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -830,7 +838,9 @@ int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
   // Allocate "parent" array for traversal tests and initialize to...
   //
   Real_ptr parent;
-  posix_memalign((void**)&parent, DATA_ALIGN, array_length * sizeof(Real_type));
+  (void) posix_memalign((void**)&parent, 
+                        DATA_ALIGN, 
+                        array_length * sizeof(Real_type));
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);
