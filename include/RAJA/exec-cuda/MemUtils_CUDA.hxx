@@ -66,7 +66,7 @@ namespace RAJA
  * \def RAJA_CUDA_MAX_NUM_BLOCKS
  * Maximum number of blocks that RAJA will launch
  */ 
-#define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
+#define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 1024)
 
 /*!
  * \def RAJA_CUDA_REDUCE_BLOCK_LENGTH

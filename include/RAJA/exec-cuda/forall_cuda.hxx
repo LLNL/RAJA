@@ -127,8 +127,8 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
   auto body = loop_body;
 
   Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
-  Index_type numThreads = HIDDEN::getGlobalNumThreads_3D_3D();
-  for (; ii < length; ii += numThreads) {
+
+  if (ii < length) {
     body(idx[ii]);
   }
 }
@@ -152,8 +152,8 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
   auto body = loop_body;
 
   Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
-  Index_type numThreads = HIDDEN::getGlobalNumThreads_3D_3D();
-  for (; ii < length; ii += numThreads) {
+
+  if (ii < length) {
     body(ii + icount, idx[ii]);
   }
 }
