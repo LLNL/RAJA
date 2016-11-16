@@ -203,9 +203,9 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_SIMD  // TODO: Define this...
 
 
-#elif defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC)
 //
-// Configuration options for xlc v12 compiler (i.e., bgq/sequoia).
+// Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
