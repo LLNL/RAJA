@@ -237,6 +237,17 @@ struct CudaReductionLocTallyType {
 /*!
  ******************************************************************************
  *
+ * \brief Get the number of active cuda reducer objects.
+ *
+ * \return int number of active cuda reducer objects.
+ *
+ ******************************************************************************
+ */
+int getCudaReducerCount();
+
+/*!
+ ******************************************************************************
+ *
  * \brief Get a valid reduction id, or complain and exit if no valid id is 
  *        available.
  *

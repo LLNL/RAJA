@@ -82,9 +82,29 @@ namespace RAJA
 //////////////////////////////////////////////////////////////////////
 //
 
-// HIDDEN namespace to encapsulate helper functions
-namespace HIDDEN
+// INTERNAL namespace to encapsulate helper functions
+namespace INTERNAL
 {
+
+/*!
+ ******************************************************************************
+ *
+ * \brief calculate global thread index from 1D grid of 1D blocks
+ *
+ ******************************************************************************
+ */
+__device__ __forceinline__ Index_type getGlobalIdx_1D_1D()
+{
+  Index_type blockId  = blockIdx.x;
+  Index_type threadId = blockId * blockDim.x + threadIdx.x;
+  return threadId;
+}
+__device__ __forceinline__ Index_type getGlobalNumThreads_1D_1D()
+{
+  Index_type numThreads = blockDim.x * gridDim.x;
+  return numThreads;
+}
+
 /*!
  ******************************************************************************
  *
@@ -108,7 +128,7 @@ __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
   return numThreads;
 }
 
-} // end HIDDEN namespace for helper functions
+} // end INTERNAL namespace for helper functions
 
 
 /*!
@@ -123,10 +143,9 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
                                    Index_type length)
 {
-
   auto body = loop_body;
 
-  Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
+  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
 
   if (ii < length) {
     body(idx[ii]);
@@ -148,10 +167,9 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           Index_type length,
                                           Index_type icount)
 {
-
   auto body = loop_body;
 
-  Index_type ii = HIDDEN::getGlobalIdx_3D_3D();
+  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
 
   if (ii < length) {
     body(ii + icount, idx[ii]);
@@ -179,14 +197,17 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
+  Index_type max_step_size = (getCudaReducerCount() > 0) ?
+                                  BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
+                                  : total_len;
+
   RAJA_FT_BEGIN;
 
   for ( Index_type step_size, offset = 0;
         offset < total_len;
         offset += step_size ) {
 
-    step_size = RAJA_MIN( total_len - offset,
-                          BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS );
+    step_size = RAJA_MIN( total_len - offset, max_step_size );
 
     auto begin = first_begin + offset;
     auto end = begin + step_size;
@@ -220,14 +241,17 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
+  Index_type max_step_size = (getCudaReducerCount() > 0) ?
+                                  BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
+                                  : total_len;
+
   RAJA_FT_BEGIN;
 
   for ( Index_type step_size, offset = 0;
         offset < total_len;
         offset += step_size ) {
 
-    step_size = RAJA_MIN( total_len - offset,
-                          BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS );
+    step_size = RAJA_MIN( total_len - offset, max_step_size );
 
     auto begin = first_begin + offset;
     auto end = begin + step_size;
