@@ -16,7 +16,7 @@
 
 #include "RAJA/RAJA.hxx"
 
-#define TEST_VEC_LEN 1024 * 1024
+#define TEST_VEC_LEN 1024 * 1024 * 6
 
 using namespace RAJA;
 using namespace std;
