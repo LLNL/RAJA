@@ -197,7 +197,7 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
-  Index_type max_step_size = (getCudaReducerCount() > 0) ?
+  Index_type max_step_size = (getCudaMemblockUsedCount() > 0) ?
                                   BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
                                   : total_len;
 
@@ -241,7 +241,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
-  Index_type max_step_size = (getCudaReducerCount() > 0) ?
+  Index_type max_step_size = (getCudaMemblockUsedCount() > 0) ?
                                   BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
                                   : total_len;
 

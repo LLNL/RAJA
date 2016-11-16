@@ -72,7 +72,16 @@ namespace RAJA
 
 namespace
 {
-  int s_cuda_reducer_count = 0;
+  /*!
+   * \brief Number of currently active cuda reduction objects
+   */
+  int s_cuda_reducer_active_count = 0;
+
+  /*!
+   * \brief Number of cuda memblocks currently being used.
+   */
+  int s_cuda_memblock_used_count = 0;
+
   /*!
    * \brief Static array used to keep track of which unique ids
    * for CUDA reduction objects are used and which are not.
@@ -195,9 +204,21 @@ namespace
 *
 *******************************************************************************
 */
-int getCudaReducerCount()
+int getCudaReducerActiveCount()
 {
-  return s_cuda_reducer_count;
+  return s_cuda_reducer_active_count;
+}
+
+/*
+*******************************************************************************
+*
+* Return number of active cuda memblocks.
+*
+*******************************************************************************
+*/
+int getCudaMemblockUsedCount()
+{
+  return s_cuda_memblock_used_count;
 }
 
 /*
@@ -213,7 +234,8 @@ int getCudaReductionId()
   static int first_time_called = true;
 
   if (first_time_called) {
-    s_cuda_reducer_count = 0;
+    s_cuda_reducer_active_count = 0;
+    s_cuda_memblock_used_count = 0;
 
     for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
       s_cuda_reduction_id_used[id] = false;
@@ -233,7 +255,7 @@ int getCudaReductionId()
     exit(1);
   }
 
-  s_cuda_reducer_count++;
+  s_cuda_reducer_active_count++;
   s_cuda_reduction_id_used[id] = true;
 
   return id;
@@ -249,9 +271,12 @@ int getCudaReductionId()
 void releaseCudaReductionId(int id)
 {
   if (id < RAJA_MAX_REDUCE_VARS) {
-    s_cuda_reducer_count--;
+    s_cuda_reducer_active_count--;
     s_cuda_reduction_id_used[id] = false;
-    s_cuda_reduction_memblock_used[id] = false;
+    if (s_cuda_reduction_memblock_used[id]) {
+      s_cuda_memblock_used_count--;
+      s_cuda_reduction_memblock_used[id] = false;
+    }
   }
 }
 
@@ -277,6 +302,7 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
     atexit(freeCudaReductionMemBlock);
   }
 
+  s_cuda_memblock_used_count++;
   s_cuda_reduction_memblock_used[id] = true;
 
   *device_memblock = &(s_cuda_reduction_mem_block[id]);
@@ -420,7 +446,7 @@ void beforeCudaKernelLaunch()
 {
   s_raja_cuda_forall_level++;
   if (s_raja_cuda_forall_level == 1) {
-    if (s_cuda_reducer_count > 0) {
+    if (s_cuda_reducer_active_count > 0) {
       s_shared_memory_amount_total = 0;
       for(int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
         s_shared_memory_offsets[i] = -1;
@@ -553,7 +579,7 @@ int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 */
 int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 {
-  if (s_cuda_reducer_count > 0) {
+  if (s_cuda_reducer_active_count > 0) {
     int launch_num_blocks = 
         launchGridDim.x * launchGridDim.y * launchGridDim.z;
 
