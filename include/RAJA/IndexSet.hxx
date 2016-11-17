@@ -169,6 +169,16 @@ public:
   bool push_front(const BaseSegment& segment);
 
   ///
+  /// Move segment to back end of index set.
+  ///
+  bool push_back(BaseSegment&& segment);
+
+  ///
+  /// Move segment to front end of index set.
+  ///
+  bool push_front(BaseSegment&& segment);
+
+  ///
   /// Return total length of index set; i.e., sum of lengths
   /// of all segments.
   ///
@@ -396,9 +406,15 @@ private:
 
   ///
   /// Helper function to create a copy of a given segment given a
-  /// pointer to the BaseSegment.
+  /// reference to the BaseSegment.
   ///
   BaseSegment* createSegmentCopy(const BaseSegment& segment) const;
+
+  ///
+  /// Helper function to create a given segment by moving from a
+  /// reference to the BaseSegment.
+  ///
+  BaseSegment* createSegmentCopy(BaseSegment&& segment) const;
 
   ///
   /// Total length of all IndexSet segments.

@@ -169,6 +169,31 @@ bool IndexSet::push_front(const BaseSegment& segment)
   return retval;
 }
 
+bool IndexSet::push_back(BaseSegment&& segment)
+{
+  bool retval = false;
+
+  if (isValidSegmentType(&segment)) {
+    BaseSegment* new_seg = createSegmentCopy(std::move(segment));
+    retval = push_back_private(new_seg, true /* owns segment */);
+    if (!retval) delete new_seg;
+  }
+
+  return retval;
+}
+bool IndexSet::push_front(BaseSegment&& segment)
+{
+  bool retval = false;
+
+  if (isValidSegmentType(&segment)) {
+    BaseSegment* new_seg = createSegmentCopy(std::move(segment));
+    retval = push_front_private(new_seg, true /* owns segment */);
+    if (!retval) delete new_seg;
+  }
+
+  return retval;
+}
+
 /*
 *************************************************************************
 *
@@ -450,6 +475,39 @@ BaseSegment* IndexSet::createSegmentCopy(const BaseSegment& segment) const
     case _ListSeg_: {
       const ListSegment& seg = static_cast<const ListSegment&>(segment);
       new_seg = new ListSegment(seg);
+      break;
+    }
+
+    default: {
+    }
+
+  }  // switch ( segtype )
+
+  return new_seg;
+}
+
+BaseSegment* IndexSet::createSegmentCopy(BaseSegment&& segment) const
+{
+  BaseSegment* new_seg = 0;
+
+  switch (segment.getType()) {
+    case _RangeSeg_: {
+      RangeSegment&& seg = static_cast<RangeSegment&&>(segment);
+      new_seg = new RangeSegment(std::move(seg));
+      break;
+    }
+
+#if 0  // RDH RETHINK
+      case _RangeStrideSeg_ : {
+         RangeStrideSegment&& seg = static_cast<RangeStrideSegment&&>(segment);
+         new_seg = new RangeStrideSegment(std::move(seg)); 
+         break;
+      }
+#endif
+
+    case _ListSeg_: {
+      ListSegment&& seg = static_cast<ListSegment&&>(segment);
+      new_seg = new ListSegment(std::move(seg));
       break;
     }
 

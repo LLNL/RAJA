@@ -114,6 +114,33 @@ public:
   ListSegment& operator=(const ListSegment& rhs);
 
   ///
+  /// Move-constructor for list segment.
+  ///
+  ListSegment(ListSegment&& other)
+    : BaseSegment(std::move(other)),
+      m_indx(other.m_indx),
+      m_len(other.m_len),
+      m_indx_own(other.m_indx_own)
+  {
+    other.m_indx = nullptr;
+  }
+
+  ///
+  /// Move-assignment for list segment.
+  ///
+  ListSegment& operator=(ListSegment&& rhs)
+  {
+    if (this != &rhs) {
+      BaseSegment::operator=(std::move(rhs));
+      m_indx = rhs.m_indx;
+      m_len = rhs.m_len;
+      m_indx_own = rhs.m_indx_own;
+      rhs.m_indx = nullptr;
+    }
+    return *this;
+  }
+
+  ///
   /// Destroy segment including its contents.
   ///
   ~ListSegment();
