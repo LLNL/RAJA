@@ -61,6 +61,7 @@
 
 #include <algorithm>
 #include <iosfwd>
+#include <type_traits>
 
 namespace RAJA
 {
@@ -240,12 +241,19 @@ ListSegment::ListSegment(const T& indx)
     cudaErrchk(cudaMallocManaged((void**)&m_indx,
                                  m_len * sizeof(Index_type),
                                  cudaMemAttachGlobal));
-    cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
-    cudaErrchk(cudaDeviceSynchronize());
+    using T_TYPE = typename std::remove_reference<decltype(indx[0])>::type;
+    if (sizeof(T_TYPE) == sizeof(Index_type) && std::is_integral<T_TYPE>::value
+        && std::is_same<std::vector<T_TYPE>, typename std::decay<T>::type>::value) {
+      // this will bitwise copy signed or unsigned integral types
+      cudaErrchk(cudaMemcpy(m_indx, &indx[0], m_len * sizeof(Index_type), cudaMemcpyDefault));
+    } else {
+      cudaErrchk(cudaDeviceSynchronize());
+      std::copy(indx.begin(), indx.end(), m_indx);
+    }
 #else
     m_indx = new Index_type[indx.size()];
-#endif
     std::copy(indx.begin(), indx.end(), m_indx);
+#endif
     m_indx_own = Owned;
   }
 }
