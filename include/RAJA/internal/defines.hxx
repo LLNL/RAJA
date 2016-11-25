@@ -25,7 +25,7 @@
 
 /*!
  *******************************************************************************
- * \def RAJA_NOT_USED(x)
+ * \def RAJA_USED_ARG(x)
  *
  * \brief Macro for silencing compiler warnings in methods with unused
  *  arguments.
@@ -34,19 +34,19 @@
  *
  * \code
  *
- *  void my_function(int x, int RAJA_NOT_USED(y))
+ *  void my_function(int x, int RAJA_UNUSED_ARG(y))
  *  {
- *    // my implementation
+ *    // my implementation that doesn't use 'y'
  *  }
  *
  * \endcode
  *******************************************************************************
  */
-#define RAJA_NOT_USED(x)
+#define RAJA_UNUSED_ARG(x)
 
 /*!
  *******************************************************************************
- * \def RAJA_DEBUG_VAR(x)
+ * \def RAJA_UNUSED_VAR(x)
  *
  * \brief Macro used to silence compiler warnings about variables
  *        that are defined but not used.
@@ -57,15 +57,14 @@
  * \code
  *
  *  double myVar = ...
- *  RAJA_DEBUG_VAR(myVar); 
- *  
  *                       
- *  cassert(myVar > 0)  // variable used in an assertion
+ *  cassert(myVar > 0)  // variable used in assertion that may be compiled out
+ *  RAJA_UNUSED_ARG(myVar); 
  *
  * \endcode
  *******************************************************************************
  */
-#define ATK_DEBUG_VAR(_x)   static_cast<void>(_x)
+#define RAJA_UNUSED_VAR(_x)   static_cast<void>(_x)
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)

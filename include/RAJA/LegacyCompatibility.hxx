@@ -103,7 +103,7 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
 };
 
 template <typename Op, typename Arg1>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& RAJA_NOT_USED(operation), Arg1&& arg) ->
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& RAJA_UNUSED_ARG(operation), Arg1&& arg) ->
     typename foldl_impl<Op, Arg1>::Ret
 {
   return forward<Arg1&&>(arg);
@@ -327,7 +327,7 @@ struct get_offset
 template <size_t index>
 struct get_arg_at {
   template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& RAJA_NOT_USED(first),
+  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& RAJA_UNUSED_ARG(first),
                                                            Rest&&... rest)
       -> decltype(VarOps::forward<
                   typename VarOps::get_type_at<index - 1, Rest...>::type>(
@@ -344,7 +344,7 @@ template <>
 struct get_arg_at<0> {
   template <typename First, typename... Rest>
   RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& first,
-                                                           Rest&&... RAJA_NOT_USED(rest))
+                                                           Rest&&... RAJA_UNUSED_ARG(rest))
       -> decltype(VarOps::forward<First>(first))
   {
     return VarOps::forward<First>(first);

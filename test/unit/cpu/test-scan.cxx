@@ -87,7 +87,7 @@ template <typename Data,
           typename Storage,
           typename Fn,
           typename T = typename std::remove_pointer<Data>::type::type>
-void compareInclusive(Data original, Storage data, Fn function, T RAJA_NOT_USED(init))
+void compareInclusive(Data original, Storage data, Fn function, T RAJA_UNUSED_ARG(init))
 {
   auto in = original->ibegin();
   auto out = data->obegin();

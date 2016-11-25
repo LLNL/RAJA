@@ -179,7 +179,7 @@ void runForallTests(unsigned ibuild,
 template <typename ISET_POLICY_T>
 void runBasicForall_IcountTest(const string& policy,
                                Real_ptr in_array,
-                               Index_type RAJA_NOT_USED(alen),
+                               Index_type RAJA_UNUSED_ARG(alen),
                                const IndexSet& iset,
                                const RAJAVec<Index_type>& is_indices)
 {
@@ -310,7 +310,7 @@ void runForall_IcountTests(unsigned ibuild,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.

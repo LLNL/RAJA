@@ -664,7 +664,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
 template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
-                              Index_type RAJA_NOT_USED(alen),
+                              Index_type RAJA_UNUSED_ARG(alen),
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
@@ -796,7 +796,7 @@ void runSumReduceTests(Real_ptr in_array,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int RAJA_NOT_USED(argc), char** RAJA_NOT_USED(argv))
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.

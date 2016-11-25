@@ -78,7 +78,7 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
                        Iter end,
                        BinFn f,
-                       T RAJA_NOT_USED(v))
+                       T RAJA_UNUSED_ARG(v))
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
@@ -119,7 +119,7 @@ void inclusive(const ::RAJA::seq_exec&,
                Iter end,
                OutIter out,
                BinFn f,
-               T RAJA_NOT_USED(v))
+               T RAJA_UNUSED_ARG(v))
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
