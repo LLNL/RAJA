@@ -61,8 +61,8 @@ void runBasicMinReductionTest(const string& policy,
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  int err_val; 
+  Real_ptr test_array = 0;
+  int err_val = 0; 
   err_val = posix_memalign((void**)&test_array, 
                            DATA_ALIGN, 
                            alen * sizeof(Real_type));
@@ -212,8 +212,8 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  int err_val; 
+  Real_ptr test_array = 0;
+  int err_val = 0; 
   err_val = posix_memalign((void**)&test_array, 
                            DATA_ALIGN, 
                            alen * sizeof(Real_type));
@@ -368,8 +368,8 @@ void runBasicMaxReductionTest(const string& policy,
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  int err_val; 
+  Real_ptr test_array = 0;
+  int err_val = 0; 
   err_val = posix_memalign((void**)&test_array, 
                            DATA_ALIGN, 
                            alen * sizeof(Real_type));
@@ -520,8 +520,8 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  int err_val; 
+  Real_ptr test_array = 0;
+  int err_val = 0; 
   err_val = posix_memalign((void**)&test_array, 
                            DATA_ALIGN, 
                            alen * sizeof(Real_type));
@@ -845,8 +845,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   // Allocate "parent" array for traversal tests and initialize to...
   //
-  Real_ptr parent;
-  int err_val; 
+  Real_ptr parent = 0;
+  int err_val = 0; 
   err_val = posix_memalign((void**)&parent, 
                            DATA_ALIGN, 
                            array_length * sizeof(Real_type));
