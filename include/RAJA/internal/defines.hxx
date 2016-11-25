@@ -59,7 +59,7 @@
  *  double myVar = ...
  *                       
  *  cassert(myVar > 0)  // variable used in assertion that may be compiled out
- *  RAJA_UNUSED_ARG(myVar); 
+ *  RAJA_UNUSED_VAR(myVar); 
  *
  * \endcode
  *******************************************************************************

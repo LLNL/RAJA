@@ -53,12 +53,14 @@ void runBasicForallTest(const string& policy,
 {
   Real_ptr test_array;
   Real_ptr ref_array;
-  (void) posix_memalign((void**)&test_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
-  (void) posix_memalign((void**)&ref_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
+  int err_val;
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  err_val = posix_memalign((void**)&ref_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < alen; ++i) {
     test_array[i] = 0.0;
