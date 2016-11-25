@@ -51,9 +51,9 @@ void runBasicForallTest(const string& policy,
                         const IndexSet& iset,
                         const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  Real_ptr ref_array;
-  int err_val;
+  Real_ptr test_array = 0;
+  Real_ptr ref_array = 0;
+  int err_val = 0;
   err_val = posix_memalign((void**)&test_array, 
                            DATA_ALIGN, 
                            alen * sizeof(Real_type));
@@ -186,9 +186,9 @@ void runBasicForall_IcountTest(const string& policy,
                                const RAJAVec<Index_type>& is_indices)
 {
   Index_type test_alen = is_indices.size();
-  Real_ptr test_array;
-  Real_ptr ref_array;
-  int err_val;
+  Real_ptr test_array = 0;
+  Real_ptr ref_array = 0;
+  int err_val = 0;
   err_val = posix_memalign((void**)&test_array,
                            DATA_ALIGN,
                            test_alen * sizeof(Real_type));
@@ -440,8 +440,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   // Allocate "parent" array for traversal tests and initialize to...
   //
-  Real_ptr parent;
-  int err_val;
+  Real_ptr parent = 0;
+  int err_val = 0;
   err_val = posix_memalign((void**)&parent, 
                            DATA_ALIGN, 
                            array_length * sizeof(Real_type));
