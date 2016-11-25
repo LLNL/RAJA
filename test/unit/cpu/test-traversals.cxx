@@ -14,15 +14,17 @@ protected:
 
     RAJA::getIndices(is_indices, index_sets_[0]);
 
-    (void) posix_memalign((void **)&test_array,
-                          RAJA::DATA_ALIGN,
-                          array_length * sizeof(RAJA::Real_type));
-    (void) posix_memalign((void **)&ref_array,
-                          RAJA::DATA_ALIGN,
-                          array_length * sizeof(RAJA::Real_type));
-    (void) posix_memalign((void **)&in_array,
-                          RAJA::DATA_ALIGN,
-                          array_length * sizeof(RAJA::Real_type));
+    int err_val;
+    err_val = posix_memalign((void **)&test_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    err_val = posix_memalign((void **)&ref_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    err_val = posix_memalign((void **)&in_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    RAJA_UNUSED_VAR(err_val);
 
     for (RAJA::Index_type i = 0; i < array_length; ++i) {
       in_array[i] = RAJA::Real_type(rand() % 65536);

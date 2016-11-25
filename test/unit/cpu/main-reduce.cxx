@@ -62,9 +62,11 @@ void runBasicMinReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  (void) posix_memalign((void**)&test_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
+  int err_val; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values positve
@@ -211,9 +213,11 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  (void) posix_memalign((void**)&test_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
+  int err_val; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values positve
@@ -365,9 +369,11 @@ void runBasicMaxReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  (void) posix_memalign((void**)&test_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
+  int err_val; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values negative
@@ -515,9 +521,11 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  (void) posix_memalign((void**)&test_array, 
-                        DATA_ALIGN, 
-                        alen * sizeof(Real_type));
+  int err_val; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values negative
@@ -838,9 +846,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   // Allocate "parent" array for traversal tests and initialize to...
   //
   Real_ptr parent;
-  (void) posix_memalign((void**)&parent, 
-                        DATA_ALIGN, 
-                        array_length * sizeof(Real_type));
+  int err_val; 
+  err_val = posix_memalign((void**)&parent, 
+                           DATA_ALIGN, 
+                           array_length * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);
