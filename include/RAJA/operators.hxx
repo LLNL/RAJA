@@ -56,6 +56,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hxx"
+
 #include "RAJA/internal/defines.hxx"
 
 #include <cfloat>
@@ -525,12 +526,12 @@ struct identity : public detail::unary_function<Orig, Ret> {
 
 template <typename T, typename U>
 struct project1st : public detail::binary_function<T, U, T> {
-  RAJA_HOST_DEVICE T operator()(const T& lhs, const U& rhs) { return lhs; }
+  RAJA_HOST_DEVICE T operator()(const T& lhs, const U& RAJA_UNUSED_ARG(rhs)) { return lhs; }
 };
 
 template <typename T, typename U = T>
 struct project2nd : public detail::binary_function<T, U, U> {
-  RAJA_HOST_DEVICE U operator()(const T& lhs, const U& rhs) { return rhs; }
+  RAJA_HOST_DEVICE U operator()(const T& RAJA_UNUSED_ARG(lhs), const U& rhs) { return rhs; }
 };
 
 // Type Traits
