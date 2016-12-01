@@ -260,7 +260,7 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
     Index_type gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
     forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
-                             >>>(body, std::move(begin), len, icount);
+                             >>>(body, std::move(begin), len, icount + offset);
   }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
