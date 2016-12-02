@@ -47,6 +47,7 @@ endif()
 
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
+set_source_files_properties(ReduceMin.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(reducemin.exe
   ReduceMin.cxx)
 
@@ -54,18 +55,21 @@ add_test(
     NAME reducemin
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemin.exe>)
 
+set_source_files_properties(ReduceMax.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(reducemax.exe
   ReduceMax.cxx)
 add_test(
     NAME reducemax
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemax.exe>)
 
+set_source_files_properties(ReduceSum.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(reducesum.exe
   ReduceSum.cxx)
 add_test(
     NAME reducesum
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducesum.exe>)
 
+set_source_files_properties(Traversal.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(traversal.exe
   Traversal.cxx)
 add_test(
@@ -73,6 +77,7 @@ add_test(
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal.exe>)
 
 if(RAJA_ENABLE_OPENMP)
+  set_source_files_properties(Nested.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
     cuda_add_executable(nested.exe
       Nested.cxx)
     add_test(
@@ -81,18 +86,21 @@ if(RAJA_ENABLE_OPENMP)
     target_link_libraries(nested.exe RAJA)
 endif()
 
+set_source_files_properties(ReduceMinLoc.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(reduceminloc.exe
   ReduceMinLoc.cxx)
 add_test(
     NAME reduceminloc
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reduceminloc.exe>)
 
+set_source_files_properties(ReduceMaxLoc.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(reducemaxloc.exe
   ReduceMaxLoc.cxx)
 add_test(
     NAME reducemaxloc
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemaxloc.exe>)
 
+set_source_files_properties(test-scan.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 cuda_add_executable(scan.exe
   test-scan.cxx)
 add_test(

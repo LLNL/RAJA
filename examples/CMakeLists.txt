@@ -43,6 +43,9 @@
 
 
 if (RAJA_ENABLE_CUDA)
+  set_source_files_properties( pi.cxx 
+    PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+
     cuda_add_executable(raja-pi
       pi.cxx)
 else ()

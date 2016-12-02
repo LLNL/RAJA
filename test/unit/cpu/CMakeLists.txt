@@ -46,27 +46,36 @@ if (NOT RAJA_ENABLE_NESTED)
 endif()
 
 if (RAJA_ENABLE_CUDA)
+  set_source_files_properties(buildIndexSet.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_library(bis buildIndexSet.cxx)
+
+  set_source_files_properties(main-traversal.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(CPUtraversal-test.exe
     main-traversal.cxx)
 
+  set_source_files_properties(main-reduce.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(CPUreduce-test.exe
     main-reduce.cxx)
 
+  set_source_files_properties(main-nested.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(CPUnested-test.exe
     main-nested.cxx)
 
   if(RAJA_ENABLE_OPENMP)
+      set_source_files_properties(main-nested-reduce.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
       cuda_add_executable(CPUnested_reduce-test.exe
         main-nested-reduce.cxx)
   endif()
 
+  set_source_files_properties(test-indexsets.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(indexset-tests
     test-indexsets.cxx)
 
+  set_source_files_properties(test-traversals.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(traversal-tests
     test-traversals.cxx)
 
+  set_source_files_properties(test-scan.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(scan-tests
     test-scan.cxx)
 
