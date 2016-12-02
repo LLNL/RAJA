@@ -439,7 +439,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other)
   {
     *this = other;
     m_is_copy = true;
