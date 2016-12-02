@@ -3,14 +3,26 @@ dist: trusty
 language: cpp
 matrix:
   include:
-  - compiler: gcc-4
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-4.9
-    env: COMPILER=g++-4.9
+   - compiler: gcc-4
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-4.9
+     env: 
+         - COMPILER=g++-4.9
+         - WARN="-DRAJA_ENABLE_WARNINGS=On"
+   - compiler: gcc-5
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=g++-5
+         - WARN="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: gcc-4+coverage
     addons:
       apt:
@@ -20,37 +32,42 @@ matrix:
         - g++-4.9
     env: 
         - COMPILER=g++-4.9 
+        - WARN=""
         - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
         - COVERAGE=t
-  - compiler: gcc-6
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-6
-    env: COMPILER=g++-6
-  - compiler: clang-3.7
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-    - DOWNLOAD=http://llvm.org/releases/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-  - compiler: clang-3.8
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
-    - DOWNLOAD=http://llvm.org/releases/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+   - compiler: gcc-6
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-6
+     env: 
+         - COMPILER=g++-6
+         - WARN=""
+   - compiler: clang-3.7
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - DOWNLOAD=http://llvm.org/releases/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+         - WARN=""
+   - compiler: clang-3.8
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-5
+     env: 
+         - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+         - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
+         - DOWNLOAD=http://llvm.org/releases/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+         - WARN=""
 cache:
   directories:
   - "$HOME/llvm"
@@ -60,10 +77,10 @@ before_install:
   tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ;
   fi
 script:
-- cd $TRAVIS_BUILD_DIR
-- mkdir travis-build && cd travis-build
-- cmake -DCMAKE_CXX_COMPILER="$COMPILER" ${CMAKE_EXTRA_FLAGS} ../
-- make -j
-- make test
+  - cd $TRAVIS_BUILD_DIR
+  - mkdir travis-build && cd travis-build
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" ${CMAKE_EXTRA_FLAGS} $WARN ../
+  - make -j
+  - make test 
 after_success:
     - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
