@@ -117,7 +117,6 @@ RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(idx[k]);
   }
@@ -145,7 +144,6 @@ RAJA_INLINE void forall_Icount(simd_exec,
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(k + icount, idx[k]);
   }

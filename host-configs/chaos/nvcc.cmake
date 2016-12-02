@@ -15,7 +15,7 @@ set(CMAKE_CXX_COMPILER "/usr/apps/gnu/4.9.3/bin/g++" CACHE PATH "")
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Ofast -mavx -finline-functions -finline-limit=20000" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -Ofast -mavx -finline-functions -finline-limit=20000" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -fpermissive" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -Wall -Werror -Wextra" CACHE STRING "")
 
 if(CMAKE_BUILD_TYPE MATCHES Release)
   set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")

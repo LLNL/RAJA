@@ -118,7 +118,7 @@ public:
   void satisfyOne()
   {
     if (m_semaphore_value > 0) {
-      int val = --m_semaphore_value;
+      --m_semaphore_value;
     }
   }
 
