@@ -1,4 +1,4 @@
-RAJA v0.1.0
+RAJA v0.2.0
 ============
 
 [![Build Status](https://travis-ci.org/LLNL/RAJA.svg?branch=develop)](https://travis-ci.org/LLNL/RAJA)
@@ -56,6 +56,15 @@ are not allowed!):
 More details about RAJA configuration options are located in the User 
 Documentation.
 
+Example Applications
+--------------------
+
+The [RAJA-examples](https://github.com/LLNL/RAJA-examples) repository contains three proxy applications that use the RAJA
+programming model. These applications can be built along with the rest of the
+RAJA framework by setting `-DRAJA_ENABLE_APPLICATIONS=On` when running CMake.
+
+When this option is passed to CMake, the RAJA-examples repository is cloned using `git` to the directory `extra/llnl-raja-proxies` in the project root. The example applications will be built using the same configuration that the RAJA library uses.
+
 User Documentation
 -------------------
 
@@ -95,19 +104,20 @@ develop branch into the `master` branch and tag a new release.
 Authors
 -----------
 
-The main RAJA developers are:
+The original developers of RAJA are:
 
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Other contributors include:
+Contributors include:
 
   * David Beckingsale (beckingsale1@llnl.gov)
+  * Jason Burmark (burmark1@llnl.gov)
   * Holger Jones (jones19@llnl.gov)
+  * Will Killian (killian4@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
   * David Poliakoff (poliakoff1@llnl.gov)
   * Tom Scogland (scogland1@llnl.gov)
-
 
 
 Release

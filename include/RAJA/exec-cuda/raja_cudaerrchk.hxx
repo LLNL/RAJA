@@ -59,34 +59,49 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <string>
 #include <iostream>
+#include <string>
 
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-namespace RAJA {
+namespace RAJA
+{
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Utility method used in CUDA operations.
-//
-//////////////////////////////////////////////////////////////////////
-//
-#define cudaErrchk(ans) \
-  { RAJA::cudaAssert((ans), __FILE__, __LINE__); }
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Utility assert method used in CUDA operations to report CUDA
+/// error codes when encountered.
+///
+///////////////////////////////////////////////////////////////////////
+///
+#define cudaErrchk(ans)                          \
+  {                                              \
+    RAJA::cudaAssert((ans), __FILE__, __LINE__); \
+  }
 
 inline void cudaAssert(cudaError_t code,
                        const char *file,
                        int line,
-                       bool abort = true) {
+                       bool abort = true)
+{
   if (code != cudaSuccess) {
     fprintf(
         stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
     if (abort) exit(code);
   }
 }
+
+/*!
+ * \def RAJA_CUDA_CHECK_AND_SYNC(Async)
+ * Macro that checks for errors and synchronizes based on paramater Async.
+ */ 
+#define RAJA_CUDA_CHECK_AND_SYNC(Async) \
+  cudaErrchk(cudaPeekAtLastError()); \
+  if (!Async) { \
+    cudaErrchk(cudaDeviceSynchronize()); \
+  }
 
 }  // closing brace for RAJA namespace
 

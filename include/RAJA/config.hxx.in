@@ -153,6 +153,15 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //     RAJA_SIMD - macro to express SIMD vectorization pragma to force
 //                 loop vectorization
 //
+//     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable alignments
+//
+
+#if defined(RAJA_COMPILER_GNU)
+#define RAJA_ALIGNED_ATTR(N) __attribute__((aligned(N)))
+#else
+#define RAJA_ALIGNED_ATTR(N) alignas(N)
+#endif
+
 
 #if defined(RAJA_COMPILER_ICC)
 //
@@ -194,9 +203,9 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_SIMD  // TODO: Define this...
 
 
-#elif defined(RAJA_COMPILER_XLC12)
+#elif defined(RAJA_COMPILER_XLC)
 //
-// Configuration options for xlc v12 compiler (i.e., bgq/sequoia).
+// Configuration options for xlc compiler (i.e., bgq/sequoia).
 //
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
@@ -223,6 +232,14 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #endif
 
 #define RAJA_SIMD  // TODO: Define this...
+
+#else
+
+#pragma message("RAJA_COMPILER unknown, using default empty macros.")
+
+#define RAJA_INLINE inline
+#define RAJA_ALIGN_DATA(d)
+#define RAJA_SIMD
 
 #endif
 

@@ -62,22 +62,42 @@ if (RAJA_ENABLE_CUDA)
   endif()
 endif()
 
-if (RAJA_ENABLE_CALIPER)
-  find_package(CALIPER)
-  if(CALIPER_FOUND)
-    message(STATUS "CALIPER")
-    include_directories(${caliper_INCLUDE_DIR})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRAJA_USE_CALIPER")
-  endif()
-endif()
-   
+if (RAJA_ENABLE_TESTS)
+  include(ExternalProject)
+  # Set default ExternalProject root directory
+  SET_DIRECTORY_PROPERTIES(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/tpl)
 
-#Used for timing
-find_library(RT_LIBRARY rt)
-if (RT_LIBRARY STREQUAL "RT_LIBRARIES-NOTFOUND")
-  message(WARNING "librt not found, some test applications might not link")
-  set(RT_LIBRARY "" CACHE STRING "timing libraries" FORCE)
+  ExternalProject_Add(
+      googletest
+      GIT_REPOSITORY https://github.com/google/googletest.git
+      GIT_TAG release-1.7.0
+      CMAKE_ARGS                
+          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
+          -DCMAKE_CXX_FLAGS=${CMAKE_CXX_FLAGS}
+      INSTALL_COMMAND ""
+      LOG_DOWNLOAD ON
+      LOG_CONFIGURE ON
+      LOG_BUILD ON)
+
+  ExternalProject_Get_Property(googletest source_dir)
+  include_directories(${source_dir}/include)
+
+  ExternalProject_Get_Property(googletest binary_dir)
+  add_library(gtest      UNKNOWN IMPORTED)
+  add_library(gtest_main UNKNOWN IMPORTED)
+  set_target_properties(gtest PROPERTIES
+    IMPORTED_LOCATION ${binary_dir}/libgtest.a
+  )
+  set_target_properties(gtest_main PROPERTIES
+    IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
+  )
+  add_dependencies(gtest      googletest)
+  add_dependencies(gtest_main googletest)
+
+  # GoogleTest requires threading
+  find_package(Threads)
+
+  enable_testing()
 endif ()
-if (CALIPER_FOUND)
-    set(RT_LIBRARIES "${RT_LIBRARY} ${caliper_LIB_DIR}/libcaliper.so" CACHE STRING "testing libraries" FORCE)
-endif()

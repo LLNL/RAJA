@@ -63,326 +63,33 @@
 
 #include "RAJA/fault_tolerance.hxx"
 
-
-namespace RAJA {
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index ranges.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over index range.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            Index_type begin, Index_type end, 
-            LOOP_BODY loop_body)
+namespace RAJA
 {
-   RAJA_FT_BEGIN ;
 
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over index range with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   Index_type begin, Index_type end,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
-   Index_type loop_end = end - begin;
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, ii+begin );
-   }
-
-   RAJA_FT_END ;
+  auto end = std::end(iter);
+  RAJA_SIMD
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
 }
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range segments. 
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over range segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const RangeSegment& iseg,
-            LOOP_BODY loop_body)
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const simd_exec &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
 {
-   Index_type begin = iseg.getBegin();
-   Index_type end   = iseg.getEnd();
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ++ii ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  RAJA_SIMD
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
+  }
 }
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over index range set object with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const RangeSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type loop_end = iseg.getEnd() - iseg.getBegin();
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, ii+begin );
-   }
-
-   RAJA_FT_END ;
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index ranges with stride.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over index range with stride.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            Index_type begin, Index_type end, 
-            Index_type stride,
-            LOOP_BODY loop_body)
-{  
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over index range with stride with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   Index_type begin, Index_type end,
-                   Index_type stride,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type loop_end = (end-begin)/stride;
-   if ( (end-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over range-stride segment objects.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over range segment object with stride.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const RangeStrideSegment& iseg,
-            LOOP_BODY loop_body)
-{
-   Index_type begin  = iseg.getBegin();
-   Index_type end    = iseg.getEnd();
-   Index_type stride = iseg.getStride();
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = begin ; ii < end ; ii += stride ) {
-      loop_body( ii );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  SIMD iteration over range index set with stride object
- *         with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const RangeStrideSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   Index_type begin = iseg.getBegin();
-   Index_type stride = iseg.getStride();
-   Index_type loop_end = (iseg.getEnd()-begin)/stride;
-   if ( (iseg.getEnd()-begin) % stride != 0 ) loop_end++;
-
-   RAJA_FT_BEGIN ;
-
-RAJA_SIMD
-   for ( Index_type ii = 0 ; ii < loop_end ; ++ii ) {
-      loop_body( ii+icount, begin + ii*stride );
-   }
-
-   RAJA_FT_END ;
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over indirection arrays.
-//
-// NOTE: These operations will not vectorize. We include them here and
-//       force sequential execution for convenience.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  "Fake" SIMD iteration over indices in indirection array.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const Index_type* __restrict__ idx, Index_type len,
-            LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
-/*!
- ******************************************************************************
- *
- * \brief  "Fake" SIMD iteration over indices in indirection array
- *         with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const Index_type* __restrict__ idx, Index_type len,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
-{
-   RAJA_FT_BEGIN ;
-
-#pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+icount, idx[k] );
-   }
-
-   RAJA_FT_END ;
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -403,22 +110,19 @@ void forall_Icount(simd_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall(simd_exec,
-            const ListSegment& iseg,
-            LOOP_BODY loop_body)
+RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type *__restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
 
 /*!
@@ -431,38 +135,34 @@ void forall(simd_exec,
  ******************************************************************************
  */
 template <typename LOOP_BODY>
-RAJA_INLINE
-void forall_Icount(simd_exec,
-                   const ListSegment& iseg,
-                   Index_type icount,
-                   LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(simd_exec,
+                               const ListSegment &iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
 {
-   const Index_type* __restrict__ idx = iseg.getIndex();
-   Index_type len = iseg.getLength();
+  const Index_type *__restrict__ idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
 
-   RAJA_FT_BEGIN ;
+  RAJA_FT_BEGIN;
 
 #pragma novector
-   for ( Index_type k = 0 ; k < len ; ++k ) {
-      loop_body( k+icount, idx[k] );
-   }
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(k + icount, idx[k]);
+  }
 
-   RAJA_FT_END ;
+  RAJA_FT_END;
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// SIMD execution policy does not apply to iteration over index 
+// SIMD execution policy does not apply to iteration over index
 // set segments, only to execution of individual segments. So there
 // are no index set traversal methods in this file.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

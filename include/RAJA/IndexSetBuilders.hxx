@@ -57,19 +57,20 @@
 
 #include "RAJA/int_datatypes.hxx"
 
-namespace RAJA {
+namespace RAJA
+{
 
 class IndexSet;
 
 /*!
  ******************************************************************************
  *
- * \brief Initialize index set with aligned Ranges and List segments from 
+ * \brief Initialize index set with aligned Ranges and List segments from
  *        array of indices with given length.
  *
  *        Specifically, Range segments will be greater than RANGE_MIN_LENGTH
  *        and starting index and length of each range segment will be
- *        multiples of RANGE_ALIGN. These constants are defined in the 
+ *        multiples of RANGE_ALIGN. These constants are defined in the
  *        RAJA config.hxx header file.
  *
  *        Routine does no error-checking on argements and assumes Index_type
@@ -83,15 +84,14 @@ void buildIndexSetAligned(IndexSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length);
 
-
 ////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 //
-// The following methods build "lock-free" index sets.  
-// 
-// Lock-free indexsets are designed to be used with coarse-grained OpenMP 
-// iteration policies.  The "lock-free" part here assumes interactions among 
-// the cell-complex associated with the space being partitioned are "tightly 
+// The following methods build "lock-free" index sets.
+//
+// Lock-free indexsets are designed to be used with coarse-grained OpenMP
+// iteration policies.  The "lock-free" part here assumes interactions among
+// the cell-complex associated with the space being partitioned are "tightly
 // bound".
 //
 ////////////////////////////////////////////////////////////////////////////////
@@ -101,7 +101,7 @@ void buildIndexSetAligned(IndexSet& hiset,
  ******************************************************************************
  *
  * Initialize lock-free "block" index set (planar division).
- * 
+ *
  * The method chunks a fastDim x midDim x slowDim mesh into blocks that can
  * be dependency-scheduled, removing need for lock constructs.
  *
@@ -110,7 +110,9 @@ void buildIndexSetAligned(IndexSet& hiset,
  ******************************************************************************
  */
 void buildLockFreeBlockIndexset(IndexSet& iset,
-                                int fastDim, int midDim, int slowDim);
+                                int fastDim,
+                                int midDim,
+                                int slowDim);
 
 /*
  ******************************************************************************
@@ -124,14 +126,13 @@ void buildLockFreeBlockIndexset(IndexSet& iset,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(IndexSet& iset,
-                                int *domainToRange, int numEntity,
-                                int numRangePerDomain, int numEntityRange,
-                                int *elemPermutation = 0l,
-                                int *ielemPermutation = 0l);
-
-
+                                int const* domainToRange,
+                                int numEntity,
+                                int numRangePerDomain,
+                                int numEntityRange,
+                                int* elemPermutation = 0l,
+                                int* ielemPermutation = 0l);
 
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

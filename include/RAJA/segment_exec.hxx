@@ -5,9 +5,9 @@
  *
  * \brief   Header file providing RAJA segment execution routines.
  *
- *          These help avoid a lot of redundant code in IndexSet 
+ *          These help avoid a lot of redundant code in IndexSet
  *          segment iteration methods.
- * 
+ *
  ******************************************************************************
  */
 
@@ -58,9 +58,8 @@
 
 #include "RAJA/config.hxx"
 
-
-namespace RAJA {
-
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
@@ -71,27 +70,19 @@ namespace RAJA {
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                             LOOP_BODY loop_body)
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
+                                         LOOP_BODY&& loop_body)
 {
-   const BaseSegment* iseg = seg_info->getSegment();
-   SegmentType segtype = iseg->getType();
+  const BaseSegment* iseg = seg_info->getSegment();
+  SegmentType segtype = iseg->getType();
 
-   switch ( segtype ) {
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
-            loop_body
-         );
-         break;
-      }
+  switch (segtype) {
+    case _RangeSeg_: {
+      const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
+      forall<SEG_EXEC_POLICY_T>(*tseg, loop_body);
+      break;
+    }
 
 #if 0  // RDH RETHINK
       case _RangeStrideSeg_ : {
@@ -106,23 +97,17 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
       }
 #endif
 
-      case _ListSeg_ : {
-         const ListSegment* tseg =
-            static_cast<const ListSegment*>(iseg);
-         forall(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
-            loop_body
-         );
-         break;
-      }
+    case _ListSeg_: {
+      const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
+      forall<SEG_EXEC_POLICY_T>(*tseg, loop_body);
+      break;
+    }
 
-      default : {
-      }
+    default: {
+    }
 
-   }  // switch on segment type
+  }  // switch on segment type
 }
-
 
 /*!
  ******************************************************************************
@@ -133,30 +118,21 @@ void executeRangeList_forall(const IndexSetSegInfo* seg_info,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T,
-          typename LOOP_BODY>
-RAJA_INLINE
-void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
-                                    LOOP_BODY loop_body)
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
+                                                LOOP_BODY&& loop_body)
 {
-   const BaseSegment* iseg = seg_info->getSegment();
-   SegmentType segtype = iseg->getType();
+  const BaseSegment* iseg = seg_info->getSegment();
+  SegmentType segtype = iseg->getType();
 
-   Index_type icount = seg_info->getIcount();
+  Index_type icount = seg_info->getIcount();
 
-   switch ( segtype ) {
-
-      case _RangeSeg_ : {
-         const RangeSegment* tseg =
-            static_cast<const RangeSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getBegin(), tseg->getEnd(),
-            icount,
-            loop_body
-         );
-         break;
-      }
+  switch (segtype) {
+    case _RangeSeg_: {
+      const RangeSegment* tseg = static_cast<const RangeSegment*>(iseg);
+      forall_Icount<SEG_EXEC_POLICY_T>(*tseg, icount, loop_body);
+      break;
+    }
 
 #if 0  // RDH RETHINK
       case _RangeStrideSeg_ : {
@@ -172,26 +148,95 @@ void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
       }
 #endif
 
-      case _ListSeg_ : {
-         const ListSegment* tseg =
-            static_cast<const ListSegment*>(iseg);
-         forall_Icount(
-            SEG_EXEC_POLICY_T(),
-            tseg->getIndex(), tseg->getLength(),
-            icount,
-            loop_body
-         );
-         break;
-      }
+    case _ListSeg_: {
+      const ListSegment* tseg = static_cast<const ListSegment*>(iseg);
+      forall_Icount<SEG_EXEC_POLICY_T>(*tseg, icount, loop_body);
+      break;
+    }
 
-      default : {
-      }
+    default: {
+    }
 
-   }  // switch on segment type
+  }  // switch on segment type
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Generic wrapper for IndexSet policies to allow the use of normal
+ * policies with them.
+ *
+ ******************************************************************************
+ */
+// TODO: this should be with the IndexSet class, really it should be part of
+// its built-in iterator, but we need to address the include snarl first
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+struct rangeListExecutor {
+  constexpr rangeListExecutor(LOOP_BODY&& body) : body(body) {}
+  RAJA_INLINE
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
+    executeRangeList_forall<SEG_EXEC_POLICY_T>(&seg_info, body);
+  }
+
+private:
+  LOOP_BODY body;
+};
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+constexpr RAJA_INLINE rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
+makeRangeListExecutor(LOOP_BODY&& body)
+{
+  return rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
+}
+
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE void forall(
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
+  forall<SEG_IT_POLICY_T>(iset,
+                          makeRangeListExecutor<SEG_EXEC_POLICY_T>(loop_body));
+}
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+struct rangeListIcountExecutor {
+  constexpr rangeListIcountExecutor(LOOP_BODY&& body) : body(body) {}
+  RAJA_INLINE
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
+    executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(&seg_info, body);
+  }
+
+private:
+  LOOP_BODY body;
+};
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+constexpr RAJA_INLINE rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
+makeRangeListIcountExecutor(LOOP_BODY&& body)
+{
+  return rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
+}
+
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
+  // no need for icount variant here
+  forall<SEG_IT_POLICY_T>(iset,
+                          makeRangeListIcountExecutor<SEG_EXEC_POLICY_T>(
+                              loop_body));
 }
 
 
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard

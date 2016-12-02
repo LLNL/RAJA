@@ -60,369 +60,373 @@
 
 #include <iosfwd>
 
-
-namespace RAJA {
-
+namespace RAJA
+{
 
 /*!
  ******************************************************************************
  *
  * \brief  Class representing an index set which is a collection
- *         of segment objects. 
+ *         of segment objects.
  *
  ******************************************************************************
  */
 class IndexSet
 {
 public:
+  ///
+  /// Nested class representing index set execution policy.
+  ///
+  /// The first template parameter describes the policy for iterating
+  /// over segments.  The second describes the policy for executing
+  /// each segment.
+  ///
+  template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T>
+  struct ExecPolicy {
+    typedef SEG_ITER_POLICY_T seg_it;
+    typedef SEG_EXEC_POLICY_T seg_exec;
+  };
 
-   ///
-   /// Nested class representing index set execution policy. 
-   ///
-   /// The first template parameter describes the policy for iterating
-   /// over segments.  The second describes the policy for executing
-   /// each segment.
-   ///
-   template< typename SEG_ITER_POLICY_T,
-             typename SEG_EXEC_POLICY_T > struct ExecPolicy
-   {
-      typedef SEG_ITER_POLICY_T seg_it;
-      typedef SEG_EXEC_POLICY_T seg_exec;
-   };
-
-
-//@{
-//!  @name Constructor and destructor methods
-
-   ///
-   /// Construct empty index set
-   ///
-   IndexSet();
-
-   ///
-   /// Copy-constructor for index set
-   ///
-   IndexSet(const IndexSet& other);
-
-   ///
-   /// Copy-assignment operator for index set
-   ///
-   IndexSet& operator=(const IndexSet& rhs);
-
-   ///
-   /// Destroy index set including all index set segments.
-   ///
-   ~IndexSet();
-
-   ///
-   /// Swap function for copy-and-swap idiom.
-   ///
-   void swap(IndexSet& other);
-
-//@}
+  using SegVecT = RAJAVec<IndexSetSegInfo>;
 
 
-//@{
-//!  @name Segment insertion and accessor methods
+  //@{
+  //!  @name Constructor and destructor methods
 
-   ///
-   /// Return true if given segment is valid for this IndexSet class; 
-   /// otherwise, return false.
-   ///
-   bool isValidSegmentType(const BaseSegment* segment) const;
+  ///
+  /// Construct empty index set
+  ///
+  IndexSet();
 
-   /*
-    * IMPORTANT: Some methods to add a segment to an index set
-    *            make a copy of the segment object passed in. Others do not.
-    *
-    *            The no-copy method names indicate the choice.
-    *            The copy/no-copy methods are further distinguished 
-    *            by taking a const reference (copy) or non-const 
-    *            pointer (no-copy).
-    *
-    *            Each method returns true if segment is added successfully;
-    *            false otherwise.
-    */
+  ///
+  /// Copy-constructor for index set
+  ///
+  IndexSet(const IndexSet& other);
 
-   ///
-   /// Add segment to back end of index set without making a copy.
-   ///
-   bool push_back_nocopy(BaseSegment* segment) 
-   { return( push_back_private(segment, false /* does not own segment */) ); } 
+  ///
+  /// Copy-assignment operator for index set
+  ///
+  IndexSet& operator=(const IndexSet& rhs);
 
-   ///
-   /// Add segment to front end of index set without making a copy.
-   ///
-   bool push_front_nocopy(BaseSegment* segment)
-   { return( push_front_private(segment, false /* does not own segment */) ); }
+  ///
+  /// Destroy index set including all index set segments.
+  ///
+  ~IndexSet();
 
-   ///
-   /// Add copy of segment to back end of index set.
-   ///
-   bool push_back(const BaseSegment& segment);
+  ///
+  /// Swap function for copy-and-swap idiom.
+  ///
+  void swap(IndexSet& other);
 
-   ///
-   /// Add copy of segment to front end of index set.
-   ///
-   bool push_front(const BaseSegment& segment);
+  //@}
 
+  //@{
+  //!  @name Segment insertion and accessor methods
 
-   ///
-   /// Return total length of index set; i.e., sum of lengths
-   /// of all segments.
-   ///
-   Index_type getLength() const { return m_len; }
+  ///
+  /// Return true if given segment is valid for this IndexSet class;
+  /// otherwise, return false.
+  ///
+  bool isValidSegmentType(const BaseSegment* segment) const;
 
-   ///
-   /// Return total number of segments in index set.
-   ///
-   unsigned getNumSegments() const { 
-      return m_segments.size(); 
-   }
+  /*
+   * IMPORTANT: Some methods to add a segment to an index set
+   *            make a copy of the segment object passed in. Others do not.
+   *
+   *            The no-copy method names indicate the choice.
+   *            The copy/no-copy methods are further distinguished
+   *            by taking a const reference (copy) or non-const
+   *            pointer (no-copy).
+   *
+   *            Each method returns true if segment is added successfully;
+   *            false otherwise.
+   */
 
-   ///
-   /// Return const pointer to BaseSegment 'i'.
-   ///
-   /// Notes: No error-checking on segment index.
-   ///
-   ///        Object must be explicitly cast to concrete type to
-   ///        access actual segment index information
-   ///        (see BaseSegment::getType() method).
-   ///
-   const BaseSegment* getSegment(unsigned i) const {
-      return m_segments[i].getSegment();
-   }
+  ///
+  /// Add segment to back end of index set without making a copy.
+  ///
+  bool push_back_nocopy(BaseSegment* segment)
+  {
+    return (push_back_private(segment, false /* does not own segment */));
+  }
 
-   ///
-   /// Return non-const pointer to BaseSegment 'i'.
-   ///
-   /// Notes: No error-checking on segment index.
-   ///
-   ///        Object must be explicitly cast to concrete type to
-   ///        access actual segment index information
-   ///        (see BaseSegment::getType() method).
-   ///
-   BaseSegment* getSegment(unsigned i) {
-      return m_segments[i].getSegment();
-   } 
+  ///
+  /// Add segment to front end of index set without making a copy.
+  ///
+  bool push_front_nocopy(BaseSegment* segment)
+  {
+    return (push_front_private(segment, false /* does not own segment */));
+  }
 
-   ///
-   /// Return const pointer to IndexSetSegInfo object for segment 'i'.
-   /// 
-   /// Note: No error-checking on segment index.
-   ///
-   const IndexSetSegInfo* getSegmentInfo(unsigned i) const { 
-      return &(m_segments[i]); 
-   }
+  ///
+  /// Add copy of segment to back end of index set.
+  ///
+  bool push_back(const BaseSegment& segment);
 
-   ///
-   /// Return non-const pointer to BaseSegment object for segment 'i'.
-   ///
-   /// Note: No error-checking on segment index.
-   ///
-   IndexSetSegInfo* getSegmentInfo(unsigned i) {
-      return &(m_segments[i]);
-   }
+  ///
+  /// Add copy of segment to front end of index set.
+  ///
+  bool push_front(const BaseSegment& segment);
 
-//@}
+  ///
+  /// Return total length of index set; i.e., sum of lengths
+  /// of all segments.
+  ///
+  Index_type getLength() const { return m_len; }
 
+  ///
+  /// Return total number of segments in index set.
+  ///
+  unsigned getNumSegments() const { return m_segments.size(); }
 
-//@{
-//!  @name IndexSet segment subsetting methods (views ranges)
+  ///
+  /// Return const pointer to BaseSegment 'i'.
+  ///
+  /// Notes: No error-checking on segment index.
+  ///
+  ///        Object must be explicitly cast to concrete type to
+  ///        access actual segment index information
+  ///        (see BaseSegment::getType() method).
+  ///
+  const BaseSegment* getSegment(unsigned i) const
+  {
+    return m_segments[i].getSegment();
+  }
 
-   ///
-   /// Return a new IndexSet object that contains the subset of
-   /// segments in this IndexSet with ids in the interval [begin, end).
-   ///
-   /// This IndexSet will not change and the created "view" into it 
-   /// will not own any of its segments.
-   ///
-   IndexSet* createView(int begin, int end) const;
+  ///
+  /// Return non-const pointer to BaseSegment 'i'.
+  ///
+  /// Notes: No error-checking on segment index.
+  ///
+  ///        Object must be explicitly cast to concrete type to
+  ///        access actual segment index information
+  ///        (see BaseSegment::getType() method).
+  ///
+  BaseSegment* getSegment(unsigned i) { return m_segments[i].getSegment(); }
 
-   ///
-   /// Return a new IndexSet object that contains the subset of
-   /// segments in this IndexSet with ids in the given int array.
-   ///
-   /// This IndexSet will not change and the created "view" into it 
-   /// will not own any of its segments.
-   ///
-   IndexSet* createView(const int* segIds, int len) const;
+  ///
+  /// Return const pointer to IndexSetSegInfo object for segment 'i'.
+  ///
+  /// Note: No error-checking on segment index.
+  ///
+  const IndexSetSegInfo* getSegmentInfo(unsigned i) const
+  {
+    return &(m_segments[i]);
+  }
 
-   ///
-   /// Return a new IndexSet object that contains the subset of
-   /// segments in this IndexSet with ids in the argument object.
-   ///
-   /// This IndexSet will not change and the created "view" into it 
-   /// will not own any of its segments.
-   ///
-   /// The object must provide methods begin(), end(), and its
-   /// iterator type must de-reference to an integral value.
-   ///
-   template< typename T> 
-   IndexSet* createView(const T& segIds) const;
+  ///
+  /// Return non-const pointer to BaseSegment object for segment 'i'.
+  ///
+  /// Note: No error-checking on segment index.
+  ///
+  IndexSetSegInfo* getSegmentInfo(unsigned i) { return &(m_segments[i]); }
 
-   
-   ///
-   /// Set [begin, end) interval of segment ids identified by
-   /// given interval id.
-   ///
-   /// For example, this method can be used to assign an interval of 
-   /// segments to be processed by a given thread.
-   ///
-   void setSegmentInterval(int interval_id, int begin, int end);
+  using iterator = SegVecT::iterator;
 
-   ///
-   /// Get lower bound or upper bound of [begin, end) interval of segment 
-   /// ids identified by given interval id.
-   ///
-   /// Notes: No error-checking on interval id.
-   ///
-   int getSegmentIntervalBegin(int interval_id) const {
-      return m_seg_interval_begin[interval_id];
-   }
-   ///
-   int getSegmentIntervalEnd(int interval_id) const {
-      return m_seg_interval_end[interval_id];
-   }
-   
+  ///
+  /// Get an iterator to the end.
+  ///
+  iterator end() const { return m_segments.end(); }
 
-//@}
+  ///
+  /// Get an iterator to the beginning.
+  ///
+  iterator begin() const { return m_segments.begin(); }
 
+  ///
+  /// Return the number of elements in the range.
+  ///
+  size_t size() const { return m_segments.size(); }
 
-//@{
-//!  @name Private data set/get methods
+  //@}
 
-   ///
-   /// Retrieve pointer to private data. Must be cast to proper type by user.
-   ///
-   void* getPrivate() const { return m_private ; }
+  //@{
+  //!  @name IndexSet segment subsetting methods (views ranges)
 
-   ///
-   /// Set pointer to private data. Can be used to associate any data
-   /// to segment.
-   ///
-   /// NOTE: Caller retains ownership of data object.
-   ///
-   void setPrivate(void *ptr) { m_private = ptr ; }
+  ///
+  /// Return a new IndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the interval [begin, end).
+  ///
+  /// This IndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  IndexSet* createView(int begin, int end) const;
 
-//@}
+  ///
+  /// Return a new IndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the given int array.
+  ///
+  /// This IndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  IndexSet* createView(const int* segIds, int len) const;
 
+  ///
+  /// Return a new IndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the argument object.
+  ///
+  /// This IndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  /// The object must provide methods begin(), end(), and its
+  /// iterator type must de-reference to an integral value.
+  ///
+  template <typename T>
+  IndexSet* createView(const T& segIds) const;
 
-//@{
-//!  @name Segment dependency methods
+  ///
+  /// Set [begin, end) interval of segment ids identified by
+  /// given interval id.
+  ///
+  /// For example, this method can be used to assign an interval of
+  /// segments to be processed by a given thread.
+  ///
+  void setSegmentInterval(int interval_id, int begin, int end);
 
-   ///
-   /// Return true if dependencyGraphFinalize() method has been called 
-   /// on index set object. 
-   ///
-   bool dependencyGraphSet() const { return m_dep_graph_set; }
+  ///
+  /// Get lower bound or upper bound of [begin, end) interval of segment
+  /// ids identified by given interval id.
+  ///
+  /// Notes: No error-checking on interval id.
+  ///
+  int getSegmentIntervalBegin(int interval_id) const
+  {
+    return m_seg_interval_begin[interval_id];
+  }
+  ///
+  int getSegmentIntervalEnd(int interval_id) const
+  {
+    return m_seg_interval_end[interval_id];
+  }
 
-   ///
-   /// Create dependency graph node objects (one for each segment in index 
-   /// set and initialize each to default state.
-   ///
-   /// Note that dependency graph data for segments needs to be set for
-   /// each dependency graph node for dependency-graph scheduling to work
-   /// properly. See DepGraphNode class.  After setting all dependency
-   /// graph data, the dependencyGraphFinalize() method should be called
-   /// to indicate that dependency graph is complete.
-   ///
-   /// Note that this method assumes dependency graph node objects don't 
-   /// already exist for index set.
-   ///
-   void initDependencyGraph();
+  //@}
 
-   ///
-   /// Calling this method indicates that dependency graph data for all
-   /// segments in index set has been set.
-   ///
-   /// This method should be called after all such data has been set.
-   ///
-   void finalizeDependencyGraph() { m_dep_graph_set = true; }
+  //@{
+  //!  @name Private data set/get methods
 
-//@}
+  ///
+  /// Retrieve pointer to private data. Must be cast to proper type by user.
+  ///
+  void* getPrivate() const { return m_private; }
 
-//@{
-//!  @name Index set equality/inequality check methods
+  ///
+  /// Set pointer to private data. Can be used to associate any data
+  /// to segment.
+  ///
+  /// NOTE: Caller retains ownership of data object.
+  ///
+  void setPrivate(void* ptr) { m_private = ptr; }
 
-   ///
-   /// Equality operator returns true if all segments are equal; else false.
-   /// 
-   /// Note: method does not check equality of anything other than segment 
-   ///       types and indices; e.g., dependency info not checked.
-   ///
-   bool operator ==(const IndexSet& other) const ;
+  //@}
 
-   ///
-   /// Inequality operator returns true if any segment is not equal, else false.
-   ///
-   bool operator !=(const IndexSet& other) const
-   {
-      return ( !(*this == other) );
-   }
+  //@{
+  //!  @name Segment dependency methods
 
-//@}
+  ///
+  /// Return true if dependencyGraphFinalize() method has been called
+  /// on index set object.
+  ///
+  bool dependencyGraphSet() const { return m_dep_graph_set; }
 
+  ///
+  /// Create dependency graph node objects (one for each segment in index
+  /// set and initialize each to default state.
+  ///
+  /// Note that dependency graph data for segments needs to be set for
+  /// each dependency graph node for dependency-graph scheduling to work
+  /// properly. See DepGraphNode class.  After setting all dependency
+  /// graph data, the dependencyGraphFinalize() method should be called
+  /// to indicate that dependency graph is complete.
+  ///
+  /// Note that this method assumes dependency graph node objects don't
+  /// already exist for index set.
+  ///
+  void initDependencyGraph();
 
-   ///
-   /// Print index set data, including segments, to given output stream.
-   ///
-   void print(std::ostream& os) const;
+  ///
+  /// Calling this method indicates that dependency graph data for all
+  /// segments in index set has been set.
+  ///
+  /// This method should be called after all such data has been set.
+  ///
+  void finalizeDependencyGraph() { m_dep_graph_set = true; }
+
+  //@}
+
+  //@{
+  //!  @name Index set equality/inequality check methods
+
+  ///
+  /// Equality operator returns true if all segments are equal; else false.
+  ///
+  /// Note: method does not check equality of anything other than segment
+  ///       types and indices; e.g., dependency info not checked.
+  ///
+  bool operator==(const IndexSet& other) const;
+
+  ///
+  /// Inequality operator returns true if any segment is not equal, else false.
+  ///
+  bool operator!=(const IndexSet& other) const { return (!(*this == other)); }
+
+  //@}
+
+  ///
+  /// Print index set data, including segments, to given output stream.
+  ///
+  void print(std::ostream& os) const;
 
 private:
-   ///
-   /// Copy function for copy-and-swap idiom (deep copy).
-   ///
-   void copy(const IndexSet& other);
+  ///
+  /// Copy function for copy-and-swap idiom (deep copy).
+  ///
+  void copy(const IndexSet& other);
 
-   ///
-   /// Helper function to add segment to back end of index set.
-   /// Returns true if segment added, false otherwise.
-   ///
-   bool push_back_private(BaseSegment* seg, bool owns_segment);
+  ///
+  /// Helper function to add segment to back end of index set.
+  /// Returns true if segment added, false otherwise.
+  ///
+  bool push_back_private(BaseSegment* seg, bool owns_segment);
 
-   ///
-   /// Helper function to add segment to front end of index set.
-   /// Returns true if segment added, false otherwise.
-   ///
-   bool push_front_private(BaseSegment* seg, bool owns_segment);
+  ///
+  /// Helper function to add segment to front end of index set.
+  /// Returns true if segment added, false otherwise.
+  ///
+  bool push_front_private(BaseSegment* seg, bool owns_segment);
 
-   ///
-   /// Helper function to create a copy of a given segment given a 
-   /// pointer to the BaseSegment.
-   ///
-   BaseSegment* createSegmentCopy(const BaseSegment& segment) const;
+  ///
+  /// Helper function to create a copy of a given segment given a
+  /// pointer to the BaseSegment.
+  ///
+  BaseSegment* createSegmentCopy(const BaseSegment& segment) const;
 
+  ///
+  /// Total length of all IndexSet segments.
+  ///
+  Index_type m_len;
 
+  ///
+  /// Collection of IndexSet segment info objects.
+  ///
+  SegVecT m_segments;
 
-   ///
-   /// Total length of all IndexSet segments.
-   ///
-   Index_type  m_len;
+  ///
+  /// Vectors holding user defined segment intervals; each is [begin, end).
+  ///
+  RAJAVec<int> m_seg_interval_begin;
+  RAJAVec<int> m_seg_interval_end;
 
-   ///
-   /// Collection of IndexSet segment info objects.
-   ///
-   RAJAVec<IndexSetSegInfo> m_segments;
+  ///
+  /// Pointer for holding arbitrary data associated with index set.
+  ///
+  void* m_private;
 
-   ///
-   /// Vectors holding user defined segment intervals; each is [begin, end).
-   ///
-   RAJAVec<int> m_seg_interval_begin;
-   RAJAVec<int> m_seg_interval_end;
-
-   ///
-   /// Pointer for holding arbitrary data associated with index set.
-   ///
-   void*       m_private;
-
-   ///
-   ///  True if dependencyGraphFinalize() method has been called; 
-   ///  else false (default).
-   ///
-   bool m_dep_graph_set;
-
-}; 
+  ///
+  ///  True if dependencyGraphFinalize() method has been called;
+  ///  else false (default).
+  ///
+  bool m_dep_graph_set;
+};
 
 /*!
  ******************************************************************************
@@ -431,25 +435,23 @@ private:
  *
  ******************************************************************************
  */
-template< typename T>
+template <typename T>
 IndexSet* IndexSet::createView(const T& segIds) const
 {
-   IndexSet *retVal = new IndexSet() ;
+  IndexSet* retVal = new IndexSet();
 
-   int numSeg = m_segments.size() ;
-   for (typename T::iterator it = segIds.begin(); it != segIds.end(); ++it) {
-      if (*it >= 0 && *it < numSeg) {
-         retVal->push_back_nocopy( 
-            const_cast<BaseSegment*>( m_segments[ *it ].getSegment() ) ) ;
-      }
-   }
+  int numSeg = m_segments.size();
+  for (typename T::iterator it = segIds.begin(); it != segIds.end(); ++it) {
+    if (*it >= 0 && *it < numSeg) {
+      retVal->push_back_nocopy(
+          const_cast<BaseSegment*>(m_segments[*it].getSegment()));
+    }
+  }
 
-   return retVal ;
+  return retVal;
 }
 
-
 }  // closing brace for RAJA namespace
-
 
 /*!
  ******************************************************************************
@@ -458,15 +460,14 @@ IndexSet* IndexSet::createView(const T& segIds) const
  *
  ******************************************************************************
  */
-namespace std {
-
-template< > 
-RAJA_INLINE
-void swap(RAJA::IndexSet& a, RAJA::IndexSet& b)
+namespace std
 {
-   a.swap(b);
-}
 
+template <>
+RAJA_INLINE void swap(RAJA::IndexSet& a, RAJA::IndexSet& b)
+{
+  a.swap(b);
+}
 }
 
 #endif  // closing endif for header file include guard

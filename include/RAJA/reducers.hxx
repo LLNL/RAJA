@@ -4,7 +4,7 @@
  * \file
  *
  * \brief   Header file providing RAJA reduction declarations.
- * 
+ *
  ******************************************************************************
  */
 
@@ -53,7 +53,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-
 #include "RAJA/config.hxx"
 
 ///
@@ -62,7 +61,8 @@
 ///
 #define RAJA_MAX_REDUCE_VARS (8)
 
-namespace RAJA {
+namespace RAJA
+{
 
 ///
 /// Macros for type agnostic reduction operations.
@@ -73,14 +73,25 @@ namespace RAJA {
 
 ///
 /// Macros to support structs used in minmaxloc operations
-#define RAJA_MINLOC(a,b) (((b.val) < (a.val)) ? (b) : (a))
+#define RAJA_MINLOC(a, b) (((b.val) < (a.val)) ? (b) : (a))
 ///
-#define RAJA_MAXLOC(a,b) (((b.val) > (a.val)) ? (b) : (a))
+#define RAJA_MAXLOC(a, b) (((b.val) > (a.val)) ? (b) : (a))
+
+///
+///Macros to support unstructured minmaxloc operations
+#define RAJA_MINLOC_UNSTRUCTURED(set_val, set_idx, a_val, a_idx, b_val, b_idx) \
+  set_idx = ((b_val) < (a_val) ? (b_idx) : (a_idx)); \
+  set_val = ((b_val) < (a_val) ? (b_val) : (a_val));
+///
+#define RAJA_MAXLOC_UNSTRUCTURED(set_val, set_idx, a_val, a_idx, b_val, b_idx) \
+  set_idx = ((b_val) > (a_val) ? (b_idx) : (a_idx)); \
+  set_val = ((b_val) > (a_val) ? (b_val) : (a_val));
+
 //
-// Forward declarations for reduction templates. 
-// Actual classes appear in forall_*.hxx header files. 
+// Forward declarations for reduction templates.
+// Actual classes appear in forall_*.hxx header files.
 //
-// IMPORTANT: reduction policy parameter must be consistent with loop 
+// IMPORTANT: reduction policy parameter must be consistent with loop
 //            execution policy type.
 //
 // Also, mutliple reductions using different reduction operations may be
@@ -100,19 +111,17 @@ namespace RAJA {
    ReduceMin<reduce_policy, Real_type> my_min(init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
-      my_min.min(data[i]); 
+      my_min.min(data[i]);
    }
 
    Real_type minval = my_min;
- 
+
  * \endverbatim
  *
  ******************************************************************************
  */
-template<typename REDUCE_POLICY_T,
-         typename T>
+template <typename REDUCE_POLICY_T, typename T>
 class ReduceMin;
-
 
 /*!
  ******************************************************************************
@@ -132,15 +141,13 @@ class ReduceMin;
 
    Real_type minval = my_min;
    Index_type minloc = my_min.getMinLoc();
- 
+
  * \endverbatim
  *
  ******************************************************************************
  */
-template<typename REDUCE_POLICY_T,
-         typename T>
+template <typename REDUCE_POLICY_T, typename T>
 class ReduceMinLoc;
-
 
 /*!
  ******************************************************************************
@@ -155,19 +162,17 @@ class ReduceMinLoc;
    ReduceMax<reduce_policy, Real_type> my_max(init_val);
 
    forall<exec_policy>( ..., [=] (Index_type i) {
-      my_max.max(data[i]); 
+      my_max.max(data[i]);
    }
 
    Real_type maxval = my_max;
- 
+
  * \endverbatim
  *
  ******************************************************************************
  */
-template<typename REDUCE_POLICY_T,
-         typename T>
+template <typename REDUCE_POLICY_T, typename T>
 class ReduceMax;
-
 
 /*!
  ******************************************************************************
@@ -192,10 +197,8 @@ class ReduceMax;
  *
  ******************************************************************************
  */
-template<typename REDUCE_POLICY_T,
-         typename T>
+template <typename REDUCE_POLICY_T, typename T>
 class ReduceMaxLoc;
-
 
 /*!
  ******************************************************************************
@@ -219,12 +222,9 @@ class ReduceMaxLoc;
  *
  ******************************************************************************
  */
-template<typename REDUCE_POLICY_T,
-         typename T>
+template <typename REDUCE_POLICY_T, typename T>
 class ReduceSum;
 
-
 }  // closing brace for RAJA namespace
-
 
 #endif  // closing endif for header file include guard
