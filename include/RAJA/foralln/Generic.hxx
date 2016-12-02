@@ -55,6 +55,8 @@
 
 #include "RAJA/LegacyCompatibility.hxx"
 
+#include "RAJA/internal/defines.hxx"
+
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 #endif
@@ -315,7 +317,7 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
 }
 
 template <typename T, typename T2>
-T return_first(T a, T2 b)
+T return_first(T a, T2 RAJA_UNUSED_ARG(b))
 {
   return a;
 }

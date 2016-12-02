@@ -175,6 +175,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -370,6 +371,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 

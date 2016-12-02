@@ -100,16 +100,16 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>,
     VarOps::assign_args(perms, IndexRange{}, PermInts...);
     Index_type swizzled_sizes[] = {sizes[PermInts]...};
     Index_type folded_strides[n_dims];
-    for (int i = 0; i < n_dims; i++) {
+    for (size_t i = 0; i < n_dims; i++) {
       folded_strides[i] = 1;
-      for (int j = 0; j < i; j++) {
+      for (size_t j = 0; j < i; j++) {
         folded_strides[j] *= swizzled_sizes[i];
       }
     }
     assign(strides, folded_strides, Permutation{}, IndexRange{});
 
     Index_type lmods[n_dims];
-    for (int i = 1; i < n_dims; i++) {
+    for (size_t i = 1; i < n_dims; i++) {
       lmods[i] = folded_strides[i - 1];
     }
     lmods[0] = limit;
