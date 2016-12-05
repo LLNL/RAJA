@@ -118,6 +118,9 @@ struct omp_taskgraph_interval_segit {
 struct omp_reduce {
 };
 
+struct omp_reduce_ordered {
+};
+
 }  // closing brace for RAJA namespace
 
 #include "RAJA/exec-openmp/forall_openmp.hxx"

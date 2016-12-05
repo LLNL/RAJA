@@ -756,6 +756,33 @@ void runSumReduceTests(Real_ptr in_array,
       alen,
       iset,
       is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit,
+                                                omp_parallel_for_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+                                                seq_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+                                                simd_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
 #endif
 
 #ifdef RAJA_ENABLE_CILK
