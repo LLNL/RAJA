@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -60,8 +61,12 @@ void runBasicMinReductionTest(const string& policy,
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  int err_val = 0; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values positve
@@ -207,8 +212,12 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  int err_val = 0; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values positve
@@ -359,8 +368,12 @@ void runBasicMaxReductionTest(const string& policy,
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  int err_val = 0; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values negative
@@ -507,8 +520,12 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  int err_val = 0; 
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   //
   // Make all test array values negative
@@ -655,7 +672,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
 template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
-                              Index_type alen,
+                              Index_type RAJA_UNUSED_ARG(alen),
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
@@ -664,7 +681,7 @@ void runBasicSumReductionTest(const string& policy,
   //
   Real_type ref_sum = 0.0;
 
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_sum += in_array[is_indices[i]];
   }
 
@@ -813,7 +830,8 @@ void runSumReduceTests(Real_ptr in_array,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.
@@ -854,8 +872,12 @@ int main(int argc, char* argv[])
   //
   // Allocate "parent" array for traversal tests and initialize to...
   //
-  Real_ptr parent;
-  posix_memalign((void**)&parent, DATA_ALIGN, array_length * sizeof(Real_type));
+  Real_ptr parent = 0;
+  int err_val = 0; 
+  err_val = posix_memalign((void**)&parent, 
+                           DATA_ALIGN, 
+                           array_length * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);

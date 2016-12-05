@@ -155,8 +155,6 @@ RAJA_INLINE void forall_Icount(Container&& c,
 template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
 RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 {
-  auto begin = std::begin(c);
-  auto end = std::end(c);
   using category =
       typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
   static_assert(
