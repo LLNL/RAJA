@@ -116,6 +116,7 @@ Contributors include:
   * Holger Jones (jones19@llnl.gov)
   * Will Killian (killian4@llnl.gov)
   * Adam Kunen (kunen1@llnl.gov)
+  * Olga Pearce (pearce8@llnl.gov)
   * David Poliakoff (poliakoff1@llnl.gov)
   * Tom Scogland (scogland1@llnl.gov)
 
