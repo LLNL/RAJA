@@ -9,7 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@
 #
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.3)
 
 project(RAJA LANGUAGES CXX C)
 
@@ -49,7 +49,7 @@ set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 2)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
@@ -60,6 +60,7 @@ option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 

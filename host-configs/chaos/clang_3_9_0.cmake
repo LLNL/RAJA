@@ -10,13 +10,12 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_CLANG" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/apps/gnu/clang/r266865-stable/bin/bgclang++" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.0/bin/clang++" CACHE PATH "")
+set(CMAKE_C_COMPILER "/usr/global/tools/clang/chaos_5_x86_64_ib/clang-3.9.0/bin/clang" CACHE PATH "")
 
-set(TEST_DRIVER srun CACHE STRING "use slurm to launch on BGQ")
-
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3 -ffast-math -std=c++11 -stdlib=libc++" CACHE STRING "")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -std=c++11 -stdlib=libc++" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0 -g" CACHE STRING "")
 
 set(RAJA_ENABLE_OPENMP On CACHE BOOL "")
 

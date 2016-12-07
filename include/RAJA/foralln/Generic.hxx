@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -54,6 +54,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/LegacyCompatibility.hxx"
+
+#include "RAJA/internal/defines.hxx"
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
@@ -315,7 +317,7 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
 }
 
 template <typename T, typename T2>
-T return_first(T a, T2 b)
+T return_first(T a, T2 RAJA_UNUSED_ARG(b))
 {
   return a;
 }
