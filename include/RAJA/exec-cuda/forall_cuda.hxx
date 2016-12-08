@@ -184,8 +184,10 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 
   RAJA_FT_BEGIN;
 
-  forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
-                    >>>(std::move(body), std::move(begin), len);
+  if (len > 0) {
+    forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)>>>
+                      (std::move(body), std::move(begin), len);
+  }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 
@@ -214,8 +216,10 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 
   RAJA_FT_BEGIN;
 
-  forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
-                           >>>(std::move(body), std::move(begin), len, icount);
+  if (len > 0) {
+    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)>>>
+                             (std::move(body), std::move(begin), len, icount);
+ }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 

@@ -380,6 +380,7 @@ int main(int argc, char *argv[])
   ///////////////////////////////////////////////////////////////////////////
   cout << "Starting GPU nested tests" << endl << endl;
   // Run some LTimes example tests (directions, groups, zones)
+  runLTimesTests(2, 0, 7, 3);
   runLTimesTests(2, 3, 7, 3);
   runLTimesTests(2, 3, 32, 4);
   runLTimesTests(25, 96, 8, 32);

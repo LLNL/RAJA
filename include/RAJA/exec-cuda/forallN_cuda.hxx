@@ -357,8 +357,11 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, cargs...);
+    if (dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z > 0 &&
+        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, cargs...);
+    }
                  
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
@@ -379,8 +382,11 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, c0);
+    if (dims.num_blocks.x * dims.num_blocks.y * dims.num_blocks.z > 0 &&
+        dims.num_threads.x * dims.num_threads.y * dims.num_threads.z > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, c0);
+    }
 
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
