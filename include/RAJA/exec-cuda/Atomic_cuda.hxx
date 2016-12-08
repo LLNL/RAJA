@@ -83,10 +83,42 @@ template < bool Async >
 struct cuda_atomic {
 };
 
+// INTERNAL namespace to encapsulate helper functions
+namespace INTERNAL
+{
 /*!
  ******************************************************************************
  *
- * \brief  Atomic cpu_atomic class specialization.
+ * \brief Method to shuffle 32b registers in sum reduction for arbitrary type.
+ *
+ ******************************************************************************
+ */
+template<typename T>
+__device__ __forceinline__ T shfl(T var, int laneMask)
+{
+  const int int_sizeof_T = 
+      (sizeof(T) + sizeof(int) - 1) / sizeof(int);
+  union {
+    T var;
+    int arr[int_sizeof_T];
+  } Tunion;
+  Tunion.var = var;
+
+  for(int i = 0; i < int_sizeof_T; ++i) {
+    Tunion.arr[i] = __shfl(Tunion.arr[i], laneMask);
+  }
+  return Tunion.var;
+}
+
+} // end INTERNAL namespace for helper functions
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Atomic cuda_atomic class specialization.
+ *
+ * Note: This class currently uses cuda reduction memory slots, hence adds to
+ *       the counts of cuda reductions.
  *
  * Note: For now memory_order is always memory_order_relaxed so you should
  *       make any assumptions about the order of memory update visibility in
@@ -99,28 +131,34 @@ template < typename T, bool Async >
 class atomic < T, cuda_atomic<Async> >
 {
 public:
-  static const std::memory_order default_memory_order = std::memory_order_relaxed;
+  using default_memory_order_t = raja_memory_order_relaxed_t;
 
   ///
   /// Default constructor default constructs T.
   ///
   __host__
-  atomic() noexcept
-    : m_impl(getCudaAtomicptr<T>(T {})),
-      m_is_copy(false)
-  {
-
-  }
+  atomic() noexcept = delete;
+  //   : m_myID(getCudaReductionId()),
+  //     m_is_copy_host(false)
+  // {
+  //   getCudaReductionTallyBlock(m_myID,
+  //                              (void **)&m_impl_host,
+  //                              (void **)&m_impl_device);
+  //   m_impl_host[0] = T();
+  // }
 
   ///
   /// Constructor to initialize T with val.
   ///
   __host__
-  constexpr atomic(T val) noexcept
-    : m_impl(getCudaAtomicptr<T>( T {val})),
-      m_is_copy(false)
+  explicit atomic(T val = T()) noexcept
+    : m_myID(getCudaReductionId()),
+      m_is_copy_host(false)
   {
-
+    getCudaReductionTallyBlock(m_myID,
+                               (void **)&m_impl_host,
+                               (void **)&m_impl_device);
+    m_impl_host[0] = val;
   }
 
   ///
@@ -128,8 +166,8 @@ public:
   ///
   __host__ __device__
   atomic(const atomic& other) noexcept
-    : m_impl(other.m_impl),
-      m_is_copy(true)
+    : m_impl_device(other.m_impl_device),
+      m_is_copy_host(true)
   {
 
   }
@@ -141,13 +179,16 @@ public:
   atomic& operator=(const atomic&) volatile = delete;
 
   ///
-  /// Atomic destructor frees this->m_impl if not a copy.
+  /// Atomic destructor frees resources if not a copy.
   ///
   __host__ __device__
   ~atomic() noexcept
   {
 #if !defined(__CUDA_ARCH__)
-    if (!m_is_copy) releaseCudaAtomicptr(this->m_impl);
+    if (!m_is_copy_host) {
+      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionId(m_myID);
+    }
 #endif
   }
 
@@ -157,42 +198,80 @@ public:
   __host__ __device__
   T operator=(T val) volatile noexcept
   {
-    _atomicExch(static_cast<volatile T*>(this->m_impl), val);
+#if defined(__CUDA_ARCH__)
+    _atomicExch(static_cast<volatile T*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    static_cast<volatile T*>(m_impl_host)[0] = val;
+#endif
     return val;
   }
   __host__ __device__
   T operator=(T val) noexcept
   {
-    _atomicExch(this->m_impl, val);
+#if defined(__CUDA_ARCH__)
+    _atomicExch(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    m_impl_host[0] = val;
+#endif
     return val;
   }
 
   ///
   /// Atomic store val.
   ///
+  template< typename MEM_ORDER >
   __host__ __device__
-  void store(T val) volatile noexcept
+  void store(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    _atomicExch(static_cast<volatile T*>(this->m_impl), val);
+#if defined(__CUDA_ARCH__)
+    _atomicExch(static_cast<volatile T*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    static_cast<volatile T*>(m_impl_host)[0] = val;
+#endif
   }
+  template< typename MEM_ORDER >
   __host__ __device__
-  void store(T val) noexcept
+  void store(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    _atomicExch(this->m_impl, val);
+#if defined(__CUDA_ARCH__)
+    _atomicExch(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    m_impl_host[0] = val;
+#endif
   }
 
   ///
   /// Atomic load.
   ///
+  template< typename MEM_ORDER >
   __host__ __device__
-  T load() const volatile noexcept
+  T load(MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicCAS(static_cast<volatile T*>(this->m_impl), T{});
+    T current();
+#if defined(__CUDA_ARCH__)
+    current = _atomicCAS(static_cast<volatile T*>(m_impl_device), current, current);
+#else
+    beforeCudaReadTallyBlock<Async>(m_myID);
+    current = static_cast<volatile T*>(m_impl_host)[0];
+#endif
+    return current;
   }
+  template< typename MEM_ORDER >
   __host__ __device__
-  T load() const noexcept
+  T load(MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicCAS(this->m_impl, T{});
+    T current();
+#if defined(__CUDA_ARCH__)
+    current = _atomicCAS(m_impl_device, current, current);
+#else
+    beforeCudaReadTallyBlock<Async>(m_myID);
+    current = m_impl_host[0];
+#endif
+    return current;
   }
 
   ///
@@ -201,27 +280,43 @@ public:
   __host__ __device__
   operator T() const volatile noexcept
   {
-    return _atomicCAS(static_cast<volatile T*>(this->m_impl), T{});
+    T current();
+#if defined(__CUDA_ARCH__)
+    current = _atomicCAS(static_cast<volatile T*>(m_impl_device), current, current);
+#else
+    beforeCudaReadTallyBlock<Async>(m_myID);
+    current = static_cast<volatile T*>(m_impl_host)[0];
+#endif
+    return current;
   }
   __host__ __device__
   operator T() const noexcept
   {
-    return _atomicCAS(this->m_impl, T{});
+    T current();
+#if defined(__CUDA_ARCH__)
+    current = _atomicCAS(m_impl_device, current, current);
+#else
+    beforeCudaReadTallyBlock<Async>(m_myID);
+    current = m_impl_host[0];
+#endif
+    return current;
   }
 
   ///
   /// Atomically loads what is stored while replacing it with val.
   /// Returns what was previously stored.
   ///
+  template< typename MEM_ORDER >
   __device__
-  T exchange(T val) volatile noexcept
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicExch(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicExch(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T exchange(T val) noexcept
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicExch(this->m_impl, val);
+    return _atomicExch(m_impl_device, val);
   }
 
   ///
@@ -229,135 +324,303 @@ public:
   /// Returns true if exchange succeeded, false otherwise, expected is overwritten with what was stored.
   /// Note that weak may fail even if the stored value == expected, but may perform better in a loop on some platforms.
   ///
+  template< typename MEM_ORDER >
   __device__
-  bool compare_exchange_weak(T& expected, T val) volatile noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
     T old_exp = expected;
-    expected = _atomicCAS(static_cast<volatile T*>(this->m_impl), expected, val);
+    expected = _atomicCAS(static_cast<volatile T*>(m_impl_device), expected, val);
     return old_exp == expected;
   }
+  template< typename MEM_ORDER >
   __device__
-  bool compare_exchange_weak(T& expected, T val) noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
     T old_exp = expected;
-    expected = _atomicCAS(this->m_impl, expected, val);
+    expected = _atomicCAS(m_impl_device, expected, val);
     return old_exp == expected;
   }
+  template< typename MEM_ORDER >
   __device__
-  bool compare_exchange_strong(T& expected, T val) volatile noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
     T old_exp = expected;
-    expected = _atomicCAS(static_cast<volatile T*>(this->m_impl), expected, val);
+    expected = _atomicCAS(static_cast<volatile T*>(m_impl_device), expected, val);
     return old_exp == expected;
   }
+  template< typename MEM_ORDER >
   __device__
-  bool compare_exchange_strong(T& expected, T val) noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
     T old_exp = expected;
-    expected = _atomicCAS(this->m_impl, expected, val);
+    expected = _atomicCAS(m_impl_device, expected, val);
+    return old_exp == expected;
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  __device__
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    T old_exp = expected;
+    expected = _atomicCAS(static_cast<volatile T*>(m_impl_device), expected, val);
+    return old_exp == expected;
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  __device__
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    T old_exp = expected;
+    expected = _atomicCAS(m_impl_device, expected, val);
+    return old_exp == expected;
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  __device__
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    T old_exp = expected;
+    expected = _atomicCAS(static_cast<volatile T*>(m_impl_device), expected, val);
+    return old_exp == expected;
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  __device__
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    T old_exp = expected;
+    expected = _atomicCAS(m_impl_device, expected, val);
     return old_exp == expected;
   }
 
   ///
   /// Atomically operate on the stored value and return the value as it was before this operation.
   ///
+  template< typename MEM_ORDER >
   __device__
-  T fetch_add(T val) volatile noexcept
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicAdd(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_add(T val) noexcept
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicAdd(this->m_impl, val);
+    return _atomicAdd(m_impl_device, val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_sub(T val) volatile noexcept
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicSub(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicSub(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_sub(T val) noexcept
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicSub(this->m_impl, val);
+    return _atomicSub(m_impl_device, val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_and(T val) volatile noexcept
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicAnd(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicAnd(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_and(T val) noexcept
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicAnd(this->m_impl, val);
+    return _atomicAnd(m_impl_device, val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_or(T val) volatile noexcept
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicOr(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicOr(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_or(T val) noexcept
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicOr(this->m_impl, val);
+    return _atomicOr(m_impl_device, val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_xor(T val) volatile noexcept
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return _atomicXor(static_cast<volatile T*>(this->m_impl), val);
+    return _atomicXor(static_cast<volatile T*>(m_impl_device), val);
   }
+  template< typename MEM_ORDER >
   __device__
-  T fetch_xor(T val) noexcept
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return _atomicXor(this->m_impl, val);
+    return _atomicXor(m_impl_device, val);
+  }
+
+  ///
+  /// Atomic min operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  __device__
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    return _atomicMin(static_cast<volatile T*>(m_impl_device), val);
+  }
+  template< typename MEM_ORDER >
+  __device__
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    return _atomicMin(m_impl_device, val);
+  }
+
+  ///
+  /// Atomic max operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  __device__
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    return _atomicMax(static_cast<volatile T*>(m_impl_device), val);
+  }
+  template< typename MEM_ORDER >
+  __device__
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    return _atomicMax(m_impl_device, val);
   }
 
   ///
   /// Atomic pre-fix operators. Equivalent to fetch_op(1) op 1
+  /// Warp aggregated.
   ///
   __device__
   T operator++() volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile T*>(this->m_impl), static_cast<T>(1)) + static_cast<T>(1);
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1)) + 1;
+    T val;
+    if (laneId == first) {
+      val = _atomicAdd(static_cast<volatile T*>(m_impl_device), static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
   }
   __device__
   T operator++() noexcept
   {
-    return _atomicAdd(this->m_impl, static_cast<T>(1)) + static_cast<T>(1);
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1)) + 1;
+    T val;
+    if (laneId == first) {
+      val = _atomicAdd(m_impl_device, static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
   }
   __device__
   T operator--() volatile noexcept
   {
-    return _atomicSub(static_cast<volatile T*>(this->m_impl), static_cast<T>(1)) - static_cast<T>(1);
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1)) + 1;
+    T val;
+    if (laneId == first) {
+      val = _atomicSub(static_cast<volatile T*>(m_impl_device), static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
   }
   __device__
   T operator--() noexcept
   {
-    return _atomicSub(this->m_impl, static_cast<T>(1)) - static_cast<T>(1);
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1)) + 1;
+    T val;
+    if (laneId == first) {
+      val = _atomicSub(m_impl_device, static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
   }
 
   ///
   /// Atomic post-fix operators. Equivalent to fetch_op(1)
+  /// Warp aggregated.
   ///
   __device__
   T operator++(int) volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile T*>(this->m_impl), static_cast<T>(1));
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1));
+    T val;
+    if (laneId == first) {
+      val = _atomicAdd(static_cast<volatile T*>(m_impl_device), static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
   }
   __device__
   T operator++(int) noexcept
   {
-    return _atomicAdd(this->m_impl, static_cast<T>(1));
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1));
+    T val;
+    if (laneId == first) {
+      val = _atomicAdd(m_impl_device, static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
   }
   __device__
   T operator--(int) volatile noexcept
   {
-    return _atomicSub(static_cast<volatile T*>(this->m_impl), static_cast<T>(1));
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1));
+    T val;
+    if (laneId == first) {
+      val = _atomicSub(static_cast<volatile T*>(m_impl_device), static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
   }
   __device__
   T operator--(int) noexcept
   {
-    return _atomicSub(this->m_impl, static_cast<T>(1));
+    int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                   + (blockDim.x * blockDim.y) * threadIdx.z;
+    int laneId = threadId % WARP_SIZE;
+    int mask = __ballot(1);
+    int first = __ffs(mask) - 1;
+    int ninc = __popc(mask);
+    int linc = __popc(mask & ((1 << laneId) - 1));
+    T val;
+    if (laneId == first) {
+      val = _atomicSub(m_impl_device, static_cast<T>(ninc));
+    }
+    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
   }
 
   ///
@@ -366,92 +629,70 @@ public:
   __device__
   T operator+=(T val) volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile T*>(this->m_impl), val) + val;
+    return _atomicAdd(static_cast<volatile T*>(m_impl_device), val) + val;
   }
   __device__
   T operator+=(T val) noexcept
   {
-    return _atomicAdd(this->m_impl, val) + val;
+    return _atomicAdd(m_impl_device, val) + val;
   }
   __device__
   T operator-=(T val) volatile noexcept
   {
-    return _atomicSub(static_cast<volatile T*>(this->m_impl), val) - val;
+    return _atomicSub(static_cast<volatile T*>(m_impl_device), val) - val;
   }
   __device__
   T operator-=(T val) noexcept
   {
-    return _atomicSub(this->m_impl, val) - val;
+    return _atomicSub(m_impl_device, val) - val;
   }
   __device__
   T operator&=(T val) volatile noexcept
   {
-    return _atomicAnd(static_cast<volatile T*>(this->m_impl), val) & val;
+    return _atomicAnd(static_cast<volatile T*>(m_impl_device), val) & val;
   }
   __device__
   T operator&=(T val) noexcept
   {
-    return _atomicAnd(this->m_impl, val) & val;
+    return _atomicAnd(m_impl_device, val) & val;
   }
   __device__
   T operator|=(T val) volatile noexcept
   {
-    return _atomicOr(static_cast<volatile T*>(this->m_impl), val) | val;
+    return _atomicOr(static_cast<volatile T*>(m_impl_device), val) | val;
   }
   __device__
   T operator|=(T val) noexcept
   {
-    return _atomicOr(this->m_impl, val) | val;
+    return _atomicOr(m_impl_device, val) | val;
   }
   __device__
   T operator^=(T val) volatile noexcept
   {
-    return _atomicXor(static_cast<volatile T*>(this->m_impl), val) ^ val;
+    return _atomicXor(static_cast<volatile T*>(m_impl_device), val) ^ val;
   }
   __device__
   T operator^=(T val) noexcept
   {
-    return _atomicXor(this->m_impl, val) ^ val;
-  }
-
-  ///
-  /// Atomic min operator, returns the previously stored value
-  ///
-  __device__
-  T fetch_min(T val) volatile noexcept
-  {
-    return _atomicMin(static_cast<volatile T*>(this->m_impl), val);
-  }
-  __device__
-  T fetch_min(T val) noexcept
-  {
-    return _atomicMin(this->m_impl, val);
-  }
-
-  ///
-  /// Atomic max operator, returns the previously stored value
-  ///
-  __device__
-  T fetch_max(T val) volatile noexcept
-  {
-    return _atomicMax(static_cast<volatile T*>(this->m_impl), val);
-  }
-  __device__
-  T fetch_max(T val) noexcept
-  {
-    return _atomicMax(this->m_impl, val);
+    return _atomicXor(m_impl_device, val) ^ val;
   }
 
 private:
   ///
-  /// Implementation via pointer to std::atomic.
+  /// Implementation via T pointer on host and device.
   ///
-  T* m_impl;
+  T* m_impl_device = nullptr;
+  T* m_impl_host = nullptr;
 
   ///
-  /// Remember if are copy to free this->m_impl.
+  /// My cuda reduction variable ID.
   ///
-  const bool m_is_copy;
+  int m_myID = -1;
+
+  ///
+  /// Remember if are copy to free m_impl_device.
+  ///
+  const bool m_is_copy_host;
 
 #if !defined(__CUDA_ARCH__)
   static_assert(std::is_arithmetic<T>::value,

@@ -87,12 +87,45 @@ struct cpu_nonatomic {
 template < typename T, typename POLICY >
 class atomic;
 
+///
+/// RAJA Atomic memory order objects
+///
+constexpr const struct raja_memory_order_relaxed_t
+{
+  static const std::memory_order value = std::memory_order_relaxed;
+} memory_order_relaxed;
+///
+constexpr const struct raja_memory_order_consume_t
+{
+  static const std::memory_order value = std::memory_order_consume;
+} memory_order_consume;
+///
+constexpr const struct raja_memory_order_acquire_t
+{
+  static const std::memory_order value = std::memory_order_acquire;
+} memory_order_acquire;
+///
+constexpr const struct raja_memory_order_release_t
+{
+  static const std::memory_order value = std::memory_order_release;
+} memory_order_release;
+///
+constexpr const struct raja_memory_order_acq_rel_t
+{
+  static const std::memory_order value = std::memory_order_acq_rel;
+} memory_order_acq_rel;
+///
+constexpr const struct raja_memory_order_seq_cst_t
+{
+  static const std::memory_order value = std::memory_order_seq_cst;
+} memory_order_seq_cst;
+
 /*!
  ******************************************************************************
  *
  * \brief  Atomic cpu_nonatomic class specialization.
  *
- * Note: For now memory_order is always memory_order_relaxed.
+ * Note: Memory_order defaults to relaxed instead of seq_cst.
  *
  ******************************************************************************
  */
@@ -100,22 +133,22 @@ template < typename T >
 class atomic < T, cpu_nonatomic>
 {
 public:
-  static const std::memory_order default_memory_order = std::memory_order_relaxed;
+  using default_memory_order_t = raja_memory_order_relaxed_t;
 
   ///
   /// Default constructor default constructs std::atomic<T>.
   ///
-  atomic() noexcept
-    : m_impl(new T {}),
-      m_is_copy(false)
-  {
+  atomic() noexcept = delete;
+  //   : m_impl(new T {}),
+  //     m_is_copy(false)
+  // {
 
-  }
+  // }
 
   ///
   /// Constructor to initialize std::atomic<T> with val.
   ///
-  constexpr atomic(T val) noexcept
+  explicit constexpr atomic(T val = T()) noexcept
     : m_impl(new T {val}),
       m_is_copy(false)
   {
@@ -143,7 +176,7 @@ public:
   ///
   ~atomic() noexcept
   {
-    if (!m_is_copy) delete this->m_impl;
+    if (!m_is_copy) delete m_impl;
   }
 
   ///
@@ -151,35 +184,39 @@ public:
   ///
   T operator=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] = val;
+    return static_cast<volatile T*>(m_impl)[0] = val;
   }
   T operator=(T val) noexcept
   {
-    return this->m_impl[0] = val;
+    return m_impl[0] = val;
   }
 
   ///
   /// Store val.
   ///
-  void store(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  void store(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    static_cast<volatile T*>(this->m_impl)[0] = val;
+    static_cast<volatile T*>(m_impl)[0] = val;
   }
-  void store(T val) noexcept
+  template< typename MEM_ORDER >
+  void store(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    this->m_impl[0] = val;
+    m_impl[0] = val;
   }
 
   ///
   /// Load.
   ///
-  T load() const volatile noexcept
+  template< typename MEM_ORDER >
+  T load(MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0];
+    return static_cast<volatile T*>(m_impl)[0];
   }
-  T load() const noexcept
+  template< typename MEM_ORDER >
+  T load(MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return this->m_impl[0];
+    return m_impl[0];
   }
 
   ///
@@ -187,27 +224,29 @@ public:
   ///
   operator T() const volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0];
+    return static_cast<volatile T*>(m_impl)[0];
   }
   operator T() const noexcept
   {
-    return this->m_impl[0];
+    return m_impl[0];
   }
 
   ///
   /// Atomically loads what is stored while replacing it with val.
   /// Returns what was previously stored.
   ///
-  T exchange(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] = val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] = val;
     return oldT;
   }
-  T exchange(T val) noexcept
+  template< typename MEM_ORDER >
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] = val;
+    T oldT = m_impl[0];
+    m_impl[0] = val;
     return oldT;
   }
 
@@ -216,44 +255,96 @@ public:
   /// Returns true if exchange succeeded, false otherwise, expected is overwritten with what was stored.
   /// Note that weak may fail even if the stored value == expected, but may perform better in a loop on some platforms.
   ///
-  bool compare_exchange_weak(T& expected, T val) volatile noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
+    T oldT = static_cast<volatile T*>(m_impl)[0];
     if (expected == oldT) {
-      static_cast<volatile T*>(this->m_impl)[0] = val;
+      static_cast<volatile T*>(m_impl)[0] = val;
       return true;
     } else {
       expected = oldT;
       return false;
     }
   }
-  bool compare_exchange_weak(T& expected, T val) noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
+    T oldT = m_impl[0];
     if (expected == oldT) {
-      this->m_impl[0] = val;
+      m_impl[0] = val;
       return true;
     } else {
       expected = oldT;
       return false;
     }
   }
-  bool compare_exchange_strong(T& expected, T val) volatile noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
+    T oldT = static_cast<volatile T*>(m_impl)[0];
     if (expected == oldT) {
-      static_cast<volatile T*>(this->m_impl)[0] = val;
+      static_cast<volatile T*>(m_impl)[0] = val;
       return true;
     } else {
       expected = oldT;
       return false;
     }
   }
-  bool compare_exchange_strong(T& expected, T val) noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
+    T oldT = m_impl[0];
     if (expected == oldT) {
-      this->m_impl[0] = val;
+      m_impl[0] = val;
+      return true;
+    } else {
+      expected = oldT;
+      return false;
+    }
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    if (expected == oldT) {
+      static_cast<volatile T*>(m_impl)[0] = val;
+      return true;
+    } else {
+      expected = oldT;
+      return false;
+    }
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    T oldT = m_impl[0];
+    if (expected == oldT) {
+      m_impl[0] = val;
+      return true;
+    } else {
+      expected = oldT;
+      return false;
+    }
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    if (expected == oldT) {
+      static_cast<volatile T*>(m_impl)[0] = val;
+      return true;
+    } else {
+      expected = oldT;
+      return false;
+    }
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    T oldT = m_impl[0];
+    if (expected == oldT) {
+      m_impl[0] = val;
       return true;
     } else {
       expected = oldT;
@@ -264,64 +355,118 @@ public:
   ///
   /// Atomically operate on the stored value and return the value as it was before this operation.
   ///
-  T fetch_add(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] += val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] += val;
     return oldT;
   }
-  T fetch_add(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] += val;
+    T oldT = m_impl[0];
+    m_impl[0] += val;
     return oldT;
   }
-  T fetch_sub(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] -= val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] -= val;
     return oldT;
   }
-  T fetch_sub(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] -= val;
+    T oldT = m_impl[0];
+    m_impl[0] -= val;
     return oldT;
   }
-  T fetch_and(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] &= val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] &= val;
     return oldT;
   }
-  T fetch_and(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] &= val;
+    T oldT = m_impl[0];
+    m_impl[0] &= val;
     return oldT;
   }
-  T fetch_or(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] |= val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] |= val;
     return oldT;
   }
-  T fetch_or(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] |= val;
+    T oldT = m_impl[0];
+    m_impl[0] |= val;
     return oldT;
   }
-  T fetch_xor(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    static_cast<volatile T*>(this->m_impl)[0] ^= val;
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    static_cast<volatile T*>(m_impl)[0] ^= val;
     return oldT;
   }
-  T fetch_xor(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    T oldT = this->m_impl[0];
-    this->m_impl[0] ^= val;
+    T oldT = m_impl[0];
+    m_impl[0] ^= val;
+    return oldT;
+  }
+
+  ///
+  /// Atomic min operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    if (val < oldT) {
+      static_cast<volatile T*>(m_impl)[0] = val;
+    }
+    return oldT;
+  }
+  template< typename MEM_ORDER >
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    T oldT = m_impl[0];
+    if (val < oldT) {
+      m_impl[0] = val;
+    }
+    return oldT;
+  }
+
+  ///
+  /// Atomic max operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    T oldT = static_cast<volatile T*>(m_impl)[0];
+    if (val > oldT) {
+      static_cast<volatile T*>(m_impl)[0] = val;
+    }
+    return oldT;
+  }
+  template< typename MEM_ORDER >
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    T oldT = m_impl[0];
+    if (val > oldT) {
+      m_impl[0] = val;
+    }
     return oldT;
   }
 
@@ -330,19 +475,19 @@ public:
   ///
   T operator++() volatile noexcept
   {
-    return ++static_cast<volatile T*>(this->m_impl)[0];
+    return ++static_cast<volatile T*>(m_impl)[0];
   }
   T operator++() noexcept
   {
-    return ++this->m_impl[0];
+    return ++m_impl[0];
   }
   T operator--() volatile noexcept
   {
-    return --static_cast<volatile T*>(this->m_impl)[0];
+    return --static_cast<volatile T*>(m_impl)[0];
   }
   T operator--() noexcept
   {
-    return --this->m_impl[0];
+    return --m_impl[0];
   }
 
   ///
@@ -350,19 +495,19 @@ public:
   ///
   T operator++(int) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0]++;
+    return static_cast<volatile T*>(m_impl)[0]++;
   }
   T operator++(int) noexcept
   {
-    return this->m_impl[0]++;
+    return m_impl[0]++;
   }
   T operator--(int) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0]--;
+    return static_cast<volatile T*>(m_impl)[0]--;
   }
   T operator--(int) noexcept
   {
-    return this->m_impl[0]--;
+    return m_impl[0]--;
   }
 
   ///
@@ -370,83 +515,43 @@ public:
   ///
   T operator+=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] += val;
+    return static_cast<volatile T*>(m_impl)[0] += val;
   }
   T operator+=(T val) noexcept
   {
-    return this->m_impl[0] += val;
+    return m_impl[0] += val;
   }
   T operator-=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] -= val;
+    return static_cast<volatile T*>(m_impl)[0] -= val;
   }
   T operator-=(T val) noexcept
   {
-    return this->m_impl[0] -= val;
+    return m_impl[0] -= val;
   }
   T operator&=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] &= val;
+    return static_cast<volatile T*>(m_impl)[0] &= val;
   }
   T operator&=(T val) noexcept
   {
-    return this->m_impl[0] &= val;
+    return m_impl[0] &= val;
   }
   T operator|=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] |= val;
+    return static_cast<volatile T*>(m_impl)[0] |= val;
   }
   T operator|=(T val) noexcept
   {
-    return this->m_impl[0] |= val;
+    return m_impl[0] |= val;
   }
   T operator^=(T val) volatile noexcept
   {
-    return static_cast<volatile T*>(this->m_impl)[0] ^= val;
+    return static_cast<volatile T*>(m_impl)[0] ^= val;
   }
   T operator^=(T val) noexcept
   {
-    return this->m_impl[0] ^= val;
-  }
-
-  ///
-  /// Atomic min operator, returns the previously stored value
-  ///
-  T fetch_min(T val) volatile noexcept
-  {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    if (val < oldT) {
-      static_cast<volatile T*>(this->m_impl)[0] = val;
-    }
-    return oldT;
-  }
-  T fetch_min(T val) noexcept
-  {
-    T oldT = this->m_impl[0];
-    if (val < oldT) {
-      this->m_impl[0] = val;
-    }
-    return oldT;
-  }
-
-  ///
-  /// Atomic max operator, returns the previously stored value
-  ///
-  T fetch_max(T val) volatile noexcept
-  {
-    T oldT = static_cast<volatile T*>(this->m_impl)[0];
-    if (val > oldT) {
-      static_cast<volatile T*>(this->m_impl)[0] = val;
-    }
-    return oldT;
-  }
-  T fetch_max(T val) noexcept
-  {
-    T oldT = this->m_impl[0];
-    if (val > oldT) {
-      this->m_impl[0] = val;
-    }
-    return oldT;
+    return m_impl[0] ^= val;
   }
 
 private:
@@ -456,7 +561,7 @@ private:
   T* m_impl;
 
   ///
-  /// Remember if are copy to free this->m_impl.
+  /// Remember if are copy to free m_impl.
   ///
   const bool m_is_copy;
 };
@@ -477,22 +582,22 @@ template < typename T >
 class atomic < T, cpu_atomic>
 {
 public:
-  static const std::memory_order default_memory_order = std::memory_order_relaxed;
+  using default_memory_order_t = raja_memory_order_relaxed_t;
 
   ///
   /// Default constructor default constructs std::atomic<T>.
   ///
-  atomic() noexcept
-    : m_impl(new std::atomic<T> {}),
-      m_is_copy(false)
-  {
+  atomic() noexcept = delete;
+  //   : m_impl(new std::atomic<T> {}),
+  //     m_is_copy(false)
+  // {
 
-  }
+  // }
 
   ///
   /// Constructor to initialize std::atomic<T> with val.
   ///
-  constexpr atomic(T val) noexcept
+  explicit constexpr atomic(T val = T()) noexcept
     : m_impl(new std::atomic<T> {val}),
       m_is_copy(false)
   {
@@ -516,11 +621,11 @@ public:
   atomic& operator=(const atomic&) volatile = delete;
 
   ///
-  /// Atomic destructor frees this->m_impl if not a copy.
+  /// Atomic destructor frees m_impl if not a copy.
   ///
   ~atomic() noexcept
   {
-    if (!m_is_copy) delete this->m_impl;
+    if (!m_is_copy) delete m_impl;
   }
 
   ///
@@ -528,35 +633,39 @@ public:
   ///
   T operator=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator=(val);
   }
   T operator=(T val) noexcept
   {
-    return this->m_impl->operator=(val);
+    return m_impl->operator=(val);
   }
 
   ///
   /// Atomic store val.
   ///
-  void store(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  void store(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    static_cast<volatile std::atomic<T>*>(this->m_impl)->store(val, default_memory_order);
+    static_cast<volatile std::atomic<T>*>(m_impl)->store(val, MEM_ORDER::value);
   }
-  void store(T val) noexcept
+  template< typename MEM_ORDER >
+  void store(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    this->m_impl->store(val, default_memory_order);
+    m_impl->store(val, MEM_ORDER::value);
   }
 
   ///
   /// Atomic load.
   ///
-  T load() const volatile noexcept
+  template< typename MEM_ORDER >
+  T load(MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->load(default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->load(MEM_ORDER::value);
   }
-  T load() const noexcept
+  template< typename MEM_ORDER >
+  T load(MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return this->m_impl->load(default_memory_order);
+    return m_impl->load(MEM_ORDER::value);
   }
 
   ///
@@ -564,24 +673,26 @@ public:
   ///
   operator T() const volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator T();
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator T();
   }
   operator T() const noexcept
   {
-    return this->m_impl->operator T();
+    return m_impl->operator T();
   }
 
   ///
   /// Atomically loads what is stored while replacing it with val.
   /// Returns what was previously stored.
   ///
-  T exchange(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->exchange(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->exchange(val, MEM_ORDER::value);
   }
-  T exchange(T val) noexcept
+  template< typename MEM_ORDER >
+  T exchange(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->exchange(val, default_memory_order);
+    return m_impl->exchange(val, MEM_ORDER::value);
   }
 
   ///
@@ -589,65 +700,135 @@ public:
   /// Returns true if exchange succeeded, false otherwise, expected is overwritten with what was stored.
   /// Note that weak may fail even if the stored value == expected, but may perform better in a loop on some platforms.
   ///
-  bool compare_exchange_weak(T& expected, T val) volatile noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->compare_exchange_weak(expected, val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_weak(expected, val, MEM_ORDER::value);
   }
-  bool compare_exchange_weak(T& expected, T val) noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->compare_exchange_weak(expected, val, default_memory_order);
+    return m_impl->compare_exchange_weak(expected, val, MEM_ORDER::value);
   }
-  bool compare_exchange_strong(T& expected, T val) volatile noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->compare_exchange_strong(expected, val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_strong(expected, val, MEM_ORDER::value);
   }
-  bool compare_exchange_strong(T& expected, T val) noexcept
+  template< typename MEM_ORDER >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->compare_exchange_strong(expected, val, default_memory_order);
+    return m_impl->compare_exchange_strong(expected, val, MEM_ORDER::value);
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    return static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_weak(expected, val, MEM_ORDER_0::value, MEM_ORDER_1::value);
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    return m_impl->compare_exchange_weak(expected, val, MEM_ORDER_0::value, MEM_ORDER_1::value);
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) volatile noexcept
+  {
+    return static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_strong(expected, val, MEM_ORDER_0::value, MEM_ORDER_1::value);
+  }
+  template< typename MEM_ORDER_0, typename MEM_ORDER_1 >
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) noexcept
+  {
+    return m_impl->compare_exchange_strong(expected, val, MEM_ORDER_0::value, MEM_ORDER_1::value);
   }
 
   ///
   /// Atomically operate on the stored value and return the value as it was before this operation.
   ///
-  T fetch_add(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->fetch_add(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->fetch_add(val, MEM_ORDER::value);
   }
-  T fetch_add(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->fetch_add(val, default_memory_order);
+    return m_impl->fetch_add(val, MEM_ORDER::value);
   }
-  T fetch_sub(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->fetch_sub(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->fetch_sub(val, MEM_ORDER::value);
   }
-  T fetch_sub(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->fetch_sub(val, default_memory_order);
+    return m_impl->fetch_sub(val, MEM_ORDER::value);
   }
-  T fetch_and(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->fetch_and(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->fetch_and(val, MEM_ORDER::value);
   }
-  T fetch_and(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->fetch_and(val, default_memory_order);
+    return m_impl->fetch_and(val, MEM_ORDER::value);
   }
-  T fetch_or(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->fetch_or(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->fetch_or(val, MEM_ORDER::value);
   }
-  T fetch_or(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->fetch_or(val, default_memory_order);
+    return m_impl->fetch_or(val, MEM_ORDER::value);
   }
-  T fetch_xor(T val) volatile noexcept
+  template< typename MEM_ORDER >
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->fetch_xor(val, default_memory_order);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->fetch_xor(val, MEM_ORDER::value);
   }
-  T fetch_xor(T val) noexcept
+  template< typename MEM_ORDER >
+  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) noexcept
   {
-    return this->m_impl->fetch_xor(val, default_memory_order);
+    return m_impl->fetch_xor(val, MEM_ORDER::value);
+  }
+
+  ///
+  /// Atomic min operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    T oldT = static_cast<volatile std::atomic<T>*>(m_impl)->load();
+    while (val < oldT && !static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_weak(oldT, val, MEM_ORDER::value));
+    return oldT;
+  }
+  template< typename MEM_ORDER >
+  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    T oldT = m_impl->load();
+    while (val < oldT && !m_impl->compare_exchange_weak(oldT, val, MEM_ORDER::value));
+    return oldT;
+  }
+
+  ///
+  /// Atomic max operator, returns the previously stored value
+  ///
+  template< typename MEM_ORDER >
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) volatile noexcept
+  {
+    T oldT = static_cast<volatile std::atomic<T>*>(m_impl)->load();
+    while (val > oldT && !static_cast<volatile std::atomic<T>*>(m_impl)->compare_exchange_weak(oldT, val, MEM_ORDER::value));
+    return oldT;
+  }
+  template< typename MEM_ORDER >
+  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) noexcept
+  {
+    T oldT = m_impl->load();
+    while (val > oldT && !m_impl->compare_exchange_weak(oldT, val, MEM_ORDER::value));
+    return oldT;
   }
 
   ///
@@ -655,19 +836,19 @@ public:
   ///
   T operator++() volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator++();
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator++();
   }
   T operator++() noexcept
   {
-    return this->m_impl->operator++();
+    return m_impl->operator++();
   }
   T operator--() volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator--();
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator--();
   }
   T operator--() noexcept
   {
-    return this->m_impl->operator--();
+    return m_impl->operator--();
   }
 
   ///
@@ -675,19 +856,19 @@ public:
   ///
   T operator++(int) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator++(0);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator++(0);
   }
   T operator++(int) noexcept
   {
-    return this->m_impl->operator++(0);
+    return m_impl->operator++(0);
   }
   T operator--(int) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator--(0);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator--(0);
   }
   T operator--(int) noexcept
   {
-    return this->m_impl->operator--(0);
+    return m_impl->operator--(0);
   }
 
   ///
@@ -695,75 +876,43 @@ public:
   ///
   T operator+=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator+=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator+=(val);
   }
   T operator+=(T val) noexcept
   {
-    return this->m_impl->operator+=(val);
+    return m_impl->operator+=(val);
   }
   T operator-=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator-=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator-=(val);
   }
   T operator-=(T val) noexcept
   {
-    return this->m_impl->operator-=(val);
+    return m_impl->operator-=(val);
   }
   T operator&=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator&=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator&=(val);
   }
   T operator&=(T val) noexcept
   {
-    return this->m_impl->operator&=(val);
+    return m_impl->operator&=(val);
   }
   T operator|=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator|=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator|=(val);
   }
   T operator|=(T val) noexcept
   {
-    return this->m_impl->operator|=(val);
+    return m_impl->operator|=(val);
   }
   T operator^=(T val) volatile noexcept
   {
-    return static_cast<volatile std::atomic<T>*>(this->m_impl)->operator^=(val);
+    return static_cast<volatile std::atomic<T>*>(m_impl)->operator^=(val);
   }
   T operator^=(T val) noexcept
   {
-    return this->m_impl->operator^=(val);
-  }
-
-  ///
-  /// Atomic min operator, returns the previously stored value
-  ///
-  T fetch_min(T val) volatile noexcept
-  {
-    T oldT = static_cast<volatile std::atomic<T>*>(this->m_impl)->load();
-    while (val < oldT && !static_cast<volatile std::atomic<T>*>(this->m_impl)->compare_exchange_weak(oldT, val, default_memory_order));
-    return oldT;
-  }
-  T fetch_min(T val) noexcept
-  {
-    T oldT = this->m_impl->load();
-    while (val < oldT && !this->m_impl->compare_exchange_weak(oldT, val, default_memory_order));
-    return oldT;
-  }
-
-  ///
-  /// Atomic max operator, returns the previously stored value
-  ///
-  T fetch_max(T val) volatile noexcept
-  {
-    T oldT = static_cast<volatile std::atomic<T>*>(this->m_impl)->load();
-    while (val > oldT && !static_cast<volatile std::atomic<T>*>(this->m_impl)->compare_exchange_weak(oldT, val, default_memory_order));
-    return oldT;
-  }
-  T fetch_max(T val) noexcept
-  {
-    T oldT = this->m_impl->load();
-    while (val > oldT && !this->m_impl->compare_exchange_weak(oldT, val, default_memory_order));
-    return oldT;
+    return m_impl->operator^=(val);
   }
 
 private:
@@ -773,7 +922,7 @@ private:
   std::atomic<T>* m_impl;
 
   ///
-  /// Remember if are copy to free this->m_impl.
+  /// Remember if are copy to free m_impl.
   ///
   const bool m_is_copy;
 };
