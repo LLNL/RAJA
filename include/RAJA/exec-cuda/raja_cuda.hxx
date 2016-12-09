@@ -283,7 +283,7 @@ __device__ inline double _atomicSub(double *address, double value) noexcept
 {
   return atomicAdd(address, -value);
 }
-#endif
+#endif // __CUDA_ARCH__ >= 600
 
 /*!
  ******************************************************************************
@@ -516,7 +516,7 @@ __device__ inline unsigned long long int _atomicMax(
   }
   return readback;
 }
-#endif
+#endif // __CUDA_ARCH__ < 350
 
 #if __CUDA_ARCH__ < 600
 /*!
@@ -555,7 +555,7 @@ __device__ inline double _atomicSub(double *address, double value) noexcept
   }
   return __longlong_as_double(oldval);
 }
-#endif
+#endif // __CUDA_ARCH__ < 600
 
 #elif defined(RAJA_USE_ATOMIC_TWO)
 
@@ -736,13 +736,13 @@ __device__ inline double _atomicSub(double *address, double value) noexcept
 
 #elif defined(RAJA_USE_NO_ATOMICS)
 
-// Noting to do here...
+// Nothing to do here...
 
 #else
 
 #error one of the options for using/not using atomics must be specified
 
-#endif //  defined(RAJA_USE_*ATOMICS*)
+#endif //  defined(RAJA_USE_*ATOMIC*)
 
 #endif //  defined(__CUDA_ARCH__)
 

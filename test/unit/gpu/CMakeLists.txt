@@ -107,6 +107,13 @@ add_test(
     NAME scan
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan.exe>)
 
+set_source_files_properties(Atomic.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+cuda_add_executable(atomic.exe
+  Atomic.cxx)
+add_test(
+    NAME atomic
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:atomic.exe>)
+
 target_link_libraries(reducemin.exe RAJA)
 target_link_libraries(reducemax.exe RAJA)
 target_link_libraries(reducesum.exe RAJA)
@@ -114,3 +121,4 @@ target_link_libraries(traversal.exe RAJA)
 target_link_libraries(reduceminloc.exe RAJA)
 target_link_libraries(reducemaxloc.exe RAJA)
 target_link_libraries(scan.exe RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+target_link_libraries(atomic.exe RAJA)
