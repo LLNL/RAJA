@@ -21,6 +21,8 @@
 #ifndef RAJA_Compare_HXX
 #define RAJA_Compare_HXX
 
+#include <limits>
+
 #define rcabs(val) (((val) < 0) ? (-(val)) : (val))
 
 namespace RAJA
@@ -32,8 +34,15 @@ namespace RAJA
 template <typename T>
 bool equal(T a, T b)
 {
-  return (rcabs(a - b)
+  bool equal;
+  if (   rcabs(a) > std::numeric_limits<T>::max()
+      && rcabs(b) > std::numeric_limits<T>::max()) {
+    equal = (a == b);
+  } else {
+    equal = (rcabs(a - b)
           <= ((rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b)) * T(1.0e-12)));
+  }
+  return equal;
 }
 
 //

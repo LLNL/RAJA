@@ -255,9 +255,6 @@ __device__ inline T _atomicXor(T *address, T value) noexcept
   return atomicXor(address, value);
 }
 
-
-#if defined(__CUDA_ARCH__)
-
 /*!
  ******************************************************************************
  *
@@ -309,17 +306,17 @@ __device__ inline double _atomicExch(double *address, double value) noexcept
 template <>
 __device__ inline float _atomicCAS(float *address, float compare, float value) noexcept
 {
-  return atomicCAS((int *)address,
-                    __float_as_int(compare),
-                    __float_as_int(value));
+  return __int_as_float(atomicCAS((int *)address,
+                                  __float_as_int(compare),
+                                  __float_as_int(value)));
 }
 ///
 template <>
 __device__ inline double _atomicCAS(double *address, double compare, double value) noexcept
 {
-  return atomicCAS((unsigned long long int *)address,
-                    __double_as_longlong(compare),
-                    __double_as_longlong(value));
+  return __longlong_as_double(atomicCAS((unsigned long long int *)address,
+                                        __double_as_longlong(compare),
+                                        __double_as_longlong(value)));
 }
 
 /*!
@@ -743,8 +740,6 @@ __device__ inline double _atomicSub(double *address, double value) noexcept
 #error one of the options for using/not using atomics must be specified
 
 #endif //  defined(RAJA_USE_*ATOMIC*)
-
-#endif //  defined(__CUDA_ARCH__)
 
 }  // closing brace for RAJA namespace
 

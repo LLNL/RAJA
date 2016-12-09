@@ -1,354 +1,536 @@
 /*
  * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+ *
  * Produced at the Lawrence Livermore National Laboratory.
  *
  * All rights reserved.
  *
- * This source code cannot be distributed without permission and
- * further review from Lawrence Livermore National Laboratory.
+ * For release details and restrictions, please see raja/README-license.txt
  */
 
-//
-// Main program illustrating RAJA nested-loop execution
-//
-
-#include <time.h>
+#include <math.h>
 #include <cfloat>
-#include <cstdlib>
-
+#include <cstdio>
+#include <iomanip>
 #include <iostream>
+#include <random>
 #include <string>
-#include <vector>
 
 #include "RAJA/RAJA.hxx"
+
+#include "Compare.hxx"
+
+#define TEST_VEC_LEN 1024 * 32
 
 using namespace RAJA;
 using namespace std;
 
-#include "Compare.hxx"
-
 //
 // Global variables for counting tests executed/passed.
 //
-unsigned s_ntests_run_total = 0;
-unsigned s_ntests_passed_total = 0;
-
 unsigned s_ntests_run = 0;
 unsigned s_ntests_passed = 0;
 
-// block_size is needed by the reduction variables to setup shared memory
-// Care should be used here to cover the maximum block dimensions used by this
-// test
-const size_t block_size = 256;
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Example LTimes kernel test routines
-//
-// Demonstrates a 4-nested loop, the use of complex nested policies and
-// the use of strongly-typed indices
-//
-// This routine computes phi(m, g, z) = SUM_d {  ell(m, d)*psi(d,g,z)  }
-//
-///////////////////////////////////////////////////////////////////////////
-
-RAJA_INDEX_VALUE(IMoment, "IMoment");
-RAJA_INDEX_VALUE(IDirection, "IDirection");
-RAJA_INDEX_VALUE(IGroup, "IGroup");
-RAJA_INDEX_VALUE(IZone, "IZone");
-
-template <typename POL>
-void runLTimesTest(std::string const &policy,
-                   Index_type num_moments,
-                   Index_type num_directions,
-                   Index_type num_groups,
-                   Index_type num_zones)
-{
-  cout << "\n TestLTimes " << num_moments << " moments, " << num_directions
-       << " directions, " << num_groups << " groups, and " << num_zones
-       << " zones"
-       << " with policy " << policy << endl;
-
-  s_ntests_run++;
-  s_ntests_run_total++;
-
-  // allocate data
-  // phi is initialized to all zeros, the others are randomized
-  std::vector<double> ell_data(num_moments * num_directions);
-  std::vector<double> psi_data(num_directions * num_groups * num_zones);
-  std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
-
-  // setup CUDA atomic variables to be exercised
-  RAJA::atomic<cuda_atomic, double> pdsum(0.0);
-  RAJA::atomic<cuda_atomic, double> pdmin(DBL_MAX);
-  RAJA::atomic<cuda_atomic, double> pdmax(-DBL_MAX);
-
-  // setup local Reduction variables as a crosscheck
-  double lsum = 0.0;
-  double lmin = DBL_MAX;
-  double lmax = -DBL_MAX;
-
-  //
-  // randomize data
-  for (size_t i = 0; i < ell_data.size(); ++i) {
-    ell_data[i] = drand48();
-    //ell_data[i] = 0.0;
-  }
-  //ell_data[0] = 2.0;
-
-  for (size_t i = 0; i < psi_data.size(); ++i) {
-    psi_data[i] = drand48();
-    //psi_data[i] = 0.0;
-  }
-  //psi_data[0] = 5.0;
-  // create device memory
-  double *d_ell, *d_phi, *d_psi;
-  cudaErrchk(cudaMalloc(&d_ell, sizeof(double) * ell_data.size()));
-  cudaErrchk(cudaMalloc(&d_phi, sizeof(double) * phi_data.size()));
-  cudaErrchk(cudaMalloc(&d_psi, sizeof(double) * psi_data.size()));
-
-  // Copy to device
-  cudaMemcpy(d_ell,
-             &ell_data[0],
-             sizeof(double) * ell_data.size(),
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_phi,
-             &phi_data[0],
-             sizeof(double) * phi_data.size(),
-             cudaMemcpyHostToDevice);
-  cudaMemcpy(d_psi,
-             &psi_data[0],
-             sizeof(double) * psi_data.size(),
-             cudaMemcpyHostToDevice);
-
-  // create views on data
-  typename POL::ELL_VIEW ell(d_ell, num_moments, num_directions);
-  typename POL::PSI_VIEW psi(d_psi, num_directions, num_groups, num_zones);
-  typename POL::PHI_VIEW phi(d_phi, num_moments, num_groups, num_zones);
-
-  // get execution policy
-  using EXEC = typename POL::EXEC;
-
-  // do calculation using RAJA
-  forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
-      RangeSegment(0, num_moments),
-      RangeSegment(0, num_directions),
-      RangeSegment(0, num_groups),
-      RangeSegment(0, num_zones),
-      [=] __device__(IMoment m, IDirection d, IGroup g, IZone z) {
-        // printf("%d,%d,%d,%d\n", *m, *d, *g, *z);
-        double val = ell(m, d) * psi(d, g, z);
-        phi(m, g, z) += val;
-        pdsum += val;
-        pdmin.fetch_min(val);
-        pdmax.fetch_max(val);
-        int index = *d + (*m * num_directions)
-                    + (*g * num_directions * num_moments)
-                    + (*z * num_directions * num_moments * num_groups);
-      });
-
-  cudaDeviceSynchronize();
-  // Copy to host the result
-  cudaMemcpy(&phi_data[0],
-             d_phi,
-             sizeof(double) * phi_data.size(),
-             cudaMemcpyDeviceToHost);
-
-  // Free CUDA memory
-  cudaFree(d_ell);
-  cudaFree(d_phi);
-  cudaFree(d_psi);
-
-  ////
-  //// CHECK ANSWER against the hand-written sequential kernel
-  ////
-  size_t nfailed = 0;
-
-  // swap to host pointers
-  ell.data = &ell_data[0];
-  phi.data = &phi_data[0];
-  psi.data = &psi_data[0];
-  for (IZone z(0); z < num_zones; ++z) {
-    for (IGroup g(0); g < num_groups; ++g) {
-      for (IMoment m(0); m < num_moments; ++m) {
-        double total = 0.0;
-        for (IDirection d(0); d < num_directions; ++d) {
-          double val = ell(m, d) * psi(d, g, z);
-          total += val;
-          lmin = RAJA_MIN(lmin, val);
-          lmax = RAJA_MAX(lmax, val);
-          int index = *d + (*m * num_directions)
-                      + (*g * num_directions * num_moments)
-                      + (*z * num_directions * num_moments * num_groups);
-        }
-        lsum += total;
-        // check answer with some reasonable tolerance
-        if (std::abs(total - phi(m, g, z)) > 1e-12) {
-          nfailed++;
-        }
-      }
-    }
-  }
-  size_t reductionsFailed = 0;
-  std::string whichFailed;
-
-  if (std::abs(lsum - double(pdsum)) > 6e-9) {
-    reductionsFailed++;
-    whichFailed += "[ReduceSum]";
-    printf("ReduceSum failed : EPS =  %g\n",std::abs(lsum - double(pdsum)));
-  }
-
-  if (lmin != double(pdmin)) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMin]";
-  }
-
-  if (lmax != double(pdmax)) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMax]";
-  }
-
-  if (nfailed || reductionsFailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-    if (reductionsFailed) {
-      cout << "  REDUCTIONS FAILURE: " << whichFailed << endl;
-    }
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
-  }
-}
-
-// Use thread-block mappings
-struct PolLTimesA_GPU {
-  // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                cuda_threadblock_x_exec<32>,
-                                cuda_threadblock_y_exec<32>>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
-};
-
-// Use thread and block mappings
-struct PolLTimesB_GPU {
-  // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                cuda_thread_z_exec,
-                                cuda_block_y_exec>,
-                       Permute<PERM_JILK>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
-};
-
-void runLTimesTests(Index_type num_moments,
-                    Index_type num_directions,
-                    Index_type num_groups,
-                    Index_type num_zones)
-{
-  runLTimesTest<PolLTimesA_GPU>(
-      "PolLTimesA_GPU", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesB_GPU>(
-      "PolLTimesB_GPU", num_moments, num_directions, num_groups, num_zones);
-}
-
-void runNegativeRange()
-{
-  s_ntests_run++;
-  s_ntests_run_total++;
-
-  cout << "\n TestNegativeRange " << endl;
-
-  double *data;
-  double host_data[100];
-
-  cudaMallocManaged((void **)&data, sizeof(double) * 100, cudaMemAttachGlobal);
-
-  for (int i = 0; i < 100; ++i) {
-    host_data[i] = i * 1.0;
-  }
-
-  forallN<NestedPolicy<ExecList<cuda_threadblock_y_exec<16>,
-                                cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
-        const int idx = ((k - -2) * 10) + (j - -2);
-        data[idx] = idx * 1.0;
-      });
-
-  cudaDeviceSynchronize();
-
-  size_t nfailed = 0;
-
-  for (int i = 0; i < 100; ++i) {
-    if (host_data[i] != data[i]) {
-      nfailed++;
-    }
-  }
-
-  if (nfailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Main Program.
-//
-///////////////////////////////////////////////////////////////////////////
-
 int main(int argc, char *argv[])
 {
-  ///////////////////////////////////////////////////////////////////////////
+  cout << "\n Begin RAJA GPU Atomic tests!!! " << endl;
+
+  const int test_repeat = 10;
+
   //
-  // Run RAJA::forall nested loop tests...
+  // Allocate and initialize managed data arrays
   //
-  ///////////////////////////////////////////////////////////////////////////
-  cout << "Starting GPU nested tests" << endl << endl;
-  // Run some LTimes example tests (directions, groups, zones)
-  runLTimesTests(2, 3, 7, 3);
-  runLTimesTests(2, 3, 32, 4);
-  runLTimesTests(25, 96, 8, 32);
-  runLTimesTests(100, 15, 7, 13);
-  runNegativeRange();
+
+  int iinit_val = -1;
+  double *rand_dvalue;
+
+  int *ivalue;
+  int* ivalue_host;
+  int *rand_ivalue;
+
+  cudaMallocManaged((void **)&rand_dvalue,
+                    sizeof(double) * TEST_VEC_LEN,
+                    cudaMemAttachGlobal);
+
+  cudaMallocManaged((void **)&ivalue,
+                    sizeof(int) * TEST_VEC_LEN,
+                    cudaMemAttachGlobal);
+  ivalue_host = new int[TEST_VEC_LEN];
+  for (int i = 0; i < TEST_VEC_LEN; ++i) {
+    ivalue_host[i] = iinit_val;
+    ivalue[i] = iinit_val;
+  }
+
+
+  cudaMallocManaged((void **)&rand_ivalue,
+                    sizeof(int) * TEST_VEC_LEN,
+                    cudaMemAttachGlobal);
+
+  ///
+  /// Define thread block size for CUDA exec policy
+  ///
+  const size_t block_size = 256;
+
+  ////////////////////////////////////////////////////////////////////////////
+  // Run 3 different sum reduction tests in a loop
+  ////////////////////////////////////////////////////////////////////////////
+
+  for (int tcount = 0; tcount < test_repeat; ++tcount) {
+    cout << "\t tcount = " << tcount << endl;
+
+    double seq_min = 1.0;
+    double seq_max =-1.0;
+    double seq_sum = 0.0;
+    double seq_pos_sum = 0.0;
+    double seq_neg_sum = 0.0;
+    double seq_prod = 1.0;
+    int seq_pos_cnt = 0;
+    int seq_neg_cnt = 0;
+    int seq_and = 0xffffffff;
+    int seq_or = 0x0;
+    int seq_xor = 0x00ff00ff;
+
+    const int prod_length = std::min(int(drand48()*1024.0*8.0), TEST_VEC_LEN);
+
+    for (int i = 0; i < TEST_VEC_LEN; ++i) {
+      // create distribution equally distributed in (-2, -1], (-1, -0.5], [0.5, 1), [1, 2)
+      double tmp = drand48();
+      if (tmp < 0.5) tmp = 2.0 * tmp + 1.0;
+      if (drand48() < 0.5) tmp = -tmp;
+      rand_dvalue[i] = tmp;
+
+      seq_sum += rand_dvalue[i];
+      if (i < prod_length) {
+        seq_prod *= rand_dvalue[i];
+      }
+      if (rand_dvalue[i] < seq_min) {
+        seq_min = rand_dvalue[i];
+      }
+      if (rand_dvalue[i] > seq_max) {
+        seq_max = rand_dvalue[i];
+      }
+      if(rand_dvalue[i] < 0.0) {
+        seq_neg_cnt++;
+        seq_neg_sum += rand_dvalue[i];
+      }
+      else {
+        seq_pos_cnt++;
+        seq_pos_sum += rand_dvalue[i];
+      }
+
+      rand_ivalue[i] = i << 3;
+      seq_and &= rand_ivalue[i];
+      seq_or |= rand_ivalue[i];
+      seq_xor ^= rand_ivalue[i];
+    }
+
+    //
+    // test 1 runs atomics using fetch_min, fetch_max.
+    //
+    {  // begin test 1
+      s_ntests_run++;
+
+      RAJA::atomic<cuda_atomic, double> atm_min(1.0);
+      RAJA::atomic<cuda_atomic, double> atm_max(1.0);
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        atm_min.fetch_min(rand_dvalue[i]);
+        atm_max.fetch_max(rand_dvalue[i]);
+      });
+
+      if (   !equal(double(atm_min), seq_min)
+          || !equal(double(atm_max), seq_max) ) {
+        cout << "\n TEST 1 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_min = " << static_cast<double>(atm_min)
+             << " (" << seq_min << ") " << endl;
+        cout << setprecision(20) << "\tatm_max = " << static_cast<double>(atm_max)
+             << " (" << seq_max << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 1
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 2 runs atomics using fetch_add, fetch_sub, a+=, a-=.
+    //
+    {  // begin test 2
+      s_ntests_run++;
+    
+      RAJA::atomic<cuda_atomic, double> atm_fad_sum(0.0);
+      RAJA::atomic<cuda_atomic, double> atm_fsb_sum(0.0);
+      RAJA::atomic<cuda_atomic, double> atm_ple_sum(0.0);
+      RAJA::atomic<cuda_atomic, double> atm_mie_sum(0.0);
+      RAJA::atomic<cuda_atomic, double> atm_pos_sum(0.0);
+      RAJA::atomic<cuda_atomic, double> atm_neg_sum(0.0);
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        atm_fad_sum.fetch_add(rand_dvalue[i]);
+        atm_fsb_sum.fetch_sub(rand_dvalue[i]);
+        atm_ple_sum += rand_dvalue[i];
+        atm_mie_sum -= rand_dvalue[i];
+
+        if(rand_dvalue[i] < 0.0) {
+          atm_neg_sum += rand_dvalue[i];
+        }
+        else {
+          atm_pos_sum += rand_dvalue[i];
+        }
+      });
+
+      if (   !equal(double(atm_fad_sum), seq_sum)
+          || !equal(double(atm_fsb_sum), -seq_sum)
+          || !equal(double(atm_ple_sum), seq_sum)
+          || !equal(double(atm_mie_sum), -seq_sum)
+          || !equal(double(atm_pos_sum), seq_pos_sum)
+          || !equal(double(atm_neg_sum), seq_neg_sum) ) {
+        cout << "\n TEST 2 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_fetch_add_sum = " << static_cast<double>(atm_fad_sum)
+             << " (" << seq_sum << ") " << endl;
+        cout << setprecision(20) << "\tatm_fetch_sub_sum = " << static_cast<double>(atm_fsb_sum)
+             << " (" << -seq_sum << ") " << endl;
+        cout << setprecision(20) << "\tatm_+=_sum = " << static_cast<double>(atm_ple_sum)
+             << " (" << seq_sum << ") " << endl;
+        cout << setprecision(20) << "\tatm_-=_sum = " << static_cast<double>(atm_mie_sum)
+             << " (" << -seq_sum << ") " << endl;
+        cout << setprecision(20) << "\tatm_pos_sum = " << static_cast<double>(atm_pos_sum)
+             << " (" << seq_pos_sum << ") " << endl;
+        cout << setprecision(20) << "\tatm_neg_sum = " << static_cast<double>(atm_neg_sum)
+             << " (" << seq_neg_sum << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 2
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 3 runs atomics using fetch_and, fetch_or, fetch_xor, a&=, a|=, a^=.
+    //
+    {  // begin test 3
+      s_ntests_run++;
+    
+      RAJA::atomic<cuda_atomic, int> atm_fan(0xffffffff);
+      RAJA::atomic<cuda_atomic, int> atm_for(0x0);
+      RAJA::atomic<cuda_atomic, int> atm_fxr(0x00ff00ff);
+      RAJA::atomic<cuda_atomic, int> atm_ane(0xffffffff);
+      RAJA::atomic<cuda_atomic, int> atm_ore(0x0);
+      RAJA::atomic<cuda_atomic, int> atm_xre(0x00ff00ff);
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        atm_fan.fetch_and(rand_ivalue[i]);
+        atm_for.fetch_or(rand_ivalue[i]);
+        atm_fxr.fetch_xor(rand_ivalue[i]);
+        atm_ane &= rand_ivalue[i];
+        atm_ore |= rand_ivalue[i];
+        atm_xre ^= rand_ivalue[i];
+      });
+
+      if (   !equal(int(atm_fan), seq_and)
+          || !equal(int(atm_for), seq_or) 
+          || !equal(int(atm_fxr), seq_xor)
+          || !equal(int(atm_ane), seq_and)
+          || !equal(int(atm_ore), seq_or) 
+          || !equal(int(atm_xre), seq_xor) ) {
+        cout << "\n TEST 3 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_fetch_and = " << static_cast<int>(atm_fan)
+             << " (" << seq_and << ") " << endl;
+        cout << setprecision(20) << "\tatm_fetch_or = " << static_cast<int>(atm_for)
+             << " (" << seq_or << ") " << endl;
+        cout << setprecision(20) << "\tatm_fetch_xor = " << static_cast<int>(atm_fxr)
+             << " (" << seq_xor << ") " << endl;
+        cout << setprecision(20) << "\tatm_&= = " << static_cast<int>(atm_ane)
+             << " (" << seq_and << ") " << endl;
+        cout << setprecision(20) << "\tatm_|= = " << static_cast<int>(atm_ore)
+             << " (" << seq_or << ") " << endl;
+        cout << setprecision(20) << "\tatm_^= = " << static_cast<int>(atm_xre)
+             << " (" << seq_xor << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 3
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 4 runs atomics using a++, ++a, a--, --a.
+    //
+    {  // begin test 4
+      s_ntests_run++;
+    
+      RAJA::atomic<cuda_atomic, int> atm_pos_post_inc(0);
+      RAJA::atomic<cuda_atomic, int> atm_pos_pre_inc(0);
+      RAJA::atomic<cuda_atomic, int> atm_pos_post_dec(0);
+      RAJA::atomic<cuda_atomic, int> atm_pos_pre_dec(0);
+      RAJA::atomic<cuda_atomic, int> atm_neg_post_inc(0);
+      RAJA::atomic<cuda_atomic, int> atm_neg_pre_inc(0);
+      RAJA::atomic<cuda_atomic, int> atm_neg_post_dec(0);
+      RAJA::atomic<cuda_atomic, int> atm_neg_pre_dec(0);
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+        if(rand_dvalue[i] < 0.0) {
+          atm_neg_post_inc++;
+          ++atm_neg_pre_inc;
+          atm_neg_post_dec--;
+          --atm_neg_pre_dec;
+        }
+        else {
+          atm_pos_post_inc++;
+          ++atm_pos_pre_inc;
+          atm_pos_post_dec--;
+          --atm_pos_pre_dec;
+        }
+      });
+
+      if (   !equal(int(atm_pos_post_inc), seq_pos_cnt)
+          || !equal(int(atm_pos_pre_inc),  seq_pos_cnt) 
+          || !equal(int(atm_pos_post_dec),-seq_pos_cnt)
+          || !equal(int(atm_pos_pre_dec), -seq_pos_cnt)
+          || !equal(int(atm_neg_post_inc), seq_neg_cnt)
+          || !equal(int(atm_neg_pre_inc),  seq_neg_cnt) 
+          || !equal(int(atm_neg_post_dec),-seq_neg_cnt)
+          || !equal(int(atm_neg_pre_dec), -seq_neg_cnt) ) {
+        cout << "\n TEST 4 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_pos_a++ = " << static_cast<int>(atm_pos_post_inc)
+             << " (" << seq_pos_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_pos_++a = " << static_cast<int>(atm_pos_pre_inc)
+             << " (" << seq_pos_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_pos_a++ = " << static_cast<int>(atm_pos_post_dec)
+             << " (" << -seq_pos_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_pos_++a = " << static_cast<int>(atm_pos_pre_dec)
+             << " (" << -seq_pos_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_neg_a++ = " << static_cast<int>(atm_neg_post_inc)
+             << " (" << seq_neg_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_neg_++a = " << static_cast<int>(atm_neg_pre_inc)
+             << " (" << seq_neg_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_neg_a++ = " << static_cast<int>(atm_neg_post_dec)
+             << " (" << -seq_neg_cnt << ") " << endl;
+        cout << setprecision(20) << "\tatm_neg_++a = " << static_cast<int>(atm_neg_pre_dec)
+             << " (" << -seq_neg_cnt << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 4
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 5 runs atomics using (T)a, load, compare_exchange_weak, compare_exchange_strong.
+    // implements *= using compare_exchange, prod_length should be kept small (<1024*8)
+    // so this product does not go to +-inf.
+    //
+    {  // begin test 5
+      s_ntests_run++;
+    
+      RAJA::atomic<cuda_atomic, double> atm_cew_prod(1.0);
+      RAJA::atomic<cuda_atomic, double> atm_ces_prod(1.0);
+
+      forall<cuda_exec<block_size> >(0, prod_length, [=] __device__(int i) {
+
+        double expect = atm_cew_prod.load();
+        while (!atm_cew_prod.compare_exchange_weak(expect, expect * rand_dvalue[i]));
+
+        expect = (double)atm_ces_prod;
+        while (!atm_ces_prod.compare_exchange_strong(expect, expect * rand_dvalue[i]));
+      });
+
+      if (   !equal(double(atm_cew_prod), seq_prod)
+          || !equal(double(atm_ces_prod), seq_prod) ) {
+        cout << "\n TEST 5 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_compare_exchange_weak_prod = " << static_cast<double>(atm_cew_prod)
+             << " (" << seq_prod << ") " << endl;
+        cout << setprecision(20) << "\tatm_compare_exchange_strong_prod = " << static_cast<double>(atm_ces_prod)
+             << " (" << seq_prod << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 5
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 6 runs atomics using load, exchange.
+    //
+    {  // begin test 6
+      s_ntests_run++;
+    
+      const unsigned long long int n = 5317;
+
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_exch_val(0);
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_sum(0);
+      RAJA::atomic<cuda_atomic, int> atm_load_val_chk(0);
+      RAJA::atomic<cuda_atomic, int> atm_exch_prev_chk(0);
+      RAJA::atomic<cuda_atomic, int> atm_load_later_chk(0);
+
+      forall<cuda_exec<block_size> >(0, (int)n, [=] __device__(int i) {
+          unsigned long long int load_first   = atm_exch_val.load();
+          unsigned long long int exch_prev  = atm_exch_val.exchange(i + 1);
+          unsigned long long int load_later   = atm_exch_val;
+
+          atm_sum += exch_prev;
+
+          if (load_first <= n) atm_load_val_chk++;
+          if (exch_prev <= n) atm_exch_prev_chk++;
+          if (load_later > 0 && load_later <= n) atm_load_later_chk++;
+      });
+
+      // note that one value in [1, n] will be missing
+      const unsigned long long int sum = n*(n+1)/2;
+
+      unsigned long long int diff = sum - atm_sum;
+
+      if (   int(atm_load_val_chk) != n
+          || int(atm_exch_prev_chk) != n
+          || int(atm_load_later_chk) != n
+          || !(diff >= 1 && diff <= n) ) {
+        cout << "\n TEST 6 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_load_val_chk = " << static_cast<int>(atm_load_val_chk)
+             << " (" << n << ") " << endl;
+        cout << setprecision(20) << "\tatm_exch_prev_chk = " << static_cast<int>(atm_exch_prev_chk)
+             << " (" << n << ") " << endl;
+        cout << setprecision(20) << "\tatm_load_later_chk = " << static_cast<int>(atm_load_later_chk)
+             << " (" << n << ") " << endl;
+        cout << setprecision(20) << "\tatm_exch_prev_chk = " << static_cast<unsigned long long int>(diff)
+             << " ( [1, " << n << "] ) " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 6
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 7 runs atomics using a=(T), store.
+    //
+    {  // begin test 7
+      s_ntests_run++;
+    
+      const unsigned long long int n = 8367;
+
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_store_val0(n);
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_store_val1(n);
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_store_chk0(0);
+      RAJA::atomic<cuda_atomic, unsigned long long int> atm_store_chk1(0);
+
+      forall<cuda_exec<block_size> >(0, (int)n, [=] __device__(int i) {
+
+          int store_i0 = int(atm_store_val0 = i);
+          atm_store_val1.store(i);
+          int store_i1 = atm_store_val1;
+
+          if (store_i0 == i) atm_store_chk0++;
+          if (store_i1 >= 0 && store_i1 < n) atm_store_chk1++;
+      });
+
+      if (   ((unsigned long long int)atm_store_chk0) != n
+          || ((unsigned long long int)atm_store_chk1) != n ) {
+        cout << "\n TEST 7 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_load_chk = " << static_cast<int>(atm_store_chk0)
+             << " (" << n << ") " << endl;
+        cout << setprecision(20) << "\tatm_exch_prev_chk = " << static_cast<int>(atm_store_chk1)
+             << " (" << n << ") " << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 7
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+    //
+    // test 8 use atomics to add values to a list.
+    //
+    {  // begin test 8
+      s_ntests_run++;
+
+      RAJA::atomic<cuda_atomic, int> atm_cnt_up(0);
+      RAJA::atomic<cuda_atomic, int> atm_cnt_down(TEST_VEC_LEN - 1);
+
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+
+        if (rand_dvalue[i] < 0.0) {
+
+          ivalue[atm_cnt_down--] = i;
+
+        } else {
+
+          ivalue[atm_cnt_up++] = i;
+
+        }
+
+      });
+
+      for(int i = 0; i < TEST_VEC_LEN; i++) {
+        ivalue_host[i] = 0;
+      }
+
+      int first_wrong = -1;
+
+      for(int i = 0; i < TEST_VEC_LEN && first_wrong == -1; i++) {
+        if (ivalue[i] >= 0 && ivalue[i] < TEST_VEC_LEN) {
+          ivalue_host[ivalue[i]] += 1;
+        } else {
+          first_wrong = i;
+        }
+      }
+
+      for(int i = 0; i < TEST_VEC_LEN && first_wrong == -1; i++) {
+        if (ivalue_host[i] != 1) {
+          first_wrong = i;
+        } else if (i < seq_pos_cnt && rand_dvalue[ivalue[i]] < 0.0) {
+          first_wrong = i;
+        } else if (i >= seq_pos_cnt && rand_dvalue[ivalue[i]] >= 0.0) {
+          first_wrong = i;
+        }
+      }
+
+      if (   ((int)atm_cnt_down) != (TEST_VEC_LEN - seq_neg_cnt - 1)
+          || ((int)atm_cnt_up) != seq_pos_cnt
+          || (first_wrong != -1) ) {
+        cout << "\n TEST 7 FAILURE: tcount = " << tcount
+             << endl;
+        cout << setprecision(20) << "\tatm_count_down = " << static_cast<int>(atm_cnt_down)
+             << " (" << (TEST_VEC_LEN - seq_neg_cnt - 1) << ") " << endl;
+        cout << setprecision(20) << "\tatm_count_up = " << static_cast<int>(atm_cnt_up)
+             << " (" << seq_pos_cnt << ") " << endl;
+        cout << setprecision(20) << "\tsomething wrong at i = " << first_wrong
+             << " ivalue[i] = " << ivalue[first_wrong]
+             << " ivalue_host[i] = " << ivalue_host[first_wrong]
+             << " rand_dvalue[ivalue[i]] = " << ((ivalue[first_wrong] >= 0 && ivalue[first_wrong] < TEST_VEC_LEN) ? rand_dvalue[ivalue[first_wrong]] : 0.0)
+             << endl;
+      } else {
+        s_ntests_passed++;
+      }
+    } // end test 8
+
+    ///////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////
+
+  }  // end test repeat loop
 
   ///
   /// Print total number of tests passed/run.
   ///
+  cout << "\n Tests Passed / Tests Run = " << s_ntests_passed << " / "
+       << s_ntests_run << endl;
 
-  cout << "\n All Tests : # passed / # run = " << s_ntests_passed_total << " / "
-       << s_ntests_run_total << endl;
+  cudaFree(rand_dvalue);
+  cudaFree(ivalue);
+  cudaFree(rand_ivalue);
 
-  //
-  // Clean up....
-  //
-
-  cout << "\n DONE!!! " << endl;
-
-  return !(s_ntests_passed_total == s_ntests_run_total);
+  return !(s_ntests_passed == s_ntests_run);
 }
