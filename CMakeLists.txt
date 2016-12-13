@@ -49,7 +49,7 @@ set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 2)
-set(RAJA_VERSION_PATCHLEVEL 1)
+set(RAJA_VERSION_PATCHLEVEL 2)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
