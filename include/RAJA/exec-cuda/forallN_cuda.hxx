@@ -97,8 +97,8 @@ struct ForallN_BindFirstArg_Device {
  * This is passed to the execution policies to setup the kernel launch.
  */
 struct CudaDim {
-  dim3 num_threads;
-  dim3 num_blocks;
+  cuda_dim_t num_threads;
+  cuda_dim_t num_blocks;
 
   __host__ __device__ void print(void) const
   {
