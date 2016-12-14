@@ -9,7 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -40,14 +40,14 @@
 #
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.3)
 
 project(RAJA LANGUAGES CXX C)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 1)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 2)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
@@ -59,6 +59,7 @@ option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -96,4 +97,12 @@ if(RAJA_ENABLE_APPLICATIONS)
     execute_process(COMMAND git clone https://github.com/LLNL/RAJA-examples.git ${PROJECT_SOURCE_DIR}/extra/llnl-raja-proxies)
   endif()
   add_subdirectory(extra/llnl-raja-proxies)
+endif()
+
+if(RAJA_ENABLE_PERFSUITE)
+  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/extra/performance/CMakeLists.txt)
+    message(STATUS "Cannot find performance suite")
+    message(STATUS "Clone it to ./extra/performance")
+  endif()
+  add_subdirectory(extra/performance)
 endif()

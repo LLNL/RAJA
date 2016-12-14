@@ -23,7 +23,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -100,10 +100,10 @@ struct Tile {
  ******************************************************************/
 
 // Forward declaration so the apply_tile's can recurse into peel_tile
-template <typename BODY, int TIDX, typename... PREST, typename TilePolicy>
+template <typename BODY, int TIDX, typename... POLICY_REST, typename TilePolicy>
 RAJA_INLINE void forallN_peel_tile(TilePolicy,
                                    BODY body,
-                                   PREST const &... prest);
+                                   POLICY_REST const &... prest);
 
 /*!
  * \brief Applys the tile_none policy
@@ -111,17 +111,17 @@ RAJA_INLINE void forallN_peel_tile(TilePolicy,
 template <typename BODY,
           typename TilePolicy,
           int TIDX,
-          typename PI,
-          typename... PREST>
+          typename POLICY_INIT,
+          typename... POLICY_REST>
 RAJA_INLINE void forallN_apply_tile(tile_none,
                                     BODY body,
-                                    PI const &pi,
-                                    PREST const &... prest)
+                                    POLICY_INIT const &pi,
+                                    POLICY_REST const &... prest)
 {
   // printf("TIDX=%d: policy=tile_none\n", (int)TIDX);
 
   // Pass thru, so just bind the index set
-  typedef ForallN_BindFirstArg_Host<BODY, PI> BOUND;
+  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
   BOUND new_body(body, pi);
 
   // Recurse to the next policy
@@ -135,16 +135,16 @@ template <typename BODY,
           typename TilePolicy,
           int TIDX,
           int TileSize,
-          typename PI,
-          typename... PREST>
+          typename POLICY_INIT,
+          typename... POLICY_REST>
 RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
                                     BODY body,
-                                    PI const &pi,
-                                    PREST const &... prest)
+                                    POLICY_INIT const &pi,
+                                    POLICY_REST const &... prest)
 {
   // printf("TIDX=%d: policy=tile_fixed<%d>\n", TIDX, TileSize);
 
-  typedef ForallN_BindFirstArg_Host<BODY, PI> BOUND;
+  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
 
   // tile loop
   Index_type i_begin = pi.getBegin();
@@ -152,7 +152,7 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
   for (Index_type i0 = i_begin; i0 < i_end; i0 += TileSize) {
     // Create a new tile
     Index_type i1 = std::min(i0 + TileSize, i_end);
-    PI pi_tile(RangeSegment(i0, i1));
+    POLICY_INIT pi_tile(RangeSegment(i0, i1));
 
     // Pass thru, so just bind the index set
     BOUND new_body(body, pi_tile);
@@ -203,13 +203,13 @@ RAJA_INLINE void forallN_peel_tile(TilePolicy, BODY body)
  */
 template <typename BODY,
           int TIDX,
-          typename PI,
-          typename... PREST,
+          typename POLICY_INIT,
+          typename... POLICY_REST,
           typename... TilePolicies>
 RAJA_INLINE void forallN_peel_tile(TileList<TilePolicies...>,
                                    BODY body,
-                                   PI const &pi,
-                                   PREST const &... prest)
+                                   POLICY_INIT const &pi,
+                                   POLICY_REST const &... prest)
 {
   using TilePolicy = TileList<TilePolicies...>;
 
@@ -231,7 +231,6 @@ template <typename POLICY, typename BODY, typename... PARGS>
 RAJA_INLINE void forallN_policy(ForallN_Tile_Tag, BODY body, PARGS... pargs)
 {
   typedef typename POLICY::NextPolicy NextPolicy;
-  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
   // Extract the list of tiling policies from the policy
   using TilePolicy = typename POLICY::TilePolicy;

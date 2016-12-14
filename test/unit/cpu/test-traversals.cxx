@@ -14,15 +14,20 @@ protected:
 
     RAJA::getIndices(is_indices, index_sets_[0]);
 
-    posix_memalign((void **)&test_array,
-                   RAJA::DATA_ALIGN,
-                   array_length * sizeof(RAJA::Real_type));
-    posix_memalign((void **)&ref_array,
-                   RAJA::DATA_ALIGN,
-                   array_length * sizeof(RAJA::Real_type));
-    posix_memalign((void **)&in_array,
-                   RAJA::DATA_ALIGN,
-                   array_length * sizeof(RAJA::Real_type));
+    int err_val;
+    test_array = 0;
+    err_val = posix_memalign((void **)&test_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    ref_array = 0;
+    err_val = posix_memalign((void **)&ref_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    in_array = 0;
+    err_val = posix_memalign((void **)&in_array,
+                             RAJA::DATA_ALIGN,
+                             array_length * sizeof(RAJA::Real_type));
+    RAJA_UNUSED_VAR(err_val);
 
     for (RAJA::Index_type i = 0; i < array_length; ++i) {
       in_array[i] = RAJA::Real_type(rand() % 65536);
@@ -33,7 +38,7 @@ protected:
       ref_array[i] = 0.0;
     }
 
-    for (RAJA::Index_type i = 0; i < is_indices.size(); ++i) {
+    for (size_t i = 0; i < is_indices.size(); ++i) {
       ref_array[is_indices[i]] =
           in_array[is_indices[i]] * in_array[is_indices[i]];
     }

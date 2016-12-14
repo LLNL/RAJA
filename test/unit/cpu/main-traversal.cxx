@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 //
@@ -20,6 +20,7 @@
 #include <string>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -50,10 +51,16 @@ void runBasicForallTest(const string& policy,
                         const IndexSet& iset,
                         const RAJAVec<Index_type>& is_indices)
 {
-  Real_ptr test_array;
-  Real_ptr ref_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
-  posix_memalign((void**)&ref_array, DATA_ALIGN, alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  Real_ptr ref_array = 0;
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  err_val = posix_memalign((void**)&ref_array, 
+                           DATA_ALIGN, 
+                           alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < alen; ++i) {
     test_array[i] = 0.0;
@@ -64,7 +71,7 @@ void runBasicForallTest(const string& policy,
   // Generate reference result to check correctness.
   // Note: Reference does not use RAJA!!!
   //
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_array[is_indices[i]] =
         in_array[is_indices[i]] * in_array[is_indices[i]];
   }
@@ -174,17 +181,21 @@ void runForallTests(unsigned ibuild,
 template <typename ISET_POLICY_T>
 void runBasicForall_IcountTest(const string& policy,
                                Real_ptr in_array,
-                               Index_type alen,
+                               Index_type RAJA_UNUSED_ARG(alen),
                                const IndexSet& iset,
                                const RAJAVec<Index_type>& is_indices)
 {
   Index_type test_alen = is_indices.size();
-  Real_ptr test_array;
-  Real_ptr ref_array;
-  posix_memalign((void**)&test_array,
-                 DATA_ALIGN,
-                 test_alen * sizeof(Real_type));
-  posix_memalign((void**)&ref_array, DATA_ALIGN, test_alen * sizeof(Real_type));
+  Real_ptr test_array = 0;
+  Real_ptr ref_array = 0;
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array,
+                           DATA_ALIGN,
+                           test_alen * sizeof(Real_type));
+  err_val = posix_memalign((void**)&ref_array, 
+                           DATA_ALIGN, 
+                           test_alen * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < test_alen; ++i) {
     test_array[i] = 0.0;
@@ -195,7 +206,7 @@ void runBasicForall_IcountTest(const string& policy,
   // Generate reference result to check correctness.
   // Note: Reference does not use RAJA!!!
   //
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_array[i] = in_array[is_indices[i]] * in_array[is_indices[i]];
   }
 
@@ -302,7 +313,8 @@ void runForall_IcountTests(unsigned ibuild,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.
@@ -428,8 +440,12 @@ int main(int argc, char* argv[])
   //
   // Allocate "parent" array for traversal tests and initialize to...
   //
-  Real_ptr parent;
-  posix_memalign((void**)&parent, DATA_ALIGN, array_length * sizeof(Real_type));
+  Real_ptr parent = 0;
+  int err_val = 0;
+  err_val = posix_memalign((void**)&parent, 
+                           DATA_ALIGN, 
+                           array_length * sizeof(Real_type));
+  RAJA_UNUSED_VAR(err_val);
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);
@@ -484,7 +500,7 @@ int main(int argc, char* argv[])
   });
 
   RAJAVec<Index_type> ref_even_indices;
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     Index_type idx = is_indices[i];
     if (idx % 2 == 0) ref_even_indices.push_back(idx);
   }
@@ -510,7 +526,7 @@ int main(int argc, char* argv[])
   });
 
   RAJAVec<Index_type> ref_lt300_indices;
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     Index_type idx = is_indices[i];
     if (idx < 300) ref_lt300_indices.push_back(idx);
   }

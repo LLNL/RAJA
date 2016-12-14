@@ -9,7 +9,7 @@
 # 
 # This file is part of RAJA. 
 # 
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 # 
 # Redistribution and use in source and binary forms, with or without 
 # modification, are permitted provided that the following conditions are met:
@@ -41,6 +41,19 @@
 ###############################################################################
 
 if (RAJA_ENABLE_CUDA)
+  set_source_files_properties(
+      AlignedRangeIndexSetBuilders.cxx
+      DepGraphNode.cxx
+      IndexSet.cxx
+      ListSegment.cxx
+      LockFreeIndexSetBuilders.cxx
+      MemUtils_CPU.cxx
+      MemUtils_CUDA.cxx
+      RangeSegment.cxx
+      ThreadUtils_CPU.cxx
+      PROPERTIES
+      CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+
   cuda_add_library(RAJA
       AlignedRangeIndexSetBuilders.cxx
       DepGraphNode.cxx

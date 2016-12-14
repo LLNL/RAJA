@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 //
@@ -101,7 +101,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
   //
   switch (build_method) {
     case AddSegments: {
-      for (int i = 0; i < segments.size(); ++i) {
+      for (size_t i = 0; i < segments.size(); ++i) {
         hindex[build_method].push_back(*segments[i]);
       }
 
@@ -109,7 +109,8 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
     }
 
     case AddSegmentsReverse: {
-      for (int i = segments.size() - 1; i >= 0; --i) {
+      int last_i = static_cast<int>(segments.size() - 1);
+      for (int i = last_i; i >= 0; --i) {
         hindex[build_method].push_front(*segments[i]);
       }
 
@@ -119,7 +120,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
     case AddSegmentsNoCopy: {
       IndexSet& iset_master = hindex[0];
 
-      for (int i = 0; i < iset_master.getNumSegments(); ++i) {
+      for (size_t i = 0; i < iset_master.getNumSegments(); ++i) {
         hindex[build_method].push_back_nocopy(iset_master.getSegment(i));
       }
 
@@ -129,7 +130,8 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
     case AddSegmentsNoCopyReverse: {
       IndexSet& iset_master = hindex[0];
 
-      for (int i = iset_master.getNumSegments() - 1; i >= 0; --i) {
+      int last_i = static_cast<int>(iset_master.getNumSegments() - 1);
+      for (int i = last_i; i >= 0; --i) {
         hindex[build_method].push_front_nocopy(iset_master.getSegment(i));
       }
 
@@ -138,11 +140,11 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 
     case MakeViewRange: {
       IndexSet& iset_master = hindex[0];
-      int num_segs = iset_master.getNumSegments();
+      size_t num_segs = iset_master.getNumSegments();
 
       IndexSet* iset_view = iset_master.createView(0, num_segs);
 
-      for (int i = 0; i < iset_view->getNumSegments(); ++i) {
+      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
         hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
       }
 
@@ -151,15 +153,15 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 
     case MakeViewArray: {
       IndexSet& iset_master = hindex[0];
-      int num_segs = iset_master.getNumSegments();
+      size_t num_segs = iset_master.getNumSegments();
       int* segIds = new int[num_segs];
-      for (int i = 0; i < num_segs; ++i) {
+      for (size_t i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
       IndexSet* iset_view = iset_master.createView(segIds, num_segs);
 
-      for (int i = 0; i < iset_view->getNumSegments(); ++i) {
+      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
         hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
       }
 
@@ -171,7 +173,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 #if defined(RAJA_USE_STL)
     case MakeViewVector: {
       IndexSet& iset_master = hindex[0];
-      int num_segs = iset_master.getNumSegments();
+      size_t num_segs = iset_master.getNumSegments();
       std::vector<int> segIds(num_segs);
       for (int i = 0; i < num_segs; ++i) {
         segIds[i] = i;
@@ -179,7 +181,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 
       IndexSet* iset_view = iset_master.createView(segIds);
 
-      for (int i = 0; i < iset_view->getNumSegments(); ++i) {
+      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
         hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
       }
 
@@ -192,7 +194,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 
   }  // switch (build_method)
 
-  for (int i = 0; i < segments.size(); ++i) {
+  for (size_t i = 0; i < segments.size(); ++i) {
     delete segments[i];
   }
 

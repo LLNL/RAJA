@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -55,6 +55,8 @@
 
 #include "RAJA/config.hxx"
 
+#include "RAJA/internal/defines.hxx"
+
 #include <algorithm>
 #include <functional>
 #include <iterator>
@@ -76,7 +78,7 @@ void inclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
                        Iter end,
                        BinFn f,
-                       T v)
+                       T RAJA_UNUSED_ARG(v))
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
@@ -117,7 +119,7 @@ void inclusive(const ::RAJA::seq_exec&,
                Iter end,
                OutIter out,
                BinFn f,
-               T v)
+               T RAJA_UNUSED_ARG(v))
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
