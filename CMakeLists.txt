@@ -54,7 +54,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH}
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
-option(RAJA_ENABLE_CLANG_CUDA "Build Clang CUDA support" Off)
+option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
@@ -71,6 +71,8 @@ include(cmake/SetupCompilers.cmake)
 include(cmake/SetupPackages.cmake)
 # Setup internal RAJA configuration options
 include(cmake/SetupRajaConfig.cmake)
+# Macros for building executables and libraries
+include (cmake/RAJAMacros.cmake)
 
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
@@ -81,7 +83,6 @@ install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
 add_subdirectory(src)
-
 
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
