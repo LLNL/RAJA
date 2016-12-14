@@ -112,6 +112,18 @@ struct CudaDim {
   }
 };
 
+RAJA_INLINE
+constexpr int numBlocks(CudaDim const& dim)
+{
+  return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
+}
+
+RAJA_INLINE
+constexpr int numThreads(CudaDim const& dim)
+{
+  return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
+}
+
 template <typename POL>
 struct CudaPolicy {
 };
@@ -357,8 +369,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, cargs...);
+    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, cargs...);
+    }
                  
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
@@ -379,8 +393,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, c0);
+    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, c0);
+    }
 
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
