@@ -9,7 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -40,7 +40,7 @@
 #
 ###############################################################################
 
-cmake_minimum_required (VERSION 3.0)
+cmake_minimum_required (VERSION 3.3)
 
 project(RAJA LANGUAGES CXX C)
 
@@ -48,8 +48,8 @@ set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 1)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 2)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
 
