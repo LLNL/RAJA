@@ -51,7 +51,7 @@ set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 1)
 set(RAJA_VERSION_PATCHLEVEL 0)
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
@@ -61,6 +61,7 @@ option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
+option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" On)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -83,7 +84,6 @@ install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include
 
 add_subdirectory(src)
 
-
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
@@ -91,6 +91,15 @@ endif()
 if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+if (RAJA_ENABLE_DOCUMENTATION)
+  if (SPHINX_FOUND)
+    add_subdirectory(docs)
+  else ()
+      message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx not found. \
+      Documentation won't be built.")
+  endif ()
+endif ()
 
 if(RAJA_ENABLE_APPLICATIONS)
   if (NOT EXISTS ${PROJECT_SOURCE_DIR}/extra/llnl-raja-proxies/CMakeLists.txt)

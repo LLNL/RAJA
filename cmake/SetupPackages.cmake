@@ -101,3 +101,7 @@ if (RAJA_ENABLE_TESTS)
 
   enable_testing()
 endif ()
+
+if (RAJA_ENABLE_DOCUMENTATION)
+  find_package(Sphinx)
+endif ()
