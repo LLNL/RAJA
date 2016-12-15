@@ -52,6 +52,11 @@ if (RAJA_ENABLE_OPENMP)
   endif()
 endif()
 
+if (RAJA_ENABLE_CLANG_CUDA)
+  set(RAJA_ENABLE_CUDA On)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
+
 if (RAJA_ENABLE_CUDA)
   find_package(CUDA)
   if(CUDA_FOUND)
