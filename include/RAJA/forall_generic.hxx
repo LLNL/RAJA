@@ -56,7 +56,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -155,8 +155,6 @@ RAJA_INLINE void forall_Icount(Container&& c,
 template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
 RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 {
-  auto begin = std::begin(c);
-  auto end = std::end(c);
   using category =
       typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
   static_assert(
@@ -294,29 +292,6 @@ RAJA_INLINE void forall_Icount(const Index_type* idx,
 {
   // turn into an iterator
   forall_Icount<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), icount, loop_body);
-}
-
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over index sets or segments
-// according to execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief Generic dependency-graph segment iteration over index set segments.
- *
- ******************************************************************************
- */
-template <typename EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void forall_segments(const IndexSet& iset, LOOP_BODY loop_body)
-{
-  forall_segments(EXEC_POLICY_T(), iset, loop_body);
 }
 
 }  // closing brace for RAJA namespace

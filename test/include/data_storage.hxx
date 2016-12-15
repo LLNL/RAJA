@@ -3,7 +3,8 @@
 
 #include <cstdio>
 
-#include <RAJA/RAJA.hxx>
+#include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 namespace internal
 {

@@ -23,6 +23,7 @@
 #include <random>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -433,7 +434,7 @@ void runLTimesTests(Index_type num_moments,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[])
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   ///////////////////////////////////////////////////////////////////////////
   //

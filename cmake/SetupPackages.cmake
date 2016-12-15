@@ -52,6 +52,11 @@ if (RAJA_ENABLE_OPENMP)
   endif()
 endif()
 
+if (RAJA_ENABLE_CLANG_CUDA)
+  set(RAJA_ENABLE_CUDA On)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+endif ()
+
 if (RAJA_ENABLE_CUDA)
   find_package(CUDA)
   if(CUDA_FOUND)
@@ -60,27 +65,6 @@ if (RAJA_ENABLE_CUDA)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
     include_directories(${CUDA_INCLUDE_DIRS})
   endif()
-endif()
-
-if (RAJA_ENABLE_CALIPER)
-  find_package(CALIPER)
-  if(CALIPER_FOUND)
-    message(STATUS "CALIPER")
-    include_directories(${caliper_INCLUDE_DIR})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRAJA_USE_CALIPER")
-  endif()
-endif()
-   
-
-#Used for timing
-find_library(RT_LIBRARIES rt)
-if (RT_LIBRARIES STREQUAL "RT_LIBRARIES-NOTFOUND")
-  message(WARNING "librt not found, some test applications might not link")
-  set(RT_LIBRARIES "" CACHE STRING "timing libraries" FORCE)
-endif ()
-
-if (CALIPER_FOUND)
-    set(RT_LIBRARIES "${RT_LIBRARIES} ${caliper_LIB_DIR}/libcaliper.so" CACHE STRING "testing libraries" FORCE)
 endif()
 
 if (RAJA_ENABLE_TESTS)
@@ -93,7 +77,6 @@ if (RAJA_ENABLE_TESTS)
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG release-1.7.0
       CMAKE_ARGS                
-          -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
           -DCMAKE_C_FLAGS=${CMAKE_C_FLAGS}
@@ -109,22 +92,12 @@ if (RAJA_ENABLE_TESTS)
   ExternalProject_Get_Property(googletest binary_dir)
   add_library(gtest      UNKNOWN IMPORTED)
   add_library(gtest_main UNKNOWN IMPORTED)
-
-  if ( UNIX )
-    set_target_properties(gtest PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/libgtest.a
-    )
-    set_target_properties(gtest_main PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
-    )
-  elseif( WIN32 )
-    set_target_properties(gtest PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/${CMAKE_BUILD_TYPE}/gtest.lib
-    )
-    set_target_properties(gtest_main PROPERTIES
-      IMPORTED_LOCATION ${binary_dir}/${CMAKE_BUILD_TYPE}/gtest_main.lib
-    )
-  endif ()
+  set_target_properties(gtest PROPERTIES
+    IMPORTED_LOCATION ${binary_dir}/libgtest.a
+  )
+  set_target_properties(gtest_main PROPERTIES
+    IMPORTED_LOCATION ${binary_dir}/libgtest_main.a
+  )
   add_dependencies(gtest      googletest)
   add_dependencies(gtest_main googletest)
 

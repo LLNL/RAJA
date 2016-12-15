@@ -26,7 +26,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -117,7 +117,6 @@ RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(idx[k]);
   }
@@ -145,7 +144,6 @@ RAJA_INLINE void forall_Icount(simd_exec,
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(k + icount, idx[k]);
   }
