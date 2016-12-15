@@ -77,6 +77,20 @@ RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 }
 
 template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const force_simd_exec &,
+                        Iterable&& iter, Func &&loop_body)
+{
+  auto end = std::end(iter);
+#pragma simd
+#pragma ivdep
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
+}
+
+};
+
+template <typename Iterable, typename Func>
 RAJA_INLINE void forall_Icount(const simd_exec &,
                                Iterable &&iter,
                                Index_type icount,
