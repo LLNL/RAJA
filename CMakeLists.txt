@@ -61,7 +61,7 @@ option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
-option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" On)
+option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
