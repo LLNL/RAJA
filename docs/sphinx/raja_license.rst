@@ -13,7 +13,7 @@
 RAJA License
 ===================================
 
-RAJA version 0.2.2
+RAJA version 0.2.3
 
 Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 
