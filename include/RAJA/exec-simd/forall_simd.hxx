@@ -88,8 +88,6 @@ RAJA_INLINE void forall(const force_simd_exec &,
   }
 }
 
-};
-
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_Icount(const simd_exec &,
                                Iterable &&iter,
