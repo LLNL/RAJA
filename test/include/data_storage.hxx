@@ -14,10 +14,7 @@ struct storage {
 
   static T* alloc(int n)
   {
-    T* ptr;
-    ptr = allocate_aligned(64, n * sizeof(T));
-
-    return ptr;
+    return RAJA::allocate_aligned_type<T>(64, n * sizeof(T));
   }
 
   static void free(T* ptr) { ::free(ptr); }

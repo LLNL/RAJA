@@ -58,6 +58,8 @@
 
 #include "RAJA/int_datatypes.hxx"
 
+#include <stddef.h>
+
 namespace RAJA
 {
 
@@ -65,6 +67,14 @@ namespace RAJA
 /// Portable aligned memory allocation
 ///
 void * allocate_aligned(size_t alignment, size_t size);
+
+///
+/// Portable aligned memory allocation
+///
+template<typename T>
+T * allocate_aligned_type(size_t alignment, size_t size) {
+    return reinterpret_cast<T*>(allocate_aligned(alignment, size));
+}
 
 
 ///

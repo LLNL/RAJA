@@ -64,7 +64,10 @@
 #include <string>
 
 #include <stdlib.h>
+
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <malloc.h>
+#endif
 
 namespace RAJA
 {
@@ -88,7 +91,7 @@ Index_type* s_cpu_reduction_loc_block = 0;
 
 void * allocate_aligned(size_t alignment, size_t size) {
     void * ret = NULL;
-#if _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
+#if HAVE_POSIX_MEMALIGN
     // posix_memalign available
     posix_memalign(&ret, alignment, size);
 #elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -102,7 +105,7 @@ void * allocate_aligned(size_t alignment, size_t size) {
 
 
 void free_aligned(void* ptr) {
-#if _POSIX_C_SOURCE >= 200112L || _XOPEN_SOURCE >= 600
+#if HAVE_POSIX_MEMALIGN
     free(ptr);
 #elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
     //on windows
