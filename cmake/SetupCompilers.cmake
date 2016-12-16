@@ -40,11 +40,17 @@
 # 
 ###############################################################################
 
-set(CMAKE_CXX_STANDARD 14)
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  set(CMAKE_CXX_STANDARD 14)
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
+
+if (RAJA_ENABLE_WARNINGS)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES Clang)
   set(RAJA_COMPILER "RAJA_COMPILER_CLANG")
@@ -65,11 +71,11 @@ endif()
 
 if (RAJA_ENABLE_CUDA)
   if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin; ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER})
   elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -x cu; -ccbin ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
   endif()
 endif()
 

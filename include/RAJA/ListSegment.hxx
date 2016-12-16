@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -261,7 +261,7 @@ private:
  */
 template <typename T>
 ListSegment::ListSegment(const T& indx)
-    : BaseSegment(_ListSeg_), m_indx(0), m_indx_own(Unowned), m_len(indx.size())
+    : BaseSegment(_ListSeg_), m_indx(0), m_len(indx.size()), m_indx_own(Unowned)
 {
   if (!indx.empty()) {
 #if defined(RAJA_ENABLE_CUDA)

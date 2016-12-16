@@ -19,7 +19,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -90,7 +90,7 @@ IndexSet& IndexSet::operator=(const IndexSet& rhs)
 
 IndexSet::~IndexSet()
 {
-  for (int i = 0; i < m_segments.size(); ++i) {
+  for (size_t i = 0; i < m_segments.size(); ++i) {
     IndexSetSegInfo& seg_info = m_segments[i];
 
     if (seg_info.ownsSegment()) {
@@ -239,7 +239,7 @@ IndexSet* IndexSet::createView(const int* segIds, int len) const
 *
 *************************************************************************
 */
-void IndexSet::setSegmentInterval(int interval_id, int begin, int end)
+void IndexSet::setSegmentInterval(size_t interval_id, int begin, int end)
 {
   while (m_seg_interval_begin.size() < interval_id + 1) {
     m_seg_interval_begin.push_back(UndefinedValue);
@@ -258,7 +258,7 @@ void IndexSet::setSegmentInterval(int interval_id, int begin, int end)
 */
 void IndexSet::initDependencyGraph()
 {
-  for (int i = 0; i < m_segments.size(); ++i) {
+  for (size_t i = 0; i < m_segments.size(); ++i) {
     IndexSetSegInfo& seg_info = m_segments[i];
     seg_info.initDepGraphNode();
   }
@@ -278,7 +278,7 @@ bool IndexSet::operator==(const IndexSet& other) const
                 && getLength() == other.getLength());
 
   if (equal) {
-    int isi = 0;
+    size_t isi = 0;
     while (equal && isi < m_segments.size()) {
       const BaseSegment* iseg = getSegmentInfo(isi)->getSegment();
       const BaseSegment* o_iseg = other.getSegmentInfo(isi)->getSegment();
@@ -306,7 +306,7 @@ void IndexSet::print(std::ostream& os) const
      << "      num segments = " << getNumSegments() << std::endl
      << "      dependency graph set = " << dependencyGraphSet() << std::endl;
 
-  for (int isi = 0; isi < m_segments.size(); ++isi) {
+  for (size_t isi = 0; isi < m_segments.size(); ++isi) {
     os << "\nSegment # " << isi << " : " << std::endl;
 
     const IndexSetSegInfo* seg_info = getSegmentInfo(isi);
@@ -438,7 +438,7 @@ bool IndexSet::push_front_private(BaseSegment* seg, bool owns_segment)
     m_len += seg->getLength();
 
     Index_type icount = seg->getLength();
-    for (unsigned i = 1; i < m_segments.size(); ++i) {
+    for (size_t i = 1; i < m_segments.size(); ++i) {
       IndexSetSegInfo& seg_info = m_segments[i];
 
       seg_info.setIcount(icount);

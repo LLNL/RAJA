@@ -25,7 +25,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -175,6 +175,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -370,6 +371,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
