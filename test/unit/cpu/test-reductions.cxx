@@ -105,7 +105,7 @@ class ReductionCorrectnessTest : public ::testing::Test
        array[i] = (RAJA::Real_type) i;
      }
      array[0] = 0.0;
-     array[array_length-1] = 0.0;
+     array[array_length-1] = -1.0;
 
      sum = 0.0;
      min = array_length * 2;
@@ -123,7 +123,7 @@ class ReductionCorrectnessTest : public ::testing::Test
          maxloc = i;
        }
 
-       if (val <= min) {
+       if (val < min) {
          min = val;
          minloc = i;
        }
