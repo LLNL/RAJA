@@ -98,8 +98,8 @@ class ReductionCorrectnessTest : public ::testing::Test
    {
      array_length = 102;
 
-     posix_memalign((void **)&array, RAJA::DATA_ALIGN,
-       array_length * sizeof(RAJA::Real_type));
+     array = RAJA::allocate_aligned_type<double>(RAJA::DATA_ALIGN,
+                                                 array_length * sizeof(double));
 
      for (int i = 1; i < array_length-1; ++i) {
        array[i] = (RAJA::Real_type) i;
