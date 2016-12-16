@@ -60,10 +60,10 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
 
   RAJA::ReduceSum<ReducePolicy, NumericType> reduce_sum(0.0);
-  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_sum(0.0);
-  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_sum(0.0);
-  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_sum(0.0, 1);
-  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_sum(0.0, 1);
+  RAJA::ReduceMin<ReducePolicy, NumericType> reduce_min(0.0);
+  RAJA::ReduceMax<ReducePolicy, NumericType> reduce_max(0.0);
+  RAJA::ReduceMinLoc<ReducePolicy, NumericType> reduce_minloc(0.0, 1);
+  RAJA::ReduceMaxLoc<ReducePolicy, NumericType> reduce_maxloc(0.0, 1);
 
   ASSERT_EQ((NumericType) reduce_sum.get(), (NumericType)(0.0));
   ASSERT_EQ((NumericType) reduce_min.get(), (NumericType)(0.0));
@@ -71,7 +71,7 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
   ASSERT_EQ((NumericType) reduce_minloc.get(), (NumericType)(0.0));
   ASSERT_EQ((RAJA::Index_type) reduce_minloc.getLoc(), (RAJA::Index_type) 1);
   ASSERT_EQ((NumericType) reduce_maxloc.get(), (NumericType)(0.0));
-  ASSERT_EQ((RAJA::Index_type) reduce_maxloc.get(), (RAJA::Index_type) 1);
+  ASSERT_EQ((RAJA::Index_type) reduce_maxloc.getLoc(), (RAJA::Index_type) 1);
 }
 
 REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTest, ReductionConstructor);
@@ -82,7 +82,10 @@ using constructor_types = ::testing::Types<
                             std::tuple<RAJA::seq_reduce, double>,
                             std::tuple<RAJA::omp_reduce, int>,
                             std::tuple<RAJA::omp_reduce, float>,
-                            std::tuple<RAJA::omp_reduce, double> >;
+                            std::tuple<RAJA::omp_reduce, double>,
+                            std::tuple<RAJA::omp_reduce_ordered, int>,
+                            std::tuple<RAJA::omp_reduce_ordered, float>,
+                            std::tuple<RAJA::omp_reduce_ordered, double> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests, ReductionConstructorTest, constructor_types);
 
@@ -90,86 +93,157 @@ INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests, ReductionConstructorTest, constr
 template <typename TUPLE>
 class ReductionCorrectnessTest : public ::testing::Test
 {
-protected:
-  virtual void SetUp()
-  {
-    array_length = 102;
+ protected:
+   virtual void SetUp()
+   {
+     array_length = 102;
 
-    posix_memalign((void **)&array, RAJA::DATA_ALIGN,
-      array_length * sizeof(RAJA::Real_type));
+     posix_memalign((void **)&array, RAJA::DATA_ALIGN,
+       array_length * sizeof(RAJA::Real_type));
 
-    for (int i = 1; i < array_length-1; ++i) {
-      array[i] = (RAJA::Real_type) i;
-    }
-    array[0] = 0.0;
-    array[array_length-1] = 0.0;
+     for (int i = 1; i < array_length-1; ++i) {
+       array[i] = (RAJA::Real_type) i;
+     }
+     array[0] = 0.0;
+     array[array_length-1] = 0.0;
 
-    sum = 0.0;
-    min = array_length * 2;
-    max = 0.0;
-    minloc = -1;
-    maxloc = -1;
+     sum = 0.0;
+     min = array_length * 2;
+     max = 0.0;
+     minloc = -1;
+     maxloc = -1;
 
-    for (int i = 0; i < array_length; ++i) {
-      RAJA::Real_type val = array[i];
+     for (int i = 0; i < array_length; ++i) {
+       RAJA::Real_type val = array[i];
 
-      sum += val;
+       sum += val;
 
-      if (val > max) {
-        max = val;
-        maxloc = i;
-      }
+       if (val > max) {
+         max = val;
+         maxloc = i;
+       }
 
-      if (val < min) {
-        min = val;
-        minloc = i;
-      }
-    }
-  }
+       if (val <= min) {
+         min = val;
+         minloc = i;
+       }
+     }
+   }
 
-  virtual void TearDown()
-  {
-    free(array);
-  }
+   virtual void TearDown()
+   {
+     free(array);
+   }
 
-  RAJA::Real_ptr array;
+   RAJA::Real_ptr array;
 
-  RAJA::Real_type max;
-  RAJA::Real_type min;
-  RAJA::Real_type sum;
-  RAJA::Real_type maxloc;
-  RAJA::Real_type minloc;
+   RAJA::Real_type max;
+   RAJA::Real_type min;
+   RAJA::Real_type sum;
+   RAJA::Real_type maxloc;
+   RAJA::Real_type minloc;
 
-  RAJA::Index_type array_length;
-};
+   RAJA::Index_type array_length;
+ };
+TYPED_TEST_CASE_P(ReductionCorrectnessTest);
 
-template <typename TUPLE>
-class ReduceSumTest : public ReductionTest<TUPLE>
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
 {
-  protected:
-    virtual void SetUp()
-    {
-      using ReducePolicy = typename ReductionTest<TUPLE>::ReducePolicy;
-      using ExecPolicy = typename ReductionTest<TUPLE>::ExecPolicy;
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  //using NumericType = typename std::tuple_element<2, TypeParam>::type;
 
-      ReductionTest<TUPLE>::SetUp();
+  RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
 
-      RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
+    sum_reducer += this->array[i];
+  });
 
-      RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
-        sum_reducer += this->array[i];
-      });
+  double raja_sum = (double) sum_reducer.get();
 
-      raja_sum = (double) sum_reducer.get();
-    }
+  ASSERT_FLOAT_EQ(this->sum, raja_sum);
+}
 
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  //using NumericType = typename std::tuple_element<2, TypeParam>::type;
 
-REGISTER_TYPED_TEST_CASE_P(ReduceSumTest, ReduceSumCorrectness);
+  RAJA::ReduceMin<ReducePolicy, double> min_reducer(1024.0);
 
-using types = ::testing::Types< 
-                std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
-                std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
-                std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>
-      >;
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
+    min_reducer.min(this->array[i]);
+  });
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReduceSumTest, types);//, ::testing::Types< std::tuple<RAJA::seq_exec, RAJA::seq_reduce> >);
+  double raja_min = (double) min_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+}
+
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  //using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  RAJA::ReduceMax<ReducePolicy, double> max_reducer(0.0);
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
+    max_reducer.max(this->array[i]);
+  });
+
+  double raja_max = (double) max_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->max, raja_max);
+}
+
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  //using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  RAJA::ReduceMinLoc<ReducePolicy, double> minloc_reducer(1024.0, 0);
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
+    minloc_reducer.minloc(this->array[i], i);
+  });
+
+  double raja_min = (double) minloc_reducer.get();
+  RAJA::Index_type raja_loc = minloc_reducer.getLoc();
+
+  ASSERT_FLOAT_EQ(this->min, raja_min);
+  ASSERT_EQ(this->minloc, raja_loc);
+}
+
+TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+  //using NumericType = typename std::tuple_element<2, TypeParam>::type;
+
+  RAJA::ReduceMaxLoc<ReducePolicy, double> maxloc_reducer(0.0, -1);
+
+  RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length), [=] (int i) {
+    maxloc_reducer.maxloc(this->array[i], i);
+  });
+
+  double raja_max = (double) maxloc_reducer.get();
+  RAJA::Index_type raja_loc = maxloc_reducer.getLoc();
+
+  ASSERT_FLOAT_EQ(this->max, raja_max);
+  ASSERT_EQ(this->maxloc, raja_loc);
+}
+
+REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest, ReduceSum, ReduceMin,
+                           ReduceMax, ReduceMinLoc, ReduceMaxLoc);
+
+using types = ::testing::Types<
+    std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
+    std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
+    std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
+    std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered>
+>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);

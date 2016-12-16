@@ -111,8 +111,10 @@ public:
   ~ReduceMin<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp atomic
-      parent->val = RAJA_MIN(parent->val, val);
+#pragma omp critical
+      {
+        parent->val = RAJA_MIN(parent->val, val);
+      }
     }
   }
 
@@ -294,8 +296,10 @@ public:
   ~ReduceMax<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp atomic
-      parent->val = RAJA_MAX(parent->val, val);
+#pragma omp critical
+      {
+        parent->val = RAJA_MAX(parent->val, val);
+      }
     }
   }
 
@@ -479,8 +483,10 @@ public:
   ~ReduceSum<omp_reduce, T>()
   {
     if (parent) {
-#pragma omp atomic
-      *parent += val;
+#pragma omp critical
+      {
+        *parent += val;
+      }
     }
   }
 
@@ -1020,7 +1026,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other)
+  ReduceSum(const ReduceSum<omp_reduce_ordered, T>& other)
   {
     *this = other;
     m_is_copy = true;
@@ -1030,7 +1036,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceSum<omp_reduce, T>()
+  ~ReduceSum<omp_reduce_ordered, T>()
   {
     if (!m_is_copy) {
       releaseCPUReductionId(m_myID);
@@ -1060,7 +1066,7 @@ public:
   //
   // += operator that adds value to sum for current thread.
   //
-  ReduceSum<omp_reduce, T> operator+=(T val) const
+  ReduceSum<omp_reduce_ordered, T> operator+=(T val) const
   {
     int tid = omp_get_thread_num();
     m_blockdata[tid * s_block_offset] += val;
@@ -1071,7 +1077,7 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceSum<omp_reduce, T>();
+  ReduceSum<omp_reduce_ordered, T>();
 
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
