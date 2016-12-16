@@ -82,7 +82,9 @@ raja_add_test(
   SOURCES test-reductions.cxx
   DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_ININT})
 
-raja_add_test(
-  NAME scan-tests
-    SOURCES test-scan.cxx
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+if (NOT MSVC)
+  raja_add_test(
+    NAME scan-tests
+      SOURCES test-scan.cxx
+      DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif ()
