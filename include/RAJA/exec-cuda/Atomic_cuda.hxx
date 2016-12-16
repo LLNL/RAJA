@@ -99,7 +99,7 @@ namespace INTERNAL
  ******************************************************************************
  */
 template <typename T>
-__device__ __forceinline__ T shfl(T var, int laneMask)
+__device__ __forceinline__ T shfl(T var, int laneMask) noexcept
 {
   const int int_sizeof_T = 
       (sizeof(T) + sizeof(int) - 1) / sizeof(int);
@@ -121,6 +121,10 @@ __device__ __forceinline__ T shfl(T var, int laneMask)
  ******************************************************************************
  *
  * \brief  Atomic cuda_atomic class specialization.
+ *
+ * Note: Operations on the host are not atomic with respect to the host and
+ *       and should only be used with sequential execution policies. This allows
+ *       cuda atomics to be used in both sequential and cuda parallel forall.
  *
  * Note: Memory_order defaults to relaxed instead of seq_cst.
  *
@@ -316,16 +320,32 @@ public:
   /// Returns what was previously stored.
   ///
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T exchange(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicExch(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicExch(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] = val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T exchange(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicExch(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicExch(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] = val;
+#endif
+    return oldT;
   }
 
   ///
@@ -334,67 +354,131 @@ public:
   /// Note that weak may fail even if the stored value == expected, but may perform better in a loop on some platforms.
   ///
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(static_cast<volatile atomic_type*>(m_impl_device), expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(m_impl_device, expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(static_cast<volatile atomic_type*>(m_impl_device), expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(m_impl_device, expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
-  __device__
+  __host__ __device__
   bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const volatile noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(static_cast<volatile atomic_type*>(m_impl_device), expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
-  __device__
+  __host__ __device__
   bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(m_impl_device, expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
-  __device__
+  __host__ __device__
   bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const volatile noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(static_cast<volatile atomic_type*>(m_impl_device), expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
-  __device__
+  __host__ __device__
   bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const noexcept
   {
     T old_exp = expected;
+#if defined(__CUDA_ARCH__)
     expected = _atomicCAS(m_impl_device, expected, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    expected = m_impl_host[0];
+    if (old_exp == expected) {
+      m_impl_host[0] = val;
+    }
+#endif
     return old_exp == expected;
   }
 
@@ -402,105 +486,227 @@ public:
   /// Atomically operate on the stored value and return the value as it was before this operation.
   ///
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] += val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicAdd(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicAdd(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] += val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] -= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicSub(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicSub(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] -= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicAnd(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicAnd(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] &= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicAnd(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicAnd(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] &= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicOr(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicOr(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] |= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicOr(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicOr(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] |= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicXor(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicXor(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] ^= val;
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicXor(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicXor(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    m_impl_host[0] ^= val;
+#endif
+    return oldT;
   }
 
   ///
   /// Atomic min operator, returns the previously stored value
   ///
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicMin(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicMin(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    if (val < oldT) {
+      m_impl_host[0] = val;
+    }
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicMin(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicMin(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    if (val < oldT) {
+      m_impl_host[0] = val;
+    }
+#endif
+    return oldT;
   }
 
   ///
   /// Atomic max operator, returns the previously stored value
   ///
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
   {
-    return _atomicMax(static_cast<volatile atomic_type*>(m_impl_device), val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicMax(static_cast<volatile atomic_type*>(m_impl_device), val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    if (val > oldT) {
+      m_impl_host[0] = val;
+    }
+#endif
+    return oldT;
   }
   template < typename MEM_ORDER = default_memory_order_t >
-  __device__
+  __host__ __device__
   T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
   {
-    return _atomicMax(m_impl_device, val);
+    T oldT;
+#if defined(__CUDA_ARCH__)
+    oldT = _atomicMax(m_impl_device, val);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = m_impl_host[0];
+    if (val > oldT) {
+      m_impl_host[0] = val;
+    }
+#endif
+    return oldT;
   }
 
   ///
   /// Atomic pre-fix operators. Equivalent to fetch_op(1) op 1
   /// Warp aggregated.
   ///
-  __device__
+  __host__ __device__
   T operator++() const volatile noexcept
   {
+    T newT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -512,11 +718,18 @@ public:
     if (laneId == first) {
       val = _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
+    newT = INTERNAL::shfl(val, first) + static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = ++(m_impl_host[0]);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator++() const noexcept
   {
+    T newT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -528,11 +741,18 @@ public:
     if (laneId == first) {
       val = _atomicAdd(m_impl_device, static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
+    newT = INTERNAL::shfl(val, first) + static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = ++(m_impl_host[0]);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator--() const volatile noexcept
   {
+    T newT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -544,11 +764,18 @@ public:
     if (laneId == first) {
       val = _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
+    newT = INTERNAL::shfl(val, first) - static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = --(m_impl_host[0]);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator--() const noexcept
   {
+    T newT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -560,16 +787,23 @@ public:
     if (laneId == first) {
       val = _atomicSub(m_impl_device, static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
+    newT = INTERNAL::shfl(val, first) - static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = --(m_impl_host[0]);
+#endif
+    return newT;
   }
 
   ///
   /// Atomic post-fix operators. Equivalent to fetch_op(1)
   /// Warp aggregated.
   ///
-  __device__
+  __host__ __device__
   T operator++(int) const volatile noexcept
   {
+    T oldT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -581,11 +815,18 @@ public:
     if (laneId == first) {
       val = _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
+    oldT = INTERNAL::shfl(val, first) + static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = (m_impl_host[0])++;
+#endif
+    return oldT;
   }
-  __device__
+  __host__ __device__
   T operator++(int) const noexcept
   {
+    T oldT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -597,11 +838,18 @@ public:
     if (laneId == first) {
       val = _atomicAdd(m_impl_device, static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) + static_cast<T>(linc);
+    oldT = INTERNAL::shfl(val, first) + static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = (m_impl_host[0])++;
+#endif
+    return oldT;
   }
-  __device__
+  __host__ __device__
   T operator--(int) const volatile noexcept
   {
+    T oldT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -613,11 +861,18 @@ public:
     if (laneId == first) {
       val = _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
+    oldT = INTERNAL::shfl(val, first) - static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = (m_impl_host[0])--;
+#endif
+    return oldT;
   }
-  __device__
+  __host__ __device__
   T operator--(int) const noexcept
   {
+    T oldT;
+#if defined(__CUDA_ARCH__)
     int threadId = threadIdx.x + blockDim.x * threadIdx.y
                    + (blockDim.x * blockDim.y) * threadIdx.z;
     int laneId = threadId % WARP_SIZE;
@@ -629,61 +884,136 @@ public:
     if (laneId == first) {
       val = _atomicSub(m_impl_device, static_cast<T>(ninc));
     }
-    return INTERNAL::shfl(val, first) - static_cast<T>(linc);
+    oldT = INTERNAL::shfl(val, first) - static_cast<T>(linc);
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    oldT = (m_impl_host[0])--;
+#endif
+    return oldT;
   }
 
   ///
   /// Atomic operators. Equivalent to fetch_op(val) op val
   ///
-  __device__
+  __host__ __device__
   T operator+=(T val) const volatile noexcept
   {
-    return _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), val) + val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicAdd(static_cast<volatile atomic_type*>(m_impl_device), val) + val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] += val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator+=(T val) const noexcept
   {
-    return _atomicAdd(m_impl_device, val) + val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicAdd(m_impl_device, val) + val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] += val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator-=(T val) const volatile noexcept
   {
-    return _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), val) - val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicSub(static_cast<volatile atomic_type*>(m_impl_device), val) - val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] -= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator-=(T val) const noexcept
   {
-    return _atomicSub(m_impl_device, val) - val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicSub(m_impl_device, val) - val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] -= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator&=(T val) const volatile noexcept
   {
-    return _atomicAnd(static_cast<volatile atomic_type*>(m_impl_device), val) & val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicAnd(static_cast<volatile atomic_type*>(m_impl_device), val) & val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] &= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator&=(T val) const noexcept
   {
-    return _atomicAnd(m_impl_device, val) & val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicAnd(m_impl_device, val) & val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] &= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator|=(T val) const volatile noexcept
   {
-    return _atomicOr(static_cast<volatile atomic_type*>(m_impl_device), val) | val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicOr(static_cast<volatile atomic_type*>(m_impl_device), val) | val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] |= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator|=(T val) const noexcept
   {
-    return _atomicOr(m_impl_device, val) | val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicOr(m_impl_device, val) | val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] |= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator^=(T val) const volatile noexcept
   {
-    return _atomicXor(static_cast<volatile atomic_type*>(m_impl_device), val) ^ val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicXor(static_cast<volatile atomic_type*>(m_impl_device), val) ^ val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] ^= val);
+#endif
+    return newT;
   }
-  __device__
+  __host__ __device__
   T operator^=(T val) const noexcept
   {
-    return _atomicXor(m_impl_device, val) ^ val;
+    T newT;
+#if defined(__CUDA_ARCH__)
+    newT = _atomicXor(m_impl_device, val) ^ val;
+#else
+    beforeCudaWriteTallyBlock<Async>(m_myID);
+    newT = (m_impl_host[0] ^= val);
+#endif
+    return newT;
   }
 
 private:
