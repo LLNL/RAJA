@@ -23,7 +23,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -58,8 +58,29 @@
 
 #include "RAJA/int_datatypes.hxx"
 
+#include <stddef.h>
+
 namespace RAJA
 {
+
+///
+/// Portable aligned memory allocation
+///
+void * allocate_aligned(size_t alignment, size_t size);
+
+///
+/// Portable aligned memory allocation
+///
+template<typename T>
+T * allocate_aligned_type(size_t alignment, size_t size) {
+    return reinterpret_cast<T*>(allocate_aligned(alignment, size));
+}
+
+
+///
+/// Portable aligned memory free - required for Windows
+///
+void free_aligned(void* ptr);
 
 ///
 /// Typedef defining common data type for RAJA-CPU reduction data blocks

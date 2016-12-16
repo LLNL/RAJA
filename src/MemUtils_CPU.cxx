@@ -20,7 +20,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -63,6 +63,12 @@
 #include <iostream>
 #include <string>
 
+#include <stdlib.h>
+
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#include <malloc.h>
+#endif
+
 namespace RAJA
 {
 
@@ -82,6 +88,32 @@ CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
 // "loc" reductions.
 //
 Index_type* s_cpu_reduction_loc_block = 0;
+
+void * allocate_aligned(size_t alignment, size_t size) {
+#if defined(HAVE_POSIX_MEMALIGN)
+    // posix_memalign available
+    void * ret = NULL;
+    int err = posix_memalign(&ret, alignment, size);
+    return err ? NULL : ret;
+#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    //on windows
+    return _aligned_malloc(size, alignment);
+#else
+    #error No known aligned allocator available
+#endif
+}
+
+
+void free_aligned(void* ptr) {
+#if defined(HAVE_POSIX_MEMALIGN)
+    free(ptr);
+#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+    //on windows
+    _aligned_free(ptr);
+#else
+    #error No known aligned allocator available
+#endif
+}
 
 /*
 *************************************************************************

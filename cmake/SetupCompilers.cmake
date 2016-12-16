@@ -40,7 +40,9 @@
 # 
 ###############################################################################
 
-set(CMAKE_CXX_STANDARD 14)
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  set(CMAKE_CXX_STANDARD 14)
+endif ()
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
@@ -67,13 +69,25 @@ else()
   set(RAJA_COMPILER "RAJA_COMPILER_${CMAKE_CXX_COMPILER_ID}")
 endif()
 
+if ( MSVC )
+  if (NOT BUILD_SHARED_LIBS)
+    foreach(flag_var
+        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
+        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
+      if(${flag_var} MATCHES "/MD")
+        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
+      endif(${flag_var} MATCHES "/MD")
+    endforeach(flag_var)
+  endif()
+endif()
+
 if (RAJA_ENABLE_CUDA)
   if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER})
   elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
+    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER})
   endif()
 endif()
 
@@ -81,3 +95,9 @@ set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
 set(RAJA_DATA_ALIGN 64 CACHE INT "")
 set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
+
+include(CheckFunctionExists)
+check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
+if(${HAVE_POSIX_MEMALIGN})
+    add_definitions(-DHAVE_POSIX_MEMALIGN)
+endif(${HAVE_POSIX_MEMALIGN})
