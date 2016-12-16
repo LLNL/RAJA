@@ -319,68 +319,68 @@ __device__ inline double _atomicCAS(double *address, double compare, double valu
                                         __double_as_longlong(value)));
 }
 
-/*!
- ******************************************************************************
- *
- * \brief Atomic and method for floating point types.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline float _atomicAnd(float *address, float value) noexcept
-{
-  return atomicAnd((int *)address,
-                    __float_as_int(value));
-}
-///
-template <>
-__device__ inline double _atomicAnd(double *address, double value) noexcept
-{
-  return atomicAnd((unsigned long long int *)address,
-                    __double_as_longlong(value));
-}
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic and method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicAnd(float *address, float value) noexcept
+// {
+//   return atomicAnd((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicAnd(double *address, double value) noexcept
+// {
+//   return atomicAnd((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
 
-/*!
- ******************************************************************************
- *
- * \brief Atomic or method for floating point types.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline float _atomicOr(float *address, float value) noexcept
-{
-  return atomicOr((int *)address,
-                    __float_as_int(value));
-}
-///
-template <>
-__device__ inline double _atomicOr(double *address, double value) noexcept
-{
-  return atomicOr((unsigned long long int *)address,
-                    __double_as_longlong(value));
-}
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic or method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicOr(float *address, float value) noexcept
+// {
+//   return atomicOr((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicOr(double *address, double value) noexcept
+// {
+//   return atomicOr((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
 
-/*!
- ******************************************************************************
- *
- * \brief Atomic xor method for floating point types.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline float _atomicXor(float *address, float value) noexcept
-{
-  return atomicXor((int *)address,
-                    __float_as_int(value));
-}
-///
-template <>
-__device__ inline double _atomicXor(double *address, double value) noexcept
-{
-  return atomicXor((unsigned long long int *)address,
-                    __double_as_longlong(value));
-}
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic xor method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicXor(float *address, float value) noexcept
+// {
+//   return atomicXor((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicXor(double *address, double value) noexcept
+// {
+//   return atomicXor((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
 
 //
 // Template specializations for atomic update methods not defined by nvidia

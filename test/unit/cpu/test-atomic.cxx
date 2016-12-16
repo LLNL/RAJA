@@ -35,11 +35,6 @@
 using namespace RAJA;
 using namespace std;
 
-///
-/// Define thread block size for CUDA exec policy
-///
-const size_t block_size = 256;
-
 //
 // Global variables for counting tests executed/passed.
 //
@@ -62,7 +57,7 @@ int seq_pos_cnt = 0;
 int seq_neg_cnt = 0;
 int seq_and = 0xffffffff;
 int seq_or = 0x0;
-int seq_xor = 0x00ff00ff;
+int seq_xor = 0x0f0f0f0f;
 
 //=========================================================================
 //=========================================================================
@@ -91,7 +86,7 @@ void runBasicMinMaxAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_min(T(1));
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_max(T(1));
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  forall<POLICY_T>(0, alen, [=] (int i) {
     atm_min.fetch_min(in_array[i]);
     atm_max.fetch_max(in_array[i]);
   });
@@ -176,7 +171,7 @@ void runBasicAddSubAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_pos_sum(T(0));
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_neg_sum(T(0));
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  forall<POLICY_T>(0, alen, [=] (int i) {
     atm_fad_sum.fetch_add(in_array[i]);
     atm_fsb_sum.fetch_sub(in_array[i]);
     atm_ple_sum += in_array[i];
@@ -274,15 +269,24 @@ void runBasicAndOrXorAtomicTest(const string& policy,
 
   s_ntests_run++;
   s_ntests_run_total++;
-    
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_fan(reinterpret_cast<T>(0xffffffff));
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_for(reinterpret_cast<T>(0x0));
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_fxr(reinterpret_cast<T>(0x00ff00ff));
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_ane(reinterpret_cast<T>(0xffffffff));
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_ore(reinterpret_cast<T>(0x0));
-  RAJA::atomic<ATOMIC_POLICY_T, T> atm_xre(reinterpret_cast<T>(0x00ff00ff));
+  
+  union reinterp_u {
+    unsigned long long int ull;
+    T t;
+  };
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  reinterp_u and_init; and_init.ull = 0xffffffffffffffffULL;
+  reinterp_u or_init;  or_init.ull  = 0x0000000000000000ULL;
+  reinterp_u xor_init; xor_init.ull = 0x0f0f0f0f0f0f0f0fULL;
+
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_fan(and_init.t);
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_for(or_init.t);
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_fxr(xor_init.t);
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_ane(and_init.t);
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_ore(or_init.t);
+  RAJA::atomic<ATOMIC_POLICY_T, T> atm_xre(xor_init.t);
+
+  forall<POLICY_T>(0, alen, [=] (int i) {
     atm_fan.fetch_and(in_array[i]);
     atm_for.fetch_or(in_array[i]);
     atm_fxr.fetch_xor(in_array[i]);
@@ -385,7 +389,7 @@ void runBasicIncDecAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, int> atm_neg_post_dec(0);
   RAJA::atomic<ATOMIC_POLICY_T, int> atm_neg_pre_dec(0);
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  forall<POLICY_T>(0, alen, [=] (int i) {
     if(in_array[i] < 0.0) {
       atm_neg_post_inc++;
       ++atm_neg_pre_inc;
@@ -408,7 +412,7 @@ void runBasicIncDecAtomicTest(const string& policy,
       || !equal(int(atm_neg_pre_inc),  seq_neg_cnt) 
       || !equal(int(atm_neg_post_dec),-seq_neg_cnt)
       || !equal(int(atm_neg_pre_dec), -seq_neg_cnt) ) {
-    cout << "\n TEST FAILURE: tcount = " << tcount
+    cout << "\n TEST FAILURE:"
          << endl;
     cout << setprecision(20) << "\tatm_pos_a++ = " << static_cast<int>(atm_pos_post_inc)
          << " (" << seq_pos_cnt << ") " << endl;
@@ -494,7 +498,7 @@ void runBasicCompExchAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_cew_prod(1.0);
   RAJA::atomic<ATOMIC_POLICY_T, T> atm_ces_prod(1.0);
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  forall<POLICY_T>(0, alen, [=] (int i) {
 
     T expect = atm_cew_prod.load();
     while (!atm_cew_prod.compare_exchange_weak(expect, expect * in_array[i]));
@@ -505,7 +509,7 @@ void runBasicCompExchAtomicTest(const string& policy,
 
   if (   !equal(T(atm_cew_prod), seq_prod)
       || !equal(T(atm_ces_prod), seq_prod) ) {
-    cout << "\n TEST FAILURE: tcount = " << tcount
+    cout << "\n TEST FAILURE:"
          << endl;
     cout << setprecision(20) << "\tatm_compare_exchange_weak_prod = " << static_cast<T>(atm_cew_prod)
          << " (" << seq_prod << ") " << endl;
@@ -584,7 +588,7 @@ void runBasicLoadExchAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, int> atm_exch_prev_chk(0);
   RAJA::atomic<ATOMIC_POLICY_T, int> atm_load_later_chk(0);
 
-  forall<POLICY_T>(0, (int)n, [=] __device__(int i) {
+  forall<POLICY_T>(0, (int)n, [=] (int i) {
       unsigned long long int load_first   = atm_exch_val.load();
       unsigned long long int exch_prev  = atm_exch_val.exchange(i + 1);
       unsigned long long int load_later   = atm_exch_val;
@@ -605,7 +609,7 @@ void runBasicLoadExchAtomicTest(const string& policy,
       || int(atm_exch_prev_chk) != n
       || int(atm_load_later_chk) != n
       || !(diff >= 1 && diff <= n) ) {
-    cout << "\n TEST FAILURE: tcount = " << tcount
+    cout << "\n TEST FAILURE:"
          << endl;
     cout << setprecision(20) << "\tatm_load_val_chk = " << static_cast<int>(atm_load_val_chk)
          << " (" << n << ") " << endl;
@@ -687,7 +691,7 @@ void runBasicLoadStoreAtomicTest(const string& policy,
   RAJA::atomic<ATOMIC_POLICY_T, unsigned long long int> atm_store_chk0(0);
   RAJA::atomic<ATOMIC_POLICY_T, unsigned long long int> atm_store_chk1(0);
 
-  forall<POLICY_T>(0, (int)n, [=] __device__(int i) {
+  forall<POLICY_T>(0, (int)n, [=] (int i) {
 
       int store_i0 = int(atm_store_val0 = i);
       atm_store_val1.store(i);
@@ -699,7 +703,7 @@ void runBasicLoadStoreAtomicTest(const string& policy,
 
   if (   ((unsigned long long int)atm_store_chk0) != n
       || ((unsigned long long int)atm_store_chk1) != n ) {
-    cout << "\n TEST FAILURE: tcount = " << tcount
+    cout << "\n TEST FAILURE:"
          << endl;
     cout << setprecision(20) << "\tatm_load_chk = " << static_cast<unsigned long long int>(atm_store_chk0)
          << " (" << n << ") " << endl;
@@ -773,10 +777,10 @@ void runBasicCountingAtomicTest(const string& policy,
   int* ivalue = new int[alen]();
   int* ivalue_check = new int[alen]();
 
-  RAJA::atomic<cuda_atomic, int> atm_cnt_up(0);
-  RAJA::atomic<cuda_atomic, int> atm_cnt_down(alen - 1);
+  RAJA::atomic<ATOMIC_POLICY_T, int> atm_cnt_up(0);
+  RAJA::atomic<ATOMIC_POLICY_T, int> atm_cnt_down(alen - 1);
 
-  forall<POLICY_T>(0, alen, [=] __device__(int i) {
+  forall<POLICY_T>(0, alen, [=] (int i) {
 
     if (in_array[i] < 0.0) {
 
@@ -817,7 +821,7 @@ void runBasicCountingAtomicTest(const string& policy,
   if (   ((int)atm_cnt_down) != (alen - seq_neg_cnt - 1)
       || ((int)atm_cnt_up) != seq_pos_cnt
       || (first_wrong != -1) ) {
-    cout << "\n TEST FAILURE: tcount = " << tcount
+    cout << "\n TEST FAILURE:"
          << endl;
     cout << setprecision(20) << "\tatm_count_down = " << static_cast<int>(atm_cnt_down)
          << " (" << (alen - seq_neg_cnt - 1) << ") " << endl;
@@ -942,7 +946,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   seq_neg_cnt = 0;
   seq_and = 0xffffffff;
   seq_or = 0x0;
-  seq_xor = 0x00ff00ff;
+  seq_xor = 0x0f0f0f0f;
 
   for (int i = 0; i < TEST_VEC_LEN; ++i) {
     // create distribution equally distributed in (-2, -1], (-1, -0.5], [0.5, 1), [1, 2)
