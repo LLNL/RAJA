@@ -79,6 +79,10 @@ if (RAJA_ENABLE_CUDA)
   cuda_add_executable(scan-tests
     test-scan.cxx)
 
+  set_source_files_properties(test-atomic.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+  cuda_add_executable(CPUatomic-test.exe
+    test-atomic.cxx)
+
 else()
   add_library(bis buildIndexSet.cxx)
   add_executable(CPUtraversal-test.exe
@@ -103,6 +107,9 @@ else()
 
   add_executable(scan-tests
     test-scan.cxx)
+
+  add_executable(CPUatomic-test.exe
+    test-atomic.cxx)
 
 endif()
 
@@ -142,9 +149,14 @@ add_test(
 
 target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
+add_test(
+    NAME CPUatomic
+    COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUatomic-test.exe>)
+
 target_link_libraries(CPUtraversal-test.exe RAJA bis)
 target_link_libraries(CPUreduce-test.exe RAJA bis)
 target_link_libraries(CPUnested-test.exe RAJA)
 if(RAJA_ENABLE_OPENMP)
   target_link_libraries(CPUnested_reduce-test.exe RAJA)
 endif()
+target_link_libraries(CPUatomic-test.exe RAJA)
