@@ -10,7 +10,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -45,109 +45,44 @@ if (NOT RAJA_ENABLE_NESTED)
   add_definitions(-DRAJA_ENABLE_NESTED)
 endif()
 
-if (RAJA_ENABLE_CUDA)
-  cuda_add_library(bis buildIndexSet.cxx)
-  cuda_add_executable(CPUtraversal-test.exe
-    main-traversal.cxx)
+raja_add_library(NAME bis SOURCES buildIndexSet.cxx)
 
-  cuda_add_executable(CPUreduce-test.exe
-    main-reduce.cxx)
+raja_add_test(
+  NAME CPUtraversal-test
+  SOURCES main-traversal.cxx
+  DEPENDS_ON bis)
 
-  cuda_add_executable(CPUnested-test.exe
-    main-nested.cxx)
+raja_add_test(
+  NAME CPUreduce-test
+  SOURCES main-reduce.cxx
+  DEPENDS_ON bis)
 
-  if(RAJA_ENABLE_OPENMP)
-      cuda_add_executable(CPUnested_reduce-test.exe
-        main-nested-reduce.cxx)
-  endif()
-
-  cuda_add_executable(indexset-tests
-    test-indexsets.cxx)
-
-  cuda_add_executable(traversal-tests
-    test-traversals.cxx)
-
-  cuda_add_executable(scan-tests
-    test-scan.cxx)
-
-  cuda_add_executable(reduction-tests
-    test-reductions.cxx)
-
-else()
-  add_library(bis buildIndexSet.cxx)
-  add_executable(CPUtraversal-test.exe
-    main-traversal.cxx)
-
-  add_executable(CPUreduce-test.exe
-    main-reduce.cxx)
-
-  add_executable(CPUnested-test.exe
-    main-nested.cxx)
-
-  if(RAJA_ENABLE_OPENMP)
-    add_executable(CPUnested_reduce-test.exe
-      main-nested-reduce.cxx)
-  endif()
-
-  add_executable(indexset-tests
-    test-indexsets.cxx)
-
-  add_executable(traversal-tests
-    test-traversals.cxx)
-
-  add_executable(scan-tests
-    test-scan.cxx)
-
-  add_executable(reduction-tests
-    test-reductions.cxx)
-
-endif()
-
-add_test(
-  NAME CPUtraversal
-  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUtraversal-test.exe>)
-
-add_test(
-  NAME CPUreduce
-  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUreduce-test.exe>)
-
-add_test(
-  NAME CPUnested
-  COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested-test.exe>)
+raja_add_test(
+  NAME CPUnested-test
+  SOURCES main-nested.cxx)
 
 if(RAJA_ENABLE_OPENMP)
-    add_test(
-      NAME CPUnested-reduce
-      COMMAND ${TEST_DRIVER} $<TARGET_FILE:CPUnested_reduce-test.exe>)
+  raja_add_test(
+    NAME CPUnested_reduce-test
+    SOURCES main-nested-reduce.cxx)
 endif()
 
-add_test(
-    NAME indexset-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:indexset-tests>)
+raja_add_test(
+  NAME indexset-tests
+  SOURCES test-indexsets.cxx
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-target_link_libraries(indexset-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+raja_add_test(
+  NAME traversal-tests
+  SOURCES test-traversals.cxx
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-add_test(
-    NAME traversal-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal-tests>)
+raja_add_test(
+  NAME reduction_tests
+  SOURCES test-reductions.cxx
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_ININT})
 
-target_link_libraries(traversal-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-add_test(
-    NAME scan-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan-tests>)
-
-target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-add_test(
-    NAME reduction-test
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reduction-tests>)
-target_link_libraries(reduction-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-
-target_link_libraries(CPUtraversal-test.exe RAJA bis)
-target_link_libraries(CPUreduce-test.exe RAJA bis)
-target_link_libraries(CPUnested-test.exe RAJA)
-if(RAJA_ENABLE_OPENMP)
-  target_link_libraries(CPUnested_reduce-test.exe RAJA)
-endif()
+raja_add_test(
+  NAME scan-tests
+    SOURCES test-scan.cxx
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
