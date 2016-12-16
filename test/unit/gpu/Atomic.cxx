@@ -20,7 +20,7 @@
 
 #include "Compare.hxx"
 
-#define TEST_VEC_LEN 1024 * 32
+#define TEST_VEC_LEN 1024 * 24
 
 using namespace RAJA;
 using namespace std;
@@ -41,11 +41,11 @@ int main(int argc, char *argv[])
   // Allocate and initialize managed data arrays
   //
 
-  int iinit_val = -1;
   double *rand_dvalue;
 
+  int iinit_val = -1;
   int *ivalue;
-  int* ivalue_host;
+  int* ivalue_check;
   int *rand_ivalue;
 
   cudaMallocManaged((void **)&rand_dvalue,
@@ -55,12 +55,11 @@ int main(int argc, char *argv[])
   cudaMallocManaged((void **)&ivalue,
                     sizeof(int) * TEST_VEC_LEN,
                     cudaMemAttachGlobal);
-  ivalue_host = new int[TEST_VEC_LEN];
+  ivalue_check = new int[TEST_VEC_LEN];
   for (int i = 0; i < TEST_VEC_LEN; ++i) {
-    ivalue_host[i] = iinit_val;
+    ivalue_check[i] = iinit_val;
     ivalue[i] = iinit_val;
   }
-
 
   cudaMallocManaged((void **)&rand_ivalue,
                     sizeof(int) * TEST_VEC_LEN,
@@ -90,19 +89,15 @@ int main(int argc, char *argv[])
     int seq_or = 0x0;
     int seq_xor = 0x00ff00ff;
 
-    const int prod_length = std::min(int(drand48()*1024.0*8.0), TEST_VEC_LEN);
-
     for (int i = 0; i < TEST_VEC_LEN; ++i) {
-      // create distribution equally distributed in (-2, -1], (-1, -0.5], [0.5, 1), [1, 2)
+      // create distribution with product that doesn't diverge too often
       double tmp = drand48();
-      if (tmp < 0.5) tmp = 2.0 * tmp + 1.0;
+      tmp = 1.103050709 * tmp + 0.5;
       if (drand48() < 0.5) tmp = -tmp;
       rand_dvalue[i] = tmp;
 
       seq_sum += rand_dvalue[i];
-      if (i < prod_length) {
-        seq_prod *= rand_dvalue[i];
-      }
+      seq_prod *= rand_dvalue[i];
       if (rand_dvalue[i] < seq_min) {
         seq_min = rand_dvalue[i];
       }
@@ -118,6 +113,7 @@ int main(int argc, char *argv[])
         seq_pos_sum += rand_dvalue[i];
       }
 
+      ivalue[i] = iinit_val;
       rand_ivalue[i] = i << 3;
       seq_and &= rand_ivalue[i];
       seq_or |= rand_ivalue[i];
@@ -325,8 +321,7 @@ int main(int argc, char *argv[])
 
     //
     // test 5 runs atomics using (T)a, load, compare_exchange_weak, compare_exchange_strong.
-    // implements *= using compare_exchange, prod_length should be kept small (<1024*8)
-    // so this product does not go to +-inf.
+    // implements *= using compare_exchange.
     //
     {  // begin test 5
       s_ntests_run++;
@@ -334,7 +329,7 @@ int main(int argc, char *argv[])
       RAJA::atomic<cuda_atomic, double> atm_cew_prod(1.0);
       RAJA::atomic<cuda_atomic, double> atm_ces_prod(1.0);
 
-      forall<cuda_exec<block_size> >(0, prod_length, [=] __device__(int i) {
+      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
 
         double expect = atm_cew_prod.load();
         while (!atm_cew_prod.compare_exchange_weak(expect, expect * rand_dvalue[i]));
@@ -439,9 +434,9 @@ int main(int argc, char *argv[])
           || ((unsigned long long int)atm_store_chk1) != n ) {
         cout << "\n TEST 7 FAILURE: tcount = " << tcount
              << endl;
-        cout << setprecision(20) << "\tatm_load_chk = " << static_cast<int>(atm_store_chk0)
+        cout << setprecision(20) << "\tatm_load_chk = " << static_cast<unsigned long long int>(atm_store_chk0)
              << " (" << n << ") " << endl;
-        cout << setprecision(20) << "\tatm_exch_prev_chk = " << static_cast<int>(atm_store_chk1)
+        cout << setprecision(20) << "\tatm_exch_prev_chk = " << static_cast<unsigned long long int>(atm_store_chk1)
              << " (" << n << ") " << endl;
       } else {
         s_ntests_passed++;
@@ -475,21 +470,21 @@ int main(int argc, char *argv[])
       });
 
       for(int i = 0; i < TEST_VEC_LEN; i++) {
-        ivalue_host[i] = 0;
+        ivalue_check[i] = 0;
       }
 
       int first_wrong = -1;
 
       for(int i = 0; i < TEST_VEC_LEN && first_wrong == -1; i++) {
         if (ivalue[i] >= 0 && ivalue[i] < TEST_VEC_LEN) {
-          ivalue_host[ivalue[i]] += 1;
+          ivalue_check[ivalue[i]] += 1;
         } else {
           first_wrong = i;
         }
       }
 
       for(int i = 0; i < TEST_VEC_LEN && first_wrong == -1; i++) {
-        if (ivalue_host[i] != 1) {
+        if (ivalue_check[i] != 1) {
           first_wrong = i;
         } else if (i < seq_pos_cnt && rand_dvalue[ivalue[i]] < 0.0) {
           first_wrong = i;
@@ -509,7 +504,7 @@ int main(int argc, char *argv[])
              << " (" << seq_pos_cnt << ") " << endl;
         cout << setprecision(20) << "\tsomething wrong at i = " << first_wrong
              << " ivalue[i] = " << ivalue[first_wrong]
-             << " ivalue_host[i] = " << ivalue_host[first_wrong]
+             << " ivalue_check[i] = " << ivalue_check[first_wrong]
              << " rand_dvalue[ivalue[i]] = " << ((ivalue[first_wrong] >= 0 && ivalue[first_wrong] < TEST_VEC_LEN) ? rand_dvalue[ivalue[first_wrong]] : 0.0)
              << endl;
       } else {
@@ -531,6 +526,7 @@ int main(int argc, char *argv[])
   cudaFree(rand_dvalue);
   cudaFree(ivalue);
   cudaFree(rand_ivalue);
+  delete[] ivalue_check;
 
   return !(s_ntests_passed == s_ntests_run);
 }
