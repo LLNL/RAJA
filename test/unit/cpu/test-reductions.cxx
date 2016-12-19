@@ -76,16 +76,23 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
 
 REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTest, ReductionConstructor);
 
+#if defined(RAJA_ENABLE_OPENMP)
 using constructor_types = ::testing::Types<
-                            std::tuple<RAJA::seq_reduce, int>,
-                            std::tuple<RAJA::seq_reduce, float>,
-                            std::tuple<RAJA::seq_reduce, double>,
-                            std::tuple<RAJA::omp_reduce, int>,
-                            std::tuple<RAJA::omp_reduce, float>,
-                            std::tuple<RAJA::omp_reduce, double>,
-                            std::tuple<RAJA::omp_reduce_ordered, int>,
-                            std::tuple<RAJA::omp_reduce_ordered, float>,
-                            std::tuple<RAJA::omp_reduce_ordered, double> >;
+    std::tuple<RAJA::seq_reduce, int>,
+    std::tuple<RAJA::seq_reduce, float>,
+    std::tuple<RAJA::seq_reduce, double>,
+    std::tuple<RAJA::omp_reduce, int>,
+    std::tuple<RAJA::omp_reduce, float>,
+    std::tuple<RAJA::omp_reduce, double>,
+    std::tuple<RAJA::omp_reduce_ordered, int>,
+    std::tuple<RAJA::omp_reduce_ordered, float>,
+    std::tuple<RAJA::omp_reduce_ordered, double> >;
+#else
+using constructor_types = ::testing::Types<
+    std::tuple<RAJA::seq_reduce, int>,
+    std::tuple<RAJA::seq_reduce, float>,
+    std::tuple<RAJA::seq_reduce, double> >;
+#endif
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests, ReductionConstructorTest, constructor_types);
 
@@ -239,11 +246,18 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
 REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest, ReduceSum, ReduceMin,
                            ReduceMax, ReduceMinLoc, ReduceMaxLoc);
 
+#if defined(RAJA_ENABLE_OPENMP)
 using types = ::testing::Types<
     std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
     std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered>
 >;
+#else
+using types = ::testing::Types<
+    std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
+    std::tuple<RAJA::simd_exec, RAJA::seq_reduce>
+>;
+#endif
 
 INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);
