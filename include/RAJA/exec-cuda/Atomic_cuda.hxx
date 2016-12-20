@@ -236,7 +236,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  void store(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  void store(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
 #if defined(__CUDA_ARCH__)
     _atomicExch(static_cast<volatile atomic_type*>(m_impl_device), val);
@@ -247,7 +247,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  void store(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  void store(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
 #if defined(__CUDA_ARCH__)
     _atomicExch(m_impl_device, val);
@@ -262,7 +262,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T load(MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T load(MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T current = T();
 #if defined(__CUDA_ARCH__)
@@ -275,7 +275,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T load(MEM_ORDER m = default_memory_order_t()) const noexcept
+  T load(MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T current = T();
 #if defined(__CUDA_ARCH__)
@@ -321,7 +321,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T exchange(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T exchange(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -335,7 +335,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T exchange(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T exchange(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -355,7 +355,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -371,7 +371,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  bool compare_exchange_weak(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -387,7 +387,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -403,7 +403,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  bool compare_exchange_strong(T& expected, T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -419,7 +419,7 @@ public:
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
   __host__ __device__
-  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const volatile noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 RAJA_UNUSED_ARG(m0), MEM_ORDER_1 RAJA_UNUSED_ARG(m1)) const volatile noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -435,7 +435,7 @@ public:
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
   __host__ __device__
-  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const noexcept
+  bool compare_exchange_weak(T& expected, T val, MEM_ORDER_0 RAJA_UNUSED_ARG(m0), MEM_ORDER_1 RAJA_UNUSED_ARG(m1)) const noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -451,7 +451,7 @@ public:
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
   __host__ __device__
-  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const volatile noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 RAJA_UNUSED_ARG(m0), MEM_ORDER_1 RAJA_UNUSED_ARG(m1)) const volatile noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -467,7 +467,7 @@ public:
   }
   template < typename MEM_ORDER_0, typename MEM_ORDER_1 >
   __host__ __device__
-  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 m0, MEM_ORDER_1 m1) const noexcept
+  bool compare_exchange_strong(T& expected, T val, MEM_ORDER_0 RAJA_UNUSED_ARG(m0), MEM_ORDER_1 RAJA_UNUSED_ARG(m1)) const noexcept
   {
     T old_exp = expected;
 #if defined(__CUDA_ARCH__)
@@ -487,7 +487,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_add(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -501,7 +501,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_add(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_add(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -515,7 +515,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_sub(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -529,7 +529,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_sub(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_sub(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -543,7 +543,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_and(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -557,7 +557,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_and(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_and(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -571,7 +571,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_or(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -585,7 +585,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_or(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_or(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -599,7 +599,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_xor(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -613,7 +613,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_xor(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_xor(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -631,7 +631,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_min(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -647,7 +647,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_min(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_min(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -667,7 +667,7 @@ public:
   ///
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) const volatile noexcept
+  T fetch_max(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const volatile noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
@@ -683,7 +683,7 @@ public:
   }
   template < typename MEM_ORDER = default_memory_order_t >
   __host__ __device__
-  T fetch_max(T val, MEM_ORDER m = default_memory_order_t()) const noexcept
+  T fetch_max(T val, MEM_ORDER RAJA_UNUSED_ARG(m) = MEM_ORDER()) const noexcept
   {
     T oldT;
 #if defined(__CUDA_ARCH__)
