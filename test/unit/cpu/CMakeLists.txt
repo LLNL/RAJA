@@ -85,5 +85,7 @@ if (NOT MSVC)
 endif ()
 
 raja_add_test(
-  NAME CPUatomic-test
-  SOURCES test-atomic.cxx)
+  NAME CPUatomic-tests
+  SOURCES test-atomic.cxx
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  
