@@ -229,7 +229,7 @@ public:
   //
   const ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
   {
-    if (rhs <= val) {
+    if (rhs < val) {
       val = rhs;
       idx = rhs_idx;
     }
@@ -238,7 +238,7 @@ public:
 
   ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx)
   {
-    if (rhs <= val) {
+    if (rhs < val) {
       val = rhs;
       idx = rhs_idx;
     }
@@ -415,7 +415,7 @@ public:
   //
   const ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
   {
-    if (rhs >= val) {
+    if (rhs > val) {
       val = rhs;
       idx = rhs_idx;
     }
@@ -424,7 +424,7 @@ public:
 
   ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx)
   {
-    if (rhs >= val) {
+    if (rhs > val) {
       val = rhs;
       idx = rhs_idx;
     }
@@ -657,6 +657,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -698,7 +699,7 @@ public:
   {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) < m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -719,7 +720,7 @@ public:
   {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) < m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -734,7 +735,7 @@ public:
   ReduceMinLoc<omp_reduce_ordered, T> minloc(T val, Index_type idx) const
   {
     int tid = omp_get_thread_num();
-    if (val <= static_cast<T>(m_blockdata[tid * s_block_offset])) {
+    if (val < static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
       m_idxdata[tid * s_idx_offset] = idx;
     }
@@ -884,6 +885,7 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
+    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -925,7 +927,7 @@ public:
   {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) > m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -946,7 +948,7 @@ public:
   {
     int nthreads = omp_get_max_threads();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) > m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -961,7 +963,7 @@ public:
   ReduceMaxLoc<omp_reduce_ordered, T> maxloc(T val, Index_type idx) const
   {
     int tid = omp_get_thread_num();
-    if (val >= static_cast<T>(m_blockdata[tid * s_block_offset])) {
+    if (val > static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
       m_idxdata[tid * s_idx_offset] = idx;
     }
