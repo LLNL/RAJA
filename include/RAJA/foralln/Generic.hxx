@@ -316,10 +316,13 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                            args)...);
 }
 
-template <typename T, typename T2>
-T return_first(T a, T2 RAJA_UNUSED_ARG(b))
-{
-  return a;
+namespace detail {
+
+template<typename T, size_t Unused>
+struct type_repeater {
+    using type=T;
+};
+
 }
 
 template <typename POLICY,
@@ -339,7 +342,7 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
   // Make it look like variadics can have defaults
   forallN_impl_extract<POLICY,
                        Indices...,
-                       decltype(return_first((Index_type)0, Unspecified))...>(
+                       typename detail::type_repeater<Index_type, Unspecified>::type...>(
       typename POLICY::ExecPolicies(), body, args...);
 }
 
