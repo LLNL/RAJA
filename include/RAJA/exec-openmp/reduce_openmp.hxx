@@ -474,6 +474,8 @@ public:
     val(other.custom_init),
     custom_init(other.custom_init)
   {
+    std::cout << "In copy constructor: me=" << this
+      << " parent=" << parent << std::endl;
   }
 
   //
@@ -485,7 +487,9 @@ public:
     if (parent) {
 #pragma omp critical
       {
+        std::cout << "val = " << val << std::endl;
         *parent += val;
+        std::cout << "parent val = " << parent->val << std::endl;
       }
     }
   }
