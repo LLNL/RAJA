@@ -325,7 +325,11 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 
 REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, NestedReduceSum);
 
+#if defined(RAJA_ENABLE_OPENMP)
 using nested_types = ::testing::Types<
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+        RAJA::seq_exec,
+        RAJA::seq_exec> >, RAJA::seq_reduce>, 
   std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
         RAJA::omp_collapse_nowait_exec,
         RAJA::omp_collapse_nowait_exec>,
@@ -338,5 +342,12 @@ std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
         RAJA::omp_collapse_nowait_exec>,
         RAJA::OMP_Parallel<> >, RAJA::omp_reduce_ordered>
 >;
+#else
+using nested_types = ::testing::Types<
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+        RAJA::seq_exec,
+        RAJA::seq_exec> >, RAJA::seq_reduce>
+>;
+#endif
 
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce, NestedReductionCorrectnessTest, nested_types);
