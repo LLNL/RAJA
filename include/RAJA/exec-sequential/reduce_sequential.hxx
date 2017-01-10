@@ -25,7 +25,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read raja/README-license.txt.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -83,18 +83,26 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val) :
-    parent(NULL)
+  explicit ReduceMin(T init_val)
   {
+    m_is_copy = false;
+
     m_reduced_val = init_val;
+
+    m_myID = getCPUReductionId();
+
+    m_blockdata = getCPUReductionMemBlock(m_myID);
+
+    m_blockdata[0] = init_val;
   }
 
   //
   // Copy ctor.
   //
   ReduceMin(const ReduceMin<seq_reduce, T>& other)
-    : parent(other.parent ? other.parent : &other)
   {
+    *this = other;
+    m_is_copy = true;
   }
 
   //
@@ -103,7 +111,9 @@ public:
   //
   ~ReduceMin<seq_reduce, T>()
   {
-    parent->min(m_reduced_val);
+    if (!m_is_copy) {
+      releaseCPUReductionId(m_myID);
+    }
   }
 
   //
@@ -111,6 +121,8 @@ public:
   //
   operator T()
   {
+    m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
+
     return m_reduced_val;
   }
 
@@ -124,7 +136,7 @@ public:
   //
   ReduceMin<seq_reduce, T> min(T val) const
   {
-    m_reduced_val = RAJA_MIN(m_reduced_val, val);
+    m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
     return *this;
   }
 
@@ -134,8 +146,12 @@ private:
   //
   ReduceMin<seq_reduce, T>();
 
-  mutable T m_reduced_val;
-  const ReduceMin<seq_reduce, T>* parent;
+  bool m_is_copy;
+  int m_myID;
+
+  T m_reduced_val;
+
+  CPUReductionBlockDataType* m_blockdata;
 };
 
 /*!
@@ -159,7 +175,6 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
-    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -195,7 +210,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -212,7 +227,7 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -224,7 +239,7 @@ public:
   //
   ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const
   {
-    if (val < static_cast<T>(m_blockdata[0])) {
+    if (val <= static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
     }
@@ -355,7 +370,6 @@ public:
     m_is_copy = false;
 
     m_reduced_val = init_val;
-    m_reduced_idx = init_loc;
 
     m_myID = getCPUReductionId();
 
@@ -391,7 +405,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -408,7 +422,7 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -420,7 +434,7 @@ public:
   //
   ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const
   {
-    if (val > static_cast<T>(m_blockdata[0])) {
+    if (val >= static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
     }
