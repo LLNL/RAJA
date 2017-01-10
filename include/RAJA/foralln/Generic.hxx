@@ -148,9 +148,10 @@ struct ForallN_BindFirstArg_Host {
   }
 };
 
-template <typename NextExec, typename BODY>
+template <typename NextExec, typename BODY_in>
 struct ForallN_PeelOuter {
   NextExec const next_exec;
+  using BODY = typename std::remove_reference<BODY_in>::type;
   BODY const body;
 
   RAJA_INLINE
@@ -281,13 +282,7 @@ struct ForallN_IndexTypeConverter {
     body(Idx(arg)...);
   }
 
-// This fixes massive compile time slowness for clang sans OpenMP
-// using a reference to body breaks offload for CUDA
-#ifdef RAJA_ENABLE_CUDA
   BODY body;
-#else
-  BODY const &body;
-#endif
 };
 
 template <typename POLICY,

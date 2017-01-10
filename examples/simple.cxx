@@ -28,16 +28,17 @@ main(int argc, char **argv) {
 
   RAJA::View<double, RAJA::Layout<int, RAJA::PERM_IJK, TimeInd, XInd, YInd>> val_view(memory, t_size, x_size, y_size);
 
-  RAJA::ReduceSum<RAJA::omp_reduce_ordered, double> oldsum(0);
-  RAJA::ReduceSum<RAJA::omp_reduce, double> newsum(0);
-
   RAJA::forallN<testpolicy, TimeInd, XInd, YInd >
     (RAJA::RangeSegment(0, t_size),
      RAJA::RangeSegment(0, x_size),
      RAJA::RangeSegment(0, y_size),
      [=](TimeInd t, XInd x, YInd y) {
      val_view(t, x, y) = value;
-     });
+   });
+
+  RAJA::ReduceSum<RAJA::omp_reduce_ordered, double> oldsum(0);
+  RAJA::ReduceSum<RAJA::omp_reduce, double> newsum(0);
+
 
   RAJA::forallN<testpolicy, TimeInd, XInd, YInd >
     (RAJA::RangeSegment(0, t_size),
@@ -48,14 +49,16 @@ main(int argc, char **argv) {
      newsum += val_view(t, x, y);
      });
 
-  RAJA::ReduceSum<RAJA::omp_reduce, double> sum(0.0);
+   RAJA::ReduceSum<RAJA::omp_reduce, double> sum(0.0);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(
-      0, (t_size*x_size*y_size), [=] (int i) {
-      sum += memory[i];
-  });
+   RAJA::forall<RAJA::omp_parallel_for_exec>(
+       0, (t_size*x_size*y_size), [=] (int i) {
+       sum += memory[i];
+   });
 
   std::cout << "Done\noldsum = " << oldsum << "\nnewsum = "
-    << newsum << "\nnon-nestedsum = " << sum << "\n";
+    << newsum 
+    << "\nnon-nestedsum = " << sum 
+    << "\n";
 
 }

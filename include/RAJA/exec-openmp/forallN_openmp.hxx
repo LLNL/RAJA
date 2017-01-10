@@ -201,18 +201,7 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag,
 
 #pragma omp parallel firstprivate(body)
   {
-#pragma omp critical
-    {
-      std::cout << "Entering parallel region" << std::endl;
-    }
-
-    //typename std::remove_reference<decltype(body)>::type loop_body = body;
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
-
-#pragma omp critical
-    {
-      std::cout << "Leaving parallel region" << std::endl;
-    }
   }
 }
 
