@@ -44,15 +44,3 @@
 raja_add_executable(
   NAME raja-pi 
   SOURCES pi.cxx)
-
-raja_add_executable(
-  NAME foralln-reduce
-  SOURCES foralln_reduce_test.cxx)
-
-raja_add_executable(
-  NAME simple
-  SOURCES simple.cxx)
-
-target_compile_definitions(foralln-reduce PUBLIC RAJA_ENABLE_NESTED=1)
-
-target_compile_definitions(simple PUBLIC RAJA_ENABLE_NESTED=1)
