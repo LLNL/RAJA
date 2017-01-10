@@ -83,26 +83,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val)
+  explicit ReduceMin(T init_val) :
+    parent(NULL)
   {
-    m_is_copy = false;
-
     m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    m_blockdata[0] = init_val;
   }
 
   //
   // Copy ctor.
   //
   ReduceMin(const ReduceMin<seq_reduce, T>& other)
+    : parent(other.parent ? other.parent : &other)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -111,9 +103,7 @@ public:
   //
   ~ReduceMin<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
-    }
+    parent->min(m_reduced_val);
   }
 
   //
@@ -121,8 +111,6 @@ public:
   //
   operator T()
   {
-    m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
-
     return m_reduced_val;
   }
 
@@ -136,7 +124,7 @@ public:
   //
   ReduceMin<seq_reduce, T> min(T val) const
   {
-    m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
+    m_reduced_val = RAJA_MIN(m_reduced_val, val);
     return *this;
   }
 
@@ -146,12 +134,8 @@ private:
   //
   ReduceMin<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  mutable T m_reduced_val;
+  const ReduceMin<seq_reduce, T>* parent;
 };
 
 /*!
