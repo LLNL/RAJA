@@ -261,3 +261,93 @@ using types = ::testing::Types<
 #endif
 
 INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);
+
+template <typename TUPLE>
+class NestedReductionCorrectnessTest : public ::testing::Test
+{
+ protected:
+   virtual void SetUp()
+   {
+     x_size = 16;
+     y_size = 16;
+     z_size = 16;
+
+     array = 
+       RAJA::allocate_aligned_type<double>(
+           RAJA::DATA_ALIGN, x_size * y_size * z_size * sizeof(double));
+
+     const double val = 4.0/(x_size * y_size * z_size);
+
+     for (int i = 0; i < (x_size * y_size * z_size); ++i) {
+           array[i] = (RAJA::Real_type) val;
+     }
+
+     sum = 4.0;
+   }
+
+   virtual void TearDown()
+   {
+     free(array);
+   }
+
+   RAJA::Real_ptr array;
+
+   RAJA::Real_type sum;
+
+   RAJA::Index_type x_size;
+   RAJA::Index_type y_size;
+   RAJA::Index_type z_size;
+ };
+TYPED_TEST_CASE_P(NestedReductionCorrectnessTest);
+
+TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
+{
+  using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
+  using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
+
+  RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
+
+  RAJA::View<double, RAJA::Layout<int, RAJA::PERM_IJK, int, int, int> > view(
+      this->array, this->x_size, this->y_size, this->z_size);
+
+  RAJA::forallN<ExecPolicy>(
+      RAJA::RangeSegment(0, this->x_size), 
+      RAJA::RangeSegment(0, this->y_size), 
+      RAJA::RangeSegment(0, this->z_size), 
+      [=] (int i, int j, int k) {
+        sum_reducer += view(i, j, k);
+  });
+
+  double raja_sum = (double) sum_reducer.get();
+
+  ASSERT_FLOAT_EQ(this->sum, raja_sum);
+}
+
+REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, NestedReduceSum);
+
+#if defined(RAJA_ENABLE_OPENMP)
+using nested_types = ::testing::Types<
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+        RAJA::seq_exec,
+        RAJA::seq_exec> >, RAJA::seq_reduce>, 
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
+        RAJA::omp_collapse_nowait_exec,
+        RAJA::omp_collapse_nowait_exec>,
+        RAJA::OMP_Parallel<> >, RAJA::omp_reduce>, 
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_parallel_for_exec,
+        RAJA::seq_exec,
+        RAJA::seq_exec> >, RAJA::omp_reduce>, 
+std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
+        RAJA::omp_collapse_nowait_exec,
+        RAJA::omp_collapse_nowait_exec>,
+        RAJA::OMP_Parallel<> >, RAJA::omp_reduce_ordered>
+>;
+#else
+using nested_types = ::testing::Types<
+  std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+        RAJA::seq_exec,
+        RAJA::seq_exec> >, RAJA::seq_reduce>
+>;
+#endif
+
+INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce, NestedReductionCorrectnessTest, nested_types);
