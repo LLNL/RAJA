@@ -15,10 +15,7 @@ struct storage {
 
   static T* alloc(int n)
   {
-    T* ptr = 0;
-    int err_val = ::posix_memalign((void**)&ptr, 64, n * sizeof(T));
-    RAJA_UNUSED_VAR(err_val);
-    return ptr;
+    return RAJA::allocate_aligned_type<T>(64, n * sizeof(T));
   }
 
   static void free(T* ptr) { ::free(ptr); }

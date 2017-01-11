@@ -139,6 +139,13 @@ const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
+#if defined (_WIN32)
+#define RAJA_RESTRICT __restrict
+#else
+#define RAJA_RESTRICT __restrict__
+#endif
+
+
 //
 //  Compiler-specific definitions for inline directives, data alignment
 //  intrinsics, and SIMD vector pragmas

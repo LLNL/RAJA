@@ -1,5 +1,8 @@
 #include "gtest/gtest.h"
 
+#include "RAJA/RAJA.hxx"
+#include "RAJA/MemUtils_CPU.hxx"
+
 #include "buildIndexSet.hxx"
 
 template <typename T>
@@ -14,20 +17,12 @@ protected:
 
     RAJA::getIndices(is_indices, index_sets_[0]);
 
-    int err_val;
-    test_array = 0;
-    err_val = posix_memalign((void **)&test_array,
-                             RAJA::DATA_ALIGN,
-                             array_length * sizeof(RAJA::Real_type));
-    ref_array = 0;
-    err_val = posix_memalign((void **)&ref_array,
-                             RAJA::DATA_ALIGN,
-                             array_length * sizeof(RAJA::Real_type));
-    in_array = 0;
-    err_val = posix_memalign((void **)&in_array,
-                             RAJA::DATA_ALIGN,
-                             array_length * sizeof(RAJA::Real_type));
-    RAJA_UNUSED_VAR(err_val);
+    test_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
+                   array_length * sizeof(RAJA::Real_type));
+    ref_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
+                   array_length * sizeof(RAJA::Real_type));
+    in_array = (RAJA::Real_ptr) RAJA::allocate_aligned(RAJA::DATA_ALIGN,
+                   array_length * sizeof(RAJA::Real_type));
 
     for (RAJA::Index_type i = 0; i < array_length; ++i) {
       in_array[i] = RAJA::Real_type(rand() % 65536);
@@ -46,9 +41,9 @@ protected:
 
   virtual void TearDown()
   {
-    free(test_array);
-    free(ref_array);
-    free(in_array);
+    RAJA::free_aligned(test_array);
+    RAJA::free_aligned(ref_array);
+    RAJA::free_aligned(in_array);
   }
 
   RAJA::IndexSet index_sets_[1];
