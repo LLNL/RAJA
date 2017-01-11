@@ -147,101 +147,105 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //
 //     RAJA_INLINE - macro to enforce method inlining
 //
+//     RAJA_SIMD - macro to apply compiler-specific pragma that encourages
+//                 compiler to SIMD vectorize loop even if it may not
+//                 normally
+//
+//     RAJA_SIMDFORCE - macro to apply compiler-specific pragma that forces
+//                      compiler to SIMD vectorize loop (should override
+//                      compiler heuristics, cost models, etc.)
+//
+//     RAJA_NOSIMD - macro to apply compiler-specific pragma to prevent
+//                   SIMD loop vectorization even if it is legal to do so
+//
 //     RAJA_ALIGN_DATA(<variable>) - macro to express alignment of data, 
-//                              loop bounds, etc.
+//                                   loop bounds, etc.
 //
-//     RAJA_SIMD - macro to express SIMD vectorization pragma to force
-//                 loop vectorization
-//
-//     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable alignments
+//     RAJA_ALIGNED_ATTR(<alignment>) - macro to express type or variable 
+//                   alignments
 //
 
 #if defined(RAJA_COMPILER_GNU)
-#define RAJA_ALIGNED_ATTR(N) __attribute__((aligned(N)))
-#else
-#define RAJA_ALIGNED_ATTR(N) alignas(N)
-#endif
-
-
-#if defined(RAJA_COMPILER_ICC)
-//
-// Configuration options for Intel compilers
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#if defined(RAJA_ENABLE_CUDA)
-#define RAJA_ALIGN_DATA(d)
-#else
-
-#if __ICC < 1300  // use alignment intrinsic
-#define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
-#else
-#define RAJA_ALIGN_DATA(d)  // TODO: Define this...
-#endif
-
-#endif
-
-#define RAJA_SIMD  // TODO: Define this...
-
-
-#elif defined(RAJA_COMPILER_GNU) 
 //
 // Configuration options for GNU compilers
 //
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
-
+#define RAJA_SIMD       // RAJA_PRAGMA(GCC ivdep) -> internal comp err w/4.9.3
+#define RAJA_SIMDFORCE  RAJA_PRAGMA(simd)
+#define RAJA_NOSIMD     // GNU compiler does not provide this option
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
-
 #endif
+#define RAJA_ALIGNED_ATTR(N) __attribute__((aligned(N)))
 
-#define RAJA_SIMD  // TODO: Define this...
 
-
-#elif defined(RAJA_COMPILER_XLC)
+#elif defined(RAJA_COMPILER_INTEL) 
 //
-// Configuration options for xlc compiler (i.e., bgq/sequoia).
-//
-
-#define RAJA_INLINE inline  __attribute__((always_inline))
-
-#define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
-
-//#define RAJA_SIMD  _Pragma("simd_level(10)")
-#define RAJA_SIMD   // TODO: Define this... 
-
-
-#elif defined(RAJA_COMPILER_CLANG)
-//
-// Configuration options for clang compilers
+// Configuration options for Intel compilers
 //
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
-
+#define RAJA_SIMD       RAJA_PRAGMA(ivdep)
+#define RAJA_SIMDFORCE  RAJA_PRAGMA(simd)
+#define RAJA_NOSIMD     RAJA_PRAGMA(novector)
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-
-#define RAJA_ALIGN_DATA(d) // TODO: Define this...
-
+#define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
 #endif
+#define RAJA_ALIGNED_ATTR(N) alignas(N)
 
-#define RAJA_SIMD  // TODO: Define this...
 
+#elif defined(RAJA_COMPILER_IBM) 
+//
+// Configuration options for IBM (xl) compilers
+//
+
+#define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_SIMD       RAJA_PRAGMA(simd_level(5))
+#define RAJA_SIMDFORCE  RAJA_PRAGMA(simd_level(10))
+#define RAJA_NOSIMD     RAJA_PRAGMA(simd_level(0))
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d)
 #else
+#define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
+#endif
+#define RAJA_ALIGNED_ATTR(N) alignas(N)
+
+
+#elif defined(RAJA_COMPILER_CLANG) 
+//
+// Configuration options for Clang compilers
+//
+
+#define RAJA_INLINE inline  __attribute__((always_inline))
+#define RAJA_SIMD      RAJA_PRAGMA(clang loop vectorize(enable))
+#define RAJA_SIMDFORCE 
+#define RAJA_NOSIMD    RAJA_PRAGMA(clang loop vectorize(disable))
+#if defined(RAJA_ENABLE_CUDA)
+#define RAJA_ALIGN_DATA(d)
+#else
+#define RAJA_ALIGN_DATA(d)
+#endif
+//#define RAJA_ALIGNED_ATTR(N) __attribute__((align_value(N)))
+#define RAJA_ALIGNED_ATTR(N) alignas(N)
+
+
+#else  // No compiler defined
 
 #pragma message("RAJA_COMPILER unknown, using default empty macros.")
 
 #define RAJA_INLINE inline
-#define RAJA_ALIGN_DATA(d)
 #define RAJA_SIMD
+#define RAJA_NOSIMD
+#define RAJA_ALIGN_DATA(d)
+#define RAJA_ALIGNED_ATTR(a)
 
 #endif
+
 
 }  // closing brace for RAJA namespace
 

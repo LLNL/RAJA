@@ -106,10 +106,7 @@ typedef std::complex<Real_type> Complex_type;
  ******************************************************************************
  */
 
-#if defined(RAJA_COMPILER_ICC)
-//
-// alignment attribute supported for versions > 12
-//
+#if defined(RAJA_COMPILER_INTEL)
 #if __ICC >= 1300
 typedef Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN)))
 TDRAReal_ptr;
@@ -310,7 +307,7 @@ public:
 /// Compiler-specific bracket operators.
 ///
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined(RAJA_COMPILER_INTEL)
   ///
   const Real_type& operator[](Index_type i) const
   {
@@ -333,7 +330,7 @@ public:
 #endif
   }
 
-#elif defined(RAJA_COMPILER_XLC)
+#elif defined(RAJA_COMPILER_IBM)
   const Real_type& operator[](Index_type i) const
   {
     RAJA_ALIGN_DATA(dptr);
@@ -424,7 +421,7 @@ public:
 /// Compiler-specific bracket operators.
 ///
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined(RAJA_COMPILER_INTEL)
   ///
   Real_type& operator[](Index_type i)
   {
@@ -468,7 +465,7 @@ public:
 #endif
   }
 
-#elif defined(RAJA_COMPILER_XLC)
+#elif defined(RAJA_COMPILER_IBM)
   ///
   Real_type& operator[](Index_type i)
   {
