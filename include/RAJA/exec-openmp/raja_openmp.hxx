@@ -79,13 +79,16 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-template <typename InnerPolicy>
+template <typename InnerPolicy, bool OnDevice=false>
 struct omp_parallel_exec {
 };
 struct omp_for_exec {
 };
 struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
 };
+struct omp_target_parallel_for_exec : public omp_parallel_exec<omp_for_exec,true> {
+};
+
 template <size_t ChunkSize>
 struct omp_for_static {
 };

@@ -81,11 +81,12 @@ namespace RAJA
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename InnerPolicy, typename Func>
-RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
+template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
+RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
+#pragma omp target if(OnDevice)
 #pragma omp parallel 
   {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
