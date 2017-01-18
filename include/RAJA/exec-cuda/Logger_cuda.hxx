@@ -59,8 +59,6 @@
 
 #include "RAJA/Logger.hxx"
 
-#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
-
 #include <type_traits>
 
 #include <stdio.h>
@@ -93,10 +91,17 @@ public:
   static const int buffer_size = 1024*1024;
   static const int error_buffer_size = 4*1024;
 
-  static CudaLogManager* getInstance()
+  static inline CudaLogManager* getInstance()
   {
     static CudaLogManager* me = new (allocateInstance()) CudaLogManager();
     return me;
+  }
+
+  static void s_check_logs()
+  {
+    if (s_instance_buffer != nullptr) {
+      getInstance()->check_logs();
+    }
   }
 
   void check_logs()
@@ -218,29 +223,31 @@ private:
 
   static void* allocateInstance()
   {
-    cudaHostAlloc(&s_instance_buffer, buffer_size, cudaHostAllocDefault);
-    memset(s_instance_buffer, 0, buffer_size);
+    if (s_instance_buffer == nullptr) {
+      cudaHostAlloc(&s_instance_buffer, buffer_size, cudaHostAllocDefault);
+      memset(s_instance_buffer, 0, buffer_size);
+    }
     return s_instance_buffer;
   }
 
   static void deallocateInstance()
   {
-    getInstance()->~CudaLogManager();
-    cudaFreeHost(s_instance_buffer);
+    if (s_instance_buffer != nullptr) {
+      getInstance()->~CudaLogManager();
+      cudaFreeHost(s_instance_buffer);
+    }
   }
 
   CudaLogManager()
+    : m_flag(false),
+      m_error_begin(s_instance_buffer + sizeof(CudaLogManager)),
+      m_error_pos(s_instance_buffer + sizeof(CudaLogManager)),
+      m_error_end(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
+      m_log_begin(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
+      m_log_pos(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
+      m_log_end(s_instance_buffer + buffer_size),
+      md_data(nullptr)
   {
-    m_flag = false;
-
-    m_error_begin = s_instance_buffer + sizeof(CudaLogManager);
-    m_error_pos = m_error_begin;
-    m_error_end = m_error_begin + error_buffer_size;
-
-    m_log_begin = m_error_end;
-    m_log_pos = m_log_begin;
-    m_log_end = s_instance_buffer + buffer_size;
-
     cudaMalloc((void**)&md_data, sizeof(CudaLogManagerDeviceData));
     cudaMemset(md_data, 0, sizeof(CudaLogManagerDeviceData));
   }
@@ -488,12 +495,13 @@ private:
     err = read_type_value(buf_pos, buf_end, fmt) || err;
 
     // read the other arguments and print to another buffer.
-    // err ||= write_types_values(buf_pos, buf_end, args...);
+    // err = write_types_values(buf_pos, buf_end, args...) || err;
 
     if ( !err ) {
       func(udata, fmt);
     } else {
       fprintf(stderr, "RAJA Logging error: Logging function could not be called.");
+      buf_pos = buf_end;
     }
 
     if (buf_pos != buf_end) {

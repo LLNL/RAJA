@@ -63,23 +63,10 @@
 namespace RAJA
 {
 
-namespace ERROR_CLEANUP
-{
-  inline void add(ResourceHandler::error_cleanup_func f)
-  {
-    ResourceHandler::getInstance().add_error_cleanup(f);
-  }
-
-  inline void remove(ResourceHandler::error_cleanup_func f)
-  {
-    ResourceHandler::getInstance().remove_error_cleanup(f);
-  }
-
-}
-
-
 using loggingID_type = unsigned long long int;
 using logging_function_type = void(*)(int, const char*);
+
+extern void check_logs();
 
 inline void basic_logger(int udata, const char* msg)
 {
