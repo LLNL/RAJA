@@ -92,6 +92,16 @@ struct cilk_for_segit : public cilk_for_exec {
 struct cilk_reduce {
 };
 
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Logger policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct cilk_logger {
+};
+
 }  // closing brace for RAJA namespace
 
 #include "RAJA/exec-cilk/forall_cilk.hxx"

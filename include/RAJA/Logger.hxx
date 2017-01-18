@@ -3,15 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
+ * \brief   
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_Logger_HXX
+#define RAJA_Logger_HXX
+
+#include "RAJA/config.hxx"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,55 +55,66 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/PolicyBase.hxx"
+#include "RAJA/ResourceHandler.hxx"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 namespace RAJA
 {
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+namespace ERROR_CLEANUP
+{
+  inline void add(ResourceHandler::error_cleanup_func f)
+  {
+    ResourceHandler::getInstance().add_error_cleanup(f);
+  }
 
-///
-/// Segment execution policies
-///
-struct seq_exec : public PolicyBase {
+  inline void remove(ResourceHandler::error_cleanup_func f)
+  {
+    ResourceHandler::getInstance().remove_error_cleanup(f);
+  }
+
+}
+
+
+using loggingID_type = unsigned long long int;
+using logging_function_type = void(*)(int, const char*);
+
+inline void basic_logger(int udata, const char* msg)
+{
+  fprintf(stderr, "RAJA log: %s\n", msg);
+}
+
+template < typename policy >
+class Logger {
+public:
+  using func_type = RAJA::logging_function_type;
+
+  explicit Logger(func_type f = RAJA::basic_logger)
+    : m_func(f)
+  {
+
+  }
+
+  template < typename... T >
+  void log(int udata, const char* fmt, T... args) const
+  {
+    m_func(udata, fmt);
+  }
+
+  template < typename... T >
+  void error(int udata, const char* fmt, T... args) const
+  {
+    ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
+    m_func(udata, fmt);
+    exit(1);
+  }
+
+private:
+  const func_type m_func;
 };
 
-///
-/// Index set segment iteration policies
-///
-struct seq_segit : public seq_exec {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_reduce {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Logger policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_logger {
-};
-
-}  // closing brace for RAJA namespace
-
-#include "RAJA/exec-sequential/forall_sequential.hxx"
-#include "RAJA/exec-sequential/reduce_sequential.hxx"
-#include "RAJA/exec-sequential/scan_sequential.hxx"
+}
 
 #endif  // closing endif for header file include guard

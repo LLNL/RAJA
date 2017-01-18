@@ -3,15 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
+ * \brief   
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_Resource_Handler_HXX
+#define RAJA_Resource_Handler_HXX
+
+#include "RAJA/config.hxx"
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -54,56 +54,75 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/PolicyBase.hxx"
+ 
+#include <vector>
+#include <algorithm>
 
 namespace RAJA
 {
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+namespace error
+{
+  enum
+  {
+    none = 0x0,
+    raja = 0x1, // an internal raja error (exceeded allowable reduction varaible count)
+    user = 0x2, // an error logged by a user
+    cuda = 0x4  // an error caused by cuda
+  };
+}
 
-///
-/// Segment execution policies
-///
-struct seq_exec : public PolicyBase {
+class ResourceHandler
+{
+public:
+  using error_cleanup_func = void(*)(int);
+
+  static ResourceHandler& getInstance()
+  {
+    static ResourceHandler me;
+    return me;
+  }
+
+  void add_error_cleanup(error_cleanup_func f)
+  {
+    m_funcs.push_back(f);
+  }
+
+  void remove_error_cleanup(error_cleanup_func f)
+  {
+    auto loc = std::find(m_funcs.begin(), m_funcs.end(), f);
+    if (loc != m_funcs.end()) {
+      m_funcs.erase(loc);
+    }
+  }
+
+  void error_cleanup(int err)
+  {
+    // call cleanup functions in reverse order
+    std::for_each(m_funcs.rbegin(), m_funcs.rend(),
+                  [=](error_cleanup_func& f) { f( err ); });
+  }
+
+private:
+
+  ResourceHandler()
+  {
+
+  }
+
+  ResourceHandler(ResourceHandler const&);
+  ResourceHandler(ResourceHandler &&);
+  ResourceHandler& operator=(ResourceHandler const&);
+  ResourceHandler& operator=(ResourceHandler &&);
+
+  ~ResourceHandler()
+  {
+
+  }
+
+  std::vector< error_cleanup_func > m_funcs;
 };
 
-///
-/// Index set segment iteration policies
-///
-struct seq_segit : public seq_exec {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_reduce {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Logger policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_logger {
-};
-
-}  // closing brace for RAJA namespace
-
-#include "RAJA/exec-sequential/forall_sequential.hxx"
-#include "RAJA/exec-sequential/reduce_sequential.hxx"
-#include "RAJA/exec-sequential/scan_sequential.hxx"
+}
 
 #endif  // closing endif for header file include guard
