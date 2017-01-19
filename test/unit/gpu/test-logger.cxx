@@ -10,8 +10,8 @@ class LoggerTest : public ::testing::Test
 protected:
   virtual void SetUp()
   {
-    array_length = 513;
-    small = 14235;
+    array_length = 3153;
+    small = 7548;
     small_count = 0;
 
     cudaMallocManaged(&test_array, array_length * sizeof(RAJA::Real_type));
@@ -55,10 +55,22 @@ void forall_test(RAJA::Index_type array_length,
 
   RAJA::Logger<LoggerPolicy> mylog([](int udata, const char* msg) {
     small_counter++;
-    fprintf(stderr, "RAJA logger: udata %i, msg %p.\n", udata, msg);
-    fprintf(stderr, "RAJA logger: msg %s.\n",  msg);
+    // fprintf(stderr, "RAJA logger: udata %i, msg %p.\n", udata, msg);
+    // fprintf(stderr, "RAJA logger: msg %s.\n",  msg);
     if (msg == nullptr || udata != atoi(msg)) {
       error_flag.store(true);
+    }
+  });
+
+  RAJA::forall<ExecPolicy>(0, array_length, [=] __host__ __device__ (RAJA::Index_type idx) {
+    if (test_array[idx] < 0) {
+      test_array[idx] = -idx;
+    }
+  });
+
+  RAJA::forall<ExecPolicy>(0, array_length, [=] __host__ __device__ (RAJA::Index_type idx) {
+    if (test_array[idx] < 0) {
+      mylog.error(idx, "%i", idx);
     }
   });
 

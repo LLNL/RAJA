@@ -60,7 +60,9 @@
 #include "RAJA/Logger.hxx"
 
 #include <type_traits>
+#include <vector>
 
+#include <string.h>
 #include <stdio.h>
 #include <stdint.h>
 
@@ -106,9 +108,9 @@ public:
 
   void check_logs() volatile
   {
-    fprintf(stderr, "RAJA logger: s_instance_buffer = %p.\n", s_instance_buffer);
+    // fprintf(stderr, "RAJA logger: s_instance_buffer = %p.\n", s_instance_buffer);
     if (m_flag) {
-      fprintf(stderr, "RAJA logger: found log in queue.\n");
+      // fprintf(stderr, "RAJA logger: found log in queue.\n");
       // handle logs
       handle_in_order();
     }
@@ -140,8 +142,9 @@ public:
 
         bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
         if (err) {
-          printf("RAJA logger: error writing log on device.\n");
-          // do something?
+          printf("RAJA logger error: Writing error on device failed.\n");
+          buf_pos = m_error_pos;
+          write_log(buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing error on device failed.");
         }
 
         m_error_pos = buf_pos;
@@ -196,8 +199,9 @@ public:
 
         bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
         if (err) {
-          printf("RAJA logger: error writing log on device.\n");
-          // do something?
+          printf("RAJA logger error: Writing log on device failed.\n");
+          buf_pos = m_error_pos;
+          write_log(buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing log on device failed.");
         }
 
         m_log_pos = buf_pos;
@@ -283,7 +287,7 @@ private:
             loggingID_type id, RAJA::logging_function_type func,
             int udata, T_fmt const& fmt, Ts const&... args)
   {
-    printf("RAJA logger: writing log on device.\n");
+    // printf("RAJA logger: writing log on device.\n");
     char* init_buf_pos = buf_pos;
     bool err = write_value(buf_pos, buf_end, static_cast<char*>(nullptr));
     err = write_value(buf_pos, buf_end, id) || err;
@@ -529,274 +533,8 @@ private:
   }
 
   // functions that read from the buffer
-
-  void handle_in_order() volatile
-  {
-    // ensure all logs visible
-    cudaDeviceSynchronize();
-
-    loggingID_type error_id = std::numeric_limits<loggingID_type>::max();
-    loggingID_type log_id = std::numeric_limits<loggingID_type>::max();
-
-    char* error_pos = m_error_begin;
-    char* error_next = m_error_pos;
-    char* error_end = m_error_pos;
-    read_preamble(error_pos, error_next, error_end, error_id);
-
-    char* log_pos = m_log_begin;
-    char* log_next = m_log_pos;
-    char* log_end = m_log_pos;
-    read_preamble(log_pos, log_next, log_end, log_id);
-
-    // handle logs in order by id
-    while( error_id != std::numeric_limits<loggingID_type>::max()
-        || log_id   != std::numeric_limits<loggingID_type>::max() ) {
-
-      if (error_id < log_id) {
-        handle_error(error_pos, error_next);
-        error_next = error_end;
-        read_preamble(error_pos, error_next, error_end, error_id);
-      } else {
-        handle_log(log_pos, log_next);
-        log_next = log_end;
-        read_preamble(log_pos, log_next, log_end, log_id);
-      }
-
-    }
-
-    // reset buffers and flags
-    m_error_pos = m_error_begin;
-    memset(m_error_begin, 0, m_error_end - m_error_begin);
-
-    m_log_pos = m_log_begin;
-    memset(m_log_begin, 0, m_log_end - m_log_begin);
-
-    m_flag = false;
-  }
-
-  static bool
-  read_preamble(char*& buf_pos, char*& buf_next, char*const& buf_end, loggingID_type& id)
-  {
-    bool err = false;
-    if (buf_pos < buf_next) {
-      char* tmp_next;
-      err = read_value<char*>(buf_pos, buf_next, tmp_next);
-      if ( !err ) {
-        buf_next = tmp_next;
-        err = read_value<loggingID_type>(buf_pos, buf_next, id);
-      }
-      if ( err ) {
-        buf_pos = buf_end;
-        buf_next = buf_end;
-        id = std::numeric_limits<loggingID_type>::max();
-      }
-    } else {
-      id = std::numeric_limits<loggingID_type>::max();
-    }
-    return err;
-  }
-
-  static bool
-  handle_error(char*& buf_pos, char*const& buf_end)
-  {
-    ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
-    bool err = handle_log(buf_pos, buf_end);
-    exit(1);
-    return err;
-  }
-
-  static bool
-  handle_log(char*& buf_pos, char*const& buf_end)
-  {
-    fprintf(stderr, "RAJA logger: handling log.\n");
-    RAJA::logging_function_type func;
-    int udata;
-    const char* fmt;
-
-    // read the logging function, udata, and fmt
-    fprintf(stderr, "RAJA logger: reading function ptr.\n");
-    bool err = read_value<RAJA::logging_function_type>(buf_pos, buf_end, func);
-    fprintf(stderr, "RAJA logger: reading udata.\n");
-    err = read_value<int>(buf_pos, buf_end, udata) || err;
-    fprintf(stderr, "RAJA logger: reading fmt.\n");
-    err = read_type_value(buf_pos, buf_end, fmt) || err;
-
-    // read the other arguments and print to another buffer.
-    // err = write_types_values(buf_pos, buf_end, args...) || err;
-
-    if ( !err ) {
-      func(udata, fmt);
-    } else {
-      fprintf(stderr, "RAJA Logging error: Logging function could not be called.\n");
-      buf_pos = buf_end;
-    }
-
-    if (buf_pos != buf_end) {
-      fprintf(stderr, "RAJA Logging warning: Unused arguments detected.\n");
-      buf_pos = buf_end;
-    }
-
-    return err;
-  }
-
-  template < typename T_read, typename T >
-  static typename std::enable_if< std::is_assignable<T&, T_read>::value, bool >::type
-  read_value(char*& pos, char*const& end, T& arg)
-  {
-    bool err = false;
-    union Tchar_union {
-      T_read t;
-      char ca[sizeof(T_read)];
-    };
-
-    Tchar_union u;
-
-    for (int i = 0; i < sizeof(T_read); i++) {
-      if (pos >= end) {
-        fprintf(stderr, "RAJA logger warning: Incomplete log detected.\n");
-        u.t = static_cast<T_read>(0);
-        err = true;
-        break;
-      }
-      u.ca[i] = *pos++;
-    }
-
-    arg = static_cast<T>(u.t);
-
-    return err;
-  }
-
-  template < typename T_read, typename T >
-  static typename std::enable_if< !std::is_assignable<T&, T_read>::value, bool >::type
-  read_value(char*& pos, char*const& end, T& arg)
-  {
-    bool err = false;
-    for (int i = 0; i < sizeof(T_read); i++) {
-      if (pos >= end) {
-        fprintf(stderr, "RAJA logger warning: Incomplete log detected.\n");
-        err = true;
-        break;
-      }
-      pos++;
-    }
-
-    fprintf(stderr, "RAJA logger warning: Incompatible types detected.\n");
-    arg = static_cast<T>(0);
-
-    return err;
-  }
-
-  template < typename T >
-  static typename std::enable_if< std::is_assignable<T&, char*>::value, bool >::type
-  read_value_char_arr(char*& pos, char*const& end, T& arg)
-  {
-    bool err = false;
-    arg = static_cast<T>(pos);
-    while (!err) {
-      if (pos >= end) {
-        fprintf(stderr, "RAJA logger warning: Incomplete log detected.\n");
-        arg = static_cast<T>(0);
-        err = true;
-        break;
-      }
-      if ( *pos++ == '\0') break;
-    }
-    return err;
-  }
-
-  template < typename T >
-  static typename std::enable_if< !std::is_assignable<T&, char*>::value, bool >::type
-  read_value_char_arr(char*& pos, char*const& end, T& arg)
-  {
-    fprintf(stderr, "RAJA logger warning: Incompatible types detected.\n");
-    bool err = false;
-    arg = static_cast<T>(0);
-    while (!err) {
-      if (pos >= end) {
-        fprintf(stderr, "RAJA logger warning: Incomplete log detected.\n");
-        err = true;
-        break;
-      }
-      if ( *pos++ == '\0') break;
-    }
-    return err;
-  }
-
-  template < typename T >
-  static bool
-  read_type_value(char*& pos, char*const& end, T& arg)
-  {
-    bool err = false;
-    if (pos >= end) {
-      fprintf(stderr, "RAJA logger warning: Incomplete log detected.\n");
-      err = true;
-      return err;
-    }
-
-    using print_types = RAJA::Internal::print_types;
-    switch( static_cast<print_types>(*pos++) ) {
-      case print_types::int8 : {
-        err = read_value<int8_t>(pos, end, arg);
-        break;
-      }
-      case print_types::int16 : {
-        err = read_value<int16_t>(pos, end, arg);
-        break;
-      }
-      case print_types::int32 : {
-        err = read_value<int32_t>(pos, end, arg);
-        break;
-      }
-      case print_types::int64 : {
-        err = read_value<int64_t>(pos, end, arg);
-        break;
-      }
-      case print_types::uint8 : {
-        err = read_value<uint8_t>(pos, end, arg);
-        break;
-      }
-      case print_types::uint16 : {
-        err = read_value<uint16_t>(pos, end, arg);
-        break;
-      }
-      case print_types::uint32 : {
-        err = read_value<uint32_t>(pos, end, arg);
-        break;
-      }
-      case print_types::uint64 : {
-        err = read_value<uint64_t>(pos, end, arg);
-        break;
-      }
-      case print_types::flt32 : {
-        err = read_value<float>(pos, end, arg);
-        break;
-      }
-      case print_types::flt64 : {
-        err = read_value<double>(pos, end, arg);
-        break;
-      }
-      case print_types::ptr : {
-        err = read_value<void*>(pos, end, arg);
-        break;
-      }
-      case print_types::char_ptr : {
-        err = read_value<char*>(pos, end, arg);
-        break;
-      }
-      case print_types::char_arr : {
-        err = read_value_char_arr(pos, end, arg);
-        break;
-      }
-      default : {
-        fprintf(stderr, "RAJA logger warning: Unknown type encountered.\n");
-        err = true;
-        break;
-      }
-    }
-
-    return err;
-  }
-
+  void handle_in_order() volatile;
+  
 };
 
 } // closing brace for Internal namespace
