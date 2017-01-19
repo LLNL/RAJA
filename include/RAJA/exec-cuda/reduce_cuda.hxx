@@ -101,6 +101,23 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
   return Tunion.var;
 }
 
+template<typename T>
+__device__ __forceinline__ T shfl(T var, int laneMask)
+{
+  const int int_sizeof_T = 
+      (sizeof(T) + sizeof(int) - 1) / sizeof(int);
+  union {
+    T var;
+    int arr[int_sizeof_T];
+  } Tunion;
+  Tunion.var = var;
+
+  for(int i = 0; i < int_sizeof_T; ++i) {
+    Tunion.arr[i] = __shfl(Tunion.arr[i], laneMask);
+  }
+  return Tunion.var;
+}
+
 } // end HIDDEN namespace for helper functions
 
 //

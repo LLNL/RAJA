@@ -85,16 +85,32 @@ public:
   }
 
   template < typename... T >
-  void log(int udata, const char* fmt, T... args) const
+  void log(int udata, const char* fmt, T const&... args) const
   {
-    m_func(udata, fmt);
+    int len = snprintf(nullptr, 0, fmt, args...);
+    if (len >= 0) {
+      char* msg = new char[len+1];
+      snprintf(msg, len+1, fmt, args...);
+      m_func(udata, msg);
+      delete[] msg;
+    } else {
+      fprintf(stderr, "RAJA logger error: could not format message");
+    }
   }
 
   template < typename... T >
-  void error(int udata, const char* fmt, T... args) const
+  void error(int udata, const char* fmt, T const&... args) const
   {
     ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
-    m_func(udata, fmt);
+    int len = snprintf(nullptr, 0, fmt, args...);
+    if (len >= 0) {
+      char* msg = new char[len+1];
+      snprintf(msg, len+1, fmt, args...);
+      m_func(udata, msg);
+      delete[] msg;
+    } else {
+      fprintf(stderr, "RAJA logger error: could not format message");
+    }
     exit(1);
   }
 
