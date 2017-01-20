@@ -58,10 +58,10 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 #include "RAJA/PolicyBase.hxx"
-
+#pragma omp declare target
 #include <omp.h>
+#pragma omp end declare target
 #include <iostream>
 #include <thread>
 
@@ -119,6 +119,9 @@ struct omp_taskgraph_interval_segit {
 ///////////////////////////////////////////////////////////////////////
 ///
 struct omp_reduce {
+};
+
+struct omp_target_reduce {
 };
 
 struct omp_reduce_ordered {

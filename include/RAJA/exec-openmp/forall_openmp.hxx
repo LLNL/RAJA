@@ -86,13 +86,15 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-#pragma omp target if(OnDevice)
+#pragma omp target if(OnDevice) 
+{
 #pragma omp parallel 
   {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall<InnerPolicy>(std::forward<Iterable>(iter),
                         std::forward<Func>(body));
   }
+}
 }
 
 template <typename Iterable, typename InnerPolicy, typename Func>

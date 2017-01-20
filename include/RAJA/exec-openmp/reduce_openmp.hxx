@@ -17,7 +17,6 @@
 #include "RAJA/config.hxx"
 
 #if defined(RAJA_ENABLE_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -65,6 +64,8 @@
 #include "RAJA/reducers.hxx"
 
 #include "RAJA/MemUtils_CPU.hxx"
+
+#include "target_reduce_openmp.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -482,6 +483,8 @@ public:
   //
   ~ReduceSum<omp_reduce, T>()
   {
+
+   if(omp_get_thread_num() == 0) printf("d: %d %p %lf\n", omp_get_thread_num(), this, val );
     if (parent) {
 #pragma omp critical
       {
@@ -508,7 +511,10 @@ public:
   //
   const ReduceSum<omp_reduce, T>& operator+=(T rhs) const
   {
+
     this->val += rhs;
+   if(omp_get_thread_num() == 0) printf("+: %d %p %lf\n", omp_get_thread_num(), this, val );
+
     return *this;
   }
 
@@ -516,6 +522,7 @@ public:
   {
     this->val += rhs;
     return *this;
+
   }
 
 private:
@@ -523,9 +530,7 @@ private:
   // Default ctor is declared private and not implemented.
   //
   ReduceSum<omp_reduce, T>();
-
   const my_type * parent;
-
   mutable T val;
   T custom_init;
 
@@ -1092,6 +1097,8 @@ private:
 
   CPUReductionBlockDataType* m_blockdata;
 };
+
+
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
