@@ -67,6 +67,8 @@ void check_logs()
 #ifdef RAJA_ENABLE_CUDA
 char* Internal::CudaLogManager::s_instance_buffer = nullptr;
 
+loggingID_type Logger< RAJA::cuda_logger >::s_num = 0;
+
 namespace Internal
 {
 
@@ -665,11 +667,13 @@ namespace Internal
   {
     bool err = false;
     if (buf_pos < buf_next) {
-      char* tmp_next;
+      char* tmp_next = nullptr;
       err = read_value<char*>(buf_pos, buf_next, tmp_next);
-      if ( !err ) {
+      if ( !err && tmp_next != nullptr ) {
         buf_next = tmp_next;
         err = read_value<loggingID_type>(buf_pos, buf_next, id);
+      } else {
+        err = true;
       }
       if ( err ) {
         buf_pos = buf_end;
@@ -682,8 +686,7 @@ namespace Internal
     return err;
   }
 
-  bool
-  handle_log(char*& buf_pos, char*const& buf_end)
+  bool CudaLogManager::handle_log(char*& buf_pos, char*const& buf_end)
   {
     // fprintf(stderr, "RAJA logger: handling log.\n");
     RAJA::logging_function_type func = nullptr;
@@ -719,15 +722,6 @@ namespace Internal
     return err;
   }
 
-  bool
-  handle_error(char*& buf_pos, char*const& buf_end)
-  {
-    ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
-    bool err = handle_log(buf_pos, buf_end);
-    exit(1);
-    return err;
-  }
-
   void CudaLogManager::handle_in_order() volatile
   {
     // ensure all logs visible
@@ -742,8 +736,8 @@ namespace Internal
     read_preamble(error_pos, error_next, error_end, error_id);
 
     char* log_pos = m_log_begin;
-    char* log_next = m_log_pos;
-    char* log_end = m_log_pos;
+    char* log_next = m_log_end;
+    char* log_end = m_log_end;
     read_preamble(log_pos, log_next, log_end, log_id);
 
     // handle logs in order by id
@@ -762,12 +756,19 @@ namespace Internal
 
     }
 
+    reset_state();
+  }
+
+  void CudaLogManager::reset_state() volatile
+  {
     // reset buffers and flags
     m_error_pos = m_error_begin;
     memset(m_error_begin, 0, m_error_end - m_error_begin);
 
-    m_log_pos = m_log_begin;
+    // m_log_pos = m_log_begin;
     memset(m_log_begin, 0, m_log_end - m_log_begin);
+
+    cudaMemset(md_data, 0, sizeof(CudaLogManagerDeviceData));
 
     m_flag = false;
   }

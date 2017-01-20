@@ -72,6 +72,20 @@ namespace RAJA
 
 namespace Internal
 {
+  template < typename... Ts >
+  struct sizeof_Ts;
+
+  template < >
+  struct sizeof_Ts < >
+  {
+    static const size_t size = 0;
+  };
+  
+  template < typename T0, typename... Ts >
+  struct sizeof_Ts < T0, Ts... >
+  {
+    static const size_t size = sizeof(T0) + sizeof_Ts<Ts...>::size;
+  };
 
   enum struct print_types: char {
     int8,
@@ -94,6 +108,8 @@ class CudaLogManager {
 public:
   static const int buffer_size = 1024*1024;
   static const int error_buffer_size = 4*1024;
+
+  using logpos_type = int;
 
   static inline CudaLogManager* getInstance()
   {
@@ -121,31 +137,34 @@ public:
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  error_impl(RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
+  error_impl(loggingID_type num, RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
     int warpIdx = ((threadIdx.z * (blockDim.x * blockDim.y))
                 + (threadIdx.y * blockDim.x) + threadIdx.x) % WARP_SIZE;
-    int warpIdxmask = 1 << warpIdx;
-    int mask = __ballot(1);
-    int first = __ffs(mask) - 1;
-    loggingID_type num;
+    int first = __ffs(__ballot(1)) - 1;
+    logpos_type msg_size = sizeof_msg(num, func, udata, fmt, args...);
     if (warpIdx == first) {
       while ( atomicCAS(&md_data->mutex, 0, 1) != 0 ); // lock per warp
-      num = atomicAdd(&md_data->count, __popc(mask));
     }
-    num = RAJA::HIDDEN::shfl(num, first);
-    num += __popc(mask & (warpIdxmask - 1));
     // serialize warp
     for (int i = 0; i < WARP_SIZE; i++) {
-      if (warpIdxmask == (1 << i)) {
+      if (warpIdx == i) {
         char* buf_pos = m_error_pos;
         char* buf_end = m_error_end;
+        if (buf_pos + msg_size < buf_end) {
+          buf_end = buf_pos + msg_size;
+        }
 
         bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
         if (err) {
           printf("RAJA logger error: Writing error on device failed.\n");
           buf_pos = m_error_pos;
+          buf_end = m_error_end;
+          msg_size = sizeof_msg(num, func, udata, "RAJA logger error: Writing error on device failed.");
+          if (buf_pos + msg_size < buf_end) {
+            buf_end = buf_pos + msg_size;
+          }
           write_log(buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing error on device failed.");
         }
 
@@ -171,14 +190,16 @@ public:
     } else {
       fprintf(stderr, "RAJA logger error: could not format message");
     }
+#ifndef RAJA_LOGGER_CUDA_TESTING
     exit(1);
+#endif
 #endif
   }
 
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  log_impl(RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
+  log_impl(loggingID_type num, RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
     int warpIdx = ((threadIdx.z * (blockDim.x * blockDim.y))
@@ -186,34 +207,40 @@ public:
     int warpIdxmask = 1 << warpIdx;
     int mask = __ballot(1);
     int first = __ffs(mask) - 1;
-    loggingID_type num;
+    int num_lanes = __popc(mask);
+    int warp_log_offset = __popc(mask & (warpIdxmask - 1));
+    // msg_size is the same for all threads in the warp
+    // msg_size only depends on the types of the arguments
+    logpos_type msg_size = sizeof_msg(num, func, udata, fmt, args...);
+
+    char* buf_pos = m_log_begin;
+    char* buf_end = m_log_end;
+    logpos_type buf_length = buf_end - buf_pos;
+
+    logpos_type pos = 0;
     if (warpIdx == first) {
-      while ( atomicCAS(&md_data->mutex, 0, 1) != 0 ); // lock per warp
-      num = atomicAdd(&md_data->count, __popc(mask));
+      pos = _atomicAddUpToMax(&md_data->log_pos, num_lanes * msg_size, buf_length);
     }
-    num = RAJA::HIDDEN::shfl(num, first);
-    num += __popc(mask & (warpIdxmask - 1));
-    // serialize warp
-    for (int i = 0; i < WARP_SIZE; i++) {
-      if (warpIdxmask == (1 << i)) {
-        char* buf_pos = m_log_pos;
-        char* buf_end = m_log_end;
+    pos = RAJA::HIDDEN::shfl(pos, first);
 
-        bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
-        if (err) {
-          printf("RAJA logger error: Writing log on device failed.\n");
-          buf_pos = m_error_pos;
-          write_log(buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing log on device failed.");
-        }
+    buf_pos += pos + msg_size * warp_log_offset;
+    if (buf_pos > buf_end) {
+      buf_pos = buf_end;
+    }
+    if ( buf_pos + msg_size < buf_end ) {
+      buf_end = buf_pos + msg_size;
+    }
+    // char* init_buf_pos = buf_pos;
 
-        m_log_pos = buf_pos;
-        __threadfence_block();
-      }
+    // parallel warp
+    bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
+    if (err) {
+      printf("RAJA logger error: Writing log on device failed.\n");
+      // write_log(init_buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing log on device failed.");
     }
     __threadfence_system();
     if (warpIdx == first) {
       m_flag = true;
-      atomicExch(&md_data->mutex, 0); // unlock
     }
 #else
     int len = snprintf(nullptr, 0, fmt, args...);
@@ -232,7 +259,7 @@ private:
   struct CudaLogManagerDeviceData
   {
     int mutex = 0;
-    loggingID_type count = 0;
+    logpos_type log_pos = 0;
   };
 
   bool  m_flag = false;
@@ -240,7 +267,7 @@ private:
   char* m_error_pos = nullptr;
   char* m_error_end = nullptr;
   char* m_log_begin = nullptr;
-  char* m_log_pos = nullptr;
+  // char* m_log_pos = nullptr;
   char* m_log_end = nullptr;
   CudaLogManagerDeviceData* md_data = nullptr;
 
@@ -269,7 +296,7 @@ private:
       m_error_pos(s_instance_buffer + sizeof(CudaLogManager)),
       m_error_end(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
       m_log_begin(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
-      m_log_pos(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
+      // m_log_pos(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
       m_log_end(s_instance_buffer + buffer_size),
       md_data(nullptr)
   {
@@ -282,6 +309,37 @@ private:
     cudaFree(md_data);
   }
 
+  __device__
+  static inline logpos_type _atomicAddUpToMax(
+      logpos_type *address,
+      logpos_type value,
+      logpos_type max)
+  {
+    logpos_type temp =
+        *(reinterpret_cast<logpos_type volatile *>(address));
+    if (temp < max) {
+      logpos_type assumed;
+      logpos_type oldval = temp;
+      do {
+        assumed = oldval;
+        oldval = atomicCAS(address, assumed, RAJA_MIN(assumed + value, max));
+      } while (assumed != oldval && oldval < max);
+      temp = oldval;
+    }
+    return temp;
+  }
+
+  template < typename... Ts >
+  RAJA_HOST_DEVICE
+  static constexpr size_t 
+  sizeof_msg(loggingID_type const&, RAJA::logging_function_type const&,
+            int const&, Ts const&...)
+  {
+    return sizeof(char*) + sizeof(loggingID_type) 
+         + sizeof(RAJA::logging_function_type) + sizeof(int)
+         + sizeof...(Ts) + sizeof_Ts<Ts...>::size;
+  }
+
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   static bool 
@@ -289,14 +347,13 @@ private:
             loggingID_type id, RAJA::logging_function_type func,
             int udata, T_fmt const& fmt, Ts const&... args)
   {
+    bool err = false;
     // printf("RAJA logger: writing log on device.\n");
-    char* init_buf_pos = buf_pos;
-    bool err = write_value(buf_pos, buf_end, static_cast<char*>(nullptr));
+    err = write_value(buf_pos, buf_end, buf_end) || err;
     err = write_value(buf_pos, buf_end, id) || err;
     err = write_value(buf_pos, buf_end, func) || err;
     err = write_value(buf_pos, buf_end, udata) || err;
     err = write_types_values(buf_pos, buf_end, fmt, args...) || err;
-    err = write_value(init_buf_pos, buf_end, buf_pos) || err;
 
     return err;
   }
@@ -534,8 +591,27 @@ private:
     return err;
   }
 
-  // functions that read from the buffer
+  // function that reads from buffers
   void handle_in_order() volatile;
+
+  // function that resets buffers
+  void reset_state() volatile;
+
+  // function that handles logs
+  static bool
+  handle_log(char*& buf_pos, char*const& buf_end);
+
+  static bool
+  handle_error(char*& buf_pos, char*const& buf_end)
+  {
+    ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
+    bool err = handle_log(buf_pos, buf_end);
+
+#ifndef RAJA_LOGGER_CUDA_TESTING
+    exit(1);
+#endif
+    return err;
+  }
 
 };
 
@@ -548,7 +624,8 @@ public:
 
   explicit Logger(func_type f = RAJA::basic_logger)
     : m_func(f),
-      m_logman(Internal::CudaLogManager::getInstance())
+      m_logman(Internal::CudaLogManager::getInstance()),
+      m_num(s_num++)
   {
 
   }
@@ -566,7 +643,7 @@ public:
                          >::type
   error(int udata, T_fmt const& fmt, Ts const&... args) const
   {
-    m_logman->error_impl(m_func, udata, fmt, args...);
+    m_logman->error_impl(m_num, m_func, udata, fmt, args...);
   }
 
   template < typename T_fmt, typename... Ts >
@@ -582,12 +659,15 @@ public:
                          >::type
   log(int udata, T_fmt const& fmt, Ts const&... args) const
   {
-    m_logman->log_impl(m_func, udata, fmt, args...);
+    m_logman->log_impl(m_num, m_func, udata, fmt, args...);
   }
 
 private:
   const func_type m_func;
   volatile Internal::CudaLogManager* const m_logman;
+  const loggingID_type m_num;
+
+  static loggingID_type s_num;
 };
 
 }  // closing brace for RAJA namespace

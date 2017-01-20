@@ -1,3 +1,7 @@
+
+// define that removes calls to exit in error handlers
+#define RAJA_LOGGER_CUDA_TESTING
+
 #include "gtest/gtest.h"
 
 #include "RAJA/RAJA.hxx"
@@ -51,7 +55,7 @@ class LoggerTest : public ::testing::Test
 protected:
   virtual void SetUp()
   {
-    array_length = 3153;
+    array_length = 123153;
     small = 7548;
     small_count = 0;
 
@@ -157,14 +161,17 @@ void forall_test(RAJA::Index_type array_length,
 
   RAJA::Logger<LoggerPolicy> mylog([](int udata, const char* msg) {
     if (msg != nullptr) {
-      T msg_val = static_cast<T>(-1);
-      sscanf(msg, s_fmt, &msg_val);
       T multiplier = std::is_floating_point<T>::value ? 3.14159265358979323846 : 1;
       T val = udata * multiplier;
+      T msg_val = static_cast<T>(-1);
+      int ns = sscanf(msg, s_fmt, &msg_val);
+      if (ns != 1 && std::is_same<T, char>::value) {
+        msg_val = msg[0]; // case where scanf can't read null char
+      }
       if (val == msg_val) {
         small_counter++;
       } else {
-        printf("val = %.16e, msg_val (%s) = %.16e\n", val, msg, msg_val);
+        printf("udata = %i, val = %.16e, msg_val (%s) = %.16e\n", udata, (double)val, msg, (double)msg_val);
       }
     }
   });
