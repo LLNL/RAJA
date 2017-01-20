@@ -64,6 +64,7 @@
 
 #include <string.h>
 #include <stdio.h>
+#include <stddef.h>
 #include <stdint.h>
 
 namespace RAJA
@@ -83,6 +84,7 @@ namespace Internal
     uint64,
     flt32,
     flt64,
+    fltL,
     ptr,
     char_ptr,
     char_arr
@@ -534,7 +536,7 @@ private:
 
   // functions that read from the buffer
   void handle_in_order() volatile;
-  
+
 };
 
 } // closing brace for Internal namespace

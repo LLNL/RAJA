@@ -227,9 +227,9 @@ namespace Internal
   }
 
   enum struct width_types : char {
+    none,
     hh,
     h,
-    none,
     l,
     ll,
     j,
