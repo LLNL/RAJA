@@ -1,7 +1,4 @@
 
-// define that removes calls to exit in error handlers
-#define RAJA_LOGGER_CUDA_TESTING
-
 #include "gtest/gtest.h"
 
 #include "RAJA/RAJA.hxx"
@@ -70,10 +67,14 @@ protected:
         small_count++;
       }
     }
+
+    RAJA::Internal::s_exit_enabled = false;
   }
 
   virtual void TearDown()
   {
+    RAJA::Internal::s_exit_enabled = true;
+
     cudaFree(test_array);
   }
 
@@ -87,6 +88,10 @@ protected:
 std::atomic<RAJA::Index_type> small_counter;
 const char* s_fmt = nullptr;
 
+#define FMT_EXTRA " %s, %d hey derry-down *&%% {}[]()\t\v\nhi %p"
+#define FMT_EXTRA_VALUES , "hi", 20500, ((void*)0x1d1ea98f7cUL)
+
+
 TYPED_TEST_CASE_P(LoggerTest);
 
 template < typename T, typename ExecPolicy, typename LoggerPolicy >
@@ -99,61 +104,61 @@ void forall_test(RAJA::Index_type array_length,
 
   const char* fmt = nullptr;
   if (std::is_same<char, T>::value) {
-    fmt = "%c";
+    fmt = "%c" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<signed char, T>::value) {
-    fmt = "%hhi";
+    fmt = "%hhi" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<short, T>::value) {
-    fmt = "%hi";
+    fmt = "%hi" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<int, T>::value) {
-    fmt = "%i";
+    fmt = "%i" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<long, T>::value) {
-    fmt = "%li";
+    fmt = "%li" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<long long, T>::value) {
-    fmt = "%lli";
+    fmt = "%lli" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<intmax_t, T>::value) {
-    fmt = "%ji";
+    fmt = "%ji" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<ptrdiff_t, T>::value) {
-    fmt = "%ti";
+    fmt = "%ti" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<unsigned char, T>::value) {
-    fmt = "%hhu";
+    fmt = "%hhu" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<unsigned short, T>::value) {
-    fmt = "%hu";
+    fmt = "%hu" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<unsigned int, T>::value) {
-    fmt = "%u";
+    fmt = "%u" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<unsigned long, T>::value) {
-    fmt = "%lu";
+    fmt = "%lu" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<unsigned long long, T>::value) {
-    fmt = "%llu";
+    fmt = "%llu" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<uintmax_t, T>::value) {
-    fmt = "%ju";
+    fmt = "%ju" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<size_t, T>::value) {
-    fmt = "%zi";
+    fmt = "%zi" FMT_EXTRA;
     s_fmt = fmt;
   } else if (std::is_same<float, T>::value) {
-    fmt = "%.10e";
-    s_fmt = "%e";
+    fmt = "%.10e" FMT_EXTRA;
+    s_fmt = fmt;
   } else if (std::is_same<double, T>::value) {
-    fmt = "%.16le";
-    s_fmt = "%le";
+    fmt = "%.16le" FMT_EXTRA;
+    s_fmt = fmt;
   } else if (std::is_same<long double, T>::value) {
-    fmt = "%.22Le";
-    s_fmt = "%Le";
+    fmt = "%.22Le" FMT_EXTRA;
+    s_fmt = fmt;
   } else if (std::is_pointer<T>::value) {
-    fmt = "%p";
+    fmt = "%p" FMT_EXTRA;
     s_fmt = fmt;
   } else {
     ASSERT_TRUE(false);
@@ -161,17 +166,14 @@ void forall_test(RAJA::Index_type array_length,
 
   RAJA::Logger<LoggerPolicy> mylog([](int udata, const char* msg) {
     if (msg != nullptr) {
+      char msg_check[512];
       T multiplier = std::is_floating_point<T>::value ? 3.14159265358979323846 : 1;
       T val = udata * multiplier;
-      T msg_val = static_cast<T>(-1);
-      int ns = sscanf(msg, s_fmt, &msg_val);
-      if (ns != 1 && std::is_same<T, char>::value) {
-        msg_val = msg[0]; // case where scanf can't read null char
-      }
-      if (val == msg_val) {
+      sprintf(msg_check, s_fmt, val FMT_EXTRA_VALUES);
+      if (strcmp(msg, msg_check) == 0) {
         small_counter++;
       } else {
-        printf("udata = %i, val = %.16e, msg_val (%s) = %.16e\n", udata, (double)val, msg, (double)msg_val);
+        printf("udata = %i, msg %s, msg_check %s\n", udata, msg, msg_check);
       }
     }
   });
@@ -180,9 +182,9 @@ void forall_test(RAJA::Index_type array_length,
     T multiplier = std::is_floating_point<T>::value ? 3.14159265358979323846 : 1;
     T val = idx * multiplier;
     if (test_array[idx] <= small) {
-      mylog.log(idx, fmt, val);
+      mylog.log(idx, fmt, val FMT_EXTRA_VALUES);
     } else if (test_array[idx] < 0) {
-      mylog.error(idx, fmt, val);
+      mylog.error(idx, fmt, val FMT_EXTRA_VALUES);
     }
   });
 

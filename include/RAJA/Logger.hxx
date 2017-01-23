@@ -63,8 +63,10 @@
 namespace RAJA
 {
 
-using loggingID_type = unsigned long long int;
-using logging_function_type = void(*)(int, const char*);
+using udata_type = int;
+using logging_function_type = void(*)(udata_type, const char*);
+
+using loggingID_type = unsigned int;
 
 extern void check_logs();
 
@@ -85,7 +87,7 @@ public:
   }
 
   template < typename... T >
-  void log(int udata, const char* fmt, T const&... args) const
+  void log(udata_type udata, const char* fmt, T const&... args) const
   {
     int len = snprintf(nullptr, 0, fmt, args...);
     if (len >= 0) {
@@ -99,7 +101,7 @@ public:
   }
 
   template < typename... T >
-  void error(int udata, const char* fmt, T const&... args) const
+  void error(udata_type udata, const char* fmt, T const&... args) const
   {
     ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
     int len = snprintf(nullptr, 0, fmt, args...);

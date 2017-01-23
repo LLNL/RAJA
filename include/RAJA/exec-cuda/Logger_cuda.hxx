@@ -72,37 +72,26 @@ namespace RAJA
 
 namespace Internal
 {
-  template < typename... Ts >
-  struct sizeof_Ts;
 
-  template < >
-  struct sizeof_Ts < >
-  {
-    static const size_t size = 0;
-  };
-  
-  template < typename T0, typename... Ts >
-  struct sizeof_Ts < T0, Ts... >
-  {
-    static const size_t size = sizeof(T0) + sizeof_Ts<Ts...>::size;
-  };
+using rw_type = int;
 
-  enum struct print_types: char {
-    int8,
-    int16,
-    int32,
-    int64,
-    uint8,
-    uint16,
-    uint32,
-    uint64,
-    flt32,
-    flt64,
-    fltL,
-    ptr,
-    char_ptr,
-    char_arr
-  };
+template < typename... Ts >
+struct rwtype_sizeof_Ts;
+
+template < >
+struct rwtype_sizeof_Ts < >
+{
+  static const size_t value = 0;
+};
+
+template < typename T0, typename... Ts >
+struct rwtype_sizeof_Ts < T0, Ts... >
+{
+  static const size_t value = (sizeof(T0) + sizeof(rw_type) - 1) / sizeof(rw_type)
+                            + rwtype_sizeof_Ts<Ts...>::value;
+};
+
+extern bool s_exit_enabled;
 
 class CudaLogManager {
 public:
@@ -137,45 +126,33 @@ public:
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  error_impl(loggingID_type num, RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
+  error_impl(loggingID_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
-    int warpIdx = ((threadIdx.z * (blockDim.x * blockDim.y))
-                + (threadIdx.y * blockDim.x) + threadIdx.x) % WARP_SIZE;
-    int first = __ffs(__ballot(1)) - 1;
-    logpos_type msg_size = sizeof_msg(num, func, udata, fmt, args...);
-    if (warpIdx == first) {
-      while ( atomicCAS(&md_data->mutex, 0, 1) != 0 ); // lock per warp
-    }
-    // serialize warp
-    for (int i = 0; i < WARP_SIZE; i++) {
-      if (warpIdx == i) {
-        char* buf_pos = m_error_pos;
-        char* buf_end = m_error_end;
-        if (buf_pos + msg_size < buf_end) {
+    if ( atomicCAS(&md_data->mutex, 0, 1) == 0 ) { // lock error buffer
+      logpos_type msg_size = LogWriter::rwtype_sizeof_msg(num, func, udata, fmt, args...);
+
+      rw_type* buf_pos = m_error_pos;
+      rw_type* buf_end = m_error_end;
+
+      if (buf_pos + msg_size <= buf_end) {
+        buf_end = buf_pos + msg_size;
+        LogWriter writer(buf_pos, buf_end);
+        writer.write(num, func, udata, fmt, args...);
+      } else {
+        printf("RAJA logger error: Writing error on device failed.\n");
+        msg_size = LogWriter::rwtype_sizeof_msg(num, func, udata, "RAJA logger error: Writing error on device failed.");
+        buf_end = m_error_end;
+        if (buf_pos + msg_size <= buf_end) {
           buf_end = buf_pos + msg_size;
+          LogWriter failed_writer(buf_pos, buf_end);
+          failed_writer.write(num, func, udata, "RAJA logger error: Writing error on device failed.");
         }
-
-        bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
-        if (err) {
-          printf("RAJA logger error: Writing error on device failed.\n");
-          buf_pos = m_error_pos;
-          buf_end = m_error_end;
-          msg_size = sizeof_msg(num, func, udata, "RAJA logger error: Writing error on device failed.");
-          if (buf_pos + msg_size < buf_end) {
-            buf_end = buf_pos + msg_size;
-          }
-          write_log(buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing error on device failed.");
-        }
-
-        m_error_pos = buf_pos;
-        __threadfence_block();
       }
-    }
-    __threadfence_system();
-    if (warpIdx == first) {
+
+      m_error_pos = buf_end;
+      __threadfence_system();
       m_flag = true;
-      atomicExch(&md_data->mutex, 0); // unlock
     }
 #else
     cudaDeviceSynchronize();
@@ -190,16 +167,16 @@ public:
     } else {
       fprintf(stderr, "RAJA logger error: could not format message");
     }
-#ifndef RAJA_LOGGER_CUDA_TESTING
-    exit(1);
-#endif
+    if (s_exit_enabled) {
+      exit(1);
+    }
 #endif
   }
 
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  log_impl(loggingID_type num, RAJA::logging_function_type func, int udata, T_fmt const& fmt, Ts const&... args) volatile
+  log_impl(loggingID_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
     int warpIdx = ((threadIdx.z * (blockDim.x * blockDim.y))
@@ -211,10 +188,10 @@ public:
     int warp_log_offset = __popc(mask & (warpIdxmask - 1));
     // msg_size is the same for all threads in the warp
     // msg_size only depends on the types of the arguments
-    logpos_type msg_size = sizeof_msg(num, func, udata, fmt, args...);
+    logpos_type msg_size = LogWriter::rwtype_sizeof_msg(num, func, udata, fmt, args...);
 
-    char* buf_pos = m_log_begin;
-    char* buf_end = m_log_end;
+    rw_type* buf_pos = m_log_begin;
+    rw_type* buf_end = m_log_end;
     logpos_type buf_length = buf_end - buf_pos;
 
     logpos_type pos = 0;
@@ -224,19 +201,16 @@ public:
     pos = RAJA::HIDDEN::shfl(pos, first);
 
     buf_pos += pos + msg_size * warp_log_offset;
-    if (buf_pos > buf_end) {
-      buf_pos = buf_end;
-    }
-    if ( buf_pos + msg_size < buf_end ) {
+    if ( buf_pos + msg_size <= buf_end ) {
       buf_end = buf_pos + msg_size;
-    }
-    // char* init_buf_pos = buf_pos;
 
-    // parallel warp
-    bool err = write_log(buf_pos, buf_end, num, func, udata, fmt, args...);
-    if (err) {
-      printf("RAJA logger error: Writing log on device failed.\n");
-      // write_log(init_buf_pos, buf_end, num, func, udata, "RAJA logger error: Writing log on device failed.");
+      LogWriter writer(buf_pos, buf_end);
+      writer.write(num, func, udata, fmt, args...);
+    } else {
+      // printf("RAJA logger error: Writing log on device failed.\n");
+      // msg_size = LogWriter::rwtype_sizeof_msg(num, func, udata, "RAJA logger error: Writing log on device failed.");
+      // LogWriter failed_writer(buf_pos, buf_end);
+      // failed_writer.write(num, func, udata, "RAJA logger error: Writing log on device failed.");
     }
     __threadfence_system();
     if (warpIdx == first) {
@@ -256,6 +230,24 @@ public:
   }
 
 private:
+  enum struct print_types: char {
+    invalid = 0, // allow use of strlen
+    int8,
+    int16,
+    int32,
+    int64,
+    uint8,
+    uint16,
+    uint32,
+    uint64,
+    flt32,
+    flt64,
+    fltL,
+    ptr,
+    char_ptr,
+    char_arr
+  };
+
   struct CudaLogManagerDeviceData
   {
     int mutex = 0;
@@ -263,12 +255,12 @@ private:
   };
 
   bool  m_flag = false;
-  char* m_error_begin = nullptr;
-  char* m_error_pos = nullptr;
-  char* m_error_end = nullptr;
-  char* m_log_begin = nullptr;
-  // char* m_log_pos = nullptr;
-  char* m_log_end = nullptr;
+  rw_type* m_error_begin = nullptr;
+  rw_type* m_error_pos = nullptr;
+  rw_type* m_error_end = nullptr;
+  rw_type* m_log_begin = nullptr;
+  // rw_type* m_log_pos = nullptr;
+  rw_type* m_log_end = nullptr;
   CudaLogManagerDeviceData* md_data = nullptr;
 
   static char* s_instance_buffer;
@@ -290,16 +282,21 @@ private:
     }
   }
 
+
   CudaLogManager()
     : m_flag(false),
-      m_error_begin(s_instance_buffer + sizeof(CudaLogManager)),
-      m_error_pos(s_instance_buffer + sizeof(CudaLogManager)),
-      m_error_end(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
-      m_log_begin(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
-      // m_log_pos(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size),
-      m_log_end(s_instance_buffer + buffer_size),
+      m_error_begin(reinterpret_cast<rw_type*>(s_instance_buffer + sizeof(CudaLogManager))),
+      m_error_pos(reinterpret_cast<rw_type*>(s_instance_buffer + sizeof(CudaLogManager))),
+      m_error_end(reinterpret_cast<rw_type*>(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size)),
+      m_log_begin(reinterpret_cast<rw_type*>(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size)),
+      // m_log_pos(reinterpret_cast<rw_type*>(s_instance_buffer + sizeof(CudaLogManager) + error_buffer_size)),
+      m_log_end(reinterpret_cast<rw_type*>(s_instance_buffer + buffer_size)),
       md_data(nullptr)
   {
+    static_assert(sizeof(CudaLogManager) % sizeof(rw_type) == 0,
+                "RAJA logger error: rw_type invalid due to alignment");
+    static_assert(error_buffer_size % sizeof(rw_type) == 0,
+                "RAJA logger error: rw_type invalid due to alignment");
     cudaMalloc((void**)&md_data, sizeof(CudaLogManagerDeviceData));
     cudaMemset(md_data, 0, sizeof(CudaLogManagerDeviceData));
   }
@@ -329,267 +326,305 @@ private:
     return temp;
   }
 
-  template < typename... Ts >
-  RAJA_HOST_DEVICE
-  static constexpr size_t 
-  sizeof_msg(loggingID_type const&, RAJA::logging_function_type const&,
-            int const&, Ts const&...)
+  // LogWriter does no error checking, LogWriter requires
+  // sizeof(rw_type) * LogWriter::rwtype_sizeof_msg(...) bytes
+  // starting at alignment of alignof(rw_type).
+  // logs are formatted as follows
+  // rw_type*       - pointer to next log
+  //                  (0 or nullptr if this (the current) log does not exist)
+  // loggingID_type - id for logs from a logger object
+  //                  (for ordering purposes)
+  // logging_function_type - pointer to a handler function
+  // udata_type     - udata argument passed through to handler function
+  // print_types[]  - 0 terminated list of types (length padded to sizeof(rw_type))
+  // char*/char[], Ts... - fmt string followed by values of arguments
+  //                  (sizeof each padded to sizeof(rw_type))
+  class LogWriter
   {
-    return sizeof(char*) + sizeof(loggingID_type) 
-         + sizeof(RAJA::logging_function_type) + sizeof(int)
-         + sizeof...(Ts) + sizeof_Ts<Ts...>::size;
-  }
+  public:
+    template < typename T_fmt, typename... Ts >
+    RAJA_HOST_DEVICE
+    static constexpr int
+    rwtype_sizeof_msg(loggingID_type const&, logging_function_type const&,
+              udata_type const&, T_fmt const& fmt, Ts const&...)
+    {
+      return rwtype_sizeof_Ts<rw_type*, loggingID_type, logging_function_type, udata_type>::value
+           + rwtype_sizeof_Ts<print_types[sizeof...(Ts) + 2]>::value
+           + rwtype_sizeof_Ts<T_fmt, Ts...>::value;
+    }
 
-  template < typename T_fmt, typename... Ts >
-  RAJA_HOST_DEVICE
-  static bool 
-  write_log(char*& buf_pos, char*const& buf_end,
-            loggingID_type id, RAJA::logging_function_type func,
-            int udata, T_fmt const& fmt, Ts const&... args)
-  {
-    bool err = false;
-    // printf("RAJA logger: writing log on device.\n");
-    err = write_value(buf_pos, buf_end, buf_end) || err;
-    err = write_value(buf_pos, buf_end, id) || err;
-    err = write_value(buf_pos, buf_end, func) || err;
-    err = write_value(buf_pos, buf_end, udata) || err;
-    err = write_types_values(buf_pos, buf_end, fmt, args...) || err;
+    RAJA_HOST_DEVICE
+    LogWriter(rw_type*const& buf_pos, rw_type*const& buf_end)
+      : m_pos(buf_pos),
+        m_end(buf_end)
+    {
 
-    return err;
-  }
+    }
 
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< !std::is_arithmetic< T >::value
-                                && !std::is_pointer< T >::value
-                                && !(std::is_array< T >::value
+    template < typename T_fmt, typename... Ts >
+    RAJA_HOST_DEVICE
+    void
+    write(loggingID_type const& id, logging_function_type const& func,
+          udata_type const& udata, T_fmt const& fmt, Ts const&... args)
+    {
+      // printf("RAJA logger: writing log on device.\n");
+      write_value(m_end);
+      write_value(id);
+      write_value(func);
+      write_value(udata);
+      write_types_values(fmt, args...);
+    }
+
+  private:
+    rw_type* m_pos;
+    rw_type*const m_end;
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< !std::is_arithmetic< T >::value
+                             && !std::is_pointer< T >::value
+                             && !(std::is_array< T >::value
                                   && std::is_same< char, 
-                                                   typename std::remove_cv< 
-                                                     typename std::remove_extent< T >::type
-                                                   >::type
+                                        typename std::remove_cv< 
+                                            typename std::remove_extent< T >::type
+                                                               >::type
                                                  >::value),
-                                  bool >::type
-  write_type(char*&, char*const, T const&)
-  {
-    static_assert(!std::is_same<T, void>::value || std::is_same<T, void>::value, "Raja error: unknown type in logger");
-    return true;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 1, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::int8);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 2, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::int16);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 4, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::int32);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 8, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::int64);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 1, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::uint8);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 2, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::uint16);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 4, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::uint32);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 8, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::uint64);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_floating_point< T >::value && sizeof(T) == 4, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::flt32);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_floating_point< T >::value && sizeof(T) == 8, bool>::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::flt64);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_pointer< T >::value
-                              && !std::is_same< char, 
-                                                typename std::remove_cv< 
-                                                  typename std::remove_pointer< T >::type
-                                                >::type
-                                              >::value,
-                                  bool >::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::ptr);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_pointer< T >::value
-                               && std::is_same< char, 
-                                                typename std::remove_cv< 
-                                                  typename std::remove_pointer< T >::type
-                                                >::type
-                                              >::value,
-                                  bool >::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::char_ptr);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_array< T >::value
-                               && std::is_same< char, 
-                                                typename std::remove_cv< 
-                                                  typename std::remove_extent< T >::type
-                                                >::type
-                                              >::value,
-                                  bool >::type
-  write_type(char*& pos, char*const& end, T const&)
-  {
-    if (pos >= end) return true;
-    *pos++ = static_cast<char>(RAJA::Internal::print_types::char_arr);
-    return false;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< !std::is_array< T >::value,
-                                  bool >::type
-  write_value(char*& pos, char*const& end, T const& arg)
-  {
-    union Tchar_union {
-      T t;
-      char ca[sizeof(T)];
-    };
-
-    bool err = false;
-
-    Tchar_union u;
-    u.t = arg;
-
-    for (int i = 0; i < sizeof(T); i++) {
-      if (pos >= end) {
-        err = true;
-        break;
-      }
-      *pos++ = u.ca[i];
+                             print_types >::type
+    get_type(T const&)
+    {
+      static_assert(!std::is_same<T, void>::value
+                    || std::is_same<T, void>::value,
+                    "Raja Logger error: unknown type in logger");
+      return print_types::invalid;
     }
 
-    return err;
-  }
-
-  template < typename T >
-  RAJA_HOST_DEVICE
-  static typename std::enable_if< std::is_array< T >::value
-                               && std::is_same< char, 
-                                                typename std::remove_cv< 
-                                                  typename std::remove_extent< T >::type
-                                                >::type
-                                              >::value,
-                                  bool >::type
-  write_value(char*& pos, char*const& end, T const& arg)
-  {
-    bool err = false;
-    for ( int i = 0; i < std::extent<T>::value; ++i ) {
-      if (pos >= end) {
-        err = true;
-        break;
-      }
-      if ('\0' == (*pos++ = arg[i])) break;
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value
+                             && std::is_signed< T >::value
+                             && sizeof(T) == 1,
+                             print_types>::type
+    get_type(T const&)
+    {
+      return print_types::int8;
     }
 
-    return err;
-  }
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 2, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::int16;
+    }
 
-  RAJA_HOST_DEVICE
-  static bool
-  write_types_values(char*&, char*const&)
-  {
-    return false;
-  }
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 4, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::int32;
+    }
 
-  template < typename T, typename... Ts >
-  RAJA_HOST_DEVICE
-  static bool
-  write_types_values(char*& pos, char*const& end, T const& arg, Ts const&... args)
-  {
-    bool err = write_type(pos, end, arg);
-    err = write_value(pos, end, arg) || err;
-    err = write_types_values(pos, end, args...) || err;
-    return err;
-  }
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_signed< T >::value && sizeof(T) == 8, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::int64;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 1, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::uint8;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 2, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::uint16;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 4, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::uint32;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_integral< T >::value && std::is_unsigned< T >::value && sizeof(T) == 8, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::uint64;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_floating_point< T >::value && sizeof(T) == 4, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::flt32;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_floating_point< T >::value && sizeof(T) == 8, print_types>::type
+    get_type(T const&)
+    {
+      return print_types::flt64;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_pointer< T >::value
+                                && !std::is_same< char, 
+                                                  typename std::remove_cv< 
+                                                    typename std::remove_pointer< T >::type
+                                                  >::type
+                                                >::value,
+                                    print_types >::type
+    get_type(T const&)
+    {
+      return print_types::ptr;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_pointer< T >::value
+                                 && std::is_same< char, 
+                                                  typename std::remove_cv< 
+                                                    typename std::remove_pointer< T >::type
+                                                  >::type
+                                                >::value,
+                                    print_types >::type
+    get_type(T const&)
+    {
+      return print_types::char_ptr;
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_array< T >::value
+                                 && std::is_same< char, 
+                                                  typename std::remove_cv< 
+                                                    typename std::remove_extent< T >::type
+                                                  >::type
+                                                >::value,
+                                    print_types >::type
+    get_type(T const&)
+    {
+      return print_types::char_arr;
+    }
+
+    RAJA_HOST_DEVICE
+    void write_types_hlp(print_types* a)
+    {
+      *a = print_types::invalid;
+    }
+
+    template < typename T0, typename... Ts >
+    RAJA_HOST_DEVICE
+    void write_types_hlp(print_types* a, T0 const& arg0, Ts const&... args)
+    {
+      *a = get_type(arg0);
+      write_types_hlp(a+1, args...);
+    }
+
+    template < typename... Ts >
+    RAJA_HOST_DEVICE
+    void write_types_arr(Ts const&... args)
+    {
+      using pt_arr_type = print_types[sizeof...(Ts) + 1];
+      union Trw_union {
+        pt_arr_type pt;
+        rw_type rw[rwtype_sizeof_Ts<pt_arr_type>::value];
+      };
+
+      Trw_union u;
+      write_types_hlp(u.pt, args...);
+
+      for (int i = 0; i < rwtype_sizeof_Ts<pt_arr_type>::value; i++) {
+        *m_pos++ = u.rw[i];
+      }
+    }
+
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< !std::is_array< T >::value >::type
+    write_value(T const& arg)
+    {
+      union Trw_union {
+        T t;
+        rw_type rw[rwtype_sizeof_Ts<T>::value];
+      };
+
+      Trw_union u;
+      u.t = arg;
+
+      for (int i = 0; i < rwtype_sizeof_Ts<T>::value; i++) {
+        *m_pos++ = u.rw[i];
+      }
+    }
+
+    // Does not record length of char[], assumes a single null character in
+    // final position
+    template < typename T >
+    RAJA_HOST_DEVICE
+    typename std::enable_if< std::is_array< T >::value
+                                 && std::is_same< char, 
+                                                  typename std::remove_cv< 
+                                                    typename std::remove_extent< T >::type
+                                                  >::type
+                                                >::value >::type
+    write_value(T const& arg)
+    {
+      union Trw_union {
+        T t;
+        rw_type rw[rwtype_sizeof_Ts<T>::value];
+      };
+
+      Trw_union u;
+      for( int i = 0; i < std::extent<T>::value; i++ ) {
+        u.t[i] = arg[i];
+      }
+
+      for ( int i = 0; i < rwtype_sizeof_Ts<T>::value; ++i ) {
+        *m_pos++ = u.rw[i];
+      }
+    }
+
+    RAJA_HOST_DEVICE
+    void write_values()
+    {
+
+    }
+
+    template < typename T0, typename... Ts >
+    RAJA_HOST_DEVICE
+    void write_values(T0 const& arg0, Ts const&... args)
+    {
+      write_value(arg0);
+      write_values(args...);
+    }
+
+    template < typename... Ts >
+    RAJA_HOST_DEVICE
+    void write_types_values(Ts const&... args)
+    {
+      write_types_arr(args...);
+      write_values(args...);
+    }
+
+  };
+
+  class LogReader;
 
   // function that reads from buffers
   void handle_in_order() volatile;
@@ -599,19 +634,10 @@ private:
 
   // function that handles logs
   static bool
-  handle_log(char*& buf_pos, char*const& buf_end);
+  handle_log(LogReader& reader);
 
   static bool
-  handle_error(char*& buf_pos, char*const& buf_end)
-  {
-    ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
-    bool err = handle_log(buf_pos, buf_end);
-
-#ifndef RAJA_LOGGER_CUDA_TESTING
-    exit(1);
-#endif
-    return err;
-  }
+  handle_error(LogReader& reader);
 
 };
 
@@ -620,7 +646,7 @@ private:
 template < >
 class Logger< RAJA::cuda_logger > {
 public:
-  using func_type = RAJA::logging_function_type;
+  using func_type = logging_function_type;
 
   explicit Logger(func_type f = RAJA::basic_logger)
     : m_func(f),
@@ -641,7 +667,7 @@ public:
                                                >::type
                            >::value
                          >::type
-  error(int udata, T_fmt const& fmt, Ts const&... args) const
+  error(udata_type udata, T_fmt const& fmt, Ts const&... args) const
   {
     m_logman->error_impl(m_num, m_func, udata, fmt, args...);
   }
@@ -657,7 +683,7 @@ public:
                                                >::type
                            >::value
                          >::type
-  log(int udata, T_fmt const& fmt, Ts const&... args) const
+  log(udata_type udata, T_fmt const& fmt, Ts const&... args) const
   {
     m_logman->log_impl(m_num, m_func, udata, fmt, args...);
   }
