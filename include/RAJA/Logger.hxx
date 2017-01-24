@@ -55,8 +55,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/ResourceHandler.hxx"
-
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -78,7 +76,7 @@ using logging_function_type = void(*)(udata_type, const char*);
  */
 inline void basic_logger(int udata, const char* msg)
 {
-  fprintf(stderr, "RAJA log: %s\n", msg);
+  fprintf(stderr, "RAJA log: %i %s\n", udata, msg);
 }
 
 /*!

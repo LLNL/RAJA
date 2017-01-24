@@ -50,12 +50,42 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/reducers.hxx"
+
+#include "RAJA/IndexSet.hxx"
+#include "RAJA/ListSegment.hxx"
+#include "RAJA/RangeSegment.hxx"
+
+#include "RAJA/ResourceHandler.hxx"
+#include "RAJA/Logger.hxx"
+
+#include "RAJA/forall_generic.hxx"
+
+#if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/foralln/Layout.hxx"
+#include "RAJA/foralln/View.hxx"
+
+#include "RAJA/foralln/Generic.hxx"
+#endif  // defined(RAJA_ENABLE_NESTED)
+
+#include "RAJA/exec-sequential/raja_sequential.hxx"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/exec-cuda/raja_cuda.hxx"
+
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
+#include "RAJA/exec-cuda/Logger_cuda.hxx"
+#endif  // defined(RAJA_ENABLE_CUDA)
 
 #include <iostream>
 
 namespace RAJA
 {
+
+/*!
+ * \brief  Definition of Internal::s_exit_enabled.
+ */
+bool Internal::s_exit_enabled = true;
 
 /*!
  * \brief  User facing function that checks for logs and handles those it finds.
@@ -67,14 +97,15 @@ void check_logs()
 #endif
 }
 
-#ifdef RAJA_ENABLE_CUDA
-char* Internal::CudaLogManager::s_instance_buffer = nullptr;
 
+#ifdef RAJA_ENABLE_CUDA
 namespace Internal
 {
 
-bool s_exit_enabled = true;
-
+/*!
+ * \brief  Definition of CudaLogManager::s_instance_buffer.
+ */
+char* CudaLogManager::s_instance_buffer = nullptr;
 
 /*!
  * \brief  Class used to read logs from buffer.

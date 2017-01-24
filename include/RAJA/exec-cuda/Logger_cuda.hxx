@@ -57,9 +57,6 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/Logger.hxx"
-#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
-
 #include <type_traits>
 #include <vector>
 
