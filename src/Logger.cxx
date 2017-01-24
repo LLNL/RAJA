@@ -70,8 +70,6 @@ void check_logs()
 #ifdef RAJA_ENABLE_CUDA
 char* Internal::CudaLogManager::s_instance_buffer = nullptr;
 
-loggingID_type Logger< RAJA::cuda_logger >::s_num = 0;
-
 namespace Internal
 {
 
@@ -88,7 +86,7 @@ public:
   /*!
    * \brief  Id indicating no log was found by the reader.
    */
-  static const loggingID_type invalid_id = std::numeric_limits<loggingID_type>::max();
+  static const kernelnum_type invalid_id = std::numeric_limits<kernelnum_type>::max();
 
   /*!
    * \brief  Defaulted copy operators.
@@ -123,7 +121,7 @@ public:
    * \brief  Function that returns the relative id of this log for 
    *         ordering purposes, or invalid_id if no log was found.
    */
-  loggingID_type get_id()
+  kernelnum_type get_id()
   {
     return m_id;
   }
@@ -180,7 +178,7 @@ private:
   print_types* m_types = nullptr;
 
   rw_type* m_next = nullptr;
-  loggingID_type m_id = std::numeric_limits<loggingID_type>::max();
+  kernelnum_type m_id = std::numeric_limits<kernelnum_type>::max();
   logging_function_type m_func = nullptr;
   udata_type m_udata = -1;
 
@@ -211,7 +209,7 @@ private:
 
     if ( !err && m_next != nullptr ) {
       m_end = m_next;
-      err = err || read_value<loggingID_type>(m_id);
+      err = err || read_value<kernelnum_type>(m_id);
       err = err || read_value<logging_function_type>(m_func);
       err = err || read_value<udata_type>(m_udata);
       err = err || skip_types();
@@ -219,7 +217,7 @@ private:
     if (err) {
       m_pos = nullptr;
       m_next = nullptr;
-      m_id = std::numeric_limits<loggingID_type>::max();
+      m_id = std::numeric_limits<kernelnum_type>::max();
       m_func = nullptr;
       m_udata = -1;
     }
@@ -946,7 +944,10 @@ void CudaLogManager::reset_state() volatile
   // m_log_pos = m_log_begin;
   memset(m_log_begin, 0, sizeof(rw_type)*(m_log_end - m_log_begin));
 
+  // ignore errors to avoid possible endless recursion
   cudaMemset(md_data, 0, sizeof(CudaLogManagerDeviceData));
+
+  s_kernel_num = 0;
 
   m_flag = false;
 }

@@ -70,6 +70,8 @@
 namespace RAJA
 {
 
+kernelnum_type s_kernel_num = 0;
+
 namespace
 {
   /*!
@@ -412,6 +414,8 @@ void afterCudaKernelLaunch()
 {
   s_in_raja_forall = false;
   s_shared_memory_amount_total = 0;
+
+  s_kernel_num++;
 }
 
 /*

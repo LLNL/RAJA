@@ -58,6 +58,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/Logger.hxx"
+#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
 
 #include <type_traits>
 #include <vector>
@@ -202,7 +203,7 @@ public:
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  error_impl(loggingID_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
+  error_impl(kernelnum_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
     if ( atomicCAS(&md_data->mutex, 0, 1) == 0 ) { // lock error buffer
@@ -257,7 +258,7 @@ public:
   template < typename T_fmt, typename... Ts >
   RAJA_HOST_DEVICE
   void
-  log_impl(loggingID_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
+  log_impl(kernelnum_type num, logging_function_type func, udata_type udata, T_fmt const& fmt, Ts const&... args) volatile
   {
 #ifdef __CUDA_ARCH__
     int warpIdx = ((threadIdx.z * (blockDim.x * blockDim.y))
@@ -422,7 +423,7 @@ private:
    * The log format used is as follows.
    * rw_type*       - pointer to next log
    *                  (0 or nullptr if this (the current) log does not exist)
-   * loggingID_type - number used for ordering purposes
+   * kernelnum_type - number used for ordering purposes
    * logging_function_type - pointer to a handler function
    * udata_type     - udata argument passed through to handler function
    * print_types[]  - print_types::invalid terminated list of print_types
@@ -442,10 +443,10 @@ private:
     template < typename T_fmt, typename... Ts >
     RAJA_HOST_DEVICE
     static constexpr int
-    rwtype_sizeof_msg(loggingID_type const&, logging_function_type const&,
+    rwtype_sizeof_msg(kernelnum_type const&, logging_function_type const&,
               udata_type const&, T_fmt const& fmt, Ts const&...)
     {
-      return rwtype_sizeof_Ts<rw_type*, loggingID_type, logging_function_type, udata_type>::value
+      return rwtype_sizeof_Ts<rw_type*, kernelnum_type, logging_function_type, udata_type>::value
            + rwtype_sizeof_Ts<print_types[sizeof...(Ts) + 2]>::value
            + rwtype_sizeof_Ts<T_fmt, Ts...>::value;
     }
@@ -470,7 +471,7 @@ private:
     template < typename T_fmt, typename... Ts >
     RAJA_HOST_DEVICE
     void
-    write(loggingID_type const& id, logging_function_type const& func,
+    write(kernelnum_type const& id, logging_function_type const& func,
           udata_type const& udata, T_fmt const& fmt, Ts const&... args)
     {
       write_value(m_end);
@@ -846,10 +847,31 @@ public:
   explicit Logger(func_type f = RAJA::basic_logger)
     : m_func(f),
       m_logman(Internal::CudaLogManager::getInstance()),
-      m_num(s_num++)
+      m_num(s_kernel_num)
   {
 
   }
+
+  /*!
+   * \brief  Copy constructor for Cuda Logger class template.
+   */
+  RAJA_HOST_DEVICE
+  Logger(Logger< RAJA::cuda_logger > const& other)
+    : m_func(other.m_func),
+      m_logman(other.m_logman),
+#ifdef __CUDA_ARCH__
+      m_num(other.m_num)
+#else
+      m_num(s_kernel_num)
+#endif
+  {
+
+  }
+
+  /*!
+   * \brief  Copy assignment operator deleted.
+   */
+  Logger& operator=(Logger< RAJA::cuda_logger > const& other) = delete;
 
   /*!
    * \brief  Cuda Logger class error function.
@@ -889,12 +911,16 @@ public:
     m_logman->log_impl(m_num, m_func, udata, fmt, args...);
   }
 
+  /*!
+   * \brief  Destructor defaulted.
+   */
+  RAJA_HOST_DEVICE
+  ~Logger() = default;
+
 private:
   const func_type m_func = nullptr;
   volatile Internal::CudaLogManager* const m_logman = nullptr;
-  const loggingID_type m_num = 0;
-
-  static loggingID_type s_num;
+  const kernelnum_type m_num = s_kernel_num;
 };
 
 }  // closing brace for RAJA namespace

@@ -74,11 +74,6 @@ using udata_type = int;
 using logging_function_type = void(*)(udata_type, const char*);
 
 /*!
- * \brief  Type used for identifying and ordering logs.
- */
-using loggingID_type = unsigned int;
-
-/*!
  * \brief  Default handler function for RAJA::Logger objects.
  */
 inline void basic_logger(int udata, const char* msg)
