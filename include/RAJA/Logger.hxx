@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   
+ * \brief   Generic class template for RAJA::Logger.
  *
  ******************************************************************************
  */
@@ -63,29 +63,96 @@
 namespace RAJA
 {
 
+/*!
+ * \brief  Type for user data given to logger functions.
+ */
 using udata_type = int;
+
+/*!
+ * \brief  Type of logger function handlers.
+ */
 using logging_function_type = void(*)(udata_type, const char*);
 
+/*!
+ * \brief  Type used for identifying and ordering logs.
+ */
 using loggingID_type = unsigned int;
 
+/*!
+ * \brief  RAJA::check_logs checks if there are logs on the queue and calls the
+ *         handlers for what it finds. Synchronize before calling to ensure
+ *         handling of all logs.
+ */
 extern void check_logs();
 
+namespace Internal
+{
+/*!
+ * \brief  Static bool that determines if in handling an error RAJA will
+ *         call exit.
+ *
+ * Note:   Use in testing environment only.
+ */
+extern bool s_exit_enabled;
+}
+
+/*!
+ * \brief  Default handler function for RAJA::Logger objects.
+ */
 inline void basic_logger(int udata, const char* msg)
 {
   fprintf(stderr, "RAJA log: %s\n", msg);
 }
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  Generic Logger class.
+ *
+ *         A RAJA object that takes a function that handles logging a userdata
+ *         and message in a RAJA::forall. The log and error member functions 
+ *         enqueue a log, but that log may not be handled immediately.
+ *         RAJA::check_logs checks if there are logs on the queue and handles
+ *         them in the order in which they arrived.
+ *
+ *         RAJA::Logger<RAJA::seq_logger> logger(
+            [](RAJA::udata_type udata, const char* msg) {
+              fprintf(stderr, msg);
+              if (udata != 0) {
+                my_kill_program();
+              }
+            });
+
+            RAJA::forall<RAJA::seq_exec>(0, 16, [=](int i){
+              if (i > 10) {
+                logger.log(0, "Log: found large i = %i", i);
+              }
+              if (i > 15) {
+                logger.error(1, "Error: found too large i = %i", i);
+              }
+            });
+ *
+ ******************************************************************************
+ */
 template < typename policy >
 class Logger {
 public:
+
   using func_type = RAJA::logging_function_type;
 
+  /*!
+   * \brief  Constructor for Logger taking a logging function handler.
+   */
   explicit Logger(func_type f = RAJA::basic_logger)
     : m_func(f)
   {
 
   }
 
+  /*!
+   * \brief  Log member function that formats fmt with args using sprintf and
+   *         passes udata and the result to the log handler for this Logger.
+   */
   template < typename... T >
   void log(udata_type udata, const char* fmt, T const&... args) const
   {
@@ -100,6 +167,15 @@ public:
     }
   }
 
+  /*!
+   * \brief  Error member function that formats fmt with args using sprintf and
+   *         passes udata and the result to the log handler for this Logger.
+   *         The error enqueued by this function will cause the program to 
+   *         exit when it is handled.
+   *
+   * Note:   Your error handler function may exit the program, or error will
+   *         call exit for you.
+   */
   template < typename... T >
   void error(udata_type udata, const char* fmt, T const&... args) const
   {
@@ -113,7 +189,9 @@ public:
     } else {
       fprintf(stderr, "RAJA logger error: could not format message");
     }
-    exit(1);
+    if (Internal::s_exit_enabled) {
+      exit(1);
+    }
   }
 
 private:

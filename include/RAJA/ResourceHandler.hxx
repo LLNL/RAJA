@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   
+ * \brief   Functionality to enable callback on raja error.
  *
  ******************************************************************************
  */
@@ -61,6 +61,10 @@
 namespace RAJA
 {
 
+
+/*!
+ * \brief  Multiple error codes may be returned, use & to get individual errors.
+ */
 namespace error
 {
   enum
@@ -72,22 +76,42 @@ namespace error
   };
 }
 
+/*!
+ * \brief  Class that manages function pointers called when RAJA encounters 
+ *         an error.
+ *
+ * Note:   Intended to allow apps to perform things like final logging.
+ *         Only called in processes where an error occurs.
+ */
 class ResourceHandler
 {
 public:
+
+  /*!
+   * \brief  Function pointer type used for the callback.
+   */
   using error_cleanup_func = void(*)(int);
 
+  /*!
+   * \brief  static funcion to get the ResourceHandler instance.
+   */
   static ResourceHandler& getInstance()
   {
     static ResourceHandler me;
     return me;
   }
 
+  /*!
+   * \brief  function to add an error cleanup function.
+   */
   void add_error_cleanup(error_cleanup_func f)
   {
     m_funcs.push_back(f);
   }
 
+  /*!
+   * \brief  function to remove an error cleanup function.
+   */
   void remove_error_cleanup(error_cleanup_func f)
   {
     auto loc = std::find(m_funcs.begin(), m_funcs.end(), f);
@@ -96,6 +120,9 @@ public:
     }
   }
 
+  /*!
+   * \brief  function that triggers error cleanup callbacks.
+   */
   void error_cleanup(int err)
   {
     // call cleanup functions in reverse order
@@ -105,36 +132,50 @@ public:
 
 private:
 
+  /*!
+   * \brief  private constructor.
+   */
   ResourceHandler()
   {
 
   }
 
+  /*!
+   * \brief  private copy functions.
+   */
   ResourceHandler(ResourceHandler const&);
   ResourceHandler(ResourceHandler &&);
   ResourceHandler& operator=(ResourceHandler const&);
   ResourceHandler& operator=(ResourceHandler &&);
 
+  /*!
+   * \brief  private destructor.
+   */
   ~ResourceHandler()
   {
 
   }
 
+  /*!
+   * \brief  container of error callback functions.
+   */
   std::vector< error_cleanup_func > m_funcs;
 };
 
-namespace ERROR_CLEANUP
+/*!
+ * \brief  Function to add a callback.
+ */
+inline void add_cleanup(ResourceHandler::error_cleanup_func f)
 {
-  inline void add(ResourceHandler::error_cleanup_func f)
-  {
-    ResourceHandler::getInstance().add_error_cleanup(f);
-  }
+  ResourceHandler::getInstance().add_error_cleanup(f);
+}
 
-  inline void remove(ResourceHandler::error_cleanup_func f)
-  {
-    ResourceHandler::getInstance().remove_error_cleanup(f);
-  }
-
+/*!
+ * \brief  Function to remove a callback.
+ */
+inline void remove_cleanup(ResourceHandler::error_cleanup_func f)
+{
+  ResourceHandler::getInstance().remove_error_cleanup(f);
 }
 
 }

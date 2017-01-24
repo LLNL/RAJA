@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Implementation file for Logging functions.
+ * \brief   Implementation file for Logger functions and classes.
  *
  ******************************************************************************
  */

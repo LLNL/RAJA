@@ -27,10 +27,14 @@ protected:
         small_count++;
       }
     }
+
+    RAJA::Internal::s_exit_enabled = false;
   }
 
   virtual void TearDown()
   {
+    RAJA::Internal::s_exit_enabled = true;
+
     RAJA::free_aligned(test_array);
   }
 
@@ -41,7 +45,8 @@ protected:
 };
 
 // it wouls be nice to encapsulate this
-std::atomic<RAJA::Index_type> small_counter;
+std::atomic<RAJA::Index_type> log_counter;
+std::atomic<RAJA::Index_type> err_counter;
 
 TYPED_TEST_CASE_P(LoggerTest);
 
@@ -50,24 +55,32 @@ TYPED_TEST_P(LoggerTest, BasicForall)
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using LoggerPolicy = typename std::tuple_element<1, TypeParam>::type;
 
-  small_counter.store(0);
+  log_counter.store(0);
+  err_counter.store(0);
 
   RAJA::Logger<LoggerPolicy> mylog([](int udata, const char* msg) {
-    small_counter++;
+    log_counter++;
+    EXPECT_EQ(udata, atoi(msg));
+  });
+
+  RAJA::Logger<LoggerPolicy> myerr([](int udata, const char* msg) {
+    err_counter++;
     EXPECT_EQ(udata, atoi(msg));
   });
 
   RAJA::forall<ExecPolicy>(0, this->array_length, [=](RAJA::Index_type idx) {
     if (this->test_array[idx] <= this->small) {
       mylog.log(idx, "%i", idx);
-    } else if (this->test_array[idx] < 0) {
-      mylog.error(idx, "%i", idx);
+    }
+    if (this->test_array[idx] <= this->small) {
+      myerr.error(idx, "%i", idx);
     }
   });
 
   RAJA::check_logs();
 
-  EXPECT_EQ(small_counter.load(), this->small_count);
+  EXPECT_EQ(log_counter.load(), this->small_count);
+  EXPECT_GT(err_counter.load(), 0);
 }
 
 REGISTER_TYPED_TEST_CASE_P(LoggerTest, BasicForall);
