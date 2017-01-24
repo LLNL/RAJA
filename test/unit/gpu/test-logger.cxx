@@ -337,3 +337,42 @@ TYPED_TEST_P(LoggerTest, BasicForall)
 REGISTER_TYPED_TEST_CASE_P(LoggerTest, BasicForall);
 
 INSTANTIATE_TYPED_TEST_CASE_P(Logger, LoggerTest, CrossTypes);
+
+int s_num_found = 0;
+
+void get_logs()
+{
+  RAJA::Internal::s_exit_enabled = false;
+
+  s_num_found = 0;
+
+  RAJA::Logger<RAJA::cuda_logger> err_check([](int udata, const char* msg) {
+    EXPECT_EQ(udata, 89416);
+    EXPECT_EQ(s_num_found++, 1);
+  });
+
+  RAJA::Logger<RAJA::cuda_logger> log_check([](int udata, const char* msg) {
+    EXPECT_EQ(udata, 15163);
+    EXPECT_EQ(s_num_found++, 0);
+  });
+
+  RAJA::forall<RAJA::cuda_exec<128>>(0, 1, [=] __host__ __device__ (int i) {
+    log_check.log(15163, "");
+    err_check.error(89416, "");
+    ((int*)0xffffffffffffffff)[0] = ((int*)0)[0]; // generate error
+  });
+
+  RAJA::check_logs();
+
+  ASSERT_EQ(s_num_found, 2);
+
+  RAJA::Internal::s_exit_enabled = true;
+
+  RAJA::Internal::CudaLogManager::deallocateInstance();
+  cudaDeviceReset();
+}
+
+TEST(ErrorTest, GetLogs)
+{
+  get_logs();
+}

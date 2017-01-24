@@ -61,6 +61,23 @@
 namespace RAJA
 {
 
+namespace Internal
+{
+/*!
+ * \brief  Static bool that determines if in handling an error RAJA will
+ *         call exit.
+ *
+ * Note:   Use in testing environment only.
+ */
+extern bool s_exit_enabled;
+}
+
+/*!
+ * \brief  RAJA::check_logs checks if there are logs on the queue and calls the
+ *         handlers for what it finds. Synchronize before calling to ensure
+ *         handling of all logs.
+ */
+extern void check_logs();
 
 /*!
  * \brief  Multiple error codes may be returned, use & to get individual errors.

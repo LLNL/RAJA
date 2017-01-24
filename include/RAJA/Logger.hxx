@@ -79,24 +79,6 @@ using logging_function_type = void(*)(udata_type, const char*);
 using loggingID_type = unsigned int;
 
 /*!
- * \brief  RAJA::check_logs checks if there are logs on the queue and calls the
- *         handlers for what it finds. Synchronize before calling to ensure
- *         handling of all logs.
- */
-extern void check_logs();
-
-namespace Internal
-{
-/*!
- * \brief  Static bool that determines if in handling an error RAJA will
- *         call exit.
- *
- * Note:   Use in testing environment only.
- */
-extern bool s_exit_enabled;
-}
-
-/*!
  * \brief  Default handler function for RAJA::Logger objects.
  */
 inline void basic_logger(int udata, const char* msg)

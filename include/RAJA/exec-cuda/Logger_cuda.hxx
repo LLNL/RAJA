@@ -133,6 +133,32 @@ public:
    * \brief  type used for offsets into log buffer.
    */
   using logpos_type = int;
+  
+
+  /*!
+   * \brief  static function that deallocates the buffer where the instance of
+   *         CudaLogManager and the error and log buffers are stored.
+   */
+  static void* allocateInstance()
+  {
+    if (s_instance_buffer == nullptr) {
+      cudaHostAlloc(&s_instance_buffer, buffer_size, cudaHostAllocDefault);
+      memset(s_instance_buffer, 0, buffer_size);
+    }
+    return s_instance_buffer;
+  }
+
+  /*!
+   * \brief  static function that allocates the buffer where the instance of
+   *         CudaLogManager and the error and log buffers are stored.
+   */
+  static void deallocateInstance()
+  {
+    if (s_instance_buffer != nullptr) {
+      getInstance()->~CudaLogManager();
+      cudaFreeHost(s_instance_buffer);
+    }
+  }
 
   /*!
    * \brief  static function that gets the single nstance of CudaLogManager.
@@ -330,31 +356,6 @@ private:
    * \brief  static variable storing the pointer to the intance buffer.
    */
   static char* s_instance_buffer;
-
-  /*!
-   * \brief  static function that deallocates the buffer where the instance of
-   *         CudaLogManager and the error and log buffers are stored.
-   */
-  static void* allocateInstance()
-  {
-    if (s_instance_buffer == nullptr) {
-      cudaHostAlloc(&s_instance_buffer, buffer_size, cudaHostAllocDefault);
-      memset(s_instance_buffer, 0, buffer_size);
-    }
-    return s_instance_buffer;
-  }
-
-  /*!
-   * \brief  static function that allocates the buffer where the instance of
-   *         CudaLogManager and the error and log buffers are stored.
-   */
-  static void deallocateInstance()
-  {
-    if (s_instance_buffer != nullptr) {
-      getInstance()->~CudaLogManager();
-      cudaFreeHost(s_instance_buffer);
-    }
-  }
 
   /*!
    * \brief  CudaLogManager constructor, initializes the nmember pointers to
