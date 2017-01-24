@@ -1,7 +1,7 @@
 #include "gtest/gtest.h"
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/internals/MemUtils_CPU.hxx"
+#include "RAJA/internal/MemUtils_CPU.hxx"
 
 #include "buildIndexSet.hxx"
 
