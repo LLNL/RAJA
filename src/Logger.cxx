@@ -57,6 +57,9 @@
 namespace RAJA
 {
 
+/*!
+ * \brief  User facing function that checks for logs and handles those it finds.
+ */
 void check_logs()
 {
 #ifdef RAJA_ENABLE_CUDA
@@ -74,14 +77,29 @@ namespace Internal
 
 bool s_exit_enabled = true;
 
+
+/*!
+ * \brief  Class used to read logs from buffer.
+ */
 class CudaLogManager::LogReader
 {
 public:
+
+  /*!
+   * \brief  Id indicating no log was found by the reader.
+   */
   static const loggingID_type invalid_id = std::numeric_limits<loggingID_type>::max();
 
+  /*!
+   * \brief  Defaulted copy operators.
+   */
   LogReader(LogReader const&) = default;
   LogReader& operator=(LogReader const&) = default;
 
+  /*!
+   * \brief  Constructor which takes the bounds of the buffer to be checked
+   *         for logs.
+   */
   LogReader(rw_type*const& buf_pos, rw_type*const& buf_end)
     : m_begin(buf_pos),
       m_pos(buf_pos),
@@ -92,26 +110,44 @@ public:
     }
   }
 
+  /*!
+   * \brief  Function that returns a pointer to the next place in the buffer
+   *         in which a log might be found.
+   */
   rw_type* get_next()
   {
     return m_next;
   }
 
+  /*!
+   * \brief  Function that returns the relative id of this log for 
+   *         ordering purposes, or invalid_id if no log was found.
+   */
   loggingID_type get_id()
   {
     return m_id;
   }
 
+  /*!
+   * \brief  Function that returns the handler function for this log.
+   */
   logging_function_type get_func()
   {
     return m_func;
   }
 
+  /*!
+   * \brief  Function that returns the user data for this log.
+   */
   udata_type get_udata()
   {
     return m_udata;
   }
 
+  /*!
+   * \brief  Function that formats and prints the message into the char vector
+   *         provided, resizing the vector as necessary.
+   */
   bool write_msg(std::vector<char>& msg)
   {
     bool err = false;
@@ -148,6 +184,10 @@ private:
   logging_function_type m_func = nullptr;
   udata_type m_udata = -1;
 
+
+  /*!
+   * \brief  Enum naming the various possible width format specifiers.
+   */
   enum struct width_types : char {
     none,
     hh,
@@ -160,6 +200,10 @@ private:
     L
   };
 
+  /*!
+   * \brief  Function that reads the preamble of the message, but not the 
+   *         formatting string or arguments.
+   */
   bool read_preamble()
   {
     bool err = false;
@@ -182,6 +226,10 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that sets up further reading, by setting m_types and 
+   *         advancing m_pos beyond the types array.
+   */
   bool skip_types()
   {
     bool err = false;
@@ -205,6 +253,10 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that reads a single value from the message and assigns
+   *         it to arg.
+   */
   template < typename T_read, typename T >
   typename std::enable_if< std::is_assignable<T&, T_read>::value, bool >::type
   read_value(T& arg)
@@ -234,7 +286,7 @@ private:
 
     return err;
   }
-
+  ///
   template < typename T_read, typename T >
   typename std::enable_if< !std::is_assignable<T&, T_read>::value, bool >::type
   read_value(T& arg)
@@ -255,7 +307,7 @@ private:
 
     return err;
   }
-
+  ///
   template < typename T >
   typename std::enable_if< std::is_assignable<T&, char*>::value, bool >::type
   read_value_char_arr(T& arg)
@@ -280,7 +332,7 @@ private:
 
     return err;
   }
-
+  ///
   template < typename T >
   typename std::enable_if< !std::is_assignable<T&, char*>::value, bool >::type
   read_value_char_arr(T& arg)
@@ -307,6 +359,10 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that reads a type from the type array and a value from 
+   *         the log.
+   */
   template < typename T >
   bool
   read_type_value(T& arg)
@@ -382,6 +438,10 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that acts like sprintf, but prints to the end of a 
+   *         char vector.
+   */
   template < typename... Ts >
   bool
   vector_sprintf(std::vector<char>& msg, const char*const& fmt, Ts const&... args)
@@ -398,12 +458,18 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %% in a message.
+   */
   bool
   format_percent(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
     return vector_sprintf(msg, fmt);
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %c in a message.
+   */
   bool
   format_char(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -427,6 +493,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %s in a message.
+   */
   bool
   format_string(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -450,6 +519,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %i|d in a message.
+   */
   bool
   format_signed(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -503,6 +575,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %u|o|x|X in a message.
+   */
   bool
   format_unsigned(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -556,6 +631,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %f|F|e|E|g|G|a|A in a message.
+   */
   bool
   format_floating_point(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -584,6 +662,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing of %p in a message.
+   */
   bool
   format_pointer(std::vector<char>& msg, width_types const& w, const char*const& fmt)
   {
@@ -602,6 +683,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that determines the width specifier in a format specifier.
+   */
   bool
   get_format_width(width_types& w, const char*const& fmt_begin, const char*const& fmt_end)
   {
@@ -671,6 +755,9 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted for a single format specifier.
+   */
   bool
   do_single_format(std::vector<char>& msg, const char*& fmt_pos, const char*const& fmt_percent)
   {
@@ -744,6 +831,11 @@ private:
     return err;
   }
 
+  /*!
+   * \brief  Function that does formatted printing for the part of a message 
+   *         up to and including the first format specifier, or all of the
+   *         message if no format specifiers are found.
+   */
   bool
   do_first_segment(std::vector<char>& msg, const char*& fmt_pos)
   {
@@ -766,6 +858,10 @@ private:
 
 };
 
+/*!
+ * \brief  Function that reads and formats a message and calls the
+ *         function handler for a log.
+ */
 bool CudaLogManager::handle_log(LogReader& reader)
 {
   // fprintf(stderr, "RAJA logger: handling log.\n");
@@ -785,6 +881,10 @@ bool CudaLogManager::handle_log(LogReader& reader)
   return err;
 }
 
+/*!
+ * \brief  Function that reads and formats a message and calls the
+ *         function handler for an error.
+ */
 bool CudaLogManager::handle_error(LogReader& reader)
 {
   ResourceHandler::getInstance().error_cleanup(RAJA::error::user);
@@ -797,6 +897,10 @@ bool CudaLogManager::handle_error(LogReader& reader)
   return err;
 }
 
+/*!
+ * \brief  Function that handles all logs and errors in the buffer, leaves
+ *         the buffer empty after it is done.
+ */
 void CudaLogManager::handle_in_order() volatile
 {
   // wait for logs to be written, ignore cuda errors for now
@@ -830,6 +934,9 @@ void CudaLogManager::handle_in_order() volatile
   reset_state();
 }
 
+/*!
+ * \brief  Function that empties the buffer, resting its state.
+ */
 void CudaLogManager::reset_state() volatile
 {
   // reset buffers and flags

@@ -116,21 +116,21 @@ inline void basic_logger(int udata, const char* msg)
  *         them in the order in which they arrived.
  *
  *         RAJA::Logger<RAJA::seq_logger> logger(
-            [](RAJA::udata_type udata, const char* msg) {
-              fprintf(stderr, msg);
-              if (udata != 0) {
-                my_kill_program();
-              }
-            });
-
-            RAJA::forall<RAJA::seq_exec>(0, 16, [=](int i){
-              if (i > 10) {
-                logger.log(0, "Log: found large i = %i", i);
-              }
-              if (i > 15) {
-                logger.error(1, "Error: found too large i = %i", i);
-              }
-            });
+ *           [](RAJA::udata_type udata, const char* msg) {
+ *             fprintf(stderr, msg);
+ *             if (udata != 0) {
+ *               my_panic_function();
+ *             }
+ *           });
+ *
+ *           RAJA::forall<RAJA::seq_exec>(0, 16, [=](int i) {
+ *             if (i > 10) {
+ *               logger.log(0, "Log: found large i = %i", i);
+ *             }
+ *             if (i > 15) {
+ *               logger.error(1, "Error: found too large i = %i", i);
+ *             }
+ *           });
  *
  ******************************************************************************
  */

@@ -638,15 +638,45 @@ private:
     RAJA_HOST_DEVICE
     void write_types_hlp(print_types* a)
     {
-      *a = print_types::invalid;
+      a[0] = print_types::invalid;
     }
     ///
-    template < typename T0, typename... Ts >
+    template < typename T0 >
     RAJA_HOST_DEVICE
-    void write_types_hlp(print_types* a, T0 const& arg0, Ts const&... args)
+    void write_types_hlp(print_types* a, T0 const& arg0)
     {
-      *a = get_type(arg0);
-      write_types_hlp(a+1, args...);
+      a[0] = get_type(arg0);
+      a[1] = print_types::invalid;
+    }
+    ///
+    template < typename T0, typename T1 >
+    RAJA_HOST_DEVICE
+    void write_types_hlp(print_types* a, T0 const& arg0, T1 const& arg1)
+    {
+      a[0] = get_type(arg0);
+      a[1] = get_type(arg1);
+      a[2] = print_types::invalid;
+    }
+    ///
+    template < typename T0, typename T1, typename T2 >
+    RAJA_HOST_DEVICE
+    void write_types_hlp(print_types* a, T0 const& arg0, T1 const& arg1, T2 const& arg2)
+    {
+      a[0] = get_type(arg0);
+      a[1] = get_type(arg1);
+      a[2] = get_type(arg2);
+      a[3] = print_types::invalid;
+    }
+    ///
+    template < typename T0, typename T1, typename T2, typename T3, typename... Ts >
+    RAJA_HOST_DEVICE
+    void write_types_hlp(print_types* a, T0 const& arg0, T1 const& arg1, T2 const& arg2, T3 const& arg3, Ts const&... args)
+    {
+      a[0] = get_type(arg0);
+      a[1] = get_type(arg1);
+      a[2] = get_type(arg2);
+      a[3] = get_type(arg3);
+      write_types_hlp(a+4, args...);
     }
 
     /*!
