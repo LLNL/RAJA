@@ -29,7 +29,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -235,7 +235,7 @@ public:
   {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) < m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -256,7 +256,7 @@ public:
   {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) <= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) < m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -271,7 +271,7 @@ public:
   ReduceMinLoc<cilk_reduce, T> minloc(T val, Index_type idx) const
   {
     int tid = __cilkrts_get_worker_number();
-    if (val <= static_cast<T>(m_blockdata[tid * s_block_offset])) {
+    if (val < static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
       m_idxdata[tid * s_idx_offset] = idx;
     }
@@ -462,7 +462,7 @@ public:
   {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) > m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -483,7 +483,7 @@ public:
   {
     int nthreads = __cilkrts_get_nworkers();
     for (int i = 0; i < nthreads; ++i) {
-      if (static_cast<T>(m_blockdata[i * s_block_offset]) >= m_reduced_val) {
+      if (static_cast<T>(m_blockdata[i * s_block_offset]) > m_reduced_val) {
         m_reduced_val = m_blockdata[i * s_block_offset];
         m_reduced_idx = m_idxdata[i * s_idx_offset];
       }
@@ -498,7 +498,7 @@ public:
   ReduceMaxLoc<cilk_reduce, T> maxloc(T val, Index_type idx) const
   {
     int tid = __cilkrts_get_worker_number();
-    if (val >= static_cast<T>(m_blockdata[tid * s_block_offset])) {
+    if (val > static_cast<T>(m_blockdata[tid * s_block_offset])) {
       m_blockdata[tid * s_block_offset] = val;
       m_idxdata[tid * s_idx_offset] = idx;
     }

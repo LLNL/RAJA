@@ -27,7 +27,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -97,8 +97,8 @@ struct ForallN_BindFirstArg_Device {
  * This is passed to the execution policies to setup the kernel launch.
  */
 struct CudaDim {
-  dim3 num_threads;
-  dim3 num_blocks;
+  cuda_dim_t num_threads;
+  cuda_dim_t num_blocks;
 
   __host__ __device__ void print(void) const
   {
@@ -111,6 +111,18 @@ struct CudaDim {
            num_threads.z);
   }
 };
+
+RAJA_INLINE
+constexpr int numBlocks(CudaDim const& dim)
+{
+  return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
+}
+
+RAJA_INLINE
+constexpr int numThreads(CudaDim const& dim)
+{
+  return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
+}
 
 template <typename POL>
 struct CudaPolicy {
@@ -357,8 +369,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, cargs...);
+    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, cargs...);
+    }
                  
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
@@ -379,8 +393,10 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     CudaDim dims;
     CuARG0 c0(dims, iset0);
 
-    cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                 >>>(body, c0);
+    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
+                   >>>(body, c0);
+    }
 
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }

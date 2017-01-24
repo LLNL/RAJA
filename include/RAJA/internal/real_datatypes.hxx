@@ -32,7 +32,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -111,10 +111,10 @@ typedef std::complex<Real_type> Complex_type;
 // alignment attribute supported for versions > 12
 //
 #if __ICC >= 1300
-typedef Real_type* __restrict__ __attribute__((align_value(RAJA::DATA_ALIGN)))
+typedef Real_type* RAJA_RESTRICT __attribute__((align_value(RAJA::DATA_ALIGN)))
 TDRAReal_ptr;
 
-typedef const Real_type* __restrict__
+typedef const Real_type* RAJA_RESTRICT
     __attribute__((align_value(RAJA::DATA_ALIGN))) const_TDRAReal_ptr;
 #endif
 
@@ -123,9 +123,17 @@ typedef const Real_type* __restrict__
 #elif defined(RAJA_COMPILER_CLANG)
 typedef Real_type aligned_real_type __attribute__((aligned(RAJA::DATA_ALIGN)));
 
-typedef aligned_real_type* __restrict__ TDRAReal_ptr;
+typedef aligned_real_type* RAJA_RESTRICT TDRAReal_ptr;
 
-typedef const aligned_real_type* __restrict__ const_TDRAReal_ptr;
+typedef const aligned_real_type* RAJA_RESTRICT const_TDRAReal_ptr;
+
+#else
+
+typedef Real_type aligned_real_type;
+
+typedef aligned_real_type* RAJA_RESTRICT TDRAReal_ptr;
+
+typedef const aligned_real_type* RAJA_RESTRICT const_TDRAReal_ptr;
 
 #endif
 
@@ -175,7 +183,7 @@ public:
   ///
   const Real_type& operator[](Index_type i) const
   {
-    return ((const Real_type* __restrict__)dptr)[i];
+    return ((const Real_type* RAJA_RESTRICT)dptr)[i];
   }
 
   ///
@@ -249,7 +257,7 @@ public:
   ///
   Real_type& operator[](Index_type i)
   {
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
   }
 
   ///
@@ -316,7 +324,7 @@ public:
   {
 #if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
-    return ((const Real_type* __restrict__)dptr)[i];
+    return ((const Real_type* RAJA_RESTRICT)dptr)[i];
 #else  // use alignment attribute
     return ((const_TDRAReal_ptr)dptr)[i];
 #endif
@@ -327,9 +335,9 @@ public:
   const Real_type& operator[](Index_type i) const
   {
 #if 1  // NOTE: alignment instrinsic not available for older GNU compilers
-    return ((const Real_type* __restrict__)RAJA_ALIGN_DATA(dptr))[i];
+    return ((const Real_type* RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
 #else
-    return ((const Real_type* __restrict__)dptr)[i];
+    return ((const Real_type* RAJA_RESTRICT)dptr)[i];
 #endif
   }
 
@@ -337,7 +345,7 @@ public:
   const Real_type& operator[](Index_type i) const
   {
     RAJA_ALIGN_DATA(dptr);
-    return ((const Real_type* __restrict__)dptr)[i];
+    return ((const Real_type* RAJA_RESTRICT)dptr)[i];
   }
 
 #elif defined(RAJA_COMPILER_CLANG)
@@ -430,7 +438,7 @@ public:
   {
 #if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
 #else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
@@ -441,7 +449,7 @@ public:
   {
 #if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
 #else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
@@ -452,9 +460,9 @@ public:
   Real_type& operator[](Index_type i)
   {
 #if 1  // NOTE: alignment instrinsic not available for older GNU compilers
-    return ((Real_type * __restrict__)RAJA_ALIGN_DATA(dptr))[i];
+    return ((Real_type * RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
 #else
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
 #endif
   }
 
@@ -462,9 +470,9 @@ public:
   const Real_type& operator[](Index_type i) const
   {
 #if 1  // NOTE: alignment instrinsic not available for older GNU compilers
-    return ((Real_type * __restrict__)RAJA_ALIGN_DATA(dptr))[i];
+    return ((Real_type * RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
 #else
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
 #endif
   }
 
@@ -473,14 +481,14 @@ public:
   Real_type& operator[](Index_type i)
   {
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
   }
 
   ///
   const Real_type& operator[](Index_type i) const
   {
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * __restrict__)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT)dptr)[i];
   }
 
 #elif defined(RAJA_COMPILER_CLANG)
@@ -558,7 +566,7 @@ public:
   ///
   const Complex_type& operator[](Index_type i) const
   {
-    return ((const Complex_type* __restrict__)dptr)[i];
+    return ((const Complex_type* RAJA_RESTRICT)dptr)[i];
   }
 
   ///
@@ -632,7 +640,7 @@ public:
   ///
   Complex_type& operator[](Index_type i)
   {
-    return ((Complex_type * __restrict__)dptr)[i];
+    return ((Complex_type * RAJA_RESTRICT)dptr)[i];
   }
 
   ///
@@ -640,7 +648,7 @@ public:
   ///
   const Complex_type& operator[](Index_type i) const
   {
-    return ((Complex_type * __restrict__)dptr)[i];
+    return ((Complex_type * RAJA_RESTRICT)dptr)[i];
   }
 
   ///
@@ -681,28 +689,28 @@ typedef Real_type* UnalignedReal_ptr;
 typedef const Real_type* const_UnalignedReal_ptr;
 
 #elif defined(RAJA_USE_RESTRICT_PTR)
-typedef Real_type* __restrict__ Real_ptr;
-typedef const Real_type* __restrict__ const_Real_ptr;
+typedef Real_type* RAJA_RESTRICT Real_ptr;
+typedef const Real_type* RAJA_RESTRICT const_Real_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef Complex_type* __restrict__ Complex_ptr;
-typedef const Complex_type* __restrict__ const_Complex_ptr;
+typedef Complex_type* RAJA_RESTRICT Complex_ptr;
+typedef const Complex_type* RAJA_RESTRICT const_Complex_ptr;
 #endif
 
-typedef Real_type* __restrict__ UnalignedReal_ptr;
-typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
+typedef Real_type* RAJA_RESTRICT UnalignedReal_ptr;
+typedef const Real_type* RAJA_RESTRICT const_UnalignedReal_ptr;
 
 #elif defined(RAJA_USE_RESTRICT_ALIGNED_PTR)
 typedef TDRAReal_ptr Real_ptr;
 typedef const_TDRAReal_ptr const_Real_ptr;
 
 #if defined(RAJA_USE_COMPLEX)
-typedef Complex_type* __restrict__ Complex_ptr;
-typedef const Complex_type* __restrict__ const_Complex_ptr;
+typedef Complex_type* RAJA_RESTRICT Complex_ptr;
+typedef const Complex_type* RAJA_RESTRICT const_Complex_ptr;
 #endif
 
-typedef Real_type* __restrict__ UnalignedReal_ptr;
-typedef const Real_type* __restrict__ const_UnalignedReal_ptr;
+typedef Real_type* RAJA_RESTRICT UnalignedReal_ptr;
+typedef const Real_type* RAJA_RESTRICT const_UnalignedReal_ptr;
 
 #elif defined(RAJA_USE_PTR_CLASS)
 typedef RestrictAlignedRealPtr Real_ptr;

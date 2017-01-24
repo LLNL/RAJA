@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -177,7 +177,7 @@ public:
   ///
   /// Return total number of segments in index set.
   ///
-  unsigned getNumSegments() const { return m_segments.size(); }
+  size_t getNumSegments() const { return m_segments.size(); }
 
   ///
   /// Return const pointer to BaseSegment 'i'.
@@ -188,7 +188,7 @@ public:
   ///        access actual segment index information
   ///        (see BaseSegment::getType() method).
   ///
-  const BaseSegment* getSegment(unsigned i) const
+  const BaseSegment* getSegment(size_t i) const
   {
     return m_segments[i].getSegment();
   }
@@ -202,14 +202,14 @@ public:
   ///        access actual segment index information
   ///        (see BaseSegment::getType() method).
   ///
-  BaseSegment* getSegment(unsigned i) { return m_segments[i].getSegment(); }
+  BaseSegment* getSegment(size_t i) { return m_segments[i].getSegment(); }
 
   ///
   /// Return const pointer to IndexSetSegInfo object for segment 'i'.
   ///
   /// Note: No error-checking on segment index.
   ///
-  const IndexSetSegInfo* getSegmentInfo(unsigned i) const
+  const IndexSetSegInfo* getSegmentInfo(size_t i) const
   {
     return &(m_segments[i]);
   }
@@ -219,7 +219,7 @@ public:
   ///
   /// Note: No error-checking on segment index.
   ///
-  IndexSetSegInfo* getSegmentInfo(unsigned i) { return &(m_segments[i]); }
+  IndexSetSegInfo* getSegmentInfo(size_t i) { return &(m_segments[i]); }
 
   using iterator = SegVecT::iterator;
 
@@ -281,7 +281,7 @@ public:
   /// For example, this method can be used to assign an interval of
   /// segments to be processed by a given thread.
   ///
-  void setSegmentInterval(int interval_id, int begin, int end);
+  void setSegmentInterval(size_t interval_id, int begin, int end);
 
   ///
   /// Get lower bound or upper bound of [begin, end) interval of segment
@@ -289,12 +289,12 @@ public:
   ///
   /// Notes: No error-checking on interval id.
   ///
-  int getSegmentIntervalBegin(int interval_id) const
+  int getSegmentIntervalBegin(size_t interval_id) const
   {
     return m_seg_interval_begin[interval_id];
   }
   ///
-  int getSegmentIntervalEnd(int interval_id) const
+  int getSegmentIntervalEnd(size_t interval_id) const
   {
     return m_seg_interval_end[interval_id];
   }
@@ -440,7 +440,7 @@ IndexSet* IndexSet::createView(const T& segIds) const
 {
   IndexSet* retVal = new IndexSet();
 
-  int numSeg = m_segments.size();
+  size_t numSeg = m_segments.size();
   for (typename T::iterator it = segIds.begin(); it != segIds.end(); ++it) {
     if (*it >= 0 && *it < numSeg) {
       retVal->push_back_nocopy(

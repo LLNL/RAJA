@@ -26,7 +26,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -119,7 +119,11 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 
+#if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
+#else
+#pragma omp for nowait
+#endif
     for (int i = begin_i; i < end_i; ++i) {
       for (int j = begin_j; j < end_j; ++j) {
         outer(i, j);
@@ -165,7 +169,11 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 
+#if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(3)
+#else
+#pragma omp for nowait
+#endif
     for (int i = begin_i; i < end_i; ++i) {
       for (int j = begin_j; j < end_j; ++j) {
         for (int k = begin_k; k < end_k; ++k) {
@@ -191,7 +199,7 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag,
   typedef typename POLICY::NextPolicy NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
 
-#pragma omp parallel
+#pragma omp parallel firstprivate(body)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }

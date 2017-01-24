@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 //
@@ -22,6 +22,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -61,7 +62,7 @@ void runBasicMinReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -115,7 +116,7 @@ void runBasicMinReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -208,7 +209,7 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -266,7 +267,7 @@ void runBasicMinLocReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -360,7 +361,7 @@ void runBasicMaxReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -415,7 +416,7 @@ void runBasicMaxReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -508,7 +509,7 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  posix_memalign((void**)&test_array, DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -566,7 +567,7 @@ void runBasicMaxLocReductionTest(const string& policy,
     }
   }
 
-  free(test_array);
+  free_aligned(test_array);
 }
 
 ///////////////////////////////////////////////////////////////////////////
@@ -655,7 +656,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
 template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
-                              Index_type alen,
+                              Index_type RAJA_UNUSED_ARG(alen),
                               const IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
@@ -664,7 +665,7 @@ void runBasicSumReductionTest(const string& policy,
   //
   Real_type ref_sum = 0.0;
 
-  for (Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
     ref_sum += in_array[is_indices[i]];
   }
 
@@ -756,6 +757,33 @@ void runSumReduceTests(Real_ptr in_array,
       alen,
       iset,
       is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit,
+                                                omp_parallel_for_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<seq_segit, omp_parallel_for_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+                                                seq_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<omp_parallel_for_segit, seq_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
+
+  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+                                                simd_exec>,
+                           omp_reduce_ordered>(
+      "ExecPolicy<omp_parallel_for_segit, simd_exec>",
+      in_array,
+      alen,
+      iset,
+      is_indices);
 #endif
 
 #ifdef RAJA_ENABLE_CILK
@@ -786,7 +814,8 @@ void runSumReduceTests(Real_ptr in_array,
 // Main Program.
 //
 ///////////////////////////////////////////////////////////////////////////
-int main(int argc, char* argv[])
+
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   //
   // Record maximum index in IndexSets for proper array allocation later.
@@ -828,7 +857,7 @@ int main(int argc, char* argv[])
   // Allocate "parent" array for traversal tests and initialize to...
   //
   Real_ptr parent;
-  posix_memalign((void**)&parent, DATA_ALIGN, array_length * sizeof(Real_type));
+  parent = (Real_ptr) allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);
@@ -901,7 +930,7 @@ int main(int argc, char* argv[])
   //
   // Clean up....
   //
-  free(parent);
+  free_aligned(parent);
 
   cout << "\n DONE!!! " << endl;
 

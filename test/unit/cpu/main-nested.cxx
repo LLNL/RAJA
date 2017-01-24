@@ -20,8 +20,10 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <random>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
 using namespace std;
@@ -226,12 +228,16 @@ void runLTimesTest(std::string const &policy,
   std::vector<double> psi_data(num_directions * num_groups * num_zones);
   std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
 
+  std::random_device rand;
+  std::mt19937 gen(rand());
+  std::uniform_real_distribution<double> rand_gen(0.0,1.0);
+
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
-    ell_data[i] = drand48();
+    ell_data[i] = rand_gen(gen);
   }
   for (size_t i = 0; i < psi_data.size(); ++i) {
-    psi_data[i] = drand48();
+    psi_data[i] = rand_gen(gen);
   }
 
   // create views on data
@@ -428,7 +434,7 @@ void runLTimesTests(Index_type num_moments,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int argc, char *argv[])
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
   ///////////////////////////////////////////////////////////////////////////
   //

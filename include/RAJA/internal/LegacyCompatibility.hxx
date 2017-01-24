@@ -1,12 +1,12 @@
 #ifndef KRIPKE_LEGAGY_COMPATIBILITY_HXX
 #define KRIPKE_LEGAGY_COMPATIBILITY_HXX 1
 
-#define stringify(X) #X
+#include "RAJA/internal/defines.hxx"
 
-#if !defined(__INTEL_COMPILER)
+#if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(
     __cplusplus >= 201103L,
-    "C++ standards below 2011 are not supported" stringify(__cplusplus));
+    "C++ standards below 2011 are not supported" RAJA_STRINGIFY_HELPER(__cplusplus));
 #endif
 
 #include <cstdint>
@@ -103,7 +103,7 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
 };
 
 template <typename Op, typename Arg1>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation, Arg1&& arg) ->
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& RAJA_UNUSED_ARG(operation), Arg1&& arg) ->
     typename foldl_impl<Op, Arg1>::Ret
 {
   return forward<Arg1&&>(arg);
@@ -141,7 +141,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
 struct adder {
   template <typename Result>
   RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(const Result& l,
-                                                           const Result& r)
+                                                           const Result& r) const
   {
     return l + r;
   }
@@ -327,7 +327,7 @@ struct get_offset
 template <size_t index>
 struct get_arg_at {
   template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& first,
+  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& RAJA_UNUSED_ARG(first),
                                                            Rest&&... rest)
       -> decltype(VarOps::forward<
                   typename VarOps::get_type_at<index - 1, Rest...>::type>(
@@ -344,7 +344,7 @@ template <>
 struct get_arg_at<0> {
   template <typename First, typename... Rest>
   RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& first,
-                                                           Rest&&... rest)
+                                                           Rest&&... RAJA_UNUSED_ARG(rest))
       -> decltype(VarOps::forward<First>(first))
   {
     return VarOps::forward<First>(first);

@@ -26,7 +26,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -112,12 +112,11 @@ RAJA_INLINE void forall_Icount(const simd_exec &,
 template <typename LOOP_BODY>
 RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 {
-  const Index_type *__restrict__ idx = iseg.getIndex();
+  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
   Index_type len = iseg.getLength();
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(idx[k]);
   }
@@ -140,12 +139,11 @@ RAJA_INLINE void forall_Icount(simd_exec,
                                Index_type icount,
                                LOOP_BODY loop_body)
 {
-  const Index_type *__restrict__ idx = iseg.getIndex();
+  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
   Index_type len = iseg.getLength();
 
   RAJA_FT_BEGIN;
 
-#pragma novector
   for (Index_type k = 0; k < len; ++k) {
     loop_body(k + icount, idx[k]);
   }

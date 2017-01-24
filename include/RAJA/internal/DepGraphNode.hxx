@@ -23,7 +23,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -118,7 +118,7 @@ public:
   void satisfyOne()
   {
     if (m_semaphore_value > 0) {
-      int val = --m_semaphore_value;
+      --m_semaphore_value;
     }
   }
 

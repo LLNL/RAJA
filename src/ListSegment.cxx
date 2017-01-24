@@ -19,7 +19,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -71,14 +71,15 @@ namespace RAJA
 ListSegment::ListSegment(const Index_type* indx,
                          Index_type len,
                          IndexOwnership indx_own)
-    : BaseSegment(_ListSeg_)
+    : BaseSegment(_ListSeg_), m_indx(0), m_len(0)
 {
   initIndexData(indx, len, indx_own);
 }
 
 ////
 ////
-ListSegment::ListSegment(const ListSegment& other) : BaseSegment(_ListSeg_)
+ListSegment::ListSegment(const ListSegment& other) 
+    : BaseSegment(_ListSeg_), m_indx(0), m_len(0)
 {
   initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
 }
