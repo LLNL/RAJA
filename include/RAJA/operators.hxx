@@ -245,11 +245,11 @@ template <typename T>
 RAJA_HOST_DEVICE constexpr T min()
 {
   return 0;
-};
+}
 template <>
 RAJA_HOST_DEVICE constexpr int16_t min<int16_t>()
 {
-  return 0xFFFF;
+  return -32768;
 }
 template <>
 RAJA_HOST_DEVICE constexpr uint16_t min<uint16_t>()
@@ -296,7 +296,7 @@ template <typename T>
 RAJA_HOST_DEVICE constexpr T max()
 {
   return 0;
-};
+}
 template <>
 RAJA_HOST_DEVICE constexpr int16_t max<int16_t>()
 {
