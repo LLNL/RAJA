@@ -76,23 +76,25 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function, typename T>
-void inclusive_inplace(const ::RAJA::cuda_exec_base&,
+template <size_t BLOCK_SIZE, bool Async,
+          typename InputIter, typename Function, typename T>
+void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter begin,
                        InputIter end,
                        Function binary_op,
                        T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
-  cudaDeviceSynchronize();
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function, typename T>
-void exclusive_inplace(const ::RAJA::cuda_exec_base&,
+template <size_t BLOCK_SIZE, bool Async,
+          typename InputIter, typename Function, typename T>
+void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter begin,
                        InputIter end,
                        Function binary_op,
@@ -100,18 +102,19 @@ void exclusive_inplace(const ::RAJA::cuda_exec_base&,
 {
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, init, binary_op);
-  cudaDeviceSynchronize();
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
+template <size_t BLOCK_SIZE, bool Async,
+          typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-void inclusive(const ::RAJA::cuda_exec_base&,
+void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                InputIter begin,
                InputIter end,
                OutputIter out,
@@ -119,18 +122,19 @@ void inclusive(const ::RAJA::cuda_exec_base&,
                T init)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
-  cudaDeviceSynchronize();
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
+template <size_t BLOCK_SIZE, bool Async,
+          typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-void exclusive(const ::RAJA::cuda_exec_base&,
+void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                InputIter begin,
                InputIter end,
                OutputIter out,
@@ -138,7 +142,7 @@ void exclusive(const ::RAJA::cuda_exec_base&,
                T init)
 {
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
-  cudaDeviceSynchronize();
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 }  // closing brace for scan namespace

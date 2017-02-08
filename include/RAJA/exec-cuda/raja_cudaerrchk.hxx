@@ -78,7 +78,7 @@ namespace RAJA
 ///
 #define cudaErrchk(ans)                          \
   {                                              \
-    RAJA::cudaAssert((ans), __FILE__, __LINE__); \
+    ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
   }
 
 inline void cudaAssert(cudaError_t code,
