@@ -67,6 +67,12 @@ if(RAJA_ENABLE_OPENMP)
     SOURCES main-nested-reduce.cxx)
 endif()
 
+if(RAJA_ENABLE_TBB)
+  raja_add_test(
+    NAME CPUstream_mockup-test
+    SOURCES dnm_stream_mockup.cxx)
+endif()
+
 raja_add_test(
   NAME indexset-tests
   SOURCES test-indexsets.cxx
