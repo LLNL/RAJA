@@ -52,6 +52,11 @@ if (RAJA_ENABLE_OPENMP)
   endif()
 endif()
 
+if (RAJA_ENABLE_TBB)
+  find_library(TBB_LIBRARY NAMES tbb libtbb libtbb.so libtbb.a)
+  list(append RAJA_RT_LIBRARIES ${TBB_LIBRARY})
+endif() #RAJA_ENABLE_TBB
+
 if (RAJA_ENABLE_CLANG_CUDA)
   set(RAJA_ENABLE_CUDA On)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")

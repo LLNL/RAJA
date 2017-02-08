@@ -54,6 +54,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
+option(RAJA_ENABLE_TBB "Build with TBB" Off)
 option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
