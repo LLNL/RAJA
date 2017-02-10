@@ -126,7 +126,9 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>,
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               IDs &... indices) const
   {
-    VarOps::assign_args(linear_index, IndexRange{}, indices...);
+
+    VarOps::ignore_args( (indices = (linear_index / strides[RangeInts]) % sizes[RangeInts])... );
+
   }
 };
 
