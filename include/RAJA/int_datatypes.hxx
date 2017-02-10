@@ -79,7 +79,7 @@ enum IndexOwnership { Unowned, Owned };
 ///
 /// Type use for all loop indexing in RAJA constructs.
 ///
-typedef int Index_type;
+typedef long Index_type;
 
 ///
 /// Integer value for undefined indices and other integer values.
