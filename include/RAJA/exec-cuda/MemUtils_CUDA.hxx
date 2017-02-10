@@ -60,6 +60,8 @@
 
 #include "RAJA/int_datatypes.hxx"
 
+#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
+
 namespace RAJA
 {
 /*!
@@ -312,15 +314,7 @@ void afterCudaKernelLaunch();
  */
 void beforeCudaReadTallyBlockAsync(int id);
 
-/*!
- ******************************************************************************
- *
- * \brief Updates host tally cache for read by reduction variable with id and 
- * a synchronous reduction policy.
- *
- ******************************************************************************
- */
-void beforeCudaReadTallyBlockSync(int id);
+void beforeCudaWriteTallyBlockAsync(int id);
 
 /*!
  ******************************************************************************
@@ -333,10 +327,44 @@ void beforeCudaReadTallyBlockSync(int id);
 template<bool Async>
 void beforeCudaReadTallyBlock(int id)
 {
-  if (Async) {
-    beforeCudaReadTallyBlockAsync(id);
-  } else {
-    beforeCudaReadTallyBlockSync(id);
+  beforeCudaReadTallyBlockAsync(id);
+  if (!Async) {
+    cudaErrchk(cudaDeviceSynchronize());
+  }
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache state for write by reduction variable with 
+ * id and templated on Async from the reduction policy. 
+ *
+ * Note: No cuda API calls are made so no synchronization is needed.
+ *
+ ******************************************************************************
+ */
+template<bool Async>
+void beforeCudaWriteTallyBlock(int id)
+{
+  beforeCudaWriteTallyBlockAsync(id);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Updates host tally cache for read and write by reduction variable 
+ * with id and templated on Async from the reduction policy.
+ *
+ ******************************************************************************
+ */
+template<bool Async>
+void beforeCudaReadWriteTallyBlock(int id)
+{
+  // before-read must be called first
+  beforeCudaReadTallyBlockAsync(id);
+  beforeCudaWriteTallyBlockAsync(id);
+  if (!Async) {
+    cudaErrchk(cudaDeviceSynchronize());
   }
 }
 

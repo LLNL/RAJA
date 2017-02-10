@@ -61,8 +61,6 @@
 
 #include "RAJA/reducers.hxx"
 
-#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
-
 #include <iostream>
 #include <string>
 #include <cassert>
@@ -363,17 +361,6 @@ static void readCudaReductionTallyBlockAsync()
     s_tally_valid = true;
   }
 }
-static void readCudaReductionTallyBlock()
-{
-  if (!s_tally_valid) {
-    cudaErrchk(cudaMemcpy(  &s_cuda_reduction_tally_block_host[0],
-                            &s_cuda_reduction_tally_block_device[0],
-                            sizeof(CudaReductionDummyTallyType) *
-                              RAJA_CUDA_REDUCE_TALLY_LENGTH,
-                            cudaMemcpyDeviceToHost));
-    s_tally_valid = true;
-  }
-}
 
 /*
 *******************************************************************************
@@ -429,17 +416,17 @@ void afterCudaKernelLaunch()
 */
 void beforeCudaReadTallyBlockAsync(int id)
 {
-  if (!s_tally_block_dirty[id]) {
+  if (!s_tally_valid && !s_tally_block_dirty[id]) {
     writeBackCudaReductionTallyBlock();
     readCudaReductionTallyBlockAsync();
   }
 }
-///
-void beforeCudaReadTallyBlockSync(int id)
+
+void beforeCudaWriteTallyBlockAsync(int id)
 {
   if (!s_tally_block_dirty[id]) {
-    writeBackCudaReductionTallyBlock();
-    readCudaReductionTallyBlock();
+    s_tally_block_dirty[id] = true;
+    s_tally_dirty++;
   }
 }
 

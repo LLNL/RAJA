@@ -203,27 +203,190 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
  * \brief Generics of atomic update methods used in reduction variables.
  *
  * The generic version just wraps the nvidia cuda atomics.
- * Specializations implement other atomics using atomic CAS.
+ * Specializations smooth out the interface by implementing other atomics.
  *
  ******************************************************************************
  */
 template <typename T>
-__device__ inline T _atomicMin(T *address, T value)
+__device__ inline T _atomicMin(T *address, T value) noexcept
 {
   return atomicMin(address, value);
 }
 ///
 template <typename T>
-__device__ inline T _atomicMax(T *address, T value)
+__device__ inline T _atomicMax(T *address, T value) noexcept
 {
   return atomicMax(address, value);
 }
 ///
 template <typename T>
-__device__ inline T _atomicAdd(T *address, T value)
+__device__ inline T _atomicAdd(T *address, T value) noexcept
 {
   return atomicAdd(address, value);
 }
+///
+template <typename T>
+__device__ inline T _atomicSub(T *address, T value) noexcept
+{
+  return atomicSub(address, value);
+}
+///
+template <typename T>
+__device__ inline T _atomicExch(T *address, T value) noexcept
+{
+  return atomicExch(address, value);
+}
+///
+template <typename T>
+__device__ inline T _atomicCAS(T *address, T compare, T value) noexcept
+{
+  return atomicCAS(address, compare, value);
+}
+///
+template <typename T>
+__device__ inline T _atomicAnd(T *address, T value) noexcept
+{
+  return atomicAnd(address, value);
+}
+///
+template <typename T>
+__device__ inline T _atomicOr(T *address, T value) noexcept
+{
+  return atomicOr(address, value);
+}
+///
+template <typename T>
+__device__ inline T _atomicXor(T *address, T value) noexcept
+{
+  return atomicXor(address, value);
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic subtract methods.
+ *
+ ******************************************************************************
+ */
+template <>
+__device__ inline unsigned long long int _atomicSub(unsigned long long int *address, unsigned long long int value) noexcept
+{
+  return atomicAdd(address, -value);
+}
+///
+template <>
+__device__ inline float _atomicSub(float *address, float value) noexcept
+{
+  return atomicAdd(address, -value);
+}
+#if __CUDA_ARCH__ >= 600
+///
+template <>
+__device__ inline double _atomicSub(double *address, double value) noexcept
+{
+  return atomicAdd(address, -value);
+}
+#endif // __CUDA_ARCH__ >= 600
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic exchange method for doubles.
+ *
+ ******************************************************************************
+ */
+template <>
+__device__ inline double _atomicExch(double *address, double value) noexcept
+{
+  return atomicExch((unsigned long long int *)address,
+                    __double_as_longlong(value));
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Atomic compare and swap method for floating point types.
+ *
+ ******************************************************************************
+ */
+template <>
+__device__ inline float _atomicCAS(float *address, float compare, float value) noexcept
+{
+  return __int_as_float(atomicCAS((int *)address,
+                                  __float_as_int(compare),
+                                  __float_as_int(value)));
+}
+///
+template <>
+__device__ inline double _atomicCAS(double *address, double compare, double value) noexcept
+{
+  return __longlong_as_double(atomicCAS((unsigned long long int *)address,
+                                        __double_as_longlong(compare),
+                                        __double_as_longlong(value)));
+}
+
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic and method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicAnd(float *address, float value) noexcept
+// {
+//   return atomicAnd((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicAnd(double *address, double value) noexcept
+// {
+//   return atomicAnd((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
+
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic or method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicOr(float *address, float value) noexcept
+// {
+//   return atomicOr((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicOr(double *address, double value) noexcept
+// {
+//   return atomicOr((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
+
+// /*!
+//  ******************************************************************************
+//  *
+//  * \brief Atomic xor method for floating point types.
+//  *
+//  ******************************************************************************
+//  */
+// template <>
+// __device__ inline float _atomicXor(float *address, float value) noexcept
+// {
+//   return atomicXor((int *)address,
+//                     __float_as_int(value));
+// }
+// ///
+// template <>
+// __device__ inline double _atomicXor(double *address, double value) noexcept
+// {
+//   return atomicXor((unsigned long long int *)address,
+//                     __double_as_longlong(value));
+// }
 
 //
 // Template specializations for atomic update methods not defined by nvidia
@@ -239,7 +402,7 @@ __device__ inline T _atomicAdd(T *address, T value)
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicMin(double *address, double value)
+__device__ inline double _atomicMin(double *address, double value) noexcept
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -259,7 +422,7 @@ __device__ inline double _atomicMin(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMin(float *address, float value)
+__device__ inline float _atomicMin(float *address, float value) noexcept
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -278,7 +441,7 @@ __device__ inline float _atomicMin(float *address, float value)
 }
 ///
 template <>
-__device__ inline double _atomicMax(double *address, double value)
+__device__ inline double _atomicMax(double *address, double value) noexcept
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -298,7 +461,7 @@ __device__ inline double _atomicMax(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMax(float *address, float value)
+__device__ inline float _atomicMax(float *address, float value) noexcept
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -315,14 +478,12 @@ __device__ inline float _atomicMax(float *address, float value)
   }
   return temp;
 }
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-// don't specialize for 64-bit min/max if they exist
-#else
+#if __CUDA_ARCH__ < 350
 ///
 template <>
 __device__ inline unsigned long long int _atomicMin(
     unsigned long long int *address,
-    unsigned long long int value)
+    unsigned long long int value) noexcept
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -342,7 +503,7 @@ __device__ inline unsigned long long int _atomicMin(
 template <>
 __device__ inline unsigned long long int _atomicMax(
     unsigned long long int *address,
-    unsigned long long int value)
+    unsigned long long int value) noexcept
 {
   unsigned long long int readback =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -358,11 +519,9 @@ __device__ inline unsigned long long int _atomicMax(
   }
   return readback;
 }
-#endif
+#endif // __CUDA_ARCH__ < 350
 
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-// don't specialize for 64-bit add if it exists
-#else
+#if __CUDA_ARCH__ < 600
 /*!
  ******************************************************************************
  *
@@ -371,7 +530,7 @@ __device__ inline unsigned long long int _atomicMax(
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicAdd(double *address, double value)
+__device__ inline double _atomicAdd(double *address, double value) noexcept
 {
   unsigned long long oldval, newval, readback;
 
@@ -384,7 +543,22 @@ __device__ inline double _atomicAdd(double *address, double value)
   }
   return __longlong_as_double(oldval);
 }
-#endif
+///
+template <>
+__device__ inline double _atomicSub(double *address, double value) noexcept
+{
+  unsigned long long oldval, newval, readback;
+
+  oldval = __double_as_longlong(*address);
+  newval = __double_as_longlong(__longlong_as_double(oldval) - value);
+  while ((readback = atomicCAS((unsigned long long *)address, oldval, newval))
+         != oldval) {
+    oldval = readback;
+    newval = __double_as_longlong(__longlong_as_double(oldval) - value);
+  }
+  return __longlong_as_double(oldval);
+}
+#endif // __CUDA_ARCH__ < 600
 
 #elif defined(RAJA_USE_ATOMIC_TWO)
 
@@ -399,7 +573,7 @@ __device__ inline double _atomicAdd(double *address, double value)
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicMin(double *address, double value)
+__device__ inline double _atomicMin(double *address, double value) noexcept
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -421,7 +595,7 @@ __device__ inline double _atomicMin(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMin(float *address, float value)
+__device__ inline float _atomicMin(float *address, float value) noexcept
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -441,7 +615,7 @@ __device__ inline float _atomicMin(float *address, float value)
 }
 ///
 template <>
-__device__ inline double _atomicMax(double *address, double value)
+__device__ inline double _atomicMax(double *address, double value) noexcept
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -463,7 +637,7 @@ __device__ inline double _atomicMax(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMax(float *address, float value)
+__device__ inline float _atomicMax(float *address, float value) noexcept
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -482,14 +656,11 @@ __device__ inline float _atomicMax(float *address, float value)
   return temp;
 }
 
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-// don't specialize for 64-bit min/max if they exist
-#else
-///
+#if __CUDA_ARCH__ < 350
 template <>
 __device__ inline unsigned long long int _atomicMin(
     unsigned long long int *address,
-    unsigned long long int value)
+    unsigned long long int value) noexcept
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -508,7 +679,7 @@ __device__ inline unsigned long long int _atomicMin(
 template <>
 __device__ inline unsigned long long int _atomicMax(
     unsigned long long int *address,
-    unsigned long long int value)
+    unsigned long long int value) noexcept
 {
   unsigned long long int temp =
       *(reinterpret_cast<unsigned long long int volatile *>(address));
@@ -523,11 +694,9 @@ __device__ inline unsigned long long int _atomicMax(
   }
   return temp;
 }
-#endif
+#endif // __CUDA_ARCH__ < 350
 
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-// don't specialize for doubles if they exist
-#else
+#if __CUDA_ARCH__ < 600
 /*!
  ******************************************************************************
  *
@@ -536,7 +705,7 @@ __device__ inline unsigned long long int _atomicMax(
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicAdd(double *address, double value)
+__device__ inline double _atomicAdd(double *address, double value) noexcept
 {
   unsigned long long int *address_as_ull = (unsigned long long int *)address;
   unsigned long long int oldval = *address_as_ull, assumed;
@@ -550,17 +719,33 @@ __device__ inline double _atomicAdd(double *address, double value)
   } while (assumed != oldval);
   return __longlong_as_double(oldval);
 }
-#endif
+///
+template <>
+__device__ inline double _atomicSub(double *address, double value) noexcept
+{
+  unsigned long long int *address_as_ull = (unsigned long long int *)address;
+  unsigned long long int oldval = *address_as_ull, assumed;
+
+  do {
+    assumed = oldval;
+    oldval =
+        atomicCAS(address_as_ull,
+                  assumed,
+                  __double_as_longlong(__longlong_as_double(oldval) - value));
+  } while (assumed != oldval);
+  return __longlong_as_double(oldval);
+}
+#endif // __CUDA_ARCH__ < 600
 
 #elif defined(RAJA_USE_NO_ATOMICS)
 
-// Noting to do here...
+// Nothing to do here...
 
 #else
 
 #error one of the options for using/not using atomics must be specified
 
-#endif
+#endif //  defined(RAJA_USE_*ATOMIC*)
 
 }  // closing brace for RAJA namespace
 
@@ -569,6 +754,7 @@ __device__ inline double _atomicAdd(double *address, double value)
 //
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
+#include "RAJA/exec-cuda/Atomic_cuda.hxx"
 
 #if defined(__NVCC__)
 #include "RAJA/exec-cuda/scan_cuda.hxx"
