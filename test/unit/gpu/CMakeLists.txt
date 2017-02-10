@@ -83,3 +83,8 @@ if (NOT RAJA_ENABLE_CLANG_CUDA)
     SOURCES test-scan.cxx
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif ()
+
+raja_add_test(
+  NAME logger
+  SOURCES test-logger.cxx
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})

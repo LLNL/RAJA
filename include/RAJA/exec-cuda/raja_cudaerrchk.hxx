@@ -59,6 +59,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/ResourceHandler.hxx"
+
 #include <iostream>
 #include <string>
 
@@ -89,7 +91,12 @@ inline void cudaAssert(cudaError_t code,
   if (code != cudaSuccess) {
     fprintf(
         stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) exit(code);
+    cudaDeviceSynchronize(); // ignore probable error
+    check_logs();
+    if (abort && Internal::s_exit_enabled) {
+      ResourceHandler::getInstance().error_cleanup(RAJA::error::cuda);
+      exit(code);
+    }
   }
 }
 

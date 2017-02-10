@@ -46,6 +46,7 @@ set (raja_sources
   IndexSet.cxx
   ListSegment.cxx
   LockFreeIndexSetBuilders.cxx
+  Logger.cxx
   MemUtils_CPU.cxx
   MemUtils_CUDA.cxx
   RangeSegment.cxx

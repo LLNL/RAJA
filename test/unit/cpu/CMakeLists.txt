@@ -77,6 +77,11 @@ raja_add_test(
   SOURCES test-traversals.cxx
   DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
+raja_add_test(
+  NAME logger-tests
+  SOURCES test-logger.cxx
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
 if (NOT MSVC)
   raja_add_test(
     NAME reduction-tests

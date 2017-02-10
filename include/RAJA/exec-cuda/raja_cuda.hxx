@@ -145,7 +145,7 @@ using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-/// Reduction reduction policies
+/// Reduction  policies
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
@@ -162,6 +162,16 @@ using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
 ///
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Logger policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct cuda_logger {
+};
 
 
 //
@@ -569,6 +579,8 @@ __device__ inline double _atomicAdd(double *address, double value)
 //
 #include "RAJA/exec-cuda/forall_cuda.hxx"
 #include "RAJA/exec-cuda/reduce_cuda.hxx"
+
+#include "RAJA/exec-cuda/Logger_cuda.hxx"
 
 #if defined(__NVCC__)
 #include "RAJA/exec-cuda/scan_cuda.hxx"

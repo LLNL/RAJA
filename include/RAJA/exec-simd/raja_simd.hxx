@@ -86,7 +86,19 @@ struct simd_exec {
 ///
 
 //
-// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
+// NOTE: RAJA reductions in SIMD loops use seq_reduce policy
+//
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Logger policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+//
+// NOTE: RAJA logging in SIMD loops use seq_logging policy
 //
 
 #include "RAJA/exec-simd/forall_simd.hxx"

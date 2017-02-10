@@ -237,6 +237,27 @@ struct CudaReductionLocTallyType {
 /*!
  ******************************************************************************
  *
+ * \brief Type for counter that counts number of forall cuda kernel executions.
+ *
+ ******************************************************************************
+ */
+using kernelnum_type = unsigned int;
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Declaration of global variable with number of cuda kernel launches.
+ *
+ * Note: May be reset periodically.
+ *
+ ******************************************************************************
+ */
+extern kernelnum_type s_kernel_num;
+
+
+/*!
+ ******************************************************************************
+ *
  * \brief Get a valid reduction id, or complain and exit if no valid id is 
  *        available.
  *
