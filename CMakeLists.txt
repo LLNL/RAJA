@@ -81,6 +81,7 @@ include_directories(${PROJECT_BINARY_DIR}/include)
 
 include_directories(include)
 
+install(DIRECTORY cub/ DESTINATION cub PATTERN .* EXCLUDE)
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
 
