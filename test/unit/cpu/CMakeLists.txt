@@ -48,11 +48,6 @@ endif()
 raja_add_library(NAME bis SOURCES buildIndexSet.cxx)
 
 raja_add_test(
-  NAME CPUtraversal-test
-  SOURCES main-traversal.cxx
-  DEPENDS_ON bis)
-
-raja_add_test(
   NAME CPUreduce-test
   SOURCES main-reduce.cxx
   DEPENDS_ON bis)
