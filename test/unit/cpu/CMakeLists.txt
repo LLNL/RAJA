@@ -88,3 +88,8 @@ if (NOT MSVC)
       SOURCES test-scan.cxx
       DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif ()
+
+raja_add_test(
+  NAME forall-tests
+  SOURCES test-forall.cxx
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}) 
