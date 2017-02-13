@@ -54,7 +54,7 @@ endif()
 
 if (RAJA_ENABLE_TBB)
   find_library(TBB_LIBRARY NAMES tbb libtbb libtbb.so libtbb.a)
-  list(append RAJA_RT_LIBRARIES ${TBB_LIBRARY})
+  list(APPEND RAJA_RT_LIBRARIES ${TBB_LIBRARY})
 endif() #RAJA_ENABLE_TBB
 
 if (RAJA_ENABLE_CLANG_CUDA)
