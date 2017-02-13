@@ -59,9 +59,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 #include "RAJA/PolicyBase.hxx"
-#pragma omp declare target
 #include <omp.h>
-#pragma omp end declare target
 #include <iostream>
 #include <thread>
 
@@ -131,6 +129,7 @@ struct omp_reduce_ordered {
 
 #include "RAJA/exec-openmp/forall_openmp.hxx"
 #include "RAJA/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/exec-openmp/target_reduce_openmp.hxx"
 #include "RAJA/exec-openmp/scan_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)

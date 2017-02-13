@@ -71,7 +71,6 @@ namespace detail
 {
 namespace scan
 {
-
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
 {
@@ -111,6 +110,46 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 }
 
 /*!
+        \brief explicit inclusive inplace scan given range, function, and
+   initial value, running on target
+*/
+template <typename Iter, typename BinFn, typename ValueT>
+void inclusive_inplace(const ::RAJA::omp_target_parallel_for_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f,
+                       ValueT v)
+{
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  const int n = end - begin;
+  int ptmp;
+#pragma omp target parallel map(tofrom:ptmp)
+   {
+	ptmp = omp_get_max_threads();
+   }
+  const int p = ptmp;
+  ::std::vector<Value> sums(p, v);
+  
+  Value * sumsPtr = &sums[0];
+  
+#pragma omp target parallel map(to:n,p) map(tofrom:sumsPtr[0:n])
+  {
+    const int pid = omp_get_thread_num();
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
+    inclusive_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f, v);
+    sums[pid] = *(begin + i1 - 1);
+#pragma omp barrier
+#pragma omp single
+    exclusive_inplace(
+        ::RAJA::seq_exec{}, sumsPtr, sumsPtr + p, f, BinFn::identity);
+    for (int i = i0; i < i1; ++i) {
+      *(begin + i) = f(*(begin + i), sumsPtr[pid]);
+    }
+  }
+}
+
+/*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
@@ -145,11 +184,67 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 }
 
 /*!
+        \brief explicit exclusive inplace scan given range, function, and
+   initial value, version for running on target
+*/
+template <typename Iter, typename BinFn, typename ValueT>
+void exclusive_inplace(const ::RAJA::omp_target_parallel_for_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f,
+                       ValueT v)
+{
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  const int n = end - begin;
+  int ptmp;
+#pragma omp target parallel map(tofrom: ptmp)
+{
+	ptmp = omp_get_max_threads();
+}	
+  const int p = ptmp;
+  ::std::vector<Value> sums(p, v);
+  Value * sumsPtr = &sums[0];
+#pragma omp target parallel map(to:n, p) map(tofrom: sumsPtr[0:n] )
+  {
+    const int pid = omp_get_thread_num();
+    const int i0 = firstIndex(n, p, pid);
+    const int i1 = firstIndex(n, p, pid + 1);
+    const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
+#pragma omp barrier
+    exclusive_inplace(seq_exec{}, begin + i0, begin + i1, f, init);
+    sumsPtr[pid] = *(begin + i1 - 1);
+#pragma omp barrier
+#pragma omp single
+    exclusive_inplace(
+        seq_exec{}, sumsPtr, sumsPtr + p, f, BinFn::identity);
+    for (int i = i0; i < i1; ++i) {
+      *(begin + i) = f(*(begin + i), sumsPtr[pid]);
+    }
+  }
+}
+
+/*!
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
 template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
 void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f,
+               ValueT v)
+{
+  ::std::copy(begin, end, out);
+  inclusive_inplace(exec, out, out + (end - begin), f, v);
+}
+
+/*!
+        \brief explicit inclusive scan given input range, output, function, and
+   initial value, target version
+*/
+template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
+void inclusive(const ::RAJA::omp_target_parallel_for_exec& exec,
                Iter begin,
                Iter end,
                OutIter out,
@@ -176,10 +271,25 @@ void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
   exclusive_inplace(exec, out, out + (end - begin), f, v);
 }
 
+/*!
+        \brief explicit exclusive scan given input range, output, function, and
+   initial value, target_version
+*/
+template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
+void exclusive(const ::RAJA::omp_target_parallel_for_exec& exec,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f,
+               ValueT v)
+{
+  ::std::copy(begin, end, out);
+  exclusive_inplace(exec, out, out + (end - begin), f, v);
+}
+
 }  // namespace scan
 
 }  // namespace detail
 
 }  // namespace RAJA
-
 #endif

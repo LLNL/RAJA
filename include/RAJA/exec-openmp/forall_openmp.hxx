@@ -73,13 +73,13 @@
 #include <omp.h>
 #endif
 
-
 namespace RAJA
 {
 
 ///
 /// OpenMP parallel for policy implementation
 ///
+
 
 template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
@@ -96,12 +96,13 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
   }
 }
 }
-
-template <typename Iterable, typename InnerPolicy, typename Func>
-RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
+template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
+RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                                Iterable&& iter,
                                Index_type icount,
                                Func&& loop_body)
+{
+#pragma omp target if(OnDevice) 
 {
 #pragma omp parallel 
   { 
@@ -109,6 +110,7 @@ RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                                icount,
                                std::forward<Func>(body));
+  }
   }
 }
 
@@ -239,8 +241,12 @@ RAJA_INLINE void forall(
     LOOP_BODY loop_body)
 {
   if (!iset.dependencyGraphSet()) {
+#ifdef _OPENMP
+    printf("\n RAJA IndexSet dependency graph not set FILE: %s line: %d\n", __FILE__, __LINE__ );
+#else
     std::cerr << "\n RAJA IndexSet dependency graph not set , "
               << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+#endif
     exit(1);
   }
 
@@ -275,7 +281,6 @@ RAJA_INLINE void forall(
 }
 
 }  // closing brace for RAJA namespace
-
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

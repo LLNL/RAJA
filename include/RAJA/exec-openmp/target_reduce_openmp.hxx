@@ -9,10 +9,7 @@
  */
 
 #pragma omp declare target
-
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 namespace RAJA
 {
@@ -29,6 +26,15 @@ public:
   explicit ReduceMin(T init_val):
     parent(NULL), val(init_val)
   {
+        hostid = omp_get_initial_device();
+        devid  = omp_get_default_device();
+        is_mapped = false;
+        dev_val = (T *)omp_target_alloc( sizeof(T), devid );
+        if( dev_val == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_val, (void *)&val, sizeof(T), 0, 0, devid, hostid );
   }
 
   //
@@ -36,7 +42,7 @@ public:
   //
   ReduceMin(const ReduceMin<omp_target_reduce, T>& other):
     parent(other.parent ? other.parent : &other),
-    val(other.val)
+    val(other.val), dev_val(other.dev_val), hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped)
   {
   }
 
@@ -45,10 +51,11 @@ public:
   //
   ~ReduceMin<omp_target_reduce, T>()
   {
-    if (parent) {
+   if( !omp_is_initial_device() && omp_in_parallel() )
+    {
 #pragma omp critical
       {
-        parent->val = RAJA_MIN(parent->val, val);
+        *dev_val = RAJA_MIN(*dev_val, val);
       }
     }
   }
@@ -58,6 +65,11 @@ public:
   //
   operator T()
   {
+    if( !is_mapped ){
+        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_val, devid );
+        is_mapped = true;
+    }
     return val;
   }
 
@@ -72,7 +84,7 @@ public:
   //
   const ReduceMin<omp_target_reduce, T>& min(T rhs) const
   {
-    val = RAJA_MIN(val, rhs);
+    ptrToThis->val = RAJA_MIN(ptrToThis->val, rhs);
     return *this;
   }
 
@@ -88,6 +100,10 @@ private:
   ReduceMin<omp_target_reduce, T>();
 
   const my_type * parent;
+  my_type * ptrToThis = this;
+  mutable T * dev_val;
+  bool is_mapped;
+  int hostid, devid;
   mutable T val;
 };
 
@@ -112,15 +128,31 @@ public:
   explicit ReduceMinLoc(T init_val, Index_type init_loc):
     parent(NULL), val(init_val), idx(init_loc)
   {
-  }
+        hostid = omp_get_initial_device();
+        devid  = omp_get_default_device();
+        is_mapped = false;
+        dev_val = (T *)omp_target_alloc( sizeof(T), devid );
+        if( dev_val == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_val, (void *)&val, sizeof(T), 0, 0, devid, hostid );
+        dev_idx = (Index_type *)omp_target_alloc( sizeof(Index_type), devid );
+        if( dev_idx == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_idx, (void *)&idx, sizeof(Index_type), 0, 0, devid, hostid );
+ }
 
   //
   // Copy ctor.
   //
   ReduceMinLoc(const ReduceMinLoc<omp_target_reduce, T>& other):
     parent(other.parent ? other.parent : &other),
-    val(other.val),
-    idx(other.idx)
+    val(other.val), dev_val(other.dev_val),
+    idx(other.idx), dev_idx(other.dev_idx),
+    hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped)
   {
   }
 
@@ -130,10 +162,15 @@ public:
   //
   ~ReduceMinLoc<omp_target_reduce, T>()
   {
-    if (parent) {
+   if( !omp_is_initial_device() && omp_in_parallel() )
+    {
 #pragma omp critical
       {
-        parent->minloc(val, idx);
+        if( val < *dev_val )
+        {
+            *dev_val = val;
+            *dev_idx = idx;
+        }        
       }
     }
   }
@@ -143,6 +180,13 @@ public:
   //
   operator T()
   {
+    if( !is_mapped ){
+        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_val, devid );
+        omp_target_memcpy( (void*)&idx, (void*)dev_idx , sizeof(Index_type), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_idx, devid );
+        is_mapped = true;
+    }
     return val;
   }
 
@@ -156,6 +200,10 @@ public:
   //
   Index_type getLoc()
   {
+    if( !is_mapped )
+    {
+       T val = get();
+    }
     return idx;
   }
 
@@ -165,8 +213,8 @@ public:
   const ReduceMinLoc<omp_target_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
   {
     if (rhs < val) {
-      val = rhs;
-      idx = rhs_idx;
+      ptr2This->val = rhs;
+      ptr2This->idx = rhs_idx;
     }
     return *this;
   }
@@ -190,6 +238,13 @@ private:
 
   mutable T val;
   mutable Index_type idx;
+
+  my_type * ptr2This = this;
+  mutable T * dev_val;
+  mutable Index_type *dev_idx;
+  bool is_mapped;
+  int hostid, devid;
+  
 };
 
 /*!
@@ -213,6 +268,15 @@ public:
   explicit ReduceMax(T init_val):
     parent(NULL), val(init_val)
   {
+        hostid = omp_get_initial_device();
+        devid  = omp_get_default_device();
+        is_mapped = false;
+        dev_val = (T *)omp_target_alloc( sizeof(T), devid );
+        if( dev_val == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_val, (void *)&val, sizeof(T), 0, 0, devid, hostid );
   }
 
   //
@@ -220,7 +284,7 @@ public:
   //
   ReduceMax(const ReduceMax<omp_target_reduce, T>& other) :
     parent(other.parent ? other.parent : &other),
-    val(other.val)
+    val(other.val), dev_val(other.dev_val), hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped)
   {
   }
 
@@ -230,10 +294,11 @@ public:
   //
   ~ReduceMax<omp_target_reduce, T>()
   {
-    if (parent) {
+   if( !omp_is_initial_device() && omp_in_parallel() )
+    {
 #pragma omp critical
       {
-        parent->val = RAJA_MAX(parent->val, val);
+        *dev_val = RAJA_MAX(*dev_val, val);
       }
     }
   }
@@ -243,6 +308,11 @@ public:
   //
   operator T()
   {
+    if( !is_mapped ){
+        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_val, devid );
+        is_mapped = true;
+    }
     return val;
   }
 
@@ -256,7 +326,7 @@ public:
   //
   const ReduceMax<omp_target_reduce, T>& max(T rhs) const
   {
-    val = RAJA_MAX(val, rhs);
+    ptrToThis->val = RAJA_MAX(ptrToThis->val, rhs);
     return *this;
   }
 
@@ -273,9 +343,11 @@ private:
   ReduceMax<omp_target_reduce, T>();
 
   const my_type * parent;
-
-  mutable T val;
-};
+  my_type * ptrToThis = this;
+  mutable T * dev_val;
+  bool is_mapped;
+  int hostid, devid;
+  mutable T val;};
 
 /*!
  ******************************************************************************
@@ -298,6 +370,21 @@ public:
   explicit ReduceMaxLoc(T init_val, Index_type init_loc):
     parent(NULL), val(init_val), idx(init_loc)
   {
+        hostid = omp_get_initial_device();
+        devid  = omp_get_default_device();
+        is_mapped = false;
+        dev_val = (T *)omp_target_alloc( sizeof(T), devid );
+        if( dev_val == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_val, (void *)&val, sizeof(T), 0, 0, devid, hostid );
+        dev_idx = (Index_type *)omp_target_alloc( sizeof(Index_type), devid );
+        if( dev_idx == NULL ){
+                printf("Unable to allocate space on device\n" );
+                exit(1);
+        }
+        omp_target_memcpy( (void *)dev_idx, (void *)&idx, sizeof(Index_type), 0, 0, devid, hostid );
   }
 
   //
@@ -305,8 +392,9 @@ public:
   //
   ReduceMaxLoc(const ReduceMaxLoc<omp_target_reduce, T>& other):
     parent(other.parent ? other.parent : &other),
-    val(other.val),
-    idx(other.idx)
+    val(other.val), dev_val(other.dev_val),
+    idx(other.idx), dev_idx(other.dev_idx),
+    hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped)
   {
   }
 
@@ -316,10 +404,15 @@ public:
   //
   ~ReduceMaxLoc<omp_target_reduce, T>()
   {
-    if (parent) {
+   if( !omp_is_initial_device() && omp_in_parallel() )
+    {
 #pragma omp critical
       {
-        parent->maxloc(val, idx);
+        if( val > *dev_val )
+        {
+            *dev_val = val;
+            *dev_idx = idx;
+        }        
       }
     }
   }
@@ -329,6 +422,13 @@ public:
   //
   operator T()
   {
+    if( !is_mapped ){
+        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_val, devid );
+        omp_target_memcpy( (void*)&idx, (void*)dev_idx , sizeof(Index_type), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_idx, devid );
+        is_mapped = true;
+    }
     return val;
   }
 
@@ -342,6 +442,10 @@ public:
   //
   Index_type getLoc()
   {
+    if( !is_mapped )
+    {
+       T val = get();
+    }
     return idx;
   }
 
@@ -351,8 +455,8 @@ public:
   const ReduceMaxLoc<omp_target_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
   {
     if (rhs > val) {
-      val = rhs;
-      idx = rhs_idx;
+      ptr2This->val = rhs;
+      ptr2This->idx = rhs_idx;
     }
     return *this;
   }
@@ -376,6 +480,13 @@ private:
 
   mutable T val;
   mutable Index_type idx;
+  
+  my_type * ptr2This = this;
+  mutable T * dev_val;
+  mutable Index_type *dev_idx;
+  bool is_mapped;
+  int hostid, devid;
+
 };
 
 /*!
@@ -387,7 +498,6 @@ private:
  *
  ******************************************************************************
  */
-
 template <typename T>
 class ReduceSum<omp_target_reduce, T>
 {
@@ -402,15 +512,15 @@ public:
   {
 	hostid = omp_get_initial_device();
 	devid  = omp_get_default_device();
-	dev_val = new T;
 	is_mapped = false;
-	my_lev = 0;
         dev_val = (T *)omp_target_alloc( sizeof(T), devid );
 	if( dev_val == NULL ){
 		printf("Unable to allocate space on device\n" );
 		exit(1);
 	}
 	omp_target_memcpy( (void *)dev_val, (void *)&val, sizeof(T), 0, 0, devid, hostid );
+	
+	
   }
 
   //
@@ -421,7 +531,7 @@ public:
     val(other.custom_init),
     dev_val(other.dev_val),
     custom_init(other.custom_init),
-    is_mapped(other.is_mapped), my_lev(other.my_lev+1), hostid(other.hostid), devid(other.devid)
+    is_mapped(other.is_mapped), hostid(other.hostid), devid(other.devid)
   {
   }
 
@@ -432,7 +542,7 @@ public:
   ~ReduceSum<omp_target_reduce, T>()
   {
 
-   if( omp_in_parallel() && !omp_is_initial_device() )
+   if( !omp_is_initial_device() && omp_in_parallel() )
     { 
 #pragma omp critical
 	{
@@ -440,21 +550,18 @@ public:
 	}  
 
     }
-    if( my_lev==1 && !is_mapped && omp_is_initial_device() )
-    {
-        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
-        omp_target_free( (void*)dev_val, devid );	
-     }
-    if( my_lev == 0 )
-    {
-	delete dev_val;
-    }
   }  
   // 
   // Operator that returns reduced sum value.
   //
   operator T()
   {
+    if( !is_mapped ){
+        omp_target_memcpy( (void*)&val, (void*)dev_val , sizeof(T), 0, 0, hostid, devid );
+        omp_target_free( (void*)dev_val, devid );
+        is_mapped = true;
+   }
+ 
     return val;
   }
 
@@ -466,10 +573,11 @@ public:
   //
   // += operator that adds value to sum for current thread.
   //
-  const ReduceSum<omp_target_reduce, T>& operator+=(T rhs) const
+  const ReduceSum<omp_target_reduce, T>& operator+=(T rhs) const 
   {
-   this->val += rhs;
-   return *this;
+//  this->val += rhs;
+  ptr2This->val += rhs;
+  return *this;
   }
 
   ReduceSum<omp_target_reduce, T>& operator+=(T rhs)
@@ -484,15 +592,15 @@ private:
   //
   ReduceSum<omp_target_reduce, T>();
   const my_type * parent;
+  my_type * ptr2This = this;
   mutable T val;
   mutable T * dev_val;
   T custom_init;
   int hostid, devid;
   bool is_mapped;
-  mutable int my_lev;
 };
+
 
 } // end RAJA namespace
 
 #pragma omp end declare target
-

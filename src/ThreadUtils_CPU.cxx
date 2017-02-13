@@ -54,9 +54,7 @@
 #include "RAJA/ThreadUtils_CPU.hxx"
 
 #if defined(_OPENMP)
-#pragma omp declare target
 #include <omp.h>
-#pragma omp end declare target
 #endif
 
 #if defined(RAJA_ENABLE_CILK)

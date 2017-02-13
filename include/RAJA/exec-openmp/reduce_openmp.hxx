@@ -65,8 +65,6 @@
 
 #include "RAJA/MemUtils_CPU.hxx"
 
-#include "target_reduce_openmp.hxx"
-
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
