@@ -21,21 +21,6 @@ using namespace std;
 #include "Compare.hxx"
 #include "buildIndexSet.hxx"
 
-using forall_types = ::testing::Types<
-    std::tuple<seq_segit, seq_exec>,
-    std::tuple<seq_segit, simd_exec>
-#if defined(RAJA_ENABLE_OPENMP)    
-    ,std::tuple<seq_segit, omp_parallel_for_exec>,
-    std::tuple<omp_parallel_for_segit, seq_exec>,
-    std::tuple<omp_parallel_for_segit, simd_exec>
-#endif 
-#if defined(RAJA_ENABLE_CILK)
-    ,std::tuple<seq_segit, cilk_for_exec>,
-    std::tuple<cilk_for_segit, seq_exec>,
-    std::tuple<clik_for_segit, simd_exec>
-#endif
->;
-
 template <typename ISET_POLICY_T>
 class ForallTest : public ::testing::Test
 {
@@ -44,6 +29,9 @@ protected:
   Index_type alen;
   IndexSet iset;
   RAJAVec<Index_type> is_indices;
+  Real_ptr test_array;
+  Real_ptr ref_icount_array;
+  Real_ptr ref_forall_array;
   
   virtual void SetUp()
   {
@@ -57,88 +45,82 @@ protected:
       }
 
       getIndices(is_indices, iset);
+
+      test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+      ref_icount_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+      ref_forall_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+
+      for (Index_type i = 0; i < alen; ++i) {
+          test_array[i] = 0.0;
+          ref_forall_array[i] = 0.0;
+          ref_icount_array[i] = 0.0;
+      }
+
+      for (size_t i = 0; i < is_indices.size(); ++i) {
+          ref_forall_array[is_indices[i]] = in_array[is_indices[i]] * in_array[is_indices[i]];
+      }
+
+      for (size_t i = 0; i < is_indices.size(); ++i) {
+          ref_icount_array[i] = in_array[is_indices[i]] * in_array[is_indices[i]];
+      }
   }
 
   virtual void TearDown()
   {
-      free(in_array);
+      free_aligned(in_array);
+      free_aligned(test_array);
+      free_aligned(ref_icount_array);
+      free_aligned(ref_forall_array);
   }
-    
 };
 
 TYPED_TEST_CASE_P(ForallTest);
 
-TYPED_TEST_P(ForallTest, runBasicForallTest)
+TYPED_TEST_P(ForallTest, BasicForall)
 {
-    using Iset_Policy = typename std::tuple_element<0, TypeParam>::type;
-    using Execution_Policy = typename std::tuple_element<1, TypeParam>::type;
-    using ISET_POLICY_T = IndexSet::ExecPolicy<Iset_Policy, Execution_Policy>;
-    
-    Real_ptr in_array = this->in_array;
-    Index_type alen = this->alen;
-    IndexSet iset = this->iset;
-    RAJAVec<Index_type> is_indices = this->is_indices;
-
-    Real_ptr test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
-    Real_ptr ref_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
-
-    for (Index_type i = 0; i < alen; ++i) {
-        test_array[i] = 0.0;
-        ref_array[i] = 0.0;
-    }
-
-    for (size_t i = 0; i < is_indices.size(); ++i) {
-      ref_array[is_indices[i]] = in_array[is_indices[i]] * in_array[is_indices[i]];
-    }
-
-    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
-      test_array[idx] = in_array[idx] * in_array[idx];
+    forall<TypeParam>(this->iset, [=](Index_type idx) {
+      this->test_array[idx] = this->in_array[idx] * this->in_array[idx];
     });
 
-    for (Index_type i = 0; i < alen; ++i) {
-        EXPECT_EQ(ref_array[i], test_array[i]);
+    for (Index_type i = 0; i < this->alen; ++i) {
+        EXPECT_EQ(this->ref_forall_array[i], this->test_array[i]);
     }
-
-    free(test_array);
-    free(ref_array);
 }
 
-TYPED_TEST_P(ForallTest, runBasicForallIcountTest)
+TYPED_TEST_P(ForallTest, BasicForallIcount)
 {
-    using Iset_Policy = typename std::tuple_element<0, TypeParam>::type;
-    using Execution_Policy = typename std::tuple_element<1, TypeParam>::type;
-    using ISET_POLICY_T = IndexSet::ExecPolicy<Iset_Policy, Execution_Policy>;
-    
-    Real_ptr in_array = this->in_array;
-    Index_type alen = this->alen;
-    IndexSet iset = this->iset;
-    RAJAVec<Index_type> is_indices = this->is_indices;
-
-    Real_ptr test_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
-    Real_ptr ref_array = (Real_ptr) allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
-
-    for (Index_type i = 0; i < alen; ++i) {
-        test_array[i] = 0.0;
-        ref_array[i] = 0.0;
-    }
-
-    for (size_t i = 0; i < is_indices.size(); ++i) {
-      ref_array[i] = in_array[is_indices[i]] * in_array[is_indices[i]];
-    }
-
-    forall_Icount<ISET_POLICY_T>(iset, [=](Index_type icount, Index_type idx) {
-      test_array[icount] = in_array[idx] * in_array[idx];
+    forall_Icount<TypeParam>(this->iset, [=](Index_type icount, Index_type idx) {
+      this->test_array[icount] = this->in_array[idx] * this->in_array[idx];
     });
 
-    for (Index_type i = 0; i < alen; ++i) {
-        EXPECT_EQ(ref_array[i], test_array[i]);
+    for (Index_type i = 0; i < this->alen; ++i) {
+        EXPECT_EQ(this->ref_icount_array[i], this->test_array[i]);
     }
-
-    free(test_array);
-    free(ref_array);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ForallTest, runBasicForallTest, runBasicForallIcountTest);
+REGISTER_TYPED_TEST_CASE_P(ForallTest, BasicForall, BasicForallIcount);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ForallTests, ForallTest, forall_types);
+using SequentialTypes = ::testing::Types<
+    IndexSet::ExecPolicy<seq_segit, seq_exec>,
+    IndexSet::ExecPolicy<seq_segit, simd_exec> >;
 
+INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OpenMPTypes = ::testing::Types<
+    IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>,
+    IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>,
+    IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >;
+
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
+#endif
+
+#if defined(RAJA_ENABLE_CILK)
+using CilkTypes = ::testing::Types<
+    IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
+    IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
+    IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >;
+
+INSTANTIATE_TYPED_TEST_CASE_P(Cilk, ForallTest, CilkTypes);
+#endif
