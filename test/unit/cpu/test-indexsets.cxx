@@ -47,7 +47,7 @@ TEST_F(IndexSetTest, conditionalOperation_even_indices)
   });
 
   RAJA::RAJAVec<RAJA::Index_type> ref_even_indices;
-  for (RAJA::Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
       RAJA::Index_type idx = is_indices[i];
       if (idx % 2 == 0) {
           ref_even_indices.push_back(idx);
@@ -55,7 +55,7 @@ TEST_F(IndexSetTest, conditionalOperation_even_indices)
   }
 
   EXPECT_EQ(even_indices.size(), ref_even_indices.size());
-  for (RAJA::Index_type i = 0; i < ref_even_indices.size(); ++i) {
+  for (size_t i = 0; i < ref_even_indices.size(); ++i) {
       EXPECT_EQ(even_indices[i], ref_even_indices[i]);
   }
 }
@@ -68,7 +68,7 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
   });
 
   RAJA::RAJAVec<RAJA::Index_type> ref_lt300_indices;
-  for (RAJA::Index_type i = 0; i < is_indices.size(); ++i) {
+  for (size_t i = 0; i < is_indices.size(); ++i) {
       RAJA::Index_type idx = is_indices[i];
       if (idx < 300) {
           ref_lt300_indices.push_back(idx);
@@ -76,7 +76,7 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
   }
 
   EXPECT_EQ(lt300_indices.size(), ref_lt300_indices.size());
-  for (RAJA::Index_type i = 0; i < ref_lt300_indices.size(); ++i) {
+  for (size_t i = 0; i < ref_lt300_indices.size(); ++i) {
       EXPECT_EQ(lt300_indices[i], ref_lt300_indices[i]);
   }
 }

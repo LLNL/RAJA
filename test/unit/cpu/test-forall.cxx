@@ -87,7 +87,7 @@ TYPED_TEST_P(ForallTest, runBasicForallTest)
         ref_array[i] = 0.0;
     }
 
-    for (Index_type i = 0; i < is_indices.size(); ++i) {
+    for (size_t i = 0; i < is_indices.size(); ++i) {
       ref_array[is_indices[i]] = in_array[is_indices[i]] * in_array[is_indices[i]];
     }
 
@@ -122,7 +122,7 @@ TYPED_TEST_P(ForallTest, runBasicForallIcountTest)
         ref_array[i] = 0.0;
     }
 
-    for (Index_type i = 0; i < is_indices.size(); ++i) {
+    for (size_t i = 0; i < is_indices.size(); ++i) {
       ref_array[i] = in_array[is_indices[i]] * in_array[is_indices[i]];
     }
 
