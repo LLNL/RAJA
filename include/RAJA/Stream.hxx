@@ -1,6 +1,7 @@
 #ifndef RAJA_Stream_HXX
 #define RAJA_Stream_HXX
 
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // copyright (c) 2016, lawrence livermore national security, llc.
 //
@@ -45,6 +46,7 @@
 
 #include "RAJA/config.hxx"
 #include "RAJA/forall_generic.hxx"
+#include "RAJA/forall_context.hxx"
 
 #include "RAJA/int_datatypes.hxx"
 
@@ -59,6 +61,7 @@ class StreamPoolNoGPU {
 public:
   template<typename LB>
   void run(int stream_num, LB&& body){
+
     streams[stream_num].run(body);
   }
   void wait(int stream_num){
@@ -92,8 +95,58 @@ constexpr bool is_gpu_policy(omp_parallel_for_exec in){
 constexpr bool is_gpu_policy(seq_exec in){
   return false;
 }
+//TODO: forgive me Bjarne, for I have sinned
+template<typename InnerIter>
+struct iterWithStream {
+  InnerIter my_iter;
+  cudaStream_t stream;
+  //std::result_of<my_iter.begin()>::type begin(){
+  //  return my_iter.begin();
+  //}
+  //std::result_of<my_iter.end()>::type end(){
+  //  return my_iter.end();
+  //}
+  auto begin() -> decltype(my_iter.begin()){
+    return my_iter.begin();
+  }
+  auto end() -> decltype(my_iter.end()){
+    return my_iter.end();
+  }
+};
+template<typename wrappee>
+iterWithStream<wrappee> makeStreamIter(wrappee in, cudaStream_t stream){
+    iterWithStream<wrappee> out;
+    out.my_iter = in;
+    out.my_stream = stream;
+    return out;
+}
 class StreamPool {
 public:
+ 
+  template<typename Policy, typename LOOP_BODY, typename... Args>
+  typename std::enable_if<std::is_base_of<RAJA::cuda_exec_base,Policy>::value,void>::type safeCPUCall(LOOP_BODY body, Args... args){
+    //this function intentionally blank
+  }
+  template<typename Policy, typename LOOP_BODY, typename... Args>
+  typename std::enable_if<!std::is_base_of<RAJA::cuda_exec_base,Policy>::value,void>::type safeCPUCall(LOOP_BODY body, Args... args){
+    body(args...);
+  }
+  template<typename Policy, typename LOOP_BODY, typename... Args>
+  typename std::enable_if<std::is_base_of<RAJA::cuda_exec_base,Policy>::value,void>::type safeGPUCall(LOOP_BODY body, Args... args){
+    body(args...);
+  }
+  template<typename Policy, typename LOOP_BODY, typename... Args>
+  typename std::enable_if<!std::is_base_of<RAJA::cuda_exec_base,Policy>::value,void>::type safeGPUCall(LOOP_BODY body, Args... args){
+    //this function intentionally blank
+  }
+  template<typename Policy>
+  typename std::enable_if<std::is_base_of<RAJA::cuda_exec_base,Policy>::value,cudaStream_t>::type getPolicy(int stream_num){
+    return getGPUStream(stream_num);
+  }
+  template<typename Policy>
+  typename std::enable_if<!std::is_base_of<RAJA::cuda_exec_base,Policy>::value,cudaStream_t>::type getPolicy(int stream_num){
+    return NULL;
+  }
   enum ExecutionSpace{
     CPU,
     GPU
@@ -114,17 +167,27 @@ public:
     last_execution_space[stream_num] = next_space;
   }
   template <typename EXEC_POLICY_T, typename... Args>
-  RAJA_INLINE void forall(int stream_num, Args... args)
+  RAJA_INLINE typename std::enable_if<!std::is_base_of<cuda_exec_base,EXEC_POLICY_T>::value,void>::type forall(int stream_num, Args... args)
   {
-    ExecutionSpace last_space = last_execution_space[stream_num];
-    ExecutionSpace next_space = is_gpu_policy(EXEC_POLICY_T()) ? ExecutionSpace::GPU : ExecutionSpace::CPU;
-    std::cout<<"Running on "<<stream_num<<" on "<<(next_space==ExecutionSpace::GPU?"GPU":"CPU")<<"\n";
-    if((last_space == ExecutionSpace::GPU) && (next_space == ExecutionSpace::CPU)){
+    std::cout<<"Queueing forall on "<<stream_num<<" on CPU\n";
+    if(last_execution_space[stream_num] == ExecutionSpace::GPU){
       gpu_nonblocking_sync(stream_num);
-      std::cout<<"Waiting on "<<stream_num<<std::endl;
     }
-    RAJA::forall<EXEC_POLICY_T>(args...);
-    last_execution_space[stream_num] = next_space;
+    tbb_streams[stream_num].run([=](){
+      std::cout<<"Running forall on "<<stream_num<<" on CPU\n";
+      RAJA::forall<EXEC_POLICY_T>(args...);
+    });
+    last_execution_space[stream_num] = ExecutionSpace::CPU;
+  }
+  template <typename EXEC_POLICY_T, typename... Args>
+  RAJA_INLINE typename std::enable_if<std::is_base_of<cuda_exec_base,EXEC_POLICY_T>::value,void>::type forall(int stream_num, Args... args)
+  {
+    std::cout<<"Queueing forall on "<<stream_num<<" on CPU\n";
+    tbb_streams[stream_num].run([=](){
+      std::cout<<"Running forall on "<<stream_num<<" on GPU\n";
+      RAJA::runtime_context::forall(cuda_stream_exec<256>(getGPUStream(stream_num)),args...);
+    });
+    last_execution_space[stream_num] = ExecutionSpace::GPU;
   }
   const cudaStream_t getGPUStream(const int stream_num) const{
     return cuda_streams[stream_num];
@@ -151,11 +214,17 @@ public:
     last_execution_space = new ExecutionSpace[num_streams];
     cuda_streams = new cudaStream_t[num_streams]; 
     for(int i=0;i<num_streams;i++){
-      tbb_streams[i].run([=](){
+      //tbb_streams[i].run([=](){
         last_execution_space[i] = ExecutionSpace::CPU;
         cudaStreamCreate(&cuda_streams[i]);
-      });
+      //});
     }
+  }
+  ~StreamPool(){
+#ifndef __CUDA_ARCH__
+    cudaDeviceSynchronize();
+    std::cout<<"Synchronizing device\n";
+#endif
   }
 private:
   tbb::task_group* tbb_streams;  
