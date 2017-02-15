@@ -67,12 +67,10 @@ if(RAJA_ENABLE_OPENMP)
     SOURCES main-nested-reduce.cxx)
 endif()
 
-if(RAJA_ENABLE_TBB)
-  raja_add_test(
-    NAME CPUstream_mockup-test
-    SOURCES dnm_stream_mockup.cxx)
-  target_link_libraries(CPUstream_mockup-test.exe ${RAJA_RT_LIBRARIES})
-endif()
+raja_add_test(
+  NAME CPUstream_mockup-test
+  SOURCES dnm_stream_mockup.cxx)
+target_link_libraries(CPUstream_mockup-test.exe ${RAJA_RT_LIBRARIES})
 
 raja_add_test(
   NAME indexset-tests
