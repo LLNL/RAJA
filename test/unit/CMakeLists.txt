@@ -41,6 +41,12 @@
 #
 ###############################################################################
 
+raja_add_test(
+  NAME layout-test
+  SOURCES test-layout.cxx
+  DEPENDS_ON gtest gtest_main
+)
+
 add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)

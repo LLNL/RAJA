@@ -92,6 +92,7 @@
 // Multidimensional layouts and views.
 //
 #include "RAJA/foralln/Layout.hxx"
+#include "RAJA/foralln/OffsetLayout.hxx"
 #include "RAJA/foralln/View.hxx"
 
 //
