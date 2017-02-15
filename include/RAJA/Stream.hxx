@@ -122,7 +122,10 @@ iterWithStream<wrappee> makeStreamIter(wrappee in, cudaStream_t stream){
 }
 class StreamPool {
 public:
- 
+  template<typename LOOP_BODY>
+  void enqueueTask(int stream_num, LOOP_BODY body){
+     tbb_streams[stream_num].run(body);
+  } 
   template<typename Policy, typename LOOP_BODY, typename... Args>
   typename std::enable_if<std::is_base_of<RAJA::cuda_exec_base,Policy>::value,void>::type safeCPUCall(LOOP_BODY body, Args... args){
     //this function intentionally blank
@@ -152,7 +155,8 @@ public:
     GPU
   }; //TODO: can we have multiple GPUs per stream here? Also, more generally, it's not that simple
   void gpu_nonblocking_sync(int stream_num){
-     tbb_streams[stream_num].run([=](){
+     enqueue_tasks(stream_num,
+     [=](){
        cudaStreamSynchronize(cuda_streams[stream_num]);
      });
   }
@@ -189,7 +193,7 @@ public:
     });
     last_execution_space[stream_num] = ExecutionSpace::GPU;
   }
-  const cudaStream_t getGPUStream(const int stream_num) const{
+  cudaStream_t getGPUStream(const int stream_num) const{
     return cuda_streams[stream_num];
   }
   template <typename EXEC_POLICY_T, typename... Args>
