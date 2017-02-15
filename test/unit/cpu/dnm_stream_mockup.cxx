@@ -40,12 +40,12 @@ int main(){
        printf("CPU2 %i: %f, %f, %f\n",i,cpuA[splitPoint+5],cpuB[splitPoint+5],cpuC[splitPoint+5]);
     }
   });
-  dog_pool.run<RAJA::seq_exec>(0,[=](){
+  dog_pool.run<RAJA::seq_exec>(RAJA::StreamIndex(0),[=](){
     cudaMemcpyAsync(cpuC,gpuC,sizeof(float)*(splitPoint),cudaMemcpyDeviceToHost,dog_pool.getGPUStream(0));
   });
   dog_pool.wait(1);
   dog_pool.wait(0);
-  dog_pool.run<RAJA::seq_exec>(0,[=](){
+  dog_pool.run<RAJA::seq_exec>(RAJA::StreamIndex(0),[=](){
     printf("%f, %f, %f, %f, %f, %f\n",cpuC[0],cpuC[1],cpuC[2],cpuC[dataSize-3],cpuC[dataSize-2],cpuC[dataSize-1]);
   });
     printf("%f, %f, %f, %f, %f, %f\n",cpuC[0],cpuC[1],cpuC[2],cpuC[dataSize-3],cpuC[dataSize-2],cpuC[dataSize-1]);
