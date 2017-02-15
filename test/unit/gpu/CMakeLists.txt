@@ -60,6 +60,11 @@ raja_add_test(
   SOURCES ReduceSum.cxx)
 
 raja_add_test(
+  NAME CPUstream_mockup-test
+  SOURCES dnm_stream_mockup.cxx)
+target_link_libraries(stream_mockup-test.exe ${RAJA_RT_LIBRARIES})
+
+raja_add_test(
   NAME traversal
   SOURCES Traversal.cxx)
 

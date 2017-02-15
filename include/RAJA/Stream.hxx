@@ -177,6 +177,7 @@ public:
     });
     last_execution_space[stream_num] = ExecutionSpace::GPU;
   }
+
   cudaStream_t getGPUStream(const int stream_num) const{
     return cuda_streams[stream_num];
   }
