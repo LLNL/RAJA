@@ -69,9 +69,8 @@ struct View {
   {
   }
 
-  template <typename... Args>
   RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT&& layout)
-      : layout(layout)
+      : layout(layout), data(data_ptr)
   {
   }
 
