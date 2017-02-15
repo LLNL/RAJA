@@ -25,7 +25,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -211,7 +211,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -228,7 +228,7 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) <= m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -240,7 +240,7 @@ public:
   //
   ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const
   {
-    if (val <= static_cast<T>(m_blockdata[0])) {
+    if (val < static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
     }
@@ -407,7 +407,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -424,7 +424,7 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) >= m_reduced_val) {
+    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
       m_reduced_val = m_blockdata[0];
       m_reduced_idx = m_idxdata[0];
     }
@@ -436,7 +436,7 @@ public:
   //
   ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const
   {
-    if (val >= static_cast<T>(m_blockdata[0])) {
+    if (val > static_cast<T>(m_blockdata[0])) {
       m_blockdata[0] = val;
       m_idxdata[0] = idx;
     }

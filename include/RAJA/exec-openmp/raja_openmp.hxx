@@ -28,7 +28,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -116,6 +116,9 @@ struct omp_taskgraph_interval_segit {
 ///////////////////////////////////////////////////////////////////////
 ///
 struct omp_reduce {
+};
+
+struct omp_reduce_ordered {
 };
 
 }  // closing brace for RAJA namespace

@@ -1,6 +1,6 @@
 *******************************************************************************
 
-RAJA: ................................, version 0.1.0
+RAJA: ................................, version 0.2.3
 
 Copyright (c) 2016, Lawrence Livermore National Security, LLC. 
 Produced at the Lawrence Livermore National Laboratory.
@@ -22,6 +22,7 @@ Jason Burmark (burmark1@llnl.gov)
 Holger Jones (jones19@llnl.gov)
 Will Killian (killian4@llnl.gov)
 Adam Kunen (kunen1@llnl.gov)
+Olga Pearce (pearce8@llnl.gov)
 David Poliakoff (poliakoff1@llnl.gov)
 Tom Scogland (scogland1@llnl.gov)
 
