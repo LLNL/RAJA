@@ -98,7 +98,6 @@
 #include <iterator>
 #include <type_traits>
 
-
 namespace RAJA
 {
 
@@ -295,5 +294,4 @@ RAJA_INLINE void forall_Icount(const Index_type* idx,
 }
 
 }  // closing brace for RAJA namespace
-
 #endif  // closing endif for header file include guard

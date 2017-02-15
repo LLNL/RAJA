@@ -1,4 +1,5 @@
 *.pyc
 *.o
 *.exe
-
+build
+buildit

@@ -58,9 +58,7 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
 #include "RAJA/PolicyBase.hxx"
-
 #include <omp.h>
 #include <iostream>
 #include <thread>
@@ -79,13 +77,16 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-template <typename InnerPolicy>
+template <typename InnerPolicy, bool OnDevice=false>
 struct omp_parallel_exec {
 };
 struct omp_for_exec {
 };
 struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
 };
+struct omp_target_parallel_for_exec : public omp_parallel_exec<omp_for_exec,true> {
+};
+
 template <size_t ChunkSize>
 struct omp_for_static {
 };
@@ -118,6 +119,9 @@ struct omp_taskgraph_interval_segit {
 struct omp_reduce {
 };
 
+struct omp_target_reduce {
+};
+
 struct omp_reduce_ordered {
 };
 
@@ -125,6 +129,7 @@ struct omp_reduce_ordered {
 
 #include "RAJA/exec-openmp/forall_openmp.hxx"
 #include "RAJA/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/exec-openmp/target_reduce_openmp.hxx"
 #include "RAJA/exec-openmp/scan_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
