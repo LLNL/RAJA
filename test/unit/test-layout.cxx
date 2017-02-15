@@ -63,9 +63,9 @@ TEST(LayoutTest, 2D_IJ)
   ASSERT_EQ(0, layout(-1, -2));
 
   /*
-   * (0, -2) should be the second element.
+   * (0, -2) should be the second element??
    */
-  ASSERT_EQ(3, layout(0, -2));
+  ASSERT_EQ(1, layout(0, -2));
 
   /*
    * Last element, (1, 0), should have index 8.
