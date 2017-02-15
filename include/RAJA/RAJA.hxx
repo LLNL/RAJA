@@ -86,8 +86,6 @@
 //
 #include "RAJA/forall_generic.hxx"
 
-#if defined(RAJA_ENABLE_NESTED)
-
 //
 // Multidimensional layouts and views.
 //
@@ -95,6 +93,7 @@
 #include "RAJA/foralln/OffsetLayout.hxx"
 #include "RAJA/foralln/View.hxx"
 
+#if defined(RAJA_ENABLE_NESTED)
 //
 // Generic iteration templates for perfectly nested loops
 //
