@@ -41,11 +41,13 @@
 #
 ###############################################################################
 
-raja_add_test(
-  NAME layout-test
-  SOURCES test-layout.cxx
-  DEPENDS_ON gtest gtest_main
-)
+if (NOT MSVC)
+  raja_add_test(
+    NAME layout-test
+    SOURCES test-layout.cxx
+    DEPENDS_ON gtest gtest_main
+  )
+endif()
 
 add_subdirectory(cpu)
 
