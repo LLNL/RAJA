@@ -58,6 +58,7 @@ raja_add_library(
 install(TARGETS RAJA EXPORT RAJA
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
 )
 
 install(EXPORT RAJA DESTINATION share/raja/cmake/)
