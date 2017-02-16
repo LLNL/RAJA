@@ -1,10 +1,11 @@
 #include "gtest/gtest.h"
 #include "RAJA/RAJA.hxx"
 
+RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");
+
 TEST(LayoutTest, 1D)
 {
-  RAJA_INDEX_VALUE(TestIndex, "TestIndex");
-  using layout = RAJA::OffsetLayout<int, RAJA::PERM_I, TestIndex>;
+  using layout = RAJA::OffsetLayout<int, RAJA::PERM_I, TestIndex1D>;
 
   /*
    * Construct a 1D view with  with the following indices:
@@ -16,14 +17,14 @@ TEST(LayoutTest, 1D)
   /*
    * First element, 10, should have index 0.
    */
-  ASSERT_EQ(0, l(TestIndex(10)));
+  ASSERT_EQ(0, l(TestIndex1D(10)));
 
-  ASSERT_EQ(2, l(TestIndex(12)));
+  ASSERT_EQ(2, l(TestIndex1D(12)));
 
   /*
    * Last element, 14, should have index 5.
    */
-  ASSERT_EQ(4, l(TestIndex(14)));
+  ASSERT_EQ(4, l(TestIndex1D(14)));
 }
 
 TEST(LayoutTest, OffsetVsRegular)
