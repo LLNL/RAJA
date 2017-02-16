@@ -63,9 +63,9 @@ TEST(LayoutTest, 2D_IJ)
   ASSERT_EQ(0, layout(-1, -2));
 
   /*
-   * (0, -2) should be the second element??
+   * (0, -2) should have index 3.
    */
-  ASSERT_EQ(1, layout(0, -2));
+  ASSERT_EQ(3, layout(0, -2));
 
   /*
    * Last element, (1, 0), should have index 8.
@@ -92,7 +92,7 @@ TEST(LayoutTest, 2D_JI)
    */
   ASSERT_EQ(0, layout(-1, -2));
 
-  ASSERT_EQ(3, layout(-1, -1));
+  ASSERT_EQ(1, layout(-0, -2));
 
   /*
    * Last element, (1, 0), should have index 8.
@@ -106,6 +106,9 @@ TEST(LayoutTest, View)
 
   using layout = RAJA::OffsetLayout<int, RAJA::PERM_I, int>;
 
+  /*
+   * View is constructed by passing in the layout.
+   */
   RAJA::View<int, layout> view(data, layout({1}, {10}));
 
   for (int i = 0; i < 10; i++) {

@@ -122,7 +122,7 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>,
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IDs... indices) const
   {
     return convertIndex<IdxLin>(VarOps::sum<Index_type>(
-          ((convertIndex<Index_type>(indices) - offsets[PermInts]) 
+          ((convertIndex<Index_type>(indices) - offsets[RangeInts])
            * strides[RangeInts])...));
   }
 };
