@@ -155,6 +155,25 @@ public:
   ///
   size_t size() const { return m_size; }
 
+  RAJA_INLINE
+  void resize(size_t new_size){
+    grow_cap(new_size);
+    m_size = new_size;
+  }
+
+  RAJA_INLINE
+  void resize(size_t new_size, T const &new_value){
+    grow_cap(new_size);
+
+    if(new_size > m_size){
+      for(size_t i = m_size;i < new_size;++ i){
+        m_data[i] = new_value;
+      }
+    }
+
+    m_size = new_size;
+  }
+
   ///
   /// Const bracket operator.
   ///

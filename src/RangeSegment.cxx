@@ -71,6 +71,13 @@ void RangeSegment::print(std::ostream& os) const
      << " : begin, end = " << m_begin << ", " << m_end << std::endl;
 }
 
+std::ostream& operator<<(std::ostream& os, const RangeSegment& rs) {
+  rs.print(os);
+  return os;
+}
+
+
+
 /*
 *************************************************************************
 *

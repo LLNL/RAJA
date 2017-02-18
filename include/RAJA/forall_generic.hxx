@@ -296,4 +296,27 @@ RAJA_INLINE void forall_Icount(const Index_type* idx,
 
 }  // closing brace for RAJA namespace
 
+
+/*!
+******************************************************************************
+*
+* \brief Generic iteration over arbitrary index set or segment.
+*
+******************************************************************************
+*/
+
+
+struct CallForall {
+
+  template<typename T, typename EXEC_POL, typename BODY>
+  RAJA_INLINE
+  void operator()(T const &segment, EXEC_POL, BODY body) const {
+    RAJA::forall<EXEC_POL>(segment, body);
+  }
+
+};
+
+
+
+
 #endif  // closing endif for header file include guard

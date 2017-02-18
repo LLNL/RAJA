@@ -202,6 +202,30 @@ RAJA_INLINE void forall(
                           makeRangeListExecutor<SEG_EXEC_POLICY_T>(loop_body));
 }
 
+/*!
+ ******************************************************************************
+ *
+ * \brief  BasicIndexSet version
+ *
+ ******************************************************************************
+ */
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename ... SEG_TYPES,
+          typename LOOP_BODY>
+RAJA_INLINE void forall(
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const BasicIndexSet<SEG_TYPES ...>& iset,
+    LOOP_BODY loop_body)
+{
+  forall(SEG_IT_POLICY_T(),iset,
+         [=](int segID){ iset.segmentCall(segID, CallForall(),
+                                          SEG_EXEC_POLICY_T(),
+                                          loop_body); });
+
+}
+
+
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 struct rangeListIcountExecutor {
   constexpr rangeListIcountExecutor(LOOP_BODY&& body) : body(body) {}
