@@ -65,8 +65,7 @@
 
 #include "RAJA/internal/defines.hxx"
 
-#include "RAJA/internal/int_datatypes.hxx"
-#include "RAJA/internal/real_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/operators.hxx"
 #include "RAJA/reducers.hxx"

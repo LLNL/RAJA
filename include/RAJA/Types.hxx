@@ -3,23 +3,15 @@
  *
  * \file
  *
- * \brief   Header file for RAJA floating point scalar and pointer types.
- *
- *          This file contains compiler-specific type definitions for scalars
- *          and data pointers used in RAJA code.
- *
- *          Note that some of these things depend on the contents of the
- *          RAJA_config.hxx header.  Others can be controlled by editing
- *          the RAJA_rules.mk file or specified using "-D" definitionsa
- *          directly on the compile-line.
+ * \brief   Header file for RAJA type definitions.
  *
  *          Definitions in this file will propagate to all RAJA header files.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_real_datatypes_HXX
-#define RAJA_real_datatypes_HXX
+#ifndef RAJA_Types_HXX
+#define RAJA_Types_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -71,6 +63,33 @@
 
 namespace RAJA
 {
+
+///
+/// Enum describing index set types.
+///
+enum SegmentType {
+  _RangeSeg_,
+  _RangeStrideSeg_,
+  _ListSeg_,
+  _UnknownSeg_  // Keep last; used for default in case stmts
+};
+
+///
+/// Enumeration used to indicate whether IndexSet objects own data
+/// representing their indices.
+///
+enum IndexOwnership { Unowned, Owned };
+
+///
+/// Type use for all loop indexing in RAJA constructs.
+///
+typedef int Index_type;
+
+///
+/// Integer value for undefined indices and other integer values.
+/// Although this is a magic value, it avoids sprinkling them throughout code.
+///
+const int UndefinedValue = -9999999;
 
 /*!
  ******************************************************************************
