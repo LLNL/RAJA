@@ -60,7 +60,7 @@
 
 #include <cassert>
 
-#include "RAJA/internal/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/internal/exec-cuda/MemUtils_CUDA.hxx"
 

@@ -59,7 +59,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/internal/fault_tolerance.hxx"
 

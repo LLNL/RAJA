@@ -60,7 +60,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/fault_tolerance.hxx"
 

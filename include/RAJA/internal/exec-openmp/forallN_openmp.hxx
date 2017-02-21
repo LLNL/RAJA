@@ -57,7 +57,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>

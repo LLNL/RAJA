@@ -73,7 +73,7 @@
 //
 // Strongly typed index class.
 //
-#include "RAJA/internal/IndexValue.hxx"
+#include "RAJA/IndexValue.hxx"
 
 //
 // Generic iteration templates require specializations defined

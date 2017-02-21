@@ -53,7 +53,7 @@
 
 #include "RAJA/internal/MemUtils_CPU.hxx"
 
-#include "RAJA/internal/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/reducers.hxx"
 

@@ -43,7 +43,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 #include "RAJA/internal/defines.hxx"
 
 #include <type_traits>

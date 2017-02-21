@@ -50,7 +50,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ListSegment.hxx"
+#include "RAJA/ListSegment.hxx"
 
 #include <iostream>
 #include <string>
