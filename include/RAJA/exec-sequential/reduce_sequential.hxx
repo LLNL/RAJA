@@ -85,8 +85,8 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val) :
-    parent(NULL), val(init_val)
+  explicit ReduceMin(T init_m_val) :
+    m_parent(NULL), m_val(init_m_val)
   {
   }
 
@@ -94,8 +94,8 @@ public:
   // Copy ctor.
   //
   ReduceMin(const ReduceMin<seq_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
   }
 
@@ -105,8 +105,8 @@ public:
   //
   ~ReduceMin<seq_reduce, T>()
   {
-    if (parent) {
-      parent->min(val);
+    if (m_parent) {
+      m_parent->min(m_val);
     }
   }
 
@@ -115,7 +115,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -128,13 +128,13 @@ public:
   //
   ReduceMin<seq_reduce, T>& min(T rhs)
   {
-    val = RAJA_MIN(val, rhs);
+    m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
   const ReduceMin<seq_reduce, T>& min(T rhs) const
   {
-    val = RAJA_MIN(val, rhs);
+    m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
@@ -144,8 +144,8 @@ private:
   //
   ReduceMin<seq_reduce, T>();
 
-  const my_type * parent;
-  mutable T val;
+  const my_type * m_parent;
+  mutable T m_val;
 };
 
 /*!
@@ -166,8 +166,8 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc) :
-    parent(NULL), val(init_val), loc(init_loc)
+  explicit ReduceMinLoc(T init_m_val, Index_type init_loc) :
+    m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
   }
 
@@ -175,8 +175,8 @@ public:
   // Copy ctor.
   //
   ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val),
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
     loc(other.loc)
   {
   }
@@ -187,8 +187,8 @@ public:
   //
   ~ReduceMinLoc<seq_reduce, T>()
   {
-    if (parent) {
-      parent->minloc(val, loc);
+    if (m_parent) {
+      m_parent->minloc(m_val, loc);
     }
   }
 
@@ -197,7 +197,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -214,12 +214,12 @@ public:
   }
 
   //
-  // Method that updates min and index values.
+  // Method that updates min and index value.
   //
   ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx)
   {
-    if (rhs < val) {
-      val = rhs;
+    if (rhs < m_val) {
+      m_val = rhs;
       loc = idx;
     }
     return *this;
@@ -227,8 +227,8 @@ public:
 
   const ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx) const
   {
-    if (rhs < val) {
-      val = rhs;
+    if (rhs < m_val) {
+      m_val = rhs;
       loc = idx;
     }
     return *this;
@@ -240,9 +240,9 @@ private:
   //
   ReduceMinLoc<seq_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
+  mutable T m_val;
   mutable Index_type loc;
 };
 
@@ -264,9 +264,9 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val) :
-    parent(NULL),
-    val(init_val)
+  explicit ReduceMax(T init_m_val) :
+    m_parent(NULL),
+    m_val(init_m_val)
   {
   }
 
@@ -274,8 +274,8 @@ public:
   // Copy ctor.
   //
   ReduceMax(const ReduceMax<seq_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
   }
 
@@ -285,8 +285,8 @@ public:
   //
   ~ReduceMax<seq_reduce, T>()
   {
-    if (parent) {
-      parent->max(val);
+    if (m_parent) {
+      m_parent->max(m_val);
     }
   }
 
@@ -295,7 +295,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -308,13 +308,13 @@ public:
   //
   ReduceMax<seq_reduce, T>& max(T rhs)
   {
-    val = RAJA_MAX(rhs, val);
+    m_val = RAJA_MAX(rhs, m_val);
     return *this;
   }
 
   const ReduceMax<seq_reduce, T>& max(T rhs) const
   {
-    val = RAJA_MAX(rhs, val);
+    m_val = RAJA_MAX(rhs, m_val);
     return *this;
   }
 
@@ -324,9 +324,9 @@ private:
   //
   ReduceMax<seq_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
+  mutable T m_val;
 };
 
 /*!
@@ -347,9 +347,9 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc) :
-    parent(NULL),
-    val(init_val),
+  explicit ReduceMaxLoc(T init_m_val, Index_type init_loc) :
+    m_parent(NULL),
+    m_val(init_m_val),
     loc(init_loc)
   {
   }
@@ -358,8 +358,8 @@ public:
   // Copy ctor.
   //
   ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val),
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
     loc(other.loc)
   {
   }
@@ -370,8 +370,8 @@ public:
   //
   ~ReduceMaxLoc<seq_reduce, T>()
   {
-    if (parent) {
-      parent->maxloc(val, loc);
+    if (m_parent) {
+      m_parent->maxloc(m_val, loc);
     }
   }
 
@@ -380,7 +380,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -397,12 +397,12 @@ public:
   }
 
   //
-  // Method that updates max and index values.
+  // Method that updates max and index value.
   //
   ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx)
   {
-    if (rhs > val) {
-      val = rhs;
+    if (rhs > m_val) {
+      m_val = rhs;
       loc = idx;
     }
     return *this;
@@ -410,8 +410,8 @@ public:
 
   const ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx) const
   {
-    if (rhs > val) {
-      val = rhs;
+    if (rhs > m_val) {
+      m_val = rhs;
       loc = idx;
     }
     return *this;
@@ -423,9 +423,9 @@ private:
   //
   ReduceMaxLoc<seq_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
+  mutable T m_val;
   mutable Index_type loc;
 };
 
@@ -447,9 +447,10 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val) :
-    parent(NULL),
-    val(init_val)
+  explicit ReduceSum(T init_m_val, T initializer = 0) :
+    m_parent(NULL),
+    m_val(init_m_val),
+    m_custom_init(initializer)
   {
   }
 
@@ -457,8 +458,9 @@ public:
   // Copy ctor.
   //
   ReduceSum(const ReduceSum<seq_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val),
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_custom_init),
+    m_custom_init(other.m_custom_init)
   {
   }
 
@@ -468,8 +470,8 @@ public:
   //
   ~ReduceSum<seq_reduce, T>()
   {
-    if (parent) {
-      *parent += val;
+    if (m_parent) {
+      *m_parent += m_val;
     }
   }
 
@@ -478,7 +480,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -491,13 +493,13 @@ public:
   //
   ReduceSum<seq_reduce, T>& operator+=(T rhs)
   {
-    this->val += rhs;
+    this->m_val += rhs;
     return *this;
   }
 
   const ReduceSum<seq_reduce, T>& operator+=(T rhs) const
   {
-    this->val += rhs;
+    this->m_val += rhs;
     return *this;
   }
 
@@ -507,9 +509,10 @@ private:
   //
   ReduceSum<seq_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
+  mutable T m_val;
+  T m_custom_init;
 };
 
 }  // closing brace for RAJA namespace
