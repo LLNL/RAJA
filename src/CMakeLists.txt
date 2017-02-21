@@ -40,57 +40,25 @@
 # 
 ###############################################################################
 
-if (RAJA_ENABLE_CUDA)
-  set_source_files_properties(
-      AlignedRangeIndexSetBuilders.cxx
-      DepGraphNode.cxx
-      IndexSet.cxx
-      ListSegment.cxx
-      LockFreeIndexSetBuilders.cxx
-      MemUtils_CPU.cxx
-      MemUtils_CUDA.cxx
-      RangeSegment.cxx
-      ThreadUtils_CPU.cxx
-      PROPERTIES
-      CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+set (raja_sources 
+  AlignedRangeIndexSetBuilders.cxx
+  DepGraphNode.cxx
+  IndexSet.cxx
+  ListSegment.cxx
+  LockFreeIndexSetBuilders.cxx
+  MemUtils_CPU.cxx
+  MemUtils_CUDA.cxx
+  RangeSegment.cxx
+  ThreadUtils_CPU.cxx)
 
-  cuda_add_library(RAJA
-      AlignedRangeIndexSetBuilders.cxx
-      DepGraphNode.cxx
-      IndexSet.cxx
-      ListSegment.cxx
-      LockFreeIndexSetBuilders.cxx
-      MemUtils_CPU.cxx
-      MemUtils_CUDA.cxx
-      RangeSegment.cxx
-      ThreadUtils_CPU.cxx
-    )
-else()
-  add_library(RAJA
-      AlignedRangeIndexSetBuilders.cxx
-      DepGraphNode.cxx
-      IndexSet.cxx
-      ListSegment.cxx
-      LockFreeIndexSetBuilders.cxx
-      MemUtils_CPU.cxx
-      MemUtils_CUDA.cxx
-      RangeSegment.cxx
-      ThreadUtils_CPU.cxx
-    )
-endif()
-
-if (NOT CMAKE_CXX_COMPILER_ID MATCHES Intel)
-  set_target_properties(RAJA
-    PROPERTIES
-    CXX_STANDARD 11
-    CXX_STANDARD_REQUIRED YES
-  )
-endif()
+raja_add_library(
+  NAME RAJA
+  SOURCES ${raja_sources})
 
 install(TARGETS RAJA EXPORT RAJA
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
 )
 
-install(EXPORT RAJA 
-  DESTINATION share/raja/cmake/)
+install(EXPORT RAJA DESTINATION share/raja/cmake/)
