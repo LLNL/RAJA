@@ -69,6 +69,11 @@ struct View {
   {
   }
 
+  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT&& layout)
+      : layout(layout), data(data_ptr)
+  {
+  }
+
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>

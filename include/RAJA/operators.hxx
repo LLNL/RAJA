@@ -61,6 +61,7 @@
 
 #include <cfloat>
 #include <cstdint>
+#include <limits>
 #include <type_traits>
 
 namespace RAJA
@@ -244,103 +245,12 @@ namespace constants
 template <typename T>
 RAJA_HOST_DEVICE constexpr T min()
 {
-  return 0;
-};
-template <>
-RAJA_HOST_DEVICE constexpr int16_t min<int16_t>()
-{
-  return 0xFFFF;
+  return std::numeric_limits<T>::min();
 }
-template <>
-RAJA_HOST_DEVICE constexpr uint16_t min<uint16_t>()
-{
-  return 0x0000;
-}
-template <>
-RAJA_HOST_DEVICE constexpr int32_t min<int32_t>()
-{
-  return 0xFFFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr uint32_t min<uint32_t>()
-{
-  return 0x00000000;
-}
-template <>
-RAJA_HOST_DEVICE constexpr int64_t min<int64_t>()
-{
-  return 0xFFFFFFFFFFFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr uint64_t min<uint64_t>()
-{
-  return 0x0000000000000000;
-}
-template <>
-RAJA_HOST_DEVICE constexpr float min<float>()
-{
-  return -FLT_MAX;
-}
-template <>
-RAJA_HOST_DEVICE constexpr double min<double>()
-{
-  return -DBL_MAX;
-}
-template <>
-RAJA_HOST_DEVICE constexpr long double min<long double>()
-{
-  return -LDBL_MAX;
-}
-
 template <typename T>
 RAJA_HOST_DEVICE constexpr T max()
 {
-  return 0;
-};
-template <>
-RAJA_HOST_DEVICE constexpr int16_t max<int16_t>()
-{
-  return 0x7FFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr uint16_t max<uint16_t>()
-{
-  return 0xFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr int32_t max<int32_t>()
-{
-  return 0x7FFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr uint32_t max<uint32_t>()
-{
-  return 0xFFFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr int64_t max<int64_t>()
-{
-  return 0x7FFFFFFFFFFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr uint64_t max<uint64_t>()
-{
-  return 0xFFFFFFFFFFFFFFFF;
-}
-template <>
-RAJA_HOST_DEVICE constexpr float max<float>()
-{
-  return FLT_MAX;
-}
-template <>
-RAJA_HOST_DEVICE constexpr double max<double>()
-{
-  return DBL_MAX;
-}
-template <>
-RAJA_HOST_DEVICE constexpr long double max<long double>()
-{
-  return LDBL_MAX;
+  return std::numeric_limits<T>::max();
 }
 
 }  // closing brace for constants namespace
