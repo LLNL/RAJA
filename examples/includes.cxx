@@ -3,7 +3,7 @@
 #include "RAJA/forall.hxx"
 #include "RAJA/sequential.hxx"
 
-int main(int argc, char* argv[])
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
   typedef RAJA::seq_exec execute_policy;
 
