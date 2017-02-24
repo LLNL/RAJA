@@ -79,7 +79,7 @@ namespace RAJA
 class BGQTimer
 {
   using TimeType = timeval;
-  using Duration = double;
+  using Duration = long double;
 
 public:
   BGQTimer() : tstart(), tstop(), telapsed(0) {}
@@ -91,7 +91,7 @@ public:
                  + std::chrono::microseconds(tstart.tv_usec);
     auto stop = std::chrono::seconds(tstop.tv_sec)
                 + std::chrono::microseconds(tstop.tv_usec);
-    telapsed += std::chrono::duration<double>(stop - start).count();
+    telapsed += std::chrono::duration<long double>(stop - start).count();
   }
 
   Duration elapsed() { return telapsed; }
@@ -124,7 +124,7 @@ class ChronoTimer
 {
   using clock = std::chrono::steady_clock;
   using TimeType = clock::time_point;
-  using Duration = std::chrono::duration<double>;
+  using Duration = std::chrono::duration<long double>;
 
 public:
   ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0) {}
