@@ -91,7 +91,7 @@ public:
                  + std::chrono::microseconds(tstart.tv_usec);
     auto stop = std::chrono::seconds(tstop.tv_sec)
                 + std::chrono::microseconds(tstop.tv_usec);
-    telapsed += std::chrono::duration<long double>(stop - start).count();
+    telapsed += std::chrono::duration<Duration>(stop - start).count();
   }
 
   Duration elapsed() { return telapsed; }
