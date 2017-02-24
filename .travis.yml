@@ -13,6 +13,7 @@ matrix:
            - g++-4.9
      env: COMPILER=g++-4.9
          - WARN="-DRAJA_ENABLE_WARNINGS=On"
+         - EXAMPLES="-DRAJA_ENABLE_APPLICATIONS=On"
    - compiler: gcc-5
      addons:
        apt:
@@ -76,6 +77,6 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN ../
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $EXAMPLES ../
   - make -j
   - make test # currently does nothing, this is how testing should be done
