@@ -3,8 +3,9 @@
  *
  * \file
  *
- * \brief   RAJA header file for simple classes that can be used to
- *          time code sections.
+ * \brief   RAJA header file for simple classes for timing code sections.
+ *
+ * There are multiple timer classes to deal with platform indiosyncracies.
  *
  ******************************************************************************
  */
@@ -61,6 +62,7 @@
 #include <caliper/Annotation.h>
 #endif
 
+
 // libstdc++ on BGQ only has gettimeofday for some reason
 #if defined(__bgq__) && (!defined(_LIBCPP_VERSION))
 
@@ -72,14 +74,18 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief  Simple timer class to time code sections.
+ * \brief  Timer class for BG/Q that uses gettimeofday since full std::chrono
+ *         functionality is not supported.
+ *
+ *         Generates elapsed time in seconds.
  *
  ******************************************************************************
  */
 class BGQTimer
 {
+  using ElapsedType = double;
   using TimeType = timeval;
-  using Duration = long double;
+  using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
   BGQTimer() : tstart(), tstop(), telapsed(0) {}
@@ -91,21 +97,22 @@ public:
                  + std::chrono::microseconds(tstart.tv_usec);
     auto stop = std::chrono::seconds(tstop.tv_sec)
                 + std::chrono::microseconds(tstop.tv_usec);
-    telapsed += std::chrono::duration<Duration>(stop - start).count();
+    telapsed += DurationType(stop - start).count();
   }
 
-  Duration elapsed() { return telapsed; }
+  ElapsedType elapsed() { return telapsed; }
 
   void reset() { telapsed = 0; }
 
 private:
   TimeType tstart;
   TimeType tstop;
-  Duration telapsed;
+  ElapsedType telapsed;
 };
 
 using TimerBase = BGQTimer;
-}
+}  // closing brace for RAJA namespace
+
 
 #elif defined(RAJA_USE_CHRONO)
 
@@ -116,37 +123,42 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief  Simple timer class to time code sections.
+ * \brief  Timer class that uses std::chrono.
+ *
+ *         Generates elapsed time in seconds.
  *
  ******************************************************************************
  */
 class ChronoTimer
 {
-  using clock = std::chrono::steady_clock;
-  using TimeType = clock::time_point;
-  using Duration = std::chrono::duration<long double>;
+  using ElapsedType = double;
+  using ClockType = std::chrono::steady_clock;
+  using TimeType = ClockType::time_point;
+  using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
-  ChronoTimer() : tstart(clock::now()), tstop(clock::now()), telapsed(0) {}
-  void start() { tstart = clock::now(); }
+  ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), 
+                  telapsed(0) {}
+  void start() { tstart = ClockType::now(); }
   void stop()
   {
-    tstop = clock::now();
-    telapsed += tstop - tstart;
+    tstop = ClockType::now();
+    telapsed += std::chrono::duration_cast<DurationType>(tstop - tstart).count();
   }
 
-  Duration::rep elapsed() { return telapsed.count(); }
+  ElapsedType elapsed() { return telapsed; }
 
-  void reset() { telapsed = Duration(0); } 
+  void reset() { telapsed = 0; }
 
 private:
   TimeType tstart;
   TimeType tstop;
-  Duration telapsed;
+  ElapsedType telapsed;
 };
 
 using TimerBase = ChronoTimer;
-}
+}  // closing brace for RAJA namespace
+
 
 #elif defined(RAJA_USE_GETTIME)
 
@@ -154,17 +166,20 @@ using TimerBase = ChronoTimer;
 
 namespace RAJA
 {
-typedef timespec TimeType;
-
 /*!
  ******************************************************************************
  *
- * \brief  Simple timer class to time code sections.
+ * \brief  Timer class that uses std::chrono.
+ *
+ *         Generates elapsed time in seconds.
  *
  ******************************************************************************
  */
 class GettimeTimer
 {
+  using ElapsedType = double;
+  using TimeType = timespec;
+
 public:
   GettimeTimer() : telapsed(0), stime_elapsed(0), nstime_elapsed(0) { ; }
   void start() { clock_gettime(CLOCK_MONOTONIC, &tstart); }
@@ -174,67 +189,27 @@ public:
     set_elapsed();
   }
 
-  long double elapsed() { return (stime_elapsed + nstime_elapsed); }
+  ElapsedType elapsed() { return (stime_elapsed + nstime_elapsed); }
 
   void reset() { stime_elapsed = 0; nstime_elapsed = 0; }
 
 private:
   TimeType tstart;
   TimeType tstop;
-  long double telapsed;
+  ElasedType telapsed;
 
-  long double stime_elapsed;
-  long double nstime_elapsed;
+  ElapsedType stime_elapsed;
+  ElapsedType nstime_elapsed;
 
   void set_elapsed()
   {
-    stime_elapsed += static_cast<long double>(tstop.tv_sec - tstart.tv_sec);
+    stime_elapsed += static_cast<ElapsedType>(tstop.tv_sec - tstart.tv_sec);
     nstime_elapsed +=
-        static_cast<long double>(tstop.tv_nsec - tstart.tv_nsec) / 1000000000.0;
+        static_cast<ElapsedType>(tstop.tv_nsec - tstart.tv_nsec) / 1000000000.0;
   }
 };
 
 using TimerBase = GettimeTimer;
-}  // closing brace for RAJA namespace
-
-#elif defined(RAJA_USE_CYCLE)
-
-#include "./cycle.h"
-namespace RAJA
-{
-typedef ticks TimeType;
-
-/*!
- ******************************************************************************
- *
- * \brief  Simple timer class to time code sections.
- *
- ******************************************************************************
- */
-class CycleTimer
-{
-public:
-  CycleTimer() : telapsed(0) { ; }
-  void start() { tstart = getticks(); }
-  void stop()
-  {
-    tstop = getticks();
-    set_elapsed();
-  }
-
-  long double elapsed() { return static_cast<long double>(telapsed); }
-
-  void reset() { telapsed = 0; }
-
-private:
-  TimeType tstart;
-  TimeType tstop;
-  long double telapsed;
-
-  void set_elapsed() { telapsed += (tstop - tstart); }
-};
-
-using TimerBase = CycleTimer;
 }  // closing brace for RAJA namespace
 
 #elif defined(RAJA_USE_CLOCK)
@@ -242,17 +217,21 @@ using TimerBase = CycleTimer;
 #include <time.h>
 namespace RAJA
 {
-typedef clock_t TimeType;
 
 /*!
  ******************************************************************************
  *
- * \brief  Simple timer class to time code sections.
+ * \brief  Timer class that uses clock_t.
+ *
+ *         Generates elapsed time in seconds.
  *
  ******************************************************************************
  */
 class ClockTimer
 {
+  using ElapsedType = double;
+  using TimeType = clock_t;
+
 public:
   ClockTimer() : telapsed(0) { ; }
 
@@ -263,9 +242,9 @@ public:
     set_elapsed();
   }
 
-  long double elapsed()
+  ElapsedType elapsed()
   {
-    return static_cast<long double>(telapsed) / CLOCKS_PER_SEC;
+    return static_cast<Elapsed Type>(telapsed) / CLOCKS_PER_SEC;
   }
 
   void reset() { telapsed = 0; }
@@ -283,7 +262,7 @@ using TimerBase = ClockTimer;
 
 #else
 
-#error RAJA_TIMER_TYPE is undefined!
+#error RAJA_TIMER is undefined!
 
 #endif
 
