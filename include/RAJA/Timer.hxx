@@ -83,7 +83,10 @@ namespace RAJA
  */
 class BGQTimer
 {
+public:
   using ElapsedType = double;
+
+private:
   using TimeType = timeval;
   using DurationType = std::chrono::duration<ElapsedType>;
 
@@ -131,7 +134,10 @@ namespace RAJA
  */
 class ChronoTimer
 {
+public:
   using ElapsedType = double;
+
+private:
   using ClockType = std::chrono::steady_clock;
   using TimeType = ClockType::time_point;
   using DurationType = std::chrono::duration<ElapsedType>;
@@ -177,7 +183,10 @@ namespace RAJA
  */
 class GettimeTimer
 {
+public:
   using ElapsedType = double;
+
+private:
   using TimeType = timespec;
 
 public:
@@ -229,7 +238,10 @@ namespace RAJA
  */
 class ClockTimer
 {
+public:
   using ElapsedType = double;
+
+private:
   using TimeType = clock_t;
 
 public:
