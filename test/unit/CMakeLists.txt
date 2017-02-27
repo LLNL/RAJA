@@ -47,6 +47,11 @@ if (NOT MSVC)
     SOURCES test-layout.cxx
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
+  raja_add_test(
+    NAME timer-test
+    SOURCES test-timer.cxx
+    DEPENDS_ON gtest gtest_main 
+  )
 endif()
 
 add_subdirectory(cpu)
