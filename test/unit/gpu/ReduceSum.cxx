@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forallN<NestedPolicy<ExecList<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > > > > (
           iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
