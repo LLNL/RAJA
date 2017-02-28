@@ -90,7 +90,7 @@
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
  ( ( (dividend) + (divisor) - 1 ) / (divisor) )
 
-inline RAJA_ABORT_OR_THROW(const char *str) {
+inline void RAJA_ABORT_OR_THROW(const char *str) {
     if  (getenv ("RAJA_NO_EXCEPT") != NULL) {
         abort();
     } else {
