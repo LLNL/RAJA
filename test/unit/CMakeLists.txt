@@ -50,7 +50,7 @@ if (NOT MSVC)
   raja_add_test(
     NAME timer-test
     SOURCES test-timer.cxx
-    DEPENDS_ON gtest gtest_main 
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
 endif()
 
