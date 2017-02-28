@@ -1,7 +1,7 @@
 #ifndef RAJA_INTERNAL_DEFINES_HXX
 #define RAJA_INTERNAL_DEFINES_HXX
 
-#include <exception>
+#include <stdexcept>
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
