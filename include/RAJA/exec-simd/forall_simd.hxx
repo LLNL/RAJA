@@ -69,11 +69,15 @@ namespace RAJA
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
+  RAJA_FT_BEGIN;
+
   auto end = std::end(iter);
-  RAJA_SIMD
+RAJA_SIMD
   for (auto ii = std::begin(iter); ii < end; ++ii) {
     loop_body(*ii);
   }
+
+  RAJA_FT_END;
 }
 
 template <typename Iterable, typename Func>
@@ -82,13 +86,17 @@ RAJA_INLINE void forall_Icount(const simd_exec &,
                                Index_type icount,
                                Func &&loop_body)
 {
+  RAJA_FT_BEGIN;
+
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  RAJA_SIMD
+RAJA_SIMD
   for (Index_type i = 0; i < distance; ++i) {
     loop_body(i + icount, begin[i]);
   }
+
+  RAJA_FT_END;
 }
 
 //
@@ -96,8 +104,8 @@ RAJA_INLINE void forall_Icount(const simd_exec &,
 //
 // Function templates that iterate over list segment objects.
 //
-// NOTE: These operations will not vectorize. We include them here and
-//       force sequential execution for convenience.
+// NOTE: These operations will likely not vectorize. We include them here 
+//       for completeness. No SIMD pragma is applied.
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -105,7 +113,7 @@ RAJA_INLINE void forall_Icount(const simd_exec &,
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over list segment object.
+ * \brief  Iteration over list segment object.
  *
  ******************************************************************************
  */

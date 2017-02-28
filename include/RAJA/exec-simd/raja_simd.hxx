@@ -71,6 +71,7 @@ namespace RAJA
 
 struct simd_exec {
 };
+
 }
 
 //
