@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -66,6 +66,11 @@ struct View {
   template <typename... Args>
   RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
       : layout(dim_sizes...), data(data_ptr)
+  {
+  }
+
+  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT&& layout)
+      : layout(layout), data(data_ptr)
   {
   }
 

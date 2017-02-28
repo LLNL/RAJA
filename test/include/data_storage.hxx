@@ -3,7 +3,8 @@
 
 #include <cstdio>
 
-#include <RAJA/RAJA.hxx>
+#include "RAJA/RAJA.hxx"
+#include "RAJA/internal/defines.hxx"
 
 namespace internal
 {
@@ -14,9 +15,7 @@ struct storage {
 
   static T* alloc(int n)
   {
-    T* ptr;
-    ::posix_memalign((void**)&ptr, 64, n * sizeof(T));
-    return ptr;
+    return RAJA::allocate_aligned_type<T>(64, n * sizeof(T));
   }
 
   static void free(T* ptr) { ::free(ptr); }
