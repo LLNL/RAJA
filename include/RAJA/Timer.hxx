@@ -96,6 +96,8 @@ public:
 
   Duration elapsed() { return telapsed; }
 
+  void reset() { telapsed = 0; }
+
 private:
   TimeType tstart;
   TimeType tstop;
@@ -135,6 +137,8 @@ public:
 
   Duration::rep elapsed() { return telapsed.count(); }
 
+  void reset() { telapsed = Duration(0); } 
+
 private:
   TimeType tstart;
   TimeType tstop;
@@ -171,6 +175,8 @@ public:
   }
 
   long double elapsed() { return (stime_elapsed + nstime_elapsed); }
+
+  void reset() { stime_elapsed = 0; nstime_elapsed = 0; }
 
 private:
   TimeType tstart;
@@ -218,6 +224,8 @@ public:
 
   long double elapsed() { return static_cast<long double>(telapsed); }
 
+  void reset() { telapsed = 0; }
+
 private:
   TimeType tstart;
   TimeType tstop;
@@ -259,6 +267,8 @@ public:
   {
     return static_cast<long double>(telapsed) / CLOCKS_PER_SEC;
   }
+
+  void reset() { telapsed = 0; }
 
 private:
   TimeType tstart;
