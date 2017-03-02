@@ -83,6 +83,19 @@ struct View {
   }
 };
 
+template <typename DataType, typename LayoutT, typename ... IndexTypes>
+struct TypedView : private View<DataType, LayoutT> {
+  using parent = View<DataType, LayoutT>;
+
+  using parent::View;
+
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
+  {
+    return parent::operator()(convertIndex<Index_type>(args)...);
+  }
+};
+
+
 }  // namespace RAJA
 
 #endif
