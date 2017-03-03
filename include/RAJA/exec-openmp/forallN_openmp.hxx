@@ -68,14 +68,26 @@ namespace RAJA
 
 /******************************************************************
  *  ForallN CUDA policies
- ******************************************************************/
-
+******************************************************************/
 struct ForallN_OMP_Parallel_Tag {
 };
+
+struct ForallN_OMP_Target_Parallel_Tag {
+};
+
 template <typename NEXT = Execute>
 struct OMP_Parallel {
   // Identify this policy
   typedef ForallN_OMP_Parallel_Tag PolicyTag;
+
+  // The next nested-loop execution policy
+  typedef NEXT NextPolicy;
+};
+
+template <typename NEXT = Execute>
+struct OMP_Target_Parallel {
+  // Identify this policy
+  typedef ForallN_OMP_Target_Parallel_Tag PolicyTag;
 
   // The next nested-loop execution policy
   typedef NEXT NextPolicy;
@@ -120,7 +132,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for nowait collapse(2)
+#pragma omp for collapse(2) nowait
 #else
 #pragma omp for nowait
 #endif
@@ -170,7 +182,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
-#pragma omp for nowait collapse(3)
+#pragma omp for collapse(3) nowait
 #else
 #pragma omp for nowait
 #endif
@@ -198,11 +210,33 @@ RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag,
 {
   typedef typename POLICY::NextPolicy NextPolicy;
   typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
-
 #pragma omp parallel firstprivate(body)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }
+}
+
+/******************************************************************
+ *  forallN_policy(), OpenMP Parallel Region execution, to be run on a target(GPU)
+ ******************************************************************/
+
+/*!
+ * \brief Tiling policy front-end function.
+ */
+template <typename POLICY, typename BODY, typename... PARGS>
+RAJA_INLINE void forallN_policy(ForallN_OMP_Target_Parallel_Tag,
+                                BODY body,
+                                PARGS... pargs)
+{
+  typedef typename POLICY::NextPolicy NextPolicy;
+  typedef typename POLICY::NextPolicy::PolicyTag NextPolicyTag;
+#pragma omp target teams 
+{
+#pragma omp parallel firstprivate(body)
+  {
+    forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
+  }
+}
 }
 
 }  // namespace RAJA

@@ -79,23 +79,37 @@ namespace RAJA
 ///
 /// OpenMP parallel for policy implementation
 ///
-
-
 template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-#pragma omp target if(OnDevice) 
-{
+
+  if( OnDevice ) {
+    #pragma omp target teams num_teams(128)
+	{		
+			omp_set_num_threads(512);
+			#pragma omp parallel 
+		{
+			typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+			forall<InnerPolicy>(std::forward<Iterable>(iter),
+							std::forward<Func>(body)); 
+		}
+	}
+  }
+  else {
 #pragma omp parallel 
-  {
-    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+  	{
+   typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall<InnerPolicy>(std::forward<Iterable>(iter),
                         std::forward<Func>(body));
+
+  	}
   }
+
 }
-}
+
+
 template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
 RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                                Iterable&& iter,
@@ -135,8 +149,7 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_Icount(const omp_for_nowait_exec&,
                                Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body)
+                               Index_type icount)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -152,15 +165,55 @@ RAJA_INLINE void forall_Icount(const omp_for_nowait_exec&,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
+RAJA_INLINE void forall(const omp_for_exec&,
+						Iterable&& iter, 
+						Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-#pragma omp for
+#pragma omp for 
   for (Index_type i = 0; i < distance; ++i) {
     loop_body(begin[i]);
   }
+}
+
+template <typename Iterable>
+long helper( Iterable&& iter )
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  return std::distance(begin, end);
+}
+
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const omp_target_for_exec&,
+						Iterable&& iter, 
+						Func&& loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  
+  int idx1, idx2;
+  int team_id = omp_get_team_num();
+  int num_teams = omp_get_num_teams();
+  int n_per_team = distance / num_teams;
+  
+  if( distance % num_teams > n_per_team )
+  	n_per_team++;
+  	
+  idx1 = team_id * n_per_team;
+  idx2 = idx1 + n_per_team - 1;
+  if( team_id == num_teams-1 ) idx2 = distance-1;
+
+
+#pragma omp for 
+  for (Index_type i = idx1; i <= idx2; ++i) {
+    loop_body(begin[i]);
+  }
+
 }
 
 template <typename Iterable, typename Func>
@@ -190,7 +243,7 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-#pragma omp for schedule(static, ChunkSize)
+#pragma omp for schedule(static, ChunkSize) 
   for (Index_type i = 0; i < distance; ++i) {
     loop_body(begin[i]);
   }
@@ -210,7 +263,6 @@ RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
     loop_body(i + icount, begin[i]);
   }
 }
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -279,7 +331,6 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 }
-
 }  // closing brace for RAJA namespace
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 

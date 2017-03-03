@@ -82,9 +82,11 @@ struct omp_parallel_exec {
 };
 struct omp_for_exec {
 };
+struct omp_target_for_exec {
+};
 struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
 };
-struct omp_target_parallel_for_exec : public omp_parallel_exec<omp_for_exec,true> {
+struct omp_target_parallel_for_exec : public omp_parallel_exec<omp_target_for_exec,true> {
 };
 
 template <size_t ChunkSize>

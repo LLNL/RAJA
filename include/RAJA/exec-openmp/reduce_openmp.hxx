@@ -482,7 +482,6 @@ public:
   ~ReduceSum<omp_reduce, T>()
   {
 
-   if(omp_get_thread_num() == 0) printf("d: %d %p %lf\n", omp_get_thread_num(), this, val );
     if (parent) {
 #pragma omp critical
       {
@@ -511,7 +510,6 @@ public:
   {
 
     this->val += rhs;
-   if(omp_get_thread_num() == 0) printf("+: %d %p %lf\n", omp_get_thread_num(), this, val );
 
     return *this;
   }
