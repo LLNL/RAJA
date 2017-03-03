@@ -1,6 +1,8 @@
 #ifndef RAJA_INTERNAL_DEFINES_HXX
 #define RAJA_INTERNAL_DEFINES_HXX
 
+#include <stdexcept>
+
 //
 // Macros for decorating host/device functions for CUDA kernels.
 // We need a better solution than this as it is a pain to manage
@@ -87,5 +89,13 @@
  */
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
  ( ( (dividend) + (divisor) - 1 ) / (divisor) )
+
+inline void RAJA_ABORT_OR_THROW(const char *str) {
+    if  (getenv ("RAJA_NO_EXCEPT") != NULL) {
+        abort();
+    } else {
+        throw std::runtime_error(str);
+    }
+}
 
 #endif /* RAJA_INTERNAL_DEFINES_HXX */
