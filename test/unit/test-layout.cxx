@@ -53,7 +53,7 @@ TEST(LayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout({-1,-2}, std::array<int, 2>{1,0});
+  const my_layout layout = my_layout::from_arrays({-1,-2}, {1,0});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -82,7 +82,7 @@ TEST(LayoutTest, 2D_JI)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout({-1,-2}, RAJA::make_permuted_layout<RAJA::PERM_JI>(3,3));
+  const my_layout layout = my_layout::from_layout({-1,-2}, RAJA::make_permuted_layout<RAJA::PERM_JI>(3,3));
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -107,7 +107,7 @@ TEST(LayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, layout({1}, std::array<int, 1>{10}));
+  RAJA::View<int, layout> view(data, layout::from_arrays({1}, {10}));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;

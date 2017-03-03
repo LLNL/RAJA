@@ -89,7 +89,6 @@ public:
   : sizes{convertIndex<IdxLin>(ns)...}
   {
     static_assert(n_dims == sizeof ... (Types), "number of dimensions must match");
-    IdxLin folded_strides[n_dims];
     for (size_t i = 0; i < n_dims; i++) {
       strides[i] = 1;
       for (size_t j = 0; j < i; j++) {
