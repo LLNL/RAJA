@@ -69,7 +69,7 @@ struct View {
   {
   }
 
-  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT&& layout)
+  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT &&layout)
       : layout(layout), data(data_ptr)
   {
   }
@@ -83,15 +83,26 @@ struct View {
   }
 };
 
-template <typename DataType, typename LayoutT, typename ... IndexTypes>
-struct TypedView : private View<DataType, LayoutT> {
-  using parent = View<DataType, LayoutT>;
+template <typename DataType, typename LayoutT, typename... IndexTypes>
+struct TypedView {
+  using Base = View<DataType, LayoutT>;
 
-  using parent::View;
+  Base base_;
+
+  template <typename... Args>
+  RAJA_INLINE constexpr TypedView(DataType *data_ptr, Args... dim_sizes)
+      : base_(data_ptr, dim_sizes...)
+  {
+  }
+
+  RAJA_INLINE constexpr TypedView(DataType *data_ptr, LayoutT &&layout)
+      : base_(data_ptr, layout)
+  {
+  }
 
   RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
   {
-    return parent::operator()(convertIndex<Index_type>(args)...);
+    return base_.operator()(convertIndex<Index_type>(args)...);
   }
 };
 

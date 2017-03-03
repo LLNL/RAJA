@@ -64,55 +64,126 @@
 namespace RAJA
 {
 
+namespace internal
+{
+
 template <typename Range, typename IdxLin>
 struct OffsetLayout_impl;
 
-template <size_t... RangeInts,
-    typename IdxLin>
-struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin>  {
-  using Base = LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>;
+template <size_t... RangeInts, typename IdxLin>
+struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
+  using IndexRange = VarOps::index_sequence<RangeInts...>;
+  using Base = LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   IdxLin offsets[sizeof...(RangeInts)];
 
-  RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> lower,
-                                                 std::array<IdxLin, sizeof...(RangeInts)> upper)
-    : base_{(upper[RangeInts] - lower[RangeInts] + 1)...}, offsets{lower[RangeInts]...}
+  RAJA_INLINE RAJA_HOST_DEVICE
+  OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> lower,
+                    std::array<IdxLin, sizeof...(RangeInts)> upper)
+      : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
+        offsets{lower[RangeInts]...}
   {
   }
 
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(
-          const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
-          const Layout<sizeof...(RangeInts), IdxLin>& rhs)
-          : base_{rhs}, offsets{offsets_in[RangeInts]...}
-  { }
-
-  template<typename ... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(Indices... indices) const
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
   {
     return base_((indices - offsets[RangeInts])...);
   }
+
+  static RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl<IndexRange, IdxLin>
+  from_layout_and_offsets(
+      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
+      const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+  {
+    return internal::OffsetLayout_impl<IndexRange, IdxLin>(offsets_in, rhs);
+  }
+
+private:
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  OffsetLayout_impl(const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
+                    const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+      : base_{rhs}, offsets{offsets_in[RangeInts]...}
+  {
+  }
 };
 
+}  // end internal namespace
+
 template <size_t n_dims = 1, typename IdxLin = Index_type>
-struct OffsetLayout : public OffsetLayout_impl<VarOps::make_index_sequence<n_dims>, IdxLin>{
-  using parent = OffsetLayout_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+struct OffsetLayout
+    : public internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                         IdxLin> {
+  using parent =
+      internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
 
   using parent::OffsetLayout_impl;
 
-  static RAJA_INLINE RAJA_HOST_DEVICE
-  OffsetLayout<n_dims, IdxLin> from_arrays(
-          const std::array<IdxLin, n_dims>& lower,
-          const std::array<IdxLin, n_dims>& upper) {
-    return OffsetLayout<n_dims, IdxLin>(lower, upper);
-  }
-  static RAJA_INLINE RAJA_HOST_DEVICE
-  OffsetLayout<n_dims, IdxLin> from_layout(
-          const std::array<IdxLin, n_dims>& offsets_in,
-          const Layout<n_dims, IdxLin>& rhs) {
-    return OffsetLayout<n_dims, IdxLin>(offsets_in, rhs);
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
+      const internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                        IdxLin>& rhs)
+      : parent{rhs}
+  {
   }
 };
+
+template <size_t n_dims, typename IdxLin = Index_type>
+auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
+                        const std::array<IdxLin, n_dims>& upper)
+    -> OffsetLayout<n_dims, IdxLin>
+{
+  return OffsetLayout<n_dims, IdxLin>{lower, upper};
+}
+
+namespace internal
+{
+template <typename IdxLin = Index_type, size_t... PermInts, size_t... RangeInts>
+auto make_permuted_offset_layout_from_upper_lower(
+    VarOps::index_sequence<PermInts...> Permutation,
+    VarOps::index_sequence<RangeInts...> IndexRange,
+    const std::array<IdxLin, sizeof...(PermInts)>& lower,
+    const std::array<IdxLin, sizeof...(RangeInts)>& upper)
+    -> OffsetLayout<sizeof...(PermInts), IdxLin>
+{
+  const auto permuted_layout =
+      make_permuted_layout<decltype(Permutation), IdxLin>(
+          (upper[RangeInts] - lower[RangeInts] + 1)...);
+  const OffsetLayout<sizeof...(PermInts), IdxLin> permuted_offset_layout{
+      internal::OffsetLayout_impl<decltype(IndexRange), IdxLin>::
+          from_layout_and_offsets(lower, permuted_layout)};
+  return permuted_offset_layout;
+}
+template <typename IdxLin = Index_type, typename Array, size_t... PermInts>
+constexpr auto make_permuted_offset_layout_helper(
+    VarOps::index_sequence<PermInts...>,
+    const Array& lower,
+    const Array& upper) -> OffsetLayout<sizeof...(PermInts), IdxLin>
+{
+  return internal::make_permuted_offset_layout_from_upper_lower(
+      VarOps::integer_sequence<PermInts...>{},
+      VarOps::make_index_sequence<sizeof...(PermInts)>{},
+      lower,
+      upper);
+}
+}
+
+template <typename Permutation, typename IdxLin = Index_type>
+constexpr auto make_permuted_offset_layout(const std::array<IdxLin,
+                                                            Permutation::size>&
+                                                                lower,
+                                           const std::array<IdxLin,
+                                                            Permutation::size>&
+                                                            upper)
+    -> decltype(internal::make_permuted_offset_layout_helper(Permutation{},
+                                                             lower,
+                                                             upper))
+{
+  return internal::make_permuted_offset_layout_helper(Permutation{},
+                                                      lower,
+                                                      upper);
+}
 
 }  // namespace RAJA
 

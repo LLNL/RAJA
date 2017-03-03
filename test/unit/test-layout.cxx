@@ -1,5 +1,5 @@
-#include "gtest/gtest.h"
 #include "RAJA/RAJA.hxx"
+#include "gtest/gtest.h"
 
 RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");
 
@@ -29,15 +29,16 @@ TEST(LayoutTest, 1D)
 
 TEST(LayoutTest, OffsetVsRegular)
 {
-  const RAJA::Layout<2> layout = RAJA::make_permuted_layout<RAJA::PERM_JI>(6,6);
-  const RAJA::OffsetLayout<2> offset({0,0}, layout);
+  const auto layout = RAJA::make_permuted_layout<RAJA::PERM_JI>(6, 6);
+  const auto offset =
+      RAJA::make_permuted_offset_layout<RAJA::PERM_JI>({0, 0}, {5, 5});
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
   for (int j = 0; j < 6; ++j) {
     for (int i = 0; i < 6; ++i) {
-      ASSERT_EQ(offset(i,j), layout(i,j));
+      ASSERT_EQ(offset(i, j), layout(i, j));
     }
   }
 }
@@ -53,7 +54,7 @@ TEST(LayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout = my_layout::from_arrays({-1,-2}, {1,0});
+  const auto layout = RAJA::make_offset_layout<2>({-1, -2}, {1, 0});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -68,7 +69,7 @@ TEST(LayoutTest, 2D_IJ)
   /*
    * Last element, (1, 0), should have index 8.
    */
-  ASSERT_EQ(8, layout(1,0));
+  ASSERT_EQ(8, layout(1, 0));
 }
 
 TEST(LayoutTest, 2D_JI)
@@ -82,7 +83,8 @@ TEST(LayoutTest, 2D_JI)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout = my_layout::from_layout({-1,-2}, RAJA::make_permuted_layout<RAJA::PERM_JI>(3,3));
+  const my_layout layout =
+      RAJA::make_permuted_offset_layout<RAJA::PERM_JI>({-1, -2}, {1, 0});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -95,7 +97,7 @@ TEST(LayoutTest, 2D_JI)
   /*
    * Last element, (1, 0), should have index 8.
    */
-  ASSERT_EQ(8, layout(1,0));
+  ASSERT_EQ(8, layout(1, 0));
 }
 
 TEST(LayoutTest, View)
@@ -107,7 +109,7 @@ TEST(LayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, layout::from_arrays({1}, {10}));
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({1}, {10}));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;

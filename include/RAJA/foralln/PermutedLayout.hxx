@@ -58,17 +58,23 @@
 
 #include "RAJA/IndexValue.hxx"
 #include "RAJA/LegacyCompatibility.hxx"
-#include "RAJA/foralln/Permutations.hxx"
 #include "RAJA/foralln/Layout.hxx"
+#include "RAJA/foralln/Permutations.hxx"
 
 namespace RAJA
 {
 
-namespace internal {
-template<typename IdxLin, size_t... RangeInts, size_t... PermInts, typename ... Sizes>
+namespace internal
+{
+template <typename IdxLin,
+          size_t... RangeInts,
+          size_t... PermInts,
+          typename... Sizes>
 auto make_permuted_layout_impl(VarOps::index_sequence<RangeInts...> IndexRange,
                                VarOps::index_sequence<PermInts...> Permutation,
-                               Sizes... sizes) -> Layout<sizeof...(Sizes), IdxLin> {
+                               Sizes... sizes)
+    -> Layout<sizeof...(Sizes), IdxLin>
+{
   constexpr int n_dims = sizeof...(sizes);
   constexpr IdxLin limit = std::numeric_limits<IdxLin>::max();
 
@@ -99,19 +105,19 @@ auto make_permuted_layout_impl(VarOps::index_sequence<RangeInts...> IndexRange,
 }
 }
 
-template<typename Permutation, typename IdxLin = Index_type, typename ... Sizes>
-auto make_permuted_layout(Sizes... sizes) -> Layout<sizeof...(Sizes)> {
-  return internal::make_permuted_layout_impl<IdxLin>(VarOps::make_index_sequence<sizeof...(Sizes)>(), Permutation(), sizes...);
+template <typename Permutation, typename IdxLin = Index_type, typename... Sizes>
+auto make_permuted_layout(Sizes... sizes) -> Layout<sizeof...(Sizes)>
+{
+  return internal::make_permuted_layout_impl<IdxLin>(
+      VarOps::make_index_sequence<sizeof...(Sizes)>(), Permutation(), sizes...);
 }
 
 template <typename Range, typename Perm, typename IdxLin>
 struct Layout_impl;
-template <size_t... RangeInts,
-        size_t... PermInts,
-        typename IdxLin>
+template <size_t... RangeInts, size_t... PermInts, typename IdxLin>
 struct Layout_impl<VarOps::index_sequence<RangeInts...>,
-        VarOps::index_sequence<PermInts...>,
-        IdxLin> {
+                   VarOps::index_sequence<PermInts...>,
+                   IdxLin> {
   using Base = LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>;
   Base base_;
 
@@ -120,10 +126,9 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>,
 
   Index_type perms[Base::n_dims];
 
-// TODO: this should be constexpr in c++14 mode
+  // TODO: this should be constexpr in c++14 mode
   template <typename... Types>
-  RAJA_INLINE RAJA_HOST_DEVICE Layout_impl(Types... ns)
-          : base_{ns...}
+  RAJA_INLINE RAJA_HOST_DEVICE Layout_impl(Types... ns) : base_{ns...}
   {
     VarOps::assign_args(perms, IndexRange{}, PermInts...);
     Index_type swizzled_sizes[] = {base_.sizes[PermInts]...};
@@ -145,23 +150,25 @@ struct Layout_impl<VarOps::index_sequence<RangeInts...>,
     assign(base_.mods, lmods, Permutation{}, IndexRange{});
   }
 
-  template<typename ... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(Indices... indices) const
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
   {
     return base_((indices)...);
   }
 };
 
 template <typename Permutation, typename IdxLin = Index_type>
-struct PermutedLayout {};
+struct PermutedLayout {
+};
 template <size_t... PermInts, typename IdxLin>
 struct PermutedLayout<VarOps::index_sequence<PermInts...>, IdxLin>
-        : public Layout_impl<VarOps::make_index_sequence<sizeof ... (PermInts)>,
-                VarOps::index_sequence<PermInts...>,
-                IdxLin>{
-  using parent = Layout_impl<VarOps::make_index_sequence<sizeof ... (PermInts)>,
-          VarOps::index_sequence<PermInts...>,
-          IdxLin>;
+    : public Layout_impl<VarOps::make_index_sequence<sizeof...(PermInts)>,
+                         VarOps::index_sequence<PermInts...>,
+                         IdxLin> {
+  using parent = Layout_impl<VarOps::make_index_sequence<sizeof...(PermInts)>,
+                             VarOps::index_sequence<PermInts...>,
+                             IdxLin>;
   using parent::Layout_impl;
 };
 
