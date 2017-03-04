@@ -79,6 +79,21 @@ namespace RAJA
 ///
 /// OpenMP parallel for policy implementation
 ///
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const omp_target_parallel_for_exec&,
+                        Iterable&& iter,
+                        Func loop_body)
+{
+    // using body_type = typename std::remove_reference<decltype(loop_body)>::type;
+    auto begin = std::begin(iter);
+    auto end = std::end(iter);
+    auto distance = std::distance(begin, end);
+#pragma omp target teams distribute parallel for schedule(static, 1)
+    for (Index_type i = 0; i < distance; ++i) {
+        loop_body(begin[i]);
+    }
+}
+
 template <typename Iterable, typename InnerPolicy, bool OnDevice, typename Func>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
                         Iterable&& iter,
@@ -86,10 +101,9 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy,OnDevice>&,
 {
 
   if( OnDevice ) {
-    #pragma omp target teams num_teams(128)
+    #pragma omp target
 	{		
-			omp_set_num_threads(512);
-			#pragma omp parallel 
+		#pragma omp parallel 
 		{
 			typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
 			forall<InnerPolicy>(std::forward<Iterable>(iter),
