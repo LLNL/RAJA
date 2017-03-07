@@ -89,7 +89,7 @@ inline void cudaAssert(cudaError_t code,
   if (code != cudaSuccess) {
     fprintf(
         stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) exit(code);
+    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
   }
 }
 
