@@ -54,6 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <string>
+#include "RAJA/internal/defines.hxx"
 #include "RAJA/int_datatypes.hxx"
 
 namespace RAJA
@@ -261,33 +262,34 @@ protected:
   Index_type value;
 };
 
-/*!
- * \brief Helper class for convertIndex, since functions cannot be partially
- * specialized
- */
-template <typename TO, typename FROM>
-struct ConvertIndexHelper {
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  static TO convert(FROM val) { return TO(*val); }
-};
-
-template <typename TO>
-struct ConvertIndexHelper<TO, Index_type> {
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  static TO convert(Index_type val) { return TO(val); }
-};
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
  * convert it to another type, possibly another Index or an int.
+ *
+ * This has been refactored to use SFINAE to differentiate between IndexValue
+ * derived types an non-IndexValue types, and return the correct type
+ * automatically
  */
+
+template <typename TO, typename FROM>
+RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
+{
+  return TO{val};
+}
+template <typename TO, typename FROM>
+RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(typename FROM::IndexValueType val)
+{
+  return TO{*val};
+}
+
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
 {
-  return ConvertIndexHelper<TO, FROM>::convert(val);
+  return convertIndex_helper<TO, FROM>(val);
 }
+
+
 
 }  // namespace RAJA
 
@@ -298,6 +300,7 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
   class TYPE : public RAJA::IndexValue<TYPE>                                   \
   {                                                                            \
   public:                                                                      \
+    typedef TYPE IndexValueType; \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() \
     {                                                                          \
     }                                                                          \

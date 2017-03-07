@@ -50,7 +50,7 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
   cout << "\n Test2d " << size_i << "x" << size_j
        << " array reduction for policy " << policy << "\n";
 
-  std::vector<int> values(size_i * size_j, 1);
+  std::vector<Index_type> values(size_i * size_j, 1);
 
   s_ntests_run++;
   s_ntests_run_total++;
@@ -99,14 +99,14 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
 struct Pol2dA {
   typedef NestedPolicy<ExecList<seq_exec, seq_exec>, Permute<PERM_IJ>> EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_IJ, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_IJ, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // SIMD, JI ordering
 struct Pol2dB {
   typedef NestedPolicy<ExecList<simd_exec, seq_exec>, Permute<PERM_JI>> EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // SIMD, Tiled JI ordering
@@ -116,7 +116,7 @@ struct Pol2dC {
                             Permute<PERM_JI>>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // SIMD, Two-level tiled JI ordering
@@ -127,7 +127,7 @@ struct Pol2dD {
                                  Permute<PERM_JI>>>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 #ifdef RAJA_ENABLE_OPENMP
@@ -138,7 +138,7 @@ struct Pol2dA_OMP {
                        Permute<PERM_IJ>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_IJ, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_IJ, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // OpenMP/SIMD, JI ordering, nowait
@@ -147,7 +147,7 @@ struct Pol2dB_OMP {
                        OMP_Parallel<Permute<PERM_JI>>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // OpenMP/SIMD, Tiled JI ordering, nowait
@@ -158,7 +158,7 @@ struct Pol2dC_OMP {
                                          Permute<PERM_JI>>>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 // OpenMP/SIMD, Two-level tiled JI ordering, nowait
@@ -171,7 +171,7 @@ struct Pol2dD_OMP {
                                               Permute<PERM_JI>>>>>
       EXEC;
 
-  typedef RAJA::View<int, Layout<int, PERM_JI, int, int>> VIEW;
+  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
 };
 
 #endif
@@ -296,15 +296,15 @@ struct PolLTimesA {
   typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>> EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IDirection, IGroup, IZone>>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IMoment, IGroup, IZone>>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
       ELL_VIEW;
 };
 
@@ -316,15 +316,15 @@ struct PolLTimesB {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IMoment, IGroup, IZone>>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_JI, IMoment, IDirection>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_JI, IMoment, IDirection>>
       ELL_VIEW;
 };
 
@@ -340,15 +340,15 @@ struct PolLTimesC {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IDirection, IGroup, IZone>>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
       ELL_VIEW;
 };
 
@@ -365,15 +365,15 @@ struct PolLTimesD_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
       ELL_VIEW;
 };
 
@@ -394,15 +394,15 @@ struct PolLTimesE_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IDirection, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_KJI, IMoment, IGroup, IZone>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
       ELL_VIEW;
 };
 
