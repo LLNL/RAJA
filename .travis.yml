@@ -13,6 +13,16 @@ matrix:
            - g++-4.9
      env: COMPILER=g++-4.9
          - WARN="-DRAJA_ENABLE_WARNINGS=On"
+   - compiler: gcc-4-noomp
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-4.9
+     env: COMPILER=g++-4.9
+         - WARN="-DRAJA_ENABLE_WARNINGS=On"
+         - OMP="-DRAJA_ENABLE_OPENMP=Off"
    - compiler: gcc-5
      addons:
        apt:
@@ -76,6 +86,6 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN ../
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $OMP ../
   - make -j
   - make test # currently does nothing, this is how testing should be done
