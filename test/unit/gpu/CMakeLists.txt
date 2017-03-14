@@ -77,6 +77,11 @@ raja_add_test(
   NAME reducemaxloc
   SOURCES ReduceMaxLoc.cxx)
 
+raja_add_test(
+  NAME forallN
+  SOURCES forallN.cxx
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
 if (NOT RAJA_ENABLE_CLANG_CUDA)
   raja_add_test(
     NAME scan
