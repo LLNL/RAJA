@@ -260,6 +260,30 @@ RAJA_INLINE void forall_Icount(
                               loop_body));
 }
 
+/*!
+******************************************************************************
+*
+* \brief  BasicIndexSet version
+*
+******************************************************************************
+*/
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename ... SEG_TYPES,
+          typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(
+  IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+  const BasicIndexSet<SEG_TYPES ...>& iset,
+  LOOP_BODY loop_body)
+{
+  // no need for icount variant here
+  forall(SEG_IT_POLICY_T(),iset,
+         [=](int segID){ iset.segmentCall(segID, CallForallIcount(iset.getStartingIcount(segID)),
+                                          SEG_EXEC_POLICY_T(),
+                                          loop_body); });
+
+}
+
 
 }  // closing brace for RAJA namespace
 

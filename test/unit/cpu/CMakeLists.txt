@@ -81,6 +81,11 @@ if (RAJA_ENABLE_CUDA)
 
 else()
   add_library(bis buildIndexSet.cxx)
+  target_link_libraries(bis RAJA)
+
+  add_executable(iss-test
+    main-iss.cxx)
+
   add_executable(CPUtraversal-test.exe
     main-traversal.cxx)
 
@@ -127,6 +132,8 @@ endif()
 add_test(
     NAME indexset-test
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:indexset-tests>)
+
+target_link_libraries(iss-test RAJA ${CMAKE_THREAD_LIBS_INIT})
 
 target_link_libraries(indexset-tests RAJA bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 

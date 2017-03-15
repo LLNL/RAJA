@@ -51,7 +51,7 @@ protected:
     free(in_array);
   }
 
-  RAJA::IndexSet index_sets_[1];
+  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> index_sets_[1];
   RAJA::Real_ptr test_array;
   RAJA::Real_ptr ref_array;
   RAJA::Real_ptr in_array;

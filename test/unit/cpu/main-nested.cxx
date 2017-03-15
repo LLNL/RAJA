@@ -443,59 +443,6 @@ struct Dumper {
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 {
-
-
-  RAJA::BasicIndexSet<int, double> vts;
-
-  vts.push_back(1.4444);
-  vts.push_back(8);
-  vts.push_back(3.5);
-  //vts.push_back("foo");
-
-  vts.push_front(0);
-
-  vts.dumpSegments();
-
-  RAJA::BasicIndexSet<int, double> vts2(vts);
-
-  vts2.dumpSegments();
-
-  printf("vts.getNumTypes()=      %d\n", (int)vts.getNumTypes());
-  printf("vts.getNumSegments()=   %d\n", (int)vts.getNumSegments());
-  printf("vts.isValidSegmentType(int)=   %d\n", (int)vts.isValidSegmentType(3));
-  printf("vts.isValidSegmentType(char*)=   %d\n", (int)vts.isValidSegmentType("meow"));
-
-
-  RAJA::BasicIndexSet<int, double, std::string> vts3;
-
-  // we can do this beause vts3 is a super-set of vts2
-  vts2.push_into(vts3, PUSH_FRONT);
-
-  vts3.push_front(std::string("meow"));
-  vts3.push_back(std::string("woof"));
-  vts3.dumpSegments();
-
-  vts3.segmentCall(0, Dumper());
-  vts3.segmentCall(1, Dumper());
-  vts3.segmentCall(2, Dumper());
-
-
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment> is0;
-
-  std::vector<int> segvec{3,2,1};
-  is0.push_back(RAJA::ListSegment(segvec));
-
-  is0.push_back(RAJA::RangeSegment(0,5));
-  is0.push_back(RAJA::RangeSegment(-5,0));
-
-  //is0.dumpSegments();
-
-  using omp_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;
-  using seq_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
-
-  RAJA::forall<seq_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
-  RAJA::forall<omp_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
-
   ///////////////////////////////////////////////////////////////////////////
   //
   // Run RAJA::forall nested loop tests...

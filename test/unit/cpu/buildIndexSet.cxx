@@ -22,7 +22,7 @@ using namespace std;
 //
 //  Initialize hybrid index set by adding segments as index set objects.
 //
-Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
+Index_type buildIndexSet(RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* hindex, IndexSetBuildMethod build_method)
 {
   //
   // Record last index in index set for return.
@@ -56,7 +56,8 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
   //
 
   const int seg_chunk_size = 5;
-  RAJAVec<BaseSegment*> segments;
+  BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset_master;
+
   for (int i = 0; i < seg_chunk_size; ++i) {
     Index_type rbeg;
     Index_type rend;
@@ -66,103 +67,110 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
     // Create Range segment
     rbeg = last_indx + 2;
     rend = rbeg + 32;
-    segments.push_back(new RangeSegment(rbeg, rend));
+    iset_master.push_back(RangeSegment(rbeg, rend));
     last_indx = rend;
 
     // Create List segment
     for (Index_type i = 0; i < lseg_len; ++i) {
       lseg[i] = lindices[i] + last_indx;
     }
-    segments.push_back(new ListSegment(&lseg[0], lseg_len));
+    iset_master.push_back(ListSegment(&lseg[0], lseg_len));
     last_indx = lseg[lseg_len - 1];
 
     // Create Range segment
     rbeg = last_indx + 16;
     rend = rbeg + 128;
-    segments.push_back(new RangeSegment(rbeg, rend));
+    iset_master.push_back(RangeSegment(rbeg, rend));
     last_indx = rend;
 
     // Create Range segment
     rbeg = last_indx + 4;
     rend = rbeg + 256;
-    segments.push_back(new RangeSegment(rbeg, rend));
+    iset_master.push_back(RangeSegment(rbeg, rend));
     last_indx = rend;
 
     // Create List segment
     for (Index_type i = 0; i < lseg_len; ++i) {
       lseg[i] = lindices[i] + last_indx + 5;
     }
-    segments.push_back(new ListSegment(&lseg[0], lseg_len));
+    iset_master.push_back(ListSegment(&lseg[0], lseg_len));
     last_indx = lseg[lseg_len - 1];
   }
+
+#if 0  // print index set for debugging
+  cout << "\n\nIndexSet( master ) " << endl;
+  iset_master.print(cout);
+#endif
 
   //
   // Generate IndexSet from segments using specified build method.
   //
+  int num_segments = iset_master.getNumSegments();
   switch (build_method) {
-    case AddSegments: {
-      for (size_t i = 0; i < segments.size(); ++i) {
-        hindex[build_method].push_back(*segments[i]);
-      }
 
+    // This is already being done above as iset_master
+    case AddSegments: {
+      // This is already being done above as iset_master
+      for (size_t i = 0; i < iset_master.getNumSegments(); ++i) {
+        iset_master.segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_COPY);
+      }
       break;
     }
 
     case AddSegmentsReverse: {
-      int last_i = static_cast<int>(segments.size() - 1);
-      for (int i = last_i; i >= 0; --i) {
-        hindex[build_method].push_front(*segments[i]);
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
+      for (int i = iset_master.getNumSegments()-1; i >= 0; --i) {
+        iset_master.segment_push_into(i, hindex[build_method], PUSH_FRONT, PUSH_COPY);
       }
 
       break;
     }
 
     case AddSegmentsNoCopy: {
-      IndexSet& iset_master = hindex[0];
-
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       for (size_t i = 0; i < iset_master.getNumSegments(); ++i) {
-        hindex[build_method].push_back_nocopy(iset_master.getSegment(i));
+        iset_master.segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       break;
     }
 
     case AddSegmentsNoCopyReverse: {
-      IndexSet& iset_master = hindex[0];
-
-      int last_i = static_cast<int>(iset_master.getNumSegments() - 1);
-      for (int i = last_i; i >= 0; --i) {
-        hindex[build_method].push_front_nocopy(iset_master.getSegment(i));
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
+      for ( int i = iset_master.getNumSegments() - 1; i >= 0 ; --i ) {
+        iset_master.segment_push_into(i, hindex[build_method], PUSH_FRONT, PUSH_NOCOPY);
       }
 
       break;
     }
 
     case MakeViewRange: {
-      IndexSet& iset_master = hindex[0];
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
-
-      IndexSet* iset_view = iset_master.createView(0, num_segs);
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view
+        = iset_master.createView(0, num_segs);
 
       for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
+        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       break;
     }
 
     case MakeViewArray: {
-      IndexSet& iset_master = hindex[0];
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       int* segIds = new int[num_segs];
+
       for (size_t i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
-      IndexSet* iset_view = iset_master.createView(segIds, num_segs);
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view
+        = iset_master.createView(segIds, num_segs);
 
       for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
+        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       delete[] segIds;
@@ -172,17 +180,17 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
 
 #if defined(RAJA_USE_STL)
     case MakeViewVector: {
-      IndexSet& iset_master = hindex[0];
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       std::vector<int> segIds(num_segs);
       for (int i = 0; i < num_segs; ++i) {
         segIds[i] = i;
       }
 
-      IndexSet* iset_view = iset_master.createView(segIds);
+      RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view = iset_master.createView(segIds);
 
       for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        hindex[build_method].push_back_nocopy(iset_view->getSegment(i));
+        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       break;
@@ -192,11 +200,7 @@ Index_type buildIndexSet(IndexSet* hindex, IndexSetBuildMethod build_method)
     default: {
     }
 
-  }  // switch (build_method)
-
-  for (size_t i = 0; i < segments.size(); ++i) {
-    delete segments[i];
-  }
+  }  // end switch (build_method)
 
   return last_indx;
 }

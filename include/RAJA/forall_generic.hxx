@@ -124,6 +124,21 @@ RAJA_INLINE void forall_Icount(const IndexSet& c, LOOP_BODY loop_body)
   forall_Icount(EXEC_POLICY_T(), c, loop_body);
 }
 
+
+/*!
+******************************************************************************
+*
+* \brief  BasicIndexSet version
+*
+******************************************************************************
+*/
+template <typename EXEC_POLICY_T, typename ... SEG_TYPES, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(const BasicIndexSet<SEG_TYPES ...>& c, LOOP_BODY loop_body)
+{
+
+  forall_Icount(EXEC_POLICY_T(), c, loop_body);
+}
+
 /*!
  ******************************************************************************
  *
@@ -314,6 +329,18 @@ struct CallForall {
     RAJA::forall<EXEC_POL>(segment, body);
   }
 
+};
+
+struct CallForallIcount {
+  constexpr CallForallIcount(int icount) : startingIcount(icount) {}
+
+  template<typename T, typename EXEC_POL, typename BODY>
+  RAJA_INLINE
+  void operator()(T const &segment, EXEC_POL, BODY body) const {
+    RAJA::forall_Icount<EXEC_POL>(segment, startingIcount, body);
+  }
+private:
+  int startingIcount;
 };
 
 

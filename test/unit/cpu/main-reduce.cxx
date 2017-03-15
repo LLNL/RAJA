@@ -58,13 +58,13 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const IndexSet& iset,
+                              const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array = 0;
-  int err_val = 0; 
-  err_val = posix_memalign((void**)&test_array, 
-                           DATA_ALIGN, 
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array,
+                           DATA_ALIGN,
                            alen * sizeof(Real_type));
   RAJA_UNUSED_VAR(err_val);
 
@@ -86,7 +86,7 @@ void runBasicMinReductionTest(const string& policy,
 #if 0
    cout << "ref_min_indx = " << ref_min_indx << endl;
    cout << "ref_min_val = " << ref_min_val << endl;
-   cout << "test_array[ref_min_indx] = " 
+   cout << "test_array[ref_min_indx] = "
              << test_array[ref_min_indx] << endl;
 #endif
 
@@ -130,7 +130,7 @@ void runBasicMinReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN REDUCE tests...." << endl;
@@ -209,13 +209,13 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const IndexSet& iset,
+                                 const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array = 0;
-  int err_val = 0; 
-  err_val = posix_memalign((void**)&test_array, 
-                           DATA_ALIGN, 
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array,
+                           DATA_ALIGN,
                            alen * sizeof(Real_type));
   RAJA_UNUSED_VAR(err_val);
 
@@ -237,7 +237,7 @@ void runBasicMinLocReductionTest(const string& policy,
 #if 0
    cout << "ref_min_indx = " << ref_min_indx << endl;
    cout << "ref_min_val = " << ref_min_val << endl;
-   cout << "test_array[ref_min_indx] = " 
+   cout << "test_array[ref_min_indx] = "
              << test_array[ref_min_indx] << endl;
 #endif
 
@@ -285,7 +285,7 @@ void runBasicMinLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const IndexSet& iset,
+                          const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN-LOC REDUCE tests...." << endl;
@@ -365,13 +365,13 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const IndexSet& iset,
+                              const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array = 0;
-  int err_val = 0; 
-  err_val = posix_memalign((void**)&test_array, 
-                           DATA_ALIGN, 
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array,
+                           DATA_ALIGN,
                            alen * sizeof(Real_type));
   RAJA_UNUSED_VAR(err_val);
 
@@ -393,7 +393,7 @@ void runBasicMaxReductionTest(const string& policy,
 #if 0
    cout << "ref_max_indx = " << ref_max_indx << endl;
    cout << "ref_max_val = " << ref_max_val << endl;
-   cout << "test_array[ref_max_indx] = " 
+   cout << "test_array[ref_max_indx] = "
              << test_array[ref_max_indx] << endl;
 #endif
 
@@ -438,7 +438,7 @@ void runBasicMaxReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX REDUCE tests...." << endl;
@@ -517,13 +517,13 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const IndexSet& iset,
+                                 const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array = 0;
-  int err_val = 0; 
-  err_val = posix_memalign((void**)&test_array, 
-                           DATA_ALIGN, 
+  int err_val = 0;
+  err_val = posix_memalign((void**)&test_array,
+                           DATA_ALIGN,
                            alen * sizeof(Real_type));
   RAJA_UNUSED_VAR(err_val);
 
@@ -545,7 +545,7 @@ void runBasicMaxLocReductionTest(const string& policy,
 #if 0
    cout << "ref_max_indx = " << ref_max_indx << endl;
    cout << "ref_max_val = " << ref_max_val << endl;
-   cout << "test_array[ref_max_indx] = " 
+   cout << "test_array[ref_max_indx] = "
              << test_array[ref_max_indx] << endl;
 #endif
 
@@ -593,7 +593,7 @@ void runBasicMaxLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const IndexSet& iset,
+                          const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX-LOC REDUCE tests...." << endl;
@@ -673,7 +673,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type RAJA_UNUSED_ARG(alen),
-                              const IndexSet& iset,
+                              const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   //
@@ -729,7 +729,7 @@ void runBasicSumReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runSumReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall SUM REDUCE tests...." << endl;
@@ -814,7 +814,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   //  All methods to construct index sets should generate equivalent results.
   //
-  IndexSet index[NumBuildMethods];
+  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>  index[NumBuildMethods];
   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
     last_indx =
         max(last_indx,
@@ -838,7 +838,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   ///////////////////////////////////////////////////////////////////////////
 
-  IndexSet& iset = index[0];
+  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset = index[0];
 
   const Index_type array_length = last_indx + 1;
 
@@ -846,9 +846,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   // Allocate "parent" array for traversal tests and initialize to...
   //
   Real_ptr parent = 0;
-  int err_val = 0; 
-  err_val = posix_memalign((void**)&parent, 
-                           DATA_ALIGN, 
+  int err_val = 0;
+  err_val = posix_memalign((void**)&parent,
+                           DATA_ALIGN,
                            array_length * sizeof(Real_type));
   RAJA_UNUSED_VAR(err_val);
 
@@ -893,8 +893,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
    for (Index_type i = 0; i < is_indices.size(); ++i) {
       ref_sum += parent[ is_indices[i] ];
    }
-  
-   double osum1 = 0.0; 
+
+   double osum1 = 0.0;
    double osum2 = 5.0;
 
    double omin1 = 1.0e+20;
@@ -903,19 +903,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 #pragma omp parallel for reduction(+ : osum1, osum2) reduction(min : omin1, \
                                                                omin2)
    for (int i = 0; i < len; ++i) {
-      osum1 += parent[ is_indices[i] ]; 
+      osum1 += parent[ is_indices[i] ];
       osum2 += 1.0;
       if ( min_array[ i ] < omin1 ) omin1 = min_array[ i ];
       if ( min_array[ i ] < omin2 ) omin2 = min_array[ i ];
-   } 
+   }
 
-   cout << "\n\nReduceSum OpenMP: osum1 = " << osum1 
+   cout << "\n\nReduceSum OpenMP: osum1 = " << osum1
              << " -- ( " << ref_sum << " )" << endl;
-   cout << "ReduceSum OpenMP: osum2 = " << osum2 
+   cout << "ReduceSum OpenMP: osum2 = " << osum2
              << " -- ( " << iset.getLength() + 5.0 << " )" << endl;
-   cout << "ReduceMin OpenMP: omin1 = " << omin1 
+   cout << "ReduceMin OpenMP: omin1 = " << omin1
              << " -- ( " << ref_min_val << " )" << endl;
-   cout << "ReduceMin OpenMP: omin2 = " << omin2 
+   cout << "ReduceMin OpenMP: omin2 = " << omin2
              << " -- ( " << -200.0 << " )" << endl;
 
 #endif

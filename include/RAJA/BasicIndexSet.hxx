@@ -191,18 +191,18 @@ struct ExecPolicy
       using OTHER_PARENT = BasicIndexSet<PREST...>;
 
       // drill down our types until we have the right type
-      if(getSegmentTypes()[segid] == T0_TypeId){
+      if (getSegmentTypes()[segid] == T0_TypeId){
 
         // Check that other's segid is of type T0
-        if(!other.template checkSegmentType<T0>(segid)){
+        if (!other.template checkSegmentType<T0>(segid)){
           return false;
         }
 
         // Compare to others segid
-        return *data[segid] == other.template getSegment<T0>(segid);
-
+        int offset = getSegmentOffsets()[segid];
+        return *data[offset] == other.template getSegment<T0>(segid);
       }
-      else{
+      else {
         // peel off T0
         return PARENT::compareSegmentById(segid, other);
       }
@@ -221,7 +221,8 @@ struct ExecPolicy
     RAJA_INLINE
     P0 &getSegment(size_t segid) {
       if(getSegmentTypes()[segid] == T0_TypeId){
-        return * (P0 *)data[segid];
+        int offset = getSegmentOffsets()[segid];
+        return * (P0 *)data[offset];
       }
       return PARENT::template getSegment<P0>(segid);
     }
@@ -230,7 +231,8 @@ struct ExecPolicy
     RAJA_INLINE
     P0 const &getSegment(size_t segid) const {
       if(getSegmentTypes()[segid] == T0_TypeId){
-        return *(P0 const *)data[segid];
+        int offset = getSegmentOffsets()[segid];
+        return *(P0 const *)data[offset];
       }
       return PARENT::template getSegment<P0>(segid);
     }
@@ -245,13 +247,14 @@ struct ExecPolicy
     bool operator ==(const BasicIndexSet<P0, PREST...> &other) const{
       size_t num_seg = getNumSegments();
       if(num_seg == other.getNumSegments()){
-        for(size_t segid = 0;segid < num_seg;++ segid){
+
+        for(size_t segid = 0; segid < num_seg; ++segid){
 
           if(!compareSegmentById(segid, other)){
             return false;
           }
-
         }
+        return true;
       }
       return false;
     }
@@ -283,15 +286,15 @@ struct ExecPolicy
                    PushEnd  pend =PUSH_BACK,
                    PushCopy pcopy=PUSH_COPY)
     {
-
       size_t num = getNumSegments();
-      if(pend == PUSH_BACK){
-        for(size_t i = 0;i < num;++ i){
+
+      if (pend == PUSH_BACK){
+        for (size_t i = 0; i < num; ++i) {
           segment_push_into(i, c, pend, pcopy);
         }
       } else {
         // Reverse push_front iteration so we preserve segment ordering
-        for(ssize_t i = num-1;i >= 0;-- i){
+        for (int i = num-1; i >= 0; --i) {
           segment_push_into(i, c, pend, pcopy);
         }
       }
@@ -306,22 +309,22 @@ struct ExecPolicy
                            PushEnd  pend =PUSH_BACK,
                            PushCopy pcopy=PUSH_COPY)
     {
-      if(getSegmentTypes()[segid] == T0_TypeId){
+      if (getSegmentTypes()[segid] == T0_TypeId) {
         int offset = getSegmentOffsets()[segid];
 
-        if(pcopy == PUSH_COPY){
-          if(pend == PUSH_BACK){
+        if (pcopy == PUSH_COPY) {
+          if (pend == PUSH_BACK) {
             c.push_back(*data[offset]);
           }
-          else{
+          else {
             c.push_front(*data[offset]);
           }
         }
-        else{
-          if(pend == PUSH_BACK){
+        else {
+          if (pend == PUSH_BACK) {
             c.push_back_nocopy(data[offset]);
           }
-          else{
+          else {
             c.push_front_nocopy(data[offset]);
           }
         }
@@ -416,14 +419,11 @@ struct ExecPolicy
     size_t getLength(void) const {
       size_t total = PARENT::getLength();
       size_t num = data.size();
-      for(size_t i = 0;i < num;++ i){
+      for (size_t i = 0; i < num; ++i){
         total += data[i]->getLength();
       }
       return total;
     }
-
-
-
 
     /*!
      * \brief Calls the operator "body" with the segment stored at segid.
@@ -513,6 +513,11 @@ protected:
 
         // Store the segment offset in data[]
         getSegmentOffsets().push_back(data.size()-1);
+
+        // Store the segment icount
+        size_t icount = val->getLength();
+        getSegmentIcounts().push_back(getTotalLength());
+        increaseTotalLength(icount);
       }
       else{
         // Store the segment type
@@ -520,6 +525,14 @@ protected:
 
         // Store the segment offset in data[]
         getSegmentOffsets().push_front(data.size()-1);
+
+        // Store the segment icount
+        getSegmentIcounts().push_front(0);
+        size_t icount = val->getLength();
+        for (size_t i = 1; i < getSegmentIcounts().size(); ++i) {
+          getSegmentIcounts()[i] += icount;
+        }
+        increaseTotalLength(icount);
       }
       return true;
     }
@@ -550,6 +563,31 @@ protected:
       return PARENT::getSegmentOffsets();
     }
 
+    /*!
+     * \brief Returns the icount of segments
+     */
+    RAJA_INLINE
+    RAJA::RAJAVec<int> &getSegmentIcounts(void){
+      return PARENT::getSegmentIcounts();
+    }
+
+    RAJA_INLINE
+    RAJA::RAJAVec<int> const &getSegmentIcounts(void) const {
+      return PARENT::getSegmentIcounts();
+    }
+
+    /*!
+     * \brief Returns the number of indices (the total icount of segments
+     */
+    RAJA_INLINE
+    size_t& getTotalLength(void) { return PARENT::getTotalLength(); }
+
+    RAJA_INLINE
+    void setTotalLength(int n) { return PARENT::setTotalLength(n); }
+
+    RAJA_INLINE
+    void increaseTotalLength(int n) { return PARENT::increaseTotalLength(n); }
+
 public:
   using iterator = Iterators::numeric_iterator<Index_type>;
 
@@ -557,27 +595,6 @@ public:
   /// Get an iterator to the beginning.
   ///
   iterator begin() const { return iterator(0); }
-
-  /*
-  //OLGA HERE: How do I rework the access from the index iterator to the actual data?
-
-  begin_iterator begin() const {
-    int segid = 0;
-
-    //make a switch statement for every type!  OLGA HERE
-    if (getSegmentTypes()[segid] == T0_TypeId) {
-      std::cout<<"begin() in T0_TypeId"<<std::endl;
-      int offset = getSegmentOffsets()[segid];
-      std::cout << *data[offset] << std::endl;
-      return iterator(*(data[offset]));
-    }
-    else {
-      std::cout<<"begin() in else not T0_TypeId"<<std::endl;
-      // peel off T0
-      return PARENT::begin();
-    }
-  }
-  */
 
   ///
   /// Get an iterator to the end.
@@ -588,6 +605,120 @@ public:
   /// Return the number of elements in the range.
   ///
   Index_type size() const { return getNumSegments(); }
+
+  //@{
+  //!  @name BasicIndexSet segment subsetting methods (views ranges)
+
+  ///
+  /// Return a new BasicIndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the interval [begin, end).
+  ///
+  /// This BasicIndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  BasicIndexSet<T0, TREST...>* createView(int begin, int end) {
+    BasicIndexSet<T0, TREST...>* retVal = new BasicIndexSet<T0, TREST...>();
+
+    int numSeg = getNumSegments();
+    int minSeg = ((begin >= 0) ? begin : 0);
+    int maxSeg = ((end < numSeg) ? end : numSeg);
+
+    for (int i = minSeg; i < maxSeg; ++i) {
+      segment_push_into(i, *retVal, PUSH_BACK, PUSH_NOCOPY);
+    }
+    return retVal;
+  }
+
+  ///
+  /// Return a new BasicIndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the given int array.
+  ///
+  /// This BasicIndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  BasicIndexSet<T0, TREST...>* createView(const int* segIds, int len) {
+    BasicIndexSet<T0, TREST...>* retVal = new BasicIndexSet<T0, TREST...>();
+
+    int numSeg = getNumSegments();
+    for (int i = 0; i < len; ++i) {
+      if (segIds[i] >= 0 && segIds[i] < numSeg) {
+        segment_push_into(segIds[i], *retVal, PUSH_BACK, PUSH_NOCOPY);
+      }
+    }
+    return retVal;
+  }
+
+  ///
+  /// Return a new BasicIndexSet object that contains the subset of
+  /// segments in this IndexSet with ids in the argument object.
+  ///
+  /// This BasicIndexSet will not change and the created "view" into it
+  /// will not own any of its segments.
+  ///
+  /// The object must provide methods begin(), end(), and its
+  /// iterator type must de-reference to an integral value.
+  ///
+  template <typename T>
+  BasicIndexSet<T0, TREST...>* createView(const T& segIds) {
+    BasicIndexSet<T0, TREST...>* retVal = new BasicIndexSet<T0, TREST...>();
+
+    int numSeg = getNumSegments();
+    for (auto it = segIds.begin(); it != segIds.end(); ++it) {
+      if (*it >= 0 && *it < numSeg) {
+        segment_push_into(*it, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      }
+    }
+    return retVal;
+  }
+  //@}
+
+  RAJA_INLINE
+  void printSegment(size_t segid, std::ostream& os) const{
+    if(getSegmentTypes()[segid] == T0_TypeId){
+      int offset = getSegmentOffsets()[segid];
+      data[offset]->print(os);
+      if (owner[offset]) { os << "(1) "; }
+      else               { os << "(0) "; }
+    }
+    else{
+      PARENT::printSegment(segid, os);
+    }
+  }
+
+  void print(std::ostream& os) const {
+    size_t n = getNumSegments();
+
+    os << "\nBASIC INDEX SET : "
+       << " length = " << getLength() << std::endl
+       << "      num segments = " << n << std::endl;
+
+    os << "Segment Types:   ";
+    for(size_t i = 0; i < n; ++i){
+      os << " " << getSegmentTypes()[i];
+    }
+    os << std::endl;
+
+    os << "Segment Offsets: ";
+    for(size_t i = 0; i < n; ++i){
+      os << " " << getSegmentOffsets()[i];
+    }
+    os << std::endl;
+
+    os << "Segment Icounts: ";
+    for(size_t i = 0; i < n; ++i){
+      os << " " << getSegmentIcounts()[i];
+    }
+    os << std::endl;
+
+    for(size_t i = 0; i < n; ++i){
+      ////os << i << ": ";
+      printSegment(i,os);
+    }// end iterate over segments
+
+    os << "END BasicIndexSet::print()" << std::endl;
+
+  }//end print
+
 
   private:
     RAJA::RAJAVec<T0 *> data;
@@ -618,8 +749,10 @@ class BasicIndexSet<> {
     RAJA_INLINE
     BasicIndexSet(BasicIndexSet<> const &c)
     {
-      segment_types = c.segment_types;
+      segment_types   = c.segment_types;
       segment_offsets = c.segment_offsets;
+      segment_icounts = c.segment_icounts;
+      m_len           = c.m_len;
     }
 
     /*!
@@ -630,14 +763,21 @@ class BasicIndexSet<> {
 
     }*/
 
+
+
     /*!
      * \brief Swap operator for copy-and-swap idiom.
      */
     void swap(BasicIndexSet<>& other){
       using std::swap;
-      swap(segment_types, other.segment_types);
-      swap(segment_types, other.segment_types);
+      swap(segment_types,   other.segment_types);
+      swap(segment_offsets, other.segment_offsets);
+      swap(segment_icounts, other.segment_icounts);
+      swap(m_len,           other.m_len);
     }
+
+
+
   protected:
 
 
@@ -675,6 +815,11 @@ class BasicIndexSet<> {
       std::cout << "UNKNOWN" << std::endl;
     }
 
+    RAJA_INLINE
+    void printSegment(size_t segid, std::ostream& os) const{
+      os << "UNKNOWN" << std::endl;
+    }
+
     template<typename BODY, typename ... ARGS>
     RAJA_INLINE
     void segmentCall(size_t segid, BODY body, ARGS ... args) const {
@@ -699,6 +844,25 @@ class BasicIndexSet<> {
     RAJA::RAJAVec<int> const &getSegmentOffsets(void) const{
       return segment_offsets;
     }
+
+    RAJA_INLINE
+    RAJA::RAJAVec<int> &getSegmentIcounts(void){
+      return segment_icounts;
+    }
+
+    RAJA_INLINE
+    RAJA::RAJAVec<int> const &getSegmentIcounts(void) const{
+      return segment_icounts;
+    }
+
+    RAJA_INLINE
+    size_t& getTotalLength(void) { return m_len; }
+
+    RAJA_INLINE
+    void setTotalLength(int n) { m_len = n; }
+
+    RAJA_INLINE
+    void increaseTotalLength(int n) { m_len += n; }
 
     template<typename P0, typename ... PREST>
     RAJA_INLINE
@@ -745,10 +909,19 @@ class BasicIndexSet<> {
 public:
   using iterator = Iterators::numeric_iterator<Index_type>;
 
+  RAJA_INLINE
+  int getStartingIcount(int segid){
+    return segment_icounts[segid];
+  }
+
+  RAJA_INLINE
+  int const getStartingIcount(int segid) const{
+    return segment_icounts[segid];
+  }
+
   ///
   /// Get an iterator to the end.
   ///
-  //iterator end() const { return iterator(m_end); }
   iterator end() const { return 0; }
 
   ///
@@ -761,15 +934,23 @@ public:
   ///
   Index_type size() const { return 0; }
 
+private:
 
-  private:
+  // Vector of segment types:    seg_index -> seg_type
+  RAJA::RAJAVec<int> segment_types;
 
-    // Vector of segment types:    seg_index -> seg_type
-    RAJA::RAJAVec<int> segment_types;
+  // offsets into each segment vector:    seg_index -> seg_offset
+  // used as segment_data[seg_type][seg_offset]
+  RAJA::RAJAVec<int> segment_offsets;
 
-    // offsets into each segment vector:    seg_index -> seg_offset
-    // used as segment_data[seg_type][seg_offset]
-    RAJA::RAJAVec<int> segment_offsets;
+  //the icount of each segment
+  RAJA::RAJAVec<int> segment_icounts;
+
+  ///
+  /// Total length of all IndexSet segments.
+  ///
+  size_t m_len;
+
 };
 
 
