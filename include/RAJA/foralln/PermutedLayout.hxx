@@ -166,10 +166,9 @@ struct PermutedLayout<VarOps::index_sequence<PermInts...>, IdxLin>
     : public Layout_impl<VarOps::make_index_sequence<sizeof...(PermInts)>,
                          VarOps::index_sequence<PermInts...>,
                          IdxLin> {
-  using parent = Layout_impl<VarOps::make_index_sequence<sizeof...(PermInts)>,
-                             VarOps::index_sequence<PermInts...>,
-                             IdxLin>;
-  using parent::Layout_impl;
+  using Layout_impl<VarOps::make_index_sequence<sizeof...(PermInts)>,
+                    VarOps::index_sequence<PermInts...>,
+                    IdxLin>::Layout_impl;
 };
 
 }  // namespace RAJA

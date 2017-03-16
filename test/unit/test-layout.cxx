@@ -45,8 +45,6 @@ TEST(LayoutTest, OffsetVsRegular)
 
 TEST(LayoutTest, 2D_IJ)
 {
-  typedef RAJA::OffsetLayout<2> my_layout;
-
   /*
    * Construct a 2D layout:
    *
