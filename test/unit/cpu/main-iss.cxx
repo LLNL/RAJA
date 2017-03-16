@@ -147,8 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   if (is1 != is0) { std::cout<<"!= operator is not correct"<<std::endl; }
 
   int view_size = num_segments - 1;
-  std::cout<<"creating a view of size "<<view_size<<std::endl;
-
+  std::cout<<"creating a view of size "<<view_size;//<<std::endl;
   //RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
   //  = is1.createView<RAJA::RangeSegment, RAJA::ListSegment>(0, view_size);
   RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
@@ -159,13 +158,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   //is0.dumpSegments();
 
-  using omp_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;
   using seq_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
-
   RAJA::forall<seq_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  std::cout<<"finished forall with RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
 
-//  //RAJA::forall<omp_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
-
+#ifdef RAJA_ENABLE_OPENMP
+  using omp_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;
+  RAJA::forall<omp_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  std::cout<<"finished forall with RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;"<<std::endl;
+#endif
 
   cout << "\n DONE!!! " << endl;
 

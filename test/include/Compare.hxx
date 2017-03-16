@@ -47,6 +47,7 @@ bool array_equal(T ref_result, T to_check, Index_type alen)
   bool is_correct = true;
   for (Index_type i = 0; i < alen && is_correct; ++i) {
     is_correct &= equal(ref_result[i], to_check[i]);
+    if (!equal(ref_result[i], to_check[i])) { std::cout<<"OLGA array_equal fail at i="<<i<<", "<<to_check[i]<<" ("<<ref_result[i]<<")"<<std::endl; }
   }
 
   return is_correct;

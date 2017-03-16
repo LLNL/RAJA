@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
       RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
 
-      IndexSet iset;
+      BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
 
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
       RangeSegment seg2(4860, 10110);
       RangeSegment seg3(20490, 32003);
 
-      IndexSet iset;
+      BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
       iset.push_back(seg2);
@@ -276,7 +276,7 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
       double neg_chk_val, pos_chk_val;
 
-      neg_chk_val = pos_chk_val = 0.0;  
+      neg_chk_val = pos_chk_val = 0.0;
 
       int loops = 3;
       for (int k = 0; k < loops; k++) {
@@ -289,7 +289,7 @@ int main(int argc, char *argv[])
           }
           else {
             pos_chk_val += rand_dvalue[i];
-          } 
+          }
         }
         forall<cuda_exec<block_size> >(0,
                                        TEST_VEC_LEN,

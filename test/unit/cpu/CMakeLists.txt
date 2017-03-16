@@ -48,6 +48,11 @@ endif()
 if (RAJA_ENABLE_CUDA)
   set_source_files_properties(buildIndexSet.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_library(bis buildIndexSet.cxx)
+  target_link_libraries(bis RAJA)
+
+  set_source_files_properties(main-iss.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
+  cuda_add_executable(iss-test
+    main-iss.cxx)
 
   set_source_files_properties(main-traversal.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
   cuda_add_executable(CPUtraversal-test.exe
@@ -149,7 +154,7 @@ add_test(
 
 target_link_libraries(scan-tests RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-target_link_libraries(CPUtraversal-test.exe RAJA bis)
+target_link_libraries(CPUtraversal-test.exe bis RAJA)
 target_link_libraries(CPUreduce-test.exe RAJA bis)
 target_link_libraries(CPUnested-test.exe RAJA)
 if(RAJA_ENABLE_OPENMP)

@@ -146,13 +146,14 @@ struct ExecPolicy
 
       // Copy all segments of type T0
       data.resize(num);
-      for(size_t i = 0;i < num;++ i){
+      for(size_t i = 0; i < num; ++i){
         // construct a copy of the segment in c
-        data[i] = new T0(*c.data[i]);
+        //data[i] = new T0(*c.data[i]); // this would be an actual copy - copy the ref only
+        data[i] = c.data[i];
       }
 
-      // mark all as owned by us
-      owner.resize(num, 1);
+      // mark all as not owned by us
+      owner.resize(num, 0);
     }
 
     /*!
@@ -530,7 +531,7 @@ protected:
         getSegmentIcounts().push_front(0);
         size_t icount = val->getLength();
         for (size_t i = 1; i < getSegmentIcounts().size(); ++i) {
-          getSegmentIcounts()[i] += icount;
+          getSegmentIcounts()[i] += (int)icount;
         }
         increaseTotalLength(icount);
       }
@@ -580,7 +581,7 @@ protected:
      * \brief Returns the number of indices (the total icount of segments
      */
     RAJA_INLINE
-    size_t& getTotalLength(void) { return PARENT::getTotalLength(); }
+    Index_type& getTotalLength(void) { return PARENT::getTotalLength(); }
 
     RAJA_INLINE
     void setTotalLength(int n) { return PARENT::setTotalLength(n); }
@@ -733,7 +734,7 @@ class BasicIndexSet<> {
      * \brief Default ctor produces empty IndexSet.
      */
     RAJA_INLINE
-    BasicIndexSet() {}
+    BasicIndexSet() : m_len(0)  {}
 
 
     /*!
@@ -856,7 +857,7 @@ class BasicIndexSet<> {
     }
 
     RAJA_INLINE
-    size_t& getTotalLength(void) { return m_len; }
+    Index_type& getTotalLength(void) { return m_len; }
 
     RAJA_INLINE
     void setTotalLength(int n) { m_len = n; }
@@ -915,7 +916,7 @@ public:
   }
 
   RAJA_INLINE
-  int const getStartingIcount(int segid) const{
+  int getStartingIcount(int segid) const{
     return segment_icounts[segid];
   }
 
@@ -949,7 +950,7 @@ private:
   ///
   /// Total length of all IndexSet segments.
   ///
-  size_t m_len;
+  Index_type m_len;
 
 };
 
