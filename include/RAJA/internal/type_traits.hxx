@@ -60,6 +60,8 @@
 
 namespace RAJA
 {
+namespace detail
+{
 
 template <typename T>
 struct function_traits : function_traits<decltype(&T::operator())> {
@@ -99,6 +101,8 @@ using extract_arg = std::tuple_element<I, typename function_traits<Fn>::argument
 
 template <size_t I, typename Fn>
 using extract_arg_t = typename extract_arg<I, Fn>::type;
+
+}  // closing brace for detail namespace
 
 }  // closing brace for RAJA namespace
 
