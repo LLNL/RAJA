@@ -116,14 +116,15 @@ template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout
     : public internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
                                          IdxLin> {
-  using parent =
-      internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+  using parent = internal::OffsetLayout_impl<
+      VarOps::make_index_sequence<n_dims>, IdxLin>;
 
-  using parent::OffsetLayout_impl;
+  using internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                    IdxLin>::OffsetLayout_impl;
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
       const internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
-                                        IdxLin>& rhs)
+                                        IdxLin> &rhs)
       : parent{rhs}
   {
   }
