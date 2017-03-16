@@ -74,6 +74,10 @@ struct View {
   {
   }
 
+  RAJA_INLINE void set_data(DataType *data_ptr) {
+      data = data_ptr;
+  }
+
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>
@@ -98,6 +102,10 @@ struct TypedView {
   RAJA_INLINE constexpr TypedView(DataType *data_ptr, LayoutT &&layout)
       : base_(data_ptr, layout)
   {
+  }
+
+  RAJA_INLINE void set_data(DataType *data_ptr) {
+      base_.set_data(data_ptr);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const

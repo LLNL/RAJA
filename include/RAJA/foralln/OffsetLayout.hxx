@@ -78,7 +78,7 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
 
   IdxLin offsets[sizeof...(RangeInts)];
 
-  RAJA_INLINE RAJA_HOST_DEVICE
+  constexpr RAJA_INLINE
   OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> lower,
                     std::array<IdxLin, sizeof...(RangeInts)> upper)
       : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
@@ -93,7 +93,7 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
     return base_((indices - offsets[RangeInts])...);
   }
 
-  static RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl<IndexRange, IdxLin>
+  static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin>
   from_layout_and_offsets(
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
@@ -102,7 +102,7 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
   }
 
 private:
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  constexpr RAJA_INLINE
   OffsetLayout_impl(const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
                     const Layout<sizeof...(RangeInts), IdxLin>& rhs)
       : base_{rhs}, offsets{offsets_in[RangeInts]...}

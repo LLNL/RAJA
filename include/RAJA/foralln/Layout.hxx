@@ -109,9 +109,9 @@ public:
   { }
 
   template <typename... Types>
-  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
-                                           const std::array<IdxLin, n_dims> &strides_in,
-                                           const std::array<IdxLin, n_dims> &mods_in)
+  constexpr RAJA_INLINE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
+                                        const std::array<IdxLin, n_dims> &strides_in,
+                                        const std::array<IdxLin, n_dims> &mods_in)
   : sizes{sizes_in[RangeInts]...},
     strides{strides_in[RangeInts]...},
     mods{mods_in[RangeInts]...}
