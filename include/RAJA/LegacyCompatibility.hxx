@@ -32,6 +32,7 @@ static_assert(
 // }
 // #else
 #include <tuple>
+#include <array>
 namespace VarOps
 {
 using std::tuple;
