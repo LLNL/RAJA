@@ -3,7 +3,7 @@
 
 #include "RAJA/internal/defines.hxx"
 
-#if !defined(__INTEL_COMPILER)
+#if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(
     __cplusplus >= 201103L,
     "C++ standards below 2011 are not supported" RAJA_STRINGIFY_HELPER(__cplusplus));

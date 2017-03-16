@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 #include <cfloat>
@@ -61,6 +61,14 @@ int main(int argc, char *argv[])
   Index_type lseg_len = lindices.size();
   RAJAVec<Index_type> lseg(lseg_len);
   std::vector<Index_type> lseg_vec(lseg_len);
+
+  // Create empty Range segment
+  rbeg = 1;
+  rend = 1;
+  iset.push_back(RangeSegment(rbeg, rend));
+  last_idx = rend;
+
+  cout << "\n last_idx = " << last_idx << endl;
 
   // Create Range segment
   rbeg = 1;
@@ -189,6 +197,44 @@ int main(int argc, char *argv[])
   ///////////////////////////////////////////////////////////////////////////
 
   cout << "\n\n BEGIN RAJA::forall tests..." << endl;
+
+  ///
+  /// Run 0 length range traversal test for sanity check
+  ///
+
+  // Reset reference and results arrays
+  cudaMemset(test_array, 0, sizeof(Real_type) * array_length);
+  cudaMemset(ref_array, 0, sizeof(Real_type) * array_length);
+
+  //
+  // Generate reference result to check correctness.
+  // Note: Reference does not use RAJA!!!
+  //
+  for (Index_type i = 0; i < 0; ++i) {
+    ref_array[i] = parent[i] * parent[i];
+  }
+
+  forall<cuda_exec<block_size> >(0,
+                                 0,
+                                 [=] __device__(Index_type idx) {
+                                   test_array[idx] = parent[idx] * parent[idx];
+                                 });
+
+  s_ntests_run++;
+  if (!array_equal(ref_array, test_array, 0)) {
+    cout << "\n TEST FAILURE " << endl;
+#if 0
+      cout << endl << endl;
+      for (Index_type i = 0; i < is_indices.size(); ++i) {
+         cout << "test_array[" << is_indices[i] << "] = "
+                   << test_array[ is_indices[i] ]
+                   << " ( " << ref_array[ is_indices[i] ] << " ) " << endl;
+      }
+      cout << endl;
+#endif
+  } else {
+    s_ntests_passed++;
+  }
 
   ///
   /// Run range traversal test in its simplest form for sanity check

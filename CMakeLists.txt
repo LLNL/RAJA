@@ -9,7 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -44,23 +44,24 @@ cmake_minimum_required (VERSION 3.3)
 
 project(RAJA LANGUAGES CXX C)
 
-set(CMAKE_CXX_STANDARD 14) # note, will decay automatically
-
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 1)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_MINOR 2)
+set(RAJA_VERSION_PATCHLEVEL 4)
 
-set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/modules" ${CMAKE_MODULE_PATH})
+set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
+option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
+set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
+option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
@@ -72,6 +73,8 @@ include(cmake/SetupCompilers.cmake)
 include(cmake/SetupPackages.cmake)
 # Setup internal RAJA configuration options
 include(cmake/SetupRajaConfig.cmake)
+# Macros for building executables and libraries
+include (cmake/RAJAMacros.cmake)
 
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
@@ -83,7 +86,6 @@ install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include
 
 add_subdirectory(src)
 
-
 if(RAJA_ENABLE_TESTS)
   add_subdirectory(test)
 endif()
@@ -91,6 +93,15 @@ endif()
 if(RAJA_ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
+
+if (RAJA_ENABLE_DOCUMENTATION)
+  if (SPHINX_FOUND)
+    add_subdirectory(docs)
+  else ()
+      message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx not found. \
+      Documentation won't be built.")
+  endif ()
+endif ()
 
 if(RAJA_ENABLE_APPLICATIONS)
   if (NOT EXISTS ${PROJECT_SOURCE_DIR}/extra/llnl-raja-proxies/CMakeLists.txt)

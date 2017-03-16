@@ -35,7 +35,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -67,7 +67,6 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_FT 
 
 #define @RAJA_FP@
@@ -83,6 +82,7 @@
 #cmakedefine RAJA_ENABLE_OPENMP
 #cmakedefine RAJA_ENABLE_CILK
 #cmakedefine RAJA_ENABLE_CUDA
+#cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_NESTED
 
 /*
@@ -138,6 +138,13 @@ const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
 const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
 const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
+
+#if defined (_WIN32)
+#define RAJA_RESTRICT __restrict
+#else
+#define RAJA_RESTRICT __restrict__
+#endif
+
 
 //
 //  Compiler-specific definitions for inline directives, data alignment

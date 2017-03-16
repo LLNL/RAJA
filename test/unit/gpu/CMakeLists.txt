@@ -10,7 +10,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -47,70 +47,39 @@ endif()
 
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
-set_source_files_properties(ReduceMin.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(reducemin.exe
-  ReduceMin.cxx)
+raja_add_test(
+  NAME reducemin
+  SOURCES ReduceMin.cxx)
 
-add_test(
-    NAME reducemin
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemin.exe>)
+raja_add_test(
+  NAME reducemax
+  SOURCES ReduceMax.cxx)
 
-set_source_files_properties(ReduceMax.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(reducemax.exe
-  ReduceMax.cxx)
-add_test(
-    NAME reducemax
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemax.exe>)
+raja_add_test(
+  NAME reducesum
+  SOURCES ReduceSum.cxx)
 
-set_source_files_properties(ReduceSum.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(reducesum.exe
-  ReduceSum.cxx)
-add_test(
-    NAME reducesum
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducesum.exe>)
-
-set_source_files_properties(Traversal.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(traversal.exe
-  Traversal.cxx)
-add_test(
-    NAME traversal
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:traversal.exe>)
+raja_add_test(
+  NAME traversal
+  SOURCES Traversal.cxx)
 
 if(RAJA_ENABLE_OPENMP)
-  set_source_files_properties(Nested.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-    cuda_add_executable(nested.exe
-      Nested.cxx)
-    add_test(
-        NAME nested
-        COMMAND ${TEST_DRIVER} $<TARGET_FILE:nested.exe>)
-    target_link_libraries(nested.exe RAJA)
+  raja_add_test(
+    NAME nested
+    SOURCES Nested.cxx)
 endif()
 
-set_source_files_properties(ReduceMinLoc.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(reduceminloc.exe
-  ReduceMinLoc.cxx)
-add_test(
-    NAME reduceminloc
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reduceminloc.exe>)
+raja_add_test(
+  NAME reduceminloc
+  SOURCES ReduceMinLoc.cxx)
 
-set_source_files_properties(ReduceMaxLoc.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(reducemaxloc.exe
-  ReduceMaxLoc.cxx)
-add_test(
-    NAME reducemaxloc
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:reducemaxloc.exe>)
+raja_add_test(
+  NAME reducemaxloc
+  SOURCES ReduceMaxLoc.cxx)
 
-set_source_files_properties(test-scan.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-cuda_add_executable(scan.exe
-  test-scan.cxx)
-add_test(
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  raja_add_test(
     NAME scan
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:scan.exe>)
-
-target_link_libraries(reducemin.exe RAJA)
-target_link_libraries(reducemax.exe RAJA)
-target_link_libraries(reducesum.exe RAJA)
-target_link_libraries(traversal.exe RAJA)
-target_link_libraries(reduceminloc.exe RAJA)
-target_link_libraries(reducemaxloc.exe RAJA)
-target_link_libraries(scan.exe RAJA gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+    SOURCES test-scan.cxx
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif ()

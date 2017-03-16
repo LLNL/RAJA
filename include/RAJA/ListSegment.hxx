@@ -22,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -219,7 +219,7 @@ private:
                      Index_type len,
                      IndexOwnership indx_own);
 
-  Index_type* __restrict__ m_indx;
+  Index_type* RAJA_RESTRICT m_indx;
   Index_type m_len;
   IndexOwnership m_indx_own;
 };

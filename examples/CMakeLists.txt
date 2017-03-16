@@ -41,16 +41,6 @@
 #
 ###############################################################################
 
-
-if (RAJA_ENABLE_CUDA)
-  set_source_files_properties( pi.cxx 
-    PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-
-    cuda_add_executable(raja-pi
-      pi.cxx)
-else ()
-    add_executable(raja-pi
-      pi.cxx)
-endif ()
-
-target_link_libraries(raja-pi RAJA)
+raja_add_executable(
+  NAME raja-pi 
+  SOURCES pi.cxx)

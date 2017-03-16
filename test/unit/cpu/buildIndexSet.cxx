@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 //
