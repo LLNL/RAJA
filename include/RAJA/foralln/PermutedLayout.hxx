@@ -112,6 +112,36 @@ auto make_permuted_layout(Sizes... sizes) -> Layout<sizeof...(Sizes)>
       VarOps::make_index_sequence<sizeof...(Sizes)>(), Permutation(), sizes...);
 }
 
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
+                          std::array<size_t, Rank> permutation) ->
+Layout<Rank, IdxLin>
+{
+  std::array<IdxLin, Rank> strides, mods;
+  std::array<IdxLin, Rank> folded_strides, lmods;
+  for (size_t i = 0; i < Rank; ++i) {
+    folded_strides[i] = 1;
+    for (size_t j = 0; j < i; ++j) {
+      folded_strides[j] *= sizes[permutation[i]];
+    }
+  }
+
+  for (size_t i = 0; i < Rank; ++i) {
+    strides[permutation[i]] = folded_strides[i];
+  }
+
+  for (size_t i = 1; i < Rank; i++) {
+    lmods[i] = folded_strides[i - 1];
+  }
+  lmods[0] = std::numeric_limits<IdxLin>::max();
+
+  for (size_t i = 0; i < Rank; ++i) {
+    mods[permutation[i]] = lmods[i];
+  }
+
+  return Layout<Rank, IdxLin>(sizes, strides, mods);
+}
+
 template <typename Range, typename Perm, typename IdxLin>
 struct Layout_impl;
 template <size_t... RangeInts, size_t... PermInts, typename IdxLin>
@@ -170,6 +200,11 @@ struct PermutedLayout<VarOps::index_sequence<PermInts...>, IdxLin>
                     VarOps::index_sequence<PermInts...>,
                     IdxLin>::Layout_impl;
 };
+
+template<size_t ... Ints>
+using Perm = VarOps::index_sequence<Ints...>;
+template<size_t N>
+using MakePerm = VarOps::make_index_sequence<N>;
 
 }  // namespace RAJA
 

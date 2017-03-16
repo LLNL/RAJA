@@ -29,16 +29,17 @@ TEST(LayoutTest, 1D)
 
 TEST(LayoutTest, OffsetVsRegular)
 {
-  const auto layout = RAJA::make_permuted_layout<RAJA::PERM_JI>(6, 6);
+  const auto layout = RAJA::make_permuted_layout({6, 6},
+                                                   RAJA::Perm<1,0>::value);
   const auto offset =
-      RAJA::make_permuted_offset_layout<RAJA::PERM_JI>({0, 0}, {5, 5});
+      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::value);
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
   for (int j = 0; j < 6; ++j) {
     for (int i = 0; i < 6; ++i) {
-      ASSERT_EQ(offset(i, j), layout(i, j));
+      ASSERT_EQ(offset(i, j), layout(i, j)) << layout.strides[0] << layout.strides[1];
     }
   }
 }
@@ -82,7 +83,7 @@ TEST(LayoutTest, 2D_JI)
    * (-1, -2), (0, -2), (1, -2)
    */
   const my_layout layout =
-      RAJA::make_permuted_offset_layout<RAJA::PERM_JI>({-1, -2}, {1, 0});
+      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::value);
 
   /*
    * First element, (-1, -2), should have index 0.

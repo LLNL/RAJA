@@ -137,52 +137,24 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
   return OffsetLayout<n_dims, IdxLin>{lower, upper};
 }
 
-namespace internal
-{
-template <typename IdxLin = Index_type, size_t... PermInts, size_t... RangeInts>
-auto make_permuted_offset_layout_from_upper_lower(
-    VarOps::index_sequence<PermInts...> Permutation,
-    VarOps::index_sequence<RangeInts...> IndexRange,
-    const std::array<IdxLin, sizeof...(PermInts)>& lower,
-    const std::array<IdxLin, sizeof...(RangeInts)>& upper)
-    -> OffsetLayout<sizeof...(PermInts), IdxLin>
-{
-  const auto permuted_layout =
-      make_permuted_layout<decltype(Permutation), IdxLin>(
-          (upper[RangeInts] - lower[RangeInts] + 1)...);
-  const OffsetLayout<sizeof...(PermInts), IdxLin> permuted_offset_layout{
-      internal::OffsetLayout_impl<decltype(IndexRange), IdxLin>::
-          from_layout_and_offsets(lower, permuted_layout)};
-  return permuted_offset_layout;
-}
-template <typename IdxLin = Index_type, typename Array, size_t... PermInts>
-constexpr auto make_permuted_offset_layout_helper(
-    VarOps::index_sequence<PermInts...>,
-    const Array& lower,
-    const Array& upper) -> OffsetLayout<sizeof...(PermInts), IdxLin>
-{
-  return internal::make_permuted_offset_layout_from_upper_lower(
-      VarOps::integer_sequence<PermInts...>{},
-      VarOps::make_index_sequence<sizeof...(PermInts)>{},
-      lower,
-      upper);
-}
-}
-
-template <typename Permutation, typename IdxLin = Index_type>
-constexpr auto make_permuted_offset_layout(const std::array<IdxLin,
-                                                            Permutation::size>&
-                                                                lower,
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_offset_layout(const std::array<IdxLin,
+                                                            Rank>&
+                                                            lower,
                                            const std::array<IdxLin,
-                                                            Permutation::size>&
-                                                            upper)
-    -> decltype(internal::make_permuted_offset_layout_helper(Permutation{},
-                                                             lower,
-                                                             upper))
+                                                            Rank>&
+                                                            upper,
+                                           const std::array<size_t,
+                                                            Rank>&
+                                                            permutation)
+    -> decltype(make_offset_layout<Rank, IdxLin>(lower, upper))
 {
-  return internal::make_permuted_offset_layout_helper(Permutation{},
-                                                      lower,
-                                                      upper);
+  std::array<IdxLin, Rank> sizes;
+  for (size_t i=0; i < Rank; ++i) {
+    sizes[i] = upper[i] - lower[i] + 1;
+  }
+  return internal::OffsetLayout_impl<VarOps::make_index_sequence<Rank>, IdxLin>::from_layout_and_offsets
+      (lower, make_permuted_layout(sizes, permutation));
 }
 
 }  // namespace RAJA
