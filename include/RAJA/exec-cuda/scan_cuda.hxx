@@ -80,8 +80,7 @@ template <typename InputIter, typename Function, typename T>
 void inclusive_inplace(const ::RAJA::cuda_exec_base&,
                        InputIter begin,
                        InputIter end,
-                       Function binary_op,
-                       T init)
+                       Function binary_op)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
   cudaDeviceSynchronize();
@@ -115,8 +114,7 @@ void inclusive(const ::RAJA::cuda_exec_base&,
                InputIter begin,
                InputIter end,
                OutputIter out,
-               Function binary_op,
-               T init)
+               Function binary_op)
 {
   ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
   cudaDeviceSynchronize();

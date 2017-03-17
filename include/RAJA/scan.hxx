@@ -80,8 +80,7 @@ template <typename ExecPolicy,
           typename BinaryFunction = ::RAJA::operators::plus<T>>
 void inclusive_scan_inplace(Iter begin,
                             Iter end,
-                            BinaryFunction binop = BinaryFunction{},
-                            T value = BinaryFunction::identity)
+                            BinaryFunction binop = BinaryFunction{})
 {
   detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop, value);
 }
@@ -136,8 +135,7 @@ template <typename ExecPolicy,
 void inclusive_scan(Iter begin,
                     Iter end,
                     IterOut out,
-                    BinaryFunction binop = BinaryFunction{},
-                    T value = BinaryFunction::identity)
+                    BinaryFunction binop = BinaryFunction{})
 {
   detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop, value);
 }

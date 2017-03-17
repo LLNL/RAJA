@@ -86,19 +86,18 @@ template <typename Iter, typename BinFn, typename ValueT>
 void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        Iter begin,
                        Iter end,
-                       BinFn f,
-                       ValueT v)
+                       BinFn f)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
   const int p = omp_get_max_threads();
-  ::std::vector<Value> sums(p, v);
+  ::std::vector<Value> sums(p, Value());
 #pragma omp parallel
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
-    inclusive_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f, v);
+    inclusive_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f);
     sums[pid] = *(begin + i1 - 1);
 #pragma omp barrier
 #pragma omp single
@@ -153,11 +152,10 @@ void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
                Iter end,
                OutIter out,
-               BinFn f,
-               ValueT v)
+               BinFn f)
 {
   ::std::copy(begin, end, out);
-  inclusive_inplace(exec, out, out + (end - begin), f, v);
+  inclusive_inplace(exec, out, out + (end - begin), f);
 }
 
 /*!
