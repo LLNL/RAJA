@@ -137,7 +137,7 @@ void inclusive_scan(Iter begin,
                     IterOut out,
                     BinaryFunction binop = BinaryFunction{})
 {
-  detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop, value);
+  detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop);
 }
 
 /*!
