@@ -52,6 +52,11 @@ if (NOT MSVC)
     SOURCES test-timer.cxx
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
+  raja_add_test(
+          NAME multipolicy
+          SOURCES multipolicy.cxx
+          DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
+  )
 endif()
 
 add_subdirectory(cpu)

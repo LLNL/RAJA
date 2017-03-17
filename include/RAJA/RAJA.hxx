@@ -136,6 +136,7 @@
 #include "RAJA/exec-cilk/raja_cilk.hxx"
 #endif
 
+#include "RAJA/MultiPolicy.hxx"
 #include "RAJA/IndexSetUtils.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
