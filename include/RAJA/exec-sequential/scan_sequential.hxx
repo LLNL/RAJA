@@ -73,7 +73,7 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn, typename T>
+template <typename Iter, typename BinFn>
 void inclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
                        Iter end,
@@ -112,7 +112,7 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn, typename T>
+template <typename Iter, typename OutIter, typename BinFn>
 void inclusive(const ::RAJA::seq_exec&,
                Iter begin,
                Iter end,

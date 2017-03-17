@@ -82,7 +82,7 @@ int firstIndex(int n, int p, int pid)
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn, typename ValueT>
+template <typename Iter, typename BinFn>
 void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
                        Iter begin,
                        Iter end,
@@ -147,7 +147,7 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
+template <typename Iter, typename OutIter, typename BinFn>
 void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
                Iter begin,
                Iter end,
