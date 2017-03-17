@@ -176,7 +176,6 @@ TYPED_TEST_CASE_P(ExclusiveScanTest);
 
 TYPED_TEST_P(InclusiveScanTest, InclusiveCorrectness)
 {
-  auto init = decltype(this->function)::identity;
   compareInclusive(this->original.get(),
                    this->data.get(),
                    this->function);
