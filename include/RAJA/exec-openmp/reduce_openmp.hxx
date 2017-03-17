@@ -92,7 +92,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMin(T init_val):
-    parent(NULL), val(init_val)
+    m_parent(NULL), m_val(init_val)
   {
   }
 
@@ -100,20 +100,20 @@ public:
   // Copy ctor.
   //
   ReduceMin(const ReduceMin<omp_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
   }
 
   //
-  // Destruction folds value into parent object.
+  // Destruction folds value into m_parent object.
   //
   ~ReduceMin<omp_reduce, T>()
   {
-    if (parent) {
+    if (m_parent) {
 #pragma omp critical
       {
-        parent->val = RAJA_MIN(parent->val, val);
+        m_parent->m_val = RAJA_MIN(m_parent->m_val, m_val);
       }
     }
   }
@@ -123,7 +123,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -137,12 +137,12 @@ public:
   //
   const ReduceMin<omp_reduce, T>& min(T rhs) const
   {
-    val = RAJA_MIN(val, rhs);
+    m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
   ReduceMin<omp_reduce, T>& min(T rhs) {
-    val = RAJA_MIN(val, rhs);
+    m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
@@ -152,8 +152,8 @@ private:
   //
   ReduceMin<omp_reduce, T>();
 
-  const my_type * parent;
-  mutable T val;
+  const my_type * m_parent;
+  mutable T m_val;
 };
 
 /*!
@@ -175,7 +175,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMinLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc)
+    m_parent(NULL), m_val(init_val), m_idx(init_loc)
   {
   }
 
@@ -183,9 +183,9 @@ public:
   // Copy ctor.
   //
   ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val),
-    idx(other.idx)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
+    m_idx(other.m_idx)
   {
   }
 
@@ -195,10 +195,10 @@ public:
   //
   ~ReduceMinLoc<omp_reduce, T>()
   {
-    if (parent) {
+    if (m_parent) {
 #pragma omp critical
       {
-        parent->minloc(val, idx);
+        m_parent->minloc(m_val, m_idx);
       }
     }
   }
@@ -208,7 +208,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -221,26 +221,26 @@ public:
   //
   Index_type getLoc()
   {
-    return idx;
+    return m_idx;
   }
 
   //
-  // Method that updates min and index values for current thread.
+  // Method that updates min and index value for current thread.
   //
   const ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
   {
-    if (rhs < val) {
-      val = rhs;
-      idx = rhs_idx;
+    if (rhs < m_val) {
+      m_val = rhs;
+      m_idx = rhs_idx;
     }
     return *this;
   }
 
   ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx)
   {
-    if (rhs < val) {
-      val = rhs;
-      idx = rhs_idx;
+    if (rhs < m_val) {
+      m_val = rhs;
+      m_idx = rhs_idx;
     }
     return *this;
   }
@@ -251,10 +251,10 @@ private:
   //
   ReduceMinLoc<omp_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
-  mutable Index_type idx;
+  mutable T m_val;
+  mutable Index_type m_idx;
 };
 
 /*!
@@ -276,7 +276,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMax(T init_val):
-    parent(NULL), val(init_val)
+    m_parent(NULL), m_val(init_val)
   {
   }
 
@@ -284,8 +284,8 @@ public:
   // Copy ctor.
   //
   ReduceMax(const ReduceMax<omp_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
   }
 
@@ -295,10 +295,10 @@ public:
   //
   ~ReduceMax<omp_reduce, T>()
   {
-    if (parent) {
+    if (m_parent) {
 #pragma omp critical
       {
-        parent->val = RAJA_MAX(parent->val, val);
+        m_parent->m_val = RAJA_MAX(m_parent->m_val, m_val);
       }
     }
   }
@@ -308,7 +308,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -321,13 +321,13 @@ public:
   //
   const ReduceMax<omp_reduce, T>& max(T rhs) const
   {
-    val = RAJA_MAX(val, rhs);
+    m_val = RAJA_MAX(m_val, rhs);
     return *this;
   }
 
   ReduceMax<omp_reduce, T>& max(T rhs)
   {
-    val = RAJA_MAX(val, rhs);
+    m_val = RAJA_MAX(m_val, rhs);
     return *this;
   }
 
@@ -337,9 +337,9 @@ private:
   //
   ReduceMax<omp_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
+  mutable T m_val;
 };
 
 /*!
@@ -361,7 +361,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMaxLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc)
+    m_parent(NULL), m_val(init_val), m_idx(init_loc)
   {
   }
 
@@ -369,9 +369,9 @@ public:
   // Copy ctor.
   //
   ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val),
-    idx(other.idx)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
+    m_idx(other.m_idx)
   {
   }
 
@@ -381,10 +381,10 @@ public:
   //
   ~ReduceMaxLoc<omp_reduce, T>()
   {
-    if (parent) {
+    if (m_parent) {
 #pragma omp critical
       {
-        parent->maxloc(val, idx);
+        m_parent->maxloc(m_val, m_idx);
       }
     }
   }
@@ -394,7 +394,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -407,26 +407,26 @@ public:
   //
   Index_type getLoc()
   {
-    return idx;
+    return m_idx;
   }
 
   //
-  // Method that updates max and index values for current thread.
+  // Method that updates max and index value for current thread.
   //
   const ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
   {
-    if (rhs > val) {
-      val = rhs;
-      idx = rhs_idx;
+    if (rhs > m_val) {
+      m_val = rhs;
+      m_idx = rhs_idx;
     }
     return *this;
   }
 
   ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx)
   {
-    if (rhs > val) {
-      val = rhs;
-      idx = rhs_idx;
+    if (rhs > m_val) {
+      m_val = rhs;
+      m_idx = rhs_idx;
     }
     return *this;
   }
@@ -437,10 +437,10 @@ private:
   //
   ReduceMaxLoc<omp_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
-  mutable Index_type idx;
+  mutable T m_val;
+  mutable Index_type m_idx;
 };
 
 /*!
@@ -462,7 +462,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceSum(T init_val, T initializer = 0)
-    : parent(NULL), val(init_val), custom_init(initializer)
+    : m_parent(NULL), m_val(init_val), m_custom_init(initializer)
   {
   }
 
@@ -470,9 +470,9 @@ public:
   // Copy ctor.
   //
   ReduceSum(const ReduceSum<omp_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.custom_init),
-    custom_init(other.custom_init)
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_custom_init),
+    m_custom_init(other.m_custom_init)
   {
   }
 
@@ -482,10 +482,10 @@ public:
   //
   ~ReduceSum<omp_reduce, T>()
   {
-    if (parent) {
+    if (m_parent) {
 #pragma omp critical
       {
-        *parent += val;
+        *m_parent += m_val;
       }
     }
   }
@@ -495,7 +495,7 @@ public:
   //
   operator T()
   {
-    return val;
+    return m_val;
   }
 
   //
@@ -508,13 +508,13 @@ public:
   //
   const ReduceSum<omp_reduce, T>& operator+=(T rhs) const
   {
-    this->val += rhs;
+    this->m_val += rhs;
     return *this;
   }
 
   ReduceSum<omp_reduce, T>& operator+=(T rhs)
   {
-    this->val += rhs;
+    this->m_val += rhs;
     return *this;
   }
 
@@ -524,10 +524,10 @@ private:
   //
   ReduceSum<omp_reduce, T>();
 
-  const my_type * parent;
+  const my_type * m_parent;
 
-  mutable T val;
-  T custom_init;
+  mutable T m_val;
+  T m_custom_init;
 
 };
 
@@ -730,7 +730,7 @@ public:
   }
 
   //
-  // Method that updates min and index values for current thread.
+  // Method that updates min and index value for current thread.
   //
   ReduceMinLoc<omp_reduce_ordered, T> minloc(T val, Index_type idx) const
   {
@@ -958,7 +958,7 @@ public:
   }
 
   //
-  // Method that updates max and index values for current thread.
+  // Method that updates max and index value for current thread.
   //
   ReduceMaxLoc<omp_reduce_ordered, T> maxloc(T val, Index_type idx) const
   {
