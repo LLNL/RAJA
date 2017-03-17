@@ -82,7 +82,7 @@ void inclusive_scan_inplace(Iter begin,
                             Iter end,
                             BinaryFunction binop = BinaryFunction{})
 {
-  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop, value);
+  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop);
 }
 
 /*!
