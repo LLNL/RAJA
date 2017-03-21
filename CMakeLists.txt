@@ -95,12 +95,7 @@ if(RAJA_ENABLE_EXAMPLES)
 endif()
 
 if (RAJA_ENABLE_DOCUMENTATION)
-  if (SPHINX_FOUND)
-    add_subdirectory(docs)
-  else ()
-      message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx not found. \
-      Documentation won't be built.")
-  endif ()
+  add_subdirectory(docs)
 endif ()
 
 if(RAJA_ENABLE_APPLICATIONS)
