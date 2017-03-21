@@ -307,7 +307,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 
   RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
 
-  RAJA::View<double, RAJA::Layout<RAJA::Index_type, RAJA::PERM_IJK, RAJA::Index_type, RAJA::Index_type, RAJA::Index_type> > view(
+  RAJA::View<double, RAJA::Layout<3> > view(
       this->array, this->x_size, this->y_size, this->z_size);
 
   RAJA::forallN<ExecPolicy>(

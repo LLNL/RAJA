@@ -32,6 +32,7 @@ static_assert(
 // }
 // #else
 #include <tuple>
+#include <array>
 namespace VarOps
 {
 using std::tuple;
@@ -178,6 +179,7 @@ template <size_t... Ints>
 struct integer_sequence {
   using type = integer_sequence;
   static constexpr size_t size = sizeof...(Ints);
+  static constexpr std::array<size_t, sizeof...(Ints)> value{Ints...};
 };
 
 template <template <class...> class Seq, class First, class... Ints>
@@ -189,6 +191,8 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
 
 template <size_t... Ints>
 constexpr size_t integer_sequence<Ints...>::size;
+template <size_t... Ints>
+constexpr  std::array<size_t, sizeof...(Ints)> integer_sequence<Ints...>::value;
 
 namespace integer_sequence_detail
 {
