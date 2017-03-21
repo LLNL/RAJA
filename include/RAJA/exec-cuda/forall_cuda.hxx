@@ -73,7 +73,6 @@
 
 namespace RAJA
 {
-
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -264,6 +263,77 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
   }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
+
+  RAJA_FT_END;
+
+  afterCudaKernelLaunch();
+}
+
+
+//
+////////////////////////////////////////////////////////////////////////
+//
+// Function templates for CUDA execution over iterables on a stream.
+//
+////////////////////////////////////////////////////////////////////////
+//
+template <size_t BLOCK_SIZE, typename Iterable, typename LOOP_BODY>
+RAJA_INLINE void forall(cuda_stream_exec<BLOCK_SIZE> pol,
+                        Iterable&& iter,
+                        LOOP_BODY&& loop_body)
+{
+  beforeCudaKernelLaunch();
+
+  auto body = loop_body;
+
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  Index_type len = std::distance(begin, end);
+  cudaStream_t stream = pol.stream;
+  size_t gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+  gridSize = RAJA_MIN(gridSize, RAJA_CUDA_MAX_NUM_BLOCKS);
+
+  RAJA_FT_BEGIN;
+
+  if (len > 0) {
+    std::cout<<"LAUNCHING CUDA KERNEL IN STREAM WITH LEN "<<len<<"\n";
+    forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS_STREAM(gridSize, BLOCK_SIZE, stream)>>>
+                      (std::move(body), std::move(begin), len);
+  }
+
+  RAJA_CUDA_CHECK_AND_SYNC(true);
+
+  RAJA_FT_END;
+
+  afterCudaKernelLaunch();
+}
+
+
+template <size_t BLOCK_SIZE, typename Iterable, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(cuda_stream_exec<BLOCK_SIZE> pol,
+                               Iterable&& iter,
+                               Index_type icount,
+                               LOOP_BODY&& loop_body)
+{
+  beforeCudaKernelLaunch();
+
+  auto body = loop_body;
+
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  Index_type len = std::distance(begin, end);
+
+  size_t gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+  gridSize = RAJA_MIN(gridSize, RAJA_CUDA_MAX_NUM_BLOCKS);
+  cudaStream_t stream = pol.stream
+  RAJA_FT_BEGIN;
+
+  if (len > 0) {
+    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE), stream>>>
+                             (std::move(body), std::move(begin), len, icount);
+ }
+
+  RAJA_CUDA_CHECK_AND_SYNC(true);
 
   RAJA_FT_END;
 

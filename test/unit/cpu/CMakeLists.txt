@@ -62,6 +62,7 @@ if(RAJA_ENABLE_OPENMP)
     SOURCES main-nested-reduce.cxx)
 endif()
 
+
 raja_add_test(
   NAME indexset-tests
   SOURCES test-indexsets.cxx

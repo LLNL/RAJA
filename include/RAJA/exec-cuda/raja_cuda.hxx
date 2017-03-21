@@ -134,6 +134,14 @@ template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec : public cuda_exec_base {
 };
 
+template <size_t BLOCK_SIZE>
+struct cuda_stream_exec : public cuda_exec_base {
+  cuda_stream_exec(cudaStream_t in_stream = NULL){
+    stream = in_stream;
+  }
+  cudaStream_t stream;
+};
+
 ///
 template <size_t BLOCK_SIZE>
 using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
@@ -178,6 +186,8 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 #define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
   gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
 
+#define RAJA_CUDA_LAUNCH_PARAMS_STREAM(gridSize, blockSize, stream) \
+  gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize), stream
 //
 // Three different variants of min/max reductions can be run by choosing
 // one of these macros. Only one should be defined!!!
