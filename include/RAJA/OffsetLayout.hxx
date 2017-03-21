@@ -59,97 +59,104 @@
 #include "RAJA/IndexValue.hxx"
 #include "RAJA/internal/LegacyCompatibility.hxx"
 #include "RAJA/Permutations.hxx"
+#include "RAJA/PermutedLayout.hxx"
 
 namespace RAJA
 {
 
-template <typename Range, typename Perm, typename IdxLin, typename... IDs>
+namespace internal
+{
+
+template <typename Range, typename IdxLin>
 struct OffsetLayout_impl;
 
-template <size_t... RangeInts,
-    size_t... PermInts,
-    typename IdxLin,
-    typename... IDs>
-struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>,
-                         VarOps::index_sequence<PermInts...>,
-                         IdxLin,
-                         IDs...> {
+template <size_t... RangeInts, typename IdxLin>
+struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
+  using IndexRange = VarOps::index_sequence<RangeInts...>;
+  using Base = LayoutBase_impl<IndexRange, IdxLin>;
+  Base base_;
 
-  typedef VarOps::index_sequence<PermInts...> Permutation;
-  typedef IdxLin IndexLinear;
-  typedef std::tuple<IDs...> IDtuple;
-  typedef VarOps::make_index_sequence<sizeof...(IDs)> IndexRange;
+  IdxLin offsets[sizeof...(RangeInts)];
 
-  static constexpr size_t n_dims = sizeof...(IDs);
-  static constexpr size_t limit = std::numeric_limits<Index_type>::max();
-
-  Index_type perms[sizeof...(IDs)];
-  Index_type sizes[sizeof...(IDs)];
-  Index_type strides[sizeof...(IDs)];
-  Index_type mods[sizeof...(IDs)];
-  Index_type offsets[sizeof...(IDs)];
-
-  RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(std::array<IdxLin, sizeof...(IDs)> lower,
-                                                 std::array<IdxLin, sizeof...(IDs)> upper)
+  constexpr RAJA_INLINE
+  OffsetLayout_impl(std::array<IdxLin, sizeof...(RangeInts)> lower,
+                    std::array<IdxLin, sizeof...(RangeInts)> upper)
+      : base_{(upper[RangeInts] - lower[RangeInts] + 1)...},
+        offsets{lower[RangeInts]...}
   {
-
-    for (size_t i = 0; i < n_dims; i++)
-    {
-      offsets[i] = lower[i];
-      sizes[i] = upper[i] - lower[i] + 1;
-    }
-
-    VarOps::assign_args(perms, IndexRange{}, PermInts...);
-    Index_type swizzled_sizes[] = {sizes[PermInts]...};
-    Index_type folded_strides[n_dims];
-    for (size_t i = 0; i < n_dims; i++) {
-      folded_strides[i] = 1;
-      for (size_t j = 0; j < i; j++) {
-        folded_strides[j] *= swizzled_sizes[i];
-      }
-    }
-    assign(strides, folded_strides, Permutation{}, IndexRange{});
-
-    Index_type lmods[n_dims];
-    for (size_t i = 1; i < n_dims; i++) {
-      lmods[i] = folded_strides[i - 1];
-    }
-    lmods[0] = limit;
-
-    assign(mods, lmods, Permutation{}, IndexRange{});
   }
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IDs... indices) const
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
   {
-    return convertIndex<IdxLin>(VarOps::sum<Index_type>(
-          ((convertIndex<Index_type>(indices) - offsets[RangeInts])
-           * strides[RangeInts])...));
+    return base_((indices - offsets[RangeInts])...);
+  }
+
+  static RAJA_INLINE OffsetLayout_impl<IndexRange, IdxLin>
+  from_layout_and_offsets(
+      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
+      const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+  {
+    return internal::OffsetLayout_impl<IndexRange, IdxLin>(offsets_in, rhs);
+  }
+
+private:
+  constexpr RAJA_INLINE
+  OffsetLayout_impl(const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
+                    const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+      : base_{rhs}, offsets{offsets_in[RangeInts]...}
+  {
   }
 };
 
-template <size_t... RangeInts,
-    size_t... PermInts,
-    typename IdxLin,
-    typename... IDs>
-constexpr size_t OffsetLayout_impl<VarOps::index_sequence<RangeInts...>,
-                                   VarOps::index_sequence<PermInts...>,
-                                   IdxLin,
-                                   IDs...>::n_dims;
-template <size_t... RangeInts,
-    size_t... PermInts,
-    typename IdxLin,
-    typename... IDs>
-constexpr size_t OffsetLayout_impl<VarOps::index_sequence<RangeInts...>,
-                                   VarOps::index_sequence<PermInts...>,
-                                   IdxLin,
-                                   IDs...>::limit;
+}  // end internal namespace
 
-template <typename IdxLin, typename Permutation, typename... IDs>
-using OffsetLayout = OffsetLayout_impl<VarOps::make_index_sequence<sizeof...
-                                                                     (IDs)>,
-                                 Permutation,
-                                 IdxLin,
-                                 IDs...>;
+template <size_t n_dims = 1, typename IdxLin = Index_type>
+struct OffsetLayout
+    : public internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                         IdxLin> {
+  using parent = internal::OffsetLayout_impl<
+      VarOps::make_index_sequence<n_dims>, IdxLin>;
+
+  using internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                    IdxLin>::OffsetLayout_impl;
+
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
+      const internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+                                        IdxLin> &rhs)
+      : parent{rhs}
+  {
+  }
+};
+
+template <size_t n_dims, typename IdxLin = Index_type>
+auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
+                        const std::array<IdxLin, n_dims>& upper)
+    -> OffsetLayout<n_dims, IdxLin>
+{
+  return OffsetLayout<n_dims, IdxLin>{lower, upper};
+}
+
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_offset_layout(const std::array<IdxLin,
+                                                            Rank>&
+                                                            lower,
+                                           const std::array<IdxLin,
+                                                            Rank>&
+                                                            upper,
+                                           const std::array<size_t,
+                                                            Rank>&
+                                                            permutation)
+    -> decltype(make_offset_layout<Rank, IdxLin>(lower, upper))
+{
+  std::array<IdxLin, Rank> sizes;
+  for (size_t i=0; i < Rank; ++i) {
+    sizes[i] = upper[i] - lower[i] + 1;
+  }
+  return internal::OffsetLayout_impl<VarOps::make_index_sequence<Rank>, IdxLin>::from_layout_and_offsets
+      (lower, make_permuted_layout(sizes, permutation));
+}
 
 }  // namespace RAJA
 

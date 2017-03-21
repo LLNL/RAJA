@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file defining view class used in forallN templates.
+ * \brief   RAJA header file defining layout operations for forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_VIEW_HXX__
-#define RAJA_VIEW_HXX__
+#ifndef RAJA_PERMUTEDLAYOUT_HXX__
+#define RAJA_PERMUTEDLAYOUT_HXX__
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,67 +53,52 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/Layout.hxx"
+#include <iostream>
+#include <limits>
+
+#include "RAJA/IndexValue.hxx"
+#include "RAJA/LegacyCompatibility.hxx"
+#include "RAJA/foralln/Layout.hxx"
+#include "RAJA/foralln/Permutations.hxx"
 
 namespace RAJA
 {
 
-template <typename DataType, typename LayoutT>
-struct View {
-  LayoutT const layout;
-  DataType *data;
-
-  template <typename... Args>
-  RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
-      : layout(dim_sizes...), data(data_ptr)
-  {
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
+                          std::array<size_t, Rank> permutation) ->
+Layout<Rank, IdxLin>
+{
+  std::array<IdxLin, Rank> strides, mods;
+  std::array<IdxLin, Rank> folded_strides, lmods;
+  for (size_t i = 0; i < Rank; ++i) {
+    folded_strides[i] = 1;
+    for (size_t j = 0; j < i; ++j) {
+      folded_strides[j] *= sizes[permutation[i]];
+    }
   }
 
-  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT &&layout)
-      : layout(layout), data(data_ptr)
-  {
+  for (size_t i = 0; i < Rank; ++i) {
+    strides[permutation[i]] = folded_strides[i];
   }
 
-  RAJA_INLINE void set_data(DataType *data_ptr) {
-      data = data_ptr;
+  for (size_t i = 1; i < Rank; i++) {
+    lmods[i] = folded_strides[i - 1];
+  }
+  lmods[0] = std::numeric_limits<IdxLin>::max();
+
+  for (size_t i = 0; i < Rank; ++i) {
+    mods[permutation[i]] = lmods[i];
   }
 
-  // making this specifically typed would require unpacking the layout,
-  // this is easier to maintain
-  template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
-  {
-    return data[convertIndex<Index_type>(layout(args...))];
-  }
-};
+  return Layout<Rank, IdxLin>(sizes, strides, mods);
+}
 
-template <typename DataType, typename LayoutT, typename... IndexTypes>
-struct TypedView {
-  using Base = View<DataType, LayoutT>;
 
-  Base base_;
-
-  template <typename... Args>
-  RAJA_INLINE constexpr TypedView(DataType *data_ptr, Args... dim_sizes)
-      : base_(data_ptr, dim_sizes...)
-  {
-  }
-
-  RAJA_INLINE constexpr TypedView(DataType *data_ptr, LayoutT &&layout)
-      : base_(data_ptr, layout)
-  {
-  }
-
-  RAJA_INLINE void set_data(DataType *data_ptr) {
-      base_.set_data(data_ptr);
-  }
-
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
-  {
-    return base_.operator()(convertIndex<Index_type>(args)...);
-  }
-};
-
+template<size_t ... Ints>
+using Perm = VarOps::index_sequence<Ints...>;
+template<size_t N>
+using MakePerm = VarOps::make_index_sequence<N>;
 
 }  // namespace RAJA
 
