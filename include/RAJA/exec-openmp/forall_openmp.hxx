@@ -29,7 +29,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -86,9 +86,12 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-#pragma omp parallel
-  forall<InnerPolicy>(std::forward<Iterable>(iter),
-                      std::forward<Func>(loop_body));
+#pragma omp parallel 
+  {
+    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+    forall<InnerPolicy>(std::forward<Iterable>(iter),
+                        std::forward<Func>(body));
+  }
 }
 
 template <typename Iterable, typename InnerPolicy, typename Func>
@@ -97,10 +100,13 @@ RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
                                Index_type icount,
                                Func&& loop_body)
 {
-#pragma omp parallel
-  forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
-                             icount,
-                             std::forward<Func>(loop_body));
+#pragma omp parallel 
+  { 
+    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+    forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
+                               icount,
+                               std::forward<Func>(body));
+  }
 }
 
 ///
@@ -232,7 +238,7 @@ RAJA_INLINE void forall(
   if (!iset.dependencyGraphSet()) {
     std::cerr << "\n RAJA IndexSet dependency graph not set , "
               << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
+    RAJA_ABORT_OR_THROW("IndexSet dependency graph");
   }
 
   IndexSet& ncis = (*const_cast<IndexSet*>(&iset));

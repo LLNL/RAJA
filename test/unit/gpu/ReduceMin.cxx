@@ -5,7 +5,7 @@
  *
  * All rights reserved.
  *
- * For release details and restrictions, please see raja/README-license.txt
+ * For release details and restrictions, please see RAJA/LICENSE.
  */
 
 #include <cfloat>
@@ -16,7 +16,7 @@
 
 #include "RAJA/RAJA.hxx"
 
-#define TEST_VEC_LEN 1024 * 1024
+#define TEST_VEC_LEN 1024 * 1024 * 6
 
 using namespace RAJA;
 using namespace std;

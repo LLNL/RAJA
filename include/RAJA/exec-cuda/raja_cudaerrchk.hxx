@@ -28,7 +28,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -65,6 +65,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
+#include "RAJA/internal/defines.hxx"
+
 namespace RAJA
 {
 
@@ -89,7 +91,7 @@ inline void cudaAssert(cudaError_t code,
   if (code != cudaSuccess) {
     fprintf(
         stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) exit(code);
+    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
   }
 }
 

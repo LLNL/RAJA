@@ -27,7 +27,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -233,6 +233,30 @@ struct CudaReductionLocTallyType {
   GridSizeType retiredBlocks;
 };
 
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Get the number of active cuda reducer objects.
+ *
+ * \return int number of active cuda reducer objects.
+ *
+ ******************************************************************************
+ */
+int getCudaReducerActiveCount();
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Get the number of active cuda memblocks.
+ *
+ * \return int number of active cuda memblocks.
+ *
+ * note: getCudaMemblockUsedCount() is the number of active non-atomic reducers
+ *
+ ******************************************************************************
+ */
+int getCudaMemblockUsedCount();
 
 /*!
  ******************************************************************************
