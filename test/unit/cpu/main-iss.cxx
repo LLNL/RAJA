@@ -20,6 +20,8 @@
 #include <string>
 
 #include "RAJA/RAJA.hxx"
+#include "RAJA/RAJAVec.hxx"
+#include "RAJA/CudaManagedAllocator.hxx"
 #include "RAJA/internal/defines.hxx"
 
 using namespace RAJA;
@@ -167,6 +169,33 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   RAJA::forall<omp_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
   std::cout<<"finished forall with RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;"<<std::endl;
 #endif
+
+//  RAJA::RAJAVec<int, cuda_managed_allocator<int> > test_managed(10);
+
+  RAJAVec<Index_type,cuda_managed_allocator<int> > lindices;
+  for (Index_type i = 0; i < 5; ++i) {
+    Index_type istart = 0;
+    lindices.push_back(istart + 1);
+    lindices.push_back(istart + 4);
+    lindices.push_back(istart + 5);
+    lindices.push_back(istart + 9);
+    lindices.push_back(istart + 10);
+    lindices.push_back(istart + 11);
+    lindices.push_back(istart + 12);
+    lindices.push_back(istart + 14);
+    lindices.push_back(istart + 15);
+    lindices.push_back(istart + 21);
+    lindices.push_back(istart + 27);
+    lindices.push_back(istart + 28);
+    //lindx_end = istart + 28;
+  }
+  Index_type lseg_len = lindices.size();
+
+  cout<<"printing RAJAVec allocated in managed memory: ";
+  for (Index_type i = 0; i < lseg_len; ++i) {
+    cout<<lindices[i]<<" ";
+  }
+  cout<<endl;
 
   cout << "\n DONE!!! " << endl;
 
