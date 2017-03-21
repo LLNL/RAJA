@@ -62,109 +62,84 @@
 namespace RAJA
 {
 
-/******************************************************************
- *  Permutation tags
- ******************************************************************/
+template <typename Range, typename IdxLin = Index_type>
+struct LayoutBase_impl { };
 
-template <typename Range, typename Perm, typename IdxLin, typename... IDs>
-struct Layout_impl;
 template <size_t... RangeInts,
-          size_t... PermInts,
-          typename IdxLin,
-          typename... IDs>
-struct Layout_impl<VarOps::index_sequence<RangeInts...>,
-                   VarOps::index_sequence<PermInts...>,
-                   IdxLin,
-                   IDs...> {
-  typedef VarOps::index_sequence<PermInts...> Permutation;
+        typename IdxLin>
+struct LayoutBase_impl<VarOps::index_sequence<RangeInts...>,
+        IdxLin> {
+public:
   typedef IdxLin IndexLinear;
-  typedef std::tuple<IDs...> IDtuple;
-  typedef VarOps::make_index_sequence<sizeof...(IDs)> IndexRange;
+  typedef VarOps::make_index_sequence<sizeof...(RangeInts)> IndexRange;
 
-  static constexpr size_t n_dims = sizeof...(IDs);
-  static constexpr size_t limit = std::numeric_limits<Index_type>::max();
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  static constexpr size_t limit = std::numeric_limits<IdxLin>::max();
 
-  // const char *index_types[sizeof...(IDs)];
+  // const char *index_types[sizeof...(RangeInts)];
 
-  Index_type perms[sizeof...(IDs)];
-  Index_type sizes[sizeof...(IDs)];
-  Index_type strides[sizeof...(IDs)];
-  Index_type mods[sizeof...(IDs)];
+  const IdxLin sizes[n_dims];
+  IdxLin strides[n_dims];
+  IdxLin mods[n_dims];
+
 
   // TODO: this should be constexpr in c++14 mode
   template <typename... Types>
-  RAJA_INLINE RAJA_HOST_DEVICE Layout_impl(Types... ns)
-      : sizes{convertIndex<Index_type>(ns)...}
-  // index_types{typeid(IDs).name()...}
+  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(Types... ns)
+  : sizes{convertIndex<IdxLin>(ns)...}
   {
-    VarOps::assign_args(perms, IndexRange{}, PermInts...);
-    Index_type swizzled_sizes[] = {sizes[PermInts]...};
-    Index_type folded_strides[n_dims];
+    static_assert(n_dims == sizeof ... (Types), "number of dimensions must match");
     for (size_t i = 0; i < n_dims; i++) {
-      folded_strides[i] = 1;
+      strides[i] = 1;
       for (size_t j = 0; j < i; j++) {
-        folded_strides[j] *= swizzled_sizes[i];
+        strides[j] *= sizes[i];
       }
     }
-    assign(strides, folded_strides, Permutation{}, IndexRange{});
 
-    Index_type lmods[n_dims];
     for (size_t i = 1; i < n_dims; i++) {
-      lmods[i] = folded_strides[i - 1];
+      mods[i] = strides[i - 1];
     }
-    lmods[0] = limit;
-
-    assign(mods, lmods, Permutation{}, IndexRange{});
+    mods[0] = limit;
   }
 
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(IDs... indices) const
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(const LayoutBase_impl<IndexRange, IdxLin>& rhs)
+  : sizes{rhs.sizes[RangeInts]...},
+    strides{rhs.strides[RangeInts]...},
+    mods{rhs.mods[RangeInts]...}
+  { }
+
+  template <typename... Types>
+  constexpr RAJA_INLINE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
+                                        const std::array<IdxLin, n_dims> &strides_in,
+                                        const std::array<IdxLin, n_dims> &mods_in)
+  : sizes{sizes_in[RangeInts]...},
+    strides{strides_in[RangeInts]...},
+    mods{mods_in[RangeInts]...}
+  { }
+
+  template<typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(Indices... indices) const
   {
-    return convertIndex<IdxLin>(VarOps::sum<Index_type>(
-        (convertIndex<Index_type>(indices) * strides[RangeInts])...));
+    return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
   }
 
+  template<typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              IDs &... indices) const
+                                              Indices &... indices) const
   {
-
     VarOps::ignore_args( (indices = (linear_index / strides[RangeInts]) % sizes[RangeInts])... );
-
   }
 };
 
-template <size_t... RangeInts,
-          size_t... PermInts,
-          typename IdxLin,
-          typename... IDs>
-constexpr size_t Layout_impl<VarOps::index_sequence<RangeInts...>,
-                             VarOps::index_sequence<PermInts...>,
-                             IdxLin,
-                             IDs...>::n_dims;
-template <size_t... RangeInts,
-          size_t... PermInts,
-          typename IdxLin,
-          typename... IDs>
-constexpr size_t Layout_impl<VarOps::index_sequence<RangeInts...>,
-                             VarOps::index_sequence<PermInts...>,
-                             IdxLin,
-                             IDs...>::limit;
+template <size_t... RangeInts, typename IdxLin>
+constexpr size_t LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::n_dims;
+template <size_t... RangeInts, typename IdxLin>
+constexpr size_t LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
 
-template <typename IdxLin, typename Permutation, typename... IDs>
-using Layout = Layout_impl<VarOps::make_index_sequence<sizeof...(IDs)>,
-                           Permutation,
-                           IdxLin,
-                           IDs...>;
+template <size_t n_dims, typename IdxLin = Index_type>
+using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+
 
 }  // namespace RAJA
-
-template <typename... Args>
-std::ostream &operator<<(std::ostream &os, RAJA::Layout_impl<Args...> const &m)
-{
-  os << "permutation:" << m.perms << std::endl;
-  os << "sizes:" << m.sizes << std::endl;
-  os << "mods:" << m.mods << std::endl;
-  os << "strides:" << m.strides << std::endl;
-  return os;
-}
 
 #endif

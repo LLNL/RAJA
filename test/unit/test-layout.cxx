@@ -1,54 +1,51 @@
-#include "gtest/gtest.h"
 #include "RAJA/RAJA.hxx"
+#include "gtest/gtest.h"
 
 RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");
 
 TEST(LayoutTest, 1D)
 {
-  using layout = RAJA::OffsetLayout<int, RAJA::PERM_I, TestIndex1D>;
+  using layout = RAJA::OffsetLayout<1>;
 
   /*
    * Construct a 1D view with  with the following indices:
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({10}, {14});
+  const layout l({10}, std::array<int, 1>{14});
 
   /*
    * First element, 10, should have index 0.
    */
-  ASSERT_EQ(0, l(TestIndex1D(10)));
+  ASSERT_EQ(0, l(10));
 
-  ASSERT_EQ(2, l(TestIndex1D(12)));
+  ASSERT_EQ(2, l(12));
 
   /*
    * Last element, 14, should have index 5.
    */
-  ASSERT_EQ(4, l(TestIndex1D(14)));
+  ASSERT_EQ(4, l(14));
 }
 
 TEST(LayoutTest, OffsetVsRegular)
 {
-  typedef RAJA::OffsetLayout<int, RAJA::PERM_JI, int, int> layout_off;
-  typedef RAJA::Layout<int, RAJA::PERM_JI, int, int> layout_reg;
-
-  const layout_off offset({0,0}, {5,5});
-  const layout_reg layout(6,6);
+  const auto layout = RAJA::make_permuted_layout({6, 6},
+                                                   RAJA::Perm<1,0>::value);
+  const auto offset =
+      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::value);
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
   for (int j = 0; j < 6; ++j) {
     for (int i = 0; i < 6; ++i) {
-      ASSERT_EQ(offset(i,j), layout(i,j));
+      ASSERT_EQ(offset(i, j), layout(i, j)) << layout.strides[0] << layout.strides[1];
     }
   }
 }
 
 TEST(LayoutTest, 2D_IJ)
 {
-  typedef RAJA::OffsetLayout<int, RAJA::PERM_IJ, int, int> my_layout;
-
   /*
    * Construct a 2D layout:
    *
@@ -56,7 +53,7 @@ TEST(LayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout({-1,-2}, {1,0});
+  const auto layout = RAJA::make_offset_layout<2>({-1, -2}, {1, 0});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -71,12 +68,12 @@ TEST(LayoutTest, 2D_IJ)
   /*
    * Last element, (1, 0), should have index 8.
    */
-  ASSERT_EQ(8, layout(1,0));
+  ASSERT_EQ(8, layout(1, 0));
 }
 
 TEST(LayoutTest, 2D_JI)
 {
-  typedef RAJA::OffsetLayout<int, RAJA::PERM_JI, int, int> my_layout;
+  typedef RAJA::OffsetLayout<2> my_layout;
 
   /*
    * Construct a 2D layout:
@@ -85,7 +82,8 @@ TEST(LayoutTest, 2D_JI)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const my_layout layout({-1,-2}, {1,0});
+  const my_layout layout =
+      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::value);
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -98,19 +96,19 @@ TEST(LayoutTest, 2D_JI)
   /*
    * Last element, (1, 0), should have index 8.
    */
-  ASSERT_EQ(8, layout(1,0));
+  ASSERT_EQ(8, layout(1, 0));
 }
 
 TEST(LayoutTest, View)
 {
   int* data = new int[10];
 
-  using layout = RAJA::OffsetLayout<int, RAJA::PERM_I, int>;
+  using layout = RAJA::OffsetLayout<>;
 
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, layout({1}, {10}));
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({1}, {10}));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;
