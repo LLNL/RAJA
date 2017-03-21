@@ -57,7 +57,7 @@
 #include <limits>
 
 #include "RAJA/IndexValue.hxx"
-#include "RAJA/LegacyCompatibility.hxx"
+#include "RAJA/internal/LegacyCompatibility.hxx"
 #include "RAJA/foralln/Layout.hxx"
 #include "RAJA/foralln/Permutations.hxx"
 
