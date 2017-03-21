@@ -57,8 +57,8 @@
 #include <limits>
 
 #include "RAJA/IndexValue.hxx"
-#include "RAJA/LegacyCompatibility.hxx"
-#include "RAJA/foralln/Permutations.hxx"
+#include "RAJA/internal/LegacyCompatibility.hxx"
+#include "RAJA/Permutations.hxx"
 
 namespace RAJA
 {
