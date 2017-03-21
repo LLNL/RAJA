@@ -130,6 +130,11 @@ namespace
    */
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
 
+  /*!
+   * \brief Pointer to pinned mem flag used to indicate completion of data copy to host.
+   */
+  volatile bool* s_cuda_reduction_done = 0;
+
   //
   /////////////////////////////////////////////////////////////////////////////
   //
@@ -337,8 +342,12 @@ void freeCudaReductionMemBlock()
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 {
   if (s_cuda_reduction_tally_block_host == 0) {
-    s_cuda_reduction_tally_block_host = 
-        new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
+    cudaErrchk(cudaMallocHost((void**)&s_cuda_reduction_tally_block_host,
+                              sizeof(CudaReductionDummyTallyType) *
+                                RAJA_CUDA_REDUCE_TALLY_LENGTH + sizeof(bool)));
+
+    s_cuda_reduction_done = reinterpret_cast<volatile bool*>(
+          s_cuda_reduction_tally_block_host + RAJA_CUDA_REDUCE_TALLY_LENGTH);
 
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
                           sizeof(CudaReductionDummyTallyType) *
@@ -398,6 +407,28 @@ static void writeBackCudaReductionTallyBlock()
   }
 }
 
+
+
+/*
+*******************************************************************************
+*
+* Copy tally block from device to host by direct copy through pcie.
+* Sets flag at done to true when finished.
+*
+*******************************************************************************
+*/
+template < int num_threads, typename T >
+__global__
+void pcie_copy(T* dst, T* src, int len, volatile bool* done)
+{
+  for (int i = threadIdx.x; i < len; i+=num_threads) {
+    dst[i] = src[i];
+  }
+  __threadfence_system();
+  __syncthreads();
+  if (threadIdx.x == 0) done[0] = 1;
+}
+
 /*
 *******************************************************************************
 *
@@ -411,12 +442,17 @@ static void writeBackCudaReductionTallyBlock()
 */
 static void readCudaReductionTallyBlockAsync()
 {
+  static_assert(sizeof(CudaReductionDummyTallyType) % sizeof(int) == 0,
+        "Error: sizeof(CudaReductionDummyTallyType) must be a multiple of sizeof(int)");
   if (!s_tally_valid) {
-    cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_host[0],
-                                &s_cuda_reduction_tally_block_device[0],
-                                sizeof(CudaReductionDummyTallyType) *
-                                  RAJA_CUDA_REDUCE_TALLY_LENGTH,
-                                cudaMemcpyDeviceToHost));
+    s_cuda_reduction_done[0] = false;
+    pcie_copy<256,int><<<1,256>>>(
+          reinterpret_cast<int*>(&s_cuda_reduction_tally_block_host[0]),
+          reinterpret_cast<int*>(&s_cuda_reduction_tally_block_device[0]),
+          (sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH)/sizeof(int),
+          &s_cuda_reduction_done[0] );
+    cudaErrchk(cudaPeekAtLastError());
+    while (s_cuda_reduction_done[0] == false);
     s_tally_valid = true;
   }
 }
@@ -528,7 +564,7 @@ void releaseCudaReductionTallyBlock(int id)
 void freeCudaReductionTallyBlock()
 {
   if (s_cuda_reduction_tally_block_host != 0) {
-    delete[] s_cuda_reduction_tally_block_host;
+    cudaErrchk(cudaFreeHost(s_cuda_reduction_tally_block_host));
     cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
     s_cuda_reduction_tally_block_host = 0;
   }
