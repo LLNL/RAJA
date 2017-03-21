@@ -238,7 +238,7 @@ RAJA_INLINE void forall(
   if (!iset.dependencyGraphSet()) {
     std::cerr << "\n RAJA IndexSet dependency graph not set , "
               << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
+    RAJA_ABORT_OR_THROW("IndexSet dependency graph");
   }
 
   IndexSet& ncis = (*const_cast<IndexSet*>(&iset));

@@ -139,23 +139,26 @@ struct CudaIndexPair : public POL {
   typedef IDX INDEX;
 };
 
+/** Provides a range from 0 to N_iter - 1
+ * 
+ */
 template <typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
-  int begin;
-  int end;
+  int distance;
 
   VIEWDIM view;
 
-  CudaThreadBlock(CudaDim &dims, RangeSegment const &is)
-      : begin(is.getBegin()), end(is.getEnd())
+  template<typename Iterable>
+  CudaThreadBlock(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
   {
     setDims(dims);
   }
 
   __device__ inline int operator()(void)
   {
-    int idx = begin + view(blockIdx) * threads_per_block + view(threadIdx);
-    if (idx >= end) {
+    int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
+    if (idx >= distance) {
       idx = INT_MIN;
     }
     return idx;
@@ -163,7 +166,7 @@ struct CudaThreadBlock {
 
   void inline setDims(CudaDim &dims)
   {
-    int n = end - begin;
+    int n = distance;
     if (n < threads_per_block) {
       view(dims.num_threads) = n;
       view(dims.num_blocks) = 1;
@@ -195,21 +198,21 @@ using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
 
 template <typename VIEWDIM>
 struct CudaThread {
-  int begin;
-  int end;
+  int distance;
 
   VIEWDIM view;
 
-  CudaThread(CudaDim &dims, RangeSegment const &is)
-      : begin(is.getBegin()), end(is.getEnd())
+  template<typename Iterable>
+  CudaThread(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
   {
     setDims(dims);
   }
 
   __device__ inline int operator()(void)
   {
-    int idx = begin + view(threadIdx);
-    if (idx >= end) {
+    int idx = view(threadIdx);
+    if (idx >= distance) {
       idx = INT_MIN;
     }
     return idx;
@@ -217,8 +220,7 @@ struct CudaThread {
 
   void inline setDims(CudaDim &dims)
   {
-    int n = end - begin;
-    view(dims.num_threads) = n;
+    view(dims.num_threads) = distance;
   }
 };
 
@@ -233,21 +235,21 @@ using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
 
 template <typename VIEWDIM>
 struct CudaBlock {
-  int begin;
-  int end;
+  int distance;
 
   VIEWDIM view;
 
-  CudaBlock(CudaDim &dims, RangeSegment const &is)
-      : begin(is.getBegin()), end(is.getEnd())
+  template<typename Iterable>
+  CudaBlock(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
   {
     setDims(dims);
   }
 
   __device__ inline int operator()(void)
   {
-    int idx = begin + view(blockIdx);
-    if (idx >= end) {
+    int idx = view(blockIdx);
+    if (idx >= distance) {
       idx = INT_MIN;
     }
     return idx;
@@ -255,8 +257,7 @@ struct CudaBlock {
 
   void inline setDims(CudaDim &dims)
   {
-    int n = end - begin;
-    view(dims.num_blocks) = n;
+    view(dims.num_blocks) = distance;
   }
 };
 
@@ -268,6 +269,25 @@ using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
 using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
 
 using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
+
+template <typename CUDA_EXEC, typename Iterator>
+struct CudaIterableWrapper {
+    CUDA_EXEC pol_;
+    Iterator i_;
+    constexpr CudaIterableWrapper (const CUDA_EXEC &pol, const Iterator &i) 
+        : pol_(pol), i_(i) {
+    }
+
+    __device__ inline decltype(i_[0]) operator()() {
+        auto val = pol_();
+        return val > INT_MIN ? i_[pol_()] : INT_MIN;
+    }
+};
+
+template <typename CUDA_EXEC, typename Iterator>
+auto make_cuda_iter_wrapper(const CUDA_EXEC &pol, const Iterator &i) -> CudaIterableWrapper<CUDA_EXEC, Iterator> {
+    return CudaIterableWrapper<CUDA_EXEC, Iterator>(pol, i);
+}
 
 /*!
  * \brief  Function to check indices for out-of-bounds
@@ -303,14 +323,6 @@ __global__ void cudaLauncherN(BODY loop_body, CARGS... cargs)
   // Compute indices and then pass through the bounds-checking mechanism
   cudaCheckBounds(body, (cargs())...);
 }
-
-/*
- * The following is commented out.
- * It would be the preferred way of implementing the CUDA Executor
- * class, but there are some template deduction issues that need
- * to be worked out
- *
- */
 
 template <int...>
 struct integer_sequence {
@@ -359,9 +371,9 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
 
     callLauncher(dims,
                  body,
-                 CuARG0(dims, iset0),
-                 CuARG1(dims, iset1),
-                 CuARGS(dims, std::get<N>(isets))...);
+                 make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0)),
+                 make_cuda_iter_wrapper(CuARG1(dims, iset1), std::begin(iset1)),
+                 make_cuda_iter_wrapper(CuARGS(dims, std::get<N>(isets)), std::begin(std::get<N>(isets)))...);
   }
 
   template <typename BODY, typename... CARGS>
@@ -391,7 +403,7 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   RAJA_INLINE void operator()(BODY body) const
   {
     CudaDim dims;
-    CuARG0 c0(dims, iset0);
+    auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
       cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
