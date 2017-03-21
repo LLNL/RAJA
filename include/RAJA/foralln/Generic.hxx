@@ -161,6 +161,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
@@ -168,6 +169,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
@@ -176,6 +178,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j, Index_type k) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);

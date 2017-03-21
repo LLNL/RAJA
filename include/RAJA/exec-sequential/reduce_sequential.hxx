@@ -79,30 +79,24 @@ namespace RAJA
 template <typename T>
 class ReduceMin<seq_reduce, T>
 {
+  using my_type = ReduceMin<seq_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val)
+  explicit ReduceMin(T init_m_val) :
+    m_parent(NULL), m_val(init_m_val)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    m_blockdata[0] = init_val;
   }
 
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<seq_reduce, T>& other)
+  ReduceMin(const ReduceMin<seq_reduce, T>& other) :
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -111,8 +105,8 @@ public:
   //
   ~ReduceMin<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (m_parent) {
+      m_parent->min(m_val);
     }
   }
 
@@ -121,9 +115,7 @@ public:
   //
   operator T()
   {
-    m_reduced_val = RAJA_MIN(m_reduced_val, static_cast<T>(m_blockdata[0]));
-
-    return m_reduced_val;
+    return m_val;
   }
 
   //
@@ -134,9 +126,15 @@ public:
   //
   // Method that updates min value.
   //
-  ReduceMin<seq_reduce, T> min(T val) const
+  ReduceMin<seq_reduce, T>& min(T rhs)
   {
-    m_blockdata[0] = RAJA_MIN(static_cast<T>(m_blockdata[0]), val);
+    m_val = RAJA_MIN(m_val, rhs);
+    return *this;
+  }
+
+  const ReduceMin<seq_reduce, T>& min(T rhs) const
+  {
+    m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
@@ -146,12 +144,8 @@ private:
   //
   ReduceMin<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
-
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  const my_type * m_parent;
+  mutable T m_val;
 };
 
 /*!
@@ -166,33 +160,25 @@ private:
 template <typename T>
 class ReduceMinLoc<seq_reduce, T>
 {
+  using my_type = ReduceMinLoc<seq_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+  explicit ReduceMinLoc(T init_m_val, Index_type init_loc) :
+    m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-    m_reduced_idx = init_loc;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-    m_blockdata[0] = init_val;
-
-    m_idxdata = getCPUReductionLocBlock(m_myID);
-    m_idxdata[0] = init_loc;
   }
 
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
+  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other) :
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
+    loc(other.loc)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -201,8 +187,8 @@ public:
   //
   ~ReduceMinLoc<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (m_parent) {
+      m_parent->minloc(m_val, loc);
     }
   }
 
@@ -211,11 +197,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
-      m_reduced_val = m_blockdata[0];
-      m_reduced_idx = m_idxdata[0];
-    }
-    return m_reduced_val;
+    return m_val;
   }
 
   //
@@ -228,21 +210,26 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) < m_reduced_val) {
-      m_reduced_val = m_blockdata[0];
-      m_reduced_idx = m_idxdata[0];
-    }
-    return m_reduced_idx;
+    return loc;
   }
 
   //
-  // Method that updates min and index values.
+  // Method that updates min and index value.
   //
-  ReduceMinLoc<seq_reduce, T> minloc(T val, Index_type idx) const
+  ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx)
   {
-    if (val < static_cast<T>(m_blockdata[0])) {
-      m_blockdata[0] = val;
-      m_idxdata[0] = idx;
+    if (rhs < m_val) {
+      m_val = rhs;
+      loc = idx;
+    }
+    return *this;
+  }
+
+  const ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx) const
+  {
+    if (rhs < m_val) {
+      m_val = rhs;
+      loc = idx;
     }
     return *this;
   }
@@ -253,14 +240,10 @@ private:
   //
   ReduceMinLoc<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
+  const my_type * m_parent;
 
-  T m_reduced_val;
-  Index_type m_reduced_idx;
-
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  mutable T m_val;
+  mutable Index_type loc;
 };
 
 /*!
@@ -275,30 +258,25 @@ private:
 template <typename T>
 class ReduceMax<seq_reduce, T>
 {
+  using my_type = ReduceMax<seq_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val)
+  explicit ReduceMax(T init_m_val) :
+    m_parent(NULL),
+    m_val(init_m_val)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    m_blockdata[0] = init_val;
   }
 
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<seq_reduce, T>& other)
+  ReduceMax(const ReduceMax<seq_reduce, T>& other) :
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -307,8 +285,8 @@ public:
   //
   ~ReduceMax<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (m_parent) {
+      m_parent->max(m_val);
     }
   }
 
@@ -317,9 +295,7 @@ public:
   //
   operator T()
   {
-    m_reduced_val = RAJA_MAX(m_reduced_val, static_cast<T>(m_blockdata[0]));
-
-    return m_reduced_val;
+    return m_val;
   }
 
   //
@@ -330,9 +306,15 @@ public:
   //
   // Method that updates max value.
   //
-  ReduceMax<seq_reduce, T> max(T val) const
+  ReduceMax<seq_reduce, T>& max(T rhs)
   {
-    m_blockdata[0] = RAJA_MAX(static_cast<T>(m_blockdata[0]), val);
+    m_val = RAJA_MAX(rhs, m_val);
+    return *this;
+  }
+
+  const ReduceMax<seq_reduce, T>& max(T rhs) const
+  {
+    m_val = RAJA_MAX(rhs, m_val);
     return *this;
   }
 
@@ -342,12 +324,9 @@ private:
   //
   ReduceMax<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
+  const my_type * m_parent;
 
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  mutable T m_val;
 };
 
 /*!
@@ -362,33 +341,27 @@ private:
 template <typename T>
 class ReduceMaxLoc<seq_reduce, T>
 {
+  using my_type = ReduceMaxLoc<seq_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+  explicit ReduceMaxLoc(T init_m_val, Index_type init_loc) :
+    m_parent(NULL),
+    m_val(init_m_val),
+    loc(init_loc)
   {
-    m_is_copy = false;
-
-    m_reduced_val = init_val;
-    m_reduced_idx = init_loc;
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-    m_blockdata[0] = init_val;
-
-    m_idxdata = getCPUReductionLocBlock(m_myID);
-    m_idxdata[0] = init_loc;
   }
 
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
+  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other) :
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_val),
+    loc(other.loc)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -397,8 +370,8 @@ public:
   //
   ~ReduceMaxLoc<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (m_parent) {
+      m_parent->maxloc(m_val, loc);
     }
   }
 
@@ -407,11 +380,7 @@ public:
   //
   operator T()
   {
-    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
-      m_reduced_val = m_blockdata[0];
-      m_reduced_idx = m_idxdata[0];
-    }
-    return m_reduced_val;
+    return m_val;
   }
 
   //
@@ -424,21 +393,26 @@ public:
   //
   Index_type getLoc()
   {
-    if (static_cast<T>(m_blockdata[0]) > m_reduced_val) {
-      m_reduced_val = m_blockdata[0];
-      m_reduced_idx = m_idxdata[0];
-    }
-    return m_reduced_idx;
+    return loc;
   }
 
   //
-  // Method that updates max and index values.
+  // Method that updates max and index value.
   //
-  ReduceMaxLoc<seq_reduce, T> maxloc(T val, Index_type idx) const
+  ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx)
   {
-    if (val > static_cast<T>(m_blockdata[0])) {
-      m_blockdata[0] = val;
-      m_idxdata[0] = idx;
+    if (rhs > m_val) {
+      m_val = rhs;
+      loc = idx;
+    }
+    return *this;
+  }
+
+  const ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx) const
+  {
+    if (rhs > m_val) {
+      m_val = rhs;
+      loc = idx;
     }
     return *this;
   }
@@ -449,14 +423,10 @@ private:
   //
   ReduceMaxLoc<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
+  const my_type * m_parent;
 
-  T m_reduced_val;
-  Index_type m_reduced_idx;
-
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  mutable T m_val;
+  mutable Index_type loc;
 };
 
 /*!
@@ -471,31 +441,27 @@ private:
 template <typename T>
 class ReduceSum<seq_reduce, T>
 {
+  using my_type = ReduceSum<seq_reduce, T>;
+
 public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_val)
+  explicit ReduceSum(T init_m_val, T initializer = 0) :
+    m_parent(NULL),
+    m_val(init_m_val),
+    m_custom_init(initializer)
   {
-    m_is_copy = false;
-
-    m_init_val = init_val;
-    m_reduced_val = static_cast<T>(0);
-
-    m_myID = getCPUReductionId();
-
-    m_blockdata = getCPUReductionMemBlock(m_myID);
-
-    m_blockdata[0] = 0;
   }
 
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<seq_reduce, T>& other)
+  ReduceSum(const ReduceSum<seq_reduce, T>& other) :
+    m_parent(other.m_parent ? other.m_parent : &other),
+    m_val(other.m_custom_init),
+    m_custom_init(other.m_custom_init)
   {
-    *this = other;
-    m_is_copy = true;
   }
 
   //
@@ -504,8 +470,8 @@ public:
   //
   ~ReduceSum<seq_reduce, T>()
   {
-    if (!m_is_copy) {
-      releaseCPUReductionId(m_myID);
+    if (m_parent) {
+      *m_parent += m_val;
     }
   }
 
@@ -514,9 +480,7 @@ public:
   //
   operator T()
   {
-    m_reduced_val = m_init_val + static_cast<T>(m_blockdata[0]);
-
-    return m_reduced_val;
+    return m_val;
   }
 
   //
@@ -527,9 +491,15 @@ public:
   //
   // += operator that adds value to sum.
   //
-  ReduceSum<seq_reduce, T> operator+=(T val) const
+  ReduceSum<seq_reduce, T>& operator+=(T rhs)
   {
-    m_blockdata[0] += val;
+    this->m_val += rhs;
+    return *this;
+  }
+
+  const ReduceSum<seq_reduce, T>& operator+=(T rhs) const
+  {
+    this->m_val += rhs;
     return *this;
   }
 
@@ -539,13 +509,10 @@ private:
   //
   ReduceSum<seq_reduce, T>();
 
-  bool m_is_copy;
-  int m_myID;
+  const my_type * m_parent;
 
-  T m_init_val;
-  T m_reduced_val;
-
-  CPUReductionBlockDataType* m_blockdata;
+  mutable T m_val;
+  T m_custom_init;
 };
 
 }  // closing brace for RAJA namespace
