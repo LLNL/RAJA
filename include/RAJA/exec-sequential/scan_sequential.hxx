@@ -73,18 +73,17 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn, typename T>
+template <typename Iter, typename BinFn>
 void inclusive_inplace(const ::RAJA::seq_exec&,
                        Iter begin,
                        Iter end,
-                       BinFn f,
-                       T RAJA_UNUSED_ARG(v))
+                       BinFn f)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;
-  while (++begin != end) {
-    agg = f(*begin, agg);
-    *begin = agg;
+  for (Iter i = ++begin; i != end; ++i) {
+    agg = f(*i, agg);
+    *i = agg;
   }
 }
 
@@ -113,13 +112,12 @@ void exclusive_inplace(const ::RAJA::seq_exec&,
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn, typename T>
+template <typename Iter, typename OutIter, typename BinFn>
 void inclusive(const ::RAJA::seq_exec&,
                Iter begin,
                Iter end,
                OutIter out,
-               BinFn f,
-               T RAJA_UNUSED_ARG(v))
+               BinFn f)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;

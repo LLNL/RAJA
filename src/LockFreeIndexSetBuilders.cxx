@@ -81,9 +81,9 @@ namespace RAJA
 #define PROFITABLE_ENTITY_THRESHOLD_BLOCK 100
 
 void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim)
+                                Index_type fastDim,
+                                Index_type midDim,
+                                Index_type slowDim)
 {
   int numThreads = getMaxOMPThreadsCPU();
 
@@ -105,8 +105,8 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
       int numSegments = numThreads * 3;
       for (int lane = 0; lane < 3; ++lane) {
         for (int i = lane; i < numSegments; i += 3) {
-          int start = i * fastDim / numSegments;
-          int end = (i + 1) * fastDim / numSegments;
+          Index_type start = i * fastDim / numSegments;
+          Index_type end = (i + 1) * fastDim / numSegments;
           // printf("%d %d\n", start, end) ;
           iset.push_back(RAJA::RangeSegment(start, end));
         }
@@ -128,11 +128,11 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
       /* now use the brain dead approach. */
       for (int lane = 0; lane < 3; ++lane) {
         for (int i = 0; i < numThreads; ++i) {
-          int startRow = i * midDim / numThreads;
-          int endRow = (i + 1) * midDim / numThreads;
-          int start = startRow * fastDim;
-          int end = endRow * fastDim;
-          int len = end - start;
+          Index_type startRow = i * midDim / numThreads;
+          Index_type endRow = (i + 1) * midDim / numThreads;
+          Index_type start = startRow * fastDim;
+          Index_type end = endRow * fastDim;
+          Index_type len = end - start;
           // printf("%d %d\n", start + (lane  )*len/3,
           //                   start + (lane+1)*len/3  ) ;
           iset.push_back(RAJA::RangeSegment(start + (lane)*len / 3,
@@ -162,11 +162,11 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
       /* now use the brain dead approach. */
       for (int lane = 0; lane < segmentsPerThread; ++lane) {
         for (int i = 0; i < numThreads; ++i) {
-          int startPlane = i * slowDim / numThreads;
-          int endPlane = (i + 1) * slowDim / numThreads;
-          int start = startPlane * fastDim * midDim;
-          int end = endPlane * fastDim * midDim;
-          int len = end - start;
+          Index_type startPlane = i * slowDim / numThreads;
+          Index_type endPlane = (i + 1) * slowDim / numThreads;
+          Index_type start = startPlane * fastDim * midDim;
+          Index_type end = endPlane * fastDim * midDim;
+          Index_type len = end - start;
           // printf("%d %d\n", start + (lane  )*len/segmentsPerThread,
           //                   start + (lane+1)*len/segmentsPerThread  );
           iset.push_back(
@@ -238,22 +238,22 @@ void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
   bool done = false;
   bool* isMarked = new bool[numEntity];
 
-  int numWorkset = 0;
-  int* worksetDelim = new int[numEntity];
+  Index_type numWorkset = 0;
+  Index_type* worksetDelim = new Index_type[numEntity];
 
-  int worksetSize = 0;
-  int* workset = new int[numEntity];
+  Index_type worksetSize = 0;
+  Index_type* workset = new Index_type[numEntity];
 
-  int* rangeToDomain = new int[numEntityRange * numRangePerDomain];
-  int* rangeToDomainCount = new int[numEntityRange];
+  Index_type* rangeToDomain = new Index_type[numEntityRange * numRangePerDomain];
+  Index_type* rangeToDomainCount = new Index_type[numEntityRange];
 
-  memset(rangeToDomainCount, 0, numEntityRange * sizeof(int));
+  memset(rangeToDomainCount, 0, numEntityRange * sizeof(Index_type));
 
   /* create an inverse mapping */
   for (int i = 0; i < numEntity; ++i) {
     for (int j = 0; j < numRangePerDomain; ++j) {
-      int id = domainToRange[i * numRangePerDomain + j];
-      int idx = id * numRangePerDomain + rangeToDomainCount[id]++;
+      Index_type id = domainToRange[i * numRangePerDomain + j];
+      Index_type idx = id * numRangePerDomain + rangeToDomainCount[id]++;
       if (idx > numEntityRange * numRangePerDomain
           || rangeToDomainCount[id] > numRangePerDomain) {
         printf("foiled!\n");
@@ -283,9 +283,9 @@ void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
         }
         workset[worksetSize++] = i;
         for (int j = 0; j < numRangePerDomain; ++j) {
-          int id = domainToRange[i * numRangePerDomain + j];
+          Index_type id = domainToRange[i * numRangePerDomain + j];
           for (int k = 0; k < rangeToDomainCount[id]; ++k) {
-            int idx = rangeToDomain[id * numRangePerDomain + k];
+            Index_type idx = rangeToDomain[id * numRangePerDomain + k];
             if (idx < 0 || idx >= numEntity) {
               printf("foiled!\n");
               exit(-1);
@@ -318,16 +318,16 @@ void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
         ielemPermutation[elemPermutation[i]] = i;
       }
     }
-    int end = 0;
+    Index_type end = 0;
     for (int i = 0; i < numWorkset; ++i) {
-      int begin = end;
+      Index_type begin = end;
       end = worksetDelim[i];
       iset.push_back(RAJA::RangeSegment(begin, end));
     }
   } else {
-    int end = 0;
+    Index_type end = 0;
     for (int i = 0; i < numWorkset; ++i) {
-      int begin = end;
+      Index_type begin = end;
       end = worksetDelim[i];
       bool isRange = true;
       for (int j = begin + 1; j < end; ++j) {

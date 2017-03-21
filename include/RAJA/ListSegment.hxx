@@ -247,7 +247,7 @@ private:
                      Index_type len,
                      IndexOwnership indx_own);
 
-  Index_type* __restrict__ m_indx;
+  Index_type* RAJA_RESTRICT m_indx;
   Index_type m_len;
   IndexOwnership m_indx_own;
 };

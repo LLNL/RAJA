@@ -22,16 +22,18 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   int run = 0;
   int passed = 0;
 
-  int const xExtent = 10;
-  int const yExtent = 10;
-  int const area = xExtent * yExtent;
+  RAJA::Index_type const begin = 0;
+
+  RAJA::Index_type const xExtent = 10;
+  RAJA::Index_type const yExtent = 10;
+  RAJA::Index_type const area = xExtent * yExtent;
 
   RAJA::ReduceSum<RAJA::omp_reduce, double> sumA(0.0);
   RAJA::ReduceMin<RAJA::omp_reduce, double> minA(10000.0);
   RAJA::ReduceMax<RAJA::omp_reduce, double> maxA(0.0);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(0, yExtent, [=](int y) {
-    RAJA::forall<RAJA::seq_exec>(0, xExtent, [=](int x) {
+  RAJA::forall<RAJA::omp_parallel_for_exec>(begin, yExtent, [=](int y) {
+    RAJA::forall<RAJA::seq_exec>(begin, xExtent, [=](int x) {
       sumA += double(y * xExtent + x + 1);
       minA.min(double(y * xExtent + x + 1));
       maxA.max(double(y * xExtent + x + 1));
@@ -60,8 +62,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   RAJA::ReduceMin<RAJA::omp_reduce, double> minB(10000.0);
   RAJA::ReduceMax<RAJA::omp_reduce, double> maxB(0.0);
 
-  RAJA::forall<RAJA::seq_exec>(0, yExtent, [=](int y) {
-    RAJA::forall<RAJA::omp_parallel_for_exec>(0, xExtent, [=](int x) {
+  RAJA::forall<RAJA::seq_exec>(begin, yExtent, [=](int y) {
+    RAJA::forall<RAJA::omp_parallel_for_exec>(begin, xExtent, [=](int x) {
       sumB += double(y * xExtent + x + 1);
       minB.min(double(y * xExtent + x + 1));
       maxB.max(double(y * xExtent + x + 1));
