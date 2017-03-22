@@ -57,7 +57,7 @@
 
 #include "BaseSegment.hxx"
 
-#include "RAJA/internal/exec-cuda/raja_cudaerrchk.hxx"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hxx"
 
 #include <algorithm>
 #include <iosfwd>

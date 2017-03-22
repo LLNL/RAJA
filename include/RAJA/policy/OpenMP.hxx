@@ -123,12 +123,12 @@ struct omp_reduce_ordered {
 
 }  // closing brace for RAJA namespace
 
-#include "RAJA/internal/exec-openmp/forall_openmp.hxx"
-#include "RAJA/internal/exec-openmp/reduce_openmp.hxx"
-#include "RAJA/internal/exec-openmp/scan_openmp.hxx"
+#include "RAJA/policy/openmp/forall_openmp.hxx"
+#include "RAJA/policy/openmp/reduce_openmp.hxx"
+#include "RAJA/policy/openmp/scan_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
-#include "RAJA/internal/exec-openmp/forallN_openmp.hxx"
+#include "RAJA/policy/openmp/forallN_openmp.hxx"
 #endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

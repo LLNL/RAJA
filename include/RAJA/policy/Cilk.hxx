@@ -94,8 +94,8 @@ struct cilk_reduce {
 
 }  // closing brace for RAJA namespace
 
-#include "RAJA/internal/exec-cilk/forall_cilk.hxx"
-#include "RAJA/internal/exec-cilk/reduce_cilk.hxx"
+#include "RAJA/policy/cilk/forall_cilk.hxx"
+#include "RAJA/policy/cilk/reduce_cilk.hxx"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CILK)
 

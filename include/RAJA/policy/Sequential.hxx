@@ -92,8 +92,8 @@ struct seq_reduce {
 
 }  // closing brace for RAJA namespace
 
-#include "RAJA/internal/exec-sequential/forall_sequential.hxx"
-#include "RAJA/internal/exec-sequential/reduce_sequential.hxx"
-#include "RAJA/internal/exec-sequential/scan_sequential.hxx"
+#include "RAJA/policy/sequential/forall_sequential.hxx"
+#include "RAJA/policy/sequential/reduce_sequential.hxx"
+#include "RAJA/policy/sequential/scan_sequential.hxx"
 
 #endif  // closing endif for header file include guard
