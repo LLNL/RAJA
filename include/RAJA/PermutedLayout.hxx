@@ -3,21 +3,13 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
- *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ * \brief   RAJA header file defining layout operations for forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_PERMUTEDLAYOUT_HXX__
+#define RAJA_PERMUTEDLAYOUT_HXX__
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,93 +53,53 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include <iostream>
+#include <limits>
 
-#include "RAJA/internal/defines.hxx"
-
-#include "RAJA/Types.hxx"
-
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
-
-//
-// Strongly typed index class.
-//
 #include "RAJA/IndexValue.hxx"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/forall.hxx"
-
-//
-// Multidimensional layouts and views.
-//
+#include "RAJA/internal/LegacyCompatibility.hxx"
 #include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
+#include "RAJA/Permutations.hxx"
 
-#if defined(RAJA_ENABLE_NESTED)
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/forallN.hxx"
+namespace RAJA
+{
 
-#endif  // defined(RAJA_ENABLE_NESTED)
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
+                          std::array<size_t, Rank> permutation) ->
+Layout<Rank, IdxLin>
+{
+  std::array<IdxLin, Rank> strides, mods;
+  std::array<IdxLin, Rank> folded_strides, lmods;
+  for (size_t i = 0; i < Rank; ++i) {
+    folded_strides[i] = 1;
+    for (size_t j = 0; j < i; ++j) {
+      folded_strides[j] *= sizes[permutation[i]];
+    }
+  }
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
-//
-//////////////////////////////////////////////////////////////////////
-//
+  for (size_t i = 0; i < Rank; ++i) {
+    strides[permutation[i]] = folded_strides[i];
+  }
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/sequential.hxx"
+  for (size_t i = 1; i < Rank; i++) {
+    lmods[i] = folded_strides[i - 1];
+  }
+  lmods[0] = std::numeric_limits<IdxLin>::max();
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/simd.hxx"
+  for (size_t i = 0; i < Rank; ++i) {
+    mods[permutation[i]] = lmods[i];
+  }
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
+  return Layout<Rank, IdxLin>(sizes, strides, mods);
+}
+
+
+template<size_t ... Ints>
+using Perm = VarOps::index_sequence<Ints...>;
+template<size_t N>
+using MakePerm = VarOps::make_index_sequence<N>;
+
+}  // namespace RAJA
+
 #endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
-
-#include "RAJA/internal/IndexSetUtils.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-
-//
-// Perfectly nested loop transformations
-//
-
-// Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
-
-// Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
-
-#include "RAJA/scan.hxx"
-
-#endif  // closing endif for header file include guard

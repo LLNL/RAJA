@@ -51,13 +51,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/MemUtils_CPU.hxx"
+#include "RAJA/internal/MemUtils_CPU.hxx"
 
-#include "RAJA/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/reducers.hxx"
 
-#include "RAJA/ThreadUtils_CPU.hxx"
+#include "RAJA/internal/ThreadUtils_CPU.hxx"
 
 #include <algorithm>
 #include <iostream>

@@ -3,21 +3,19 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA headers for OpenMP execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_openmp_HXX
+#define RAJA_openmp_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,93 +59,78 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/internal/PolicyBase.hxx"
 
-#include "RAJA/internal/defines.hxx"
+#include <omp.h>
+#include <iostream>
+#include <thread>
 
-#include "RAJA/Types.hxx"
-
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/IndexValue.hxx"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/forall.hxx"
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/forallN.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// Execution policies
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/sequential.hxx"
+///
+/// Segment execution policies
+///
+template <typename InnerPolicy>
+struct omp_parallel_exec {
+};
+struct omp_for_exec {
+};
+struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
+};
+template <size_t ChunkSize>
+struct omp_for_static {
+};
+template <size_t ChunkSize>
+struct omp_parallel_for_static
+    : public omp_parallel_exec<omp_for_static<ChunkSize>> {
+};
+struct omp_for_nowait_exec {
+};
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/simd.hxx"
+///
+/// Index set segment iteration policies
+///
+struct omp_parallel_for_segit : public omp_parallel_for_exec {
+};
+struct omp_parallel_segit : public omp_parallel_for_segit {
+};
+struct omp_taskgraph_segit {
+};
+struct omp_taskgraph_interval_segit {
+};
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
-#endif
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct omp_reduce {
+};
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
-#endif
+struct omp_reduce_ordered {
+};
 
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
+}  // closing brace for RAJA namespace
 
-#include "RAJA/internal/IndexSetUtils.hxx"
+#include "RAJA/internal/exec-openmp/forall_openmp.hxx"
+#include "RAJA/internal/exec-openmp/reduce_openmp.hxx"
+#include "RAJA/internal/exec-openmp/scan_openmp.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/internal/exec-openmp/forallN_openmp.hxx"
+#endif
 
-//
-// Perfectly nested loop transformations
-//
-
-// Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
-
-// Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
-
-#include "RAJA/scan.hxx"
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

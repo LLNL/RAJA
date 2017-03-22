@@ -3,13 +3,14 @@
  *
  * \file
  *
- * \brief   Header file for various index set builder methods.
+ * \brief   Header file containing generic RAJA index set and segment utility
+ *          method templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_IndexSetBuilders_HXX
-#define RAJA_IndexSetBuilders_HXX
+#ifndef RAJA_IndexSetUtils_HXX
+#define RAJA_IndexSetUtils_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -60,78 +61,85 @@
 namespace RAJA
 {
 
-class IndexSet;
+/*!
+ ******************************************************************************
+ *
+ * \brief  Copy all indices in given index set to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
+ *
+ ******************************************************************************
+ */
+template <typename CONTAINER_T>
+RAJA_INLINE void getIndices(CONTAINER_T& con, const IndexSet& iset)
+{
+  CONTAINER_T tcon;
+  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+    tcon.push_back(idx);
+  });
+  con = tcon;
+}
 
 /*!
  ******************************************************************************
  *
- * \brief Initialize index set with aligned Ranges and List segments from
- *        array of indices with given length.
- *
- *        Specifically, Range segments will be greater than RANGE_MIN_LENGTH
- *        and starting index and length of each range segment will be
- *        multiples of RANGE_ALIGN. These constants are defined in the
- *        RAJA config.hxx header file.
- *
- *        Routine does no error-checking on argements and assumes Index_type
- *        array contains valid indices.
- *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * \brief  Copy all indices in given segment to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-void buildIndexSetAligned(IndexSet& hiset,
-                          const Index_type* const indices_in,
-                          Index_type length);
+template <typename CONTAINER_T, typename SEGMENT_T>
+RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& iset)
+{
+  CONTAINER_T tcon;
+  forall<seq_exec>(iset, [&](Index_type idx) { tcon.push_back(idx); });
+  con = tcon;
+}
 
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-//
-// The following methods build "lock-free" index sets.
-//
-// Lock-free indexsets are designed to be used with coarse-grained OpenMP
-// iteration policies.  The "lock-free" part here assumes interactions among
-// the cell-complex associated with the space being partitioned are "tightly
-// bound".
-//
-////////////////////////////////////////////////////////////////////////////////
-////////////////////////////////////////////////////////////////////////////////
-
-/*
+/*!
  ******************************************************************************
  *
- * Initialize lock-free "block" index set (planar division).
- *
- * The method chunks a fastDim x midDim x slowDim mesh into blocks that can
- * be dependency-scheduled, removing need for lock constructs.
- *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * \brief  Copy all indices in given index set that satisfy
+ *         given conditional to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-void buildLockFreeBlockIndexset(IndexSet& iset,
-                                int fastDim,
-                                int midDim,
-                                int slowDim);
+template <typename CONTAINER_T, typename CONDITIONAL>
+RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+                                       const IndexSet& iset,
+                                       CONDITIONAL conditional)
+{
+  CONTAINER_T tcon;
+  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+    if (conditional(idx)) tcon.push_back(idx);
+  });
+  con = tcon;
+}
 
-/*
+/*!
  ******************************************************************************
  *
- * Build Lock-free "color" index set. The domain-set is colored based on
- * connectivity to the range-set. All elements in each segment are
- * independent, and no two segments can be executed in parallel.
- *
- * Note: Method assumes IndexSet reference refers to an empty index set.
+ * \brief  Copy all indices in given segment that satisfy
+ *         given conditional to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(IndexSet& iset,
-                                int const* domainToRange,
-                                int numEntity,
-                                int numRangePerDomain,
-                                int numEntityRange,
-                                int* elemPermutation = 0l,
-                                int* ielemPermutation = 0l);
+template <typename CONTAINER_T, typename SEGMENT_T, typename CONDITIONAL>
+RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+                                       const SEGMENT_T& iset,
+                                       CONDITIONAL conditional)
+{
+  CONTAINER_T tcon;
+  forall<seq_exec>(iset, [&](Index_type idx) {
+    if (conditional(idx)) tcon.push_back(idx);
+  });
+  con = tcon;
+}
 
 }  // closing brace for RAJA namespace
 
