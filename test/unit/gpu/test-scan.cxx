@@ -9,6 +9,7 @@
 #include <cstdlib>
 
 #include <gtest/gtest.h>
+
 #include <RAJA/RAJA.hxx>
 
 #include "data_storage.hxx"
@@ -81,7 +82,7 @@ template <typename Data,
           typename Storage,
           typename Fn,
           typename T = typename std::remove_pointer<Data>::type::type>
-void compareInclusive(Data original, Storage data, Fn function, T init)
+void compareInclusive(Data original, Storage data, Fn function)
 {
   auto in = original->ibegin();
   auto out = data->obegin();
@@ -170,11 +171,9 @@ TYPED_TEST_CASE_P(ExclusiveScanTest);
 
 TYPED_TEST_P(InclusiveScanTest, InclusiveCorrectness)
 {
-  auto init = decltype(this->function)::identity;
   compareInclusive(this->original.get(),
                    this->data.get(),
-                   this->function,
-                   init);
+                   this->function);
 }
 TYPED_TEST_P(ExclusiveScanTest, ExclusiveCorrectness)
 {

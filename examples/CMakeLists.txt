@@ -44,3 +44,7 @@
 raja_add_executable(
   NAME raja-pi 
   SOURCES pi.cxx)
+
+raja_add_executable(
+  NAME raja-includes
+  SOURCES includes.cxx)

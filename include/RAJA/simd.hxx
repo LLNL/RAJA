@@ -3,21 +3,15 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA headers for SIMD segment execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_simd_HXX
+#define RAJA_simd_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,93 +55,40 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
-
-#include "RAJA/internal/defines.hxx"
-
-#include "RAJA/Types.hxx"
-
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/IndexValue.hxx"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/forall.hxx"
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/forallN.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
-
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// Execution policies
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/sequential.hxx"
+///
+/// Segment execution policies
+///
+namespace RAJA
+{
+
+struct simd_exec {
+};
+}
 
 //
-// All platforms should support simd execution.
-//
-#include "RAJA/simd.hxx"
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
-
-#include "RAJA/internal/IndexSetUtils.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-
-//
-// Perfectly nested loop transformations
+// NOTE: There is no Index set segment iteration policy for SIMD
 //
 
-// Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
 
-// Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
+//
+// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
+//
 
-#endif  // defined(RAJA_ENABLE_NESTED)
-
-#include "RAJA/scan.hxx"
+#include "RAJA/internal/exec-simd/forall_simd.hxx"
 
 #endif  // closing endif for header file include guard
