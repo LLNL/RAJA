@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/exec-sequential/scan_sequential.hxx"
+#include "RAJA/policy/exec-sequential/scan_sequential.hxx"
 
 #include <omp.h>
 

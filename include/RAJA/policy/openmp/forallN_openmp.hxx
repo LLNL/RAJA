@@ -57,7 +57,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
 
 #if defined(_OPENMP)
 #include <omp.h>

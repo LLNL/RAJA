@@ -55,7 +55,7 @@
 
 #include "RAJA/internal/LegacyCompatibility.hxx"
 
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/internal/exec-cuda/MemUtils_CUDA.hxx"

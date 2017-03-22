@@ -2,7 +2,7 @@
 #include <iostream>
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {

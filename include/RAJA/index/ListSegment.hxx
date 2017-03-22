@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/BaseSegment.hxx"
+#include "BaseSegment.hxx"
 
 #include "RAJA/internal/exec-cuda/raja_cudaerrchk.hxx"
 

@@ -3,15 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
+ * \brief   RAJA header file defining view class used in forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_VIEW_HXX__
+#define RAJA_VIEW_HXX__
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,45 +53,68 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/PolicyBase.hxx"
+#include "Layout.hxx"
 
 namespace RAJA
 {
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+template <typename DataType, typename LayoutT>
+struct View {
+  LayoutT const layout;
+  DataType *data;
 
-///
-/// Segment execution policies
-///
-struct seq_exec : public PolicyBase {
+  template <typename... Args>
+  RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
+      : layout(dim_sizes...), data(data_ptr)
+  {
+  }
+
+  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT &&layout)
+      : layout(layout), data(data_ptr)
+  {
+  }
+
+  RAJA_INLINE void set_data(DataType *data_ptr) {
+      data = data_ptr;
+  }
+
+  // making this specifically typed would require unpacking the layout,
+  // this is easier to maintain
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
+  {
+    return data[convertIndex<Index_type>(layout(args...))];
+  }
 };
 
-///
-/// Index set segment iteration policies
-///
-struct seq_segit : public seq_exec {
+template <typename DataType, typename LayoutT, typename... IndexTypes>
+struct TypedView {
+  using Base = View<DataType, LayoutT>;
+
+  Base base_;
+
+  template <typename... Args>
+  RAJA_INLINE constexpr TypedView(DataType *data_ptr, Args... dim_sizes)
+      : base_(data_ptr, dim_sizes...)
+  {
+  }
+
+  RAJA_INLINE constexpr TypedView(DataType *data_ptr, LayoutT &&layout)
+      : base_(data_ptr, layout)
+  {
+  }
+
+  RAJA_INLINE void set_data(DataType *data_ptr) {
+      base_.set_data(data_ptr);
+  }
+
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
+  {
+    return base_.operator()(convertIndex<Index_type>(args)...);
+  }
 };
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_reduce {
-};
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
-#include "RAJA/internal/exec-sequential/forall_sequential.hxx"
-#include "RAJA/internal/exec-sequential/reduce_sequential.hxx"
-#include "RAJA/internal/exec-sequential/scan_sequential.hxx"
-
-#endif  // closing endif for header file include guard
+#endif

@@ -1,7 +1,7 @@
 #ifndef KRIPKE_LEGAGY_COMPATIBILITY_HXX
 #define KRIPKE_LEGAGY_COMPATIBILITY_HXX 1
 
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(

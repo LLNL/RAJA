@@ -11,7 +11,7 @@
 #include <gtest/gtest.h>
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
 #include "data_storage.hxx"
 #include "type_helper.hxx"

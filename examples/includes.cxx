@@ -1,7 +1,7 @@
 #include <iostream>
 
-#include "RAJA/forall.hxx"
-#include "RAJA/sequential.hxx"
+#include "RAJA/pattern/Forall.hxx"
+#include "RAJA/policy/Sequential.hxx"
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {

@@ -56,10 +56,10 @@
 #include <iostream>
 #include <limits>
 
-#include "RAJA/IndexValue.hxx"
+#include "RAJA/index/IndexValue.hxx"
 #include "RAJA/internal/LegacyCompatibility.hxx"
-#include "RAJA/Permutations.hxx"
-#include "RAJA/PermutedLayout.hxx"
+#include "Permutations.hxx"
+#include "PermutedLayout.hxx"
 
 namespace RAJA
 {

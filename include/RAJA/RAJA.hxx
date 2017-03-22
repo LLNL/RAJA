@@ -63,37 +63,37 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
 
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
+#include "RAJA/util/Operators.hxx"
+#include "RAJA/pattern/Reducers.hxx"
 
 //
 // Strongly typed index class.
 //
-#include "RAJA/IndexValue.hxx"
+#include "RAJA/index/IndexValue.hxx"
 
 //
 // Generic iteration templates require specializations defined
 // in the files included below.
 //
-#include "RAJA/forall.hxx"
+#include "RAJA/pattern/Forall.hxx"
 
 //
 // Multidimensional layouts and views.
 //
-#include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
+#include "RAJA/util/Layout.hxx"
+#include "RAJA/util/PermutedLayout.hxx"
+#include "RAJA/util/OffsetLayout.hxx"
+#include "RAJA/util/View.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "RAJA/forallN.hxx"
+#include "RAJA/pattern/ForallN.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 
@@ -113,26 +113,26 @@
 //
 // All platforms must support sequential execution.
 //
-#include "RAJA/sequential.hxx"
+#include "RAJA/policy/Sequential.hxx"
 
 //
 // All platforms should support simd execution.
 //
-#include "RAJA/simd.hxx"
+#include "RAJA/policy/Simd.hxx"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/cuda.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
+#include "RAJA/policy/OpenMP.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
 #include "RAJA/cilk.hxx"
 #endif
 
-#include "RAJA/internal/IndexSetUtils.hxx"
+#include "RAJA/index/IndexSetUtils.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 
@@ -141,13 +141,13 @@
 //
 
 // Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
+#include "RAJA/pattern/Tile.hxx"
 
 // Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
+#include "RAJA/pattern/Permute.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 
-#include "RAJA/scan.hxx"
+#include "RAJA/pattern/Scan.hxx"
 
 #endif  // closing endif for header file include guard

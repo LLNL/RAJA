@@ -4,7 +4,7 @@
 #include <cstdio>
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/util/Defines.hxx"
 
 namespace internal
 {

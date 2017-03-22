@@ -55,7 +55,7 @@
 
 #include <iostream>
 #include <limits>
-#include "RAJA/IndexValue.hxx"
+#include "RAJA/index/IndexValue.hxx"
 #include "RAJA/internal/LegacyCompatibility.hxx"
 #include "Permutations.hxx"
 

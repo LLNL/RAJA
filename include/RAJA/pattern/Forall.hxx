@@ -90,14 +90,14 @@
 #include "RAJA/config.hxx"
 
 #include "RAJA/internal/Iterators.hxx"
-#include "RAJA/internal/PolicyBase.hxx"
+#include "RAJA/policy/PolicyBase.hxx"
 
-#include "RAJA/IndexSet.hxx"
-#include "RAJA/RangeSegment.hxx"
-#include "RAJA/ListSegment.hxx"
+#include "RAJA/index/IndexSet.hxx"
+#include "RAJA/index/RangeSegment.hxx"
+#include "RAJA/index/ListSegment.hxx"
 
 #include "RAJA/internal/fault_tolerance.hxx"
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
 
 #include <functional>
 #include <iterator>

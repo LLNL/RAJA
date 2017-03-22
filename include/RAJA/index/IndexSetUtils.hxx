@@ -3,17 +3,14 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
+ * \brief   Header file containing generic RAJA index set and segment utility
+ *          method templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HXX
-#define RAJA_forall_simd_HXX
+#ifndef RAJA_IndexSetUtils_HXX
+#define RAJA_IndexSetUtils_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,107 +56,90 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/Types.hxx"
-
-#include "RAJA/internal/fault_tolerance.hxx"
+#include "RAJA/util/Types.hxx"
 
 namespace RAJA
 {
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  RAJA_SIMD
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const simd_exec &,
-                               Iterable &&iter,
-                               Index_type icount,
-                               Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
-  }
-}
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over list segment objects.
-//
-// NOTE: These operations will not vectorize. We include them here and
-//       force sequential execution for convenience.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over list segment object.
+ * \brief  Copy all indices in given index set to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
+template <typename CONTAINER_T>
+RAJA_INLINE void getIndices(CONTAINER_T& con, const IndexSet& iset)
 {
-  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  RAJA_FT_BEGIN;
-
-  for (Index_type k = 0; k < len; ++k) {
-    loop_body(idx[k]);
-  }
-
-  RAJA_FT_END;
+  CONTAINER_T tcon;
+  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+    tcon.push_back(idx);
+  });
+  con = tcon;
 }
 
 /*!
  ******************************************************************************
  *
- * \brief  "Fake" SIMD iteration over list segment object with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
+ * \brief  Copy all indices in given segment to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(simd_exec,
-                               const ListSegment &iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body)
+template <typename CONTAINER_T, typename SEGMENT_T>
+RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& iset)
 {
-  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
-
-  RAJA_FT_BEGIN;
-
-  for (Index_type k = 0; k < len; ++k) {
-    loop_body(k + icount, idx[k]);
-  }
-
-  RAJA_FT_END;
+  CONTAINER_T tcon;
+  forall<seq_exec>(iset, [&](Index_type idx) { tcon.push_back(idx); });
+  con = tcon;
 }
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// SIMD execution policy does not apply to iteration over index
-// set segments, only to execution of individual segments. So there
-// are no index set traversal methods in this file.
-//
-//////////////////////////////////////////////////////////////////////
-//
+/*!
+ ******************************************************************************
+ *
+ * \brief  Copy all indices in given index set that satisfy
+ *         given conditional to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
+ *
+ ******************************************************************************
+ */
+template <typename CONTAINER_T, typename CONDITIONAL>
+RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+                                       const IndexSet& iset,
+                                       CONDITIONAL conditional)
+{
+  CONTAINER_T tcon;
+  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+    if (conditional(idx)) tcon.push_back(idx);
+  });
+  con = tcon;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  Copy all indices in given segment that satisfy
+ *         given conditional to given container.
+ *         Container must be template on element type, have default and
+ *         copy ctors and push_back method.
+ *
+ ******************************************************************************
+ */
+template <typename CONTAINER_T, typename SEGMENT_T, typename CONDITIONAL>
+RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
+                                       const SEGMENT_T& iset,
+                                       CONDITIONAL conditional)
+{
+  CONTAINER_T tcon;
+  forall<seq_exec>(iset, [&](Index_type idx) {
+    if (conditional(idx)) tcon.push_back(idx);
+  });
+  con = tcon;
+}
 
 }  // closing brace for RAJA namespace
 

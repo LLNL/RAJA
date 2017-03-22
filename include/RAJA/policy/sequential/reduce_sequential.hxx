@@ -58,9 +58,9 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
 
-#include "RAJA/reducers.hxx"
+#include "RAJA/pattern/Reducers.hxx"
 
 #include "RAJA/internal/MemUtils_CPU.hxx"
 
