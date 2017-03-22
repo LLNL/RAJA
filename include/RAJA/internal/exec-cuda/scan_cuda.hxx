@@ -76,7 +76,7 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function, typename T>
+template <typename InputIter, typename Function>
 void inclusive_inplace(const ::RAJA::cuda_exec_base&,
                        InputIter begin,
                        InputIter end,
@@ -108,8 +108,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec_base&,
 */
 template <typename InputIter,
           typename OutputIter,
-          typename Function,
-          typename T>
+          typename Function>
 void inclusive(const ::RAJA::cuda_exec_base&,
                InputIter begin,
                InputIter end,
