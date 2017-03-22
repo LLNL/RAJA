@@ -24,7 +24,7 @@ sys.path.insert(0, os.path.abspath('_exts'))
 # Generate Doxygen on RTD
 read_the_docs_build = os.environ.get('READTHEDOCS', None) == 'True'
 if read_the_docs_build:
-    subprocess.call('cd ../doxygen; doxygen', shell=True)
+    subprocess.call('cd ../doxygen; cp Doxyfile.in Doxyfile; doxygen', shell=True)
 
 # -- General configuration ------------------------------------------------
 
@@ -167,7 +167,7 @@ html_static_path = ['_static']
 # Add any extra paths that contain custom files (such as robots.txt or
 # .htaccess) here, relative to this directory. These files are copied
 # directly to the root of the documentation.
-#html_extra_path = []
+html_extra_path = ['../doxygen/build/html']
 
 # If not '', a 'Last updated on:' timestamp is inserted at every page bottom,
 # using the given strftime format.
