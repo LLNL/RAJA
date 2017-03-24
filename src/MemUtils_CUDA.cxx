@@ -434,22 +434,23 @@ void pcie_copy(T* dst, T* src, int len, volatile bool* done)
 *
 * Read tally block from device if invalid on host.
 * Must be called after tally blocks have been allocated.
-* The Async version is synchronous on the host if 
-* s_cuda_reduction_tally_block_host is allocated as pageable host memory 
-* and not if allocated as pinned host memory or managed memory.
+* The Async version directly copies s_cuda_reduction_tally_block_device to
+* s_cuda_reduction_tally_block_host allocated as pinned host memory. 
+* Then it sets the flag s_cuda_reduction_done in pinned host memory to true.
 *
 *******************************************************************************
 */
 static void readCudaReductionTallyBlockAsync()
 {
-  static_assert(sizeof(CudaReductionDummyTallyType) % sizeof(int) == 0,
-        "Error: sizeof(CudaReductionDummyTallyType) must be a multiple of sizeof(int)");
+  using read_type = int;
+  static_assert(sizeof(CudaReductionDummyTallyType) % sizeof(read_type) == 0,
+        "Error: sizeof(CudaReductionDummyTallyType) must be a multiple of sizeof(read_type)");
   if (!s_tally_valid) {
     s_cuda_reduction_done[0] = false;
-    pcie_copy<256,int><<<1,256>>>(
-          reinterpret_cast<int*>(&s_cuda_reduction_tally_block_host[0]),
-          reinterpret_cast<int*>(&s_cuda_reduction_tally_block_device[0]),
-          (sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH)/sizeof(int),
+    pcie_copy<256,read_type><<<1,256>>>(
+          reinterpret_cast<read_type*>(&s_cuda_reduction_tally_block_host[0]),
+          reinterpret_cast<read_type*>(&s_cuda_reduction_tally_block_device[0]),
+          (sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH)/sizeof(read_type),
           &s_cuda_reduction_done[0] );
     cudaErrchk(cudaPeekAtLastError());
     while (s_cuda_reduction_done[0] == false);
