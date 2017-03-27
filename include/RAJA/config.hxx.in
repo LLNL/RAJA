@@ -85,6 +85,8 @@
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
 #cmakedefine RAJA_ENABLE_NESTED
 
+#cmakedefine RAJA_USE_CUB
+
 /*
  * Timer options
  */
