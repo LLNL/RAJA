@@ -3,21 +3,13 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
- *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ * \brief   RAJA header file defining segment base class.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_BaseSegment_HXX
+#define RAJA_BaseSegment_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -63,91 +55,97 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/defines.hxx"
-
 #include "RAJA/Types.hxx"
 
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
+namespace RAJA
+{
 
-//
-// Strongly typed index class.
-//
-#include "RAJA/IndexValue.hxx"
+/*!
+ ******************************************************************************
+ *
+ * \brief  Base class for all segment classes.
+ *
+ ******************************************************************************
+ */
+class BaseSegment
+{
+public:
+  ///
+  /// Ctor for base segment type.
+  ///
+  explicit BaseSegment(SegmentType type) : m_type(type), m_private(0) { ; }
 
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/forall.hxx"
+  /*
+   * Using compiler-generated copy ctor, copy assignment.
+   */
 
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
+  ///
+  /// Virtual dtor.
+  ///
+  virtual ~BaseSegment() { ; }
 
-#if defined(RAJA_ENABLE_NESTED)
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/forallN.hxx"
+  ///
+  /// Get index count associated with start of segment.
+  ///
+  SegmentType getType() const { return m_type; }
 
-#endif  // defined(RAJA_ENABLE_NESTED)
+  ///
+  /// Retrieve pointer to private data. Must be cast to proper type by user.
+  ///
+  void* getPrivate() const { return m_private; }
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
-//
-//////////////////////////////////////////////////////////////////////
-//
+  ///
+  /// Set pointer to private data. Can be used to associate any data
+  /// to segment.
+  ///
+  /// NOTE: Caller retains ownership of data object.
+  ///
+  void setPrivate(void* ptr) { m_private = ptr; }
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/sequential.hxx"
+  //
+  // Pure virtual methods that must be provided by concrete segment classes.
+  //
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/simd.hxx"
+  ///
+  /// Get segment length (i.e., number of indices in segment).
+  ///
+  virtual Index_type getLength() const = 0;
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
-#endif
+  ///
+  /// Return enum value indicating whether segment owns the data rapresenting
+  /// its indices.
+  ///
+  virtual IndexOwnership getIndexOwnership() const = 0;
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
-#endif
+  ///
+  /// Pure virtual equality operator returns true if segments are equal;
+  /// else false.
+  ///
+  virtual bool operator==(const BaseSegment& other) const = 0;
 
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
+  ///
+  /// Pure virtual inequality operator returns true if segments are not
+  /// equal, else false.
+  ///
+  virtual bool operator!=(const BaseSegment& other) const = 0;
 
-#include "RAJA/internal/IndexSetUtils.hxx"
+private:
+  ///
+  /// The default ctor is not implemented.
+  ///
+  BaseSegment();
 
-#if defined(RAJA_ENABLE_NESTED)
+  ///
+  /// Enum value indicating segment type.
+  ///
+  SegmentType m_type;
 
-//
-// Perfectly nested loop transformations
-//
+  ///
+  /// Pointer that can be used to hold arbitrary data associated with segment.
+  ///
+  void* m_private;
+};
 
-// Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
-
-// Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
-
-#include "RAJA/scan.hxx"
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

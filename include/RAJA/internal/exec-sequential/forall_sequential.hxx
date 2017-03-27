@@ -3,21 +3,16 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for sequential execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_forall_sequential_HXX
+#define RAJA_forall_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -63,91 +58,60 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/internal/defines.hxx"
-
 #include "RAJA/Types.hxx"
 
-#include "RAJA/operators.hxx"
-#include "RAJA/reducers.hxx"
+#include "RAJA/internal/fault_tolerance.hxx"
 
-//
-// Strongly typed index class.
-//
-#include "RAJA/IndexValue.hxx"
+#include "RAJA/internal/segment_exec.hxx"
 
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/forall.hxx"
+namespace RAJA
+{
 
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/Layout.hxx"
-#include "RAJA/PermutedLayout.hxx"
-#include "RAJA/OffsetLayout.hxx"
-#include "RAJA/View.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/forallN.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/sequential.hxx"
+template <typename Func>
+RAJA_INLINE void forall(const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body)
+{
+  auto end = iter.getEnd();
+  for (auto ii = iter.getBegin(); ii < end; ++ii) {
+    loop_body(ii);
+  }
+}
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/simd.hxx"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
+{
+  auto end = std::end(iter);
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
+}
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
-#endif
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const PolicyBase &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
+  }
+}
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/openmp.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
-
-#include "RAJA/internal/IndexSetUtils.hxx"
-
-#if defined(RAJA_ENABLE_NESTED)
-
-//
-// Perfectly nested loop transformations
-//
-
-// Tiling policies
-#include "RAJA/internal/foralln/Tile.hxx"
-
-// Loop interchange policies
-#include "RAJA/internal/foralln/Permute.hxx"
-
-#endif  // defined(RAJA_ENABLE_NESTED)
-
-#include "RAJA/scan.hxx"
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

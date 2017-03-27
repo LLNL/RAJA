@@ -31,6 +31,8 @@ matrix:
            - g++-6
      env: COMPILER=g++-6
          - WARN=""
+         - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
+         - COVERAGE=t
    - compiler: clang-3.6
      addons:
        apt:
@@ -76,6 +78,8 @@ before_install:
 script:
   - cd $TRAVIS_BUILD_DIR
   - mkdir travis-build && cd travis-build
-  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN ../
+  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
   - make -j
-  - make test # currently does nothing, this is how testing should be done
+  - make test 
+after_success:
+  - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi

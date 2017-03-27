@@ -54,7 +54,7 @@
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 
-#include "RAJA/ThreadUtils_CPU.hxx"
+#include "RAJA/internal/ThreadUtils_CPU.hxx"
 
 #include <cstdio>
 #include <cstdlib>
