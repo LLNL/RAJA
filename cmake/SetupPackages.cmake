@@ -65,7 +65,14 @@ if (RAJA_ENABLE_CUDA)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
     include_directories(${CUDA_INCLUDE_DIRS})
   endif()
+
+  if (RAJA_ENABLE_CUB)
+    find_package(cub)
+  else()
+    message(WARNING "NOT USING CUB, FALLING BACK TO THRUST CUDA SCANS")
+  endif()
 endif()
+
 
 if (RAJA_ENABLE_TESTS)
   include(ExternalProject)

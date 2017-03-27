@@ -60,7 +60,7 @@
 #include <iterator>
 #include <type_traits>
 
-#if defined(RAJA_USE_CUB)
+#if defined(RAJA_ENABLE_CUB)
 #include <::cub/util_allocator.cuh>
 #include <::cub/device/device_scan.cuh>
 #else
@@ -77,8 +77,8 @@ namespace detail
 namespace scan
 {
 
-#if defined(RAJA_USE_CUB)
-RAJA_LINE ::cub::CachingDeviceAllocator& getAllocator() {
+#if defined(RAJA_ENABLE_CUB)
+RAJA_INLINE ::cub::CachingDeviceAllocator& getAllocator() {
   static ::cub::CachingDeviceAllocator allocator(true);
   return allocator;
 }
@@ -97,7 +97,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter end,
                        Function binary_op)
 {
-#if defined(RAJA_USE_CUB)
+#if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = NULL;
@@ -130,7 +130,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        Function binary_op,
                        T init)
 {
-#if defined(RAJA_USE_CUB)
+#if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = NULL;
@@ -164,7 +164,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                OutputIter out,
                Function binary_op)
 {
-#if defined(RAJA_USE_CUB)
+#if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = NULL;
@@ -199,7 +199,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                Function binary_op,
                T init)
 {
-#if defined(RAJA_USE_CUB)
+#if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = NULL;
