@@ -61,8 +61,8 @@
 #include <type_traits>
 
 #if defined(RAJA_ENABLE_CUB)
-#include <::cub/util_allocator.cuh>
-#include <::cub/device/device_scan.cuh>
+#include "cub/util_allocator.cuh"
+#include "cub/device/device_scan.cuh"
 #else
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
