@@ -60,10 +60,15 @@
 #include <iterator>
 #include <type_traits>
 
+#if defined(RAJA_ENABLE_CUB)
+#include "cub/util_allocator.cuh"
+#include "cub/device/device_scan.cuh"
+#else
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
 #include <thrust/functional.h>
 #include <thrust/scan.h>
+#endif
 
 namespace RAJA
 {
@@ -72,70 +77,144 @@ namespace detail
 namespace scan
 {
 
+#if defined(RAJA_ENABLE_CUB)
+RAJA_INLINE ::cub::CachingDeviceAllocator& getAllocator() {
+  static ::cub::CachingDeviceAllocator allocator(true);
+  return allocator;
+}
+#endif
+
 /*!
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function>
-void inclusive_inplace(const ::RAJA::cuda_exec_base&,
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename InputIter,
+          typename Function>
+void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter begin,
                        InputIter end,
                        Function binary_op)
 {
+#if defined(RAJA_ENABLE_CUB)
+  int len = std::distance(begin, end);
+  // Determine temporary device storage requirements
+  void* d_temp_storage = NULL;
+  size_t temp_storage_bytes = 0;
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len));
+  // Allocate temporary storage
+  cudaErrchk(getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes));
+  // Run
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len));
+  // Free temporary storage
+  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+#else
   ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
-  cudaDeviceSynchronize();
+#endif
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function, typename T>
-void exclusive_inplace(const ::RAJA::cuda_exec_base&,
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename InputIter,
+          typename Function,
+          typename T>
+void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter begin,
                        InputIter end,
                        Function binary_op,
                        T init)
 {
+#if defined(RAJA_ENABLE_CUB)
+  int len = std::distance(begin, end);
+  // Determine temporary device storage requirements
+  void* d_temp_storage = NULL;
+  size_t temp_storage_bytes = 0;
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len));
+  // Allocate temporary storage
+  cudaErrchk(getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes));
+  // Run
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len));
+  // Free temporary storage
+  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+#else
   ::thrust::exclusive_scan(
       ::thrust::device, begin, end, begin, init, binary_op);
-  cudaDeviceSynchronize();
+#endif
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename InputIter,
           typename OutputIter,
           typename Function>
-void inclusive(const ::RAJA::cuda_exec_base&,
+void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                InputIter begin,
                InputIter end,
                OutputIter out,
                Function binary_op)
 {
+#if defined(RAJA_ENABLE_CUB)
+  int len = std::distance(begin, end);
+  // Determine temporary device storage requirements
+  void* d_temp_storage = NULL;
+  size_t temp_storage_bytes = 0;
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes, begin, out, binary_op, len));
+  // Allocate temporary storage
+  cudaErrchk(getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes));
+  // Run
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage, temp_storage_bytes, begin, out, binary_op, len));
+  // Free temporary storage
+  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+#else
   ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
-  cudaDeviceSynchronize();
+#endif
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 /*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
+template <size_t BLOCK_SIZE,
+          bool Async,
+          typename InputIter,
           typename OutputIter,
           typename Function,
           typename T>
-void exclusive(const ::RAJA::cuda_exec_base&,
+void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                InputIter begin,
                InputIter end,
                OutputIter out,
                Function binary_op,
                T init)
 {
+#if defined(RAJA_ENABLE_CUB)
+  int len = std::distance(begin, end);
+  // Determine temporary device storage requirements
+  void* d_temp_storage = NULL;
+  size_t temp_storage_bytes = 0;
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len));
+  // Allocate temporary storage
+  cudaErrchk(getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes));
+  // Run
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len));
+  // Free temporary storage
+  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+#else
   ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
-  cudaDeviceSynchronize();
+#endif
+  RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
 }  // closing brace for scan namespace
