@@ -67,11 +67,16 @@ if (RAJA_ENABLE_CUDA)
   endif()
 
   if (RAJA_ENABLE_CUB)
+
     find_package(CUB)
-    include_directories(${CUB_INCLUDE_DIRS})
-  else()
-    message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
-Please set CUB_DIR for better scan performance.")
+
+    if (CUB_FOUND)
+      include_directories(${CUB_INCLUDE_DIRS})
+    else()
+      message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
+  Please set CUB_DIR for better scan performance.")
+      set(RAJA_ENABLE_CUB False)
+    endif()
   endif()
 endif()
 
