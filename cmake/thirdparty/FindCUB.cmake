@@ -11,4 +11,8 @@ find_package_handle_standard_args(
   DEFAULT_MSG
   CUB_INCLUDE_DIRS)
 
-set(CUB_FOUND True)
+if (CUB_INCLUDE_DIRS)
+  set(CUB_FOUND True)
+else ()
+  set(CUB_FOUND False)
+endif()
