@@ -65,15 +65,10 @@
 
 #include "RAJA/internal/defines.hxx"
 
-#include "RAJA/int_datatypes.hxx"
-#include "RAJA/real_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/operators.hxx"
 #include "RAJA/reducers.hxx"
-
-#include "RAJA/IndexSet.hxx"
-#include "RAJA/ListSegment.hxx"
-#include "RAJA/RangeSegment.hxx"
 
 //
 // Strongly typed index class.
@@ -84,20 +79,21 @@
 // Generic iteration templates require specializations defined
 // in the files included below.
 //
-#include "RAJA/forall_generic.hxx"
+#include "RAJA/forall.hxx"
 
 //
 // Multidimensional layouts and views.
 //
-#include "RAJA/foralln/Layout.hxx"
-#include "RAJA/foralln/OffsetLayout.hxx"
-#include "RAJA/foralln/View.hxx"
+#include "RAJA/Layout.hxx"
+#include "RAJA/PermutedLayout.hxx"
+#include "RAJA/OffsetLayout.hxx"
+#include "RAJA/View.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "RAJA/foralln/Generic.hxx"
+#include "RAJA/forallN.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 
@@ -117,26 +113,26 @@
 //
 // All platforms must support sequential execution.
 //
-#include "RAJA/exec-sequential/raja_sequential.hxx"
+#include "RAJA/sequential.hxx"
 
 //
 // All platforms should support simd execution.
 //
-#include "RAJA/exec-simd/raja_simd.hxx"
+#include "RAJA/simd.hxx"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/exec-cuda/raja_cuda.hxx"
+#include "RAJA/cuda.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/exec-openmp/raja_openmp.hxx"
+#include "RAJA/openmp.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/exec-cilk/raja_cilk.hxx"
+#include "RAJA/cilk.hxx"
 #endif
 
-#include "RAJA/IndexSetUtils.hxx"
+#include "RAJA/internal/IndexSetUtils.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 
@@ -145,10 +141,10 @@
 //
 
 // Tiling policies
-#include "RAJA/foralln/Tile.hxx"
+#include "RAJA/internal/foralln/Tile.hxx"
 
 // Loop interchange policies
-#include "RAJA/foralln/Permute.hxx"
+#include "RAJA/internal/foralln/Permute.hxx"
 
 #endif  // defined(RAJA_ENABLE_NESTED)
 

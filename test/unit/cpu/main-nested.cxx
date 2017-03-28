@@ -18,9 +18,9 @@
 #include <cstdlib>
 
 #include <iostream>
+#include <random>
 #include <string>
 #include <vector>
-#include <random>
 
 #include "RAJA/RAJA.hxx"
 #include "RAJA/internal/defines.hxx"
@@ -59,7 +59,9 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
   //// DO WORK
   ////
 
-  typename POL::VIEW val_view(&values[0], size_i, size_j);
+  typename POL::VIEW val_view(&values[0], make_permuted_layout({size_i,
+                                                                size_j},
+  POL::PERM::value));
 
   forallN<typename POL::EXEC>(RangeSegment(1, size_i),
                               RangeSegment(0, size_j),
@@ -99,14 +101,16 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
 struct Pol2dA {
   typedef NestedPolicy<ExecList<seq_exec, seq_exec>, Permute<PERM_IJ>> EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_IJ, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_IJ PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // SIMD, JI ordering
 struct Pol2dB {
   typedef NestedPolicy<ExecList<simd_exec, seq_exec>, Permute<PERM_JI>> EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // SIMD, Tiled JI ordering
@@ -116,7 +120,8 @@ struct Pol2dC {
                             Permute<PERM_JI>>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // SIMD, Two-level tiled JI ordering
@@ -127,7 +132,8 @@ struct Pol2dD {
                                  Permute<PERM_JI>>>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 #ifdef RAJA_ENABLE_OPENMP
@@ -138,7 +144,8 @@ struct Pol2dA_OMP {
                        Permute<PERM_IJ>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_IJ, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_IJ PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // OpenMP/SIMD, JI ordering, nowait
@@ -147,7 +154,8 @@ struct Pol2dB_OMP {
                        OMP_Parallel<Permute<PERM_JI>>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // OpenMP/SIMD, Tiled JI ordering, nowait
@@ -158,7 +166,8 @@ struct Pol2dC_OMP {
                                          Permute<PERM_JI>>>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 // OpenMP/SIMD, Two-level tiled JI ordering, nowait
@@ -171,7 +180,8 @@ struct Pol2dD_OMP {
                                               Permute<PERM_JI>>>>>
       EXEC;
 
-  typedef RAJA::View<RAJA::Index_type, Layout<RAJA::Index_type, PERM_JI, RAJA::Index_type, RAJA::Index_type>> VIEW;
+  typedef RAJA::PERM_JI PERM;
+  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
 #endif
@@ -230,7 +240,7 @@ void runLTimesTest(std::string const &policy,
 
   std::random_device rand;
   std::mt19937 gen(rand());
-  std::uniform_real_distribution<double> rand_gen(0.0,1.0);
+  std::uniform_real_distribution<double> rand_gen(0.0, 1.0);
 
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
@@ -241,12 +251,18 @@ void runLTimesTest(std::string const &policy,
   }
 
   // create views on data
-  typename POL::ELL_VIEW ell(&ell_data[0], num_moments, num_directions);
+  typename POL::ELL_VIEW ell(&ell_data[0],
+                             make_permuted_layout({num_moments, num_directions},
+                                                  POL::ELL_PERM::value));
   typename POL::PSI_VIEW psi(&psi_data[0],
-                             num_directions,
-                             num_groups,
-                             num_zones);
-  typename POL::PHI_VIEW phi(&phi_data[0], num_moments, num_groups, num_zones);
+                             make_permuted_layout(
+                                 {num_directions, num_groups, num_zones},
+                                 POL::PSI_PERM::value));
+  typename POL::PHI_VIEW phi(&phi_data[0],
+                             make_permuted_layout({num_moments,
+                                                   num_groups,
+                                                   num_zones},
+                                                  POL::PHI_PERM::value));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
@@ -258,7 +274,7 @@ void runLTimesTest(std::string const &policy,
       RangeSegment(0, num_groups),
       RangeSegment(0, num_zones),
       [=](IMoment m, IDirection d, IGroup g, IZone z) {
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
+    phi(m, g, z) += ell(m, d) * psi(d, g, z);
       });
 
   ////
@@ -296,16 +312,18 @@ struct PolLTimesA {
   typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>> EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Sequential, reversed permutation
@@ -316,16 +334,18 @@ struct PolLTimesB {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_JI, IMoment, IDirection>>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_KJI PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_JI ELL_PERM;
 };
 
 // Sequential, Tiled, another permutation
@@ -340,16 +360,22 @@ struct PolLTimesC {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJK, IDirection, IGroup, IZone>>
-      PSI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+          PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
+          PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_KJI PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 #ifdef RAJA_ENABLE_OPENMP
@@ -365,16 +391,22 @@ struct PolLTimesD_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
-      PSI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+          PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
+          PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_KJI PSI_PERM;
+  typedef RAJA::PERM_KJI PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Same as D, but with tiling on zones and omp collapse on groups and zones
@@ -394,16 +426,22 @@ struct PolLTimesE_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IDirection, IGroup, IZone>>
-      PSI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+          PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_KJI, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::
+      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
+          PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<RAJA::Index_type, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_KJI PSI_PERM;
+  typedef RAJA::PERM_KJI PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 #endif
@@ -434,7 +472,7 @@ void runLTimesTests(Index_type num_moments,
 //
 ///////////////////////////////////////////////////////////////////////////
 
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv))
 {
   ///////////////////////////////////////////////////////////////////////////
   //
