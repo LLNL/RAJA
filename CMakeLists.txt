@@ -47,7 +47,7 @@ project(RAJA LANGUAGES CXX C)
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 2)
-set(RAJA_VERSION_PATCHLEVEL 4)
+set(RAJA_VERSION_PATCHLEVEL 5)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
@@ -56,6 +56,7 @@ option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+option(RAJA_ENABLE_CUB "Use cub for scans using CUDA" On)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)

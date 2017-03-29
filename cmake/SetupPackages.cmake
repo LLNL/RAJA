@@ -65,7 +65,21 @@ if (RAJA_ENABLE_CUDA)
     set (CUDA_PROPAGATE_HOST_FLAGS OFF)
     include_directories(${CUDA_INCLUDE_DIRS})
   endif()
+
+  if (RAJA_ENABLE_CUB)
+
+    find_package(CUB)
+
+    if (CUB_FOUND)
+      include_directories(${CUB_INCLUDE_DIRS})
+    else()
+      message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
+  Please set CUB_DIR for better scan performance.")
+      set(RAJA_ENABLE_CUB False)
+    endif()
+  endif()
 endif()
+
 
 if (RAJA_ENABLE_TESTS)
   include(ExternalProject)
