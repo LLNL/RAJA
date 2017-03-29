@@ -8,12 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_cuda_HXX
-#define RAJA_scan_cuda_HXX
-
-#include "RAJA/config.hxx"
-
-#if defined(RAJA_ENABLE_CUDA)
+#ifndef RAJA_scan_sequential_HXX
+#define RAJA_scan_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -57,17 +53,18 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hxx"
+
+#include "RAJA/util/Defines.hxx"
+
+#include <algorithm>
+#include <functional>
 #include <iterator>
 #include <type_traits>
 
-#include <thrust/device_ptr.h>
-#include <thrust/execution_policy.h>
-#include <thrust/functional.h>
-#include <thrust/scan.h>
-
 namespace RAJA
 {
-namespace detail
+namespace impl
 {
 namespace scan
 {
@@ -76,74 +73,87 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function>
-void inclusive_inplace(const ::RAJA::cuda_exec_base&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op)
+template <typename Iter, typename BinFn>
+void inclusive_inplace(const ::RAJA::seq_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f)
 {
-  ::thrust::inclusive_scan(::thrust::device, begin, end, begin, binary_op);
-  cudaDeviceSynchronize();
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  Value agg = *begin;
+  for (Iter i = ++begin; i != end; ++i) {
+    agg = f(*i, agg);
+    *i = agg;
+  }
 }
 
 /*!
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename InputIter, typename Function, typename T>
-void exclusive_inplace(const ::RAJA::cuda_exec_base&,
-                       InputIter begin,
-                       InputIter end,
-                       Function binary_op,
-                       T init)
+template <typename Iter, typename BinFn, typename T>
+void exclusive_inplace(const ::RAJA::seq_exec&,
+                       Iter begin,
+                       Iter end,
+                       BinFn f,
+                       T v)
 {
-  ::thrust::exclusive_scan(
-      ::thrust::device, begin, end, begin, init, binary_op);
-  cudaDeviceSynchronize();
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  const int n = end - begin;
+  Value agg = v;
+  for (int i = 0; i < n; ++i) {
+    Value t = *(begin + i);
+    *(begin + i) = agg;
+    agg = f(agg, t);
+  }
 }
 
 /*!
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
-          typename OutputIter,
-          typename Function>
-void inclusive(const ::RAJA::cuda_exec_base&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op)
+template <typename Iter, typename OutIter, typename BinFn>
+void inclusive(const ::RAJA::seq_exec&,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f)
 {
-  ::thrust::inclusive_scan(::thrust::device, begin, end, out, binary_op);
-  cudaDeviceSynchronize();
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  Value agg = *begin;
+  *out++ = agg;
+  for (Iter i = begin + 1; i != end; ++i) {
+    agg = f(agg, *i);
+    *out++ = agg;
+  }
 }
 
 /*!
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename InputIter,
-          typename OutputIter,
-          typename Function,
-          typename T>
-void exclusive(const ::RAJA::cuda_exec_base&,
-               InputIter begin,
-               InputIter end,
-               OutputIter out,
-               Function binary_op,
-               T init)
+template <typename Iter, typename OutIter, typename BinFn, typename T>
+void exclusive(const ::RAJA::seq_exec&,
+               Iter begin,
+               Iter end,
+               OutIter out,
+               BinFn f,
+               T v)
 {
-  ::thrust::exclusive_scan(::thrust::device, begin, end, out, init, binary_op);
-  cudaDeviceSynchronize();
+  using Value = typename ::std::iterator_traits<Iter>::value_type;
+  Value agg = v;
+  OutIter o = out;
+  *o++ = v;
+  for (Iter i = begin; i != end - 1; ++i, ++o) {
+    agg = f(*i, agg);
+    *o = agg;
+  }
 }
 
-}  // closing brace for scan namespace
+}  // namespace scan
 
-}  // closing brace for detail namespace
+}  // namespace impl
 
-}  // closing brace for RAJA namespace
+}  // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
-
-#endif  // closing endif for header file include guard
+#endif

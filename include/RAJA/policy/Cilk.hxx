@@ -59,41 +59,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-namespace RAJA
-{
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-///
-/// Segment execution policies
-///
-struct cilk_for_exec {
-};
-
-///
-/// Index set segment iteration policies
-///
-struct cilk_for_segit : public cilk_for_exec {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct cilk_reduce {
-};
-
-}  // closing brace for RAJA namespace
-
+#include "RAJA/policy/cilk/policy_cilk.hxx"
 #include "RAJA/policy/cilk/forall_cilk.hxx"
 #include "RAJA/policy/cilk/reduce_cilk.hxx"
 

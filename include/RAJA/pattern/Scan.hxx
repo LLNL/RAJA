@@ -82,7 +82,7 @@ void inclusive_scan_inplace(Iter begin,
                             Iter end,
                             BinaryFunction binop = BinaryFunction{})
 {
-  detail::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop);
+  impl::scan::inclusive_inplace(ExecPolicy{}, begin, end, binop);
 }
 
 /*!
@@ -107,7 +107,7 @@ void exclusive_scan_inplace(Iter begin,
                             BinaryFunction binop = BinaryFunction{},
                             T value = BinaryFunction::identity)
 {
-  detail::scan::exclusive_inplace(ExecPolicy{}, begin, end, binop, value);
+  impl::scan::exclusive_inplace(ExecPolicy{}, begin, end, binop, value);
 }
 
 /*!
@@ -137,7 +137,7 @@ void inclusive_scan(Iter begin,
                     IterOut out,
                     BinaryFunction binop = BinaryFunction{})
 {
-  detail::scan::inclusive(ExecPolicy{}, begin, end, out, binop);
+  impl::scan::inclusive(ExecPolicy{}, begin, end, out, binop);
 }
 
 /*!
@@ -168,7 +168,7 @@ void exclusive_scan(Iter begin,
                     BinaryFunction binop = BinaryFunction{},
                     T value = BinaryFunction::identity)
 {
-  detail::scan::exclusive(ExecPolicy{}, begin, end, out, binop, value);
+  impl::scan::exclusive(ExecPolicy{}, begin, end, out, binop, value);
 }
 
 }  // closing brace for RAJA namespace

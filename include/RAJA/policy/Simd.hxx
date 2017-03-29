@@ -55,40 +55,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
 
-///
-/// Segment execution policies
-///
-namespace RAJA
-{
-
-struct simd_exec {
-};
-}
-
-//
-// NOTE: There is no Index set segment iteration policy for SIMD
-//
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-
-//
-// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
-//
-
-#include "RAJA/policy/simd/forall_simd.hxx"
+#include "RAJA/policy/simd/PolicySimd.hxx"
+#include "RAJA/policy/simd/ForallSimd.hxx"
 
 #endif  // closing endif for header file include guard

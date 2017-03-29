@@ -55,45 +55,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "PolicyBase.hxx"
 
-namespace RAJA
-{
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-///
-/// Segment execution policies
-///
-struct seq_exec : public PolicyBase {
-};
-
-///
-/// Index set segment iteration policies
-///
-struct seq_segit : public seq_exec {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_reduce {
-};
-
-}  // closing brace for RAJA namespace
-
-#include "RAJA/policy/sequential/forall_sequential.hxx"
-#include "RAJA/policy/sequential/reduce_sequential.hxx"
-#include "RAJA/policy/sequential/scan_sequential.hxx"
+#include "RAJA/policy/sequential/PolicySequential.hxx"
+#include "RAJA/policy/sequential/ForallSequential.hxx"
+#include "RAJA/policy/sequential/ReduceSequential.hxx"
+#include "RAJA/policy/sequential/ScanSequential.hxx"
 
 #endif  // closing endif for header file include guard

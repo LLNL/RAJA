@@ -60,7 +60,7 @@
 
 #include "RAJA/util/Types.hxx"
 
-#include "RAJA/pattern/Reducers.hxx"
+#include "RAJA/pattern/Reduce.hxx"
 
 #include "RAJA/internal/MemUtils_CPU.hxx"
 

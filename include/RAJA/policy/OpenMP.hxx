@@ -59,76 +59,18 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "PolicyBase.hxx"
 
 #include <omp.h>
 #include <iostream>
 #include <thread>
 
-namespace RAJA
-{
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-///
-/// Segment execution policies
-///
-template <typename InnerPolicy>
-struct omp_parallel_exec {
-};
-struct omp_for_exec {
-};
-struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
-};
-template <size_t ChunkSize>
-struct omp_for_static {
-};
-template <size_t ChunkSize>
-struct omp_parallel_for_static
-    : public omp_parallel_exec<omp_for_static<ChunkSize>> {
-};
-struct omp_for_nowait_exec {
-};
-
-///
-/// Index set segment iteration policies
-///
-struct omp_parallel_for_segit : public omp_parallel_for_exec {
-};
-struct omp_parallel_segit : public omp_parallel_for_segit {
-};
-struct omp_taskgraph_segit {
-};
-struct omp_taskgraph_interval_segit {
-};
-
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct omp_reduce {
-};
-
-struct omp_reduce_ordered {
-};
-
-}  // closing brace for RAJA namespace
-
-#include "RAJA/policy/openmp/forall_openmp.hxx"
-#include "RAJA/policy/openmp/reduce_openmp.hxx"
-#include "RAJA/policy/openmp/scan_openmp.hxx"
+#include "RAJA/policy/openmp/PolicyOpenMP.hxx"
+#include "RAJA/policy/openmp/ForallOpenMP.hxx"
+#include "RAJA/policy/openmp/ReduceOpenMP.hxx"
+#include "RAJA/policy/openmp/ScanOpenMP.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
-#include "RAJA/policy/openmp/forallN_openmp.hxx"
+#include "RAJA/policy/openmp/ForallNOpenMP.hxx"
 #endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

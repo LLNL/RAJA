@@ -3,21 +3,20 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for Intel Cilk Plus execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods work only on platforms that support Cilk Plus.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_forall_cilk_HXX
+#define RAJA_forall_cilk_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,84 +60,59 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/Types.hxx"
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/fault_tolerance.hxx"
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/segment_exec.hxx"
 
-#include "RAJA/util/Operators.hxx"
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/policy/Sequential.hxx"
+namespace RAJA
+{
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/Simd.hxx"
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/OpenMP.hxx"
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
-#endif
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hxx"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/Forall.hxx"
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hxx"
-#include "RAJA/util/PermutedLayout.hxx"
-#include "RAJA/util/OffsetLayout.hxx"
-#include "RAJA/util/View.hxx"
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/ForallN.hxx"
-
-
-#include "RAJA/pattern/Reduce.hxx"
+namespace impl
+{
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// Function templates that iterate over iterables.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hxx"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const cilk_for_exec &,
+                        Iterable &&iter,
+                        Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  cilk_for(Index_type i = 0; i < distance; ++i) { loop_body(begin[i]); }
+}
 
-// Tiling policies
-#include "RAJA/pattern/Tile.hxx"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const cilk_for_exec &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  cilk_for(Index_type i = 0; i < distance; ++i)
+  {
+    loop_body(i + icount, begin[i]);
+  }
+}
 
-// Loop interchange policies
-#include "RAJA/pattern/Permute.hxx"
+}  // closing brace for impl namespace
 
-#include "RAJA/pattern/Scan.hxx"
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_CILK guard
 
 #endif  // closing endif for header file include guard

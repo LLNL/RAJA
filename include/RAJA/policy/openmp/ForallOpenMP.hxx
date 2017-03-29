@@ -64,7 +64,9 @@
 
 #include "RAJA/internal/fault_tolerance.hxx"
 
-#include "RAJA/internal/segment_exec.hxx"
+#include "RAJA/index/RangeSegment.hxx"
+#include "RAJA/index/ListSegment.hxx"
+#include "RAJA/index/IndexSet.hxx"
 
 #include <iostream>
 #include <thread>
@@ -76,6 +78,12 @@
 
 namespace RAJA
 {
+
+namespace impl
+{
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
 
 ///
 /// OpenMP parallel for policy implementation
@@ -252,6 +260,9 @@ RAJA_INLINE void forall(
 
     task->wait();
 
+    /*
+     * TODO: Fix this!!!
+     */
     executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
     task->reset();
@@ -270,6 +281,8 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 }
+
+}  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
 

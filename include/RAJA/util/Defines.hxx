@@ -8,10 +8,11 @@
 // We need a better solution than this as it is a pain to manage
 // this stuff in an application.
 //
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA) && defined(__CUDACC__)
 
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
+
 #if defined(_WIN32)  // windows is non-compliant, yay
 #define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
 #else

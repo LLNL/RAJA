@@ -74,6 +74,9 @@
 namespace RAJA
 {
 
+namespace impl
+{
+
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -331,6 +334,8 @@ RAJA_INLINE void forall_Icount(
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
+
+}  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
 

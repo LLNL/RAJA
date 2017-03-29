@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/policy/sequential/scan_sequential.hxx"
+#include "RAJA/policy/sequential/ScanSequential.hxx"
 
 #include <omp.h>
 
@@ -67,7 +67,7 @@
 
 namespace RAJA
 {
-namespace detail
+namespace impl
 {
 namespace scan
 {
@@ -176,7 +176,7 @@ void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
 
 }  // namespace scan
 
-}  // namespace detail
+}  // namespace impl
 
 }  // namespace RAJA
 
