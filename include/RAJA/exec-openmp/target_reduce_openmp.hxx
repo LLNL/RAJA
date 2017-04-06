@@ -12,7 +12,6 @@
 
 namespace RAJA
 {
-#pragma omp declare target
 template <typename T>
 class ReduceMin<omp_target_reduce, T>
 {
@@ -693,7 +692,6 @@ private:
   bool is_mapped;
 };
 
-#pragma omp end declare target
 
 } // end RAJA namespace
 

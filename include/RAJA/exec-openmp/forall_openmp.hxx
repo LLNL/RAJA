@@ -88,9 +88,11 @@ RAJA_INLINE void forall(const omp_target_parallel_for_exec&,
     auto begin = std::begin(iter);
     auto end = std::end(iter);
     auto distance = std::distance(begin, end);
-#pragma omp target teams distribute parallel for schedule(static, 1)
-    for (Index_type i = 0; i < distance; ++i) {
-        loop_body(begin[i]);
+#pragma omp target teams distribute parallel for schedule(static, 1) firstprivate(loop_body)
+    {
+        for (Index_type i = 0; i < distance; ++i) {
+            loop_body(begin[i]);
+        }
     }
 }
 
