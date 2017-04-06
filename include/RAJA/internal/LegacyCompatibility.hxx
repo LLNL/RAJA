@@ -1,6 +1,7 @@
-#ifndef KRIPKE_LEGAGY_COMPATIBILITY_HXX
-#define KRIPKE_LEGAGY_COMPATIBILITY_HXX 1
+#ifndef RAJA_LEGACY_COMPATIBILITY_HXX
+#define RAJA_LEGACY_COMPATIBILITY_HXX
 
+#include "RAJA/config.hxx"
 #include "RAJA/util/Defines.hxx"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
