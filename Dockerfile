@@ -2,7 +2,7 @@ FROM nvidia/cuda:8.0-devel-ubuntu16.04
 MAINTAINER David Poliakoff <poliakoff1@llnl.gov>
 
 RUN apt-get update -y
-RUN apt-get install -y git cmake
+RUN apt-get install -y git cmake gdb
 
 RUN cd /opt/ && git clone https://github.com/LLNL/RAJA.git
 
