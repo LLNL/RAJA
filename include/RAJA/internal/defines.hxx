@@ -1,6 +1,7 @@
 #ifndef RAJA_INTERNAL_DEFINES_HXX
 #define RAJA_INTERNAL_DEFINES_HXX
 
+#include <stdlib.h>
 #include <stdexcept>
 
 //
