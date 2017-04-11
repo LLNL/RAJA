@@ -1,5 +1,5 @@
 FROM nvidia/cuda:8.0-devel-ubuntu16.04
-MAINTAINER David Poliakoff <poliakoff1@llnl.gov>
+MAINTAINER RAJA Development Team <raja-dev@llnl.gov>
 
 RUN apt-get update -y
 RUN apt-get install -y git cmake gdb
