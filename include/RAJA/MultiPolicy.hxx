@@ -60,76 +60,107 @@
 namespace RAJA
 {
 
-template <typename Selector, typename ...Policies>
-class MultiPolicy {
-  Selector s;
-public:
-  MultiPolicy() = delete; // No default construction
-  MultiPolicy(Selector s) : s(s)
-  { }
-
-  MultiPolicy(const MultiPolicy &p) : s(p.s)
-  { }
-
-  template <typename Iterable>
-  int operator()(Iterable &&i)
-  {
-    return s(i);
-  }
-};
-
-template <typename ...Policies, typename Selector>
-auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
-{
-  return MultiPolicy<Selector, Policies...>(s);
-}
-
 namespace detail
 {
 
-template <size_t index, size_t size, typename first, typename... rest>
-struct policy_invoker {
-  using policy = first;
+template <size_t index, size_t size, typename Policy, typename... rest>
+struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
+  static_assert(index < size, "index must be in the range of possibilities");
+  Policy _p;
+  using NextInvoker = policy_invoker<index - 1, size, rest...>;
+
+  policy_invoker(Policy p, rest... args) : _p(p), NextInvoker(args...) {}
 
   template <typename Iterable, typename Body>
-  static void invoke(int offset, Iterable &&iter, Body &&body)
+  void invoke(int offset, Iterable &&iter, Body &&body)
   {
-    if(offset == size - index - 1) {
-      forall(policy(), iter, body);
+    if (offset == size - index - 1) {
+      forall(_p, iter, body);
     } else {
-      policy_invoker<index - 1, size, rest...>::invoke(offset, iter, body);
+      NextInvoker::invoke(offset, iter, body);
     }
   }
 };
 
-template <size_t size, typename first, typename... rest>
-struct policy_invoker<0, size, first, rest...> {
-  using policy = first;
-
+template <size_t size, typename Policy, typename... rest>
+struct policy_invoker<0, size, Policy, rest...> {
+  Policy _p;
+  policy_invoker(Policy p, rest... args) : _p(p) {}
   template <typename Iterable, typename Body>
-  static void invoke(int offset, Iterable &&iter, Body &&body)
+  void invoke(int offset, Iterable &&iter, Body &&body)
   {
-    if(offset == size - 1) {
-      forall(policy(), iter, body);
+    if (offset == size - 1) {
+      forall(_p, iter, body);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }
   }
 };
-
-
 }
 
-template <typename ...Policies, typename Selector, typename Iterable,
+template <typename Selector, typename... Policies>
+class MultiPolicy
+{
+  Selector s;
+
+public:
+  MultiPolicy() = delete;  // No default construction
+  MultiPolicy(Selector s) : s(s), _policies({Policies{}...}) {}
+  MultiPolicy(Selector s, Policies... policies) : s(s), _policies({policies...})
+  {
+  }
+
+  MultiPolicy(const MultiPolicy &p) : s(p.s), _policies(p._policies) {}
+
+  template <typename Iterable, typename Body>
+  int invoke(Iterable &&i, Body &&b)
+  {
+    size_t index = s(i);
+    _policies.invoke(index, i, b);
+    return s(i);
+  }
+
+  detail::
+      policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
+          _policies;
+};
+
+namespace detail
+{
+template <size_t... Indices, typename... Policies, typename Selector>
+auto make_multi_policy(VarOps::index_sequence<Indices...>,
+                       Selector s,
+                       std::tuple<Policies...> policies)
+    -> MultiPolicy<Selector, Policies...>
+{
+  return MultiPolicy<Selector, Policies...>(s, std::get<Indices>(policies)...);
+}
+}
+
+template <typename... Policies, typename Selector>
+auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
+{
+  return MultiPolicy<Selector, Policies...>(s, Policies{}...);
+}
+
+template <typename... Policies, typename Selector>
+auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
+    -> MultiPolicy<Selector, Policies...>
+{
+  return detail::make_multi_policy(
+      VarOps::make_index_sequence<sizeof... (Policies)>{}, s, policies);
+}
+
+template <typename... Policies,
+          typename Selector,
+          typename Iterable,
           typename Body>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p, Iterable &&iter,
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
+                        Iterable &&iter,
                         Body &&body)
 {
-  using inv = detail::policy_invoker<sizeof...(Policies) - 1, sizeof...
-      (Policies), Policies...>;
-  inv::invoke(p(iter), iter, body);
+  p.invoke(iter, body);
 }
-
 }
 
 #endif
