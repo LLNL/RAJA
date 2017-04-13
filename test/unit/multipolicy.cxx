@@ -12,10 +12,10 @@ TEST(multipolicy, basic)
           return 1;
         }
       });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 5), [](RAJA::Index_type i){
+  RAJA::forall(mp, RAJA::RangeSegment(0, 5), [](RAJA::Index_type){
     ASSERT_EQ(omp_get_num_threads(), 1);
   });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 101), [](RAJA::Index_type i){
+  RAJA::forall(mp, RAJA::RangeSegment(0, 101), [](RAJA::Index_type){
     ASSERT_TRUE(omp_get_num_threads() > 1);
   });
   // Nest a multipolicy to ensure value-based policies are preserved
@@ -28,13 +28,13 @@ TEST(multipolicy, basic)
           return 1;
         }
       });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), [](RAJA::Index_type i){
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), [](RAJA::Index_type){
     ASSERT_EQ(omp_get_num_threads(), 1);
   });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), [](RAJA::Index_type i){
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), [](RAJA::Index_type){
     ASSERT_EQ(omp_get_num_threads(), 1);
   });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), [](RAJA::Index_type i){
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), [](RAJA::Index_type){
     ASSERT_TRUE(omp_get_num_threads() > 1);
   });
 }

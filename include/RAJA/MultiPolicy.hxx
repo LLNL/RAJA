@@ -69,7 +69,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   Policy _p;
   using NextInvoker = policy_invoker<index - 1, size, rest...>;
 
-  policy_invoker(Policy p, rest... args) : _p(p), NextInvoker(args...) {}
+  policy_invoker(Policy p, rest... args) : NextInvoker(args...), _p(p) {}
 
   template <typename Iterable, typename Body>
   void invoke(int offset, Iterable &&iter, Body &&body)
