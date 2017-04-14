@@ -91,7 +91,7 @@ class BasicIndexSet<T0, TREST...> : public BasicIndexSet<TREST...>{
     using PARENT = BasicIndexSet<TREST...>;
     const size_t T0_TypeId = sizeof...(TREST);
 
-  public:
+public:
 
 ///
 /// Class representing index set execution policy.
@@ -100,15 +100,13 @@ class BasicIndexSet<T0, TREST...> : public BasicIndexSet<TREST...>{
 /// over segments.  The second describes the policy for executing
 /// each segment.
 ///
-template< typename SEG_ITER_POLICY_T,
-          typename SEG_EXEC_POLICY_T >
-struct ExecPolicy
-{
-  typedef SEG_ITER_POLICY_T seg_it;
-  typedef SEG_EXEC_POLICY_T seg_exec;
-};
-
-
+  template< typename SEG_ITER_POLICY_T,
+            typename SEG_EXEC_POLICY_T >
+  struct ExecPolicy
+  {
+    typedef SEG_ITER_POLICY_T seg_it;
+    typedef SEG_EXEC_POLICY_T seg_exec;
+  };
 
 
     /*!
@@ -238,8 +236,7 @@ struct ExecPolicy
       return PARENT::template getSegment<P0>(segid);
     }
 
-
-
+public:
     /*!
      * \brief Equality operator.
      */
@@ -270,6 +267,7 @@ struct ExecPolicy
       return ( !(*this == other) );
     }
 
+public:
     /*!
      * \brief Append an IndexSet of another type to this one.
      *
@@ -280,7 +278,7 @@ struct ExecPolicy
      */
 
 
-
+private:
     template<typename ... CALL>
     RAJA_INLINE
     bool push_into(BasicIndexSet<CALL...> &c,
@@ -303,7 +301,7 @@ struct ExecPolicy
     }
 
 
-
+public:
     template<typename ... CALL>
     RAJA_INLINE
     bool segment_push_into(size_t segid, BasicIndexSet<CALL...> &c,
@@ -336,9 +334,6 @@ struct ExecPolicy
       }
       return true;
     }
-
-
-
 
 
     /*!
@@ -376,8 +371,6 @@ struct ExecPolicy
     bool push_front_nocopy(Tnew *val){
       return push_internal(val, PUSH_FRONT, PUSH_NOCOPY);
     }
-
-
 
     /*!
      * \brief Returns the number of types this IndexSet can store.
@@ -443,43 +436,6 @@ struct ExecPolicy
       }
       else{
         PARENT::segmentCall(segid, body, args...);
-      }
-    }
-
-
-    RAJA_INLINE
-    void dumpSegments(void) const{
-      size_t n = getNumSegments();
-
-      std::cout << "dumpSegments():" << std::endl;
-      std::cout << "Number of segments: " << n << std::endl;
-      std::cout << "Segment Types:   ";
-      for(size_t i = 0;i < n;++ i){
-        std::cout << " " << getSegmentTypes()[i];
-      }
-      std::cout << std::endl;
-
-      std::cout << "Segment Offsets: ";
-      for(size_t i = 0;i < n;++ i){
-        std::cout << " " << getSegmentOffsets()[i];
-      }
-      std::cout << std::endl;
-
-      for(size_t i = 0;i < n;++ i){
-        std::cout << i << ": ";
-        dumpSegment(i);
-      }
-      std::cout << "END dumpSegments()" << std::endl;
-    }
-
-    RAJA_INLINE
-    void dumpSegment(size_t segid) const{
-      if(getSegmentTypes()[segid] == T0_TypeId){
-        int offset = getSegmentOffsets()[segid];
-        std::cout << *data[offset] << std::endl;
-      }
-      else{
-        PARENT::dumpSegment(segid);
       }
     }
 
@@ -712,14 +668,12 @@ public:
     os << std::endl;
 
     for(size_t i = 0; i < n; ++i){
-      ////os << i << ": ";
       printSegment(i,os);
     }// end iterate over segments
 
     os << "END BasicIndexSet::print()" << std::endl;
 
   }//end print
-
 
   private:
     RAJA::RAJAVec<T0 *> data;
@@ -797,23 +751,16 @@ class BasicIndexSet<> {
       return false;
     }
 
-    RAJA_INLINE
-    //constexpr
+    RAJA_INLINE    //constexpr
     static
     int getNumSegments(void) /*const*/ {
       return 0;
     }
 
-    RAJA_INLINE
-    //constexpr
+    RAJA_INLINE    //constexpr
     static
     size_t getLength(void) /*const*/ {
       return 0;
-    }
-
-    RAJA_INLINE
-    void dumpSegment(size_t segid) const{
-      std::cout << "UNKNOWN" << std::endl;
     }
 
     RAJA_INLINE
