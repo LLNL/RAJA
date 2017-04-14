@@ -20,7 +20,7 @@
 
 #include "Compare.hxx"
 
-#define TEST_VEC_LEN 1024 * 1024
+#define TEST_VEC_LEN 1024 * 1024 * 5
 
 using namespace RAJA;
 using namespace std;
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forallN<NestedPolicy<ExecList<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > > > > (
           iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
@@ -270,13 +270,16 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 3
+
+    ////////////////////////////////////////////////////////////////////////////
+
     {// Begin test4
 
       ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
       ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
-      double neg_chk_val, pos_chk_val;
 
-      neg_chk_val = pos_chk_val = 0.0;
+      double neg_chk_val = 0.0;
+      double pos_chk_val = 0.0;
 
       int loops = 3;
       for (int k = 0; k < loops; k++) {
@@ -302,13 +305,14 @@ int main(int argc, char *argv[])
           }
         });
 
-        //fprintf(stderr,"pos_chk_val %0.12lf : dsumP %0.12lf : EPS %0.12lf\n",pos_chk_val,double(dsumP),std::abs(pos_chk_val - double(dsumP)));
-        //fprintf(stderr,"neg_chk_val %0.12lf : dsumN %0.12lf : EPS %0.12lf\n",neg_chk_val,double(dsumN),std::abs(neg_chk_val - double(dsumN)));
-        if (!(std::abs(double(dsumN) - neg_chk_val) < 4e-8)
-            || !(std::abs(double(dsumP) - pos_chk_val) < 4e-8)) {
-
+        if (   !equal(dsumN.get(), neg_chk_val)
+            || !equal(dsumP.get(), pos_chk_val)) {
           cout << "\n TEST 4 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
+          cout << setprecision(20) << "\tdsumN = " << static_cast<double>(dsumN)
+               << " (" << neg_chk_val << ") " << endl;
+          cout << setprecision(20) << "\tdsumP = " << static_cast<double>(dsumP)
+               << " (" << pos_chk_val << ") " << endl;
 
         } else {
           s_ntests_passed++;

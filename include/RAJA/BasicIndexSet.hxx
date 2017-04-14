@@ -58,8 +58,8 @@
 #include<vector>
 #include<iostream>
 
-#include "RAJA/Iterators.hxx"
-#include<RAJA/RAJAVec.hxx>
+#include "RAJA/internal/Iterators.hxx"
+#include "RAJA/internal/RAJAVec.hxx"
 
 namespace RAJA {
 

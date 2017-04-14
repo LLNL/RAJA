@@ -57,7 +57,7 @@
 #include <algorithm>
 
 #include "RAJA/config.hxx"
-#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
+#include "RAJA/internal/exec-cuda/raja_cudaerrchk.hxx"
 
 namespace RAJA
 {

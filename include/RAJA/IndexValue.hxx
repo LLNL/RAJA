@@ -55,7 +55,8 @@
 
 #include <string>
 #include "RAJA/internal/defines.hxx"
-#include "RAJA/int_datatypes.hxx"
+
+#include "RAJA/Types.hxx"
 
 namespace RAJA
 {

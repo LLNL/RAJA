@@ -20,7 +20,7 @@
 #include <string>
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/RAJAVec.hxx"
+#include "RAJA/internal/RAJAVec.hxx"
 #include "RAJA/CudaManagedAllocator.hxx"
 #include "RAJA/internal/defines.hxx"
 
