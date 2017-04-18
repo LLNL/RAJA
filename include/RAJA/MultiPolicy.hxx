@@ -173,6 +173,11 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof... (Policies)>{}, s, policies);
 }
 
+/// forall - MultiPolicy specialization, select at runtime from a
+/// compile-time list of policies, build with make_multi_policy()
+/// \param p MultiPolicy to use for selection
+/// \param iter iterable of items to supply to body
+/// \param body functor, will receive each value produced by iterable iter
 template <typename... Policies,
           typename Selector,
           typename Iterable,
