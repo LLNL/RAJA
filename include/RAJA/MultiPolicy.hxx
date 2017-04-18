@@ -59,7 +59,11 @@
 
 namespace RAJA
 {
-
+/// MultiPolicy - Meta-policy for choosing between a compile-time list of
+/// policies at runtime
+///
+/// \tparam Selector Functor/Lambda/function type used to select policies
+/// \tparam Policies Variadic pack of policies, numbered from 0
 template <typename Selector, typename ...Policies>
 class MultiPolicy {
   Selector s;
@@ -78,6 +82,14 @@ public:
   }
 };
 
+/// make_multi_policy - Construct a MultiPolicy from the given selector and
+/// Policies
+///
+/// \tparam Policies list of policies, 0 to N-1
+/// \tparam Selector type of s, should almost always be inferred
+/// \param s a functor called with the segment object passed to
+/// forall, must return an int in the set 0 to N-1 selecting the policy to use
+/// \return A MultiPolicy containing the given selector s
 template <typename ...Policies, typename Selector>
 auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 {
@@ -86,7 +98,8 @@ auto make_multi_policy(Selector s) -> MultiPolicy<Selector, Policies...>
 
 namespace detail
 {
-
+/// @brief policy_invoker - internal helper for compile-time expansion and
+/// runtime selection
 template <size_t index, size_t size, typename first, typename... rest>
 struct policy_invoker {
   using policy = first;
