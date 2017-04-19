@@ -53,7 +53,7 @@ int main(int argc, char *argv[])
   //
   // Construct index set with mix of Range and List segments.
   //
-  BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
+  IndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
 
   Index_type rbeg;
   Index_type rend;
@@ -290,7 +290,7 @@ int main(int argc, char *argv[])
     ref_array[is_indices[i]] = parent[is_indices[i]] * parent[is_indices[i]];
   }
 
-  forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+  forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
       iset, [=] __device__(Index_type idx) {
         test_array[idx] = parent[idx] * parent[idx];
       });
@@ -375,7 +375,7 @@ int main(int argc, char *argv[])
     ref_array[i] = parent[is_indices[i]] * parent[is_indices[i]];
   }
 
-  forall_Icount<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+  forall_Icount<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
       iset, [=] __device__(Index_type icount, Index_type idx) {
         test_array[icount] = parent[idx] * parent[idx];
       });

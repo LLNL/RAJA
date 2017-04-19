@@ -162,7 +162,7 @@ int main(int argc, char *argv[])
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
       RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
 
-      BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
+      IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
 
@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
-      forallN<NestedPolicy<ExecList<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > > > > (
+      forallN<NestedPolicy<ExecList<ExecPolicy<seq_segit, cuda_exec<block_size> > > > > (
           iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
@@ -226,7 +226,7 @@ int main(int argc, char *argv[])
       RangeSegment seg2(4860, 10110);
       RangeSegment seg3(20490, 32003);
 
-      BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
+      IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
       iset.push_back(seg2);
@@ -240,7 +240,7 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];

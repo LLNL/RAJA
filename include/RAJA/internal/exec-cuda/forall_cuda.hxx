@@ -123,7 +123,7 @@ __device__ __forceinline__ Index_type getGlobalIdx_3D_3D()
 }
 __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
 {
-  Index_type numThreads = blockDim.x * blockDim.y * blockDim.z * 
+  Index_type numThreads = blockDim.x * blockDim.y * blockDim.z *
                           gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
@@ -288,9 +288,10 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
  *
  ******************************************************************************
  */
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY>
-RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
-                        const IndexSet& iset,
+/*
+template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
+RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
+                        const IndexSet<SEG_TYPES ...>& iset,
                         LOOP_BODY&& loop_body)
 {
 
@@ -303,6 +304,7 @@ RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, As
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
+*/
 
 /*!
  ******************************************************************************
@@ -316,10 +318,11 @@ RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, As
  *
  ******************************************************************************
  */
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY>
+ /*
+template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
 RAJA_INLINE void forall_Icount(
-    IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
-    const IndexSet& iset,
+ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
+const IndexSet<SEG_TYPES ...>& iset,
     LOOP_BODY&& loop_body)
 {
   int num_seg = iset.getNumSegments();
@@ -331,7 +334,7 @@ RAJA_INLINE void forall_Icount(
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
-
+ */
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard

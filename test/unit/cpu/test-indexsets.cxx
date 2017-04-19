@@ -17,7 +17,7 @@ protected:
   }
 
   RAJA::RAJAVec<RAJA::Index_type> is_indices;
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> index_sets_[NumBuildMethods];
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> index_sets_[NumBuildMethods];
 };
 
 TEST_F(IndexSetTest, IndexSetEquality)
@@ -32,7 +32,7 @@ TEST_F(IndexSetTest, InvalidSegments)
 {
   RAJA::RangeStrideSegment rs_segment(0, 4, 2);
 
-  // FIX ME push back will work here because RangeStrideSegment is a valid type in the BasicIndexSet - need to come up with a new type to test with
+  // FIX ME push back will work here because RangeStrideSegment is a valid type in the IndexSet - need to come up with a new type to test with
   //EXPECT_NE(true, index_sets_[0].isValidSegmentType(rs_segment));
   //EXPECT_NE(true, index_sets_[0].push_back(rs_segment));
   //EXPECT_NE(true, index_sets_[0].push_back_nocopy(&rs_segment));

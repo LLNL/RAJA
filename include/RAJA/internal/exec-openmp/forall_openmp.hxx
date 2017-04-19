@@ -86,7 +86,7 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-#pragma omp parallel 
+#pragma omp parallel
   {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall<InnerPolicy>(std::forward<Iterable>(iter),
@@ -100,8 +100,8 @@ RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
                                Index_type icount,
                                Func&& loop_body)
 {
-#pragma omp parallel 
-  { 
+#pragma omp parallel
+  {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                                icount,
@@ -229,10 +229,11 @@ RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+/*
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY, typename ... SEG_TYPES>
 RAJA_INLINE void forall(
-    IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
-    const IndexSet& iset,
+    ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
+    const IndexSet<SEG_TYPES ...>& iset,
     LOOP_BODY loop_body)
 {
   if (!iset.dependencyGraphSet()) {
@@ -270,6 +271,7 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 }
+*/
 
 }  // closing brace for RAJA namespace
 

@@ -51,7 +51,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   /*
     //Commenting out because POD is no longer a valid type for indices
 
-  RAJA::BasicIndexSet<int, double> vts;
+  RAJA::IndexSet<int, double> vts;
 
   vts.push_back(1.4444);
 
@@ -72,7 +72,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   std::cout<<"after size()"<<std::endl;
 
 
-  RAJA::BasicIndexSet<int, double> vts2(vts);
+  RAJA::IndexSet<int, double> vts2(vts);
 
   std::cout<<"vts2:"<<std::endl;
   vts2.dumpSegments();
@@ -83,8 +83,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   printf("vts.isValidSegmentType(char*)=   %d\n", (int)vts.isValidSegmentType("meow"));
 
 
-  RAJA::BasicIndexSet<int, double, std::string> vts3;
-  RAJA::BasicIndexSet<int, double, std::string> vts4;
+  RAJA::IndexSet<int, double, std::string> vts3;
+  RAJA::IndexSet<int, double, std::string> vts4;
 
   // we can do this beause vts3 is a super-set of vts2
   vts2.push_into(vts3, PUSH_BACK);
@@ -106,7 +106,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 */
 
   //RAJA::IndexSet is0;
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment> is0;
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment> is0;
 
   std::vector<int> segvec{3,2,1};
   is0.push_back(RAJA::ListSegment(segvec));
@@ -118,7 +118,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   is0.print(cout);
 
 
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment> is1;
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment> is1;
   int num_segments = is0.getNumSegments();
 
   for (int i = 0; i < num_segments; ++i) {
@@ -150,9 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   int view_size = num_segments - 1;
   std::cout<<"creating a view of size "<<view_size;//<<std::endl;
-  //RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
+  //RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
   //  = is1.createView<RAJA::RangeSegment, RAJA::ListSegment>(0, view_size);
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
     = is1.createView(0, view_size);
 
   cout << "\n\nIndexSet( view ) " << endl;
@@ -160,14 +160,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   //is0.dumpSegments();
 
-  using seq_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+  using seq_seq_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
   RAJA::forall<seq_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
-  std::cout<<"finished forall with RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
 
 #ifdef RAJA_ENABLE_OPENMP
-  using omp_seq_pol = RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;
+  using omp_seq_pol = RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;
   RAJA::forall<omp_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
-  std::cout<<"finished forall with RAJA::IndexSet::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;"<<std::endl;
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::omp_parallel_for_segit, RAJA::seq_exec>;"<<std::endl;
 #endif
 
 //  RAJA::RAJAVec<int, cuda_managed_allocator<int> > test_managed(10);

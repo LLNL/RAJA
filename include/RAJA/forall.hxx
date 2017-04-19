@@ -95,7 +95,6 @@
 #include "RAJA/IndexSet.hxx"
 #include "RAJA/RangeSegment.hxx"
 #include "RAJA/ListSegment.hxx"
-#include "RAJA/BasicIndexSet.hxx"
 
 #include "RAJA/internal/fault_tolerance.hxx"
 #include "RAJA/Types.hxx"
@@ -123,23 +122,8 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(const IndexSet& c, LOOP_BODY loop_body)
-{
-
-  forall_Icount(EXEC_POLICY_T(), c, loop_body);
-}
-
-
-/*!
-******************************************************************************
-*
-* \brief  BasicIndexSet version
-*
-******************************************************************************
-*/
 template <typename EXEC_POLICY_T, typename ... SEG_TYPES, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(const BasicIndexSet<SEG_TYPES ...>& c, LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(const IndexSet<SEG_TYPES ...>& c, LOOP_BODY loop_body)
 {
 
   forall_Icount(EXEC_POLICY_T(), c, loop_body);

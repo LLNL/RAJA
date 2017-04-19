@@ -74,8 +74,6 @@
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 
-#include "RAJA/BasicIndexSet.hxx"
-
 //
 // Strongly typed index class.
 //

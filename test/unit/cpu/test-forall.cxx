@@ -27,7 +27,7 @@ class ForallTest : public ::testing::Test
 protected:
   Real_ptr in_array;
   Index_type alen;
-  RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
   RAJAVec<Index_type> is_indices;
   Real_ptr test_array;
   Real_ptr ref_icount_array;
@@ -101,26 +101,26 @@ TYPED_TEST_P(ForallTest, BasicForallIcount)
 REGISTER_TYPED_TEST_CASE_P(ForallTest, BasicForall, BasicForallIcount);
 
 using SequentialTypes = ::testing::Types<
-    IndexSet::ExecPolicy<seq_segit, seq_exec>,
-    IndexSet::ExecPolicy<seq_segit, simd_exec> >;
+    ExecPolicy<seq_segit, seq_exec>,
+    ExecPolicy<seq_segit, simd_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
 using OpenMPTypes = ::testing::Types<
-    IndexSet::ExecPolicy<seq_segit, omp_parallel_for_exec>,
-    IndexSet::ExecPolicy<omp_parallel_for_segit, seq_exec>,
-    IndexSet::ExecPolicy<omp_parallel_for_segit, simd_exec> >;
+    ExecPolicy<seq_segit, omp_parallel_for_exec>,
+    ExecPolicy<omp_parallel_for_segit, seq_exec>,
+    ExecPolicy<omp_parallel_for_segit, simd_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
 using CilkTypes = ::testing::Types<
-    IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-    IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-    IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >;
+    ExecPolicy<seq_segit, cilk_for_exec>,
+    ExecPolicy<cilk_for_segit, seq_exec>,
+    ExecPolicy<cilk_for_segit, simd_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Cilk, ForallTest, CilkTypes);
 #endif

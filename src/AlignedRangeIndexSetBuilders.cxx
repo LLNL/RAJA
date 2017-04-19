@@ -50,7 +50,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/BasicIndexSet.hxx"
+#include "RAJA/IndexSet.hxx"
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 
@@ -66,7 +66,7 @@ namespace RAJA
 *************************************************************************
 */
 
-void buildIndexSetAligned(RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& hiset,
+void buildIndexSetAligned(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& hiset,
                           const Index_type* const indices_in,
                           Index_type length)
 {

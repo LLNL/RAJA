@@ -50,7 +50,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/BasicIndexSet.hxx"
+#include "RAJA/IndexSet.hxx"
 #include "RAJA/ListSegment.hxx"
 #include "RAJA/RangeSegment.hxx"
 
@@ -80,7 +80,7 @@ namespace RAJA
  */
 #define PROFITABLE_ENTITY_THRESHOLD_BLOCK 100
 
-void buildLockFreeBlockIndexset(RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+void buildLockFreeBlockIndexset(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                 Index_type fastDim,
                                 Index_type midDim,
                                 Index_type slowDim)
@@ -239,7 +239,7 @@ void buildLockFreeBlockIndexset(RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::Li
  *
  ******************************************************************************
  */
-void buildLockFreeColorIndexset(RAJA::BasicIndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+void buildLockFreeColorIndexset(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
                                 int const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,
