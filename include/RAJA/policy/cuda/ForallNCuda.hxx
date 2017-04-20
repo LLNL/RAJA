@@ -60,9 +60,10 @@
 
 #include <cassert>
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
 
-#include "RAJA/internal/exec-cuda/MemUtils_CUDA.hxx"
+#include "RAJA/internal/ForallNPolicy.hxx"
 
 #include <climits>
 

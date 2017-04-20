@@ -80,7 +80,7 @@
 #include "RAJA/policy/Simd.hxx"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/cuda.hxx"
+#include "RAJA/policy/Cuda.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -88,7 +88,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/cilk.hxx"
+#include "RAJA/policy/Cilk.hxx"
 #endif
 
 //

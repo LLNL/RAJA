@@ -60,13 +60,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/Types.hxx"
 
-#include "RAJA/reducers.hxx"
+#include "RAJA/pattern/Reduce.hxx"
 
-#include "RAJA/internal/exec-cuda/MemUtils_CUDA.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
 
-#include "RAJA/internal/exec-cuda/raja_cudaerrchk.hxx"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hxx"
 
 #include <cuda.h>
 
