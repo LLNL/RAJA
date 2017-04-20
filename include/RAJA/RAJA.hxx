@@ -133,6 +133,7 @@
 #endif
 
 #include "RAJA/internal/IndexSetUtils.hxx"
+#include "RAJA/MultiPolicy.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 
