@@ -132,6 +132,7 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hxx"
+#include "RAJA/MultiPolicy.hxx"
 
 // Tiling policies
 #include "RAJA/pattern/Tile.hxx"
