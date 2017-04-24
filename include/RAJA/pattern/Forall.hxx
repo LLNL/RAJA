@@ -227,7 +227,8 @@ struct rangeListExecutor {
   }
 
  private:
-  LOOP_BODY body;
+  // LOOP_BODY body;
+  typename std::remove_reference<LOOP_BODY>::type body;
 };
 
 template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
@@ -256,7 +257,8 @@ struct rangeListIcountExecutor {
   }
 
  private:
-  LOOP_BODY body;
+  typename std::remove_reference<LOOP_BODY>::type body;
+  // LOOP_BODY body;
 };
 
 template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
