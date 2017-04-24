@@ -50,7 +50,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/index/RangeSegment.hxx"
+#include "RAJA/index/RangeSegment.hpp"
 
 #include <iostream>
 

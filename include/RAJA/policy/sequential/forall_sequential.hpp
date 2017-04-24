@@ -3,11 +3,16 @@
  *
  * \file
  *
- * \brief   Implementation file for routines used to manage
- *          CPU threading operations.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for sequential execution.
+ *
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_forall_sequential_HXX
+#define RAJA_forall_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,60 +56,68 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
+#include "RAJA/config.hxx"
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
+#include "RAJA/util/types.hpp"
 
-#if defined(RAJA_ENABLE_CILK)
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#endif
+#include "RAJA/index/RangeSegment.hpp"
+#include "RAJA/index/ListSegment.hpp"
 
-#include <algorithm>
+#include "RAJA/internal/fault_tolerance.hpp"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* Return max number of available threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxReduceThreadsCPU()
+namespace impl
 {
-  int nthreads = 1;
 
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-#if defined(RAJA_ENABLE_CILK)
-  int nworkers = __cilkrts_get_nworkers();
-  nthreads = std::max(nthreads, nworkers);
-#endif
 
-  return nthreads;
+//
+//////////////////////////////////////////////////////////////////////
+//
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+template <typename Func>
+RAJA_INLINE void forall(const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body)
+{
+  auto end = iter.getEnd();
+  for (auto ii = iter.getBegin(); ii < end; ++ii) {
+    loop_body(ii);
+  }
 }
 
-/*
-*************************************************************************
-*
-* Return max number of OpenMP threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxOMPThreadsCPU()
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
 {
-  int nthreads = 1;
-
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-
-  return nthreads;
+  auto end = std::end(iter);
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
 }
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const PolicyBase &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
+  }
+}
+
+}  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

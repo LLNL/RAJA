@@ -3,11 +3,15 @@
  *
  * \file
  *
- * \brief   Implementation file for routines used to manage
- *          CPU threading operations.
+ * \brief   Header file containing RAJA headers for sequential execution.
+ *
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_sequential_HXX
+#define RAJA_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,60 +55,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
+#include "RAJA/policy/sequential/policy_sequential.hpp"
+#include "RAJA/policy/sequential/forall_sequential.hpp"
+#include "RAJA/policy/sequential/reduce_sequential.hpp"
+#include "RAJA/policy/sequential/scan_sequential.hpp"
 
-#if defined(RAJA_ENABLE_CILK)
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#endif
-
-#include <algorithm>
-
-namespace RAJA
-{
-
-/*
-*************************************************************************
-*
-* Return max number of available threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxReduceThreadsCPU()
-{
-  int nthreads = 1;
-
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-#if defined(RAJA_ENABLE_CILK)
-  int nworkers = __cilkrts_get_nworkers();
-  nthreads = std::max(nthreads, nworkers);
-#endif
-
-  return nthreads;
-}
-
-/*
-*************************************************************************
-*
-* Return max number of OpenMP threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxOMPThreadsCPU()
-{
-  int nthreads = 1;
-
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-
-  return nthreads;
-}
-
-}  // closing brace for RAJA namespace
+#endif  // closing endif for header file include guard

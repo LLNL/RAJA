@@ -50,10 +50,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/index/IndexSet.hxx"
+#include "RAJA/index/IndexSet.hpp"
 
-#include "RAJA/index/ListSegment.hxx"
-#include "RAJA/index/RangeSegment.hxx"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
 #include <iostream>
 

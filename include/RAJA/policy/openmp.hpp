@@ -3,11 +3,19 @@
  *
  * \file
  *
- * \brief   Implementation file for routines used to manage
- *          CPU threading operations.
+ * \brief   Header file containing RAJA headers for OpenMP execution.
+ *
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_openmp_HXX
+#define RAJA_openmp_HXX
+
+#include "RAJA/config.hxx"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,60 +59,20 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-#if defined(_OPENMP)
 #include <omp.h>
+#include <iostream>
+#include <thread>
+
+#include "RAJA/policy/openmp/policy_openmp.hpp"
+#include "RAJA/policy/openmp/forall_openmp.hpp"
+#include "RAJA/policy/openmp/reduce_openmp.hpp"
+#include "RAJA/policy/openmp/scan_openmp.hpp"
+
+#if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/policy/openmp/forallN_openmp.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_CILK)
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#endif
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
-#include <algorithm>
-
-namespace RAJA
-{
-
-/*
-*************************************************************************
-*
-* Return max number of available threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxReduceThreadsCPU()
-{
-  int nthreads = 1;
-
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-#if defined(RAJA_ENABLE_CILK)
-  int nworkers = __cilkrts_get_nworkers();
-  nthreads = std::max(nthreads, nworkers);
-#endif
-
-  return nthreads;
-}
-
-/*
-*************************************************************************
-*
-* Return max number of OpenMP threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxOMPThreadsCPU()
-{
-  int nthreads = 1;
-
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-
-  return nthreads;
-}
-
-}  // closing brace for RAJA namespace
+#endif  // closing endif for header file include guard

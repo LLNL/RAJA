@@ -1,8 +1,8 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "RAJA/RAJA.hxx"
-#include "RAJA/util/defines.hxx"
+#include "RAJA/RAJA.hpp"
+#include "RAJA/util/defines.hpp"
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {

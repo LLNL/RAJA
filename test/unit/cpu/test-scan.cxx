@@ -10,8 +10,8 @@
 
 #include <gtest/gtest.h>
 
-#include "RAJA/RAJA.hxx"
-#include "RAJA/util/defines.hxx"
+#include "RAJA/RAJA.hpp"
+#include "RAJA/util/defines.hpp"
 
 #include "data_storage.hxx"
 #include "type_helper.hxx"

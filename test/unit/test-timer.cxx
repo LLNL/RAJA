@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "RAJA/util/Timer.hxx"
+#include "RAJA/util/Timer.hpp"
 
 #include <string>
 #include <iostream>

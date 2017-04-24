@@ -3,11 +3,13 @@
  *
  * \file
  *
- * \brief   Implementation file for routines used to manage
- *          CPU threading operations.
+ * \brief   RAJA header file defining layout operations for forallN templates.
  *
  ******************************************************************************
  */
+
+#ifndef RAJA_PERMUTEDLAYOUT_HXX__
+#define RAJA_PERMUTEDLAYOUT_HXX__
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,60 +53,53 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
+#include <iostream>
+#include <limits>
 
-#if defined(_OPENMP)
-#include <omp.h>
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#endif
-
-#include <algorithm>
+#include "RAJA/index/IndexValue.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "Layout.hpp"
+#include "Permutations.hpp"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* Return max number of available threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxReduceThreadsCPU()
+template <size_t Rank, typename IdxLin = Index_type>
+auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
+                          std::array<size_t, Rank> permutation) ->
+Layout<Rank, IdxLin>
 {
-  int nthreads = 1;
+  std::array<IdxLin, Rank> strides, mods;
+  std::array<IdxLin, Rank> folded_strides, lmods;
+  for (size_t i = 0; i < Rank; ++i) {
+    folded_strides[i] = 1;
+    for (size_t j = 0; j < i; ++j) {
+      folded_strides[j] *= sizes[permutation[i]];
+    }
+  }
 
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
-#endif
-#if defined(RAJA_ENABLE_CILK)
-  int nworkers = __cilkrts_get_nworkers();
-  nthreads = std::max(nthreads, nworkers);
-#endif
+  for (size_t i = 0; i < Rank; ++i) {
+    strides[permutation[i]] = folded_strides[i];
+  }
 
-  return nthreads;
+  for (size_t i = 1; i < Rank; i++) {
+    lmods[i] = folded_strides[i - 1];
+  }
+  lmods[0] = std::numeric_limits<IdxLin>::max();
+
+  for (size_t i = 0; i < Rank; ++i) {
+    mods[permutation[i]] = lmods[i];
+  }
+
+  return Layout<Rank, IdxLin>(sizes, strides, mods);
 }
 
-/*
-*************************************************************************
-*
-* Return max number of OpenMP threads for code run on CPU.
-*
-*************************************************************************
-*/
-int getMaxOMPThreadsCPU()
-{
-  int nthreads = 1;
 
-#if defined(_OPENMP)
-  nthreads = omp_get_max_threads();
+template<size_t ... Ints>
+using Perm = VarOps::index_sequence<Ints...>;
+template<size_t N>
+using MakePerm = VarOps::make_index_sequence<N>;
+
+}  // namespace RAJA
+
 #endif
-
-  return nthreads;
-}
-
-}  // closing brace for RAJA namespace

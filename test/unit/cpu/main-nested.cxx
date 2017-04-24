@@ -22,8 +22,8 @@
 #include <string>
 #include <vector>
 
-#include "RAJA/RAJA.hxx"
-#include "RAJA/util/defines.hxx"
+#include "RAJA/RAJA.hpp"
+#include "RAJA/util/defines.hpp"
 
 using namespace RAJA;
 using namespace std;
