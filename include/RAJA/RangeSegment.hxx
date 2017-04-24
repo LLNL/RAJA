@@ -55,8 +55,8 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/BaseSegment.hxx"
-#include "RAJA/Iterators.hxx"
+#include "RAJA/internal/BaseSegment.hxx"
+#include "RAJA/internal/Iterators.hxx"
 
 #include <algorithm>
 #include <iosfwd>

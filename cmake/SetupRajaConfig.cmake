@@ -65,7 +65,7 @@ option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
 ## Timer options
 set(RAJA_TIMER "chrono" CACHE STRING
     "Select a timer backend")
-set_property(CACHE RAJA_TIMER PROPERTY STRINGS "chrono" "gettime" "clock" "cycle")
+set_property(CACHE RAJA_TIMER PROPERTY STRINGS "chrono" "gettime" "clock" )
 
 if (RAJA_TIMER STREQUAL "chrono")
     set(RAJA_USE_CHRONO  ON  CACHE BOOL "Use the default std::chrono timer" )
@@ -81,11 +81,6 @@ if (RAJA_TIMER STREQUAL "clock")
     set(RAJA_USE_CLOCK   ON CACHE BOOL "Use clock from time.h for timer"     )
 else ()
     set(RAJA_USE_CLOCK   OFF CACHE BOOL "Use clock from time.h for timer"    )
-endif ()
-if (RAJA_TIMER STREQUAL "cycle")
-    set(RAJA_USE_CYCLE   ON CACHE BOOL "Use getticks from cycle.h for timer"  )
-else ()
-    set(RAJA_USE_CYCLE   OFF CACHE BOOL "Use getticks from cycle.h for timer"  )
 endif ()
 
 # Configure a header file with all the variables we found.

@@ -131,9 +131,9 @@ void runLTimesTest(std::string const &policy,
              cudaMemcpyHostToDevice);
 
   // create views on data
-  typename POL::ELL_VIEW ell(d_ell, num_moments, num_directions);
-  typename POL::PSI_VIEW psi(d_psi, num_directions, num_groups, num_zones);
-  typename POL::PHI_VIEW phi(d_phi, num_moments, num_groups, num_zones);
+  typename POL::ELL_VIEW ell(d_ell, make_permuted_layout({num_moments, num_directions}, POL::ELL_PERM::value));
+  typename POL::PSI_VIEW psi(d_psi, make_permuted_layout({num_directions, num_groups, num_zones}, POL::PSI_PERM::value));
+  typename POL::PHI_VIEW phi(d_phi, make_permuted_layout({num_moments, num_groups, num_zones}, POL::PHI_PERM::value));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
@@ -176,9 +176,9 @@ void runLTimesTest(std::string const &policy,
   size_t nfailed = 0;
 
   // swap to host pointers
-  ell.data = &ell_data[0];
-  phi.data = &phi_data[0];
-  psi.data = &psi_data[0];
+  ell.set_data(&ell_data[0]);
+  phi.set_data(&phi_data[0]);
+  psi.set_data(&psi_data[0]);
   for (IZone z(0); z < num_zones; ++z) {
     for (IGroup g(0); g < num_groups; ++g) {
       for (IMoment m(0); m < num_moments; ++m) {
@@ -253,16 +253,18 @@ struct PolLTimesA_GPU {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Use thread and block mappings
@@ -272,20 +274,22 @@ struct PolLTimesB_GPU {
                                 seq_exec,
                                 cuda_thread_z_exec,
                                 cuda_block_y_exec>,
-                       Permute<PERM_JILK>>
+                       Permute<PERM_IJKL>>
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Combine OMP Parallel, omp nowait, and cuda thread-block launch
@@ -299,16 +303,18 @@ struct PolLTimesC_GPU {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::View<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
-      PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::View<double, Layout<int, PERM_IJ, IMoment, IDirection>>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 void runLTimesTests(Index_type num_moments,

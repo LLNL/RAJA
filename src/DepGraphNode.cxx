@@ -50,7 +50,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/DepGraphNode.hxx"
+#include "RAJA/internal/DepGraphNode.hxx"
 
 #include <iostream>
 
