@@ -53,7 +53,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #include "RAJA/Types.hxx"
 
@@ -71,7 +71,7 @@ class IndexSet;
  *        Specifically, Range segments will be greater than RANGE_MIN_LENGTH
  *        and starting index and length of each range segment will be
  *        multiples of RANGE_ALIGN. These constants are defined in the
- *        RAJA config.hxx header file.
+ *        RAJA config.hpp header file.
  *
  *        Routine does no error-checking on argements and assumes Index_type
  *        array contains valid indices.

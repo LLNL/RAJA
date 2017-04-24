@@ -60,7 +60,7 @@
 #include "RAJA/internal/ForallNPolicy.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
-#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
 namespace RAJA

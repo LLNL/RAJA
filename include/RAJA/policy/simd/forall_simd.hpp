@@ -57,7 +57,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
 

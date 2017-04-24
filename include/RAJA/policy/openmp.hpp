@@ -13,7 +13,7 @@
 #ifndef RAJA_openmp_HXX
 #define RAJA_openmp_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
 

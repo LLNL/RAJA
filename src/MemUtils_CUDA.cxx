@@ -9,7 +9,7 @@
  ******************************************************************************
  */
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -55,13 +55,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/Reduce.hxx"
+#include "RAJA/pattern/reduce.hpp"
 
-#include "RAJA/policy/cuda/raja_cudaerrchk.hxx"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <iostream>
 #include <string>

@@ -13,7 +13,7 @@
 #ifndef RAJA_cuda_HXX
 #define RAJA_cuda_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -62,15 +62,15 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/policy/cuda/PolicyCuda.hxx"
-#include "RAJA/policy/cuda/ForallCuda.hxx"
-#include "RAJA/policy/cuda/ReduceCuda.hxx"
+#include "RAJA/policy/cuda/policy_cuda.hpp"
+#include "RAJA/policy/cuda/forall_cuda.hpp"
+#include "RAJA/policy/cuda/reduce_cuda.hpp"
 #if defined(__NVCC__)
-#include "RAJA/policy/cuda/ScanCuda.hxx"
+#include "RAJA/policy/cuda/scan_cuda.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_NESTED)
-#include "RAJA/policy/cuda/ForallNCuda.hxx"
+#include "RAJA/policy/cuda/forallN_cuda.hpp"
 #endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)

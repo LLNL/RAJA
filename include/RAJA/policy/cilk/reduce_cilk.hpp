@@ -14,7 +14,7 @@
 #ifndef RAJA_reduce_cilk_HXX
 #define RAJA_reduce_cilk_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CILK)
 

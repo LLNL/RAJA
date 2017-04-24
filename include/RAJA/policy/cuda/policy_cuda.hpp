@@ -1,3 +1,6 @@
+#ifndef RAJA_policy_cuda_HPP
+#define RAJA_policy_cuda_HPP
+
 namespace RAJA
 {
 
@@ -499,3 +502,5 @@ __device__ inline double _atomicAdd(double *address, double value)
 #endif
 
 }  // closing brace for RAJA namespace
+
+#endif

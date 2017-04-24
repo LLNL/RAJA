@@ -53,9 +53,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/RAJA.hpp"
-
 #include <tuple>
+
+#include "RAJA/internal/LegacyCompatability.hpp"
 
 namespace RAJA
 {
@@ -75,7 +75,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
-      forall(_p, iter, body);
+      RAJA::impl::forall(_p, iter, body);
     } else {
       NextInvoker::invoke(offset, iter, body);
     }
@@ -90,7 +90,7 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-      forall(_p, iter, body);
+      RAJA::impl::forall(_p, iter, body);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }
@@ -188,6 +188,7 @@ RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
+
 }
 
 #endif

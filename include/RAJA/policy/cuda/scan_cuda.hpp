@@ -11,7 +11,7 @@
 #ifndef RAJA_scan_cuda_HXX
 #define RAJA_scan_cuda_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 

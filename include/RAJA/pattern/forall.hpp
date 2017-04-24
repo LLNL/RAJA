@@ -87,7 +87,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/policy/PolicyBase.hpp"

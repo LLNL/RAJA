@@ -61,7 +61,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #include "RAJA/util/defines.hpp"
 
@@ -80,7 +80,7 @@
 #include "RAJA/policy/simd.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/Cuda.hxx"
+#include "RAJA/policy/cuda.hpp"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -88,13 +88,16 @@
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/Cilk.hxx"
+#include "RAJA/policy/Cilk.hpp"
 #endif
 
 //
 // Strongly typed index class.
 //
 #include "RAJA/index/IndexValue.hpp"
+
+// TODO: Fix MultiPolicy
+// #include "RAJA/policy/MultiPolicy.hpp"
 
 //
 // Generic iteration templates require specializations defined
@@ -132,7 +135,6 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hpp"
-#include "RAJA/policy/MultiPolicy.hpp"
 
 // Tiling policies
 #include "RAJA/pattern/tile.hpp"

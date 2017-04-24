@@ -13,7 +13,7 @@
 #ifndef RAJA_raja_cudaerrchk_HXX
 #define RAJA_raja_cudaerrchk_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -65,7 +65,7 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hpp"
 
 namespace RAJA
 {

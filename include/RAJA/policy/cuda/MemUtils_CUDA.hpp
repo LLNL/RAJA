@@ -12,7 +12,7 @@
 #ifndef RAJA_MemUtils_CUDA_HXX
 #define RAJA_MemUtils_CUDA_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -58,7 +58,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {

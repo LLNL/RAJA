@@ -1,7 +1,7 @@
 #ifndef RAJA_LEGACY_COMPATIBILITY_HXX
 #define RAJA_LEGACY_COMPATIBILITY_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))

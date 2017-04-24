@@ -14,7 +14,7 @@
 #ifndef RAJA_reduce_cuda_HXX
 #define RAJA_reduce_cuda_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -60,13 +60,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/Reduce.hxx"
+#include "RAJA/pattern/reduce.hpp"
 
-#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
-#include "RAJA/policy/cuda/raja_cudaerrchk.hxx"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <cuda.h>
 
@@ -116,7 +116,7 @@ __device__ __forceinline__ T shfl_xor(T var, int laneMask)
  *
  * \brief  Min reduction class template for use in CUDA kernels.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */
@@ -319,7 +319,7 @@ private:
  *
  * \brief  Max reduction class template for use in CUDA kernels.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */
@@ -523,7 +523,7 @@ private:
  *
  * \brief  Sum reduction class template for use in CUDA kernel.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */
@@ -786,7 +786,7 @@ private:
  * \brief  Sum reduction Atomic Non-Deterministic Variant class template
  *         for use in CUDA kernel.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */
@@ -995,7 +995,7 @@ private:
  *
  * \brief  Min-loc reducer class template for use in a CUDA execution.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */
@@ -1308,7 +1308,7 @@ private:
  *
  * \brief  Max-loc reducer class template for use in a CUDA execution.
  *
- *         For usage example, see reducers.hxx.
+ *         For usage example, see reducers.hpp.
  *
  ******************************************************************************
  */

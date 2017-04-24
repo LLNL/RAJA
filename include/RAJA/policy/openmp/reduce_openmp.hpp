@@ -14,7 +14,7 @@
 #ifndef RAJA_forall_omp_HXX
 #define RAJA_forall_omp_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_OPENMP)
 

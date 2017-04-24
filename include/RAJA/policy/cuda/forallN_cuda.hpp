@@ -12,7 +12,7 @@
 #ifndef RAJA_forallN_cuda_HXX__
 #define RAJA_forallN_cuda_HXX__
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -60,10 +60,10 @@
 
 #include <cassert>
 
-#include "RAJA/util/Types.hxx"
-#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
+#include "RAJA/util/types.hpp"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
-#include "RAJA/internal/ForallNPolicy.hxx"
+#include "RAJA/internal/ForallNPolicy.hpp"
 
 #include <climits>
 

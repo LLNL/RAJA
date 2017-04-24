@@ -15,7 +15,7 @@
 #ifndef RAJA_forall_cuda_HXX
 #define RAJA_forall_cuda_HXX
 
-#include "RAJA/config.hxx"
+#include "RAJA/config.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -61,20 +61,20 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/internal/fault_tolerance.hxx"
+#include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/policy/cuda/raja_cudaerrchk.hxx"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-#include "RAJA/policy/cuda/MemUtils_CUDA.hxx"
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hpp"
 
-#include "RAJA/index/IndexSet.hxx"
-#include "RAJA/policy/sequential/PolicySequential.hxx"
+#include "RAJA/index/IndexSet.hpp"
+#include "RAJA/policy/sequential/policy_sequential.hpp"
 
-#include "RAJA/pattern/Forall.hxx"
+#include "RAJA/pattern/forall.hpp"
 
 namespace RAJA
 {
