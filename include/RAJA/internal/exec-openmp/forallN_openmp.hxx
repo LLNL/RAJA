@@ -184,6 +184,111 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   }
 };
 
+/*
+ * Collapse RangeStrideSegments
+ */
+template <typename... PREST>
+struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+                                           RangeStrideSegment>,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
+                                           RangeStrideSegment>,
+                        PREST...> {
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_i;
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_j;
+
+  typedef ForallN_Executor<PREST...> NextExec;
+  NextExec next_exec;
+
+  RAJA_INLINE
+  constexpr ForallN_Executor(
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &iseti_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetj_,
+      PREST const &... prest)
+      : iset_i(iseti_), iset_j(isetj_), next_exec(prest...)
+  {
+  }
+
+  template <typename BODY>
+  RAJA_INLINE void operator()(BODY body) const
+  {
+    int begin_i = iset_i.getBegin();
+    int begin_j = iset_j.getBegin();
+    int end_i = iset_i.getEnd();
+    int end_j = iset_j.getEnd();
+    int stride_i = iset_i.getStride();
+    int stride_j = iset_j.getStride();
+    
+
+    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+
+#if !defined(RAJA_COMPILER_MSVC)
+#pragma omp for nowait collapse(2)
+#else
+#pragma omp for nowait
+#endif
+    for (int i = begin_i; i < end_i; i+=stride_i) {
+      for (int j = begin_j; j < end_j; j+=stride_j) {
+        outer(i, j);
+      }
+    }
+  }
+};
+
+template <typename... PREST>
+struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+                                           RangeStrideSegment>,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
+                                           RangeStrideSegment>,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
+                                           RangeStrideSegment>,
+                        PREST...> {
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_i;
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_j;
+  ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_k;
+
+  typedef ForallN_Executor<PREST...> NextExec;
+  NextExec next_exec;
+
+  RAJA_INLINE
+  constexpr ForallN_Executor(
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &iseti_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetj_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetk_,
+      PREST... prest)
+      : iset_i(iseti_), iset_j(isetj_), iset_k(isetk_), next_exec(prest...)
+  {
+  }
+
+  template <typename BODY>
+  RAJA_INLINE void operator()(BODY body) const
+  {
+    int begin_i = iset_i.getBegin();
+    int begin_j = iset_j.getBegin();
+    int begin_k = iset_k.getBegin();
+    int end_i = iset_i.getEnd();
+    int end_j = iset_j.getEnd();
+    int end_k = iset_k.getEnd();
+    int stride_i = iset_i.getStride();
+    int stride_j = iset_j.getStride();
+    int stride_k = iset_k.getStride();
+
+    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+
+#if !defined(RAJA_COMPILER_MSVC)
+#pragma omp for nowait collapse(3)
+#else
+#pragma omp for nowait
+#endif
+    for (int i = begin_i; i < end_i; i+=stride_i) {
+      for (int j = begin_j; j < end_j; j+=stride_j) {
+        for (int k = begin_k; k < end_k; k+=stride_k) {
+          outer(i, j, k);
+        }
+      }
+    }
+  }
+};
+
 /******************************************************************
  *  forallN_policy(), OpenMP Parallel Region execution
  ******************************************************************/
