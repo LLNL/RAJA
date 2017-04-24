@@ -57,7 +57,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 #include "RAJA/internal/ForallNPolicy.hxx"
 
 #if defined(_OPENMP)

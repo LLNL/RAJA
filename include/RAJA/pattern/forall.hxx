@@ -97,7 +97,7 @@
 #include "RAJA/index/ListSegment.hxx"
 
 #include "RAJA/internal/fault_tolerance.hxx"
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 
 #include <functional>
 #include <iterator>

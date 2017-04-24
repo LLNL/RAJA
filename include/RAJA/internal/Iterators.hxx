@@ -43,8 +43,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/types.hxx"
+#include "RAJA/util/defines.hxx"
 
 #include <type_traits>
 #include <iterator>

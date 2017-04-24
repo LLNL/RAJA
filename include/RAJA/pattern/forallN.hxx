@@ -55,7 +55,7 @@
 
 #include "RAJA/internal/LegacyCompatibility.hxx"
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
 #include "RAJA/internal/ForallNPolicy.hxx"
 

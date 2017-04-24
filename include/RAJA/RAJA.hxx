@@ -63,28 +63,28 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 
 #include "RAJA/util/Operators.hxx"
 
 //
 // All platforms must support sequential execution.
 //
-#include "RAJA/policy/Sequential.hxx"
+#include "RAJA/policy/sequential.hxx"
 
 //
 // All platforms should support simd execution.
 //
-#include "RAJA/policy/Simd.hxx"
+#include "RAJA/policy/simd.hxx"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/Cuda.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/OpenMP.hxx"
+#include "RAJA/policy/openmp.hxx"
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
@@ -100,7 +100,7 @@
 // Generic iteration templates require specializations defined
 // in the files included below.
 //
-#include "RAJA/pattern/Forall.hxx"
+#include "RAJA/pattern/forall.hxx"
 
 //
 // Multidimensional layouts and views.
@@ -113,10 +113,10 @@
 //
 // Generic iteration templates for perfectly nested loops
 //
-#include "RAJA/pattern/ForallN.hxx"
+#include "RAJA/pattern/forallN.hxx"
 
 
-#include "RAJA/pattern/Reduce.hxx"
+#include "RAJA/pattern/reduce.hxx"
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -132,14 +132,14 @@
 //
 
 #include "RAJA/index/IndexSetUtils.hxx"
-#include "RAJA/MultiPolicy.hxx"
+#include "RAJA/policy/MultiPolicy.hxx"
 
 // Tiling policies
-#include "RAJA/pattern/Tile.hxx"
+#include "RAJA/pattern/tile.hxx"
 
 // Loop interchange policies
-#include "RAJA/pattern/Permute.hxx"
+#include "RAJA/pattern/permute.hxx"
 
-#include "RAJA/pattern/Scan.hxx"
+#include "RAJA/pattern/scan.hxx"
 
 #endif  // closing endif for header file include guard

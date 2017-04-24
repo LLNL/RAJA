@@ -3,15 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for SIMD segment execution.
+ * \brief   Header file containing RAJA headers for sequential execution.
  *
  *          These methods work on all platforms.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_simd_HXX
-#define RAJA_simd_HXX
+#ifndef RAJA_sequential_HXX
+#define RAJA_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,7 +56,9 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/simd/PolicySimd.hxx"
-#include "RAJA/policy/simd/ForallSimd.hxx"
+#include "RAJA/policy/sequential/policy_sequential.hxx"
+#include "RAJA/policy/sequential/forall_sequential.hxx"
+#include "RAJA/policy/sequential/reduce_sequential.hxx"
+#include "RAJA/policy/sequential/scan_sequential.hxx"
 
 #endif  // closing endif for header file include guard

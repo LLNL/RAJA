@@ -57,7 +57,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "Defines.hxx"
+#include "defines.hxx"
 
 #include <cfloat>
 #include <cstdint>

@@ -3,15 +3,16 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for sequential execution.
  *
- *          These methods work on all platforms.
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_forall_sequential_HXX
+#define RAJA_forall_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,10 +56,68 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hxx"
 
-#include "RAJA/policy/sequential/PolicySequential.hxx"
-#include "RAJA/policy/sequential/ForallSequential.hxx"
-#include "RAJA/policy/sequential/ReduceSequential.hxx"
-#include "RAJA/policy/sequential/ScanSequential.hxx"
+#include "RAJA/util/types.hxx"
+
+#include "RAJA/index/RangeSegment.hxx"
+#include "RAJA/index/ListSegment.hxx"
+
+#include "RAJA/internal/fault_tolerance.hxx"
+
+namespace RAJA
+{
+
+namespace impl
+{
+
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+template <typename Func>
+RAJA_INLINE void forall(const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body)
+{
+  auto end = iter.getEnd();
+  for (auto ii = iter.getBegin(); ii < end; ++ii) {
+    loop_body(ii);
+  }
+}
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
+{
+  auto end = std::end(iter);
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
+}
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const PolicyBase &,
+                               Iterable &&iter,
+                               Index_type icount,
+                               Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
+  }
+}
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

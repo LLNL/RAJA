@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
 #include <algorithm>
 #include <functional>

@@ -56,7 +56,7 @@
 #include "RAJA/config.hxx"
 
 #include "RAJA/internal/DepGraphNode.hxx"
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 
 namespace RAJA
 {

@@ -2,7 +2,7 @@
 #define RAJA_LEGACY_COMPATIBILITY_HXX
 
 #include "RAJA/config.hxx"
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(

@@ -22,7 +22,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hxx"
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
 using namespace RAJA;
 using namespace std;

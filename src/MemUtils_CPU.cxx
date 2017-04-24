@@ -53,9 +53,9 @@
 
 #include "RAJA/internal/MemUtils_CPU.hxx"
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 
-#include "RAJA/pattern/Reduce.hxx"
+#include "RAJA/pattern/reduce.hxx"
 
 #include "RAJA/internal/ThreadUtils_CPU.hxx"
 

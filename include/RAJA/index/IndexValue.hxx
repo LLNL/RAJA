@@ -54,9 +54,9 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <string>
-#include "RAJA/util/Defines.hxx"
+#include "RAJA/util/defines.hxx"
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hxx"
 
 namespace RAJA
 {
