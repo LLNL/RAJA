@@ -526,16 +526,16 @@ public:
   //@}
 
   //@{
-  //!  @name IndexSet segment subsetting methods (views ranges)
+  //!  @name IndexSet segment subsetting methods (slices ranges)
 
   ///
   /// Return a new IndexSet object that contains the subset of
   /// segments in this IndexSet with ids in the interval [begin, end).
   ///
-  /// This IndexSet will not change and the created "view" into it
+  /// This IndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  IndexSet<T0, TREST...>* createView(int begin, int end) {
+  IndexSet<T0, TREST...>* createSlice(int begin, int end) {
     IndexSet<T0, TREST...>* retVal = new IndexSet<T0, TREST...>();
 
     int numSeg = getNumSegments();
@@ -552,10 +552,10 @@ public:
   /// Return a new IndexSet object that contains the subset of
   /// segments in this IndexSet with ids in the given int array.
   ///
-  /// This IndexSet will not change and the created "view" into it
+  /// This IndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
-  IndexSet<T0, TREST...>* createView(const int* segIds, int len) {
+  IndexSet<T0, TREST...>* createSlice(const int* segIds, int len) {
     IndexSet<T0, TREST...>* retVal = new IndexSet<T0, TREST...>();
 
     int numSeg = getNumSegments();
@@ -571,14 +571,14 @@ public:
   /// Return a new IndexSet object that contains the subset of
   /// segments in this IndexSet with ids in the argument object.
   ///
-  /// This IndexSet will not change and the created "view" into it
+  /// This IndexSet will not change and the created "slice" into it
   /// will not own any of its segments.
   ///
   /// The object must provide methods begin(), end(), and its
   /// iterator type must de-reference to an integral value.
   ///
   template <typename T>
-  IndexSet<T0, TREST...>* createView(const T& segIds) {
+  IndexSet<T0, TREST...>* createSlice(const T& segIds) {
     IndexSet<T0, TREST...>* retVal = new IndexSet<T0, TREST...>();
 
     int numSeg = getNumSegments();

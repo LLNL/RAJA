@@ -23,8 +23,8 @@ enum IndexSetBuildMethod {
   AddSegmentsReverse,
   AddSegmentsNoCopy,
   AddSegmentsNoCopyReverse,
-  MakeViewRange,
-  MakeViewArray,
+  MakeSliceRange,
+  MakeSliceArray,
 #if defined(RAJA_USE_STL)
   MakeViewVector,
 #endif

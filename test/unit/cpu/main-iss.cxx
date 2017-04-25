@@ -148,15 +148,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 
   if (is1 != is0) { std::cout<<"!= operator is not correct"<<std::endl; }
 
-  int view_size = num_segments - 1;
-  std::cout<<"creating a view of size "<<view_size;//<<std::endl;
-  //RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
-  //  = is1.createView<RAJA::RangeSegment, RAJA::ListSegment>(0, view_size);
-  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_view
-    = is1.createView(0, view_size);
+  int slice_size = num_segments - 1;
+  std::cout<<"creating a slice of size "<<slice_size;//<<std::endl;
+  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment>* iset_slice
+    = is1.createSlice(0, slice_size);
 
-  cout << "\n\nIndexSet( view ) " << endl;
-  iset_view->print(cout);
+  cout << "\n\nIndexSet( slice ) " << endl;
+  iset_slice->print(cout);
 
   //is0.dumpSegments();
 

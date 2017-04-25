@@ -143,20 +143,20 @@ Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, R
       break;
     }
 
-    case MakeViewRange: {
+    case MakeSliceRange: {
       RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
-      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view
-        = iset_master.createView(0, num_segs);
+      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_slice
+        = iset_master.createSlice(0, num_segs);
 
-      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
+        iset_slice->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       break;
     }
 
-    case MakeViewArray: {
+    case MakeSliceArray: {
       RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       int* segIds = new int[num_segs];
@@ -165,11 +165,11 @@ Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, R
         segIds[i] = i;
       }
 
-      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view
-        = iset_master.createView(segIds, num_segs);
+      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_slice
+        = iset_master.createSlice(segIds, num_segs);
 
-      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
+        iset_slice->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       delete[] segIds;
@@ -178,7 +178,7 @@ Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, R
     }
 
 #if defined(RAJA_USE_STL)
-    case MakeViewVector: {
+    case MakeSliceVector: {
       RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset_master = hindex[0];
       size_t num_segs = iset_master.getNumSegments();
       std::vector<int> segIds(num_segs);
@@ -186,10 +186,10 @@ Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, R
         segIds[i] = i;
       }
 
-      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_view = iset_master.createView(segIds);
+      RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* iset_slice = iset_master.createSlice(segIds);
 
-      for (size_t i = 0; i < iset_view->getNumSegments(); ++i) {
-        iset_view->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
+      for (size_t i = 0; i < iset_slice->getNumSegments(); ++i) {
+        iset_slice->segment_push_into(i, hindex[build_method], PUSH_BACK, PUSH_NOCOPY);
       }
 
       break;
