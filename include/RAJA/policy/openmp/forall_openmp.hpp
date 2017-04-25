@@ -82,6 +82,9 @@ namespace RAJA
 namespace impl
 {
 
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
+
 ///
 /// OpenMP parallel for policy implementation
 ///
