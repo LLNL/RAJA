@@ -105,7 +105,6 @@ Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, R
   //
   // Generate IndexSet from segments using specified build method.
   //
-  int num_segments = iset_master.getNumSegments();
   switch (build_method) {
 
     // This is already being done above as iset_master

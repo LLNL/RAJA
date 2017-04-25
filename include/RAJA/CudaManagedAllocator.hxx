@@ -91,7 +91,7 @@ public:
   }
 
 
-  void deallocate (T* p, std::size_t n) {
+  void deallocate (T* p, std::size_t) {
 #if defined(RAJA_ENABLE_CUDA)
     cudaErrchk(cudaFree(p));
     cudaErrchk(cudaDeviceSynchronize());

@@ -115,7 +115,7 @@ template<typename T0, typename ... TREST>
 class IndexSet<T0, TREST...> : public IndexSet<TREST...>{
 private:
   using PARENT = IndexSet<TREST...>;
-  const size_t T0_TypeId = sizeof...(TREST);
+  const int T0_TypeId = sizeof...(TREST);
 
 public:
   //@{
@@ -165,7 +165,7 @@ public:
   RAJA_INLINE
   ~IndexSet(){
     size_t num_seg = data.size();
-    for(int i = 0;i < num_seg;++ i){
+    for(size_t i = 0; i < num_seg; ++i){
 
       // Only free segment of we allocated it
       if(owner[i]){
@@ -203,8 +203,6 @@ public:
   template<typename P0, typename ... PREST>
   RAJA_INLINE
   bool compareSegmentById(size_t segid, const IndexSet<P0, PREST...> &other) const{
-    using OTHER_PARENT = IndexSet<PREST...>;
-
     // drill down our types until we have the right type
     if (getSegmentTypes()[segid] == T0_TypeId){
 
@@ -279,7 +277,7 @@ public:
 
   RAJA_INLINE
   constexpr
-  bool isValidSegmentType(T0 const &segment) const{
+  bool isValidSegmentType(T0 const &) const{
     return true;
   }
 
@@ -833,7 +831,7 @@ protected:
   template<typename T>
   RAJA_INLINE
   constexpr
-  bool isValidSegmentType(T const &segment) const{
+  bool isValidSegmentType(T const &) const{
     // Segment type wasn't found
     return false;
   }
@@ -851,13 +849,13 @@ protected:
   }
 
   RAJA_INLINE
-  void printSegment(size_t segid, std::ostream& os) const{
+  void printSegment(size_t, std::ostream& os) const{
     os << "UNKNOWN" << std::endl;
   }
 
   template<typename BODY, typename ... ARGS>
   RAJA_INLINE
-  void segmentCall(size_t segid, BODY body, ARGS ... args) const {
+  void segmentCall(size_t, BODY, ARGS ... ) const {
   }
 
   RAJA_INLINE
@@ -901,13 +899,13 @@ protected:
 
   template<typename P0, typename ... PREST>
   RAJA_INLINE
-  bool compareSegmentById(size_t segid, const IndexSet<P0, PREST...> &other) const{
+  bool compareSegmentById(size_t, const IndexSet<P0, PREST...> &) const{
     return false;
   }
 
   template<typename P0>
   RAJA_INLINE
-  bool checkSegmentType(size_t segid) const {
+  bool checkSegmentType(size_t) const {
     return false;
   }
 
@@ -921,7 +919,7 @@ protected:
 
   template<typename P0>
   RAJA_INLINE
-  P0 const &getSegment(size_t segid) const {
+  P0 const &getSegment(size_t) const {
     // cause a segfault
     P0 const *x = 0;
     return *x;
@@ -934,7 +932,7 @@ protected:
 
   template<typename ... CALL>
   RAJA_INLINE
-  void segment_push_into(size_t segid, IndexSet<CALL...> &,
+  void segment_push_into(size_t, IndexSet<CALL...> &,
                          PushEnd, PushCopy) const {}
 
 
