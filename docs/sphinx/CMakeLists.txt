@@ -5,7 +5,7 @@ configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
         "${SPHINX_BUILD_DIR}/conf.py"
         @ONLY)
 
-add_custom_target(docs
+add_custom_target(raja-sphinx
         ${SPHINX_EXECUTABLE}
         -q -b html
         "${CMAKE_CURRENT_SOURCE_DIR}"
@@ -14,3 +14,6 @@ add_custom_target(docs
 
 install(DIRECTORY "${SPHINX_HTML_DIR}"
         DESTINATION "docs/sphinx/" OPTIONAL)
+
+add_dependencies(docs
+  raja-sphinx)
