@@ -96,8 +96,7 @@
 //
 #include "RAJA/index/IndexValue.hpp"
 
-// TODO: Fix MultiPolicy
-// #include "RAJA/policy/MultiPolicy.hpp"
+#include "RAJA/policy/MultiPolicy.hpp"
 
 //
 // Generic iteration templates require specializations defined

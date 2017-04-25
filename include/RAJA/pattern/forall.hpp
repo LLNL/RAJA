@@ -328,6 +328,27 @@ RAJA_INLINE void forall_Icount(Container&& c,
 /*!
  ******************************************************************************
  *
+ * \brief Generic dispatch over containers with a value-based policy
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
+{
+  using category =
+      typename std::iterator_traits<decltype(std::begin(c))>::iterator_category;
+  static_assert(
+      std::is_base_of<std::random_access_iterator_tag, category>::value,
+      "Iterators passed to RAJA must be Random Access or Contiguous iterators");
+
+  // printf("running container\n");
+
+  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief Generic dispatch over containers
  *
  ******************************************************************************

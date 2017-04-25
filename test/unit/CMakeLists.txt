@@ -52,14 +52,13 @@ if (NOT MSVC)
     SOURCES test-timer.cxx
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
-# TODO: Fix MultiPolicy
-#  if(RAJA_ENABLE_OPENMP)
-#    raja_add_test(
-#            NAME multipolicy
-#            SOURCES multipolicy.cxx
-#            DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-#    )
-#  endif(RAJA_ENABLE_OPENMP)
+  if(RAJA_ENABLE_OPENMP)
+    raja_add_test(
+            NAME multipolicy
+            SOURCES multipolicy.cxx
+            DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
+    )
+  endif(RAJA_ENABLE_OPENMP)
 endif()
 
 add_subdirectory(cpu)

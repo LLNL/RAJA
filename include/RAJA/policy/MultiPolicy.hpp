@@ -55,48 +55,19 @@
 
 #include <tuple>
 
-#include "RAJA/internal/LegacyCompatability.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
 
 namespace RAJA
 {
 
-namespace detail
-{
+template <typename Selector, typename... Policies>
+class MultiPolicy;
 
-template <size_t index, size_t size, typename Policy, typename... rest>
-struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
-  static_assert(index < size, "index must be in the range of possibilities");
-  Policy _p;
-  using NextInvoker = policy_invoker<index - 1, size, rest...>;
-
-  policy_invoker(Policy p, rest... args) : NextInvoker(args...), _p(p) {}
-
-  template <typename Iterable, typename Body>
-  void invoke(int offset, Iterable &&iter, Body &&body)
-  {
-    if (offset == size - index - 1) {
-      RAJA::impl::forall(_p, iter, body);
-    } else {
-      NextInvoker::invoke(offset, iter, body);
-    }
-  }
-};
-
-template <size_t size, typename Policy, typename... rest>
-struct policy_invoker<0, size, Policy, rest...> {
-  Policy _p;
-  policy_invoker(Policy p, rest... args) : _p(p) {}
-  template <typename Iterable, typename Body>
-  void invoke(int offset, Iterable &&iter, Body &&body)
-  {
-    if (offset == size - 1) {
-      RAJA::impl::forall(_p, iter, body);
-    } else {
-      throw std::runtime_error("unknown offset invoked");
-    }
-  }
-};
+namespace detail {
+    template <size_t index, size_t size, typename Policy, typename... rest>
+    struct policy_invoker;
 }
+
 
 /// MultiPolicy - Meta-policy for choosing between a compile-time list of
 /// policies at runtime
@@ -173,6 +144,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof... (Policies)>{}, s, policies);
 }
 
+namespace impl {
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
 /// \param p MultiPolicy to use for selection
@@ -187,6 +159,45 @@ RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
                         Body &&body)
 {
   p.invoke(iter, body);
+}
+}
+
+namespace detail
+{
+
+template <size_t index, size_t size, typename Policy, typename... rest>
+struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
+  static_assert(index < size, "index must be in the range of possibilities");
+  Policy _p;
+  using NextInvoker = policy_invoker<index - 1, size, rest...>;
+
+  policy_invoker(Policy p, rest... args) : NextInvoker(args...), _p(p) {}
+
+  template <typename Iterable, typename Body>
+  void invoke(int offset, Iterable &&iter, Body &&body)
+  {
+    if (offset == size - index - 1) {
+      RAJA::impl::forall(_p, iter, body);
+    } else {
+      NextInvoker::invoke(offset, iter, body);
+    }
+  }
+};
+
+template <size_t size, typename Policy, typename... rest>
+struct policy_invoker<0, size, Policy, rest...> {
+  Policy _p;
+  policy_invoker(Policy p, rest... args) : _p(p) {}
+  template <typename Iterable, typename Body>
+  void invoke(int offset, Iterable &&iter, Body &&body)
+  {
+    if (offset == size - 1) {
+      RAJA::impl::forall(_p, iter, body);
+    } else {
+      throw std::runtime_error("unknown offset invoked");
+    }
+  }
+};
 }
 
 }
