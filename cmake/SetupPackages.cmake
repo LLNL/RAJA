@@ -131,4 +131,5 @@ endif ()
 
 if (RAJA_ENABLE_DOCUMENTATION)
   find_package(Sphinx)
+  find_package(Doxygen)
 endif ()
