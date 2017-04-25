@@ -177,16 +177,14 @@ void ListSegment::initIndexData(const Index_type* indx,
       cudaErrchk(cudaMallocManaged((void**)&m_indx,
                                    m_len * sizeof(Index_type),
                                    cudaMemAttachGlobal));
-      cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
-      cudaErrchk(cudaDeviceSynchronize());
+      cudaErrchk(cudaMemcpy(m_indx, indx,
+                            m_len * sizeof(Index_type), cudaMemcpyDefault));
 #else
       m_indx = new Index_type[len];
-#endif
-
       for (Index_type i = 0; i < m_len; ++i) {
         m_indx[i] = indx[i];
       }
-
+#endif
     } else {
       // Uh-oh. Using evil const_cast....
       m_indx = const_cast<Index_type*>(indx);
