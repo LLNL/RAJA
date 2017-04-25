@@ -55,13 +55,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/exec-cuda/MemUtils_CUDA.hxx"
+#include "RAJA/internal/exec-cuda/MemUtils_CUDA.hxx"
 
-#include "RAJA/int_datatypes.hxx"
+#include "RAJA/Types.hxx"
 
 #include "RAJA/reducers.hxx"
 
-#include "RAJA/exec-cuda/raja_cudaerrchk.hxx"
+#include "RAJA/internal/exec-cuda/raja_cudaerrchk.hxx"
 
 #include <iostream>
 #include <string>

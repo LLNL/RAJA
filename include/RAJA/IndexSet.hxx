@@ -55,8 +55,8 @@
 
 #include "RAJA/config.hxx"
 
-#include "RAJA/IndexSetSegInfo.hxx"
-#include "RAJA/RAJAVec.hxx"
+#include "RAJA/internal/IndexSetSegInfo.hxx"
+#include "RAJA/internal/RAJAVec.hxx"
 
 #include <iosfwd>
 

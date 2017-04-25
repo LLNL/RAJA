@@ -142,6 +142,9 @@ bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const
 ////
 void ListSegment::print(std::ostream& os) const
 {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaErrchk(cudaDeviceSynchronize());
+#endif
   os << "ListSegment : length, owns index = " << getLength()
      << (m_indx_own == Owned ? " -- Owned" : " -- Unowned") << std::endl;
   for (Index_type i = 0; i < getLength(); ++i) {
