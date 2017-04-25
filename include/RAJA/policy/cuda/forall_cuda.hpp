@@ -72,15 +72,20 @@
 #include "RAJA/util/defines.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
-#include "RAJA/policy/sequential/policy_sequential.hpp"
 
-#include "RAJA/pattern/forall.hpp"
+// #include "RAJA/policy/sequential/policy_sequential.hpp"
 
 namespace RAJA
 {
 
 namespace impl
 {
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
+
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
 
 //
 //////////////////////////////////////////////////////////////////////

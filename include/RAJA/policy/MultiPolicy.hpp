@@ -145,6 +145,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 }
 
 namespace impl {
+
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
 /// \param p MultiPolicy to use for selection
@@ -160,6 +161,7 @@ RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
+
 }
 
 namespace detail
