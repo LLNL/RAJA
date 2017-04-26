@@ -104,7 +104,7 @@
 #define RAJA_COMPILER_XLC
 #elif defined(__PGI)
 #define RAJA_COMPILER_PGI
-#elif defined(_MSVC_VER)
+#elif defined(_WIN32)
 #define RAJA_COMPILER_MSVC
 #elif defined(__GNUC__)
 #define RAJA_COMPILER_GNU
