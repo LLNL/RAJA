@@ -58,6 +58,8 @@
 #include "RAJA/internal/LegacyCompatibility.hxx"
 #include "RAJA/internal/defines.hxx"
 
+#include "RAJA/internal/exec-sequential/transform-reduce.hxx"
+
 #include <tuple>
 
 namespace RAJA
