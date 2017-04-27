@@ -75,7 +75,7 @@ namespace scan
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
 {
-  return static_cast<size_t>(n * pid) / p;
+  return (static_cast<size_t>(n) * pid) / p;
 }
 
 /*!
@@ -90,17 +90,17 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
-  const int p = omp_get_max_threads();
+  const int p = std::min(n, omp_get_max_threads());
   ::std::vector<Value> sums(p, Value());
-#pragma omp parallel
+  #pragma omp parallel num_threads(p)
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
     inclusive_inplace(::RAJA::seq_exec{}, begin + i0, begin + i1, f);
     sums[pid] = *(begin + i1 - 1);
-#pragma omp barrier
-#pragma omp single
+    #pragma omp barrier
+    #pragma omp single
     exclusive_inplace(
         ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
     for (int i = i0; i < i1; ++i) {
@@ -124,17 +124,17 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
   const int n = end - begin;
   const int p = omp_get_max_threads();
   ::std::vector<Value> sums(p, v);
-#pragma omp parallel
+  #pragma omp parallel
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
     const int i1 = firstIndex(n, p, pid + 1);
     const Value init = ((pid == 0) ? v : *(begin + i0 - 1));
-#pragma omp barrier
+    #pragma omp barrier
     exclusive_inplace(seq_exec{}, begin + i0, begin + i1, f, init);
     sums[pid] = *(begin + i1 - 1);
-#pragma omp barrier
-#pragma omp single
+    #pragma omp barrier
+    #pragma omp single
     exclusive_inplace(
         seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
     for (int i = i0; i < i1; ++i) {
