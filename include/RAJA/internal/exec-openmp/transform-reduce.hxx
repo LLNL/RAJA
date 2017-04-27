@@ -69,7 +69,7 @@ template <typename Iterable,
           typename Transformer,
           typename Reducer,
           typename... Args>
-void transform_reduce(RAJA::simd_exec,
+void transform_reduce(RAJA::omp_parallel_for_exec,
                       Iterable&& iterable,
                       Transformer&& transformer,
                       Reducer&& reducer,
