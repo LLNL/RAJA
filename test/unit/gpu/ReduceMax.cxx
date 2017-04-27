@@ -14,7 +14,7 @@
 #include <random>
 #include <string>
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 
 #define TEST_VEC_LEN 1024 * 1024 * 6
 
