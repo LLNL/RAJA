@@ -126,6 +126,7 @@ struct omp_reduce_ordered {
 #include "RAJA/internal/exec-openmp/forall_openmp.hxx"
 #include "RAJA/internal/exec-openmp/reduce_openmp.hxx"
 #include "RAJA/internal/exec-openmp/scan_openmp.hxx"
+#include "RAJA/internal/exec-openmp/transform_reduce.hxx"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/internal/exec-openmp/forallN_openmp.hxx"

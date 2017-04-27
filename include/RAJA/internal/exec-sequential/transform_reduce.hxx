@@ -1,17 +1,15 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for SIMD segment execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA transform-reduce declarations.
+*
+******************************************************************************
+*/
 
-#ifndef RAJA_simd_HXX
-#define RAJA_simd_HXX
+#ifndef RAJA_transform_reduce_sequential_HXX
+#define RAJA_transform_reduce_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,41 +53,55 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+#include "RAJA/config.hxx"
 
-///
-/// Segment execution policies
-///
+#include "RAJA/internal/LegacyCompatibility.hxx"
+#include "RAJA/internal/defines.hxx"
+
+#include <tuple>
+
 namespace RAJA
 {
+namespace detail
+{
 
-struct simd_exec {
-};
+template <typename Reducer,
+          typename ResultTuple,
+          typename LocalTuple,
+          size_t... Ids>
+void reduce(RAJA::seq_exec,
+            Reducer&& reducer,
+            ResultTuple&& result,
+            LocalTuple&& local,
+            VarOps::index_sequence<Ids...>)
+{
+  reducer(VarOps::forward(std::get<Ids>(result))...,
+          VarOps::forward(std::get<Ids>(local))...);
 }
 
-//
-// NOTE: There is no Index set segment iteration policy for SIMD
-//
+template <typename Iterable,
+          typename Transformer,
+          typename Reducer,
+          typename... Args>
+void transform_reduce(RAJA::seq_exec,
+                      Iterable&& iterable,
+                      Transformer&& transformer,
+                      Reducer&& reducer,
+                      Args&&... args)
+{
+  auto begin = iterable.begin();
+  auto end = iterable.end();
+  for (auto i = begin; i < end; ++i) {
+    reduce(RAJA::seq_exec{},
+           VarOps::forward(reducer),
+           std::tie(args...),
+           VarOps::forward(transformer(i)),
+           VarOps::index_sequence_for<Args...>());
+  }
+}
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
+}  // namespace detail
 
-//
-// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
-//
+}  // namespace RAJA
 
-#include "RAJA/internal/exec-simd/forall_simd.hxx"
-#include "RAJA/internal/exec-simd/transform-reduce.hxx"
-
-#endif  // closing endif for header file include guard
+#endif

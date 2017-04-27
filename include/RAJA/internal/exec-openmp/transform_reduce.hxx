@@ -1,17 +1,15 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for SIMD segment execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA transform-reduce declarations.
+*
+******************************************************************************
+*/
 
-#ifndef RAJA_simd_HXX
-#define RAJA_simd_HXX
+#ifndef RAJA_transform_reduce_openmp_HXX
+#define RAJA_transform_reduce_openmp_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,41 +53,58 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+#include <tuple>
 
-///
-/// Segment execution policies
-///
+#include "RAJA/config.hxx"
+#include "RAJA/internal/defines.hxx"
+
+#include "RAJA/internal/exec-sequential/transform-reduce.hxx"
+
 namespace RAJA
 {
+namespace detail
+{
 
-struct simd_exec {
-};
+template <typename Iterable,
+          typename Transformer,
+          typename Reducer,
+          typename... Args>
+void transform_reduce(RAJA::simd_exec,
+                      Iterable&& iterable,
+                      Transformer&& transformer,
+                      Reducer&& reducer,
+                      Args&&... args)
+{
+  auto begin = iterable.begin();
+  auto end = iterable.end();
+  #pragma omp parallel
+  {
+    std::tuple<Args...> local;
+
+    #pragma omp parallel for
+    for (auto i = begin; i < end; ++i) {
+      reduce(RAJA::seq_exec{},
+             VarOps::forward(reducer),
+             local,
+             VarOps::forward(transformer(i)),
+             VarOps::index_sequence_for<Args...>());
+    }
+
+    for (int p = 0; p < omp_get_num_threads(); ++p) {
+      if (omp_get_thread_num() == p) {
+        reduce(RAJA::seq_exec{},
+               VarOps::forward(reducer),
+               std::tie(args...),
+               VarOps::forward(local),
+               VarOps::index_sequence_for<Args...>());
+      }
+      #pragma omp barrier
+    }
+  }
 }
 
-//
-// NOTE: There is no Index set segment iteration policy for SIMD
-//
+}  // namespace detail
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
+}  // namespace RAJA
 
-//
-// NOTE: RAJA reductions in SIMD loops use seg_reduce policy
-//
-
-#include "RAJA/internal/exec-simd/forall_simd.hxx"
-#include "RAJA/internal/exec-simd/transform-reduce.hxx"
-
-#endif  // closing endif for header file include guard
+#endif

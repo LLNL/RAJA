@@ -232,6 +232,9 @@ template <size_t Upper>
 using make_index_sequence =
     typename integer_sequence_detail::gen_seq<Upper>::type;
 
+template <typename ... Args>
+using index_sequence_for = make_index_sequence<sizeof...(Args)>;
+
 template <size_t... Ints>
 using index_sequence = integer_sequence<Ints...>;
 
