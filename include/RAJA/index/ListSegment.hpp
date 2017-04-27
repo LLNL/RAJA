@@ -61,6 +61,7 @@
 
 #include <algorithm>
 #include <iosfwd>
+#include <type_traits>
 
 namespace RAJA
 {
@@ -111,6 +112,33 @@ public:
   /// Copy-assignment for list segment.
   ///
   ListSegment& operator=(const ListSegment& rhs);
+
+  ///
+  /// Move-constructor for list segment.
+  ///
+  ListSegment(ListSegment&& other)
+    : BaseSegment(std::move(other)),
+      m_indx(other.m_indx),
+      m_len(other.m_len),
+      m_indx_own(other.m_indx_own)
+  {
+    other.m_indx = nullptr;
+  }
+
+  ///
+  /// Move-assignment for list segment.
+  ///
+  ListSegment& operator=(ListSegment&& rhs)
+  {
+    if (this != &rhs) {
+      BaseSegment::operator=(std::move(rhs));
+      m_indx = rhs.m_indx;
+      m_len = rhs.m_len;
+      m_indx_own = rhs.m_indx_own;
+      rhs.m_indx = nullptr;
+    }
+    return *this;
+  }
 
   ///
   /// Destroy segment including its contents.
@@ -240,12 +268,19 @@ ListSegment::ListSegment(const T& indx)
     cudaErrchk(cudaMallocManaged((void**)&m_indx,
                                  m_len * sizeof(Index_type),
                                  cudaMemAttachGlobal));
-    cudaErrchk(cudaMemset(m_indx, 0, m_len * sizeof(Index_type)));
-    cudaErrchk(cudaDeviceSynchronize());
+    using T_TYPE = typename std::remove_reference<decltype(indx[0])>::type;
+    if (sizeof(T_TYPE) == sizeof(Index_type) && std::is_integral<T_TYPE>::value
+        && std::is_same<std::vector<T_TYPE>, typename std::decay<T>::type>::value) {
+      // this will bitwise copy signed or unsigned integral types
+      cudaErrchk(cudaMemcpy(m_indx, &indx[0], m_len * sizeof(Index_type), cudaMemcpyDefault));
+    } else {
+      cudaErrchk(cudaDeviceSynchronize());
+      std::copy(indx.begin(), indx.end(), m_indx);
+    }
 #else
     m_indx = new Index_type[indx.size()];
-#endif
     std::copy(indx.begin(), indx.end(), m_indx);
+#endif
     m_indx_own = Owned;
   }
 }
