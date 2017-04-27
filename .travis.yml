@@ -40,7 +40,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
-     env: 
+     env:
          - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
          - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
          - WARN=""
@@ -51,7 +51,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
-     env: 
+     env:
          - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
          - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
          - WARN=""
@@ -62,7 +62,7 @@ matrix:
            - ubuntu-toolchain-r-test
          packages:
            - g++-5
-     env: 
+     env:
          - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
          - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
          - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -80,6 +80,7 @@ script:
   - mkdir travis-build && cd travis-build
   - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
   - make -j
-  - make test 
+  - ctest -R scan-tests.exe -VV
+  - make test
 after_success:
   - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
