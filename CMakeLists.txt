@@ -82,8 +82,9 @@ include_directories(${PROJECT_BINARY_DIR}/include)
 
 include_directories(include)
 
-install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
+install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
+        DESTINATION "include/RAJA")
 
 add_subdirectory(src)
 

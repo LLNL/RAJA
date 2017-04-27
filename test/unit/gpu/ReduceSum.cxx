@@ -16,7 +16,7 @@
 #include <random>
 #include <string>
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 
 #include "Compare.hxx"
 
