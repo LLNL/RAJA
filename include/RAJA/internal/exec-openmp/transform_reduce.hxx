@@ -81,7 +81,7 @@ void transform_reduce(RAJA::simd_exec,
   {
     std::tuple<Args...> local;
 
-    #pragma omp parallel for
+    #pragma omp for
     for (auto i = begin; i < end; ++i) {
       reduce(RAJA::seq_exec{},
              VarOps::forward(reducer),
@@ -90,16 +90,12 @@ void transform_reduce(RAJA::simd_exec,
              VarOps::index_sequence_for<Args...>());
     }
 
-    for (int p = 0; p < omp_get_num_threads(); ++p) {
-      if (omp_get_thread_num() == p) {
-        reduce(RAJA::seq_exec{},
-               VarOps::forward(reducer),
-               std::tie(args...),
-               VarOps::forward(local),
-               VarOps::index_sequence_for<Args...>());
-      }
-      #pragma omp barrier
-    }
+    #pragma omp critical(omp_transform_reduce_aggregate)
+    reduce(RAJA::seq_exec{},
+           VarOps::forward(reducer),
+           std::tie(args...),
+           VarOps::forward(local),
+           VarOps::index_sequence_for<Args...>());
   }
 }
 
