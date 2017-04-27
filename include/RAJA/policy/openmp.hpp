@@ -64,13 +64,13 @@
 #include <iostream>
 #include <thread>
 
-#include "RAJA/policy/openmp/policy_openmp.hpp"
-#include "RAJA/policy/openmp/forall_openmp.hpp"
-#include "RAJA/policy/openmp/reduce_openmp.hpp"
-#include "RAJA/policy/openmp/scan_openmp.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/openmp/forall.hpp"
+#include "RAJA/policy/openmp/reduce.hpp"
+#include "RAJA/policy/openmp/scan.hpp"
 
 #if defined(RAJA_ENABLE_NESTED)
-#include "RAJA/policy/openmp/forallN_openmp.hpp"
+#include "RAJA/policy/openmp/forallN.hpp"
 #endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)

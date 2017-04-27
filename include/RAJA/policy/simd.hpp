@@ -56,7 +56,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/simd/policy_simd.hpp"
-#include "RAJA/policy/simd/forall_simd.hpp"
+#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/simd/forall.hpp"
 
 #endif  // closing endif for header file include guard
