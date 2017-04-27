@@ -2,7 +2,7 @@
 
 #include "buildIndexSet.hxx"
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 
 class IndexSetTest : public ::testing::Test
 {

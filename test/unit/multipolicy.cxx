@@ -1,5 +1,6 @@
 #include "gtest/gtest.h"
-#include "RAJA/RAJA.hxx"
+
+#include "RAJA/RAJA.hpp"
 
 TEST(multipolicy, basic)
 {

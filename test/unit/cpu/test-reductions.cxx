@@ -42,7 +42,7 @@
 
 #include "gtest/gtest.h"
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 #include <iostream>
 
 #include <tuple>

@@ -9,7 +9,7 @@
 #include <cstdlib>
 
 #include <gtest/gtest.h>
-#include <RAJA/RAJA.hxx>
+#include <RAJA/RAJA.hpp>
 
 const int x = 500, y = 500, z = 50;
 
