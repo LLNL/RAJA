@@ -80,7 +80,8 @@ RAJA_INLINE void forall(
     LOOP_BODY loop_body)
 {
   forall(SEG_IT_POLICY_T(),iset,
-         [=](int segID){ iset.segmentCall(segID, CallForall(),
+         [=](int segID){ iset.segmentCall(segID,
+                                          CallForall(),
                                           SEG_EXEC_POLICY_T(),
                                           loop_body); });
 
@@ -107,7 +108,8 @@ RAJA_INLINE void forall_Icount(
 {
   // no need for icount variant here
   forall(SEG_IT_POLICY_T(),iset,
-         [=](int segID){ iset.segmentCall(segID, CallForallIcount(iset.getStartingIcount(segID)),
+         [=](int segID){ iset.segmentCall(segID,
+                                          CallForallIcount(iset.getStartingIcount(segID)),
                                           SEG_EXEC_POLICY_T(),
                                           loop_body); });
 

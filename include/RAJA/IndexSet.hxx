@@ -265,23 +265,6 @@ public:
     return 1 + PARENT::getNumTypes();
   }
 
-  ///
-  /// Returns true if the segment is storable in this IndexSet.
-  ///
-  template<typename T>
-  RAJA_INLINE
-  constexpr
-  bool isValidSegmentType(T const &segment) const{
-    return PARENT::isValidSegmentType(segment);
-  }
-
-  RAJA_INLINE
-  constexpr
-  bool isValidSegmentType(T0 const &) const{
-    return true;
-  }
-
-
   /*
    * IMPORTANT: Some methods to add a segment to an index set
    *            make a copy of the segment object passed in. Others do not.

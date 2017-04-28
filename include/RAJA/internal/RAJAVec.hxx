@@ -84,7 +84,7 @@ public:
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_t init_cap = 0, const _Allocator& __a = _Allocator()) : m_allocator(__a), m_capacity(0), m_size(0), m_data(0)
+  explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator()) : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
   {
     grow_cap(init_cap);
   }

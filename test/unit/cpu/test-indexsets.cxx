@@ -27,17 +27,6 @@ TEST_F(IndexSetTest, IndexSetEquality)
   }
 }
 
-// TODO: tests for adding other invalid types
-TEST_F(IndexSetTest, InvalidSegments)
-{
-  RAJA::RangeStrideSegment rs_segment(0, 4, 2);
-
-  // FIX ME push back will work here because RangeStrideSegment is a valid type in the IndexSet - need to come up with a new type to test with
-  //EXPECT_NE(true, index_sets_[0].isValidSegmentType(rs_segment));
-  //EXPECT_NE(true, index_sets_[0].push_back(rs_segment));
-  //EXPECT_NE(true, index_sets_[0].push_back_nocopy(&rs_segment));
-}
-
 #if !defined(RAJA_COMPILER_XLC12) && 1
 TEST_F(IndexSetTest, conditionalOperation_even_indices)
 {

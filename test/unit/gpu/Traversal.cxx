@@ -383,7 +383,7 @@ int main(int argc, char *argv[])
   s_ntests_run++;
   if (!array_equal(ref_array, test_array, test_alen)) {
     cout << "\n TEST FAILURE " << endl;
-#if 0
+#if 1
     cout << endl << endl;
     for (Index_type i = 0; i < test_alen; ++i) {
       cout << "test_array[" << is_indices[i]

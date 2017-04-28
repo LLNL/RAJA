@@ -288,23 +288,22 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
  *
  ******************************************************************************
  */
-/*
 template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
 RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
                         const IndexSet<SEG_TYPES ...>& iset,
                         LOOP_BODY&& loop_body)
 {
-
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
-    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall<cuda_exec_async<BLOCK_SIZE>>(seg_info, loop_body);
-
+    iset.segmentCall(isi,
+                     CallForall(),
+                     cuda_exec_async<BLOCK_SIZE>(),
+                     loop_body);
   }  // iterate over segments of index set
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
-*/
+
 
 /*!
  ******************************************************************************
@@ -318,7 +317,6 @@ RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
  *
  ******************************************************************************
  */
- /*
 template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
 RAJA_INLINE void forall_Icount(
 ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
@@ -327,14 +325,15 @@ const IndexSet<SEG_TYPES ...>& iset,
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
-    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall_Icount<cuda_exec_async<BLOCK_SIZE>>(seg_info, loop_body);
-
+    iset.segmentCall(isi,
+                     CallForallIcount(iset.getStartingIcount(isi)),
+                     cuda_exec_async<BLOCK_SIZE>(),
+                     loop_body);
   }  // iterate over segments of index set
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
- */
+
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
