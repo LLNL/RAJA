@@ -75,7 +75,7 @@ namespace scan
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
 {
-  return static_cast<size_t>(n * pid) / p;
+  return (static_cast<size_t>(n) * pid) / p;
 }
 
 /*!
@@ -90,9 +90,9 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
-  const int p = omp_get_max_threads();
+  const int p = std::min(n, omp_get_max_threads());
   ::std::vector<Value> sums(p, Value());
-#pragma omp parallel
+#pragma omp parallel num_threads(p)
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
@@ -122,9 +122,9 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
-  const int p = omp_get_max_threads();
+  const int p = std::min(n, omp_get_max_threads());
   ::std::vector<Value> sums(p, v);
-#pragma omp parallel
+#pragma omp parallel num_threads(p)
   {
     const int pid = omp_get_thread_num();
     const int i0 = firstIndex(n, p, pid);
