@@ -15,6 +15,7 @@
 #define RAJA_reduce_cilk_HXX
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/cilk/policy.hpp"
 
 #if defined(RAJA_ENABLE_CILK)
 
