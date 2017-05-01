@@ -62,18 +62,15 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/defines.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
-#include "RAJA/util/defines.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
-
-// #include "RAJA/policy/sequential/policy_sequential.hpp"
 
 namespace RAJA
 {
@@ -136,7 +133,7 @@ __device__ __forceinline__ Index_type getGlobalIdx_3D_3D()
 }
 __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
 {
-  Index_type numThreads = blockDim.x * blockDim.y * blockDim.z * 
+  Index_type numThreads = blockDim.x * blockDim.y * blockDim.z *
                           gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }

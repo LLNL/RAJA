@@ -4,15 +4,20 @@
  * \file
  *
  * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
+ *          template methods for Intel Cilk Plus execution.
  *
- *          These methods should work on any platform.
+ *          These methods work only on platforms that support Cilk Plus.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_sequential_HXX
-#define RAJA_forall_sequential_HXX
+#ifndef RAJA_forall_cilk_HXX
+#define RAJA_forall_cilk_HXX
+
+#include "RAJA/config.hpp"
+#include "RAJA/policy/cilk/policy.hpp"
+
+#if defined(RAJA_ENABLE_CILK)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,14 +61,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
+#include "RAJA/util/Types.hxx"
 
-#include "RAJA/util/types.hpp"
+#include "RAJA/internal/fault_tolerance.hxx"
 
-#include "RAJA/index/RangeSegment.hpp"
-#include "RAJA/index/ListSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
+#include <cilk/cilk.h>
+#include <cilk/cilk_api.h>
 
 namespace RAJA
 {
@@ -71,39 +74,27 @@ namespace RAJA
 namespace impl
 {
 
-
 //
 //////////////////////////////////////////////////////////////////////
 //
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
+// Function templates that iterate over iterables.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Func>
-RAJA_INLINE void forall(const PolicyBase &,
-                        const RangeSegment &iter,
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const cilk_for_exec &,
+                        Iterable &&iter,
                         Func &&loop_body)
 {
-  auto end = iter.getEnd();
-  for (auto ii = iter.getBegin(); ii < end; ++ii) {
-    loop_body(ii);
-  }
-}
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
-{
+  auto begin = std::begin(iter);
   auto end = std::end(iter);
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
+  auto distance = std::distance(begin, end);
+  cilk_for(Index_type i = 0; i < distance; ++i) { loop_body(begin[i]); }
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const PolicyBase &,
+RAJA_INLINE void forall_Icount(const cilk_for_exec &,
                                Iterable &&iter,
                                Index_type icount,
                                Func &&loop_body)
@@ -111,7 +102,8 @@ RAJA_INLINE void forall_Icount(const PolicyBase &,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  for (Index_type i = 0; i < distance; ++i) {
+  cilk_for(Index_type i = 0; i < distance; ++i)
+  {
     loop_body(i + icount, begin[i]);
   }
 }
@@ -119,5 +111,7 @@ RAJA_INLINE void forall_Icount(const PolicyBase &,
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_CILK guard
 
 #endif  // closing endif for header file include guard

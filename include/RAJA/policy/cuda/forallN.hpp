@@ -59,13 +59,15 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cassert>
+#include <climits>
 
 #include "RAJA/util/types.hpp"
+
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 #include "RAJA/internal/ForallNPolicy.hpp"
 
-#include <climits>
 
 namespace RAJA
 {
@@ -141,7 +143,7 @@ struct CudaIndexPair : public POL {
 };
 
 /** Provides a range from 0 to N_iter - 1
- * 
+ *
  */
 template <typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
@@ -275,7 +277,7 @@ template <typename CUDA_EXEC, typename Iterator>
 struct CudaIterableWrapper {
     CUDA_EXEC pol_;
     Iterator i_;
-    constexpr CudaIterableWrapper (const CUDA_EXEC &pol, const Iterator &i) 
+    constexpr CudaIterableWrapper (const CUDA_EXEC &pol, const Iterator &i)
         : pol_(pol), i_(i) {
     }
 
@@ -386,7 +388,7 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
       cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
                    >>>(body, cargs...);
     }
-                 
+
     RAJA_CUDA_CHECK_AND_SYNC(true);
   }
 };
