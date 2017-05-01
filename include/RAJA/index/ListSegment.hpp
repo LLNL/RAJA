@@ -62,6 +62,7 @@
 #include <algorithm>
 #include <iosfwd>
 #include <type_traits>
+#include <vector>
 
 namespace RAJA
 {
