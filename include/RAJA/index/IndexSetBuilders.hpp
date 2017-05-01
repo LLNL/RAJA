@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/Types.hxx"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
