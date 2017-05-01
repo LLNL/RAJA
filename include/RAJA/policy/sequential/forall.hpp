@@ -60,6 +60,8 @@
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/policy/sequential/policy.hpp"
+
 #include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/index/ListSegment.hpp"
 

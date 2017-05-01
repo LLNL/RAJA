@@ -63,6 +63,8 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+#include "RAJA/policy/simd/policy.hpp"
+
 namespace RAJA
 {
 

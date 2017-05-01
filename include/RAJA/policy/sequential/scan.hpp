@@ -57,6 +57,8 @@
 
 #include "RAJA/util/defines.hpp"
 
+#include "RAJA/policy/sequential/policy.hpp"
+
 #include <algorithm>
 #include <functional>
 #include <iterator>

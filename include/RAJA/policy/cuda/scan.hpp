@@ -57,6 +57,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/policy/cuda/policy.hpp"
+
 #include <iterator>
 #include <type_traits>
 
