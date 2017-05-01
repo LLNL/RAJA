@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "IndexSetSegInfo.hpp"
+#include "RAJA/index/IndexSetSegInfo.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
 
 #include <iosfwd>
