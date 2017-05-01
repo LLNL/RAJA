@@ -247,10 +247,19 @@ RAJA_INLINE void forallN(Ts &&... args)
   beforeCudaKernelLaunch();
 #endif
 
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  rm->setExecutionSpace(detail::getSpace<POLICY>());
+#endif
+
   fun_unpacker<POLICY, Indices...>(
       VarOps::index_sequence<sizeof...(args)-1>{},
       VarOps::make_index_sequence<sizeof...(args)-1>{},
       VarOps::forward<Ts>(args)...);
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
 
 #ifdef RAJA_ENABLE_CUDA
   afterCudaKernelLaunch();

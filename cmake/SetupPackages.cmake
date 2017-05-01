@@ -133,3 +133,9 @@ if (RAJA_ENABLE_DOCUMENTATION)
   find_package(Sphinx)
   find_package(Doxygen)
 endif ()
+
+if (RAJA_ENABLE_CHAI)
+  find_package(chai)
+
+  include_directories(${CHAI_INCLUDE_DIRS})
+endif()
