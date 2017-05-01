@@ -68,6 +68,7 @@
 #include "RAJA/policy/openmp/forall_openmp.hpp"
 #include "RAJA/policy/openmp/reduce_openmp.hpp"
 #include "RAJA/policy/openmp/scan_openmp.hpp"
+#include "RAJA/policy/openmp/transform-reduce.hpp"
 
 #if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/policy/openmp/forallN_openmp.hpp"

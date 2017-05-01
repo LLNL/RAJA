@@ -1,17 +1,15 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA transform-reduce declarations.
+*
+******************************************************************************
+*/
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_transform_reduce_sequential_HXX
+#define RAJA_transform_reduce_sequential_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,10 +53,55 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/sequential/policy_sequential.hpp"
-#include "RAJA/policy/sequential/forall_sequential.hpp"
-#include "RAJA/policy/sequential/reduce_sequential.hpp"
-#include "RAJA/policy/sequential/scan_sequential.hpp"
-#include "RAJA/policy/sequential/transform-reduce.hpp"
+#include "RAJA/config.hpp"
 
-#endif  // closing endif for header file include guard
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/defines.hpp"
+
+#include <tuple>
+
+namespace RAJA
+{
+namespace detail
+{
+
+template <typename Reducer,
+          typename ResultTuple,
+          typename LocalTuple,
+          size_t... Ids>
+void reduce(RAJA::seq_exec,
+            Reducer&& reducer,
+            ResultTuple&& result,
+            LocalTuple&& local,
+            VarOps::index_sequence<Ids...>)
+{
+  reducer(VarOps::forward(std::get<Ids>(result))...,
+          VarOps::forward(std::get<Ids>(local))...);
+}
+
+template <typename Iterable,
+          typename Transformer,
+          typename Reducer,
+          typename... Args>
+void transform_reduce(RAJA::seq_exec,
+                      Iterable&& iterable,
+                      Transformer&& transformer,
+                      Reducer&& reducer,
+                      Args&&... args)
+{
+  auto begin = iterable.begin();
+  auto end = iterable.end();
+  for (auto i = begin; i < end; ++i) {
+    reduce(RAJA::seq_exec{},
+           VarOps::forward(reducer),
+           std::tie(args...),
+           VarOps::forward(transformer(i)),
+           VarOps::index_sequence_for<Args...>());
+  }
+}
+
+}  // namespace detail
+
+}  // namespace RAJA
+
+#endif

@@ -55,8 +55,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-
 #include "RAJA/policy/simd/policy_simd.hpp"
 #include "RAJA/policy/simd/forall_simd.hpp"
+#include "RAJA/policy/simd/transform-reduce.hpp"
 
 #endif  // closing endif for header file include guard

@@ -97,10 +97,54 @@ struct function_traits<R (T::*)(Args...) const> {
 
 // extract 0-based argument type
 template <size_t I, typename Fn>
-using extract_arg = std::tuple_element<I, typename function_traits<Fn>::argument_types>;
+using extract_arg =
+    std::tuple_element<I, typename function_traits<Fn>::argument_types>;
 
 template <size_t I, typename Fn>
 using extract_arg_t = typename extract_arg<I, Fn>::type;
+
+template <typename Exec>
+struct is_exec_policy
+  : public std::integral_constant<
+      bool, std::is_base_of<RAJA::PolicyBase, Exec>::value> {
+};
+
+template <typename T, typename = void>
+struct is_iterable : std::false_type {
+};
+
+template <typename... Ts>
+struct is_iterable_helper {
+};
+
+template <typename T>
+struct is_iterable<
+  T,
+  typename std::conditional<
+    false,
+    is_iterable_helper<
+      decltype(std::declval<T>().begin()),
+      decltype(std::declval<T>().end())>,
+    void>::type> : public std::true_type {
+};
+
+template <typename T, template <typename...> class Template>
+struct is_specialization_of : std::false_type {
+};
+
+template <template <typename...> class Template, typename... Args>
+struct is_specialization_of<Template<Args...>, Template> : std::true_type {
+};
+
+template <bool...>
+struct bool_list;
+
+template <bool... V>
+struct all_of
+  : public std::integral_constant<
+      bool, std::is_same<bool_list<true, V...>,
+                         bool_list<V..., true>>::value> {
+};
 
 }  // closing brace for detail namespace
 

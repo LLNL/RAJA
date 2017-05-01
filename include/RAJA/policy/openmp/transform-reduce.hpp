@@ -1,17 +1,15 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA transform-reduce declarations.
+*
+******************************************************************************
+*/
 
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
+#ifndef RAJA_transform_reduce_openmp_HXX
+#define RAJA_transform_reduce_openmp_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,10 +53,56 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/sequential/policy_sequential.hpp"
-#include "RAJA/policy/sequential/forall_sequential.hpp"
-#include "RAJA/policy/sequential/reduce_sequential.hpp"
-#include "RAJA/policy/sequential/scan_sequential.hpp"
+#include "RAJA/config.hpp"
+
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/defines.hpp"
+
 #include "RAJA/policy/sequential/transform-reduce.hpp"
 
-#endif  // closing endif for header file include guard
+#include <tuple>
+
+namespace RAJA
+{
+namespace detail
+{
+
+template <typename Iterable,
+          typename Transformer,
+          typename Reducer,
+          typename... Args>
+void transform_reduce(RAJA::omp_parallel_for_exec,
+                      Iterable&& iterable,
+                      Transformer&& transformer,
+                      Reducer&& reducer,
+                      Args&&... args)
+{
+  auto begin = iterable.begin();
+  auto end = iterable.end();
+  #pragma omp parallel
+  {
+    std::tuple<Args...> local;
+
+    #pragma omp for
+    for (auto i = begin; i < end; ++i) {
+      reduce(RAJA::seq_exec{},
+             VarOps::forward(reducer),
+             local,
+             VarOps::forward(transformer(i)),
+             VarOps::index_sequence_for<Args...>());
+    }
+
+    #pragma omp critical(omp_transform_reduce_aggregate)
+    reduce(RAJA::seq_exec{},
+           VarOps::forward(reducer),
+           std::tie(args...),
+           VarOps::forward(local),
+           VarOps::index_sequence_for<Args...>());
+  }
+}
+
+}  // namespace detail
+
+}  // namespace RAJA
+
+#endif
