@@ -28,6 +28,7 @@ using namespace std;
 #include "Compare.hxx"
 
 #include "chai/ArrayManager.hpp"
+#include "chai/ManagedArray.hpp"
 
 #define CUDA_TEST(X, Y) \
   static void cuda_test_ ## X ## Y();\
@@ -73,7 +74,7 @@ CUDA_TEST(Chai, NestedView) {
   chai::ManagedArray<float> v1_array(X*Y);
   chai::ManagedArray<float> v2_array(X*Y);
 
-  typedef RAJA::ManagedArrayView<float, RAJA::Layout<int, RAJA::PERM_IJ, int, int> > view;
+  typedef RAJA::ManagedArrayView<float, RAJA::Layout<2> > view;
 
   view v1(v1_array, X, Y);
   view v2(v2_array, X, Y);
@@ -101,7 +102,7 @@ CUDA_TEST(Chai, NestedView2) {
   chai::ManagedArray<float> v1_array(X*Y);
   chai::ManagedArray<float> v2_array(X*Y);
 
-  typedef RAJA::ManagedArrayView<float, RAJA::Layout<int, RAJA::PERM_IJ, int, int> > view;
+  typedef RAJA::ManagedArrayView<float, RAJA::Layout<2> > view;
 
   view v1(v1_array, X, Y);
   view v2(v2_array, X, Y);
@@ -214,7 +215,7 @@ void runLTimesTest(std::string const &policy,
   cudaDeviceSynchronize();
 
   // Make sure data is copied to host for checking results.
-  chai::ResourceManager* rm = chai::ResourceManager::getResourceManager();
+  chai::ArrayManager* rm = chai::ArrayManager::getArrayManager();
   rm->setExecutionSpace(chai::CPU);
   // setup local Reduction variables as a crosscheck
   double the_lsum = 0.0;
