@@ -33,7 +33,7 @@ struct cilk_for_segit : public cilk_for_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-  struct cilk_reduce : public reduce_policy {
+struct cilk_reduce : public reduce_policy {
 };
 
 }  // closing brace for RAJA namespace

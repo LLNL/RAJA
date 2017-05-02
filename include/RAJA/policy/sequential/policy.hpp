@@ -33,7 +33,7 @@ struct seq_segit : public seq_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-  struct seq_reduce : public reduce_policy {
+struct seq_reduce : public reduce_policy {
 };
 
 }  // closing brace for RAJA namespace

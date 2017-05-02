@@ -20,6 +20,6 @@ namespace RAJA
 struct simd_exec : forall_policy {
 };
 
-} // end of namespace RAJA
+}  // end of namespace RAJA
 
 #endif
