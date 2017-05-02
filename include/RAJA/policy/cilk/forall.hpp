@@ -61,9 +61,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/internal/fault_tolerance.hxx"
+#include "RAJA/internal/fault_tolerance.hpp"
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
