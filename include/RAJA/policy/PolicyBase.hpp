@@ -4,12 +4,6 @@
 namespace RAJA
 {
 
-namespace detail
-{
-struct wrap_policy {
-};
-}
-
 struct PolicyBase {
 };
 
@@ -19,13 +13,20 @@ struct reduce_policy : public PolicyBase {
 struct forall_policy : public PolicyBase {
 };
 
+struct taskgraph_policy : public PolicyBase {
+};
+
+namespace detail
+{
+  struct wrap_policy : public PolicyBase {
+};
+} // end namespace detail
+
 template <typename Inner>
-struct wrap_policy : public PolicyBase, public detail::wrap_policy {
+struct wrap_policy : public detail::wrap_policy {
   using inner_policy = Inner;
 };
 
-struct taskgraph_policy : public PolicyBase {
-};
-}
+} // end namespace RAJA
 
 #endif /* RAJA_POLICYBASE_HXX */
