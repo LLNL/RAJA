@@ -239,18 +239,93 @@ struct larger_of {
 
 }  // closing brace for types namespace
 
+namespace detail {
+template <typename T>
+struct signed_limits {
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr T min() {
+   return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
+}
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr T max() {
+  return static_cast<T>(~(1llu << ((8llu * sizeof(T)) - 1llu)));
+}
+};
+
+template <typename T>
+struct unsigned_limits {
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr T min() {
+   return static_cast<T>(0);
+}
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr T max() {
+  return static_cast<T>(0xFFFFFFFFFFFFFFFF);
+}
+};
+
+template <typename T>
+struct floating_point_limits {
+};
+
+template<>
+struct floating_point_limits<float> {
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr float min() {
+   return -FLT_MAX;
+}
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr float max() {
+   return FLT_MAX;
+}
+};
+
+template<>
+struct floating_point_limits<double> {
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr double min() {
+   return -DBL_MAX;
+}
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr double max() {
+   return DBL_MAX;
+}
+};
+
+template<>
+struct floating_point_limits<long double> {
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr long double min() {
+   return -LDBL_MAX;
+}
+RAJA_INLINE RAJA_HOST_DEVICE
+static constexpr long double max() {
+   return LDBL_MAX;
+}
+};
+} // end namespace detail
+
+template <typename T>
+struct limits : public std::conditional<
+  std::is_integral<T>::value,
+  typename std::conditional<
+    std::is_unsigned<T>::value,
+    detail::unsigned_limits<T>,
+    detail::signed_limits<T>>::type,
+  detail::floating_point_limits<T>>::type {};
+
 namespace constants
 {
 
 template <typename T>
 RAJA_HOST_DEVICE constexpr T min()
 {
-  return std::numeric_limits<T>::min();
+  return limits<T>::min();
 }
 template <typename T>
 RAJA_HOST_DEVICE constexpr T max()
 {
-  return std::numeric_limits<T>::max();
+  return limits<T>::max();
 }
 
 }  // closing brace for constants namespace
