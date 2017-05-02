@@ -107,6 +107,10 @@
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
+
+#include "chai/ArrayManager.hpp"
+#include "chai/ExecutionSpaces.hpp"
+
 #endif
 
 namespace RAJA

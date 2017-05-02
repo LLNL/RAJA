@@ -60,6 +60,8 @@
 #include "RAJA/util/types.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 
+#include "RAJA/policy/openmp/policy_openmp.hpp"
+
 #if defined(_OPENMP)
 #include <omp.h>
 #endif
@@ -86,8 +88,6 @@ struct OMP_Parallel {
  *  ForallN collapse nowait policies
  ******************************************************************/
 
-struct omp_collapse_nowait_exec {
-};
 
 template <typename... PREST>
 struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,

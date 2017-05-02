@@ -38,7 +38,7 @@ using namespace std;
 /*
  * Simple tests using forallN and View
  */
-CUDA_TEST(Chai, Nested) {
+CUDA_TEST(Chai, NestedSimple) {
   typedef RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::seq_exec> > POLICY;
   typedef RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_thread_y_exec > > POLICY_GPU;
 
@@ -185,9 +185,9 @@ void runLTimesTest(std::string const &policy,
     phi_data[i] = 0.0;
   });
 
-  typename POL::ELL_VIEW ell(ell_data, num_moments, num_directions);
-  typename POL::PSI_VIEW psi(psi_data, num_directions, num_groups, num_zones);
-  typename POL::PHI_VIEW phi(phi_data, num_moments, num_groups, num_zones);
+  typename POL::ELL_VIEW ell(ell_data, RAJA::make_permuted_layout({num_moments, num_directions}, POL::ELL_PERM::value));
+  typename POL::PSI_VIEW psi(psi_data, RAJA::make_permuted_layout({num_directions, num_groups, num_zones}, POL::PSI_PERM::value));
+  typename POL::PHI_VIEW phi(phi_data, RAJA::make_permuted_layout({num_moments, num_groups, num_zones}, POL::PHI_PERM::value));
 
   using EXEC = typename POL::EXEC;
 
@@ -215,7 +215,7 @@ void runLTimesTest(std::string const &policy,
   cudaDeviceSynchronize();
 
   // Make sure data is copied to host for checking results.
-  chai::ArrayManager* rm = chai::ArrayManager::getArrayManager();
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(chai::CPU);
   // setup local Reduction variables as a crosscheck
   double the_lsum = 0.0;
@@ -276,16 +276,20 @@ struct PolLTimesA_GPU {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IMoment, IGroup, IZone>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Use thread and block mappings
@@ -295,20 +299,24 @@ struct PolLTimesB_GPU {
                                 seq_exec,
                                 cuda_thread_z_exec,
                                 cuda_block_y_exec>,
-                       Permute<PERM_JILK>>
+                       Permute<PERM_IJKL>>
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IMoment, IGroup, IZone>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 // Combine OMP Parallel, omp nowait, and cuda thread-block launch
@@ -322,16 +330,20 @@ struct PolLTimesC_GPU {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IDirection, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IDirection, IGroup, IZone>
       PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJK, IMoment, IGroup, IZone>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<3>, IMoment, IGroup, IZone>
       PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::ManagedArrayView<double, Layout<int, PERM_IJ, IMoment, IDirection>>
+  typedef RAJA::TypedManagedArrayView<double, RAJA::Layout<2>, IMoment, IDirection>
       ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
 };
 
 void runLTimesTests(Index_type num_moments,

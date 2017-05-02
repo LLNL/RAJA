@@ -54,6 +54,10 @@ struct omp_taskgraph_interval_segit : public omp_exec_base {
   const PolicyFamily family = PolicyFamily::openmp;
 };
 
+struct omp_collapse_nowait_exec : public omp_exec_base {
+  const PolicyFamily family = PolicyFamily::openmp;
+};
+
 ///
 ///////////////////////////////////////////////////////////////////////
 ///

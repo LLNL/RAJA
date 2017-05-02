@@ -137,9 +137,9 @@ struct ManagedArrayView {
   {
   }
 
-  // RAJA_INLINE void set_data(DataType *data_ptr) {
-  //     data = data_ptr;
-  // }
+  RAJA_INLINE void set_data(chai::ManagedArray<DataType> new_array) {
+      array = new_array;
+  }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
@@ -147,6 +147,33 @@ struct ManagedArrayView {
   RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
   {
     return array[convertIndex<Index_type>(layout(args...))];
+  }
+};
+
+template <typename DataType, typename LayoutT, typename... IndexTypes>
+struct TypedManagedArrayView {
+  using Base = ManagedArrayView<DataType, LayoutT>;
+
+  Base base_;
+
+  template <typename... Args>
+  RAJA_INLINE constexpr TypedManagedArrayView(chai::ManagedArray<DataType> data_ptr, Args... dim_sizes)
+      : base_(data_ptr, dim_sizes...)
+  {
+  }
+
+  RAJA_INLINE constexpr TypedManagedArrayView(chai::ManagedArray<DataType> data_ptr, LayoutT &&layout)
+      : base_(data_ptr, layout)
+  {
+  }
+
+  RAJA_INLINE void set_data(chai::ManagedArray<DataType> new_array) {
+      base_.set_data(new_array);
+  }
+
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
+  {
+    return base_.operator()(convertIndex<Index_type>(args)...);
   }
 };
 

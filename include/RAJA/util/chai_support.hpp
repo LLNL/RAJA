@@ -19,7 +19,7 @@
 namespace RAJA {
 namespace detail {
 
-const chai::ExecutionSpace getSpace(const ::RAJA::PolicyBase) {
+constexpr chai::ExecutionSpace getSpace(const ::RAJA::PolicyBase) {
   return ::chai::CPU;
 }
 
@@ -36,12 +36,23 @@ constexpr chai::ExecutionSpace getSpace(const ::RAJA::IndexSet::ExecPolicy<A,B>)
   return ::chai::NONE;
 }
 
+template <typename Selector, typename... Policies>
+constexpr chai::ExecutionSpace getSpace(const ::RAJA::MultiPolicy<Selector, Policies...>) {
+  return ::chai::NONE;
+}
+
+
 #if defined(RAJA_ENABLE_NESTED)
 template <typename policy>
 int is_cuda (policy p) {
-  if (p.family == cuda)
+  if (p.family == PolicyFamily::cuda)
     return 1;
   else return 0;
+}
+
+template <typename A, typename B>
+int is_cuda (const RAJA::IndexSet::ExecPolicy<A, B>) {
+  return 0;
 }
 
 template <typename... Ps>
