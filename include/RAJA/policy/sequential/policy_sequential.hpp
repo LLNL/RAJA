@@ -3,6 +3,8 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/policy/PolicyFamily.hpp"
+
 namespace RAJA
 {
 
@@ -18,6 +20,7 @@ namespace RAJA
 /// Segment execution policies
 ///
 struct seq_exec : public PolicyBase {
+  const PolicyFamily family = PolicyFamily::sequential;
 };
 
 ///

@@ -53,7 +53,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
 #include "Layout.hpp"
+
+#if defined(RAJA_ENABLE_CHAI)
+#include "chai/ManagedArray.hpp"
+#endif
 
 namespace RAJA
 {
@@ -113,6 +118,39 @@ struct TypedView {
     return base_.operator()(convertIndex<Index_type>(args)...);
   }
 };
+
+#if defined(RAJA_ENABLE_CHAI)
+
+template <typename DataType, typename LayoutT>
+struct ManagedArrayView {
+  LayoutT const layout;
+  chai::ManagedArray<DataType> array;
+
+  template <typename... Args>
+  RAJA_INLINE constexpr ManagedArrayView(chai::ManagedArray<DataType> data_ptr, Args... dim_sizes)
+      : layout(dim_sizes...), array(data_ptr)
+  {
+  }
+
+  RAJA_INLINE constexpr ManagedArrayView(chai::ManagedArray<DataType> data_ptr, LayoutT &&layout)
+      : layout(layout), array(data_ptr)
+  {
+  }
+
+  // RAJA_INLINE void set_data(DataType *data_ptr) {
+  //     data = data_ptr;
+  // }
+
+  // making this specifically typed would require unpacking the layout,
+  // this is easier to maintain
+  template <typename... Args>
+  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
+  {
+    return array[convertIndex<Index_type>(layout(args...))];
+  }
+};
+
+#endif
 
 
 }  // namespace RAJA

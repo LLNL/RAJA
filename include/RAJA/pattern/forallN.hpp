@@ -63,6 +63,10 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_CHAI)
+#include "RAJA/util/chai_support.hpp"
+#endif
+
 namespace RAJA
 {
 

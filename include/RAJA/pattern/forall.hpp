@@ -105,6 +105,10 @@
 
 #include "RAJA/internal/rangelist_forall.hpp"
 
+#if defined(RAJA_ENABLE_CHAI)
+#include "RAJA/util/chai_support.hpp"
+#endif
+
 namespace RAJA
 {
 
@@ -178,7 +182,7 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
   impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
 
 #if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(detail::getSpace<POLICY>());
+  rm->setExecutionSpace(chai::NONE);
 #endif
 }
 
@@ -208,7 +212,7 @@ RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
   impl::forall(EXEC_POLICY_T(), std::forward<Container>(c), loop_body);
 
 #if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(detail::getSpace<POLICY>());
+  rm->setExecutionSpace(chai::NONE);
 #endif
 }
 
