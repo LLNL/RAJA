@@ -54,6 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+#include "RAJA/util/Operators.hpp"
 
 #include <iterator>
 #include <type_traits>

@@ -61,7 +61,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hpp"
+#include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
