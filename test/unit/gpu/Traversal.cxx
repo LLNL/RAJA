@@ -15,7 +15,7 @@
 #include <string>
 #include <vector>
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 
 using namespace RAJA;
 using namespace std;

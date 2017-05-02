@@ -1,4 +1,4 @@
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
 RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");

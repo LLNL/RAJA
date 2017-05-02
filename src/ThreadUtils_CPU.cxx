@@ -51,7 +51,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/ThreadUtils_CPU.hxx"
+#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
 #if defined(_OPENMP)
 #include <omp.h>

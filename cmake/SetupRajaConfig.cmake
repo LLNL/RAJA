@@ -84,8 +84,8 @@ else ()
 endif ()
 
 # Configure a header file with all the variables we found.
-configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hxx.in
-  ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx)
+configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
+  ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)
 
 # Configure CMake config
 configure_file(${PROJECT_SOURCE_DIR}/share/raja/cmake/RAJA-config.cmake.in

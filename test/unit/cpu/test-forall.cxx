@@ -12,7 +12,7 @@
 
 #include <string>
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 
 using namespace RAJA;

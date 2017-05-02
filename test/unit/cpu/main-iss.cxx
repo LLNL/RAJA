@@ -19,9 +19,9 @@
 #include <iostream>
 #include <string>
 
-#include "RAJA/RAJA.hxx"
-#include "RAJA/internal/RAJAVec.hxx"
-#include "RAJA/internal/defines.hxx"
+#include "RAJA/RAJA.hpp"
+#include "RAJA/internal/RAJAVec.hpp"
+#include "RAJA/util/defines.hpp"
 
 using namespace RAJA;
 using namespace std;

@@ -13,7 +13,7 @@
 // for testing...
 //
 
-#include "RAJA/RAJA.hxx"
+#include "RAJA/RAJA.hpp"
 
 //
 // Enum for different hybrid initialization procedures.
