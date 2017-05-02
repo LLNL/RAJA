@@ -1,6 +1,8 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 namespace RAJA
 {
 
@@ -66,7 +68,7 @@ struct Dim3z {
 /// Segment execution policies
 ///
 
-struct cuda_exec_base {
+struct cuda_exec_base : public forall_policy {
 };
 
 template <size_t BLOCK_SIZE, bool Async = false>
@@ -89,11 +91,11 @@ using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
 ///////////////////////////////////////////////////////////////////////
 ///
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce {
+struct cuda_reduce : public reduce_policy {
 };
 ///
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic {
+struct cuda_reduce_atomic : public reduce_policy  {
 };
 ///
 template <size_t BLOCK_SIZE>
@@ -125,16 +127,8 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 #define RAJA_USE_ATOMIC_TWO
 //#define RAJA_USE_NO_ATOMICS
 
-#if 0
-#define ull_to_double(x) __longlong_as_double(reinterpret_cast<long long>(x))
-
-#define double_to_ull(x) \
-  reinterpret_cast<unsigned long long>(__double_as_longlong(x))
-#else
 #define ull_to_double(x) __longlong_as_double(x)
-
 #define double_to_ull(x) __double_as_longlong(x)
-#endif
 
 /*!
  ******************************************************************************
@@ -491,11 +485,7 @@ __device__ inline double _atomicAdd(double *address, double value)
 }
 #endif
 
-#elif defined(RAJA_USE_NO_ATOMICS)
-
-// Noting to do here...
-
-#else
+#elif !defined(RAJA_USE_NO_ATOMICS)
 
 #error one of the options for using/not using atomics must be specified
 

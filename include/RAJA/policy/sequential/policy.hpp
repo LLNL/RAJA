@@ -17,7 +17,7 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct seq_exec : public PolicyBase {
+struct seq_exec : public forall_policy {
 };
 
 ///
@@ -33,7 +33,7 @@ struct seq_segit : public seq_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce {
+  struct seq_reduce : public reduce_policy {
 };
 
 }  // closing brace for RAJA namespace

@@ -97,12 +97,38 @@ struct function_traits<R (T::*)(Args...) const> {
 
 // extract 0-based argument type
 template <size_t I, typename Fn>
-using extract_arg = std::tuple_element<I, typename function_traits<Fn>::argument_types>;
+using extract_arg =
+    std::tuple_element<I, typename function_traits<Fn>::argument_types>;
 
-template <size_t I, typename Fn>
-using extract_arg_t = typename extract_arg<I, Fn>::type;
+template <typename Pol, typename CheckWith>
+struct is_policy_of {
+  static constexpr const bool value =
+      std::is_base_of<CheckWith,
+                      std::conditional<is_wrap_policy<Pol>, Pol::inner, Pol>>;
+};
 
 }  // closing brace for detail namespace
+
+template <size_t I, typename Fn>
+using extract_arg_t = typename detail::extract_arg<I, Fn>::type;
+
+template <typename Pol>
+struct is_policy {
+  static constexpr const bool value = std::is_base_of<PolicyBase, Pol>;
+};
+
+template <typename Pol>
+struct is_forall_policy : public detail::is_policy_of<Pol, forall_policy> {
+};
+
+template <typename Pol>
+struct is_reduce_policy : public detail::is_policy_of<Pol, reduce_policy> {
+};
+
+template <typename Pol>
+struct is_taskgraph_policy
+    : public detail::is_policy_of<Pol, taskgraph_policy> {
+};
 
 }  // closing brace for RAJA namespace
 

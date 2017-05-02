@@ -1,6 +1,8 @@
 #ifndef policy_simd_HXX_
 #define policy_simd_HXX_
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -15,7 +17,7 @@
 namespace RAJA
 {
 
-struct simd_exec {
+struct simd_exec : forall_policy {
 };
 
 } // end of namespace RAJA
