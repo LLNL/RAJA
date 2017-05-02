@@ -57,7 +57,7 @@
 #include <limits>
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "Permutations.hpp"
+#include "RAJA/util/Permutations.hpp"
 
 namespace RAJA
 {

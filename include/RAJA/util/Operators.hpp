@@ -57,7 +57,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "defines.hpp"
+#include "RAJA/util/defines.hpp"
 
 #include <cfloat>
 #include <cstdint>
