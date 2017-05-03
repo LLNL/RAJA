@@ -104,7 +104,6 @@
 #include <type_traits>
 
 #include "RAJA/index/IndexSet.hpp"
-#include "RAJA/internal/rangelist_forall.hpp"
 
 namespace RAJA
 {
