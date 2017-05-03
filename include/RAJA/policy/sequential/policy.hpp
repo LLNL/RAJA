@@ -17,7 +17,8 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct seq_exec : public forall_policy {
+struct seq_exec
+    : public RAJA::make_policy_pattern<Policy::sequential, Pattern::forall> {
 };
 
 ///
@@ -33,7 +34,8 @@ struct seq_segit : public seq_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce : public reduce_policy {
+struct seq_reduce
+    : public make_policy_pattern<Policy::sequential, Pattern::reduce> {
 };
 
 }  // closing brace for RAJA namespace

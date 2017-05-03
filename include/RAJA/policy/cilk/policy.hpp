@@ -17,7 +17,8 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct cilk_for_exec : public forall_policy {
+struct cilk_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
+                                                        RAJA::Pattern::forall> {
 };
 
 ///
@@ -33,7 +34,8 @@ struct cilk_for_segit : public cilk_for_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct cilk_reduce : public reduce_policy {
+struct cilk_reduce : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
+                                                      RAJA::Pattern::reduce> {
 };
 
 }  // closing brace for RAJA namespace

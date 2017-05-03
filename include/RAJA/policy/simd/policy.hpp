@@ -17,7 +17,8 @@
 namespace RAJA
 {
 
-struct simd_exec : forall_policy {
+struct simd_exec : public RAJA::make_policy_pattern<RAJA::Policy::simd,
+                                                    RAJA::Pattern::forall> {
 };
 
 }  // end of namespace RAJA
