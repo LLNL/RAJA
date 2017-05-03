@@ -61,7 +61,6 @@
 
 #include <cfloat>
 #include <cstdint>
-#include <limits>
 #include <type_traits>
 
 namespace RAJA
@@ -307,6 +306,7 @@ struct limits
 };
 
 #ifdef RAJA_CHECK_LIMITS
+#include <limits>
 template <typename T>
 constexpr bool check()
 {
@@ -326,22 +326,6 @@ static_assert(check<unsigned long int>(), "limits for unsigned long int is broke
 static_assert(check<long long>(), "limits for long long is broken");
 static_assert(check<unsigned long long>(), "limits for unsigned long long is broken");
 #endif
-
-namespace constants
-{
-
-template <typename T>
-RAJA_HOST_DEVICE constexpr T min()
-{
-  return limits<T>::min();
-}
-template <typename T>
-RAJA_HOST_DEVICE constexpr T max()
-{
-  return limits<T>::max();
-}
-
-}  // closing brace for constants namespace
 
 // Arithmetic
 
@@ -451,7 +435,7 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? lhs : rhs;
   }
-  static constexpr const Ret identity = constants::max<Ret>();
+  static constexpr const Ret identity = limits<Ret>::max();
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -461,7 +445,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? rhs : lhs;
   }
-  static constexpr const Ret identity = constants::min<Ret>();
+  static constexpr const Ret identity = limits<Ret>::min();
 };
 
 // Logical Comparison
