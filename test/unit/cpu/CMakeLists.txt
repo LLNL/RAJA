@@ -49,14 +49,6 @@ set_source_files_properties(buildIndexSet.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FO
 raja_add_library(NAME bis SOURCES buildIndexSet.cxx)
 target_link_libraries(bis RAJA)
 
-set_source_files_properties(main-iss.cxx PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-if (RAJA_ENABLE_CUDA)
-  cuda_add_executable(iss-test main-iss.cxx)
-else()
-  add_executable(iss-test main-iss.cxx)
-endif()
-target_link_libraries(iss-test RAJA ${CMAKE_THREAD_LIBS_INIT})
-
 raja_add_test(
   NAME CPUreduce-test
   SOURCES main-reduce.cxx
