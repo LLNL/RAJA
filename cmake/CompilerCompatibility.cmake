@@ -1,7 +1,9 @@
 include(CheckCXXSourceCompiles)
 
 set(OLD_CMAKE_REQUIRED_FLAGS ${CMAKE_REQUIRED_FLAGS})
-set(CMAKE_REQUIRED_FLAGS ${CMAKE_CXX_FLAGS})
+if (NOT MSVC)
+  set(CMAKE_REQUIRED_FLAGS "-std=c++11")
+endif()
 
 CHECK_CXX_SOURCE_COMPILES(
 "#include <type_traits>
