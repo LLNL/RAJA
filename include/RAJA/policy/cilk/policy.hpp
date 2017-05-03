@@ -1,6 +1,8 @@
 #ifndef policy_cilk_HXX_
 #define policy_cilk_HXX_
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 namespace RAJA
 {
 
@@ -15,7 +17,8 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct cilk_for_exec {
+struct cilk_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
+                                                        RAJA::Pattern::forall> {
 };
 
 ///
@@ -31,7 +34,8 @@ struct cilk_for_segit : public cilk_for_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct cilk_reduce {
+struct cilk_reduce : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
+                                                      RAJA::Pattern::reduce> {
 };
 
 }  // closing brace for RAJA namespace
