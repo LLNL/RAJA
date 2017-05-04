@@ -4,8 +4,8 @@
 #include <cstdio>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
 #include "RAJA/internal/type_traits.hpp"
+#include "RAJA/util/defines.hpp"
 
 namespace internal
 {
@@ -58,10 +58,7 @@ struct storage<ExecPolicy, T, true> : public storage_base {
 
 #ifdef RAJA_ENABLE_CUDA
   static constexpr bool UseGPU = RAJA::is_cuda_policy<ExecPolicy>::value;
-  using StorageType =
-      typename internal::storage<ExecPolicy,
-                                 T,
-                                 UseGPU>;
+  using StorageType = typename internal::storage<ExecPolicy, T, UseGPU>;
 #else
   using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
@@ -78,6 +75,7 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   T* oend() { return data + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
+
 private:
   T* data;
   int elems;
@@ -88,16 +86,14 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
-  using StorageType =
-      typename internal::storage<ExecPolicy,
-                                 T,
-                                 RAJA::is_cuda_policy<ExecPolicy>::value>;
+  using StorageType = typename internal::
+      storage<ExecPolicy, T, RAJA::is_cuda_policy<ExecPolicy>::value>;
 #else
-  using StorageType = typename internal::storage<ExecPolicy, T>;
+  using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
 
   storage(int n)
-      : in{StorageType::alloc(n)}, out{StorageType::alloc(n)}, elems{n}
+      : in(StorageType::alloc(n)), out(StorageType::alloc(n)), elems(n)
   {
     StorageType::ready();
   }
@@ -112,6 +108,7 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   T* oend() { return out + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
+
 private:
   T* in;
   T* out;
