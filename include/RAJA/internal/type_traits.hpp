@@ -57,6 +57,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
@@ -123,25 +124,25 @@ struct is_policy : public std::integral_constant<bool, is_wrapper_policy<T>::val
 namespace detail
 {
 template <typename T, T A, T B>
-struct is_enum_same : std::false_type {
+struct is_enum_same : public std::false_type {
 };
 template <typename T, T A>
-struct is_enum_same<T, A, A> : std::true_type {
+struct is_enum_same<T, A, A> : public std::true_type {
 };
 template <typename Policy, RAJA::Policy P>
 struct models_policy
-    : std::integral_constant<bool,
-                             is_enum_same<RAJA::Policy, Policy::policy, P>::value> {
+    : public std::integral_constant<bool,
+                                    is_enum_same<RAJA::Policy, Policy::policy, P>::value> {
 };
-template <typename Policy, Launch L>
+template <typename Policy, RAJA::Launch L>
 struct models_launch
-    : std::integral_constant<bool,
-                             is_enum_same<RAJA::Launch, Policy::launch, L>::value> {
+    : public std::integral_constant<bool,
+                                    is_enum_same<RAJA::Launch, Policy::launch, L>::value> {
 };
-template <typename Policy, Pattern P>
+template <typename Policy, RAJA::Pattern P>
 struct models_pattern
-    : std::integral_constant<bool,
-                             is_enum_same<RAJA::Pattern, Policy::pattern, P>::value> {
+    : public std::integral_constant<bool,
+                                    is_enum_same<RAJA::Pattern, Policy::pattern, P>::value> {
 };
 }
 
