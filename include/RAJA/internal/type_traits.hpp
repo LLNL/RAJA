@@ -128,20 +128,20 @@ struct is_enum_same : std::false_type {
 template <typename T, T A>
 struct is_enum_same<T, A, A> : std::true_type {
 };
-template <typename Policy, Policy P>
+template <typename Policy, RAJA::Policy P>
 struct models_policy
     : std::integral_constant<bool,
-                             is_enum_same<Policy, Policy::policy, P>::value> {
+                             is_enum_same<RAJA::Policy, Policy::policy, P>::value> {
 };
 template <typename Policy, Launch L>
 struct models_launch
     : std::integral_constant<bool,
-                             is_enum_same<Launch, Policy::launch, L>::value> {
+                             is_enum_same<RAJA::Launch, Policy::launch, L>::value> {
 };
 template <typename Policy, Pattern P>
 struct models_pattern
     : std::integral_constant<bool,
-                             is_enum_same<Pattern, Policy::pattern, P>::value> {
+                             is_enum_same<RAJA::Pattern, Policy::pattern, P>::value> {
 };
 }
 

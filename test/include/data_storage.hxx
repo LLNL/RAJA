@@ -90,8 +90,7 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   using StorageType =
       typename internal::storage<ExecPolicy,
                                  T,
-                                 std::is_base_of<RAJA::cuda_exec_base,
-                                                 ExecPolicy>::value>;
+                                 RAJA::is_cuda_policy<ExecPolicy>::value>;
 #else
   using StorageType = typename internal::storage<ExecPolicy, T>;
 #endif
