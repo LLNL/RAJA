@@ -118,7 +118,11 @@ struct is_wrapper_policy<Outer<Tags...>>
 };
 
 template <typename T>
-struct is_policy : public std::integral_constant<bool, is_wrapper_policy<T>::value || std::is_base_of<T,PolicyBase>::value> {
+struct is_policy
+    : public std::integral_constant<bool,
+                                    is_wrapper_policy<T>::value
+                                        || std::is_base_of<T,
+                                                           PolicyBase>::value> {
 };
 
 namespace detail
@@ -129,43 +133,50 @@ struct is_enum_same : public std::false_type {
 template <typename T, T A>
 struct is_enum_same<T, A, A> : public std::true_type {
 };
-template <typename Policy, RAJA::Policy P>
-struct models_policy
-    : public std::integral_constant<bool,
-                                    is_enum_same<RAJA::Policy, Policy::policy, P>::value> {
+
+template <typename P_, Policy P>
+struct models_policy : public std::integral_constant<bool, is_enum_same<Policy, P_::policy, P>::value> {
 };
-template <typename Policy, RAJA::Launch L>
-struct models_launch
-    : public std::integral_constant<bool,
-                                    is_enum_same<RAJA::Launch, Policy::launch, L>::value> {
+
+template <typename P_, Launch L>
+struct models_launch : public std::integral_constant<bool, is_enum_same<Launch, P_::launch, L>::value> {
 };
-template <typename Policy, RAJA::Pattern P>
-struct models_pattern
-    : public std::integral_constant<bool,
-                                    is_enum_same<RAJA::Pattern, Policy::pattern, P>::value> {
+
+template <typename P_, Pattern P>
+struct models_pattern : public std::integral_constant<bool, is_enum_same<Pattern, P_::pattern, P>::value> {
 };
 }
 
 template <typename P>
-using is_sequential_policy = detail::models_policy<P, Policy::sequential>;
+struct is_sequential_policy
+    : public detail::models_policy<P, Policy::sequential> {
+};
 template <typename P>
-using is_simd_policy = detail::models_policy<P, Policy::simd>;
+struct is_simd_policy : public detail::models_policy<P, Policy::simd> {
+};
 template <typename P>
-using is_openmp_policy = detail::models_policy<P, Policy::openmp>;
+struct is_openmp_policy : public detail::models_policy<P, Policy::openmp> {
+};
 template <typename P>
-using is_cuda_policy = detail::models_policy<P, Policy::cuda>;
+struct is_cuda_policy : public detail::models_policy<P, Policy::cuda> {
+};
 template <typename P>
-using is_cilk_policy = detail::models_policy<P, Policy::cilk>;
+struct is_cilk_policy : public detail::models_policy<P, Policy::cilk> {
+};
 
 template <typename L>
-using is_sync_launch = detail::models_launch<L, Launch::sync>;
+struct is_sync_launch : public detail::models_launch<L, Launch::sync> {
+};
 template <typename L>
-using is_async_launch = detail::models_launch<L, Launch::async>;
+struct is_async_launch : public detail::models_launch<L, Launch::async> {
+};
 
 template <typename P>
-using is_forall_pattern = detail::models_pattern<P, Pattern::forall>;
+struct is_forall_pattern : public detail::models_pattern<P, Pattern::forall> {
+};
 template <typename P>
-using is_reduce_pattern = detail::models_pattern<P, Pattern::reduce>;
+struct is_reduce_pattern : public detail::models_pattern<P, Pattern::reduce> {
+};
 
 template <Policy P>
 struct forall_for : public make_policy_pattern<P, Pattern::forall> {

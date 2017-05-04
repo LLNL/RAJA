@@ -10,7 +10,7 @@
 namespace internal
 {
 
-template <typename ExecPolicy, typename T, bool gpu = false>
+template <typename ExecPolicy, typename T, bool gpu>
 struct storage {
   using type = T;
 
@@ -57,15 +57,16 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
+  static constexpr bool UseGPU = RAJA::is_cuda_policy<ExecPolicy>::value;
   using StorageType =
       typename internal::storage<ExecPolicy,
                                  T,
-                                 RAJA::is_cuda_policy<ExecPolicy>::value>;
+                                 UseGPU>;
 #else
-  using StorageType = typename internal::storage<ExecPolicy, T>;
+  using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
 
-  storage(int n) : data{StorageType::alloc(n)}, elems{n}
+  storage(int n) : data(StorageType::alloc(n)), elems(n)
   {
     StorageType::ready();
   }
