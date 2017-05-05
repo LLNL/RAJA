@@ -64,6 +64,8 @@
 
 #include "RAJA/pattern/reduce.hpp"
 
+#include "RAJA/policy/openmp/policy.hpp"
+
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
 #if defined(_OPENMP)

@@ -58,8 +58,8 @@
 
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "Permutations.hpp"
-#include "PermutedLayout.hpp"
+#include "RAJA/util/Permutations.hpp"
+#include "RAJA/util/PermutedLayout.hpp"
 
 namespace RAJA
 {

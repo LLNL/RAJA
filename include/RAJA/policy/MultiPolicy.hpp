@@ -57,6 +57,8 @@
 
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 namespace RAJA
 {
 

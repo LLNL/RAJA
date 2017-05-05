@@ -60,7 +60,7 @@
 #include "RAJA/util/types.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 
-#include "RAJA/policy/openmp/policy_openmp.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
 
 #if defined(_OPENMP)
 #include <omp.h>
@@ -218,7 +218,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int end_j = iset_j.getEnd();
     int stride_i = iset_i.getStride();
     int stride_j = iset_j.getStride();
-    
+
 
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
 

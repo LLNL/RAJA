@@ -54,7 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
-#include "Layout.hpp"
+#include "RAJA/util/Layout.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "chai/ManagedArray.hpp"

@@ -15,6 +15,7 @@
 #define RAJA_reduce_cilk_HXX
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/cilk/policy.hpp"
 
 #if defined(RAJA_ENABLE_CILK)
 
@@ -60,11 +61,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/Types.hxx"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/Reduce.hxx"
+#include "RAJA/pattern/reduce.hpp"
 
-#include "RAJA/internal/MemUtils_CPU.hxx"
+#include "RAJA/internal/MemUtils_CPU.hpp"
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>

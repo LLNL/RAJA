@@ -2,7 +2,6 @@
 #define policy_simd_HXX_
 
 #include "RAJA/policy/PolicyBase.hpp"
-#include "RAJA/policy/PolicyFamily.hpp"
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -18,10 +17,10 @@
 namespace RAJA
 {
 
-struct simd_exec : public PolicyBase {
-  const PolicyFamily family = PolicyFamily::simd;
+struct simd_exec : public RAJA::make_policy_pattern<RAJA::Policy::simd,
+                                                    RAJA::Pattern::forall> {
 };
 
-} // end of namespace RAJA
+}  // end of namespace RAJA
 
 #endif

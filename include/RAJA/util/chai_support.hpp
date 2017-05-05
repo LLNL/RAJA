@@ -2,34 +2,46 @@
 #define RAJA_DETAIL_RAJA_CHAI_HPP
 
 #include "chai/ExecutionSpaces.hpp"
+
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/MultiPolicy.hpp"
+
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 
-#include "RAJA/policy/sequential/policy_sequential.hpp"
-#include "RAJA/policy/simd/policy_simd.hpp"
-#include "RAJA/policy/cuda/policy_cuda.hpp"
-#include "RAJA/policy/openmp/policy_openmp.hpp"
-
-#include <tuple>
-#include <type_traits>
+#include "RAJA/internal/type_traits.hpp"
 
 
 namespace RAJA {
 namespace detail {
 
-constexpr chai::ExecutionSpace getSpace(const ::RAJA::PolicyBase) {
-  return ::chai::CPU;
-}
+template <bool gpu>
+struct get_space_impl;
 
-constexpr chai::ExecutionSpace getSpace(const ::RAJA::omp_exec_base) {
-  return ::chai::CPU;
-}
+template<>
+struct get_space_impl<false> {
+  static constexpr chai::ExecutionSpace value = chai::CPU;
+};
 
-constexpr chai::ExecutionSpace getSpace(const ::RAJA::cuda_exec_base) {
-  return ::chai::GPU;
-}
+template<>
+struct get_space_impl<true> {
+  static constexpr chai::ExecutionSpace value = chai::GPU;
+};
+
+struct get_no_space {
+  static constexpr chai::ExecutionSpace value = chai::NONE;
+};
+
+
+template <typename T> struct get_space 
+    : public get_space_impl<is_cuda_policy<T>::value > {};
+
+template <typename SEG, typename EXEC>
+struct get_space<RAJA::IndexSet::ExecPolicy<SEG, EXEC> > : public get_no_space {};
+
+template <typename Selector, typename... Policies>
+struct get_space<RAJA::MultiPolicy<Selector, Policies...> > : public get_no_space  {};
 
 template <typename A, typename B>
 constexpr chai::ExecutionSpace getSpace(const ::RAJA::IndexSet::ExecPolicy<A,B>) {
@@ -45,7 +57,7 @@ constexpr chai::ExecutionSpace getSpace(const ::RAJA::MultiPolicy<Selector, Poli
 #if defined(RAJA_ENABLE_NESTED)
 template <typename policy>
 int is_cuda (policy p) {
-  if (p.family == PolicyFamily::cuda)
+  if (p.policy == RAJA::Policy::cuda)
     return 1;
   else return 0;
 }
@@ -69,6 +81,11 @@ inline chai::ExecutionSpace getSpace() {
     return chai::CPU;
   }
 }
+
+// VarOps::or<bool>(is_cuda_policy<Ps>)
+
+
+
 #endif
 
 }
