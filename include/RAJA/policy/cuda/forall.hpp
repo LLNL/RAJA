@@ -307,7 +307,7 @@ RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, As
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall<cuda_exec_async<BLOCK_SIZE>>(seg_info, loop_body);
+    executeRangeList_forall<cuda_exec<BLOCK_SIZE, true>>(seg_info, loop_body);
 
   }  // iterate over segments of index set
 
@@ -335,7 +335,7 @@ RAJA_INLINE void forall_Icount(
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall_Icount<cuda_exec_async<BLOCK_SIZE>>(seg_info, loop_body);
+    executeRangeList_forall_Icount<cuda_exec<BLOCK_SIZE, true>>(seg_info, loop_body);
 
   }  // iterate over segments of index set
 

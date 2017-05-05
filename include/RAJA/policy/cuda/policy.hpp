@@ -68,23 +68,20 @@ struct Dim3z {
 /// Segment execution policies
 ///
 
-template <size_t BLOCK_SIZE, bool Async>
-struct cuda_exec;
+namespace detail {
+  template <bool Async>
+  struct get_launch {
+    static constexpr RAJA::Launch value = RAJA::Launch::async;
+  };
 
-template <size_t BLOCK_SIZE>
-struct cuda_exec<BLOCK_SIZE, true>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::async,
-                                              RAJA::Pattern::forall> {
-};
+  template <>
+  struct get_launch<false> {
+    static constexpr RAJA::Launch value = RAJA::Launch::sync;
+  };
+}
 
-///
-template <size_t BLOCK_SIZE>
-struct cuda_exec<BLOCK_SIZE, false>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::sync,
-                                              RAJA::Pattern::forall> {
-};
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_exec : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::forall> {};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -97,44 +94,18 @@ struct cuda_exec<BLOCK_SIZE, false>
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-template <size_t BLOCK_SIZE, bool Async>
-struct cuda_reduce;
 
-template <size_t BLOCK_SIZE>
-struct cuda_reduce<BLOCK_SIZE, true>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::async,
-                                              RAJA::Pattern::reduce> {
-};
-template <size_t BLOCK_SIZE>
-struct cuda_reduce<BLOCK_SIZE, false>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::sync,
-                                              RAJA::Pattern::reduce> {
-};
-
-template <size_t BLOCK_SIZE, bool Async>
-struct cuda_reduce_atomic;
-
-template <size_t BLOCK_SIZE>
-struct cuda_reduce_atomic<BLOCK_SIZE, true>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::async,
-                                              RAJA::Pattern::reduce> {
-};
-template <size_t BLOCK_SIZE>
-struct cuda_reduce_atomic<BLOCK_SIZE, false>
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              RAJA::Launch::sync,
-                                              RAJA::Pattern::reduce> {
-};
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_reduce : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
 
 template <size_t BLOCK_SIZE>
 using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
-///
+
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_reduce_atomic : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
+
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
-
 
 //
 // Operations in the included files are parametrized using the following
