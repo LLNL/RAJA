@@ -101,7 +101,6 @@ struct ForallN_PeelOuter {
   {
   }
 
-  RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Index_type i) const
@@ -110,7 +109,6 @@ struct ForallN_PeelOuter {
     next_exec(inner);
   }
 
-  RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j) const
@@ -120,7 +118,6 @@ struct ForallN_PeelOuter {
     next_exec(inner_j);
   }
 
-  RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j, Index_type k) const
