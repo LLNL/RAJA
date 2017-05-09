@@ -1,13 +1,14 @@
 #ifndef RAJA_internal_ForallNPolicy_HXX_
 #define RAJA_internal_ForallNPolicy_HXX_
 
-namespace RAJA {
+namespace RAJA
+{
 
 /******************************************************************
  *  ForallN generic policies
  ******************************************************************/
 
-template<typename P, typename I>
+template <typename P, typename I>
 struct ForallN_PolicyPair : public I {
   typedef P POLICY;
   typedef I ISET;
@@ -16,7 +17,7 @@ struct ForallN_PolicyPair : public I {
   explicit constexpr ForallN_PolicyPair(ISET const &i) : ISET(i) {}
 };
 
-template<typename... PLIST>
+template <typename... PLIST>
 struct ExecList {
   constexpr const static size_t num_loops = sizeof...(PLIST);
   typedef std::tuple<PLIST...> tuple;
@@ -30,7 +31,7 @@ struct Execute {
   typedef ForallN_Execute_Tag PolicyTag;
 };
 
-template<typename EXEC, typename NEXT = Execute>
+template <typename EXEC, typename NEXT = Execute>
 struct NestedPolicy {
   typedef NEXT NextPolicy;
   typedef EXEC ExecPolicies;
@@ -101,7 +102,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
-      RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
@@ -109,7 +110,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
-      RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
@@ -118,7 +119,7 @@ struct ForallN_PeelOuter {
   }
 
   RAJA_INLINE
-      RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE
   void operator()(Index_type i, Index_type j, Index_type k) const
   {
     ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
@@ -128,6 +129,6 @@ struct ForallN_PeelOuter {
   }
 };
 
-} // end of RAJA namespace
+}  // end of RAJA namespace
 
 #endif
