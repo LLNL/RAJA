@@ -82,13 +82,13 @@ namespace RAJA
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const omp_target_parallel_for_exec&,
                         Iterable&& iter,
-                        Func loop_body)
+                        Func && loop_body)
 {
-    // using body_type = typename std::remove_reference<decltype(loop_body)>::type;
+    using body_type = typename std::remove_reference<decltype(loop_body)>::type;
     auto begin = std::begin(iter);
     auto end = std::end(iter);
     auto distance = std::distance(begin, end);
-#pragma omp target teams distribute parallel for schedule(static, 1) firstprivate(loop_body)
+#pragma omp target teams distribute parallel for schedule(static, 1) num_teams(16)  firstprivate(loop_body)
     {
         for (Index_type i = 0; i < distance; ++i) {
             loop_body(begin[i]);

@@ -9,6 +9,7 @@
  */
 
 #include <omp.h>
+#include <cstdlib>
 
 namespace RAJA
 {
@@ -22,7 +23,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMin(T init_val):
-    parent(NULL), val(init_val), num_teams(128), num_threads(512)
+    parent(NULL), val(init_val), num_teams(16), num_threads(512)
   {
 
         hostid = omp_get_initial_device();
@@ -137,7 +138,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMinLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc), num_teams(128), num_threads(512)
+    parent(NULL), val(init_val), idx(init_loc), num_teams(16), num_threads(512)
   {
         hostid = omp_get_initial_device();
         devid  = omp_get_default_device();
@@ -302,7 +303,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMax(T init_val):
-    parent(NULL), val(init_val), num_teams(128), num_threads(512)
+    parent(NULL), val(init_val), num_teams(16), num_threads(512)
   {
         hostid = omp_get_initial_device();
         devid  = omp_get_default_device();
@@ -414,7 +415,7 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMaxLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc), num_teams(128), num_threads(512)
+    parent(NULL), val(init_val), idx(init_loc), num_teams(16), num_threads(512)
   {
         hostid = omp_get_initial_device();
         devid  = omp_get_default_device();
@@ -579,13 +580,19 @@ public:
   //
   explicit ReduceSum(T init_val, T initializer = 0)
     : parent(NULL), val(init_val), dev_val(NULL), custom_init(initializer),
-    hostid(0), devid(0), num_teams(128), num_threads(512), is_mapped(false)
+    hostid(0), devid(0), num_teams(16), num_threads(512), is_mapped(false)
   {
   	int flag;
 	hostid = omp_get_initial_device();
 	devid  = omp_get_default_device();
+
+	char *p = std::getenv( "RAJA_OMP_NUM_TEAMS" );
+	if( p != NULL )
+        	num_teams = std::atoi( p );
+	else
+		printf("RAJA_OMP_NUM_TEAMS not set. Default value: %d\n", num_teams );
 	
-    dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
+        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
 	if( dev_val == NULL ){
 		printf("Unable to allocate space on device\n" );
 		exit(1);
@@ -650,7 +657,7 @@ public:
         }
 
         omp_target_free( (void*)dev_val, devid );
-		delete [] host_val;
+	delete [] host_val;
         is_mapped = true;
    }
  
@@ -667,7 +674,6 @@ public:
   //
   const ReduceSum<omp_target_reduce, T>& operator+=(T rhs) const 
   {
-
   ptr2this->val += rhs;    
   return *this;
   }
