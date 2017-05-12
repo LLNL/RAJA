@@ -57,6 +57,7 @@
 
 #include <tuple>
 #include <type_traits>
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
@@ -97,12 +98,112 @@ struct function_traits<R (T::*)(Args...) const> {
 
 // extract 0-based argument type
 template <size_t I, typename Fn>
-using extract_arg = std::tuple_element<I, typename function_traits<Fn>::argument_types>;
-
-template <size_t I, typename Fn>
-using extract_arg_t = typename extract_arg<I, Fn>::type;
+using extract_arg =
+    std::tuple_element<I, typename function_traits<Fn>::argument_types>;
 
 }  // closing brace for detail namespace
+
+template <size_t I, typename Fn>
+using extract_arg_t = typename detail::extract_arg<I, Fn>::type;
+
+template <typename T>
+struct is_wrapper_policy : public std::false_type {
+};
+
+template <template <typename...> class Outer, typename... Tags>
+struct is_wrapper_policy<Outer<Tags...>>
+    : public std::integral_constant<bool,
+                                    std::is_same<WrapperPolicy<Tags...>,
+                                                 Outer<Tags...>>::value> {
+};
+
+template <typename T>
+struct is_policy
+    : public std::integral_constant<bool,
+                                    is_wrapper_policy<T>::value
+                                        || std::is_base_of<T,
+                                                           PolicyBase>::value> {
+};
+
+namespace detail
+{
+template <typename T, T A, T B>
+struct is_enum_same : public std::false_type {
+};
+template <typename T, T A>
+struct is_enum_same<T, A, A> : public std::true_type {
+};
+
+template <typename P_, Policy P>
+struct models_policy : public std::integral_constant<bool, is_enum_same<Policy, P_::policy, P>::value> {
+};
+
+template <typename P_, Launch L>
+struct models_launch : public std::integral_constant<bool, is_enum_same<Launch, P_::launch, L>::value> {
+};
+
+template <typename P_, Pattern P>
+struct models_pattern : public std::integral_constant<bool, is_enum_same<Pattern, P_::pattern, P>::value> {
+};
+}
+
+template <typename P>
+struct is_sequential_policy
+    : public detail::models_policy<P, Policy::sequential> {
+};
+template <typename P>
+struct is_simd_policy : public detail::models_policy<P, Policy::simd> {
+};
+template <typename P>
+struct is_openmp_policy : public detail::models_policy<P, Policy::openmp> {
+};
+template <typename P>
+struct is_cuda_policy : public detail::models_policy<P, Policy::cuda> {
+};
+template <typename P>
+struct is_cilk_policy : public detail::models_policy<P, Policy::cilk> {
+};
+
+template <typename L>
+struct is_sync_launch : public detail::models_launch<L, Launch::sync> {
+};
+template <typename L>
+struct is_async_launch : public detail::models_launch<L, Launch::async> {
+};
+
+template <typename P>
+struct is_forall_pattern : public detail::models_pattern<P, Pattern::forall> {
+};
+template <typename P>
+struct is_reduce_pattern : public detail::models_pattern<P, Pattern::reduce> {
+};
+
+template <Policy P>
+struct forall_for : public make_policy_pattern<P, Pattern::forall> {
+};
+template <Policy P>
+struct reduce_for : public make_policy_pattern<P, Pattern::reduce> {
+};
+
+template <Pattern P>
+struct sequential_for : public make_policy_pattern<Policy::sequential, P> {
+};
+template <Pattern P>
+struct simd_for : public make_policy_pattern<Policy::simd, P> {
+};
+template <Pattern P>
+struct openmp_for : public make_policy_pattern<Policy::openmp, P> {
+};
+template <Pattern P>
+struct cuda_for : public make_policy_pattern<Policy::cuda, P> {
+};
+template <Pattern P>
+struct cuda_async_for
+    : public make_policy_launch_pattern<Policy::cuda, Launch::async, P> {
+};
+template <Pattern P>
+struct cilk_for : public make_policy_pattern<Policy::cilk, P> {
+};
 
 }  // closing brace for RAJA namespace
 

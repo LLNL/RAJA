@@ -59,6 +59,17 @@ if (NOT MSVC)
             DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
     )
   endif(RAJA_ENABLE_OPENMP)
+  raja_add_test(
+    NAME integral-limits
+    SOURCES test-integral-limits.cxx
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
+  )
+  
+  raja_add_test(
+    NAME type-traits
+    SOURCES test-type-traits.cxx
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
+  )
 endif()
 
 add_subdirectory(cpu)

@@ -57,7 +57,7 @@
 #include <limits>
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "Permutations.hpp"
+#include "RAJA/util/Permutations.hpp"
 
 namespace RAJA
 {
@@ -74,7 +74,7 @@ public:
   typedef VarOps::make_index_sequence<sizeof...(RangeInts)> IndexRange;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
-  static constexpr size_t limit = std::numeric_limits<IdxLin>::max();
+  static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
 
   // const char *index_types[sizeof...(RangeInts)];
 

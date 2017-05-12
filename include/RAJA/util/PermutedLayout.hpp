@@ -54,12 +54,12 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <iostream>
-#include <limits>
 
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "Layout.hpp"
-#include "Permutations.hpp"
+#include "RAJA/util/Layout.hpp"
+#include "RAJA/util/Permutations.hpp"
+#include "RAJA/util/Operators.hpp"
 
 namespace RAJA
 {
@@ -85,7 +85,7 @@ Layout<Rank, IdxLin>
   for (size_t i = 1; i < Rank; i++) {
     lmods[i] = folded_strides[i - 1];
   }
-  lmods[0] = std::numeric_limits<IdxLin>::max();
+  lmods[0] = RAJA::operators::limits<IdxLin>::max();
 
   for (size_t i = 0; i < Rank; ++i) {
     mods[permutation[i]] = lmods[i];

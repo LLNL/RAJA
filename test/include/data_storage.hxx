@@ -4,12 +4,13 @@
 #include <cstdio>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/internal/type_traits.hpp"
 #include "RAJA/util/defines.hpp"
 
 namespace internal
 {
 
-template <typename ExecPolicy, typename T, bool gpu = false>
+template <typename ExecPolicy, typename T, bool gpu>
 struct storage {
   using type = T;
 
@@ -56,16 +57,13 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
-  using StorageType =
-      typename internal::storage<ExecPolicy,
-                                 T,
-                                 std::is_base_of<RAJA::cuda_exec_base,
-                                                 ExecPolicy>::value>;
+  static constexpr bool UseGPU = RAJA::is_cuda_policy<ExecPolicy>::value;
+  using StorageType = typename internal::storage<ExecPolicy, T, UseGPU>;
 #else
-  using StorageType = typename internal::storage<ExecPolicy, T>;
+  using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
 
-  storage(int n) : data{StorageType::alloc(n)}, elems{n}
+  storage(int n) : data(StorageType::alloc(n)), elems(n)
   {
     StorageType::ready();
   }
@@ -77,6 +75,7 @@ struct storage<ExecPolicy, T, true> : public storage_base {
   T* oend() { return data + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
+
 private:
   T* data;
   int elems;
@@ -87,17 +86,14 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
-  using StorageType =
-      typename internal::storage<ExecPolicy,
-                                 T,
-                                 std::is_base_of<RAJA::cuda_exec_base,
-                                                 ExecPolicy>::value>;
+  using StorageType = typename internal::
+      storage<ExecPolicy, T, RAJA::is_cuda_policy<ExecPolicy>::value>;
 #else
-  using StorageType = typename internal::storage<ExecPolicy, T>;
+  using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
 
   storage(int n)
-      : in{StorageType::alloc(n)}, out{StorageType::alloc(n)}, elems{n}
+      : in(StorageType::alloc(n)), out(StorageType::alloc(n)), elems(n)
   {
     StorageType::ready();
   }
@@ -112,6 +108,7 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   T* oend() { return out + elems; }
   int size() { return elems; }
   void update() { StorageType::ready(); }
+
 private:
   T* in;
   T* out;

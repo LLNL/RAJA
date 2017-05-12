@@ -142,9 +142,9 @@ protected:
     std::copy(data->ibegin(), data->iend(), original->ibegin());
   }
 
-  std::unique_ptr<Storage> data = std::unique_ptr<Storage>(new Storage{N});
-  std::unique_ptr<Storage> original = std::unique_ptr<Storage>(new Storage{N});
-  Fn function = Fn{};
+  std::unique_ptr<Storage> data = std::unique_ptr<Storage>(new Storage(N));
+  std::unique_ptr<Storage> original = std::unique_ptr<Storage>(new Storage(N));
+  Fn function = Fn();
 };
 
 template <typename Tuple>

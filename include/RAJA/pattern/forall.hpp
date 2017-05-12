@@ -103,8 +103,6 @@
 #include <iterator>
 #include <type_traits>
 
-#include "RAJA/index/IndexSet.hpp"
-
 #include "RAJA/policy/cuda/forward_decl_cuda.hpp"
 
 

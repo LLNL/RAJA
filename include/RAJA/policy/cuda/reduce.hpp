@@ -65,11 +65,10 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 
 #include <cuda.h>
-
 
 namespace RAJA
 {
@@ -87,7 +86,7 @@ namespace HIDDEN
 template<typename T>
 __device__ __forceinline__ T shfl_xor(T var, int laneMask)
 {
-  const int int_sizeof_T = 
+  const int int_sizeof_T =
       (sizeof(T) + sizeof(int) - 1) / sizeof(int);
   union {
     T var;
@@ -289,7 +288,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -310,7 +309,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
@@ -493,7 +492,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -514,7 +513,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
@@ -755,7 +754,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -776,7 +775,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
@@ -898,7 +897,7 @@ public:
     }
 #endif
 
-    
+
   }
 
   /*!
@@ -965,7 +964,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -986,7 +985,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
@@ -1064,7 +1063,7 @@ public:
 #else
     m_is_copy_host = true;
     m_smem_offset =
-        getCudaSharedmemOffset(m_myID, BLOCK_SIZE, 
+        getCudaSharedmemOffset(m_myID, BLOCK_SIZE,
                                (sizeof(T) + sizeof(Index_type)));
 #endif
   }
@@ -1278,7 +1277,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -1299,7 +1298,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
@@ -1377,7 +1376,7 @@ public:
 #else
     m_is_copy_host = true;
     m_smem_offset =
-        getCudaSharedmemOffset(m_myID, BLOCK_SIZE, 
+        getCudaSharedmemOffset(m_myID, BLOCK_SIZE,
                                (sizeof(T) + sizeof(Index_type)));
 #endif
   }
@@ -1502,7 +1501,7 @@ public:
     }
 #endif
 
-    
+
   }
 
   /*!
@@ -1592,7 +1591,7 @@ private:
   int m_smem_offset = -1;
 
   /*!
-   * \brief If this variable is a copy or not; only original may release memory 
+   * \brief If this variable is a copy or not; only original may release memory
    *        or perform finalization.
    */
   bool m_is_copy_host = false;
@@ -1613,7 +1612,7 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= " 
+      "Error: type must be of size <= "
       RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 

@@ -1,5 +1,7 @@
-#ifndef policy_cilk_HXX_
-#define policy_cilk_HXX_
+#ifndef policy_sequential_HXX_
+#define policy_sequential_HXX_
+
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
@@ -15,13 +17,14 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct cilk_for_exec {
+struct seq_exec
+    : public RAJA::make_policy_pattern<Policy::sequential, Pattern::forall> {
 };
 
 ///
 /// Index set segment iteration policies
 ///
-struct cilk_for_segit : public cilk_for_exec {
+struct seq_segit : public seq_exec {
 };
 
 ///
@@ -31,7 +34,8 @@ struct cilk_for_segit : public cilk_for_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct cilk_reduce {
+struct seq_reduce
+    : public make_policy_pattern<Policy::sequential, Pattern::reduce> {
 };
 
 }  // closing brace for RAJA namespace

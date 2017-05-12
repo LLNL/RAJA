@@ -3,16 +3,17 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
+ * \brief   Header file containing RAJA segment template methods for
+ *          SIMD execution.
  *
- *          These methods should work on any platform.
+ *          These methods should work on any platform. They make no
+ *          asumptions about data alignment.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_sequential_HXX
-#define RAJA_forall_sequential_HXX
+#ifndef RAJA_forall_simd_HXX
+#define RAJA_forall_simd_HXX
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -60,10 +61,9 @@
 
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/index/RangeSegment.hpp"
-#include "RAJA/index/ListSegment.hpp"
-
 #include "RAJA/internal/fault_tolerance.hpp"
+
+#include "RAJA/policy/simd/policy.hpp"
 
 namespace RAJA
 {
@@ -71,39 +71,18 @@ namespace RAJA
 namespace impl
 {
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-template <typename Func>
-RAJA_INLINE void forall(const PolicyBase &,
-                        const RangeSegment &iter,
-                        Func &&loop_body)
-{
-  auto end = iter.getEnd();
-  for (auto ii = iter.getBegin(); ii < end; ++ii) {
-    loop_body(ii);
-  }
-}
-
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
+RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
   auto end = std::end(iter);
+  RAJA_SIMD
   for (auto ii = std::begin(iter); ii < end; ++ii) {
     loop_body(*ii);
   }
 }
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const PolicyBase &,
+RAJA_INLINE void forall_Icount(const simd_exec &,
                                Iterable &&iter,
                                Index_type icount,
                                Func &&loop_body)
@@ -111,10 +90,81 @@ RAJA_INLINE void forall_Icount(const PolicyBase &,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+  RAJA_SIMD
   for (Index_type i = 0; i < distance; ++i) {
     loop_body(i + icount, begin[i]);
   }
 }
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Function templates that iterate over list segment objects.
+//
+// NOTE: These operations will not vectorize. We include them here and
+//       force sequential execution for convenience.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  "Fake" SIMD iteration over list segment object.
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
+{
+  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
+
+  RAJA_FT_BEGIN;
+
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(idx[k]);
+  }
+
+  RAJA_FT_END;
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief  "Fake" SIMD iteration over list segment object with index count.
+ *
+ *         NOTE: lambda loop body requires two args (icount, index).
+ *
+ ******************************************************************************
+ */
+template <typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(simd_exec,
+                               const ListSegment &iseg,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
+{
+  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
+  Index_type len = iseg.getLength();
+
+  RAJA_FT_BEGIN;
+
+  for (Index_type k = 0; k < len; ++k) {
+    loop_body(k + icount, idx[k]);
+  }
+
+  RAJA_FT_END;
+}
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// SIMD execution policy does not apply to iteration over index
+// set segments, only to execution of individual segments. So there
+// are no index set traversal methods in this file.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
 }  // closing brace for impl namespace
 

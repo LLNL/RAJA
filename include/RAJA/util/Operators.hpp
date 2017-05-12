@@ -57,11 +57,10 @@
 
 #include "RAJA/config.hpp"
 
-#include "defines.hpp"
+#include "RAJA/util/defines.hpp"
 
 #include <cfloat>
 #include <cstdint>
-#include <limits>
 #include <type_traits>
 
 namespace RAJA
@@ -231,29 +230,102 @@ struct larger_of<T, U, false> {
 
 template <typename T, typename U>
 struct larger_of {
-  using type =
-      typename detail::larger_of<T,
-                                 U,
-                                 (size_of<T>::value > size_of<U>::value)>::type;
+  using type = typename detail::
+      larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
 };
 
 }  // closing brace for types namespace
 
-namespace constants
+namespace detail
 {
+template <typename T>
+struct signed_limits {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
+  {
+    return static_cast<T>(1llu << ((8llu * sizeof(T)) - 1llu));
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
+  {
+    return static_cast<T>(~(1llu << ((8llu * sizeof(T)) - 1llu)));
+  }
+};
 
 template <typename T>
-RAJA_HOST_DEVICE constexpr T min()
-{
-  return std::numeric_limits<T>::min();
-}
-template <typename T>
-RAJA_HOST_DEVICE constexpr T max()
-{
-  return std::numeric_limits<T>::max();
-}
+struct unsigned_limits {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr T min()
+  {
+    return static_cast<T>(0);
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr T max()
+  {
+    return static_cast<T>(0xFFFFFFFFFFFFFFFF);
+  }
+};
 
-}  // closing brace for constants namespace
+template <typename T>
+struct floating_point_limits {
+};
+
+template <>
+struct floating_point_limits<float> {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float min() { return -FLT_MAX; }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr float max() { return FLT_MAX; }
+};
+
+template <>
+struct floating_point_limits<double> {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double min()
+  {
+    return -DBL_MAX;
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr double max() { return DBL_MAX; }
+};
+
+template <>
+struct floating_point_limits<long double> {
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr long double min()
+  {
+    return -LDBL_MAX;
+  }
+  RAJA_INLINE RAJA_HOST_DEVICE static constexpr long double max()
+  {
+    return LDBL_MAX;
+  }
+};
+}  // end namespace detail
+
+template <typename T>
+struct limits
+  : public std::conditional<
+      std::is_integral<T>::value,
+      typename std::conditional<
+        std::is_unsigned<T>::value,
+        detail::unsigned_limits<T>,
+        detail::signed_limits<T>>::type,
+      detail::floating_point_limits<T>>::type {
+};
+
+#ifdef RAJA_CHECK_LIMITS
+#include <limits>
+template <typename T>
+constexpr bool check()
+{
+  return limits<T>::min() == std::numeric_limits<T>::min()
+         && limits<T>::max() == std::numeric_limits<T>::max();
+}
+static_assert(check<char>(), "limits for char is broken");
+static_assert(check<unsigned char>(), "limits for unsigned char is broken");
+static_assert(check<short>(), "limits for short is broken");
+static_assert(check<unsigned short>(), "limits for unsigned short is broken");
+static_assert(check<int>(), "limits for int is broken");
+static_assert(check<unsigned int>(), "limits for unsigned int is broken");
+static_assert(check<long>(), "limits for long is broken");
+static_assert(check<unsigned long>(), "limits for unsigned long is broken");
+static_assert(check<long int>(), "limits for long int is broken");
+static_assert(check<unsigned long int>(), "limits for unsigned long int is broken");
+static_assert(check<long long>(), "limits for long long is broken");
+static_assert(check<unsigned long long>(), "limits for unsigned long long is broken");
+#endif
 
 // Arithmetic
 
@@ -363,7 +435,7 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? lhs : rhs;
   }
-  static constexpr const Ret identity = constants::max<Ret>();
+  static constexpr const Ret identity = limits<Ret>::max();
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -373,7 +445,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? rhs : lhs;
   }
-  static constexpr const Ret identity = constants::min<Ret>();
+  static constexpr const Ret identity = limits<Ret>::min();
 };
 
 // Logical Comparison
@@ -436,12 +508,18 @@ struct identity : public detail::unary_function<Orig, Ret> {
 
 template <typename T, typename U>
 struct project1st : public detail::binary_function<T, U, T> {
-  RAJA_HOST_DEVICE T operator()(const T& lhs, const U& RAJA_UNUSED_ARG(rhs)) { return lhs; }
+  RAJA_HOST_DEVICE T operator()(const T& lhs, const U& RAJA_UNUSED_ARG(rhs))
+  {
+    return lhs;
+  }
 };
 
 template <typename T, typename U = T>
 struct project2nd : public detail::binary_function<T, U, U> {
-  RAJA_HOST_DEVICE U operator()(const T& RAJA_UNUSED_ARG(lhs), const U& rhs) { return rhs; }
+  RAJA_HOST_DEVICE U operator()(const T& RAJA_UNUSED_ARG(lhs), const U& rhs)
+  {
+    return rhs;
+  }
 };
 
 // Type Traits

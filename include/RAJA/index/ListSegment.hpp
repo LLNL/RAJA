@@ -55,13 +55,16 @@
 
 #include "RAJA/config.hpp"
 
-#include "BaseSegment.hpp"
+#include "RAJA/index/BaseSegment.hpp"
 
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#endif
 
 #include <algorithm>
 #include <iosfwd>
 #include <type_traits>
+#include <vector>
 
 namespace RAJA
 {

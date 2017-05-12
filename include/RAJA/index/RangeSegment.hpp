@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "BaseSegment.hpp"
+#include "RAJA/index/BaseSegment.hpp"
 #include "RAJA/internal/Iterators.hpp"
 
 #include <algorithm>

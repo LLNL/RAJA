@@ -68,6 +68,8 @@
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/IndexSet.hpp"
 
+#include "RAJA/policy/openmp/policy.hpp"
+
 #include <iostream>
 #include <thread>
 

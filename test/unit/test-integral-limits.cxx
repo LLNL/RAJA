@@ -1,18 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_sequential_HXX
-#define RAJA_sequential_HXX
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -24,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read raja/README-license.txt.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -55,10 +40,40 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "gtest/gtest.h"
 
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
+#define RAJA_CHECK_LIMITS
+#include "RAJA/util/Operators.hpp"
 
-#endif  // closing endif for header file include guard
+#include <limits>
+
+template <typename T>
+class IntegralLimitsTest : public ::testing::Test
+{
+};
+
+TYPED_TEST_CASE_P(IntegralLimitsTest);
+
+TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
+{
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(), std::numeric_limits<TypeParam>::min());
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(), std::numeric_limits<TypeParam>::max());
+}
+
+REGISTER_TYPED_TEST_CASE_P(IntegralLimitsTest, IntegralLimits);
+
+using integer_types = ::testing::Types<
+  char,
+  unsigned char,
+  short,
+  unsigned short,
+  int,
+  unsigned int,
+  long,
+  unsigned long,
+  long int,
+  unsigned long int,
+  long long,
+  unsigned long long>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsTests, IntegralLimitsTest, integer_types);

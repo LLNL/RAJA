@@ -1,6 +1,8 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 namespace RAJA
 {
 
@@ -66,16 +68,20 @@ struct Dim3z {
 /// Segment execution policies
 ///
 
-struct cuda_exec_base {
-};
+namespace detail {
+  template <bool Async>
+  struct get_launch {
+    static constexpr RAJA::Launch value = RAJA::Launch::async;
+  };
+
+  template <>
+  struct get_launch<false> {
+    static constexpr RAJA::Launch value = RAJA::Launch::sync;
+  };
+}
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec : public cuda_exec_base {
-};
-
-///
-template <size_t BLOCK_SIZE>
-using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
+struct cuda_exec : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::forall> {};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -88,20 +94,18 @@ using cuda_exec_async = cuda_exec<BLOCK_SIZE, true>;
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
+
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce {
-};
-///
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic {
-};
-///
+struct cuda_reduce : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
+
 template <size_t BLOCK_SIZE>
 using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
-///
+
+template <size_t BLOCK_SIZE, bool Async = false>
+struct cuda_reduce_atomic : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
+
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
-
 
 //
 // Operations in the included files are parametrized using the following
@@ -125,16 +129,8 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 #define RAJA_USE_ATOMIC_TWO
 //#define RAJA_USE_NO_ATOMICS
 
-#if 0
-#define ull_to_double(x) __longlong_as_double(reinterpret_cast<long long>(x))
-
-#define double_to_ull(x) \
-  reinterpret_cast<unsigned long long>(__double_as_longlong(x))
-#else
 #define ull_to_double(x) __longlong_as_double(x)
-
 #define double_to_ull(x) __double_as_longlong(x)
-#endif
 
 /*!
  ******************************************************************************
@@ -149,19 +145,19 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 template <typename T>
 __device__ inline T _atomicMin(T *address, T value)
 {
-return atomicMin(address, value);
+  return atomicMin(address, value);
 }
 ///
 template <typename T>
 __device__ inline T _atomicMax(T *address, T value)
 {
-return atomicMax(address, value);
+  return atomicMax(address, value);
 }
 ///
 template <typename T>
 __device__ inline T _atomicAdd(T *address, T value)
 {
-return atomicAdd(address, value);
+  return atomicAdd(address, value);
 }
 
 //
@@ -491,11 +487,7 @@ __device__ inline double _atomicAdd(double *address, double value)
 }
 #endif
 
-#elif defined(RAJA_USE_NO_ATOMICS)
-
-// Noting to do here...
-
-#else
+#elif !defined(RAJA_USE_NO_ATOMICS)
 
 #error one of the options for using/not using atomics must be specified
 
