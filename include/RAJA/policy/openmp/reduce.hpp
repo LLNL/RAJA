@@ -72,6 +72,8 @@
 #include <omp.h>
 #endif
 
+#include "RAJA/policy/openmp/target_reduce.hpp"
+
 namespace RAJA
 {
 
@@ -1099,3 +1101,4 @@ private:
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard
+
