@@ -130,6 +130,11 @@ namespace
    */
   CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
 
+  /*!
+   * \brief Pointer to pinned mem flag used to indicate completion of data copy to host.
+   */
+  volatile bool* s_cuda_reduction_done = 0;
+
   //
   /////////////////////////////////////////////////////////////////////////////
   //
@@ -337,8 +342,12 @@ void freeCudaReductionMemBlock()
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 {
   if (s_cuda_reduction_tally_block_host == 0) {
-    s_cuda_reduction_tally_block_host = 
-        new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
+    cudaErrchk(cudaMallocHost((void**)&s_cuda_reduction_tally_block_host,
+                              sizeof(CudaReductionDummyTallyType) *
+                                RAJA_CUDA_REDUCE_TALLY_LENGTH + sizeof(bool)));
+
+    s_cuda_reduction_done = reinterpret_cast<volatile bool*>(
+          s_cuda_reduction_tally_block_host + RAJA_CUDA_REDUCE_TALLY_LENGTH);
 
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
                           sizeof(CudaReductionDummyTallyType) *
@@ -398,25 +407,53 @@ static void writeBackCudaReductionTallyBlock()
   }
 }
 
+
+
+/*
+*******************************************************************************
+*
+* Copy tally block from device to host by direct copy through pcie.
+* Sets flag at done to true when finished.
+*
+*******************************************************************************
+*/
+template < int num_threads, typename T >
+__global__
+void pcie_copy(T* dst, T* src, int len, volatile bool* done)
+{
+  for (int i = threadIdx.x; i < len; i+=num_threads) {
+    dst[i] = src[i];
+  }
+  __threadfence_system();
+  __syncthreads();
+  if (threadIdx.x == 0) done[0] = 1;
+}
+
 /*
 *******************************************************************************
 *
 * Read tally block from device if invalid on host.
 * Must be called after tally blocks have been allocated.
-* The Async version is synchronous on the host if 
-* s_cuda_reduction_tally_block_host is allocated as pageable host memory 
-* and not if allocated as pinned host memory or managed memory.
+* The Async version directly copies s_cuda_reduction_tally_block_device to
+* s_cuda_reduction_tally_block_host allocated as pinned host memory. 
+* Then it sets the flag s_cuda_reduction_done in pinned host memory to true.
 *
 *******************************************************************************
 */
 static void readCudaReductionTallyBlockAsync()
 {
+  using read_type = int;
+  static_assert(sizeof(CudaReductionDummyTallyType) % sizeof(read_type) == 0,
+        "Error: sizeof(CudaReductionDummyTallyType) must be a multiple of sizeof(read_type)");
   if (!s_tally_valid) {
-    cudaErrchk(cudaMemcpyAsync( &s_cuda_reduction_tally_block_host[0],
-                                &s_cuda_reduction_tally_block_device[0],
-                                sizeof(CudaReductionDummyTallyType) *
-                                  RAJA_CUDA_REDUCE_TALLY_LENGTH,
-                                cudaMemcpyDeviceToHost));
+    s_cuda_reduction_done[0] = false;
+    pcie_copy<256,read_type><<<1,256>>>(
+          reinterpret_cast<read_type*>(&s_cuda_reduction_tally_block_host[0]),
+          reinterpret_cast<read_type*>(&s_cuda_reduction_tally_block_device[0]),
+          (sizeof(CudaReductionDummyTallyType) * RAJA_CUDA_REDUCE_TALLY_LENGTH)/sizeof(read_type),
+          &s_cuda_reduction_done[0] );
+    cudaErrchk(cudaPeekAtLastError());
+    while (s_cuda_reduction_done[0] == false);
     s_tally_valid = true;
   }
 }
@@ -528,7 +565,7 @@ void releaseCudaReductionTallyBlock(int id)
 void freeCudaReductionTallyBlock()
 {
   if (s_cuda_reduction_tally_block_host != 0) {
-    delete[] s_cuda_reduction_tally_block_host;
+    cudaErrchk(cudaFreeHost(s_cuda_reduction_tally_block_host));
     cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
     s_cuda_reduction_tally_block_host = 0;
   }
