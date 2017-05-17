@@ -3,21 +3,19 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA headers for OpenMP execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods work only on platforms that support OpenMP.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_openacc_HXX
+#define RAJA_openacc_HXX
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_OPENACC)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,90 +59,17 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include <iostream>
+#include <thread>
 
-#include "RAJA/util/types.hpp"
+#include "RAJA/policy/openacc/policy.hpp"
+#include "RAJA/policy/openacc/forall.hpp"
 
-#include "RAJA/util/Operators.hpp"
-
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/policy/sequential.hpp"
-
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/simd.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
+#if defined(RAJA_ENABLE_NESTED)
+#include "RAJA/policy/openacc/forallN.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_OPENACC)
-#include "RAJA/policy/openacc.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/Cilk.hpp"
-#endif
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/policy/MultiPolicy.hpp"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
-#include "RAJA/util/OffsetLayout.hpp"
-#include "RAJA/util/View.hpp"
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-#include "RAJA/pattern/reduce.hpp"
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-#include "RAJA/index/IndexSetUtils.hpp"
-
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
-
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
-
-#include "RAJA/pattern/scan.hpp"
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENACC)
 
 #endif  // closing endif for header file include guard
