@@ -1,12 +1,20 @@
+
+// control emmission of "fake pragmas" as deprecated warnings
+// useful for determining correctness of SFINAE
+//
+// sample usage:
+//   clang++ -std=c++14 -O3 test.cpp 2>&1 | grep 'deprecated-declarations'
+//
+#define RAJA_ENABLE_VERBOSE
+
+// didn't add to CMake yet
+
 #define RAJA_ENABLE_OPENACC 1
 #include "RAJA/policy/openacc.hpp"
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/pattern/forallN.hpp"
 
 #include <algorithm>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
 
 int main() {
   namespace acc = RAJA::acc;
@@ -15,9 +23,9 @@ int main() {
   using T = double;
 
   T *a, *b, *c;
-  cudaMallocManaged(reinterpret_cast<void**>(&a), sizeof(T) * N);
-  cudaMallocManaged(reinterpret_cast<void**>(&b), sizeof(T) * N);
-  cudaMallocManaged(reinterpret_cast<void**>(&c), sizeof(T) * N);
+  a = new T[N];
+  b = new T[N];
+  c = new T[N];
 
   std::fill(a, a + N, T(1));
   std::fill(b, b + N, T(2));
@@ -37,26 +45,28 @@ int main() {
   std::cout << std::boolalpha << valid << std::endl;
 
   RAJA::forallN<
-    RAJA::ExecList<
-      RAJA::acc_loop_exec<acc::config<acc::independent>>,
-      RAJA::acc_loop_exec<acc::config<acc::independent>>>,
-    RAJA::ACC_Kernels<acc::config<acc::num::vectors<32>>>> (
-      RAJA::RangeSegment{0,32},
-      RAJA::RangeSegment{0,32},
-      [=] (int out, int in) {
-        int idx = out * 32 + in;
-        c[idx] = a[idx] + b[idx];
-      });
+    RAJA::NestedPolicy<
+      RAJA::ExecList<
+        RAJA::acc_loop_exec<acc::config<acc::independent>>,
+        RAJA::acc_loop_exec<acc::config<acc::independent>>>,
+      RAJA::ACC_Kernels<acc::config<acc::num::vectors<32>>>>> (
+    RAJA::RangeSegment{0,32},
+    RAJA::RangeSegment{0,32},
+    [=] (int out, int in) {
+      int idx = out * 32 + in;
+      c[idx] = a[idx] + b[idx];
+    });
 
-  bool valid = std::all_of(c, c + N, [] (T const &v) {
+  valid = std::all_of(c, c + N, [] (T const &v) {
     return v == T(3);
   });
 
   std::cout << std::boolalpha << valid << std::endl;
 
-  cudaFree(a);
-  cudaFree(b);
-  cudaFree(c);
+  delete[] a;
+  delete[] b;
+  delete[] c;
+
 
   return EXIT_SUCCESS;
 }

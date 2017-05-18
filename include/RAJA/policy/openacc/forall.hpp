@@ -62,18 +62,15 @@
 
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/policy/openacc/policy.hpp"
 
-#include <iostream>
-
-#if defined(_OPENACC)
-#include <openacc.h>
+#ifdef RAJA_ENABLE_VERBOSE
+#define RAJA_VERBOSE(A) [[deprecated(A)]]
+#else
+#define RAJA_VERBOSE(A)
 #endif
-
 
 namespace RAJA
 {
@@ -85,6 +82,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -105,6 +103,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -128,6 +127,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -148,6 +148,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -171,6 +172,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_workers")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -191,6 +193,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_workers")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -214,6 +217,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -234,6 +238,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -257,6 +262,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -278,6 +284,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -302,6 +309,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -323,6 +331,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -347,6 +356,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -368,6 +378,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -392,6 +403,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -413,6 +425,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -438,6 +451,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -458,6 +472,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -481,6 +496,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -501,6 +517,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -524,6 +541,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_workers")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -544,6 +562,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_workers")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -567,6 +586,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -587,6 +607,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -610,6 +631,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -631,6 +653,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -655,6 +678,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -676,6 +700,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<!acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -700,6 +725,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -721,6 +747,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && !acc::has::num_workers<Config>::value
@@ -745,6 +772,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -766,6 +794,7 @@ template <typename Iterable,
           typename InnerPolicy,
           typename Config,
           typename Func>
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers vector_length")
 RAJA_INLINE
     typename std::enable_if<acc::has::num_gangs<Config>::value
                             && acc::has::num_workers<Config>::value
@@ -786,16 +815,19 @@ RAJA_INLINE
   }
 }
 
+
 ///
-/// OpenACC parallel for policy implementation
+/// OpenACC loop policy implementation
 ///
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -807,14 +839,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -826,11 +860,13 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop gang")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -842,14 +878,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop gang")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -860,11 +898,13 @@ forall_Icount(const acc_loop_exec<Config>&,
   }
 }
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop worker")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -876,14 +916,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop worker")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -894,11 +936,12 @@ forall_Icount(const acc_loop_exec<Config>&,
   }
 }
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -910,14 +953,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -929,11 +973,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop gang vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -945,14 +990,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop gang vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -964,11 +1010,13 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop gang worker")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -980,14 +1028,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop gang worker")
+RAJA_INLINE
+    typename std::enable_if<!acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -999,11 +1049,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop worker vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1015,14 +1066,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop worker vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1034,11 +1086,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop gang worker vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1050,14 +1103,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop gang worker vector")
 RAJA_INLINE typename std::enable_if<!acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1068,13 +1122,14 @@ forall_Icount(const acc_loop_exec<Config>&,
   }
 }
 
-
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1086,14 +1141,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1105,11 +1162,13 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent gang")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1121,14 +1180,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent gang")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && !acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1139,11 +1200,13 @@ forall_Icount(const acc_loop_exec<Config>&,
   }
 }
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent worker")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1155,14 +1218,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent worker")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && !acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1173,11 +1238,12 @@ forall_Icount(const acc_loop_exec<Config>&,
   }
 }
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1189,14 +1255,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1208,11 +1275,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent gang vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1224,14 +1292,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent gang vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && !acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && !acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1243,11 +1312,13 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent gang worker")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1259,14 +1330,16 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && !acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+RAJA_VERBOSE("\nacc loop independent gang worker")
+RAJA_INLINE
+    typename std::enable_if<acc::has::is_independent<Config>::value
+                            && acc::has::is_gang<Config>::value
+                            && acc::has::is_worker<Config>::value
+                            && !acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1278,11 +1351,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent worker vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1294,14 +1368,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent worker vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && !acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && !acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1313,11 +1388,12 @@ forall_Icount(const acc_loop_exec<Config>&,
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent gang worker vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1329,14 +1405,15 @@ forall(const acc_loop_exec<Config>&, Iterable&& iter, Func&& loop_body)
 }
 
 template <typename Config, typename Iterable, typename Func>
+RAJA_VERBOSE("\nacc loop independent gang worker vector")
 RAJA_INLINE typename std::enable_if<acc::has::is_independent<Config>::value
-                           && acc::has::is_gang<Config>::value
-                           && acc::has::is_worker<Config>::value
-                           && acc::has::is_vector<Config>::value>::type
-forall_Icount(const acc_loop_exec<Config>&,
-              Iterable&& iter,
-              Index_type icount,
-              Func&& loop_body)
+                                    && acc::has::is_gang<Config>::value
+                                    && acc::has::is_worker<Config>::value
+                                    && acc::has::is_vector<Config>::value>::type
+    forall_Icount(const acc_loop_exec<Config>&,
+                  Iterable&& iter,
+                  Index_type icount,
+                  Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -1350,6 +1427,8 @@ forall_Icount(const acc_loop_exec<Config>&,
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#undef RAJA_VERBOSE
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENACC)
 

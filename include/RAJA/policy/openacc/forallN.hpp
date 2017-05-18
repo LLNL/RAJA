@@ -62,8 +62,10 @@
 
 #include "RAJA/policy/openacc/policy.hpp"
 
-#if defined(_OPENACC)
-#include <openacc.h>
+#ifdef RAJA_ENABLE_VERBOSE
+#define RAJA_VERBOSE(A) [[deprecated(A)]]
+#else
+#define RAJA_VERBOSE(A)
 #endif
 
 namespace RAJA
@@ -92,7 +94,7 @@ struct ACC_Kernels : public Config {
  ******************************************************************/
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -106,7 +108,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -121,7 +123,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_gangs") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -135,7 +137,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_gangs") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -150,7 +152,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_workers") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -164,7 +166,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_workers") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -179,7 +181,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel vector_length") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -193,7 +195,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels vector_length") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -209,7 +211,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -223,7 +225,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -238,7 +240,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_gangs vector_length") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -252,7 +254,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_gangs vector_length") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   !acc::has::num_workers<POLICY>::value&&
@@ -267,7 +269,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_workers vector_length") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -281,7 +283,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_workers vector_length") RAJA_INLINE
 typename std::enable_if<
   !acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -296,7 +298,7 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc parallel num_gangs num_workers vector_length") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -310,7 +312,7 @@ forallN_policy(ForallN_ACC_Parallel_Tag, BODY body, PARGS... pargs) {
   }
 }
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE
+RAJA_VERBOSE("\nacc kernels num_gangs num_workers vector_length") RAJA_INLINE
 typename std::enable_if<
   acc::has::num_gangs<POLICY>::value&&
   acc::has::num_workers<POLICY>::value&&
@@ -325,6 +327,8 @@ forallN_policy(ForallN_ACC_Kernels_Tag, BODY body, PARGS... pargs) {
 }
 
 }  // namespace RAJA
+
+#undef RAJA_VERBOSE
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENACC)
 
