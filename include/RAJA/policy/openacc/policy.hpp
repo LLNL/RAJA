@@ -7,11 +7,13 @@
 #include <utility>
 
 #if defined(RAJA_ENABLE_VERBOSE)
-#if !defined(RAJA_VERBOSE)
-#define RAJA_VERBOSE(A) [[deprecated(A)]]
+# if !defined(RAJA_VERBOSE)
+#  define RAJA_VERBOSE(A) [[deprecated(A)]]
+# endif
 #else
-#define RAJA_VERBOSE(A)
-#endif
+# if !defined(RAJA_VERBOSE)
+#  define RAJA_VERBOSE(A)
+# endif
 #endif
 
 namespace RAJA

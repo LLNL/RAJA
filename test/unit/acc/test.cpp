@@ -5,7 +5,7 @@
 // sample usage:
 //   clang++ -std=c++14 -O3 test.cpp 2>&1 | grep 'deprecated-declarations'
 //
-#define RAJA_ENABLE_VERBOSE
+//#define RAJA_ENABLE_VERBOSE
 
 // didn't add to CMake yet
 
@@ -31,7 +31,7 @@ int main() {
   std::fill(b, b + N, T(2));
 
   RAJA::forall<
-    RAJA::acc_kernels_loop_exec<
+    RAJA::acc_parallel_loop_exec<
       acc::config<acc::NumGangs<32>, acc::NumVectors<32>>,
       acc::config<acc::Independent, acc::Gang, acc::Vector>>>
     (0, N, [=] (int i) {
@@ -44,18 +44,20 @@ int main() {
 
   std::cout << std::boolalpha << valid << std::endl;
 
+  /*
   RAJA::forallN<
     RAJA::NestedPolicy<
       RAJA::ExecList<
         RAJA::acc_loop_exec<acc::config<acc::Independent>>,
         RAJA::acc_loop_exec<acc::config<acc::Independent>>>,
-      RAJA::ACC_Kernels<acc::config<acc::NumVectors<32>>>>> (
+      RAJA::ACC_Parallel<acc::config<acc::NumVectors<32>>>>> (
     RAJA::RangeSegment{0,32},
     RAJA::RangeSegment{0,32},
     [=] (int out, int in) {
       int idx = out * 32 + in;
       c[idx] = a[idx] + b[idx];
     });
+  */
 
   valid = std::all_of(c, c + N, [] (T const &v) {
     return v == T(3);

@@ -112,71 +112,71 @@ struct ACC_Kernels : public Config {
   }
 
 FORALLN(parallel, no_ngangs, no_nworkers, no_nvectors, )
-FORALLN(parallel, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
+FORALLN(parallel, ngangs, no_nworkers, no_nvectors, num_gangs(Policy::ngangs))
 FORALLN(parallel,
         no_ngangs,
         nworkers,
         no_nvectors,
-        num_workers(Config::nworkers))
+        num_workers(Policy::nworkers))
 FORALLN(parallel,
         ngangs,
         nworkers,
         no_nvectors,
-        num_gangs(Config::ngangs) num_workers(Config::nworkers))
+        num_gangs(Policy::ngangs) num_workers(Policy::nworkers))
 FORALLN(parallel,
         no_ngangs,
         no_nworkers,
         nvectors,
-        vector_length(Config::nvectors))
+        vector_length(Policy::nvectors))
 FORALLN(parallel,
         ngangs,
         no_nworkers,
         nvectors,
-        num_gangs(Config::ngangs) vector_length(Config::nvectors))
+        num_gangs(Policy::ngangs) vector_length(Policy::nvectors))
 FORALLN(parallel,
         no_ngangs,
         nworkers,
         nvectors,
-        num_workers(Config::nworkers) vector_length(Config::nvectors))
+        num_workers(Policy::nworkers) vector_length(Policy::nvectors))
 FORALLN(parallel,
         ngangs,
         nworkers,
         nvectors,
-        num_gangs(Config::ngangs) num_workers(Config::nworkers)
-            vector_length(Config::nvectors))
+        num_gangs(Policy::ngangs) num_workers(Policy::nworkers)
+            vector_length(Policy::nvectors))
 FORALLN(kernels, no_ngangs, no_nworkers, no_nvectors, )
-FORALLN(kernels, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
-FORALLN(kernels,
-        no_ngangs,
-        nworkers,
-        no_nvectors,
-        num_workers(Config::nworkers))
-FORALLN(kernels,
-        ngangs,
-        nworkers,
-        no_nvectors,
-        num_gangs(Config::ngangs) num_workers(Config::nworkers))
-FORALLN(kernels,
-        no_ngangs,
-        no_nworkers,
-        nvectors,
-        vector_length(Config::nvectors))
-FORALLN(kernels,
-        ngangs,
-        no_nworkers,
-        nvectors,
-        num_gangs(Config::ngangs) vector_length(Config::nvectors))
-FORALLN(kernels,
-        no_ngangs,
-        nworkers,
-        nvectors,
-        num_workers(Config::nworkers) vector_length(Config::nvectors))
-FORALLN(kernels,
-        ngangs,
-        nworkers,
-        nvectors,
-        num_gangs(Config::ngangs) num_workers(Config::nworkers)
-            vector_length(Config::nvectors))
+// FORALLN(kernels, ngangs, no_nworkers, no_nvectors, num_gangs(Policy::ngangs))
+// FORALLN(kernels,
+//         no_ngangs,
+//         nworkers,
+//         no_nvectors,
+//         num_workers(Policy::nworkers))
+// FORALLN(kernels,
+//         ngangs,
+//         nworkers,
+//         no_nvectors,
+//         num_gangs(Policy::ngangs) num_workers(Policy::nworkers))
+// FORALLN(kernels,
+//         no_ngangs,
+//         no_nworkers,
+//         nvectors,
+//         vector_length(Policy::nvectors))
+// FORALLN(kernels,
+//         ngangs,
+//         no_nworkers,
+//         nvectors,
+//         num_gangs(Policy::ngangs) vector_length(Policy::nvectors))
+// FORALLN(kernels,
+//         no_ngangs,
+//         nworkers,
+//         nvectors,
+//         num_workers(Policy::nworkers) vector_length(Policy::nvectors))
+// FORALLN(kernels,
+//         ngangs,
+//         nworkers,
+//         nvectors,
+//         num_gangs(Policy::ngangs) num_workers(Policy::nworkers)
+//             vector_length(Policy::nvectors))
 
 #undef FORALLN
 

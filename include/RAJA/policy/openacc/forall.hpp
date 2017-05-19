@@ -153,34 +153,34 @@ FORALL(parallel,
        num_gangs(Config::ngangs) num_workers(Config::nworkers)
            vector_length(Config::nvectors))
 FORALL(kernels, no_ngangs, no_nworkers, no_nvectors, )
-FORALL(kernels, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
-FORALL(kernels, no_ngangs, nworkers, no_nvectors, num_workers(Config::nworkers))
-FORALL(kernels,
-       ngangs,
-       nworkers,
-       no_nvectors,
-       num_gangs(Config::ngangs) num_workers(Config::nworkers))
-FORALL(kernels,
-       no_ngangs,
-       no_nworkers,
-       nvectors,
-       vector_length(Config::nvectors))
-FORALL(kernels,
-       ngangs,
-       no_nworkers,
-       nvectors,
-       num_gangs(Config::ngangs) vector_length(Config::nvectors))
-FORALL(kernels,
-       no_ngangs,
-       nworkers,
-       nvectors,
-       num_workers(Config::nworkers) vector_length(Config::nvectors))
-FORALL(kernels,
-       ngangs,
-       nworkers,
-       nvectors,
-       num_gangs(Config::ngangs) num_workers(Config::nworkers)
-           vector_length(Config::nvectors))
+// FORALL(kernels, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
+// FORALL(kernels, no_ngangs, nworkers, no_nvectors, num_workers(Config::nworkers))
+// FORALL(kernels,
+//        ngangs,
+//        nworkers,
+//        no_nvectors,
+//        num_gangs(Config::ngangs) num_workers(Config::nworkers))
+// FORALL(kernels,
+//        no_ngangs,
+//        no_nworkers,
+//        nvectors,
+//        vector_length(Config::nvectors))
+// FORALL(kernels,
+//        ngangs,
+//        no_nworkers,
+//        nvectors,
+//        num_gangs(Config::ngangs) vector_length(Config::nvectors))
+// FORALL(kernels,
+//        no_ngangs,
+//        nworkers,
+//        nvectors,
+//        num_workers(Config::nworkers) vector_length(Config::nvectors))
+// FORALL(kernels,
+//        ngangs,
+//        nworkers,
+//        nvectors,
+//        num_gangs(Config::ngangs) num_workers(Config::nworkers)
+//            vector_length(Config::nvectors))
 
 #undef FORALL
 
