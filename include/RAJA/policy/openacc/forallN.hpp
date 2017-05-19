@@ -69,19 +69,19 @@ namespace RAJA
  *  ForallN CUDA policies
  ******************************************************************/
 
-struct ACC_Parallel_Tag {
+struct ForallN_ACC_parallel_Tag {
 };
 template <typename Config = acc::config<>, typename NEXT = Execute>
 struct ACC_Parallel : public Config {
-  using PolicyTag = ACC_Parallel_Tag;
+  using PolicyTag = ForallN_ACC_parallel_Tag;
   using NextPolicy = NEXT;
 };
 
-struct ACC_Kernels_Tag {
+struct ForallN_ACC_kernels_Tag {
 };
 template <typename Config = acc::config<>, typename NEXT = Execute>
 struct ACC_Kernels : public Config {
-  using PolicyTag = ACC_Kernels_Tag;
+  using PolicyTag = ForallN_ACC_kernels_Tag;
   using NextPolicy = NEXT;
 };
 
@@ -89,302 +89,101 @@ struct ACC_Kernels : public Config {
  *  forallN_policy(), Openacc Parallel Region execution
  ******************************************************************/
 
-using namespace RAJA::acc;
+#define STR_(X) #X
+#define STR(X) STR_(X)
 
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel")
-RAJA_INLINE When<Policy, no_ngangs, no_nworkers, no_nvectors> forallN_policy(
-    ACC_Parallel_Tag,
-    Body body,
-    PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
+#define PRAGMA_ACC(exec, args) PRAGMA(acc exec args)
+#define PRAGMA(x) _Pragma(#x)
+
+#define FORALLN(EXEC_TYPE, GANGS, WORKERS, VECTORS, DESCRIPTOR)            \
+  template <typename Policy, typename Body, typename... PArgs>             \
+  RAJA_VERBOSE("\nacc " STR(EXEC_TYPE) " " STR(DESCRIPTOR))                \
+  RAJA_INLINE acc::When<Policy, acc::GANGS, acc::WORKERS, acc::VECTORS>    \
+  forallN_policy(ForallN_ACC_##EXEC_TYPE##_Tag, Body body, PArgs... pargs) \
+  {                                                                        \
+    using NextPolicy = typename Policy::NextPolicy;                        \
+    using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;          \
+    PRAGMA_ACC(EXEC_TYPE, DESCRIPTOR)                                      \
+    {                                                                      \
+      forallN_policy<NextPolicy>(NextPolicyTag(),                          \
+                                 std::forward<Body>(body),                 \
+                                 std::forward<PArgs>(pargs)...);           \
+    }                                                                      \
   }
-}
 
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel nvectors")
-RAJA_INLINE
-    When<Policy, no_ngangs, no_nworkers, nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
+FORALLN(parallel, no_ngangs, no_nworkers, no_nvectors, )
+FORALLN(parallel, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
+FORALLN(parallel,
+        no_ngangs,
+        nworkers,
+        no_nvectors,
+        num_workers(Config::nworkers))
+FORALLN(parallel,
+        ngangs,
+        nworkers,
+        no_nvectors,
+        num_gangs(Config::ngangs) num_workers(Config::nworkers))
+FORALLN(parallel,
+        no_ngangs,
+        no_nworkers,
+        nvectors,
+        vector_length(Config::nvectors))
+FORALLN(parallel,
+        ngangs,
+        no_nworkers,
+        nvectors,
+        num_gangs(Config::ngangs) vector_length(Config::nvectors))
+FORALLN(parallel,
+        no_ngangs,
+        nworkers,
+        nvectors,
+        num_workers(Config::nworkers) vector_length(Config::nvectors))
+FORALLN(parallel,
+        ngangs,
+        nworkers,
+        nvectors,
+        num_gangs(Config::ngangs) num_workers(Config::nworkers)
+            vector_length(Config::nvectors))
+FORALLN(kernels, no_ngangs, no_nworkers, no_nvectors, )
+FORALLN(kernels, ngangs, no_nworkers, no_nvectors, num_gangs(Config::ngangs))
+FORALLN(kernels,
+        no_ngangs,
+        nworkers,
+        no_nvectors,
+        num_workers(Config::nworkers))
+FORALLN(kernels,
+        ngangs,
+        nworkers,
+        no_nvectors,
+        num_gangs(Config::ngangs) num_workers(Config::nworkers))
+FORALLN(kernels,
+        no_ngangs,
+        no_nworkers,
+        nvectors,
+        vector_length(Config::nvectors))
+FORALLN(kernels,
+        ngangs,
+        no_nworkers,
+        nvectors,
+        num_gangs(Config::ngangs) vector_length(Config::nvectors))
+FORALLN(kernels,
+        no_ngangs,
+        nworkers,
+        nvectors,
+        num_workers(Config::nworkers) vector_length(Config::nvectors))
+FORALLN(kernels,
+        ngangs,
+        nworkers,
+        nvectors,
+        num_gangs(Config::ngangs) num_workers(Config::nworkers)
+            vector_length(Config::nvectors))
 
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel nworkers")
-RAJA_INLINE
-    When<Policy, no_ngangs, nworkers, no_nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_workers(Policy::nworkers)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
+#undef FORALLN
 
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel nworkers nvectors")
-RAJA_INLINE
-    When<Policy, no_ngangs, nworkers, nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_workers(Policy::nworkers) \
-    vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel ngangs")
-RAJA_INLINE
-    When<Policy, ngangs, no_nworkers, no_nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::ngangs)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel ngangs nvectors")
-RAJA_INLINE
-    When<Policy, ngangs, no_nworkers, nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::ngangs) \
-    vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel ngangs nworkers")
-RAJA_INLINE
-    When<Policy, ngangs, nworkers, no_nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::ngangs) \
-    num_workers(Policy::nworkers)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc parallel ngangs nworkers nvectors")
-RAJA_INLINE
-    When<Policy, ngangs, nworkers, nvectors> forallN_policy(
-        ACC_Parallel_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::ngangs) \
-    num_workers(Policy::nworkers) vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels")
-RAJA_INLINE When<Policy, no_ngangs, no_nworkers, no_nvectors> forallN_policy(
-    ACC_Kernels_Tag,
-    Body body,
-    PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels nvectors")
-RAJA_INLINE
-    When<Policy, no_ngangs, no_nworkers, nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels nworkers")
-RAJA_INLINE
-    When<Policy, no_ngangs, nworkers, no_nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_workers(Policy::nworkers)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels nworkers nvectors")
-RAJA_INLINE
-    When<Policy, no_ngangs, nworkers, nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_workers(Policy::nworkers) \
-    vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels ngangs")
-RAJA_INLINE
-    When<Policy, ngangs, no_nworkers, no_nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::ngangs)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels ngangs nvectors")
-RAJA_INLINE
-    When<Policy, ngangs, no_nworkers, nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::ngangs) \
-    vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels ngangs nworkers")
-RAJA_INLINE
-    When<Policy, ngangs, nworkers, no_nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::ngangs) \
-    num_workers(Policy::nworkers)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
-
-template <typename Policy, typename Body, typename... PArgs>
-RAJA_VERBOSE("\nacc kernels ngangs nworkers nvectors")
-RAJA_INLINE
-    When<Policy, ngangs, nworkers, nvectors> forallN_policy(
-        ACC_Kernels_Tag,
-        Body body,
-        PArgs... pargs)
-{
-  using NextPolicy = typename Policy::NextPolicy;
-  using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::ngangs) \
-    num_workers(Policy::nworkers) vector_length(Policy::nvectors)
-  {
-    forallN_policy<NextPolicy>(NextPolicyTag(),
-                               std::forward<Body>(body),
-                               std::forward<PArgs>(pargs)...);
-  }
-}
+#undef STR_
+#undef STR
+#undef PRAGMA_ACC
+#undef PRAGMA
 
 }  // namespace RAJA
 
