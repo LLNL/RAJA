@@ -32,8 +32,8 @@ int main() {
 
   RAJA::forall<
     RAJA::acc_kernels_loop_exec<
-      acc::config<acc::num::gangs<32>, acc::num::vectors<32>>,
-      acc::config<acc::independent, acc::gang, acc::vector>>>
+      acc::config<acc::NumGangs<32>, acc::NumVectors<32>>,
+      acc::config<acc::Independent, acc::Gang, acc::Vector>>>
     (0, N, [=] (int i) {
     c[i] = a[i] + b[i];
   });
@@ -47,9 +47,9 @@ int main() {
   RAJA::forallN<
     RAJA::NestedPolicy<
       RAJA::ExecList<
-        RAJA::acc_loop_exec<acc::config<acc::independent>>,
-        RAJA::acc_loop_exec<acc::config<acc::independent>>>,
-      RAJA::ACC_Kernels<acc::config<acc::num::vectors<32>>>>> (
+        RAJA::acc_loop_exec<acc::config<acc::Independent>>,
+        RAJA::acc_loop_exec<acc::config<acc::Independent>>>,
+      RAJA::ACC_Kernels<acc::config<acc::NumVectors<32>>>>> (
     RAJA::RangeSegment{0,32},
     RAJA::RangeSegment{0,32},
     [=] (int out, int in) {

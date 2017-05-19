@@ -89,9 +89,11 @@ struct ACC_Kernels : public Config {
  *  forallN_policy(), Openacc Parallel Region execution
  ******************************************************************/
 
+using namespace RAJA::acc;
+
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel")
-RAJA_INLINE When<Policy, no::n_gang, no::n_worker, no::n_vector> forallN_policy(
+RAJA_INLINE When<Policy, no_ngangs, no_nworkers, no_nvectors> forallN_policy(
     ACC_Parallel_Tag,
     Body body,
     PArgs... pargs)
@@ -109,14 +111,14 @@ RAJA_INLINE When<Policy, no::n_gang, no::n_worker, no::n_vector> forallN_policy(
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel nvectors")
 RAJA_INLINE
-    When<Policy, no::n_gang, no::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, no_ngangs, no_nworkers, nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel vector_length(Policy::num_vectors)
+#pragma acc parallel vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -127,14 +129,14 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel nworkers")
 RAJA_INLINE
-    When<Policy, no::n_gang, yes::n_worker, no::n_vector> forallN_policy(
+    When<Policy, no_ngangs, nworkers, no_nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_workers(Policy::num_workers)
+#pragma acc parallel num_workers(Policy::nworkers)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -145,15 +147,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel nworkers nvectors")
 RAJA_INLINE
-    When<Policy, no::n_gang, yes::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, no_ngangs, nworkers, nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_workers(Policy::num_workers) \
-    vector_length(Policy::num_vectors)
+#pragma acc parallel num_workers(Policy::nworkers) \
+    vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -164,14 +166,14 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel ngangs")
 RAJA_INLINE
-    When<Policy, yes::n_gang, no::n_worker, no::n_vector> forallN_policy(
+    When<Policy, ngangs, no_nworkers, no_nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::num_gangs)
+#pragma acc parallel num_gangs(Policy::ngangs)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -182,15 +184,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel ngangs nvectors")
 RAJA_INLINE
-    When<Policy, yes::n_gang, no::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, ngangs, no_nworkers, nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::num_gangs) \
-    vector_length(Policy::num_vectors)
+#pragma acc parallel num_gangs(Policy::ngangs) \
+    vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -201,15 +203,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers")
 RAJA_INLINE
-    When<Policy, yes::n_gang, yes::n_worker, no::n_vector> forallN_policy(
+    When<Policy, ngangs, nworkers, no_nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::num_gangs) \
-    num_workers(Policy::num_workers)
+#pragma acc parallel num_gangs(Policy::ngangs) \
+    num_workers(Policy::nworkers)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -220,15 +222,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers nvectors")
 RAJA_INLINE
-    When<Policy, yes::n_gang, yes::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, ngangs, nworkers, nvectors> forallN_policy(
         ACC_Parallel_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc parallel num_gangs(Policy::num_gangs) \
-    num_workers(Policy::num_workers) vector_length(Policy::num_vectors)
+#pragma acc parallel num_gangs(Policy::ngangs) \
+    num_workers(Policy::nworkers) vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -239,7 +241,7 @@ RAJA_INLINE
 
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels")
-RAJA_INLINE When<Policy, no::n_gang, no::n_worker, no::n_vector> forallN_policy(
+RAJA_INLINE When<Policy, no_ngangs, no_nworkers, no_nvectors> forallN_policy(
     ACC_Kernels_Tag,
     Body body,
     PArgs... pargs)
@@ -257,14 +259,14 @@ RAJA_INLINE When<Policy, no::n_gang, no::n_worker, no::n_vector> forallN_policy(
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels nvectors")
 RAJA_INLINE
-    When<Policy, no::n_gang, no::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, no_ngangs, no_nworkers, nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels vector_length(Policy::num_vectors)
+#pragma acc kernels vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -275,14 +277,14 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels nworkers")
 RAJA_INLINE
-    When<Policy, no::n_gang, yes::n_worker, no::n_vector> forallN_policy(
+    When<Policy, no_ngangs, nworkers, no_nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_workers(Policy::num_workers)
+#pragma acc kernels num_workers(Policy::nworkers)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -293,15 +295,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels nworkers nvectors")
 RAJA_INLINE
-    When<Policy, no::n_gang, yes::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, no_ngangs, nworkers, nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_workers(Policy::num_workers) \
-    vector_length(Policy::num_vectors)
+#pragma acc kernels num_workers(Policy::nworkers) \
+    vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -312,14 +314,14 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels ngangs")
 RAJA_INLINE
-    When<Policy, yes::n_gang, no::n_worker, no::n_vector> forallN_policy(
+    When<Policy, ngangs, no_nworkers, no_nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::num_gangs)
+#pragma acc kernels num_gangs(Policy::ngangs)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -330,15 +332,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels ngangs nvectors")
 RAJA_INLINE
-    When<Policy, yes::n_gang, no::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, ngangs, no_nworkers, nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::num_gangs) \
-    vector_length(Policy::num_vectors)
+#pragma acc kernels num_gangs(Policy::ngangs) \
+    vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -349,15 +351,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers")
 RAJA_INLINE
-    When<Policy, yes::n_gang, yes::n_worker, no::n_vector> forallN_policy(
+    When<Policy, ngangs, nworkers, no_nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::num_gangs) \
-    num_workers(Policy::num_workers)
+#pragma acc kernels num_gangs(Policy::ngangs) \
+    num_workers(Policy::nworkers)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),
@@ -368,15 +370,15 @@ RAJA_INLINE
 template <typename Policy, typename Body, typename... PArgs>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers nvectors")
 RAJA_INLINE
-    When<Policy, yes::n_gang, yes::n_worker, yes::n_vector> forallN_policy(
+    When<Policy, ngangs, nworkers, nvectors> forallN_policy(
         ACC_Kernels_Tag,
         Body body,
         PArgs... pargs)
 {
   using NextPolicy = typename Policy::NextPolicy;
   using NextPolicyTag = typename Policy::NextPolicy::PolicyTag;
-#pragma acc kernels num_gangs(Policy::num_gangs) \
-    num_workers(Policy::num_workers) vector_length(Policy::num_vectors)
+#pragma acc kernels num_gangs(Policy::ngangs) \
+    num_workers(Policy::nworkers) vector_length(Policy::nvectors)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(),
                                std::forward<Body>(body),

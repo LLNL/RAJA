@@ -71,10 +71,11 @@ namespace RAJA
 
 namespace impl
 {
+using namespace RAJA::acc;
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, no_nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -89,7 +90,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, no_nvectors> forall_Icount(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -105,14 +106,14 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, no_nworkers, no_nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs)
+#pragma acc parallel num_gangs(Config::ngangs)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -120,7 +121,7 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, ngangs, no_nworkers, no_nvectors> forall_Icount(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -128,7 +129,7 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs)
+#pragma acc parallel num_gangs(Config::ngangs)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -136,14 +137,14 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nworkers")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, nworkers, no_nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_workers(Config::num_workers)
+#pragma acc parallel num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -151,7 +152,7 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nworkers")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, nworkers, no_nvectors> forall_Icount(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -159,7 +160,7 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_workers(Config::num_workers)
+#pragma acc parallel num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -167,14 +168,14 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nvectors")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel vector_length(Config::num_vectors)
+#pragma acc parallel vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -182,7 +183,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nvectors")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, nvectors> forall_Icount(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -190,7 +191,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel vector_length(Config::num_vectors)
+#pragma acc parallel vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -198,15 +199,14 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers")
-RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, nworkers, no_nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers)
+#pragma acc parallel num_gangs(Config::ngangs) num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -214,17 +214,15 @@ RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers")
-RAJA_INLINE
-    When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall_Icount(
-        const acc_parallel_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, nworkers, no_nvectors> forall_Icount(
+    const acc_parallel_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers)
+#pragma acc parallel num_gangs(Config::ngangs) num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -232,15 +230,14 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nvectors")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, no_nworkers, nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    vector_length(Config::num_vectors >
+#pragma acc parallel num_gangs(Config::ngangs) vector_length(nvectors >
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -248,17 +245,15 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nvectors")
-RAJA_INLINE
-    When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall_Icount(
-        const acc_parallel_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, no_nworkers, nvectors> forall_Icount(
+    const acc_parallel_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    vector_length(Config::num_vectors)
+#pragma acc parallel num_gangs(Config::ngangs) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -266,15 +261,14 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nworkers nvectors")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, nworkers, nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_workers(Config::num_workers) \
-    vector_length(Config::num_vectors)
+#pragma acc parallel num_workers(Config::nworkers) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -282,17 +276,15 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel nworkers nvectors")
-RAJA_INLINE
-    When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall_Icount(
-        const acc_parallel_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, no_ngangs, nworkers, nvectors> forall_Icount(
+    const acc_parallel_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_workers(Config::num_workers) \
-    vector_length(Config::num_vectors)
+#pragma acc parallel num_workers(Config::nworkers) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -300,15 +292,15 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers nvectors")
-RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, nworkers, nvectors> forall(
     const acc_parallel_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers) vector_length(Config::num_vectors)
+#pragma acc parallel num_gangs(Config::ngangs) num_workers(Config::nworkers) \
+    vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -316,17 +308,16 @@ RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc parallel ngangs nworkers nvectors")
-RAJA_INLINE
-    When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall_Icount(
-        const acc_parallel_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, nworkers, nvectors> forall_Icount(
+    const acc_parallel_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc parallel num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers) vector_length(Config::num_vectors)
+#pragma acc parallel num_gangs(Config::ngangs) num_workers(Config::nworkers) \
+    vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -335,7 +326,7 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, no_nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -350,7 +341,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, no_nvectors> forall_Icount(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -366,14 +357,14 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, no_nworkers, no_nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs)
+#pragma acc kernels num_gangs(Config::ngangs)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -381,7 +372,7 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, ngangs, no_nworkers, no_nvectors> forall_Icount(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -389,7 +380,7 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs)
+#pragma acc kernels num_gangs(Config::ngangs)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -397,14 +388,14 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nworkers")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, nworkers, no_nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_workers(Config::num_workers)
+#pragma acc kernels num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -412,7 +403,7 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nworkers")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, nworkers, no_nvectors> forall_Icount(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -420,7 +411,7 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_workers(Config::num_workers)
+#pragma acc kernels num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -428,14 +419,14 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, no::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nvectors")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels vector_length(Config::num_vectors)
+#pragma acc kernels vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -443,7 +434,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nvectors")
-RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
+RAJA_INLINE When<Config, no_ngangs, no_nworkers, nvectors> forall_Icount(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Index_type icount,
@@ -451,7 +442,7 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels vector_length(Config::num_vectors)
+#pragma acc kernels vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -459,15 +450,14 @@ RAJA_INLINE When<Config, no::n_gang, no::n_worker, yes::n_vector> forall_Icount(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers")
-RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, nworkers, no_nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers)
+#pragma acc kernels num_gangs(Config::ngangs) num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -475,17 +465,15 @@ RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers")
-RAJA_INLINE
-    When<Config, yes::n_gang, yes::n_worker, no::n_vector> forall_Icount(
-        const acc_kernels_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, nworkers, no_nvectors> forall_Icount(
+    const acc_kernels_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers)
+#pragma acc kernels num_gangs(Config::ngangs) num_workers(Config::nworkers)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -493,15 +481,14 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nvectors")
-RAJA_INLINE When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, no_nworkers, nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    vector_length(Config::num_vectors >
+#pragma acc kernels num_gangs(Config::ngangs) vector_length(nvectors >
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -509,17 +496,15 @@ RAJA_INLINE When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nvectors")
-RAJA_INLINE
-    When<Config, yes::n_gang, no::n_worker, yes::n_vector> forall_Icount(
-        const acc_kernels_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, no_nworkers, nvectors> forall_Icount(
+    const acc_kernels_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    vector_length(Config::num_vectors)
+#pragma acc kernels num_gangs(Config::ngangs) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -527,15 +512,14 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nworkers nvectors")
-RAJA_INLINE When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, no_ngangs, nworkers, nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_workers(Config::num_workers) \
-    vector_length(Config::num_vectors)
+#pragma acc kernels num_workers(Config::nworkers) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -543,17 +527,15 @@ RAJA_INLINE When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels nworkers nvectors")
-RAJA_INLINE
-    When<Config, no::n_gang, yes::n_worker, yes::n_vector> forall_Icount(
-        const acc_kernels_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, no_ngangs, nworkers, nvectors> forall_Icount(
+    const acc_kernels_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_workers(Config::num_workers) \
-    vector_length(Config::num_vectors)
+#pragma acc kernels num_workers(Config::nworkers) vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -561,15 +543,15 @@ RAJA_INLINE
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers nvectors")
-RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall(
+RAJA_INLINE When<Config, ngangs, nworkers, nvectors> forall(
     const acc_kernels_exec<Policy, Config>&,
     Iterable&& iter,
     Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers) vector_length(Config::num_vectors)
+#pragma acc kernels num_gangs(Config::ngangs) num_workers(Config::nworkers) \
+    vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -577,17 +559,16 @@ RAJA_INLINE When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall(
 
 template <typename Iterable, typename Policy, typename Config, typename Func>
 RAJA_VERBOSE("\nacc kernels ngangs nworkers nvectors")
-RAJA_INLINE
-    When<Config, yes::n_gang, yes::n_worker, yes::n_vector> forall_Icount(
-        const acc_kernels_exec<Policy, Config>&,
-        Iterable&& iter,
-        Index_type icount,
-        Func&& loop_body)
+RAJA_INLINE When<Config, ngangs, nworkers, nvectors> forall_Icount(
+    const acc_kernels_exec<Policy, Config>&,
+    Iterable&& iter,
+    Index_type icount,
+    Func&& loop_body)
 {
   using body_type = typename std::remove_reference<decltype(loop_body)>::type;
   body_type body = loop_body;
-#pragma acc kernels num_gangs(Config::num_gangs) \
-    num_workers(Config::num_workers) vector_length(Config::num_vectors)
+#pragma acc kernels num_gangs(Config::ngangs) num_workers(Config::nworkers) \
+    vector_length(nvectors)
   {
     forall<Policy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
@@ -599,7 +580,7 @@ RAJA_INLINE
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop")
-RAJA_INLINE When<Config, no::ind, no::gang, no::worker, no::vector> forall(
+RAJA_INLINE When<Config, no_independent, no_gang, no_worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -615,7 +596,7 @@ RAJA_INLINE When<Config, no::ind, no::gang, no::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop vector")
-RAJA_INLINE When<Config, no::ind, no::gang, no::worker, yes::vector> forall(
+RAJA_INLINE When<Config, no_independent, no_gang, no_worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -631,7 +612,7 @@ RAJA_INLINE When<Config, no::ind, no::gang, no::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop worker")
-RAJA_INLINE When<Config, no::ind, no::gang, yes::worker, no::vector> forall(
+RAJA_INLINE When<Config, no_independent, no_gang, worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -647,7 +628,7 @@ RAJA_INLINE When<Config, no::ind, no::gang, yes::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop worker vector")
-RAJA_INLINE When<Config, no::ind, no::gang, yes::worker, yes::vector> forall(
+RAJA_INLINE When<Config, no_independent, no_gang, worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -663,7 +644,7 @@ RAJA_INLINE When<Config, no::ind, no::gang, yes::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop gang")
-RAJA_INLINE When<Config, no::ind, yes::gang, no::worker, no::vector> forall(
+RAJA_INLINE When<Config, no_independent, gang, no_worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -679,7 +660,7 @@ RAJA_INLINE When<Config, no::ind, yes::gang, no::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop gang vector")
-RAJA_INLINE When<Config, no::ind, yes::gang, no::worker, yes::vector> forall(
+RAJA_INLINE When<Config, no_independent, gang, no_worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -695,7 +676,7 @@ RAJA_INLINE When<Config, no::ind, yes::gang, no::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop gang worker")
-RAJA_INLINE When<Config, no::ind, yes::gang, yes::worker, no::vector> forall(
+RAJA_INLINE When<Config, no_independent, gang, worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -711,7 +692,7 @@ RAJA_INLINE When<Config, no::ind, yes::gang, yes::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop gang worker vector")
-RAJA_INLINE When<Config, no::ind, yes::gang, yes::worker, yes::vector> forall(
+RAJA_INLINE When<Config, no_independent, gang, worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -727,7 +708,7 @@ RAJA_INLINE When<Config, no::ind, yes::gang, yes::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent")
-RAJA_INLINE When<Config, yes::ind, no::gang, no::worker, no::vector> forall(
+RAJA_INLINE When<Config, independent, no_gang, no_worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -743,7 +724,7 @@ RAJA_INLINE When<Config, yes::ind, no::gang, no::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent vector")
-RAJA_INLINE When<Config, yes::ind, no::gang, no::worker, yes::vector> forall(
+RAJA_INLINE When<Config, independent, no_gang, no_worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -759,7 +740,7 @@ RAJA_INLINE When<Config, yes::ind, no::gang, no::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent worker")
-RAJA_INLINE When<Config, yes::ind, no::gang, yes::worker, no::vector> forall(
+RAJA_INLINE When<Config, independent, no_gang, worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -775,7 +756,7 @@ RAJA_INLINE When<Config, yes::ind, no::gang, yes::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent worker vector")
-RAJA_INLINE When<Config, yes::ind, no::gang, yes::worker, yes::vector> forall(
+RAJA_INLINE When<Config, independent, no_gang, worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -791,7 +772,7 @@ RAJA_INLINE When<Config, yes::ind, no::gang, yes::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent gang")
-RAJA_INLINE When<Config, yes::ind, yes::gang, no::worker, no::vector> forall(
+RAJA_INLINE When<Config, independent, gang, no_worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -807,7 +788,7 @@ RAJA_INLINE When<Config, yes::ind, yes::gang, no::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent gang vector")
-RAJA_INLINE When<Config, yes::ind, yes::gang, no::worker, yes::vector> forall(
+RAJA_INLINE When<Config, independent, gang, no_worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -823,7 +804,7 @@ RAJA_INLINE When<Config, yes::ind, yes::gang, no::worker, yes::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent gang worker")
-RAJA_INLINE When<Config, yes::ind, yes::gang, yes::worker, no::vector> forall(
+RAJA_INLINE When<Config, independent, gang, worker, no_vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
@@ -839,7 +820,7 @@ RAJA_INLINE When<Config, yes::ind, yes::gang, yes::worker, no::vector> forall(
 
 template <typename Config, typename Iterable, typename Func>
 RAJA_VERBOSE("\nacc loop independent gang worker vector")
-RAJA_INLINE When<Config, yes::ind, yes::gang, yes::worker, yes::vector> forall(
+RAJA_INLINE When<Config, independent, gang, worker, vector> forall(
     const acc_loop_exec<Config>&,
     Iterable&& iter,
     Func&& loop_body)
