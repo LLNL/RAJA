@@ -28,10 +28,6 @@ struct omp_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
 struct omp_parallel_for_exec : public omp_parallel_exec<omp_for_exec> {
 };
 
-struct omp_target_parallel_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::target_openmp,
-                                                                       RAJA::Pattern::forall> {
-};
-
 template <size_t ChunkSize>
 struct omp_for_static
     : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
@@ -47,6 +43,13 @@ struct omp_for_nowait_exec
     : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
                                        RAJA::Pattern::forall> {
 };
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+template <size_t Teams>
+struct omp_target_parallel_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::target_openmp,
+                                                                       RAJA::Pattern::forall> {
+};
+#endif
 
 ///
 /// Index set segment iteration policies
@@ -75,10 +78,12 @@ struct omp_reduce : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
                                                      RAJA::Pattern::reduce> {
 };
 
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+template <size_t Teams>
 struct omp_target_reduce : public RAJA::make_policy_pattern<RAJA::Policy::target_openmp,
                                                      RAJA::Pattern::reduce> {
 };
-
+#endif
 
 struct omp_reduce_ordered : public omp_reduce {
 };

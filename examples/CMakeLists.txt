@@ -42,5 +42,11 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME raja-pi 
+  NAME raja-pi
   SOURCES pi.cxx)
+
+if(RAJA_ENABLE_TARGET_OPENMP)
+  raja_add_executable(
+    NAME raja-pi-offload
+    SOURCES pi_offload.cxx)
+end()

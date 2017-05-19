@@ -66,700 +66,324 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#include "RAJA/internal/MemUtils_CPU.hpp"
-
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
+#include <algorithm>
 
 namespace RAJA
 {
 
-template <typename T>
-class ReduceMin<omp_target_reduce, T>
+namespace omp
 {
-  using my_type = ReduceMin<omp_target_reduce, T>;
 
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMin(T init_val):
-    parent(NULL), val(init_val), num_teams(16), num_threads(512)
-  {
+template <typename Self>
+struct Offload_Info {
+  int hostID{omp_get_initial_device()};
+  int deviceID{omp_get_default_device()};
+  bool isMapped{false};
 
-        hostid = omp_get_initial_device();
-        devid  = omp_get_default_device();
-        is_mapped = false;
-        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
-        if( dev_val == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }
-        
-        host_val = new T [ num_teams ];
-        
-        for(int i=0; i<num_teams; ++i ) host_val[i] = init_val;
-        
-        omp_target_memcpy( (void *)dev_val, (void *)host_val, num_teams*sizeof(T), 0, 0, devid, hostid );
-  }
+  Offload_Info() = default;
 
-  //
-  // Copy ctor.
-  //
-  ReduceMin(const ReduceMin<omp_target_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val), dev_val(other.dev_val), hostid(other.hostid), devid(other.devid), 
-    num_teams(other.num_teams), num_threads(other.num_threads), is_mapped(other.is_mapped)
+  Offload_Info(const Offload_Info &other)
+      : hostID{other.hostID},
+        deviceID{other.deviceID},
+        isMapped{other.isMapped}
   {
   }
+};
 
-  //
-  // Destruction folds value into parent object.
-  //
-  ~ReduceMin<omp_target_reduce, T>()
+template <size_t Teams, typename T, typename Reducer>
+struct Reduce_Data {
+  Offload_Info<Reducer>* info;
+  T value;
+  T *device;
+  T *host;
+
+  Reduce_Data() = delete;
+
+  explicit Reduce_Data(T defaultValue, Offload_Info<Reducer> & oinfo)
+      : info(&oinfo),
+        value{defaultValue},
+        device{(T *)omp_target_alloc(Teams * sizeof(T), info->deviceID)},
+        host{new T[Teams]}
   {
-   if( !omp_is_initial_device() )
-    {
+    if (!host) {
+      printf("Unable to allocate space on host\n");
+      exit(1);
+    }
+    if (!device) {
+      printf("Unable to allocate space on device\n");
+      exit(1);
+    }
+    std::fill_n(host, Teams, value);
+    hostToDevice();
+  }
+
+  Reduce_Data(const Reduce_Data & other)
+      : info{other.info}, value{other.value}, device{nullptr}, host{nullptr}
+  {
+  }
+
+  void hostToDevice()
+  {
+    if (!!host && !!device
+        && !omp_target_memcpy((void *)device,
+                              (void *)host,
+                              Teams * sizeof(T),
+                              0,
+                              0,
+                              info->deviceID,
+                              info->hostID)) {
+      printf("Unable to copy memory from host to device\n");
+      exit(1);
+    }
+  }
+
+  void deviceToHost()
+  {
+    if (!!host && !!device
+        && !omp_target_memcpy((void *)host,
+                              (void *)device,
+                              Teams * sizeof(T),
+                              0,
+                              0,
+                              info->deviceID,
+                              info->hostID)) {
+      printf("Unable to copy memory from device to host\n");
+      exit(1);
+    }
+  }
+
+  void cleanup()
+  {
+    if (device) {
+      omp_target_free((void *)device, info->deviceID);
+      device = nullptr;
+    }
+    if (host) {
+      delete[] host;
+      host = nullptr;
+    }
+  }
+};
+
+#pragma omp declare target
+
+template <typename T>
+struct sum {
+  static void apply(T &val, const T &v) { val += v; }
+};
+
+template <typename T>
+struct min {
+  static void apply(T &val, const T &v)
+  {
+    if (v < val) val = v;
+  }
+};
+
+template <typename T>
+struct max {
+  static void apply(T &val, const T &v)
+  {
+    if (v > val) val = v;
+  }
+};
+
+template <typename T, typename I = Index_type>
+struct minloc {
+  static void apply(I &loc, T &val, const I &l, const T &v)
+  {
+    if (v < val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+template <typename T, typename I = Index_type>
+struct maxloc {
+  static void apply(I &loc, T &val, const I &l, const T &v)
+  {
+    if (v > val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+#pragma omp end declare target
+
+}  // end namespace omp
+
+
+template <size_t Teams, typename T, typename Reducer>
+struct TargetReduce
+    : protected omp::Offload_Info<TargetReduce<Teams, T, Reducer>> {
+  using SelfType = TargetReduce<Teams, T, Reducer>;
+  using Offload = omp::Offload_Info<TargetReduce<Teams, T, Reducer>>;
+
+  TargetReduce() = delete;
+  TargetReduce(const TargetReduce &) = default;
+  explicit TargetReduce(T init_val)
+      : omp::Offload_Info<SelfType>(), val(init_val, *this)
+  {
+  }
+
+  ~TargetReduce()
+  {
+    if (!omp_is_initial_device()) {
 #pragma omp critical
       {
-      	int tid = omp_get_team_num();
-        dev_val[tid] = RAJA_MIN(dev_val[tid], ptr2this->val);
+        int tid = omp_get_team_num();
+        Reducer::apply(val.device[tid], val.value);
       }
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
   operator T()
   {
-    if( !is_mapped ){
-        omp_target_memcpy( (void*)host_val, (void*)dev_val , num_teams*sizeof(T), 0, 0, hostid, devid );
-        
-        for(int i=0; i<num_teams; ++i )
-        	val = RAJA_MIN( val, host_val[i] );
-        
-        omp_target_free( (void*)dev_val, devid );
-        delete [] host_val;
-        is_mapped = true;
+    if (!this->isMapped) {
+      val.deviceToHost();
+      for (int i = 0; i < Teams; ++i) {
+        Reducer::apply(val.value, val.host[i]);
+      }
+      val.cleanup();
+      this->isMapped = true;
     }
-    return val;
+    return val.value;
   }
-
-  //
-  // Method that returns reduced min value.
-  //
   T get() { return operator T(); }
 
-  //
-  // Method that updates min value for current object, assumes each thread
-  // has its own copy of the object.
-  //
-  const ReduceMin<omp_target_reduce, T>& min(T rhs) const
+  TargetReduce &reduce(T rhsVal)
   {
-    ptr2this->val = RAJA_MIN(ptr2this->val, rhs);
+    Reducer::apply(val.value, rhsVal);
     return *this;
   }
-
-  ReduceMin<omp_target_reduce, T>& min(T rhs) {
-    val = RAJA_MIN(val, rhs);
-    return *this;
+  const TargetReduce &reduce(T rhsVal) const
+  {
+    return const_cast<SelfType *>(this)->reduce(rhsVal);
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMin<omp_target_reduce, T>();
-
-  const my_type * parent;
-  my_type * ptr2this = this;
-  T *host_val, *dev_val;
-  bool is_mapped;
-  int hostid, devid, num_teams, num_threads;
-  mutable T val;
+  omp::Reduce_Data<Teams, T, SelfType> val;
 };
 
-/*!
- ******************************************************************************
- *
- * \brief  Min-loc reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceMinLoc<omp_target_reduce, T>
-{
-  using my_type = ReduceMinLoc<omp_target_reduce, T>;
+template <size_t Teams, typename T, typename Reducer>
+struct TargetReduceLoc
+    : protected omp::Offload_Info<TargetReduceLoc<Teams, T, Reducer>> {
+  using SelfType = TargetReduceLoc<Teams, T, Reducer>;
 
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc), num_teams(16), num_threads(512)
-  {
-        hostid = omp_get_initial_device();
-        devid  = omp_get_default_device();
-        is_mapped = false;
-        
-        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
-        if( dev_val == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }
-        dev_idx = (Index_type *)omp_target_alloc( num_teams*sizeof(Index_type), devid );
-        if( dev_idx == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }        
-        
-        host_val = new T [num_teams];
-        host_idx = new Index_type [num_teams];
-        
-        for(int i=0; i<num_teams; ++i )
-        {
-        	host_val[i] = init_val;
-        	host_idx[i] = init_loc;
-        }
-        
-        omp_target_memcpy( (void *)dev_val, (void *)host_val, num_teams*sizeof(T), 0, 0, devid, hostid );
-        omp_target_memcpy( (void *)dev_idx, (void *)host_idx, num_teams*sizeof(Index_type), 0, 0, devid, hostid );
- }
-
-  //
-  // Copy ctor.
-  //
-  ReduceMinLoc(const ReduceMinLoc<omp_target_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val), dev_val(other.dev_val),
-    idx(other.idx), dev_idx(other.dev_idx),
-    hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped), 
-    num_teams(other.num_teams), num_threads(other.num_threads)
+  TargetReduceLoc() = delete;
+  TargetReduceLoc(const TargetReduceLoc &) = default;
+  explicit TargetReduceLoc(T init_val, Index_type init_loc)
+      : omp::Offload_Info<SelfType>(),
+        val(init_val, this->deviceID),
+        loc(init_loc, this->deviceID)
   {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMinLoc<omp_target_reduce, T>()
+  ~TargetReduceLoc()
   {
-   if( !omp_is_initial_device() )
-    {
+    if (!omp_is_initial_device()) {
 #pragma omp critical
       {
-      	int tid = omp_get_team_num();
-        if( ptr2this->val < dev_val[tid] )
-        {
-            dev_val[tid] = ptr2this->val;
-            dev_idx[tid] = ptr2this->idx;
-        }        
+        int tid = omp_get_team_num();
+        Reducer::apply(loc.device[tid], val.host[tid], loc.value, val.value);
       }
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
   operator T()
   {
-    if( !is_mapped ){
-        omp_target_memcpy( (void*)host_val, (void*)dev_val , num_teams*sizeof(T), 0, 0, hostid, devid );
-        omp_target_free( (void*)dev_val, devid );
-        omp_target_memcpy( (void*)host_idx, (void*)dev_idx , num_teams*sizeof(Index_type), 0, 0, hostid, devid );
-        omp_target_free( (void*)dev_idx, devid );
-        
-        for(int i=0; i<num_teams; ++i)
-        {
-        	if( host_val[i] < val )
-        	{
-        		val = host_val[i];
-        		idx = host_idx[i];
-        	}
-        }
-        
-        delete [] host_idx;
-        delete [] host_val;
-        is_mapped = true;
+    if (!this->isMapped) {
+      val.deviceToHost();
+      loc.deviceToHost();
+      for (int i = 0; i < Teams; ++i) {
+        Reducer::apply(loc.value, val.value, loc.host[i], val.host[i]);
+      }
+      val.cleanup();
+      loc.cleanup();
+      this->isMapped = true;
     }
-    return val;
+    return val.value;
   }
-
-  //
-  // Method that returns reduced min value.
-  //
   T get() { return operator T(); }
 
-  //
-  // Method that returns index corresponding to reduced min value.
-  //
   Index_type getLoc()
   {
-    if( !is_mapped )
-    {
-       T val = get();
-    }
-    return idx;
+    if (!this->isMapped) get();
+    return loc.value;
   }
 
-  //
-  // Method that updates min and index values for current thread.
-  //
-  const ReduceMinLoc<omp_target_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
+  TargetReduceLoc &reduce(T rhsVal, Index_type rhsLoc)
   {
-    if (rhs < ptr2this->val) {
-      ptr2this->val = rhs;
-      ptr2this->idx = rhs_idx;
-    }
+    Reducer::apply(loc.value, val.value, rhsLoc, rhsVal);
     return *this;
   }
-
-  ReduceMinLoc<omp_target_reduce, T>& minloc(T rhs, Index_type rhs_idx)
+  const TargetReduceLoc &reduce(T rhsVal, Index_type rhsLoc) const
   {
-    if (rhs < val) {
-      val = rhs;
-      idx = rhs_idx;
-    }
-    return *this;
+    return const_cast<SelfType *>(this)->reduce(rhsVal, rhsLoc);
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMinLoc<omp_target_reduce, T>();
-
-  const my_type * parent;
-
-  mutable T val;
-  mutable Index_type idx;
-
-  my_type * ptr2this = this;
-  T *host_val, *dev_val;
-  Index_type *host_idx, *dev_idx;
-  bool is_mapped;
-  int hostid, devid, num_teams, num_threads;
-  
+  omp::Reduce_Data<Teams, T, SelfType> val;
+  omp::Reduce_Data<Teams, Index_type, SelfType> loc;
 };
 
-/*!
- ******************************************************************************
- *
- * \brief  Max reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceMax<omp_target_reduce, T>
-{
-  using my_type = ReduceMax<omp_target_reduce, T>;
-
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMax(T init_val):
-    parent(NULL), val(init_val), num_teams(16), num_threads(512)
-  {
-        hostid = omp_get_initial_device();
-        devid  = omp_get_default_device();
-        is_mapped = false;
-        
-        host_val = new T [num_teams];
-        
-        for(int i=0; i<num_teams; ++i ) host_val[i] = init_val;
-        
-        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
-        if( dev_val == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }
-        omp_target_memcpy( (void *)dev_val, (void *)host_val, num_teams*sizeof(T), 0, 0, devid, hostid );
-  }
-
-  //
-  // Copy ctor.
-  //
-  ReduceMax(const ReduceMax<omp_target_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other),
-    val(other.val), dev_val(other.dev_val), hostid(other.hostid), devid(other.devid), 
-    num_teams(other.num_teams), num_threads(other.num_threads), is_mapped(other.is_mapped)
-  {
-  }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMax<omp_target_reduce, T>()
-  {
-   if( !omp_is_initial_device()  )
-    {
-#pragma omp critical
-      {
-      	int tid = omp_get_team_num();
-        dev_val[tid] = RAJA_MAX(dev_val[tid], ptr2this->val);
-      }
-    }
-  }
-
-  //
-  // Operator that returns reduced max value.
-  //
-  operator T()
-  {
-    if( !is_mapped ){
-        omp_target_memcpy( (void*)host_val, (void*)dev_val , num_teams*sizeof(T), 0, 0, hostid, devid );
-        for(int i=0; i<num_teams; ++i )
-        	val = RAJA_MAX(val, host_val[i]);
-        omp_target_free( (void*)dev_val, devid );
-        delete [] host_val;
-        is_mapped = true;
-    }
-    return val;
-  }
-
-  //
-  // Method that returns reduced max value.
-  //
-  T get() { return operator T(); }
-
-  //
-  // Method that updates max value for current thread.
-  //
-  const ReduceMax<omp_target_reduce, T>& max(T rhs) const
-  {
-    ptr2this->val = RAJA_MAX(ptr2this->val, rhs);
-    return *this;
-  }
-
-  ReduceMax<omp_target_reduce, T>& max(T rhs)
-  {
-    val = RAJA_MAX(val, rhs);
-    return *this;
-  }
-
-private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMax<omp_target_reduce, T>();
-
-  const my_type * parent;
-  my_type * ptr2this = this;
-  T *host_val, *dev_val;
-  bool is_mapped;
-  int hostid, devid, num_teams, num_threads;
-  mutable T val;};
-
-/*!
- ******************************************************************************
- *
- * \brief  Max-loc reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceMaxLoc<omp_target_reduce, T>
-{
-  using my_type = ReduceMaxLoc<omp_target_reduce, T>;
-
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc):
-    parent(NULL), val(init_val), idx(init_loc), num_teams(16), num_threads(512)
-  {
-        hostid = omp_get_initial_device();
-        devid  = omp_get_default_device();
-        is_mapped = false;
-        
-        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
-        if( dev_val == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }
-        dev_idx = (Index_type *)omp_target_alloc( num_teams*sizeof(Index_type), devid );
-        if( dev_idx == NULL ){
-                printf("Unable to allocate space on device\n" );
-                exit(1);
-        }
-        
-        host_val = new T [num_teams];
-        host_idx = new Index_type [num_teams];
-        
-        for(int i=0; i<num_teams; ++i)
-        {
-        	host_val[i] = init_val;
-        	host_idx[i]= init_loc;
-        }
-        
-        omp_target_memcpy( (void *)dev_val, (void *)host_val, num_teams*sizeof(T), 0, 0, devid, hostid );
-        omp_target_memcpy( (void *)dev_idx, (void *)host_idx, num_teams*sizeof(Index_type), 0, 0, devid, hostid );
-  }
-
-  //
-  // Copy ctor.
-  //
-  ReduceMaxLoc(const ReduceMaxLoc<omp_target_reduce, T>& other):
-    parent(other.parent ? other.parent : &other),
-    val(other.val), dev_val(other.dev_val),
-    idx(other.idx), dev_idx(other.dev_idx),
-    hostid(other.hostid), devid(other.devid), is_mapped(other.is_mapped),
-    num_teams(other.num_teams), num_threads(other.num_threads)
-  {
-  }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMaxLoc<omp_target_reduce, T>()
-  {
-   if( !omp_is_initial_device() )
-    {
-#pragma omp critical
-      {
-      	int tid = omp_get_team_num();
-        if( ptr2this->val > dev_val[tid] )
-        {
-            dev_val[tid] = ptr2this->val;
-            dev_idx[tid] = ptr2this->idx;
-        }        
-      }
-    }
-  }
-
-  //
-  // Operator that returns reduced max value.
-  //
-  operator T()
-  {
-    if( !is_mapped ){
-        omp_target_memcpy( (void*)host_val, (void*)dev_val , num_teams*sizeof(T), 0, 0, hostid, devid );
-        omp_target_free( (void*)dev_val, devid );
-        omp_target_memcpy( (void*)host_idx, (void*)dev_idx , num_teams*sizeof(Index_type), 0, 0, hostid, devid );
-        omp_target_free( (void*)dev_idx, devid );
-        for(int i=0; i<num_teams; ++i)
-        {
-        	if( host_val[i] > val )
-        	{
-        		val = host_val[i];
-        		idx = host_idx[i];
-        	}
-        }
-        delete [] host_val;
-        delete [] host_idx;
-        is_mapped = true;
-    }
-    return val;
-  }
-
-  //
-  // Method that returns reduced max value.
-  //
-  T get() { return operator T(); }
-
-  //
-  // Method that returns index corresponding to reduced max value.
-  //
-  Index_type getLoc()
-  {
-    if( !is_mapped )
-    {
-       T val = get();
-    }
-    return idx;
-  }
-
-  //
-  // Method that updates max and index values for current thread.
-  //
-  const ReduceMaxLoc<omp_target_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
-  {
-    if (rhs > val) {
-      ptr2this->val = rhs;
-      ptr2this->idx = rhs_idx;
-    }
-    return *this;
-  }
-
-  ReduceMaxLoc<omp_target_reduce, T>& maxloc(T rhs, Index_type rhs_idx)
-  {
-    if (rhs > val) {
-      val = rhs;
-      idx = rhs_idx;
-    }
-    return *this;
-  }
-
-private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMaxLoc<omp_target_reduce, T>();
-
-  const my_type * parent;
-
-  mutable T val;
-  mutable Index_type idx;
-  
-  my_type * ptr2this = this;
-  T *host_val, *dev_val;
-  Index_type *host_idx, *dev_idx;
-  bool is_mapped;
-  int hostid, devid, num_teams, num_threads;
-
+template <size_t Teams, typename T>
+struct ReduceSum<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, T, omp::sum<T>> {
+  using parent = TargetReduce<Teams, T, omp::sum<T>>;
+  using parent::parent;
+  using parent::reduce;
+  parent &operator+=(T rhsVal) { return reduce(rhsVal); }
+  const parent &operator+=(T rhsVal) const { return reduce(rhsVal); }
 };
 
-/*
- ******************************************************************************
- *
- * \brief  Sum reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
- 
-template <typename T>
-class ReduceSum<omp_target_reduce, T>
-{
-  using my_type = ReduceSum<omp_target_reduce, T>;
+template <size_t Teams, typename T>
+struct ReduceMin<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, T, omp::min<T>> {
+  using parent = TargetReduce<Teams, T, omp::min<T>>;
+  using parent::parent;
+  using parent::reduce;
+  parent &min(T rhsVal) { return reduce(rhsVal); }
+  const parent &min(T rhsVal) const { return reduce(rhsVal); }
+};
 
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceSum(T init_val, T initializer = 0)
-    : parent(NULL), val(init_val), dev_val(NULL), custom_init(initializer),
-    hostid(0), devid(0), num_teams(16), num_threads(512), is_mapped(false)
+template <size_t Teams, typename T>
+struct ReduceMax<omp_target_reduce<Teams>, T>
+    : public TargetReduce<Teams, T, omp::max<T>> {
+  using parent = TargetReduce<Teams, T, omp::max<T>>;
+  using parent::parent;
+  using parent::reduce;
+  parent &max(T rhsVal) { return reduce(rhsVal); }
+  const parent &max(T rhsVal) const { return reduce(rhsVal); }
+};
+
+template <size_t Teams, typename T>
+struct ReduceMinLoc<omp_target_reduce<Teams>, T>
+    : public TargetReduceLoc<Teams, T, omp::minloc<T>> {
+  using parent = TargetReduceLoc<Teams, T, omp::minloc<T>>;
+  using parent::parent;
+  using parent::reduce;
+  parent &minloc(Index_type rhsLoc, T rhsVal) { return reduce(rhsLoc, rhsVal); }
+  const parent &minloc(Index_type rhsLoc, T rhsVal) const
   {
-  	int flag;
-	hostid = omp_get_initial_device();
-	devid  = omp_get_default_device();
-
-	char *p = std::getenv( "RAJA_OMP_NUM_TEAMS" );
-	if( p != NULL )
-        	num_teams = std::atoi( p );
-	else
-		printf("RAJA_OMP_NUM_TEAMS not set. Default value: %d\n", num_teams );
-	
-        dev_val = (T *)omp_target_alloc( num_teams*sizeof(T), devid );
-	if( dev_val == NULL ){
-		printf("Unable to allocate space on device\n" );
-		exit(1);
-	} 
-		
-	
-	host_val = new T [num_teams];
-	
-	for(int i=0; i<num_teams; i++) host_val[i] = init_val;
-	
-	flag = omp_target_memcpy( (void *)dev_val, (void *)host_val, 
-	                    num_teams*sizeof(T), 0, 0, devid, hostid );
-    if( flag != 0 ){
-    	printf("Unable to copy memory from host to device\n" );
-    	exit(1);
-    }
- 
+    return reduce(rhsLoc, rhsVal);
   }
+};
 
-  //
-  // Copy ctor.
-  //
-  ReduceSum(const ReduceSum<omp_target_reduce, T>& other) :
-    parent(other.parent ? other.parent : &other), 
-    val(other.val), dev_val(other.dev_val),
-    num_teams(other.num_teams), num_threads(other.num_threads),
-    is_mapped(other.is_mapped), hostid(other.hostid), devid(other.devid)
+template <size_t Teams, typename T>
+struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
+    : public TargetReduceLoc<Teams, T, omp::maxloc<T>> {
+  using parent = TargetReduceLoc<Teams, T, omp::maxloc<T>>;
+  using parent::parent;
+  using parent::reduce;
+  parent &maxloc(Index_type rhsLoc, T rhsVal) { return reduce(rhsLoc, rhsVal); }
+  const parent &maxloc(Index_type rhsLoc, T rhsVal) const
   {
-		
+    return reduce(rhsLoc, rhsVal);
   }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceSum<omp_target_reduce, T>()
-  {
-   if( !omp_is_initial_device() )
-    { 
-        #pragma omp critical
-	{
-          int tid = omp_get_team_num();
-	  dev_val[tid] += ptr2this->val;
-	}  
-
-    } 
-  } 
-  // 
-  // Operator that returns reduced sum value.
-  //
-  operator T()
-  {
-    if( !is_mapped ){
-    	int flag = omp_target_memcpy( (void*)host_val, (void*)dev_val , 
-				       num_teams*sizeof(T), 0, 0, hostid, devid );
-        if( flag != 0 ){
-    		printf("Unable to copy memory from device to host\n" );
-    		exit(1);
-    	}
-
-        for(int i=0; i<num_teams; ++i)
-        {
-        	val += host_val[i];
-        }
-
-        omp_target_free( (void*)dev_val, devid );
-	delete [] host_val;
-        is_mapped = true;
-   }
- 
-    return val;
-  }
-
-  //
-  // Method that returns sum value.
-  //
-  T get() { return operator T(); }
-
-  //
-  // += operator that adds value to sum for current thread.
-  //
-  const ReduceSum<omp_target_reduce, T>& operator+=(T rhs) const 
-  {
-  ptr2this->val += rhs;    
-  return *this;
-  }
-
-  ReduceSum<omp_target_reduce, T>& operator+=(T rhs)
-  {
-    this->val += rhs;
-    return *this;
-  }
-  
-private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<omp_target_reduce, T>();
-  const my_type * parent;
-  my_type * ptr2this = this;
-  mutable T val;
-  T *host_val, *dev_val;
-  T custom_init;
-  int hostid, devid, num_teams, num_threads;
-  bool is_mapped;
 };
 
 }  // closing brace for RAJA namespace

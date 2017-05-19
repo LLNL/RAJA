@@ -62,21 +62,13 @@
 
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/index/RangeSegment.hpp"
-#include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#include <iostream>
-#include <thread>
-
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
-
 
 namespace RAJA
 {
@@ -88,29 +80,41 @@ namespace impl
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_target_parallel_for_exec&,
+template <size_t Teams, typename Iterable, typename Func>
+RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
                         Iterable&& iter,
-                        Func && loop_body)
+                        Func&& loop_body)
 {
-    using body_type = typename std::remove_reference<decltype(loop_body)>::type;
-    auto begin = std::begin(iter);
-    auto end = std::end(iter);
-    auto distance = std::distance(begin, end);
-    int nteams=16;
-    char *p = std::getenv( "RAJA_OMP_NUM_TEAMS" );
-    if( p != NULL )
-            nteams = std::atoi( p );
-    else
-            printf("RAJA_OMP_NUM_TEAMS not set. Default value: %d\n", nteams );
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
 
-#pragma omp target teams distribute parallel for schedule(static, 1) \
-	num_teams(nteams) firstprivate(loop_body)
-    {
-        for (Index_type i = 0; i < distance; ++i) {
-            loop_body(begin[i]);
-        }
+#pragma omp target teams distribute parallel for schedule( \
+    static, 1) num_teams(Teams) firstprivate(loop_body)
+  {
+    for (Index_type i = 0; i < distance; ++i) {
+      loop_body(begin[i]);
     }
+  }
+}
+
+template <size_t Teams, typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const omp_target_parallel_for_exec<Teams>&,
+                               Iterable&& iter,
+                               Index_type icount,
+                               Func&& loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+
+#pragma omp target teams distribute parallel for schedule( \
+    static, 1) num_teams(Teams) firstprivate(loop_body)
+  {
+    for (Index_type i = 0; i < distance; ++i) {
+      loop_body(i + icount, begin[i]);
+    }
+  }
 }
 
 }  // closing brace for impl namespace
