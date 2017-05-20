@@ -85,16 +85,14 @@ RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
+  typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-
-#pragma omp target teams distribute parallel for schedule( \
-    static, 1) num_teams(Teams) firstprivate(loop_body)
-  {
-    for (Index_type i = 0; i < distance; ++i) {
-      loop_body(begin[i]);
-    }
+#pragma omp target teams distribute parallel for num_teams(Teams) \
+    schedule(static, 1) firstprivate(body)
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(begin[i]);
   }
 }
 
@@ -104,16 +102,14 @@ RAJA_INLINE void forall_Icount(const omp_target_parallel_for_exec<Teams>&,
                                Index_type icount,
                                Func&& loop_body)
 {
+  typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-
-#pragma omp target teams distribute parallel for schedule( \
-    static, 1) num_teams(Teams) firstprivate(loop_body)
-  {
-    for (Index_type i = 0; i < distance; ++i) {
-      loop_body(i + icount, begin[i]);
-    }
+#pragma omp target teams distribute parallel for num_teams(Teams) \
+    schedule(static, 1) firstprivate(body)
+  for (Index_type i = 0; i < distance; ++i) {
+    loop_body(i + icount, begin[i]);
   }
 }
 

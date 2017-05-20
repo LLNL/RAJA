@@ -84,23 +84,21 @@ struct Offload_Info {
   Offload_Info() = default;
 
   Offload_Info(const Offload_Info &other)
-      : hostID{other.hostID},
-        deviceID{other.deviceID},
-        isMapped{other.isMapped}
+      : hostID{other.hostID}, deviceID{other.deviceID}, isMapped{other.isMapped}
   {
   }
 };
 
 template <size_t Teams, typename T, typename Reducer>
 struct Reduce_Data {
-  Offload_Info<Reducer>* info;
+  Offload_Info<Reducer> *info;
   T value;
   T *device;
   T *host;
 
   Reduce_Data() = delete;
 
-  explicit Reduce_Data(T defaultValue, Offload_Info<Reducer> & oinfo)
+  explicit Reduce_Data(T defaultValue, Offload_Info<Reducer> &oinfo)
       : info(&oinfo),
         value{defaultValue},
         device{(T *)omp_target_alloc(Teams * sizeof(T), info->deviceID)},
@@ -118,7 +116,7 @@ struct Reduce_Data {
     hostToDevice();
   }
 
-  Reduce_Data(const Reduce_Data & other)
+  Reduce_Data(const Reduce_Data &other)
       : info{other.info}, value{other.value}, device{nullptr}, host{nullptr}
   {
   }
@@ -170,12 +168,12 @@ struct Reduce_Data {
 
 template <typename T>
 struct sum {
-  static void apply(T &val, const T &v) { val += v; }
+  static void apply(T &val, T v) { val += v; }
 };
 
 template <typename T>
 struct min {
-  static void apply(T &val, const T &v)
+  static void apply(T &val, T v)
   {
     if (v < val) val = v;
   }
@@ -183,15 +181,15 @@ struct min {
 
 template <typename T>
 struct max {
-  static void apply(T &val, const T &v)
+  static void apply(T &val, T v)
   {
     if (v > val) val = v;
   }
 };
 
-template <typename T, typename I = Index_type>
+template <typename T, typename I>
 struct minloc {
-  static void apply(I &loc, T &val, const I &l, const T &v)
+  static void apply(T &val, I &loc, T v, I l)
   {
     if (v < val) {
       loc = l;
@@ -200,9 +198,9 @@ struct minloc {
   }
 };
 
-template <typename T, typename I = Index_type>
+template <typename T, typename I>
 struct maxloc {
-  static void apply(I &loc, T &val, const I &l, const T &v)
+  static void apply(T &val, I &loc, T v, I l)
   {
     if (v > val) {
       loc = l;
@@ -268,17 +266,18 @@ private:
   omp::Reduce_Data<Teams, T, SelfType> val;
 };
 
-template <size_t Teams, typename T, typename Reducer>
+template <size_t Teams, typename T, typename IndexType, typename Reducer>
 struct TargetReduceLoc
-    : protected omp::Offload_Info<TargetReduceLoc<Teams, T, Reducer>> {
-  using SelfType = TargetReduceLoc<Teams, T, Reducer>;
+    : protected omp::
+          Offload_Info<TargetReduceLoc<Teams, T, IndexType, Reducer>> {
+  using SelfType = TargetReduceLoc<Teams, T, IndexType, Reducer>;
 
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
-  explicit TargetReduceLoc(T init_val, Index_type init_loc)
+  explicit TargetReduceLoc(T init_val, IndexType init_loc)
       : omp::Offload_Info<SelfType>(),
-        val(init_val, this->deviceID),
-        loc(init_loc, this->deviceID)
+        val(init_val, *this),
+        loc(init_loc, *this)
   {
   }
 
@@ -288,7 +287,7 @@ struct TargetReduceLoc
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        Reducer::apply(loc.device[tid], val.host[tid], loc.value, val.value);
+        Reducer::apply(val.host[tid], loc.device[tid], val.value, loc.value);
       }
     }
   }
@@ -299,7 +298,7 @@ struct TargetReduceLoc
       val.deviceToHost();
       loc.deviceToHost();
       for (int i = 0; i < Teams; ++i) {
-        Reducer::apply(loc.value, val.value, loc.host[i], val.host[i]);
+        Reducer::apply(val.value, loc.value, val.host[i], loc.host[i]);
       }
       val.cleanup();
       loc.cleanup();
@@ -309,25 +308,25 @@ struct TargetReduceLoc
   }
   T get() { return operator T(); }
 
-  Index_type getLoc()
+  IndexType getLoc()
   {
     if (!this->isMapped) get();
     return loc.value;
   }
 
-  TargetReduceLoc &reduce(T rhsVal, Index_type rhsLoc)
+  TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
-    Reducer::apply(loc.value, val.value, rhsLoc, rhsVal);
+    Reducer::apply(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
-  const TargetReduceLoc &reduce(T rhsVal, Index_type rhsLoc) const
+  const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
     return const_cast<SelfType *>(this)->reduce(rhsVal, rhsLoc);
   }
 
 private:
   omp::Reduce_Data<Teams, T, SelfType> val;
-  omp::Reduce_Data<Teams, Index_type, SelfType> loc;
+  omp::Reduce_Data<Teams, IndexType, SelfType> loc;
 };
 
 template <size_t Teams, typename T>
@@ -362,27 +361,35 @@ struct ReduceMax<omp_target_reduce<Teams>, T>
 
 template <size_t Teams, typename T>
 struct ReduceMinLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, T, omp::minloc<T>> {
-  using parent = TargetReduceLoc<Teams, T, omp::minloc<T>>;
+    : public TargetReduceLoc<Teams, T, Index_type, omp::minloc<T, Index_type>> {
+  using parent =
+      TargetReduceLoc<Teams, T, Index_type, omp::minloc<T, Index_type>>;
   using parent::parent;
   using parent::reduce;
-  parent &minloc(Index_type rhsLoc, T rhsVal) { return reduce(rhsLoc, rhsVal); }
-  const parent &minloc(Index_type rhsLoc, T rhsVal) const
+  parent &minloc(T rhsVal, Index_type rhsLoc)
   {
-    return reduce(rhsLoc, rhsVal);
+    return reducer(rhsVal, rhsLoc);
+  }
+  const parent &minloc(T rhsVal, Index_type rhsLoc) const
+  {
+    return reduce(rhsVal, rhsLoc);
   }
 };
 
 template <size_t Teams, typename T>
 struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
-    : public TargetReduceLoc<Teams, T, omp::maxloc<T>> {
-  using parent = TargetReduceLoc<Teams, T, omp::maxloc<T>>;
+    : public TargetReduceLoc<Teams, T, Index_type, omp::maxloc<T, Index_type>> {
+  using parent =
+      TargetReduceLoc<Teams, T, Index_type, omp::maxloc<T, Index_type>>;
   using parent::parent;
   using parent::reduce;
-  parent &maxloc(Index_type rhsLoc, T rhsVal) { return reduce(rhsLoc, rhsVal); }
-  const parent &maxloc(Index_type rhsLoc, T rhsVal) const
+  parent &maxloc(T rhsVal, Index_type rhsLoc)
   {
-    return reduce(rhsLoc, rhsVal);
+    return reducer(rhsVal, rhsLoc);
+  }
+  const parent &maxloc(T rhsVal, Index_type rhsLoc) const
+  {
+    return reduce(rhsVal, rhsLoc);
   }
 };
 

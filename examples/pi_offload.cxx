@@ -6,8 +6,9 @@
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
-  typedef RAJA::omp_target_reduce reduce_policy;
-  typedef RAJA::omp_target_parallel_for_exec execute_policy;
+  constexpr const size_t Teams = 64;
+  using reduce_policy = RAJA::omp_target_reduce<Teams>;
+  using execute_policy = RAJA::omp_target_parallel_for_exec<Teams>;
 
   RAJA::Index_type begin = 0;
   RAJA::Index_type numBins = 512 * 512;
