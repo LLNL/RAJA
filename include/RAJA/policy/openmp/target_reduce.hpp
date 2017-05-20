@@ -75,7 +75,6 @@ namespace RAJA
 namespace omp
 {
 
-template <typename Self>
 struct Offload_Info {
   int hostID{omp_get_initial_device()};
   int deviceID{omp_get_default_device()};
@@ -91,17 +90,15 @@ struct Offload_Info {
 
 template <size_t Teams, typename T, typename Reducer>
 struct Reduce_Data {
-  Offload_Info<Reducer> *info;
   T value;
   T *device;
   T *host;
 
   Reduce_Data() = delete;
 
-  explicit Reduce_Data(T defaultValue, Offload_Info<Reducer> &oinfo)
-      : info(&oinfo),
-        value{defaultValue},
-        device{(T *)omp_target_alloc(Teams * sizeof(T), info->deviceID)},
+  explicit Reduce_Data(T defaultValue, Offload_Info &oinfo)
+      : value{defaultValue},
+        device{reinterpret_cast<T *>(omp_target_alloc(Teams * sizeof(T), oinfo.deviceID))},
         host{new T[Teams]}
   {
     if (!host) {
@@ -113,54 +110,55 @@ struct Reduce_Data {
       exit(1);
     }
     std::fill_n(host, Teams, value);
-    hostToDevice();
+    hostToDevice(oinfo);
   }
 
   Reduce_Data(const Reduce_Data &other)
-      : info{other.info}, value{other.value}, device{nullptr}, host{nullptr}
+      : value{other.value}, device{nullptr}, host{nullptr}
   {
   }
 
-  void hostToDevice()
+  void hostToDevice(Offload_Info &info)
   {
     if (!!host && !!device
-        && !omp_target_memcpy((void *)device,
-                              (void *)host,
+        && !omp_target_memcpy(reinterpret_cast<void *>(device),
+                              reinterpret_cast<void *>(host),
                               Teams * sizeof(T),
                               0,
                               0,
-                              info->deviceID,
-                              info->hostID)) {
+                              info.deviceID,
+                              info.hostID)) {
       printf("Unable to copy memory from host to device\n");
       exit(1);
     }
   }
 
-  void deviceToHost()
+  void deviceToHost(Offload_Info &info)
   {
     if (!!host && !!device
-        && !omp_target_memcpy((void *)host,
-                              (void *)device,
+        && !omp_target_memcpy(reinterpret_cast<void *>(host),
+                              reinterpret_cast<void *>(device),
                               Teams * sizeof(T),
                               0,
                               0,
-                              info->deviceID,
-                              info->hostID)) {
+                              info.deviceID,
+                              info.hostID)) {
       printf("Unable to copy memory from device to host\n");
       exit(1);
     }
   }
 
-  void cleanup()
+  void cleanup(Offload_Info &info)
   {
     if (device) {
-      omp_target_free((void *)device, info->deviceID);
+      omp_target_free(reinterpret_cast<void *>(device), info.deviceID);
       device = nullptr;
     }
     if (host) {
       delete[] host;
       host = nullptr;
     }
+    info.isMapped = true;
   }
 };
 
@@ -215,17 +213,12 @@ struct maxloc {
 
 
 template <size_t Teams, typename T, typename Reducer>
-struct TargetReduce
-    : protected omp::Offload_Info<TargetReduce<Teams, T, Reducer>> {
+struct TargetReduce : protected omp::Offload_Info {
   using SelfType = TargetReduce<Teams, T, Reducer>;
-  using Offload = omp::Offload_Info<TargetReduce<Teams, T, Reducer>>;
 
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
-  explicit TargetReduce(T init_val)
-      : omp::Offload_Info<SelfType>(), val(init_val, *this)
-  {
-  }
+  explicit TargetReduce(T init_val) : val(init_val, *this) {}
 
   ~TargetReduce()
   {
@@ -241,12 +234,11 @@ struct TargetReduce
   operator T()
   {
     if (!this->isMapped) {
-      val.deviceToHost();
+      val.deviceToHost(*this);
       for (int i = 0; i < Teams; ++i) {
         Reducer::apply(val.value, val.host[i]);
       }
-      val.cleanup();
-      this->isMapped = true;
+      val.cleanup(*this);
     }
     return val.value;
   }
@@ -267,17 +259,13 @@ private:
 };
 
 template <size_t Teams, typename T, typename IndexType, typename Reducer>
-struct TargetReduceLoc
-    : protected omp::
-          Offload_Info<TargetReduceLoc<Teams, T, IndexType, Reducer>> {
+struct TargetReduceLoc : protected omp::Offload_Info {
   using SelfType = TargetReduceLoc<Teams, T, IndexType, Reducer>;
 
   TargetReduceLoc() = delete;
   TargetReduceLoc(const TargetReduceLoc &) = default;
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
-      : omp::Offload_Info<SelfType>(),
-        val(init_val, *this),
-        loc(init_loc, *this)
+      : val(init_val, *this), loc(init_loc, *this)
   {
   }
 
@@ -287,7 +275,7 @@ struct TargetReduceLoc
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        Reducer::apply(val.host[tid], loc.device[tid], val.value, loc.value);
+        Reducer::apply(val.device[tid], loc.device[tid], val.value, loc.value);
       }
     }
   }
@@ -295,14 +283,13 @@ struct TargetReduceLoc
   operator T()
   {
     if (!this->isMapped) {
-      val.deviceToHost();
-      loc.deviceToHost();
+      val.deviceToHost(*this);
+      loc.deviceToHost(*this);
       for (int i = 0; i < Teams; ++i) {
         Reducer::apply(val.value, loc.value, val.host[i], loc.host[i]);
       }
-      val.cleanup();
-      loc.cleanup();
-      this->isMapped = true;
+      val.cleanup(*this);
+      loc.cleanup(*this);
     }
     return val.value;
   }
@@ -334,9 +321,8 @@ struct ReduceSum<omp_target_reduce<Teams>, T>
     : public TargetReduce<Teams, T, omp::sum<T>> {
   using parent = TargetReduce<Teams, T, omp::sum<T>>;
   using parent::parent;
-  using parent::reduce;
-  parent &operator+=(T rhsVal) { return reduce(rhsVal); }
-  const parent &operator+=(T rhsVal) const { return reduce(rhsVal); }
+  parent &operator+=(T rhsVal) { return parent::reduce(rhsVal); }
+  const parent &operator+=(T rhsVal) const { return parent::reduce(rhsVal); }
 };
 
 template <size_t Teams, typename T>
@@ -344,9 +330,8 @@ struct ReduceMin<omp_target_reduce<Teams>, T>
     : public TargetReduce<Teams, T, omp::min<T>> {
   using parent = TargetReduce<Teams, T, omp::min<T>>;
   using parent::parent;
-  using parent::reduce;
-  parent &min(T rhsVal) { return reduce(rhsVal); }
-  const parent &min(T rhsVal) const { return reduce(rhsVal); }
+  parent &min(T rhsVal) { return parent::reduce(rhsVal); }
+  const parent &min(T rhsVal) const { return parent::reduce(rhsVal); }
 };
 
 template <size_t Teams, typename T>
@@ -354,9 +339,8 @@ struct ReduceMax<omp_target_reduce<Teams>, T>
     : public TargetReduce<Teams, T, omp::max<T>> {
   using parent = TargetReduce<Teams, T, omp::max<T>>;
   using parent::parent;
-  using parent::reduce;
-  parent &max(T rhsVal) { return reduce(rhsVal); }
-  const parent &max(T rhsVal) const { return reduce(rhsVal); }
+  parent &max(T rhsVal) { return parent::reduce(rhsVal); }
+  const parent &max(T rhsVal) const { return parent::reduce(rhsVal); }
 };
 
 template <size_t Teams, typename T>
@@ -365,14 +349,13 @@ struct ReduceMinLoc<omp_target_reduce<Teams>, T>
   using parent =
       TargetReduceLoc<Teams, T, Index_type, omp::minloc<T, Index_type>>;
   using parent::parent;
-  using parent::reduce;
   parent &minloc(T rhsVal, Index_type rhsLoc)
   {
-    return reducer(rhsVal, rhsLoc);
+    return parent::reduce(rhsVal, rhsLoc);
   }
   const parent &minloc(T rhsVal, Index_type rhsLoc) const
   {
-    return reduce(rhsVal, rhsLoc);
+    return parent::reduce(rhsVal, rhsLoc);
   }
 };
 
@@ -382,14 +365,13 @@ struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
   using parent =
       TargetReduceLoc<Teams, T, Index_type, omp::maxloc<T, Index_type>>;
   using parent::parent;
-  using parent::reduce;
   parent &maxloc(T rhsVal, Index_type rhsLoc)
   {
-    return reducer(rhsVal, rhsLoc);
+    return parent::reduce(rhsVal, rhsLoc);
   }
   const parent &maxloc(T rhsVal, Index_type rhsLoc) const
   {
-    return reduce(rhsVal, rhsLoc);
+    return parent::reduce(rhsVal, rhsLoc);
   }
 };
 
