@@ -63,12 +63,11 @@ namespace RAJA
 {
 
 template <typename Range, typename IdxLin = Index_type>
-struct LayoutBase_impl { };
+struct LayoutBase_impl {
+};
 
-template <size_t... RangeInts,
-        typename IdxLin>
-struct LayoutBase_impl<VarOps::index_sequence<RangeInts...>,
-        IdxLin> {
+template <size_t... RangeInts, typename IdxLin>
+struct LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
 public:
   typedef IdxLin IndexLinear;
   typedef VarOps::make_index_sequence<sizeof...(RangeInts)> IndexRange;
@@ -86,9 +85,11 @@ public:
   // TODO: this should be constexpr in c++14 mode
   template <typename... Types>
   RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(Types... ns)
-  : sizes{convertIndex<IdxLin>(ns)...}
+      : sizes{convertIndex<IdxLin>(ns)...}
   {
-    static_assert(n_dims == sizeof ... (Types), "number of dimensions must match");
+    static_assert(n_dims == sizeof...(Types),
+                  "number of dimensions must "
+                  "match");
     for (size_t i = 0; i < n_dims; i++) {
       strides[i] = 1;
       for (size_t j = 0; j < i; j++) {
@@ -102,42 +103,90 @@ public:
     mods[0] = limit;
   }
 
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(const LayoutBase_impl<IndexRange, IdxLin>& rhs)
-  : sizes{rhs.sizes[RangeInts]...},
-    strides{rhs.strides[RangeInts]...},
-    mods{rhs.mods[RangeInts]...}
-  { }
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  LayoutBase_impl(const LayoutBase_impl<IndexRange, IdxLin> &rhs)
+      : sizes{rhs.sizes[RangeInts]...},
+        strides{rhs.strides[RangeInts]...},
+        mods{rhs.mods[RangeInts]...}
+  {
+  }
 
   template <typename... Types>
-  constexpr RAJA_INLINE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
-                                        const std::array<IdxLin, n_dims> &strides_in,
-                                        const std::array<IdxLin, n_dims> &mods_in)
-  : sizes{sizes_in[RangeInts]...},
-    strides{strides_in[RangeInts]...},
-    mods{mods_in[RangeInts]...}
-  { }
+  constexpr RAJA_INLINE LayoutBase_impl(
+      const std::array<IdxLin, n_dims> &sizes_in,
+      const std::array<IdxLin, n_dims> &strides_in,
+      const std::array<IdxLin, n_dims> &mods_in)
+      : sizes{sizes_in[RangeInts]...},
+        strides{strides_in[RangeInts]...},
+        mods{mods_in[RangeInts]...}
+  {
+  }
 
-  template<typename... Indices>
-  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(Indices... indices) const
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
   {
     return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
   }
 
-  template<typename... Indices>
+  template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &... indices) const
   {
-    VarOps::ignore_args( (indices = (linear_index / strides[RangeInts]) % sizes[RangeInts])... );
+    VarOps::ignore_args(
+        (indices = (linear_index / strides[RangeInts]) % sizes[RangeInts])...);
   }
 };
 
 template <size_t... RangeInts, typename IdxLin>
-constexpr size_t LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::n_dims;
+constexpr size_t
+    LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::n_dims;
 template <size_t... RangeInts, typename IdxLin>
-constexpr size_t LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
+constexpr size_t
+    LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
 
 template <size_t n_dims, typename IdxLin = Index_type>
 using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+
+template <typename IdxLin, typename... DimTypes>
+struct TypedLayout : Layout<sizeof...(DimTypes), Index_type> {
+  using Self = TypedLayout<IdxLin, DimTypes...>;
+  using Base = Layout<sizeof...(DimTypes), Index_type>;
+  using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
+
+  template <typename... Types>
+  RAJA_INLINE RAJA_HOST_DEVICE TypedLayout(Types... ns)
+      : Base{convertIndex<Index_type>(ns)...}
+  {}
+
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE TypedLayout(const Self &rhs)
+      : Base{rhs}
+  {
+  }
+
+  template <typename... Types>
+  constexpr RAJA_INLINE TypedLayout(
+      const DimArr &sizes_in,
+      const DimArr &strides_in,
+      const DimArr &mods_in)
+      : Base{sizes_in, strides_in, mods_in}
+  {
+  }
+
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
+  {
+    return convertIndex<IdxLin>(Base::operator()(convertIndex<Index_type>(indices)...));
+  }
+
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices &... indices) const
+  {
+    Base::toIndices(linear_index, convertIndex<Index_type>(indices)...);
+  }
+};
 
 
 }  // namespace RAJA
