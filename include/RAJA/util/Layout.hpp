@@ -149,42 +149,42 @@ template <size_t n_dims, typename IdxLin = Index_type>
 using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
 
 template <typename IdxLin, typename... DimTypes>
-struct TypedLayout : Layout<sizeof...(DimTypes), Index_type> {
+struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
   using Self = TypedLayout<IdxLin, DimTypes...>;
   using Base = Layout<sizeof...(DimTypes), Index_type>;
   using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
 
-  template <typename... Types>
-  RAJA_INLINE RAJA_HOST_DEVICE TypedLayout(Types... ns)
-      : Base{convertIndex<Index_type>(ns)...}
-  {}
-
-  constexpr RAJA_INLINE RAJA_HOST_DEVICE TypedLayout(const Self &rhs)
-      : Base{rhs}
-  {
-  }
-
-  template <typename... Types>
-  constexpr RAJA_INLINE TypedLayout(
-      const DimArr &sizes_in,
-      const DimArr &strides_in,
-      const DimArr &mods_in)
-      : Base{sizes_in, strides_in, mods_in}
-  {
-  }
+  // Pull in base constructors
+  using Base::Base;
 
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
-    return convertIndex<IdxLin>(Base::operator()(convertIndex<Index_type>(indices)...));
+    return convertIndex<IdxLin>(
+        Base::operator()(convertIndex<Index_type>(indices)...));
   }
 
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &... indices) const
   {
-    Base::toIndices(linear_index, convertIndex<Index_type>(indices)...);
+    toIndicesHelper(VarOps::make_index_sequence<sizeof...(DimTypes)>{},
+                    std::forward<IdxLin>(linear_index),
+                    std::forward<Indices &>(indices)...);
+  }
+
+private:
+  template <typename... Indices, size_t... RangeInts>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(
+      VarOps::index_sequence<RangeInts...>,
+      IdxLin linear_index,
+      Indices &... indices) const
+  {
+    Index_type locals[sizeof...(DimTypes)];
+    Base::toIndices(convertIndex<Index_type>(linear_index),
+                    locals[RangeInts]...);
+    VarOps::ignore_args((indices = Indices{locals[RangeInts]})...);
   }
 };
 
