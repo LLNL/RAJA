@@ -11,8 +11,36 @@
 
 #include "RAJA/internal/type_traits.hpp"
 
-
 namespace RAJA {
+
+template <bool cuda, typename POL, typename... REST>
+struct has_cuda : has_cuda< is_cuda_policy<POL>::type, POL, REST...> { };
+
+template <typename POL, typename... REST>
+struct has_cuda<true, POL, REST...>
+{
+    static bool const value = true;
+};
+
+template <typename POL, typename... REST>
+struct has_cuda<false, POL, REST...>
+{
+    static bool const value = has_cuda<false, REST...>::value;
+};
+
+template <typename POL>
+struct has_cuda<true, POL>
+{
+    static bool const value = true;
+};
+
+template <typename POL>
+struct has_cuda<false, POL>
+{
+    static bool const value = false;
+};
+
+
 
 template <typename Selector, typename... Policies>
 class MultiPolicy;
@@ -47,7 +75,7 @@ struct get_space<RAJA::MultiPolicy<Selector, Policies...> > : public get_space_i
 
 template <typename... POLICIES>
 struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...> > > : 
-  public get_space_impl< is_cuda_policy<POLICIES...>::value > {};
+  public get_space_impl< has_cuda<false, POLICIES...>::value > {};
 
 // constexpr chai::ExecutionSpace getSpace(RAJA::PolicyBase&& policy) {
 //   // return is_cuda_policy<decltype(policy)>::value ? chai::GPU : chai::CPU;
