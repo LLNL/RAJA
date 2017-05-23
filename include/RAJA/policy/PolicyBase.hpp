@@ -37,7 +37,7 @@ struct WrapperPolicy : public Inner {
 // "makers"
 
 template <typename Inner, typename... T>
-struct wrap : public WrapperPolicy<Inner, T...> {
+struct wrapper : public WrapperPolicy<Inner, T...> {
 };
 
 template <Policy Pol, Launch L, Pattern P>

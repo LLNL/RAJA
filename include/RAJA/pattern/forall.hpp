@@ -152,6 +152,24 @@ RAJA_INLINE void forall_Icount(Container&& c,
                  loop_body);
 }
 
+namespace wrap {
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with a value-based policy
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
+{
+  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
+}
+
+}
+
+
 /*!
  ******************************************************************************
  *
@@ -170,7 +188,7 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
 
   // printf("running container\n");
 
-  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
+  wrap::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
 }
 
 /*!
@@ -191,7 +209,7 @@ RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 
   // printf("running container\n");
 
-  impl::forall(EXEC_POLICY_T(), std::forward<Container>(c), loop_body);
+  wrap::forall(EXEC_POLICY_T(), std::forward<Container>(c), loop_body);
 }
 
 //
@@ -212,7 +230,7 @@ RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 template <typename EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void forall(Index_type begin, Index_type end, LOOP_BODY loop_body)
 {
-  forall<EXEC_POLICY_T>(RangeSegment(begin, end), loop_body);
+    wrap::forall(EXEC_POLICY_T{}, RangeSegment(begin, end), loop_body);
 }
 
 /*!
@@ -255,7 +273,7 @@ RAJA_INLINE void forall(Index_type begin,
                         Index_type stride,
                         LOOP_BODY loop_body)
 {
-  impl::forall(EXEC_POLICY_T(), RangeStrideSegment(begin, end, stride),
+  wrap::forall(EXEC_POLICY_T(), RangeStrideSegment(begin, end, stride),
              loop_body);
 }
 
@@ -302,7 +320,7 @@ RAJA_INLINE void forall(const Index_type* idx,
                         LOOP_BODY loop_body)
 {
   // turn into an iterator
-  forall<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), loop_body);
+    wrap::forall(EXEC_POLICY_T{}, ListSegment(idx, len, Unowned), loop_body);
 }
 
 /*!
