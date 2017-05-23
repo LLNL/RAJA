@@ -163,12 +163,12 @@ struct Reduce_Data {
 
 template <typename T>
 struct sum {
-  static void apply(T &val, T v) { val += v; }
+  void operator()(T &val, T v) { val += v; }
 };
 
 template <typename T>
 struct min {
-  static void apply(T &val, T v)
+  void operator()(T &val, T v)
   {
     if (v < val) val = v;
   }
@@ -176,7 +176,7 @@ struct min {
 
 template <typename T>
 struct max {
-  static void apply(T &val, T v)
+  void operator()(T &val, T v)
   {
     if (v > val) val = v;
   }
@@ -184,7 +184,7 @@ struct max {
 
 template <typename T, typename I>
 struct minloc {
-  static void apply(T &val, I &loc, T v, I l)
+  void operator()(T &val, I &loc, T v, I l)
   {
     if (v < val) {
       loc = l;
@@ -195,7 +195,7 @@ struct minloc {
 
 template <typename T, typename I>
 struct maxloc {
-  static void apply(T &val, I &loc, T v, I l)
+  void operator()(T &val, I &loc, T v, I l)
   {
     if (v > val) {
       loc = l;
@@ -221,7 +221,7 @@ struct TargetReduce {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        Reducer::apply(val.device[tid], val.value);
+        Reducer{}(val.device[tid], val.value);
       }
     }
   }
@@ -231,7 +231,7 @@ struct TargetReduce {
     if (!info.isMapped) {
       val.deviceToHost(info);
       for (int i = 0; i < Teams; ++i) {
-        Reducer::apply(val.value, val.host[i]);
+        Reducer{}(val.value, val.host[i]);
       }
       val.cleanup(info);
       info.isMapped = true;
@@ -242,7 +242,7 @@ struct TargetReduce {
 
   TargetReduce &reduce(T rhsVal)
   {
-    Reducer::apply(val.value, rhsVal);
+    Reducer{}(val.value, rhsVal);
     return *this;
   }
   const TargetReduce &reduce(T rhsVal) const
@@ -271,7 +271,7 @@ struct TargetReduceLoc {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        Reducer::apply(val.device[tid], loc.device[tid], val.value, loc.value);
+        Reducer{}(val.device[tid], loc.device[tid], val.value, loc.value);
       }
     }
   }
@@ -282,7 +282,7 @@ struct TargetReduceLoc {
       val.deviceToHost(info);
       loc.deviceToHost(info);
       for (int i = 0; i < Teams; ++i) {
-        Reducer::apply(val.value, loc.value, val.host[i], loc.host[i]);
+        Reducer{}(val.value, loc.value, val.host[i], loc.host[i]);
       }
       val.cleanup(info);
       loc.cleanup(info);
@@ -300,7 +300,7 @@ struct TargetReduceLoc {
 
   TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
-    Reducer::apply(val.value, loc.value, rhsVal, rhsLoc);
+    Reducer{}(val.value, loc.value, rhsVal, rhsLoc);
     return *this;
   }
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
@@ -408,7 +408,7 @@ struct TargetReduceGeneric<Teams,
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        Reducer::apply(std::get<Indicies>(data).device...,
+        Reducer{}(std::get<Indicies>(data).device...,
                        std::get<Indicies>(data).val...);
       }
     }
@@ -419,7 +419,7 @@ struct TargetReduceGeneric<Teams,
     if (!info.isMapped) {
       DO_IN_ORDER(std::get<Indicies>(data).deviceToHost(info));
       for (int i = 0; i < Teams; ++i) {
-        Reducer::apply(std::get<Indicies>(data).val...,
+        Reducer{}(std::get<Indicies>(data).val...,
                        std::get<Indicies>(data).host);
       }
       DO_IN_ORDER(std::get<Indicies>(data).cleanup(info));
@@ -437,7 +437,7 @@ struct TargetReduceGeneric<Teams,
 
   TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
-    Reducer::apply(std::get<Indicies>(data).value..., args...);
+    Reducer{}(std::get<Indicies>(data).value..., args...);
     return *this;
   }
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
