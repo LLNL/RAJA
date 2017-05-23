@@ -180,7 +180,7 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<EXEC_POLICY_T>::value);
+  rm->setExecutionSpace(detail::get_space<decltype(p)>::value);
 #endif
 
   impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);

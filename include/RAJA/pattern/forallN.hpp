@@ -253,7 +253,7 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::getSpace<POLICY>());
+  rm->setExecutionSpace(detail::get_space<POLICY>::value);
 #endif
 
   fun_unpacker<POLICY, Indices...>(
