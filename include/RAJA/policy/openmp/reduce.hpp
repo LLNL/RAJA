@@ -68,9 +68,7 @@
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 namespace RAJA
 {

@@ -53,7 +53,7 @@
 
 #include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-#if defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #include <omp.h>
 #endif
 
@@ -78,7 +78,7 @@ int getMaxReduceThreadsCPU()
 {
   int nthreads = 1;
 
-#if defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   nthreads = omp_get_max_threads();
 #endif
 #if defined(RAJA_ENABLE_CILK)
@@ -100,7 +100,7 @@ int getMaxOMPThreadsCPU()
 {
   int nthreads = 1;
 
-#if defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   nthreads = omp_get_max_threads();
 #endif
 

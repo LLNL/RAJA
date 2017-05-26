@@ -62,9 +62,7 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 namespace RAJA
 {
