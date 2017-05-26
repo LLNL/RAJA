@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for basic timer operation
+///
+
 #include "gtest/gtest.h"
 
 #include "RAJA/util/Timer.hpp"

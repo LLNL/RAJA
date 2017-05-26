@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for basic layout operations
+///
+
 #include "RAJA/RAJA.hpp"
 #include "gtest/gtest.h"
 

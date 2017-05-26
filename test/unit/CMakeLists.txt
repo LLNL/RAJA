@@ -55,8 +55,8 @@ if (NOT MSVC)
   )
   if(RAJA_ENABLE_OPENMP)
     raja_add_test(
-            NAME multipolicy
-            SOURCES multipolicy.cpp
+            NAME test-multipolicy
+            SOURCES test-multipolicy.cpp
             DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
     )
   endif(RAJA_ENABLE_OPENMP)

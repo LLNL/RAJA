@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for RAJA type traits.
+///
+
 #include "RAJA/RAJA.hpp"
 
 #include "RAJA/internal/type_traits.hpp"

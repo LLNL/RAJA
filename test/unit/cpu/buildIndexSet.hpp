@@ -41,43 +41,32 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for numeric limits in RAJA operators
+/// Header file defining methods that build index sets in various ways
+/// for testing...
 ///
 
-#include "gtest/gtest.h"
+#include "RAJA/RAJA.hpp"
 
-#define RAJA_CHECK_LIMITS
-#include "RAJA/util/Operators.hpp"
+//
+// Enum for different hybrid initialization procedures.
+//
+enum IndexSetBuildMethod {
+  AddSegments = 0,
+  AddSegmentsReverse,
+  AddSegmentsNoCopy,
+  AddSegmentsNoCopyReverse,
+  MakeViewRange,
+  MakeViewArray,
+#if defined(RAJA_USE_STL)
+  MakeViewVector,
+#endif
 
-#include <limits>
-
-template <typename T>
-class IntegralLimitsTest : public ::testing::Test
-{
+  NumBuildMethods
 };
 
-TYPED_TEST_CASE_P(IntegralLimitsTest);
-
-TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
-{
-  ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(), std::numeric_limits<TypeParam>::min());
-  ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(), std::numeric_limits<TypeParam>::max());
-}
-
-REGISTER_TYPED_TEST_CASE_P(IntegralLimitsTest, IntegralLimits);
-
-using integer_types = ::testing::Types<
-  char,
-  unsigned char,
-  short,
-  unsigned short,
-  int,
-  unsigned int,
-  long,
-  unsigned long,
-  long int,
-  unsigned long int,
-  long long,
-  unsigned long long>;
-
-INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsTests, IntegralLimitsTest, integer_types);
+//
+//  Initialize index set by adding segments as indicated by enum value.
+//  Return last index in IndexSet.
+//
+RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex,
+                               IndexSetBuildMethod use_vector);

@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for basic multipolicy operation
+///
+
 #include "gtest/gtest.h"
 
 #include "RAJA/RAJA.hpp"
