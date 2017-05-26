@@ -3,6 +3,10 @@
 
 RAJA_INDEX_VALUE(TestIndex1D, "TestIndex1D");
 
+RAJA_INDEX_VALUE(TIX, "TIX");
+RAJA_INDEX_VALUE(TIY, "TIY");
+RAJA_INDEX_VALUE(TIL, "TIL");
+
 TEST(LayoutTest, 1D)
 {
   using layout = RAJA::OffsetLayout<1>;
@@ -12,7 +16,7 @@ TEST(LayoutTest, 1D)
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({10}, std::array<int, 1>{14});
+  const layout l({10}, std::array<RAJA::Index_type, 1>{14});
 
   /*
    * First element, 10, should have index 0.
@@ -26,6 +30,28 @@ TEST(LayoutTest, 1D)
    */
   ASSERT_EQ(4, l(14));
 }
+
+TEST(TypedLayoutTest, 1D)
+{
+  /*
+   * Construct a 2D view, 10x5
+   */
+  const RAJA::TypedLayout<TIL, TIX, TIY> l(10, 5);
+
+  ASSERT_EQ(TIL{0}, l(TIX{0},TIY{0}));
+
+  ASSERT_EQ(TIL{2}, l(TIX{0}, TIY{2}));
+
+  ASSERT_EQ(TIL{10}, l(TIX{2}, TIY{0}));
+
+  TIX x{5};
+  TIY y{0};
+  l.toIndices(TIL{10}, y, x);
+  ASSERT_EQ(x, TIX{0});
+  ASSERT_EQ(y, TIY{2});
+
+}
+
 
 TEST(LayoutTest, OffsetVsRegular)
 {

@@ -88,7 +88,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/Cilk.hpp"
+#include "RAJA/policy/cilk.hpp"
 #endif
 
 #include "RAJA/index/IndexSet.hpp"
