@@ -12,23 +12,21 @@
 ## For additional details and restrictions, please see RAJA/LICENSE.txt
 ##
 
-rm -rf build-bgq_clang-3.9.0 2>/dev/null
-mkdir build-bgq_clang-3.9.0 && cd build-bgq_clang-3.9.0
-. /usr/local/tools/dotkit/init.sh && use cmake-3.4.3
+rm -rf build-icpc-17.0.174 2>/dev/null
+mkdir build-icpc-17.0.174 && cd build-icpc-17.0.174
+. /usr/local/tools/dotkit/init.sh && use gcc-4.9.3p
 
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
-  -DCMAKE_BUILD_TYPE=Release \
-  -DCMAKE_INSTALL_PREFIX=../install-bgq_clang-3.9.0 \
+  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
+  -DCMAKE_INSTALL_PREFIX=../install-icpc-1cpc-17.0.174 \
   "$@" \
   ${RAJA_DIR}
 
 #cmake \
-#  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-bgq_clang-3.9.0 \
-#  -DCMAKE_BUILD_TYPE=Release \
+#  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
+#  -DCMAKE_INSTALL_PREFIX=../install-icpc-1cpc-17.0.174 \
 #  -DRAJA_ENABLE_PERFSUITE=On \
 #  -DRAJA_ENABLE_APPLICATIONS=On \
 #  "$@" \

@@ -3,6 +3,8 @@
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
+## LLNL-CODE-689114
+##
 ## All rights reserved.
 ##
 ## For release details and restrictions, please see RAJA/LICENSE.
@@ -10,7 +12,7 @@
 
 set(RAJA_COMPILER "RAJA_COMPILER_GNU" CACHE STRING "")
 
-set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.8.4" CACHE PATH "")
+set(CMAKE_CXX_COMPILER "/usr/local/tools/compilers/ibm/mpicxx-4.7.2b" CACHE PATH "")
 
 set(TEST_DRIVER srun CACHE STRING "use slurm to launch on BGQ")
 
