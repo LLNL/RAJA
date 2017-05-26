@@ -245,8 +245,13 @@ void runBasicMinLocReductionTest(const string& policy,
     s_ntests_run_total++;
 
     //    cout << "k = " << k << endl;
-
+/*
     forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+      tmin0.minloc(k * test_array[idx], idx);
+      tmin1.minloc(test_array[idx], idx);
+    });
+*/
+    forallN<NestedPolicy<ExecList<ISET_POLICY_T> > >(iset, [=](Index_type idx) {
       tmin0.minloc(k * test_array[idx], idx);
       tmin1.minloc(test_array[idx], idx);
     });

@@ -65,6 +65,25 @@
 
 namespace RAJA
 {
+namespace impl {
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename ... SEG_TYPES,
+          typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(
+  ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+  const IndexSet<SEG_TYPES ...>& iset,
+  LOOP_BODY loop_body);
+
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY,
+          typename ... SEG_TYPES>
+RAJA_INLINE void forall(
+  ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+  const IndexSet<SEG_TYPES ...>& iset,
+  LOOP_BODY loop_body);
+}
 
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
