@@ -44,12 +44,12 @@
 
 if (NOT MSVC)
   raja_add_test(
-    NAME layout-test
+    NAME test-layout
     SOURCES test-layout.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
   raja_add_test(
-    NAME timer-test
+    NAME test-timer
     SOURCES test-timer.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
@@ -61,13 +61,13 @@ if (NOT MSVC)
     )
   endif(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME integral-limits
+    NAME test-integral-limits
     SOURCES test-integral-limits.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
   
   raja_add_test(
-    NAME type-traits
+    NAME test-type-traits
     SOURCES test-type-traits.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )

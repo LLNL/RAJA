@@ -1,12 +1,48 @@
-/*
- * Copyright (c) 2016, Lawrence Livermore National Security, LLC.
- *
- * Produced at the Lawrence Livermore National Laboratory.
- *
- * All rights reserved.
- *
- * For release details and restrictions, please see RAJA/LICENSE.
- */
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For additional details, please also read RAJA/README.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// * Redistributions of source code must retain the above copyright notice,
+//   this list of conditions and the disclaimer below.
+//
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the disclaimer (as noted below) in the
+//   documentation and/or other materials provided with the distribution.
+//
+// * Neither the name of the LLNS/LLNL nor the names of its contributors may
+//   be used to endorse or promote products derived from this software without
+//   specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
+// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+///
+/// Source file containing tests for RAJA GPU max reductions.
+///
 
 #include <cfloat>
 #include <cstdio>
@@ -16,15 +52,11 @@
 
 #include "RAJA/RAJA.hpp"
 
-#define TEST_VEC_LEN 1024 * 1024 * 8
-
-typedef struct {
-  double val;
-  int idx;
-} maxloc_t;
+#define TEST_VEC_LEN 1024 * 1024 * 6
 
 using namespace RAJA;
 using namespace std;
+
 //
 // Global variables for counting tests executed/passed.
 //
@@ -33,7 +65,7 @@ unsigned s_ntests_passed = 0;
 
 int main(int argc, char *argv[])
 {
-  cout << "\n Begin RAJA GPU ReduceMaxLoc tests!!! " << endl;
+  cout << "\n Begin RAJA GPU ReduceMax tests!!! " << endl;
 
   const int test_repeat = 10;
 
@@ -59,11 +91,9 @@ int main(int argc, char *argv[])
   ////////////////////////////////////////////////////////////////////////////
 
   // current running max value
-  maxloc_t dcurrentMax;
-  dcurrentMax.val = -DBL_MAX;
-  dcurrentMax.idx = -1;
+  double dcurrentMax = -DBL_MAX;
 
-  // for setting random values in arrays
+  // for setting random min values in arrays
   random_device rd;
   mt19937 mt(rd());
   uniform_real_distribution<double> dist(-10, 10);
@@ -80,9 +110,9 @@ int main(int argc, char *argv[])
     {  // begin test 1
 
       double BIG_MAX = 500.0;
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax2(BIG_MAX, -1);
+      ReduceMax<cuda_reduce<block_size>, double> dmax0(-DBL_MAX);
+      ReduceMax<cuda_reduce<block_size>, double> dmax1(-DBL_MAX);
+      ReduceMax<cuda_reduce<block_size>, double> dmax2(BIG_MAX);
 
       int loops = 16;
       for (int k = 0; k < loops; k++) {
@@ -90,29 +120,24 @@ int main(int argc, char *argv[])
 
         double droll = dist(mt);
         int index = int(dist2(mt));
-        maxloc_t lmax = {droll, index};
         dvalue[index] = droll;
-        dcurrentMax = RAJA_MAXLOC(dcurrentMax, lmax);
+        dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
-        // printf("droll[%d] =  %lf : dcurrentMax[%d] =
-        // %lf\n",lmax.idx,lmax.val,dcurrentMax.idx,dcurrentMax.val);
         forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
-          dmax0.maxloc(dvalue[i], i);
-          dmax1.maxloc(2 * dvalue[i], i);
-          dmax2.maxloc(dvalue[i], i);
+          dmax0.max(dvalue[i]);
+          dmax1.max(2 * dvalue[i]);
+          dmax2.max(dvalue[i]);
         });
 
-        if (dmax0.get() != dcurrentMax.val || dmax1.get() != 2 * dcurrentMax.val
-            || dmax2.get() != BIG_MAX
-            || dmax0.getLoc() != dcurrentMax.idx
-            || dmax1.getLoc() != dcurrentMax.idx) {
+        if (dmax0.get() != dcurrentMax || dmax1.get() != 2 * dcurrentMax
+            || dmax2.get() != BIG_MAX) {
           cout << "\n TEST 1 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
           cout << "  droll = " << droll << endl;
           cout << "\tdmax0 = " << static_cast<double>(dmax0.get()) << " ("
-               << dcurrentMax.val << ") " << endl;
+               << dcurrentMax << ") " << endl;
           cout << "\tdmax1 = " << static_cast<double>(dmax1.get()) << " ("
-               << 2 * dcurrentMax.val << ") " << endl;
+               << 2 * dcurrentMax << ") " << endl;
           cout << "\tdmax2 = " << static_cast<double>(dmax2.get()) << " ("
                << BIG_MAX << ") " << endl;
         } else {
@@ -140,33 +165,29 @@ int main(int argc, char *argv[])
       iset.push_back(seg0);
       iset.push_back(seg1);
 
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
+      ReduceMax<cuda_reduce<block_size>, double> dmax0(-DBL_MAX);
+      ReduceMax<cuda_reduce<block_size>, double> dmax1(-DBL_MAX);
 
       int index = int(dist2(mt));
 
       double droll = dist(mt);
       dvalue[index] = droll;
-      maxloc_t lmax = {droll, index};
-      dvalue[index] = droll;
-      dcurrentMax = RAJA_MAXLOC(dcurrentMax, lmax);
+
+      dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
-            dmax0.maxloc(dvalue[i], i);
-            dmax1.maxloc(2 * dvalue[i], i);
+            dmax0.max(dvalue[i]);
+            dmax1.max(2 * dvalue[i]);
           });
 
-      if (double(dmax0) != dcurrentMax.val
-          || double(dmax1) != 2 * dcurrentMax.val
-          || dmax0.getLoc() != dcurrentMax.idx
-          || dmax1.getLoc() != dcurrentMax.idx) {
+      if (double(dmax0) != dcurrentMax || double(dmax1) != 2 * dcurrentMax) {
         cout << "\n TEST 2 FAILURE: tcount = " << tcount << endl;
         cout << "  droll = " << droll << endl;
         cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
-             << dcurrentMax.val << ") " << endl;
+             << dcurrentMax << ") " << endl;
         cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
-             << 2 * dcurrentMax.val << ") " << endl;
+             << 2 * dcurrentMax << ") " << endl;
       } else {
         s_ntests_passed++;
       }
@@ -188,8 +209,8 @@ int main(int argc, char *argv[])
       for (int i = 0; i < TEST_VEC_LEN; ++i) {
         dvalue[i] = -DBL_MAX;
       }
-      dcurrentMax.val = -DBL_MAX;
-      dcurrentMax.idx = -1;
+      dcurrentMax = -DBL_MAX;
+
       RangeSegment seg0(1, 1230);
       RangeSegment seg1(1237, 3385);
       RangeSegment seg2(4860, 10110);
@@ -201,8 +222,8 @@ int main(int argc, char *argv[])
       iset.push_back(seg2);
       iset.push_back(seg3);
 
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-      ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
+      ReduceMax<cuda_reduce<block_size>, double> dmax0(-DBL_MAX);
+      ReduceMax<cuda_reduce<block_size>, double> dmax1(-DBL_MAX);
 
       // pick an index in one of the segments
       int index = 897;                     // seg 0
@@ -213,26 +234,21 @@ int main(int argc, char *argv[])
       double droll = dist(mt);
       dvalue[index] = droll;
 
-      maxloc_t lmax = {droll, index};
-      dvalue[index] = droll;
-      dcurrentMax = RAJA_MAXLOC(dcurrentMax, lmax);
+      dcurrentMax = RAJA_MAX(dcurrentMax, dvalue[index]);
 
       forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
-            dmax0.maxloc(dvalue[i], i);
-            dmax1.maxloc(2 * dvalue[i], i);
+            dmax0.max(dvalue[i]);
+            dmax1.max(2 * dvalue[i]);
           });
 
-      if (double(dmax0) != dcurrentMax.val
-          || double(dmax1) != 2 * dcurrentMax.val
-          || dmax0.getLoc() != dcurrentMax.idx
-          || dmax1.getLoc() != dcurrentMax.idx) {
+      if (double(dmax0) != dcurrentMax || double(dmax1) != 2 * dcurrentMax) {
         cout << "\n TEST 3 FAILURE: tcount = " << tcount << endl;
         cout << "  droll = " << droll << endl;
         cout << "\tdmax0 = " << static_cast<double>(dmax0) << " ("
-             << dcurrentMax.val << ") " << endl;
+             << dcurrentMax << ") " << endl;
         cout << "\tdmax1 = " << static_cast<double>(dmax1) << " ("
-             << 2 * dcurrentMax.val << ") " << endl;
+             << 2 * dcurrentMax << ") " << endl;
       } else {
         s_ntests_passed++;
       }
@@ -249,7 +265,7 @@ int main(int argc, char *argv[])
 
   cudaFree(dvalue);
 
-  cout << "\n RAJA GPU ReduceMaxLoc tests DONE!!! " << endl;
+  cout << "\n RAJA GPU ReduceMax tests DONE!!! " << endl;
 
   return !(s_ntests_passed == s_ntests_run);
 }

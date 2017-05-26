@@ -48,38 +48,38 @@ endif()
 raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
 
 raja_add_test(
-  NAME CPUreduce-test
+  NAME test-reduce
   SOURCES main-reduce.cpp
   DEPENDS_ON bis)
 
 raja_add_test(
-  NAME CPUnested-test
+  NAME test-nested
   SOURCES main-nested.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME CPUnested_reduce-test
+    NAME test-nested_reduce
     SOURCES main-nested-reduce.cpp)
 endif()
 
 raja_add_test(
-  NAME indexset-tests
+  NAME test-indexset
   SOURCES test-indexsets.cpp
   DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 if (NOT MSVC)
   raja_add_test(
-    NAME reduction-tests
+    NAME test-reduction
     SOURCES test-reductions.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
   raja_add_test(
-    NAME scan-tests
+    NAME test-scan
     SOURCES test-scan.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
   raja_add_test(
-    NAME forall-tests
+    NAME test-forall
     SOURCES test-forall.cpp
     DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}) 
 endif ()
