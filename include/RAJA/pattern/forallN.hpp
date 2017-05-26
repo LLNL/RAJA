@@ -115,7 +115,7 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   RAJA_INLINE void operator()(BODY const &body) const
   {
     ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
-    RAJA::impl::forall(POLICY_I(), is_i, outer);
+    RAJA::impl::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
   }
 };
 
@@ -207,8 +207,7 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
   // call policy layer with next policy
   forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(),
                                        IDX_CONV(body),
-                                       ForallN_PolicyPair<ExecPolicies, Ts>(
-                                           args)...);
+                                       ForallN_PolicyPair<ExecPolicies, Ts>(args)...);
 }
 
 namespace detail {
