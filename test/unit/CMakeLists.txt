@@ -1,3 +1,4 @@
+
 ###############################################################################
 #
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -44,30 +45,30 @@
 if (NOT MSVC)
   raja_add_test(
     NAME layout-test
-    SOURCES test-layout.cxx
+    SOURCES test-layout.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
   raja_add_test(
     NAME timer-test
-    SOURCES test-timer.cxx
+    SOURCES test-timer.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
   if(RAJA_ENABLE_OPENMP)
     raja_add_test(
             NAME multipolicy
-            SOURCES multipolicy.cxx
+            SOURCES multipolicy.cpp
             DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
     )
   endif(RAJA_ENABLE_OPENMP)
   raja_add_test(
     NAME integral-limits
-    SOURCES test-integral-limits.cxx
+    SOURCES test-integral-limits.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
   
   raja_add_test(
     NAME type-traits
-    SOURCES test-type-traits.cxx
+    SOURCES test-type-traits.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
 endif()

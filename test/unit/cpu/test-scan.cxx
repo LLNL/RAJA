@@ -13,8 +13,8 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-#include "data_storage.hxx"
-#include "type_helper.hxx"
+#include "data_storage.hpp"
+#include "type_helper.hpp"
 
 const int N = 1024;
 

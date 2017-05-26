@@ -9,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read raja/README-license.txt.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -42,38 +42,42 @@
 
 #include "gtest/gtest.h"
 
-#define RAJA_CHECK_LIMITS
-#include "RAJA/util/Operators.hpp"
+#include "RAJA/RAJA.hpp"
 
-#include <limits>
-
-template <typename T>
-class IntegralLimitsTest : public ::testing::Test
+TEST(multipolicy, basic)
 {
-};
-
-TYPED_TEST_CASE_P(IntegralLimitsTest);
-
-TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
-{
-  ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(), std::numeric_limits<TypeParam>::min());
-  ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(), std::numeric_limits<TypeParam>::max());
+  auto mp = RAJA::make_multi_policy<RAJA::seq_exec,RAJA::omp_parallel_for_exec>(
+      [] (const RAJA::RangeSegment& r) {
+        if (r.size() < 100) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  RAJA::forall(mp, RAJA::RangeSegment(0, 5), [](RAJA::Index_type){
+    ASSERT_EQ(omp_get_num_threads(), 1);
+  });
+  RAJA::forall(mp, RAJA::RangeSegment(0, 101), [](RAJA::Index_type){
+    ASSERT_TRUE(omp_get_num_threads() > 1);
+  });
+  // Nest a multipolicy to ensure value-based policies are preserved
+  auto mp2 = RAJA::make_multi_policy(
+          std::make_tuple(RAJA::omp_parallel_for_exec{}, mp),
+          [] (const RAJA::RangeSegment& r) {
+        if (r.size() > 10 && r.size() < 90) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), [](RAJA::Index_type){
+    ASSERT_EQ(omp_get_num_threads(), 1);
+  });
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), [](RAJA::Index_type){
+    ASSERT_EQ(omp_get_num_threads(), 1);
+  });
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), [](RAJA::Index_type){
+    ASSERT_TRUE(omp_get_num_threads() > 1);
+  });
 }
 
-REGISTER_TYPED_TEST_CASE_P(IntegralLimitsTest, IntegralLimits);
-
-using integer_types = ::testing::Types<
-  char,
-  unsigned char,
-  short,
-  unsigned short,
-  int,
-  unsigned int,
-  long,
-  unsigned long,
-  long int,
-  unsigned long int,
-  long long,
-  unsigned long long>;
-
-INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsTests, IntegralLimitsTest, integer_types);

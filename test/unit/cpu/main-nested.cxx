@@ -28,7 +28,7 @@
 using namespace RAJA;
 using namespace std;
 
-#include "Compare.hxx"
+#include "Compare.hpp"
 
 //
 // Global variables for counting tests executed/passed.

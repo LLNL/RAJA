@@ -27,7 +27,7 @@
 using namespace RAJA;
 using namespace std;
 
-#include "Compare.hxx"
+#include "Compare.hpp"
 
 #include "buildIndexSet.hxx"
 
