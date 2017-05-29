@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_cuda_HXX
-#define RAJA_scan_cuda_HXX
+#ifndef RAJA_scan_cuda_HPP
+#define RAJA_scan_cuda_HPP
 
 #include "RAJA/config.hpp"
 

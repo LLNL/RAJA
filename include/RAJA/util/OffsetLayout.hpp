@@ -3,13 +3,14 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout operations for forallN templates.
+ * \brief   RAJA header file defining offset layout operations for 
+ *          forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_OFFSETLAYOUT_HXX__
-#define RAJA_OFFSETLAYOUT_HXX__
+#ifndef RAJA_OFFSETLAYOUT_HPP
+#define RAJA_OFFSETLAYOUT_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

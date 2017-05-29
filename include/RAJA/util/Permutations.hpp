@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_FORALLN_PERMUTATIONS_HXX
-#define RAJA_FORALLN_PERMUTATIONS_HXX
+#ifndef RAJA_FORALLN_PERMUTATIONS_HPP
+#define RAJA_FORALLN_PERMUTATIONS_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -214,4 +214,4 @@ using PERM_MLKIJ = VarOps::index_sequence<4, 3, 2, 0, 1>;
 using PERM_MLKJI = VarOps::index_sequence<4, 3, 2, 1, 0>;
 }
 
-#endif /* RAJA_FORALLN_PERMUTATIONS_HXX */
+#endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

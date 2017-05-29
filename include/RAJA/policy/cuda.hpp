@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_cuda_HXX
-#define RAJA_cuda_HXX
+#ifndef RAJA_cuda_HPP
+#define RAJA_cuda_HPP
 
 #include "RAJA/config.hpp"
 

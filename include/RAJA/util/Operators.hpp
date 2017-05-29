@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_operators_HXX
-#define RAJA_operators_HXX
+#ifndef RAJA_operators_HPP
+#define RAJA_operators_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

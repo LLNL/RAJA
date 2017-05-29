@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_reduce_cilk_HXX
-#define RAJA_reduce_cilk_HXX
+#ifndef RAJA_reduce_cilk_HPP
+#define RAJA_reduce_cilk_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/policy/cilk/policy.hpp"

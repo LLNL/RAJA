@@ -21,8 +21,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_config_HXX
-#define RAJA_config_HXX
+#ifndef RAJA_config_HPP
+#define RAJA_config_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

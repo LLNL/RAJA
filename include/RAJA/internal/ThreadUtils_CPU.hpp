@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_ThreadUtils_CPU_HXX
-#define RAJA_ThreadUtils_CPU_HXX
+#ifndef RAJA_ThreadUtils_CPU_HPP
+#define RAJA_ThreadUtils_CPU_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

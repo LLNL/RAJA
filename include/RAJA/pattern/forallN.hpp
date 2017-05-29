@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file defining generic forall templates.
+ * \brief   RAJA header file defining generic forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_generic_HXX__
-#define RAJA_forallN_generic_HXX__
+#ifndef RAJA_forallN_generic_HPP
+#define RAJA_forallN_generic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

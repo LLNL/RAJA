@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HXX
-#define RAJA_openmp_HXX
+#ifndef RAJA_openmp_HPP
+#define RAJA_openmp_HPP
 
 #include "RAJA/config.hpp"
 

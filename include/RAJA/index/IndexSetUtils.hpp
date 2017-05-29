@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_IndexSetUtils_HXX
-#define RAJA_IndexSetUtils_HXX
+#ifndef RAJA_IndexSetUtils_HPP
+#define RAJA_IndexSetUtils_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

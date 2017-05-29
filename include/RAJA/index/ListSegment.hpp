@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_ListSegment_HXX
-#define RAJA_ListSegment_HXX
+#ifndef RAJA_ListSegment_HPP
+#define RAJA_ListSegment_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

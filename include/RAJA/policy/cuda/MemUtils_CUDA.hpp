@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MemUtils_CUDA_HXX
-#define RAJA_MemUtils_CUDA_HXX
+#ifndef RAJA_MemUtils_CUDA_HPP
+#define RAJA_MemUtils_CUDA_HPP
 
 #include "RAJA/config.hpp"
 

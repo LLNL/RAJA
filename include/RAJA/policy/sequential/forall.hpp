@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_sequential_HXX
-#define RAJA_forall_sequential_HXX
+#ifndef RAJA_forall_sequential_HPP
+#define RAJA_forall_sequential_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

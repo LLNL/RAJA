@@ -12,8 +12,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HXX
-#define RAJA_forall_simd_HXX
+#ifndef RAJA_forall_simd_HPP
+#define RAJA_forall_simd_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

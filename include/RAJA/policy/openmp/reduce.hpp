@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_omp_HXX
-#define RAJA_forall_omp_HXX
+#ifndef RAJA_forall_omp_HPP
+#define RAJA_forall_omp_HPP
 
 #include "RAJA/config.hpp"
 

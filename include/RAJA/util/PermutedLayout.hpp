@@ -3,13 +3,14 @@
  *
  * \file
  *
- * \brief   RAJA header file defining layout operations for forallN templates.
+ * \brief   RAJA header file defining layout permutation operations for 
+ *          forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_PERMUTEDLAYOUT_HXX__
-#define RAJA_PERMUTEDLAYOUT_HXX__
+#ifndef RAJA_PERMUTEDLAYOUT_HPP
+#define RAJA_PERMUTEDLAYOUT_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
