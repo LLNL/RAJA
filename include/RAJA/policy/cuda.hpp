@@ -69,9 +69,7 @@
 #include "RAJA/policy/cuda/scan.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/policy/cuda/forallN.hpp"
-#endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

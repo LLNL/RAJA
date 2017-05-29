@@ -41,10 +41,6 @@
 #
 ###############################################################################
 
-if (NOT RAJA_ENABLE_NESTED)
-  add_definitions(-DRAJA_ENABLE_NESTED)
-endif()
-
 raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
 
 raja_add_test(

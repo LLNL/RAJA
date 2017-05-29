@@ -41,10 +41,6 @@
 #
 ###############################################################################
 
-if (NOT RAJA_ENABLE_NESTED)
-  add_definitions(-DRAJA_ENABLE_NESTED)
-endif()
-
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 raja_add_test(

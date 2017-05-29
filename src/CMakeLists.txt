@@ -41,15 +41,15 @@
 ###############################################################################
 
 set (raja_sources 
-  AlignedRangeIndexSetBuilders.cxx
-  DepGraphNode.cxx
-  IndexSet.cxx
-  ListSegment.cxx
-  LockFreeIndexSetBuilders.cxx
-  MemUtils_CPU.cxx
-  MemUtils_CUDA.cxx
-  RangeSegment.cxx
-  ThreadUtils_CPU.cxx)
+  AlignedRangeIndexSetBuilders.cpp
+  DepGraphNode.cpp
+  IndexSet.cpp
+  ListSegment.cpp
+  LockFreeIndexSetBuilders.cpp
+  MemUtils_CPU.cpp
+  MemUtils_CUDA.cpp
+  RangeSegment.cpp
+  ThreadUtils_CPU.cpp)
 
 raja_add_library(
   NAME RAJA
