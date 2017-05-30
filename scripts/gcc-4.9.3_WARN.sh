@@ -21,7 +21,6 @@ cmake \
   -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -DRAJA_ENABLE_WARNINGS=On \
-  -DRAJA_ENABLE_NESTED=On \
   -DRAJA_ENABLE_APPLICATIONS=On \
   -DRAJA_ENABLE_PERFSUITE=On \
   "$@" \

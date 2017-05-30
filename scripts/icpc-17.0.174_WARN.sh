@@ -22,7 +22,6 @@ cmake \
   -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
   -DRAJA_ENABLE_WARNINGS=On \
-  -DRAJA_ENABLE_NESTED=On \
   -DRAJA_ENABLE_APPLICATIONS=On \
   -DRAJA_ENABLE_PERFSUITE=On \
   "$@" \
