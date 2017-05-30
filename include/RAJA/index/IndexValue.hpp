@@ -97,7 +97,14 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  Index_type operator*(void)const { return value; }
+  Index_type &operator*(void) { return value; }
+
+  /*!
+   * \brief Dereference provides cast-to-integer.
+   */
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  const Index_type &operator*(void)const { return value; }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
@@ -281,7 +288,7 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(typename FROM::IndexValueType val)
 {
-  return TO{*val};
+  return static_cast<TO>(*val);
 }
 
 template <typename TO, typename FROM>
