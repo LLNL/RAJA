@@ -40,7 +40,7 @@
 # 
 ###############################################################################
 
-set (raja_sources 
+set (raja_sources
   AlignedRangeIndexSetBuilders.cpp
   DepGraphNode.cpp
   IndexSet.cpp
