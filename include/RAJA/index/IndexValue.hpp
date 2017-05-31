@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_INDEXVALUE_HXX__
-#define RAJA_INDEXVALUE_HXX__
+#ifndef RAJA_INDEXVALUE_HPP
+#define RAJA_INDEXVALUE_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,10 +53,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <string>
-#include "RAJA/util/defines.hpp"
+#include "RAJA/config.hpp"
 
+#include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
+
+#include <string>
 
 namespace RAJA
 {

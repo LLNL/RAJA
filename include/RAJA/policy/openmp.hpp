@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HXX
-#define RAJA_openmp_HXX
+#ifndef RAJA_openmp_HPP
+#define RAJA_openmp_HPP
 
 #include "RAJA/config.hpp"
 
@@ -69,9 +69,7 @@
 #include "RAJA/policy/openmp/reduce.hpp"
 #include "RAJA/policy/openmp/scan.hpp"
 
-#if defined(RAJA_ENABLE_NESTED)
 #include "RAJA/policy/openmp/forallN.hpp"
-#endif
 
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 

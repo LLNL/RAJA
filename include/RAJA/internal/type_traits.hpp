@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_type_traits_HXX
-#define RAJA_type_traits_HXX
+#ifndef RAJA_type_traits_HPP
+#define RAJA_type_traits_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

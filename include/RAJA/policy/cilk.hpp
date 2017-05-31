@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_cilk_HXX
-#define RAJA_cilk_HXX
+#ifndef RAJA_cilk_HPP
+#define RAJA_cilk_HPP
 
 #include "RAJA/config.hpp"
 

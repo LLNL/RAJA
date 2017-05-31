@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_raja_cudaerrchk_HXX
-#define RAJA_raja_cudaerrchk_HXX
+#ifndef RAJA_raja_cudaerrchk_HPP
+#define RAJA_raja_cudaerrchk_HPP
 
 #include "RAJA/config.hpp"
 

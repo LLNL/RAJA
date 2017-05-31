@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MultiPolicy_HXX
-#define RAJA_MultiPolicy_HXX
+#ifndef RAJA_MultiPolicy_HPP
+#define RAJA_MultiPolicy_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

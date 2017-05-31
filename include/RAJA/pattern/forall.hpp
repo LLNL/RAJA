@@ -42,8 +42,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_generic_HXX
-#define RAJA_forall_generic_HXX
+#ifndef RAJA_forall_generic_HPP
+#define RAJA_forall_generic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

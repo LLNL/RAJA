@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_Timer_HXX
-#define RAJA_Timer_HXX
+#ifndef RAJA_Timer_HPP
+#define RAJA_Timer_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

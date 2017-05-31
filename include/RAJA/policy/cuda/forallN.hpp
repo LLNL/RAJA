@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_cuda_HXX__
-#define RAJA_forallN_cuda_HXX__
+#ifndef RAJA_forallN_cuda_HPP
+#define RAJA_forallN_cuda_HPP
 
 #include "RAJA/config.hpp"
 

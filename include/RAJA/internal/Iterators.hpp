@@ -1,5 +1,16 @@
-#ifndef RAJA_ITERATORS_HXX
-#define RAJA_ITERATORS_HXX
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for RAJA iterator constructs.
+ *
+ ******************************************************************************
+ */
+
+
+#ifndef RAJA_ITERATORS_HPP
+#define RAJA_ITERATORS_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -224,4 +235,4 @@ private:
 }
 }
 
-#endif /* RAJA_ITERATORS_HXX */
+#endif /* RAJA_ITERATORS_HPP */

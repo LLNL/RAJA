@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_openmp_HXX
-#define RAJA_forall_openmp_HXX
+#ifndef RAJA_forall_openmp_HPP
+#define RAJA_forall_openmp_HPP
 
 #include "RAJA/config.hpp"
 
@@ -73,9 +73,7 @@
 #include <iostream>
 #include <thread>
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 
 namespace RAJA
