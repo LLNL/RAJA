@@ -82,12 +82,10 @@ struct OMP_Parallel {
   typedef NEXT NextPolicy;
 };
 
-/******************************************************************
- *  ForallN collapse nowait policies
- ******************************************************************/
 
-struct omp_collapse_nowait_exec {
-};
+/******************************************************************
+ *  ForallN collapse nowait execution templates
+ ******************************************************************/
 
 template <typename... PREST>
 struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,

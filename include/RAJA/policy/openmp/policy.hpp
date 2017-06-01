@@ -96,6 +96,7 @@ struct omp_for_nowait_exec
                                        RAJA::Pattern::forall> {
 };
 
+
 ///
 /// Index set segment iteration policies
 ///
@@ -110,6 +111,13 @@ struct omp_taskgraph_segit
 struct omp_taskgraph_interval_segit
     : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
                                        RAJA::Pattern::taskgraph> {
+};
+
+
+///
+/// Policies for applying OpenMP clauses in forallN loop nests.
+///
+struct omp_collapse_nowait_exec {
 };
 
 ///
