@@ -58,9 +58,9 @@
 #include "RAJA/util/defines.hpp"
 
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
-static_assert(
-    __cplusplus >= 201103L,
-    "C++ standards below 2011 are not supported" RAJA_STRINGIFY_HELPER(__cplusplus));
+static_assert(__cplusplus >= 201103L,
+              "C++ standards below 2011 are not "
+              "supported" RAJA_STRINGIFY_HELPER(__cplusplus));
 #endif
 
 #include <cstdint>
@@ -85,8 +85,8 @@ static_assert(
 //     using thrust::make_tuple;
 // }
 // #else
-#include <tuple>
 #include <array>
+#include <tuple>
 namespace VarOps
 {
 using std::tuple;
@@ -158,8 +158,9 @@ struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
 };
 
 template <typename Op, typename Arg1>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& RAJA_UNUSED_ARG(operation), Arg1&& arg) ->
-    typename foldl_impl<Op, Arg1>::Ret
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
+    Op&& RAJA_UNUSED_ARG(operation),
+    Arg1&& arg) -> typename foldl_impl<Op, Arg1>::Ret
 {
   return forward<Arg1&&>(arg);
 }
@@ -195,8 +196,9 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
 
 struct adder {
   template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(const Result& l,
-                                                           const Result& r) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
+      const Result& l,
+      const Result& r) const
   {
     return l + r;
   }
@@ -246,7 +248,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
 template <size_t... Ints>
 constexpr size_t integer_sequence<Ints...>::size;
 template <size_t... Ints>
-constexpr  std::array<size_t, sizeof...(Ints)> integer_sequence<Ints...>::value;
+constexpr std::array<size_t, sizeof...(Ints)> integer_sequence<Ints...>::value;
 
 namespace integer_sequence_detail
 {
@@ -385,8 +387,9 @@ struct get_offset
 template <size_t index>
 struct get_arg_at {
   template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& RAJA_UNUSED_ARG(first),
-                                                           Rest&&... rest)
+  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
+      First&& RAJA_UNUSED_ARG(first),
+      Rest&&... rest)
       -> decltype(VarOps::forward<
                   typename VarOps::get_type_at<index - 1, Rest...>::type>(
           get_arg_at<index - 1>::value(VarOps::forward<Rest>(rest)...)))
@@ -401,8 +404,9 @@ struct get_arg_at {
 template <>
 struct get_arg_at<0> {
   template <typename First, typename... Rest>
-  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(First&& first,
-                                                           Rest&&... RAJA_UNUSED_ARG(rest))
+  RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
+      First&& first,
+      Rest&&... RAJA_UNUSED_ARG(rest))
       -> decltype(VarOps::forward<First>(first))
   {
     return VarOps::forward<First>(first);

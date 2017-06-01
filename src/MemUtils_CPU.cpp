@@ -65,7 +65,8 @@
 
 #include <stdlib.h>
 
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
+#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
+    || defined(__MINGW32__) || defined(__BORLANDC__)
 #include <malloc.h>
 #endif
 
@@ -89,29 +90,33 @@ CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
 //
 Index_type* s_cpu_reduction_loc_block = 0;
 
-void * allocate_aligned(size_t alignment, size_t size) {
+void* allocate_aligned(size_t alignment, size_t size)
+{
 #if defined(HAVE_POSIX_MEMALIGN)
-    // posix_memalign available
-    void * ret = NULL;
-    int err = posix_memalign(&ret, alignment, size);
-    return err ? NULL : ret;
-#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-    //on windows
-    return _aligned_malloc(size, alignment);
+  // posix_memalign available
+  void* ret = NULL;
+  int err = posix_memalign(&ret, alignment, size);
+  return err ? NULL : ret;
+#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
+    || defined(__MINGW32__) || defined(__BORLANDC__)
+  // on windows
+  return _aligned_malloc(size, alignment);
 #else
-    #error No known aligned allocator available
+#error No known aligned allocator available
 #endif
 }
 
 
-void free_aligned(void* ptr) {
+void free_aligned(void* ptr)
+{
 #if defined(HAVE_POSIX_MEMALIGN)
-    free(ptr);
-#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) || defined(__MINGW32__) || defined(__BORLANDC__)
-    //on windows
-    _aligned_free(ptr);
+  free(ptr);
+#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
+    || defined(__MINGW32__) || defined(__BORLANDC__)
+  // on windows
+  _aligned_free(ptr);
 #else
-    #error No known aligned allocator available
+#error No known aligned allocator available
 #endif
 }
 

@@ -54,8 +54,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-namespace RAJA {
-namespace impl {
+namespace RAJA
+{
+namespace impl
+{
 
 /*!
  ******************************************************************************
@@ -166,68 +168,76 @@ RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
  */
 // TODO: this should be with the IndexSet class, really it should be part of
 // its built-in iterator, but we need to address the include snarl first
-template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 struct rangeListExecutor {
-  constexpr rangeListExecutor(LOOP_BODY &&body) : body(body) {}
+  constexpr rangeListExecutor(LOOP_BODY&& body) : body(body) {}
   RAJA_INLINE
-  void operator()(const IndexSetSegInfo &seg_info) {
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
     executeRangeList_forall<SEG_EXEC_POLICY_T>(&seg_info, body);
   }
 
- private:
+private:
   // LOOP_BODY body;
   typename std::remove_reference<LOOP_BODY>::type body;
 };
 
-template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 constexpr RAJA_INLINE rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
-makeRangeListExecutor(LOOP_BODY &&body) {
+makeRangeListExecutor(LOOP_BODY&& body)
+{
   return rangeListExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
 }
 
-template<typename SEG_IT_POLICY_T,
-    typename SEG_EXEC_POLICY_T,
-    typename LOOP_BODY>
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
 RAJA_INLINE void forall(
-    IndexSet::ExecPolicy <SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
-    const IndexSet &iset,
-    LOOP_BODY loop_body) {
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
   impl::forall(SEG_IT_POLICY_T(),
-               iset, makeRangeListExecutor<SEG_EXEC_POLICY_T>(loop_body));
+               iset,
+               makeRangeListExecutor<SEG_EXEC_POLICY_T>(loop_body));
 }
 
-template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 struct rangeListIcountExecutor {
-  constexpr rangeListIcountExecutor(LOOP_BODY &&body) : body(body) {}
+  constexpr rangeListIcountExecutor(LOOP_BODY&& body) : body(body) {}
   RAJA_INLINE
-  void operator()(const IndexSetSegInfo &seg_info) {
+  void operator()(const IndexSetSegInfo& seg_info)
+  {
     executeRangeList_forall_Icount<SEG_EXEC_POLICY_T>(&seg_info, body);
   }
 
- private:
+private:
   typename std::remove_reference<LOOP_BODY>::type body;
   // LOOP_BODY body;
 };
 
-template<typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
 constexpr RAJA_INLINE rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>
-makeRangeListIcountExecutor(LOOP_BODY &&body) {
+makeRangeListIcountExecutor(LOOP_BODY&& body)
+{
   return rangeListIcountExecutor<SEG_EXEC_POLICY_T, LOOP_BODY>(body);
 }
 
-template<typename SEG_IT_POLICY_T,
-    typename SEG_EXEC_POLICY_T,
-    typename LOOP_BODY>
+template <typename SEG_IT_POLICY_T,
+          typename SEG_EXEC_POLICY_T,
+          typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(
-    IndexSet::ExecPolicy <SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
-    const IndexSet &iset,
-    LOOP_BODY loop_body) {
+    IndexSet::ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
+    const IndexSet& iset,
+    LOOP_BODY loop_body)
+{
   // no need for icount variant here
   impl::forall(SEG_IT_POLICY_T(),
-               iset, makeRangeListIcountExecutor<SEG_EXEC_POLICY_T>(loop_body));
+               iset,
+               makeRangeListIcountExecutor<SEG_EXEC_POLICY_T>(loop_body));
 }
 
-} // end of namespace impl
-} // end of namespace RAJA
+}  // end of namespace impl
+}  // end of namespace RAJA
 
-#endif // RAJA_rangelist_forall_HPP
+#endif  // RAJA_rangelist_forall_HPP

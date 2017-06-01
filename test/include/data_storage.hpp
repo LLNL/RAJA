@@ -138,8 +138,10 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
-  using StorageType = typename internal::
-      storage<ExecPolicy, T, RAJA::is_cuda_policy<ExecPolicy>::value>;
+  using StorageType =
+      typename internal::storage<ExecPolicy,
+                                 T,
+                                 RAJA::is_cuda_policy<ExecPolicy>::value>;
 #else
   using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif

@@ -91,9 +91,9 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
   //// DO WORK
   ////
 
-  typename POL::VIEW val_view(&values[0], make_permuted_layout({size_i,
-                                                                size_j},
-  POL::PERM::value));
+  typename POL::VIEW val_view(&values[0],
+                              make_permuted_layout({size_i, size_j},
+                                                   POL::PERM::value));
 
   forallN<typename POL::EXEC>(RangeSegment(1, size_i),
                               RangeSegment(0, size_j),
@@ -286,15 +286,14 @@ void runLTimesTest(std::string const &policy,
   typename POL::ELL_VIEW ell(&ell_data[0],
                              make_permuted_layout({num_moments, num_directions},
                                                   POL::ELL_PERM::value));
-  typename POL::PSI_VIEW psi(&psi_data[0],
-                             make_permuted_layout(
-                                 {num_directions, num_groups, num_zones},
-                                 POL::PSI_PERM::value));
-  typename POL::PHI_VIEW phi(&phi_data[0],
-                             make_permuted_layout({num_moments,
-                                                   num_groups,
-                                                   num_zones},
-                                                  POL::PHI_PERM::value));
+  typename POL::PSI_VIEW psi(
+      &psi_data[0],
+      make_permuted_layout({num_directions, num_groups, num_zones},
+                           POL::PSI_PERM::value));
+  typename POL::PHI_VIEW phi(
+      &phi_data[0],
+      make_permuted_layout({num_moments, num_groups, num_zones},
+                           POL::PHI_PERM::value));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
@@ -306,7 +305,7 @@ void runLTimesTest(std::string const &policy,
       RangeSegment(0, num_groups),
       RangeSegment(0, num_zones),
       [=](IMoment m, IDirection d, IGroup g, IZone z) {
-    phi(m, g, z) += ell(m, d) * psi(d, g, z);
+        phi(m, g, z) += ell(m, d) * psi(d, g, z);
       });
 
   ////
@@ -392,18 +391,14 @@ struct PolLTimesC {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-          PSI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+      PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
-          PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
 
   typedef RAJA::PERM_IJK PSI_PERM;
   typedef RAJA::PERM_KJI PHI_PERM;
@@ -423,18 +418,14 @@ struct PolLTimesD_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-          PSI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+      PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
-          PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
 
   typedef RAJA::PERM_KJI PSI_PERM;
   typedef RAJA::PERM_KJI PHI_PERM;
@@ -458,18 +449,14 @@ struct PolLTimesE_OMP {
       EXEC;
 
   // psi[direction, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-          PSI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+      PSI_VIEW;
 
   // phi[moment, group, zone]
-  typedef RAJA::
-      TypedView<double, Layout<3>, IMoment, IGroup, IZone>
-          PHI_VIEW;
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
 
   // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection>
-      ELL_VIEW;
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
 
   typedef RAJA::PERM_KJI PSI_PERM;
   typedef RAJA::PERM_KJI PHI_PERM;

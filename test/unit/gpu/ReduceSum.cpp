@@ -210,7 +210,9 @@ int main(int argc, char *argv[])
       ReduceSum<cuda_reduce<block_size>, double> dsum2(dtinit * 3.0);
       ReduceSum<cuda_reduce<block_size>, int> isum3(itinit * 4);
 
-      forallN<NestedPolicy<ExecList<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > > > > (
+      forallN<NestedPolicy<ExecList<IndexSet::
+                                        ExecPolicy<seq_segit,
+                                                   cuda_exec<block_size> > > > >(
           iset, [=] __device__(int i) {
             dsum0 += dvalue[i];
             isum1 += 2 * ivalue[i];
@@ -309,7 +311,7 @@ int main(int argc, char *argv[])
 
     ////////////////////////////////////////////////////////////////////////////
 
-    {// Begin test4
+    {  // Begin test4
 
       ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
       ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
@@ -323,25 +325,21 @@ int main(int argc, char *argv[])
 
         for (int i = 0; i < TEST_VEC_LEN; ++i) {
           rand_dvalue[i] = drand48() - 0.5;
-          if(rand_dvalue[i] < 0.0) {
+          if (rand_dvalue[i] < 0.0) {
             neg_chk_val += rand_dvalue[i];
-          }
-          else {
+          } else {
             pos_chk_val += rand_dvalue[i];
-          } 
-        }
-        forall<cuda_exec<block_size> >(0,
-                                       TEST_VEC_LEN,
-                                       [=] __device__(int i) {
-          if(rand_dvalue[i] < 0.0) {
-            dsumN += rand_dvalue[i];
           }
-          else {
+        }
+        forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
+          if (rand_dvalue[i] < 0.0) {
+            dsumN += rand_dvalue[i];
+          } else {
             dsumP += rand_dvalue[i];
           }
         });
 
-        if (   !equal(dsumN.get(), neg_chk_val)
+        if (!equal(dsumN.get(), neg_chk_val)
             || !equal(dsumP.get(), pos_chk_val)) {
           cout << "\n TEST 4 FAILURE: tcount, k = " << tcount << " , " << k
                << endl;
@@ -354,8 +352,8 @@ int main(int argc, char *argv[])
           s_ntests_passed++;
         }
       }
-    } //end test4
-  }  // end test repeat loop
+    }  // end test4
+  }    // end test repeat loop
 
   ///
   /// Print total number of tests passed/run.

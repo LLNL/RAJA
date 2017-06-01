@@ -61,14 +61,14 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/types.hpp"
 #include "RAJA/util/defines.hpp"
+#include "RAJA/util/types.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 
@@ -79,10 +79,12 @@ namespace impl
 {
 
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
+                                         LOOP_BODY&& loop_body);
 
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
+RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
+                                                LOOP_BODY&& loop_body);
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -105,7 +107,7 @@ namespace INTERNAL
  */
 __device__ __forceinline__ Index_type getGlobalIdx_1D_1D()
 {
-  Index_type blockId  = blockIdx.x;
+  Index_type blockId = blockIdx.x;
   Index_type threadId = blockId * blockDim.x + threadIdx.x;
   return threadId;
 }
@@ -133,12 +135,12 @@ __device__ __forceinline__ Index_type getGlobalIdx_3D_3D()
 }
 __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
 {
-  Index_type numThreads = blockDim.x * blockDim.y * blockDim.z *
-                          gridDim.x * gridDim.y * gridDim.z;
+  Index_type numThreads =
+      blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
 
-} // end INTERNAL namespace for helper functions
+}  // end INTERNAL namespace for helper functions
 
 
 /*!
@@ -207,17 +209,16 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
-  Index_type max_step_size = (getCudaMemblockUsedCount() > 0) ?
-                                  BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
-                                  : total_len;
+  Index_type max_step_size = (getCudaMemblockUsedCount() > 0)
+                                 ? BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
+                                 : total_len;
 
   RAJA_FT_BEGIN;
 
-  for ( Index_type step_size, offset = 0;
-        offset < total_len;
-        offset += step_size ) {
+  for (Index_type step_size, offset = 0; offset < total_len;
+       offset += step_size) {
 
-    step_size = RAJA_MIN( total_len - offset, max_step_size );
+    step_size = RAJA_MIN(total_len - offset, max_step_size);
 
     auto begin = first_begin + offset;
     auto end = begin + step_size;
@@ -225,8 +226,8 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
     Index_type len = std::distance(begin, end);
     Index_type gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
-    forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
-                      >>>(body, std::move(begin), len);
+    forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)>>>(
+        body, std::move(begin), len);
   }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
@@ -251,17 +252,16 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
   auto final_end = std::end(iter);
   Index_type total_len = std::distance(first_begin, final_end);
 
-  Index_type max_step_size = (getCudaMemblockUsedCount() > 0) ?
-                                  BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
-                                  : total_len;
+  Index_type max_step_size = (getCudaMemblockUsedCount() > 0)
+                                 ? BLOCK_SIZE * RAJA_CUDA_MAX_NUM_BLOCKS
+                                 : total_len;
 
   RAJA_FT_BEGIN;
 
-  for ( Index_type step_size, offset = 0;
-        offset < total_len;
-        offset += step_size ) {
+  for (Index_type step_size, offset = 0; offset < total_len;
+       offset += step_size) {
 
-    step_size = RAJA_MIN( total_len - offset, max_step_size );
+    step_size = RAJA_MIN(total_len - offset, max_step_size);
 
     auto begin = first_begin + offset;
     auto end = begin + step_size;
@@ -269,8 +269,8 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
     Index_type len = std::distance(begin, end);
     Index_type gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
-    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)
-                             >>>(body, std::move(begin), len, icount + offset);
+    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(
+        gridSize, BLOCK_SIZE)>>>(body, std::move(begin), len, icount + offset);
   }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
@@ -299,9 +299,10 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
  ******************************************************************************
  */
 template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY>
-RAJA_INLINE void forall(IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
-                        const IndexSet& iset,
-                        LOOP_BODY&& loop_body)
+RAJA_INLINE void forall(
+    IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
+    const IndexSet& iset,
+    LOOP_BODY&& loop_body)
 {
 
   int num_seg = iset.getNumSegments();
@@ -335,7 +336,8 @@ RAJA_INLINE void forall_Icount(
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall_Icount<cuda_exec<BLOCK_SIZE, true>>(seg_info, loop_body);
+    executeRangeList_forall_Icount<cuda_exec<BLOCK_SIZE, true>>(seg_info,
+                                                                loop_body);
 
   }  // iterate over segments of index set
 

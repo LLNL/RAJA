@@ -143,13 +143,15 @@ private:
   using DurationType = std::chrono::duration<ElapsedType>;
 
 public:
-  ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), 
-                  telapsed(0) {}
+  ChronoTimer() : tstart(ClockType::now()), tstop(ClockType::now()), telapsed(0)
+  {
+  }
   void start() { tstart = ClockType::now(); }
   void stop()
   {
     tstop = ClockType::now();
-    telapsed += std::chrono::duration_cast<DurationType>(tstop - tstart).count();
+    telapsed +=
+        std::chrono::duration_cast<DurationType>(tstop - tstart).count();
   }
 
   ElapsedType elapsed() { return telapsed; }
@@ -200,7 +202,11 @@ public:
 
   ElapsedType elapsed() { return (stime_elapsed + nstime_elapsed); }
 
-  void reset() { stime_elapsed = 0; nstime_elapsed = 0; }
+  void reset()
+  {
+    stime_elapsed = 0;
+    nstime_elapsed = 0;
+  }
 
 private:
   TimeType tstart;

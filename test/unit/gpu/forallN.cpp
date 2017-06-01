@@ -41,7 +41,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA GPU nested loop kernels. 
+/// Source file containing tests for RAJA GPU nested loop kernels.
 ///
 
 #include <time.h>
@@ -133,15 +133,15 @@ void runLTimesTest(std::string const &policy,
   // randomize data
   for (size_t i = 0; i < ell_data.size(); ++i) {
     ell_data[i] = drand48();
-    //ell_data[i] = 0.0;
+    // ell_data[i] = 0.0;
   }
-  //ell_data[0] = 2.0;
+  // ell_data[0] = 2.0;
 
   for (size_t i = 0; i < psi_data.size(); ++i) {
     psi_data[i] = drand48();
-    //psi_data[i] = 0.0;
+    // psi_data[i] = 0.0;
   }
-  //psi_data[0] = 5.0;
+  // psi_data[0] = 5.0;
   // create device memory
   double *d_ell, *d_phi, *d_psi;
   cudaErrchk(cudaMalloc(&d_ell, sizeof(double) * ell_data.size()));
@@ -163,9 +163,17 @@ void runLTimesTest(std::string const &policy,
              cudaMemcpyHostToDevice);
 
   // create views on data
-  typename POL::ELL_VIEW ell(d_ell, make_permuted_layout({num_moments, num_directions}, POL::ELL_PERM::value));
-  typename POL::PSI_VIEW psi(d_psi, make_permuted_layout({num_directions, num_groups, num_zones}, POL::PSI_PERM::value));
-  typename POL::PHI_VIEW phi(d_phi, make_permuted_layout({num_moments, num_groups, num_zones}, POL::PHI_PERM::value));
+  typename POL::ELL_VIEW ell(d_ell,
+                             make_permuted_layout({num_moments, num_directions},
+                                                  POL::ELL_PERM::value));
+  typename POL::PSI_VIEW psi(
+      d_psi,
+      make_permuted_layout({num_directions, num_groups, num_zones},
+                           POL::PSI_PERM::value));
+  typename POL::PHI_VIEW phi(
+      d_phi,
+      make_permuted_layout({num_moments, num_groups, num_zones},
+                           POL::PHI_PERM::value));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
@@ -241,7 +249,7 @@ void runLTimesTest(std::string const &policy,
   if (std::abs(lsum - double(pdsum)) > 5e-9) {
     reductionsFailed++;
     whichFailed += "[ReduceSum]";
-    //printf("ReduceSum failed : EPS =  %g\n",std::abs(lsum - double(pdsum)));
+    // printf("ReduceSum failed : EPS =  %g\n",std::abs(lsum - double(pdsum)));
   }
 
   if (lmin != double(pdmin)) {

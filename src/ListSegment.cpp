@@ -78,7 +78,7 @@ ListSegment::ListSegment(const Index_type* indx,
 
 ////
 ////
-ListSegment::ListSegment(const ListSegment& other) 
+ListSegment::ListSegment(const ListSegment& other)
     : BaseSegment(_ListSeg_), m_indx(0), m_len(0)
 {
   initIndexData(other.m_indx, other.getLength(), other.m_indx_own);
@@ -143,7 +143,7 @@ bool ListSegment::indicesEqual(const Index_type* indx, Index_type len) const
 void ListSegment::print(std::ostream& os) const
 {
 #if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaDeviceSynchronize());
+  cudaErrchk(cudaDeviceSynchronize());
 #endif
   os << "ListSegment : length, owns index = " << getLength()
      << (m_indx_own == Owned ? " -- Owned" : " -- Unowned") << std::endl;
@@ -177,8 +177,8 @@ void ListSegment::initIndexData(const Index_type* indx,
       cudaErrchk(cudaMallocManaged((void**)&m_indx,
                                    m_len * sizeof(Index_type),
                                    cudaMemAttachGlobal));
-      cudaErrchk(cudaMemcpy(m_indx, indx,
-                            m_len * sizeof(Index_type), cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(
+          m_indx, indx, m_len * sizeof(Index_type), cudaMemcpyDefault));
 #else
       m_indx = new Index_type[len];
       for (Index_type i = 0; i < m_len; ++i) {

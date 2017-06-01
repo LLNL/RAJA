@@ -217,9 +217,7 @@ TYPED_TEST_CASE_P(ExclusiveScanTest);
 
 TYPED_TEST_P(InclusiveScanTest, InclusiveCorrectness)
 {
-  compareInclusive(this->original.get(),
-                   this->data.get(),
-                   this->function);
+  compareInclusive(this->original.get(), this->data.get(), this->function);
 }
 TYPED_TEST_P(ExclusiveScanTest, ExclusiveCorrectness)
 {

@@ -62,8 +62,8 @@
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/forall.hpp"
+#include "RAJA/policy/cuda/policy.hpp"
 #include "RAJA/policy/cuda/reduce.hpp"
 #if defined(__NVCC__)
 #include "RAJA/policy/cuda/scan.hpp"

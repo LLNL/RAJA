@@ -84,7 +84,7 @@ TEST(TypedLayoutTest, 1D)
    */
   const RAJA::TypedLayout<TIL, TIX, TIY> l(10, 5);
 
-  ASSERT_EQ(TIL{0}, l(TIX{0},TIY{0}));
+  ASSERT_EQ(TIL{0}, l(TIX{0}, TIY{0}));
 
   ASSERT_EQ(TIL{2}, l(TIX{0}, TIY{2}));
 
@@ -95,14 +95,13 @@ TEST(TypedLayoutTest, 1D)
   l.toIndices(TIL{10}, y, x);
   ASSERT_EQ(x, TIX{0});
   ASSERT_EQ(y, TIY{2});
-
 }
 
 
 TEST(LayoutTest, OffsetVsRegular)
 {
-  const auto layout = RAJA::make_permuted_layout({6, 6},
-                                                   RAJA::Perm<1,0>::value);
+  const auto layout =
+      RAJA::make_permuted_layout({6, 6}, RAJA::Perm<1, 0>::value);
   const auto offset =
       RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::value);
 
@@ -111,7 +110,8 @@ TEST(LayoutTest, OffsetVsRegular)
    */
   for (int j = 0; j < 6; ++j) {
     for (int i = 0; i < 6; ++i) {
-      ASSERT_EQ(offset(i, j), layout(i, j)) << layout.strides[0] << layout.strides[1];
+      ASSERT_EQ(offset(i, j), layout(i, j)) << layout.strides[0]
+                                            << layout.strides[1];
     }
   }
 }

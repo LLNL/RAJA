@@ -79,7 +79,7 @@ struct NestedPolicy {
 
 /*!
  * \brief Struct that contains a policy for each loop nest in a forallN
- *        construct. 
+ *        construct.
  *
  *  Typically, passed as first template argument to NestedPolicy template,
  *  followed by permutation, etc.
@@ -111,7 +111,8 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   NextExec const next_exec;
 
   template <typename... TYPE_REST>
-  constexpr ForallN_Executor(POLICY_INIT const &is_i0, TYPE_REST const &... is_rest)
+  constexpr ForallN_Executor(POLICY_INIT const &is_i0,
+                             TYPE_REST const &... is_rest)
       : is_i(is_i0), next_exec(is_rest...)
   {
   }
@@ -216,13 +217,13 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                            args)...);
 }
 
-namespace detail {
+namespace detail
+{
 
-template<typename T, size_t Unused>
+template <typename T, size_t Unused>
 struct type_repeater {
-    using type=T;
+  using type = T;
 };
-
 }
 
 template <typename POLICY,
@@ -242,7 +243,8 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
   // Make it look like variadics can have defaults
   forallN_impl_extract<POLICY,
                        Indices...,
-                       typename detail::type_repeater<Index_type, Unspecified>::type...>(
+                       typename detail::type_repeater<Index_type,
+                                                      Unspecified>::type...>(
       typename POLICY::ExecPolicies(), body, args...);
 }
 

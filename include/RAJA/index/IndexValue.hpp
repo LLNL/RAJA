@@ -288,7 +288,8 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
   return TO{val};
 }
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(typename FROM::IndexValueType val)
+RAJA_HOST_DEVICE RAJA_INLINE TO
+convertIndex_helper(typename FROM::IndexValueType val)
 {
   return static_cast<TO>(*val);
 }
@@ -300,7 +301,6 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
 }
 
 
-
 }  // namespace RAJA
 
 /*!
@@ -310,7 +310,7 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
   class TYPE : public RAJA::IndexValue<TYPE>                                   \
   {                                                                            \
   public:                                                                      \
-    typedef TYPE IndexValueType; \
+    typedef TYPE IndexValueType;                                               \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() \
     {                                                                          \
     }                                                                          \
