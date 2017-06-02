@@ -53,6 +53,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+
 #include <stdlib.h>
 #include <stdexcept>
 
@@ -120,7 +122,7 @@
  * \endcode
  *******************************************************************************
  */
-#define RAJA_UNUSED_VAR(_x)   static_cast<void>(_x)
+#define RAJA_UNUSED_VAR(_x) static_cast<void>(_x)
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -131,7 +133,7 @@
 
 /*!
  * \def RAJA_STRINGIFY_MACRO(x)
- * 
+ *
  * Used in static_assert macros to print values of defines
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
@@ -142,14 +144,15 @@
  * Macro to find ceiling (dividend / divisor) for integer types
  */
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
- ( ( (dividend) + (divisor) - 1 ) / (divisor) )
+  (((dividend) + (divisor)-1) / (divisor))
 
-inline void RAJA_ABORT_OR_THROW(const char *str) {
-    if  (getenv ("RAJA_NO_EXCEPT") != NULL) {
-        abort();
-    } else {
-        throw std::runtime_error(str);
-    }
+inline void RAJA_ABORT_OR_THROW(const char *str)
+{
+  if (getenv("RAJA_NO_EXCEPT") != NULL) {
+    abort();
+  } else {
+    throw std::runtime_error(str);
+  }
 }
 
 #endif /* RAJA_INTERNAL_DEFINES_HPP */

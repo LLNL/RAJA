@@ -57,8 +57,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/util/types.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
+#include "RAJA/util/types.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
@@ -82,12 +82,10 @@ struct OMP_Parallel {
   typedef NEXT NextPolicy;
 };
 
-/******************************************************************
- *  ForallN collapse nowait policies
- ******************************************************************/
 
-struct omp_collapse_nowait_exec {
-};
+/******************************************************************
+ *  ForallN collapse nowait execution templates
+ ******************************************************************/
 
 template <typename... PREST>
 struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
@@ -202,8 +200,10 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 
   RAJA_INLINE
   constexpr ForallN_Executor(
-      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &iseti_,
-      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetj_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const
+          &iseti_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const
+          &isetj_,
       PREST const &... prest)
       : iset_i(iseti_), iset_j(isetj_), next_exec(prest...)
   {
@@ -227,8 +227,8 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 #else
 #pragma omp for nowait
 #endif
-    for (int i = begin_i; i < end_i; i+=stride_i) {
-      for (int j = begin_j; j < end_j; j+=stride_j) {
+    for (int i = begin_i; i < end_i; i += stride_i) {
+      for (int j = begin_j; j < end_j; j += stride_j) {
         outer(i, j);
       }
     }
@@ -252,9 +252,12 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 
   RAJA_INLINE
   constexpr ForallN_Executor(
-      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &iseti_,
-      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetj_,
-      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const &isetk_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const
+          &iseti_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const
+          &isetj_,
+      ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> const
+          &isetk_,
       PREST... prest)
       : iset_i(iseti_), iset_j(isetj_), iset_k(isetk_), next_exec(prest...)
   {
@@ -280,9 +283,9 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 #else
 #pragma omp for nowait
 #endif
-    for (int i = begin_i; i < end_i; i+=stride_i) {
-      for (int j = begin_j; j < end_j; j+=stride_j) {
-        for (int k = begin_k; k < end_k; k+=stride_k) {
+    for (int i = begin_i; i < end_i; i += stride_i) {
+      for (int j = begin_j; j < end_j; j += stride_j) {
+        for (int k = begin_k; k < end_k; k += stride_k) {
           outer(i, j, k);
         }
       }

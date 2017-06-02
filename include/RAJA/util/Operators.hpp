@@ -230,8 +230,10 @@ struct larger_of<T, U, false> {
 
 template <typename T, typename U>
 struct larger_of {
-  using type = typename detail::
-      larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
+  using type =
+      typename detail::larger_of<T,
+                                 U,
+                                 (size_of<T>::value > size_of<U>::value)>::type;
 };
 
 }  // closing brace for types namespace
@@ -296,13 +298,12 @@ struct floating_point_limits<long double> {
 
 template <typename T>
 struct limits
-  : public std::conditional<
-      std::is_integral<T>::value,
-      typename std::conditional<
-        std::is_unsigned<T>::value,
-        detail::unsigned_limits<T>,
-        detail::signed_limits<T>>::type,
-      detail::floating_point_limits<T>>::type {
+    : public std::
+          conditional<std::is_integral<T>::value,
+                      typename std::conditional<std::is_unsigned<T>::value,
+                                                detail::unsigned_limits<T>,
+                                                detail::signed_limits<T>>::type,
+                      detail::floating_point_limits<T>>::type {
 };
 
 #ifdef RAJA_CHECK_LIMITS
@@ -322,9 +323,11 @@ static_assert(check<unsigned int>(), "limits for unsigned int is broken");
 static_assert(check<long>(), "limits for long is broken");
 static_assert(check<unsigned long>(), "limits for unsigned long is broken");
 static_assert(check<long int>(), "limits for long int is broken");
-static_assert(check<unsigned long int>(), "limits for unsigned long int is broken");
+static_assert(check<unsigned long int>(),
+              "limits for unsigned long int is broken");
 static_assert(check<long long>(), "limits for long long is broken");
-static_assert(check<unsigned long long>(), "limits for unsigned long long is broken");
+static_assert(check<unsigned long long>(),
+              "limits for unsigned long long is broken");
 #endif
 
 // Arithmetic

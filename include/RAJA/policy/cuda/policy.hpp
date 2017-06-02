@@ -120,20 +120,25 @@ struct Dim3z {
 /// Segment execution policies
 ///
 
-namespace detail {
-  template <bool Async>
-  struct get_launch {
-    static constexpr RAJA::Launch value = RAJA::Launch::async;
-  };
+namespace detail
+{
+template <bool Async>
+struct get_launch {
+  static constexpr RAJA::Launch value = RAJA::Launch::async;
+};
 
-  template <>
-  struct get_launch<false> {
-    static constexpr RAJA::Launch value = RAJA::Launch::sync;
-  };
+template <>
+struct get_launch<false> {
+  static constexpr RAJA::Launch value = RAJA::Launch::sync;
+};
 }
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::forall> {};
+struct cuda_exec
+    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
+                                              detail::get_launch<Async>::value,
+                                              RAJA::Pattern::forall> {
+};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -148,13 +153,21 @@ struct cuda_exec : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, d
 ///
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
+struct cuda_reduce
+    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
+                                              detail::get_launch<Async>::value,
+                                              RAJA::Pattern::reduce> {
+};
 
 template <size_t BLOCK_SIZE>
 using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::reduce> {};
+struct cuda_reduce_atomic
+    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
+                                              detail::get_launch<Async>::value,
+                                              RAJA::Pattern::reduce> {
+};
 
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;

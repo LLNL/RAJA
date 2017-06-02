@@ -250,11 +250,9 @@ int main(int argc, char *argv[])
     ref_array[i] = parent[i] * parent[i];
   }
 
-  forall<cuda_exec<block_size> >(0,
-                                 0,
-                                 [=] __device__(Index_type idx) {
-                                   test_array[idx] = parent[idx] * parent[idx];
-                                 });
+  forall<cuda_exec<block_size> >(0, 0, [=] __device__(Index_type idx) {
+    test_array[idx] = parent[idx] * parent[idx];
+  });
 
   s_ntests_run++;
   if (!array_equal(ref_array, test_array, 0)) {

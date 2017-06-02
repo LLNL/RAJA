@@ -66,6 +66,31 @@
 namespace RAJA
 {
 
+/*!
+ * \brief Struct used to define forallN nested policies.
+ *
+ *  Typically, passed as first template argument to forallN templates.
+ */
+template <typename EXEC, typename NEXT = Execute>
+struct NestedPolicy {
+  typedef NEXT NextPolicy;
+  typedef EXEC ExecPolicies;
+};
+
+/*!
+ * \brief Struct that contains a policy for each loop nest in a forallN
+ *        construct.
+ *
+ *  Typically, passed as first template argument to NestedPolicy template,
+ *  followed by permutation, etc.
+ */
+template <typename... PLIST>
+struct ExecList {
+  constexpr const static size_t num_loops = sizeof...(PLIST);
+  typedef std::tuple<PLIST...> tuple;
+};
+
+
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
  ******************************************************************/
@@ -75,7 +100,6 @@ namespace RAJA
  *
  *  The default action is to call RAJA::forall to peel off outer loop nest.
  */
-
 template <typename POLICY_INIT, typename... POLICY_REST>
 struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::ISET TYPE_I;
@@ -87,7 +111,8 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   NextExec const next_exec;
 
   template <typename... TYPE_REST>
-  constexpr ForallN_Executor(POLICY_INIT const &is_i0, TYPE_REST const &... is_rest)
+  constexpr ForallN_Executor(POLICY_INIT const &is_i0,
+                             TYPE_REST const &... is_rest)
       : is_i(is_i0), next_exec(is_rest...)
   {
   }
@@ -192,13 +217,13 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                            args)...);
 }
 
-namespace detail {
+namespace detail
+{
 
-template<typename T, size_t Unused>
+template <typename T, size_t Unused>
 struct type_repeater {
-    using type=T;
+  using type = T;
 };
-
 }
 
 template <typename POLICY,
@@ -218,7 +243,8 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
   // Make it look like variadics can have defaults
   forallN_impl_extract<POLICY,
                        Indices...,
-                       typename detail::type_repeater<Index_type, Unspecified>::type...>(
+                       typename detail::type_repeater<Index_type,
+                                                      Unspecified>::type...>(
       typename POLICY::ExecPolicies(), body, args...);
 }
 

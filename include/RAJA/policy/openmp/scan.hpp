@@ -55,8 +55,8 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 
 #include <omp.h>
 

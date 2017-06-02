@@ -244,7 +244,8 @@ void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
   Index_type worksetSize = 0;
   Index_type* workset = new Index_type[numEntity];
 
-  Index_type* rangeToDomain = new Index_type[numEntityRange * numRangePerDomain];
+  Index_type* rangeToDomain =
+      new Index_type[numEntityRange * numRangePerDomain];
   Index_type* rangeToDomainCount = new Index_type[numEntityRange];
 
   memset(rangeToDomainCount, 0, numEntityRange * sizeof(Index_type));

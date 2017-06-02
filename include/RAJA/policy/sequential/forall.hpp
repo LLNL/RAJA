@@ -62,8 +62,8 @@
 
 #include "RAJA/policy/sequential/policy.hpp"
 
-#include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/internal/fault_tolerance.hpp"
 

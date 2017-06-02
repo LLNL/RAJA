@@ -60,8 +60,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/cilk/policy.hpp"
 #include "RAJA/policy/cilk/forall.hpp"
+#include "RAJA/policy/cilk/policy.hpp"
 #include "RAJA/policy/cilk/reduce.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CILK)
