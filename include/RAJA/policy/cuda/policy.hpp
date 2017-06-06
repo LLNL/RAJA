@@ -81,7 +81,8 @@ namespace detail {
 }
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_exec : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::forall> {};
+struct cuda_exec : 
+  public RAJA::make_policy_launch_pattern_platform<RAJA::Policy::cuda, detail::get_launch<Async>::value, RAJA::Pattern::forall, RAJA::Platform::cuda> {};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA

@@ -17,7 +17,7 @@ static_assert(RAJA::detail::get_space<RAJA::IndexSet::ExecPolicy<RAJA::seq_segit
 #endif
 
 static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::seq_exec > > >::value == chai::CPU, "");
-static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_exec<16> > > >::value == chai::GPU, "");
+//static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_exec<16> > > >::value == chai::GPU, "");
 
 TEST(ChaiPolicyTest, Default) {
   std::cout << RAJA::detail::get_space<RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128> > >::value << std::endl;
