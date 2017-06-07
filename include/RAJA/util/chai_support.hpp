@@ -15,6 +15,8 @@ namespace RAJA {
 namespace detail {
 
 struct max_platform {
+    RAJA_HOST_DEVICE
+    RAJA_INLINE
     constexpr
     RAJA::Platform
     operator()(const RAJA::Platform& l, const RAJA::Platform& r) const
@@ -67,26 +69,6 @@ struct get_space_from_list<RAJA::IndexSet::ExecPolicy<SEG, EXEC>> {
 template <typename TAGS, typename... POLICIES>
 struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...>, TAGS > > : 
   public get_space_from_list<POLICIES...> {};
-
-// constexpr chai::ExecutionSpace getSpace(RAJA::PolicyBase&& policy) {
-//   // return is_cuda_policy<decltype(policy)>::value ? chai::GPU : chai::CPU;
-// }
-
-// template <typename SEG, typename EXEC>
-// constexpr chai::ExecutionSpace getSpace(RAJA::IndexSet::ExecPolicy<SEG, EXEC>&& policy) {
-//   return getSpace(EXEC());
-// }
-// 
-// template <typename Selector, typename... Policies>
-// constexpr chai::ExecutionSpace getSpace(RAJA::MultiPolicy<Selector, Policies...> && policy) {
-//   return chai::NONE;
-// }
-// 
-// template <typename... Policies>
-// constexpr chai::ExecutionSpace getSpace(RAJA::NestedPolicy<Policies...>&& policy) {
-//     return chai::CPU;
-// }
-
 
 }
 }
