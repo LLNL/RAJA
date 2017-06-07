@@ -257,7 +257,6 @@ struct TargetReduce {
   }
 
 private:
-  TargetReduce *ptr2this;
   omp::Offload_Info info;
   omp::Reduce_Data<Teams, T> val;
 };

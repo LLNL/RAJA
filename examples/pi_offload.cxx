@@ -34,6 +34,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "PImax is ~ " << double(piMax) / numBins << std::endl;
   std::cout << "PIminloc is ~ " << double(piMinLoc)/numBins << " at " << piMinLoc.getLoc() << std::endl;
   std::cout << "PImaxloc is ~ " << double(piMaxLoc)/numBins << " at " << piMaxLoc.getLoc() << std::endl;
-
+ 
   return 0;
 }
