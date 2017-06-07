@@ -90,7 +90,7 @@ struct Offload_Info {
 
 template <size_t Teams, typename T>
 struct Reduce_Data {
-  T value;
+  mutable T value;
   T *device;
   T *host;
 
@@ -119,30 +119,30 @@ struct Reduce_Data {
   RAJA_INLINE void hostToDevice(Offload_Info &info)
   {
     // precondition: host and device are valid pointers
-    if (!omp_target_memcpy(reinterpret_cast<void *>(device),
+    if (omp_target_memcpy(reinterpret_cast<void *>(device),
                            reinterpret_cast<void *>(host),
                            Teams * sizeof(T),
                            0,
                            0,
                            info.deviceID,
-                           info.hostID)) {
+                           info.hostID) != 0) {
       printf("Unable to copy memory from host to device\n");
       exit(1);
     }
   }
-
+ 
   RAJA_INLINE void deviceToHost(Offload_Info &info)
   {
     // precondition: host and device are valid pointers
-    if (!omp_target_memcpy(reinterpret_cast<void *>(host),
-                           reinterpret_cast<void *>(device),
+    if (omp_target_memcpy(reinterpret_cast<void *>(host),
+                          reinterpret_cast<void *>(device),
                            Teams * sizeof(T),
                            0,
                            0,
                            info.hostID,
-                           info.deviceID)) {
+                           info.deviceID) != 0) {
       printf("Unable to copy memory from device to host\n");
-      exit(1);
+     exit(1);
     }
   }
 
@@ -212,8 +212,11 @@ struct maxloc {
 template <size_t Teams, typename Reducer, typename T>
 struct TargetReduce {
   TargetReduce() = delete;
-  TargetReduce(const TargetReduce &) = default;
-  explicit TargetReduce(T init_val) : info(), val(init_val, info) {}
+  TargetReduce(const TargetReduce &) = default; 
+
+  explicit TargetReduce(T init_val) : info(), val(init_val, info)
+  {
+  }
 
   ~TargetReduce()
   {
@@ -248,10 +251,13 @@ struct TargetReduce {
   const TargetReduce &reduce(T rhsVal) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
-    return const_cast<NonConst>(this)->reduce(rhsVal);
+    auto ptr = const_cast<NonConst>(this); 
+    Reducer{}(ptr->val.value,rhsVal);
+    return *this;
   }
 
 private:
+  TargetReduce *ptr2this;
   omp::Offload_Info info;
   omp::Reduce_Data<Teams, T> val;
 };
@@ -306,7 +312,10 @@ struct TargetReduceLoc {
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
-    return const_cast<NonConst>(this)->reduce(rhsVal, rhsLoc);
+    auto ptr = const_cast<NonConst>(this);
+    Reducer{}(ptr->val.value,ptr->loc.value,rhsVal,rhsLoc);
+    return *this;
+
   }
 
 private:

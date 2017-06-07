@@ -18,6 +18,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::ReduceMax<reduce_policy, double> piMax(std::numeric_limits<double>::min());
   RAJA::ReduceMinLoc<reduce_policy, double> piMinLoc(std::numeric_limits<double>::max(),std::numeric_limits<RAJA::Index_type>::max());
   RAJA::ReduceMaxLoc<reduce_policy, double> piMaxLoc(std::numeric_limits<double>::min(),std::numeric_limits<RAJA::Index_type>::min());
+
   RAJA::forall<execute_policy>(begin, numBins, [=](int i) {
     double x = (double(i) + 0.5) / numBins;
     piSum += 4.0 / (1.0 + x * x);
@@ -33,5 +34,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout << "PImax is ~ " << double(piMax) / numBins << std::endl;
   std::cout << "PIminloc is ~ " << double(piMinLoc)/numBins << " at " << piMinLoc.getLoc() << std::endl;
   std::cout << "PImaxloc is ~ " << double(piMaxLoc)/numBins << " at " << piMaxLoc.getLoc() << std::endl;
+
   return 0;
 }
