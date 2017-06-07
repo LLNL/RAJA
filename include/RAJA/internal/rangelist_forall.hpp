@@ -54,6 +54,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/pattern/forall.hpp"
+#include "RAJA/policy/sequential.hpp"
+
 namespace RAJA
 {
 namespace impl
