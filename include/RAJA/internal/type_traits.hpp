@@ -203,9 +203,6 @@ template <Pattern P>
 struct cuda_async_for
     : public make_policy_launch_pattern<Policy::cuda, Launch::async, P> {
 };
-template <Pattern P>
-struct cilk_for : public make_policy_pattern<Policy::cilk, P> {
-};
 
 }  // closing brace for RAJA namespace
 

@@ -127,6 +127,88 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
+ * \brief The RAJA::wrap layer unwraps dynamic policies before dispatch
+ *
+ ******************************************************************************
+ */
+namespace wrap {
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with a value-based policy
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
+{
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  auto space = detail::get_space< typename std::remove_reference<decltype(p)>::type >::value;
+  rm->setExecutionSpace(space);
+#endif
+
+  typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), body);
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with icount
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(EXEC_POLICY_T&&p, const IndexSet& c, LOOP_BODY loop_body)
+{
+
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  rm->setExecutionSpace(detail::get_space<EXEC_POLICY_T>::value);
+#endif
+
+  typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+  impl::forall_Icount(p, c, body);
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Generic dispatch over containers with icount
+ *
+ ******************************************************************************
+ */
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+RAJA_INLINE void forall_Icount(EXEC_POLICY_T&& p,
+                               Container&& c,
+                               Index_type icount,
+                               LOOP_BODY loop_body)
+{
+  using Iterator = decltype(std::begin(c));
+  using category = typename std::iterator_traits<Iterator>::iterator_category;
+  static_assert(
+      std::is_base_of<std::random_access_iterator_tag, category>::value,
+      "Iterators passed to RAJA must be Random Access or Contiguous iterators");
+
+  typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+  impl::forall_Icount(p, std::forward<Container>(c), icount, body);
+}
+
+}
+
+/*!
+ ******************************************************************************
+ *
  * \brief Generic dispatch over containers with icount
  *
  ******************************************************************************
@@ -135,7 +217,7 @@ template <typename EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(const IndexSet& c, LOOP_BODY loop_body)
 {
 
-  impl::forall_Icount(EXEC_POLICY_T(), c, loop_body);
+    wrap::forall_Icount(EXEC_POLICY_T(), c, loop_body);
 }
 
 /*!
@@ -156,9 +238,11 @@ RAJA_INLINE void forall_Icount(Container&& c,
       std::is_base_of<std::random_access_iterator_tag, category>::value,
       "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
-  impl::forall_Icount(EXEC_POLICY_T(), std::forward<Container>(c), icount,
+  wrap::forall_Icount(EXEC_POLICY_T(), std::forward<Container>(c), icount,
                  loop_body);
 }
+
+
 
 /*!
  ******************************************************************************
@@ -177,17 +261,7 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
       "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
   // printf("running container\n");
-
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<decltype(p)>::value);
-#endif
-
-  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
-
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  wrap::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), loop_body);
 }
 
 /*!
@@ -208,16 +282,7 @@ RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 
   // printf("running container\n");
 
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<EXEC_POLICY_T>::value);
-#endif
-
-  impl::forall(EXEC_POLICY_T(), std::forward<Container>(c), loop_body);
-
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  wrap::forall(EXEC_POLICY_T(), std::forward<Container>(c), loop_body);
 }
 
 //
@@ -238,7 +303,7 @@ RAJA_INLINE void forall(Container&& c, LOOP_BODY loop_body)
 template <typename EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void forall(Index_type begin, Index_type end, LOOP_BODY loop_body)
 {
-  forall<EXEC_POLICY_T>(RangeSegment(begin, end), loop_body);
+    wrap::forall(EXEC_POLICY_T{}, RangeSegment(begin, end), loop_body);
 }
 
 /*!
@@ -256,7 +321,7 @@ RAJA_INLINE void forall_Icount(Index_type begin,
                                Index_type icount,
                                LOOP_BODY loop_body)
 {
-  impl::forall_Icount(EXEC_POLICY_T(), RangeSegment(begin, end), icount,
+    wrap::forall_Icount(EXEC_POLICY_T(), RangeSegment(begin, end), icount,
                    loop_body);
 }
 
@@ -281,7 +346,7 @@ RAJA_INLINE void forall(Index_type begin,
                         Index_type stride,
                         LOOP_BODY loop_body)
 {
-  impl::forall(EXEC_POLICY_T(), RangeStrideSegment(begin, end, stride),
+  wrap::forall(EXEC_POLICY_T(), RangeStrideSegment(begin, end, stride),
              loop_body);
 }
 
@@ -301,7 +366,7 @@ RAJA_INLINE void forall_Icount(Index_type begin,
                                Index_type icount,
                                LOOP_BODY loop_body)
 {
-  impl::forall_Icount(EXEC_POLICY_T(),
+    wrap::forall_Icount(EXEC_POLICY_T(),
                 RangeStrideSegment(begin, end, stride),
                 icount,
                 loop_body);
@@ -328,7 +393,7 @@ RAJA_INLINE void forall(const Index_type* idx,
                         LOOP_BODY loop_body)
 {
   // turn into an iterator
-  forall<EXEC_POLICY_T>(ListSegment(idx, len, Unowned), loop_body);
+    wrap::forall(EXEC_POLICY_T{}, ListSegment(idx, len, Unowned), loop_body);
 }
 
 /*!

@@ -518,7 +518,7 @@ struct CudaDim {
 
 template <typename POL>
 struct CudaPolicy :
-  public RAJA::make_policy<RAJA::Policy::cuda>
+  public RAJA::make_policy_platform<RAJA::Policy::cuda, RAJA::Platform::cuda>
 {
 };
 

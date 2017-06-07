@@ -47,7 +47,7 @@ struct WrapperPolicy : public Inner {
 // "makers"
 
 template <typename Inner, typename... T>
-struct wrap : public WrapperPolicy<Inner, T...> {
+struct wrapper : public WrapperPolicy<Inner, T...> {
 };
 
 template <Policy Pol, Launch L, Pattern P>
@@ -83,6 +83,11 @@ struct make_policy_launch : public PolicyBaseT<Pol, L, Pattern::undefined> {
 
 template <Policy Pol, Pattern P>
 struct make_policy_pattern : public PolicyBaseT<Pol, Launch::undefined, P> {
+};
+
+template <Policy Pol, Platform Plat>
+struct make_policy_platform : 
+  public PolicyBaseT<Pol, Launch::undefined, Pattern::undefined, Plat> {
 };
 
 template <Launch L, Pattern P>

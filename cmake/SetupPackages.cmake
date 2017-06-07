@@ -135,6 +135,8 @@ if (RAJA_ENABLE_DOCUMENTATION)
 endif ()
 
 if (RAJA_ENABLE_CHAI)
+  message(STATUS "CHAI enabled")
+
   find_package(chai)
 
   include_directories(${CHAI_INCLUDE_DIRS})

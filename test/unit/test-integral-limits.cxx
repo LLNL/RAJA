@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   RAJA header file defining layout operations for forallN templates.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_PERMUTEDLAYOUT_HXX__
-#define RAJA_PERMUTEDLAYOUT_HXX__
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -22,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read raja/README-license.txt.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -53,53 +40,40 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iostream>
+#include "gtest/gtest.h"
 
-#include "RAJA/index/IndexValue.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/Permutations.hpp"
+#define RAJA_CHECK_LIMITS
 #include "RAJA/util/Operators.hpp"
 
-namespace RAJA
+#include <limits>
+
+template <typename T>
+class IntegralLimitsTest : public ::testing::Test
 {
+};
 
-template <size_t Rank, typename IdxLin = Index_type>
-auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
-                          std::array<size_t, Rank> permutation) ->
-Layout<Rank, IdxLin>
+TYPED_TEST_CASE_P(IntegralLimitsTest);
+
+TYPED_TEST_P(IntegralLimitsTest, IntegralLimits)
 {
-  std::array<IdxLin, Rank> strides, mods;
-  std::array<IdxLin, Rank> folded_strides, lmods;
-  for (size_t i = 0; i < Rank; ++i) {
-    folded_strides[i] = 1;
-    for (size_t j = 0; j < i; ++j) {
-      folded_strides[j] *= sizes[permutation[i]];
-    }
-  }
-
-  for (size_t i = 0; i < Rank; ++i) {
-    strides[permutation[i]] = folded_strides[i];
-  }
-
-  for (size_t i = 1; i < Rank; i++) {
-    lmods[i] = folded_strides[i - 1];
-  }
-  lmods[0] = RAJA::operators::limits<IdxLin>::max();
-
-  for (size_t i = 0; i < Rank; ++i) {
-    mods[permutation[i]] = lmods[i];
-  }
-
-  return Layout<Rank, IdxLin>(sizes, strides, mods);
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::min(), std::numeric_limits<TypeParam>::min());
+  ASSERT_EQ(RAJA::operators::limits<TypeParam>::max(), std::numeric_limits<TypeParam>::max());
 }
 
+REGISTER_TYPED_TEST_CASE_P(IntegralLimitsTest, IntegralLimits);
 
-template<size_t ... Ints>
-using Perm = VarOps::index_sequence<Ints...>;
-template<size_t N>
-using MakePerm = VarOps::make_index_sequence<N>;
+using integer_types = ::testing::Types<
+  char,
+  unsigned char,
+  short,
+  unsigned short,
+  int,
+  unsigned int,
+  long,
+  unsigned long,
+  long int,
+  unsigned long int,
+  long long,
+  unsigned long long>;
 
-}  // namespace RAJA
-
-#endif
+INSTANTIATE_TYPED_TEST_CASE_P(IntegralLimitsTests, IntegralLimitsTest, integer_types);

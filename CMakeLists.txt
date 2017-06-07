@@ -42,6 +42,7 @@
 
 cmake_minimum_required (VERSION 3.3)
 
+# C is required for googletest to find Threads
 project(RAJA LANGUAGES CXX C)
 
 # Set version number
@@ -76,6 +77,8 @@ include(cmake/SetupPackages.cmake)
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
+# Sanity check for compiler compatibility
+include (cmake/CompilerCompatibility.cmake)
 
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)

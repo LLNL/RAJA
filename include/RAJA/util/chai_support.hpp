@@ -12,11 +12,16 @@
 #include "RAJA/internal/type_traits.hpp"
 
 namespace RAJA {
-
-template <typename Selector, typename... Policies>
-class MultiPolicy;
-
 namespace detail {
+
+struct max_platform {
+    constexpr
+    RAJA::Platform
+    operator()(const RAJA::Platform& l, const RAJA::Platform& r) const
+    {
+      return (l == RAJA::Platform::cuda) ? l : r;
+    }
+};
 
 template<Platform p>
 struct get_space_impl {};
@@ -26,20 +31,23 @@ struct get_space_impl<Platform::host> {
   static constexpr chai::ExecutionSpace value = chai::CPU;
 };
 
+#if defined(RAJA_ENABLE_CUDA)
 template<>
 struct get_space_impl<Platform::cuda> {
   static constexpr chai::ExecutionSpace value = chai::GPU;
 };
+#endif
 
 template<>
 struct get_space_impl<Platform::undefined> {
   static constexpr chai::ExecutionSpace value = chai::NONE;
 };
 
+
 template<typename... Ts>
 struct get_space_from_list {
   static constexpr chai::ExecutionSpace value = 
-    get_space_impl<decltype(VarOps::max(Ts::platform...))>::value;
+    get_space_impl<VarOps::foldl(max_platform(), Ts::platform...)>::value;
 };
 
 template <typename T, typename=void> struct get_space {};
@@ -51,11 +59,13 @@ struct get_space<T, typename std::enable_if<std::is_base_of<PolicyBase, T>::valu
 template <typename SEG, typename EXEC>
 struct get_space<RAJA::IndexSet::ExecPolicy<SEG, EXEC> > : public get_space<EXEC> {};
 
-template <typename Selector, typename... Policies>
-struct get_space<RAJA::MultiPolicy<Selector, Policies...> > : public get_space_impl<RAJA::Platform::undefined> {};
+template<typename SEG, typename EXEC>
+struct get_space_from_list<RAJA::IndexSet::ExecPolicy<SEG, EXEC>> {
+  static constexpr chai::ExecutionSpace value = get_space<EXEC>::value;
+};
 
-template <typename... POLICIES>
-struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...> > > : 
+template <typename TAGS, typename... POLICIES>
+struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...>, TAGS > > : 
   public get_space_from_list<POLICIES...> {};
 
 // constexpr chai::ExecutionSpace getSpace(RAJA::PolicyBase&& policy) {

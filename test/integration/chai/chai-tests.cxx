@@ -19,9 +19,13 @@ CUDA_TEST(ChaiTest, Simple) {
       v1[i] = static_cast<float>(i * 1.0f);
   });
 
+  std::cout << "end of loop 1" << std::endl;
+
   RAJA::forall<RAJA::cuda_exec<16> >(0, 10, [=] __device__ (int i) {
       v2[i] = v1[i]*2.0f;
   });
+
+  std::cout << "end of loop 2" << std::endl;
 
   RAJA::forall<RAJA::seq_exec>(0, 10, [=] (int i) {
       ASSERT_FLOAT_EQ(v2[i], i*2.0f);
@@ -33,7 +37,7 @@ CUDA_TEST(ChaiTest, Simple) {
 
   float * raw_v2 = v2;
   for (int i = 0; i < 10; i++ ) {
-      ASSERT_FLOAT_EQ(raw_v2[i], i*1.0f*2.0f*2.0f);;
+      ASSERT_FLOAT_EQ(raw_v2[i], i*2.0f*2.0f);;
   }
 }
 

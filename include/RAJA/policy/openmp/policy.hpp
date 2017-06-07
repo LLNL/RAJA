@@ -18,7 +18,7 @@ namespace RAJA
 /// Segment execution policies
 ///
 template <typename InnerPolicy>
-struct omp_parallel_exec : public RAJA::wrap<InnerPolicy> {
+struct omp_parallel_exec : public RAJA::wrapper<InnerPolicy> {
 };
 
 struct omp_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
@@ -74,7 +74,8 @@ struct omp_reduce : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
 struct omp_reduce_ordered : public omp_reduce {
 };
 
-struct omp_collapse_nowait_exec {};
+struct omp_collapse_nowait_exec : 
+  public RAJA::make_policy_pattern<RAJA::Policy::openmp, RAJA::Pattern::forall> {};
 
 }  // closing brace for RAJA namespace
 

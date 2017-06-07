@@ -88,7 +88,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/Cilk.hpp"
+#include "RAJA/policy/cilk.hpp"
 #endif
 
 //
@@ -103,6 +103,7 @@
 // in the files included below.
 //
 #include "RAJA/pattern/forall.hpp"
+
 
 //
 // Multidimensional layouts and views.
