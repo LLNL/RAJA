@@ -53,6 +53,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
 #include "RAJA/util/Layout.hpp"
 
 namespace RAJA

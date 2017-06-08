@@ -53,11 +53,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
-#include "RAJA/util/defines.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/defines.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -258,8 +257,8 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
                               Ts &&... args)
 {
   forallN_impl<POLICY, Indices...>(
-      VarOps::make_index_sequence<sizeof...(args)-1>(),
-      VarOps::make_index_sequence<sizeof...(args)-1 - sizeof...(Indices)>(),
+      VarOps::make_index_sequence<sizeof...(args) - 1>(),
+      VarOps::make_index_sequence<sizeof...(args) - 1 - sizeof...(Indices)>(),
       VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
       VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
 }
@@ -274,8 +273,8 @@ RAJA_INLINE void forallN(Ts &&... args)
 #endif
 
   fun_unpacker<POLICY, Indices...>(
-      VarOps::index_sequence<sizeof...(args)-1>{},
-      VarOps::make_index_sequence<sizeof...(args)-1>{},
+      VarOps::index_sequence<sizeof...(args) - 1>{},
+      VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
 
 #ifdef RAJA_ENABLE_CUDA

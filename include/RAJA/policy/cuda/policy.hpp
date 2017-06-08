@@ -53,6 +53,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA

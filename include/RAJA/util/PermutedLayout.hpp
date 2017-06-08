@@ -56,6 +56,7 @@
 
 #include <iostream>
 
+#include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Layout.hpp"

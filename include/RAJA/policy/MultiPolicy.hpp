@@ -55,6 +55,7 @@
 
 #include <tuple>
 
+#include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 namespace RAJA

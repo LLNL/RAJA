@@ -54,6 +54,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
 #include "RAJA/pattern/forall.hpp"
 #include "RAJA/policy/sequential.hpp"
 
