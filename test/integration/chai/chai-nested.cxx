@@ -25,7 +25,7 @@
 using namespace RAJA;
 using namespace std;
 
-#include "Compare.hxx"
+#include "Compare.hpp"
 
 #include "chai/ArrayManager.hpp"
 #include "chai/ManagedArray.hpp"
