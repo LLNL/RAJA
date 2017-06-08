@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MultiPolicy_HXX
-#define RAJA_MultiPolicy_HXX
+#ifndef RAJA_MultiPolicy_HPP
+#define RAJA_MultiPolicy_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -65,9 +65,10 @@ namespace RAJA
 template <typename Selector, typename... Policies>
 class MultiPolicy;
 
-namespace detail {
-    template <size_t index, size_t size, typename Policy, typename... rest>
-    struct policy_invoker;
+namespace detail
+{
+template <size_t index, size_t size, typename Policy, typename... rest>
+struct policy_invoker;
 }
 
 
@@ -98,9 +99,10 @@ public:
     return s(i);
   }
 
-  detail::
-      policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
-          _policies;
+  detail::policy_invoker<sizeof...(Policies)-1,
+                         sizeof...(Policies),
+                         Policies...>
+      _policies;
 };
 
 namespace detail
@@ -143,7 +145,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
     -> MultiPolicy<Selector, Policies...>
 {
   return detail::make_multi_policy(
-      VarOps::make_index_sequence<sizeof... (Policies)>{}, s, policies);
+      VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
 namespace wrap {
@@ -165,7 +167,6 @@ RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
-
 }
 
 namespace detail
@@ -205,7 +206,6 @@ struct policy_invoker<0, size, Policy, rest...> {
   }
 };
 }
-
 }
 
 #endif

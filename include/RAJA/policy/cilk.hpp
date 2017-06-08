@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_cilk_HXX
-#define RAJA_cilk_HXX
+#ifndef RAJA_cilk_HPP
+#define RAJA_cilk_HPP
 
 #include "RAJA/config.hpp"
 
@@ -60,8 +60,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include "RAJA/policy/cilk/policy.hpp"
 #include "RAJA/policy/cilk/forall.hpp"
+#include "RAJA/policy/cilk/policy.hpp"
 #include "RAJA/policy/cilk/reduce.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CILK)
