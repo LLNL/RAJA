@@ -55,7 +55,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 
-#include <RAJA/LegacyCompatibility.hxx>
+#include <RAJA/internal/LegacyCompatibility.hpp>
 
 namespace RAJA
 {
