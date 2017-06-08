@@ -63,6 +63,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+
 #ifdef RAJA_ENABLE_FT
 
 #ifdef RAJA_REPORT_FT
