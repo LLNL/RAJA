@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_permute_HXX__
-#define RAJA_forallN_permute_HXX__
+#ifndef RAJA_forallN_permute_HPP
+#define RAJA_forallN_permute_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

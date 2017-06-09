@@ -16,8 +16,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_HXX
-#define RAJA_HXX
+#ifndef RAJA_HPP
+#define RAJA_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -88,7 +88,7 @@
 #endif
 
 #if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/Cilk.hpp"
+#include "RAJA/policy/cilk.hpp"
 #endif
 
 //
@@ -108,8 +108,8 @@
 // Multidimensional layouts and views.
 //
 #include "RAJA/util/Layout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
+#include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
 //

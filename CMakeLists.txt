@@ -42,6 +42,7 @@
 
 cmake_minimum_required (VERSION 3.3)
 
+# C is required for googletest to find Threads
 project(RAJA LANGUAGES CXX C)
 
 # Set version number

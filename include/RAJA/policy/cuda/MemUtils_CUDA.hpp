@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MemUtils_CUDA_HXX
-#define RAJA_MemUtils_CUDA_HXX
+#ifndef RAJA_MemUtils_CUDA_HPP
+#define RAJA_MemUtils_CUDA_HPP
 
 #include "RAJA/config.hpp"
 
@@ -65,7 +65,7 @@ namespace RAJA
 /*!
  * \def RAJA_CUDA_MAX_NUM_BLOCKS
  * Maximum number of blocks that RAJA will launch
- */ 
+ */
 #define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
 
 /*!
@@ -84,9 +84,9 @@ namespace RAJA
 
 /*!
  * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
- * Size in bytes used in CudaReductionDummyDataType for array allocation to 
+ * Size in bytes used in CudaReductionDummyDataType for array allocation to
  * accommodate the template type used in reductions.
- * 
+ *
  * Note: Includes the size of the index variable for Loc reductions.
  */
 #define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
@@ -106,7 +106,7 @@ typedef unsigned int GridSizeType;
  ******************************************************************************
  */
 struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
-CudaReductionDummyDataType {
+    CudaReductionDummyDataType {
   unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
 };
 
@@ -174,7 +174,7 @@ struct CudaReductionLocBlockType {
  *
  ******************************************************************************
  */
-template  <typename T>
+template <typename T>
 struct CudaReductionLocType {
   T val;
   Index_type idx;
@@ -261,7 +261,7 @@ int getCudaMemblockUsedCount();
 /*!
  ******************************************************************************
  *
- * \brief Get a valid reduction id, or complain and exit if no valid id is 
+ * \brief Get a valid reduction id, or complain and exit if no valid id is
  *        available.
  *
  * \return int the next available valid reduction id.
@@ -302,7 +302,7 @@ void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
  ******************************************************************************
  *
  * \brief Release tally block for reducer object with given id.
- * 
+ *
  ******************************************************************************
  */
 void releaseCudaReductionTallyBlock(int id);
@@ -323,13 +323,13 @@ void beforeCudaKernelLaunch();
  * \brief Resets state variables after kernel launch.
  *
  ******************************************************************************
- */ 
+ */
 void afterCudaKernelLaunch();
 
 /*!
  ******************************************************************************
  *
- * \brief Updates host tally cache for read by reduction variable with id and 
+ * \brief Updates host tally cache for read by reduction variable with id and
  * an asynchronous reduction policy.
  *
  ******************************************************************************
@@ -339,7 +339,7 @@ void beforeCudaReadTallyBlockAsync(int id);
 /*!
  ******************************************************************************
  *
- * \brief Updates host tally cache for read by reduction variable with id and 
+ * \brief Updates host tally cache for read by reduction variable with id and
  * a synchronous reduction policy.
  *
  ******************************************************************************
@@ -349,12 +349,12 @@ void beforeCudaReadTallyBlockSync(int id);
 /*!
  ******************************************************************************
  *
- * \brief Updates host tally cache for read by reduction variable with id and 
+ * \brief Updates host tally cache for read by reduction variable with id and
  * templated on Async from the reduction policy.
  *
  ******************************************************************************
  */
-template<bool Async>
+template <bool Async>
 void beforeCudaReadTallyBlock(int id)
 {
   if (Async) {

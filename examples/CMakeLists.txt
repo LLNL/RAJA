@@ -10,7 +10,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -42,11 +42,11 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME raja-pi
+  NAME example-raja-pi
   SOURCES pi.cxx)
 
 if(RAJA_ENABLE_TARGET_OPENMP)
   raja_add_executable(
-    NAME raja-pi-offload
+    NAME example-raja-pi-offload
     SOURCES pi_offload.cxx)
 endif()

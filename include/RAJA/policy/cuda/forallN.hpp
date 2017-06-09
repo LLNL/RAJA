@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_cuda_HXX__
-#define RAJA_forallN_cuda_HXX__
+#ifndef RAJA_forallN_cuda_HPP
+#define RAJA_forallN_cuda_HPP
 
 #include "RAJA/config.hpp"
 
@@ -116,13 +116,13 @@ struct CudaDim {
 };
 
 RAJA_INLINE
-constexpr int numBlocks(CudaDim const& dim)
+constexpr int numBlocks(CudaDim const &dim)
 {
   return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
 }
 
 RAJA_INLINE
-constexpr int numThreads(CudaDim const& dim)
+constexpr int numThreads(CudaDim const &dim)
 {
   return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
 }
@@ -151,7 +151,7 @@ struct CudaThreadBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThreadBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -205,7 +205,7 @@ struct CudaThread {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThread(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -221,10 +221,7 @@ struct CudaThread {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_threads) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_threads) = distance; }
 };
 
 /* These execution policies map the given loop nest to the threads in the
@@ -242,7 +239,7 @@ struct CudaBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -258,10 +255,7 @@ struct CudaBlock {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_blocks) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_blocks) = distance; }
 };
 
 /* These execution policies map the given loop nest to the blocks in the
@@ -275,21 +269,25 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 template <typename CUDA_EXEC, typename Iterator>
 struct CudaIterableWrapper {
-    CUDA_EXEC pol_;
-    Iterator i_;
-    constexpr CudaIterableWrapper (const CUDA_EXEC &pol, const Iterator &i)
-        : pol_(pol), i_(i) {
-    }
+  CUDA_EXEC pol_;
+  Iterator i_;
+  constexpr CudaIterableWrapper(const CUDA_EXEC &pol, const Iterator &i)
+      : pol_(pol), i_(i)
+  {
+  }
 
-    __device__ inline decltype(i_[0]) operator()() {
-        auto val = pol_();
-        return val > INT_MIN ? i_[pol_()] : INT_MIN;
-    }
+  __device__ inline decltype(i_[0]) operator()()
+  {
+    auto val = pol_();
+    return val > INT_MIN ? i_[pol_()] : INT_MIN;
+  }
 };
 
 template <typename CUDA_EXEC, typename Iterator>
-auto make_cuda_iter_wrapper(const CUDA_EXEC &pol, const Iterator &i) -> CudaIterableWrapper<CUDA_EXEC, Iterator> {
-    return CudaIterableWrapper<CUDA_EXEC, Iterator>(pol, i);
+auto make_cuda_iter_wrapper(const CUDA_EXEC &pol, const Iterator &i)
+    -> CudaIterableWrapper<CUDA_EXEC, Iterator>
+{
+  return CudaIterableWrapper<CUDA_EXEC, Iterator>(pol, i);
 }
 
 /*!
@@ -314,7 +312,8 @@ RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i)
 }
 
 /*!
- * \brief Launcher that uses execution policies to map blockIdx and threadIdx to map
+ * \brief Launcher that uses execution policies to map blockIdx and threadIdx to
+ * map
  * to N-argument function
  */
 template <typename BODY, typename... CARGS>
@@ -376,7 +375,8 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                  body,
                  make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0)),
                  make_cuda_iter_wrapper(CuARG1(dims, iset1), std::begin(iset1)),
-                 make_cuda_iter_wrapper(CuARGS(dims, std::get<N>(isets)), std::begin(std::get<N>(isets)))...);
+                 make_cuda_iter_wrapper(CuARGS(dims, std::get<N>(isets)),
+                                        std::begin(std::get<N>(isets)))...);
   }
 
   template <typename BODY, typename... CARGS>
@@ -385,8 +385,9 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                   >>>(body, cargs...);
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
+                                              dims.num_threads)>>>(body,
+                                                                   cargs...);
     }
 
     RAJA_CUDA_CHECK_AND_SYNC(true);
@@ -409,8 +410,8 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads)
-                   >>>(body, c0);
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
+                                              dims.num_threads)>>>(body, c0);
     }
 
     RAJA_CUDA_CHECK_AND_SYNC(true);

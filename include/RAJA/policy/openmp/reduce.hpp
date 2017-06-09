@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_omp_HXX
-#define RAJA_forall_omp_HXX
+#ifndef RAJA_forall_omp_HPP
+#define RAJA_forall_omp_HPP
 
 #include "RAJA/config.hpp"
 
@@ -68,9 +68,7 @@
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 #include "RAJA/policy/openmp/target_reduce.hpp"
 
@@ -95,17 +93,13 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_val):
-    m_parent(NULL), m_val(init_val)
-  {
-  }
+  explicit ReduceMin(T init_val) : m_parent(NULL), m_val(init_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<omp_reduce, T>& other):
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val)
+  ReduceMin(const ReduceMin<omp_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
@@ -125,10 +119,7 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
@@ -145,7 +136,8 @@ public:
     return *this;
   }
 
-  ReduceMin<omp_reduce, T>& min(T rhs) {
+  ReduceMin<omp_reduce, T>& min(T rhs)
+  {
     m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
@@ -156,7 +148,7 @@ private:
   //
   ReduceMin<omp_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
   mutable T m_val;
 };
 
@@ -178,18 +170,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc):
-    m_parent(NULL), m_val(init_val), m_idx(init_loc)
+  explicit ReduceMinLoc(T init_val, Index_type init_loc)
+      : m_parent(NULL), m_val(init_val), m_idx(init_loc)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other):
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val),
-    m_idx(other.m_idx)
+  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        m_idx(other.m_idx)
   {
   }
 
@@ -210,10 +202,7 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
@@ -223,10 +212,7 @@ public:
   //
   // Method that returns index corresponding to reduced min value.
   //
-  Index_type getLoc()
-  {
-    return m_idx;
-  }
+  Index_type getLoc() { return m_idx; }
 
   //
   // Method that updates min and index value for current thread.
@@ -255,7 +241,7 @@ private:
   //
   ReduceMinLoc<omp_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   mutable Index_type m_idx;
@@ -279,17 +265,13 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_val):
-    m_parent(NULL), m_val(init_val)
-  {
-  }
+  explicit ReduceMax(T init_val) : m_parent(NULL), m_val(init_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<omp_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val)
+  ReduceMax(const ReduceMax<omp_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
@@ -310,10 +292,7 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
@@ -341,7 +320,7 @@ private:
   //
   ReduceMax<omp_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
 };
@@ -364,18 +343,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc):
-    m_parent(NULL), m_val(init_val), m_idx(init_loc)
+  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
+      : m_parent(NULL), m_val(init_val), m_idx(init_loc)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other):
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val),
-    m_idx(other.m_idx)
+  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        m_idx(other.m_idx)
   {
   }
 
@@ -396,10 +375,7 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
@@ -409,10 +385,7 @@ public:
   //
   // Method that returns index corresponding to reduced max value.
   //
-  Index_type getLoc()
-  {
-    return m_idx;
-  }
+  Index_type getLoc() { return m_idx; }
 
   //
   // Method that updates max and index value for current thread.
@@ -441,7 +414,7 @@ private:
   //
   ReduceMaxLoc<omp_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   mutable Index_type m_idx;
@@ -466,17 +439,17 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceSum(T init_val, T initializer = 0)
-    : m_parent(NULL), m_val(init_val), m_custom_init(initializer)
+      : m_parent(NULL), m_val(init_val), m_custom_init(initializer)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_custom_init),
-    m_custom_init(other.m_custom_init)
+  ReduceSum(const ReduceSum<omp_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_custom_init),
+        m_custom_init(other.m_custom_init)
   {
   }
 
@@ -497,10 +470,7 @@ public:
   //
   // Operator that returns reduced sum value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns sum value.
@@ -528,11 +498,10 @@ private:
   //
   ReduceSum<omp_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   T m_custom_init;
-
 };
 
 /*

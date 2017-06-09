@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_reduce_cuda_HXX
-#define RAJA_reduce_cuda_HXX
+#ifndef RAJA_reduce_cuda_HPP
+#define RAJA_reduce_cuda_HPP
 
 #include "RAJA/config.hpp"
 
@@ -65,8 +65,8 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <cuda.h>
 
@@ -83,24 +83,23 @@ namespace HIDDEN
  *
  ******************************************************************************
  */
-template<typename T>
+template <typename T>
 __device__ __forceinline__ T shfl_xor(T var, int laneMask)
 {
-  const int int_sizeof_T =
-      (sizeof(T) + sizeof(int) - 1) / sizeof(int);
+  const int int_sizeof_T = (sizeof(T) + sizeof(int) - 1) / sizeof(int);
   union {
     T var;
     int arr[int_sizeof_T];
   } Tunion;
   Tunion.var = var;
 
-  for(int i = 0; i < int_sizeof_T; ++i) {
+  for (int i = 0; i < int_sizeof_T; ++i) {
     Tunion.arr[i] = __shfl_xor(Tunion.arr[i], laneMask);
   }
   return Tunion.var;
 }
 
-} // end HIDDEN namespace for helper functions
+}  // end HIDDEN namespace for helper functions
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -248,7 +247,8 @@ public:
    *
    * Note: only operates on device.
    */
-  __device__ ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T> const &min(T val) const
+  __device__ ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T> const &min(
+      T val) const
   {
     extern __shared__ unsigned char sd_block[];
     T *sd = reinterpret_cast<T *>(&sd_block[m_smem_offset]);
@@ -309,8 +309,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -451,8 +451,8 @@ public:
    *
    * Note: only operates on device.
    */
-  __device__ ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T> const &max(T val)
-   const
+  __device__ ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T> const &max(
+      T val) const
   {
     extern __shared__ unsigned char sd_block[];
     T *sd = reinterpret_cast<T *>(&sd_block[m_smem_offset]);
@@ -513,8 +513,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -775,8 +775,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -896,8 +896,6 @@ public:
       releaseCudaReductionId(m_myID);
     }
 #endif
-
-
   }
 
   /*!
@@ -985,8 +983,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1062,9 +1060,9 @@ public:
     __syncthreads();
 #else
     m_is_copy_host = true;
-    m_smem_offset =
-        getCudaSharedmemOffset(m_myID, BLOCK_SIZE,
-                               (sizeof(T) + sizeof(Index_type)));
+    m_smem_offset = getCudaSharedmemOffset(m_myID,
+                                           BLOCK_SIZE,
+                                           (sizeof(T) + sizeof(Index_type)));
 #endif
   }
 
@@ -1099,11 +1097,11 @@ public:
       for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
         if (threadId < i) {
           RAJA_MINLOC_UNSTRUCTURED(sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId + i],
-                           sd_idx[threadId + i]);
+                                   sd_idx[threadId],
+                                   sd_val[threadId],
+                                   sd_idx[threadId],
+                                   sd_val[threadId + i],
+                                   sd_idx[threadId + i]);
         }
         __syncthreads();
       }
@@ -1111,11 +1109,11 @@ public:
       for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
         if (threadId < i) {
           RAJA_MINLOC_UNSTRUCTURED(sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId + i],
-                           sd_idx[threadId + i]);
+                                   sd_idx[threadId],
+                                   sd_val[threadId],
+                                   sd_idx[threadId],
+                                   sd_val[threadId + i],
+                                   sd_idx[threadId + i]);
         }
       }
 
@@ -1138,11 +1136,11 @@ public:
         int threads = blockDim.x * blockDim.y * blockDim.z;
         for (int i = threadId; i < blocks; i += threads) {
           RAJA_MINLOC_UNSTRUCTURED(lmin.val,
-                           lmin.idx,
-                           lmin.val,
-                           lmin.idx,
-                           m_blockdata->values[i],
-                           m_blockdata->indices[i]);
+                                   lmin.idx,
+                                   lmin.val,
+                                   lmin.idx,
+                                   m_blockdata->values[i],
+                                   m_blockdata->indices[i]);
         }
         sd_val[threadId] = lmin.val;
         sd_idx[threadId] = lmin.idx;
@@ -1151,11 +1149,11 @@ public:
         for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
           if (threadId < i) {
             RAJA_MINLOC_UNSTRUCTURED(sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId + i],
-                             sd_idx[threadId + i]);
+                                     sd_idx[threadId],
+                                     sd_val[threadId],
+                                     sd_idx[threadId],
+                                     sd_val[threadId + i],
+                                     sd_idx[threadId + i]);
           }
           __syncthreads();
         }
@@ -1163,21 +1161,21 @@ public:
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
           if (threadId < i) {
             RAJA_MINLOC_UNSTRUCTURED(sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId + i],
-                             sd_idx[threadId + i]);
+                                     sd_idx[threadId],
+                                     sd_val[threadId],
+                                     sd_idx[threadId],
+                                     sd_val[threadId + i],
+                                     sd_idx[threadId + i]);
           }
         }
 
         if (threadId < 1) {
           RAJA_MINLOC_UNSTRUCTURED(m_tally_device->tally.val,
-                           m_tally_device->tally.idx,
-                           m_tally_device->tally.val,
-                           m_tally_device->tally.idx,
-                           sd_val[threadId],
-                           sd_idx[threadId]);
+                                   m_tally_device->tally.idx,
+                                   m_tally_device->tally.val,
+                                   m_tally_device->tally.idx,
+                                   sd_val[threadId],
+                                   sd_idx[threadId]);
         }
       }
     }
@@ -1236,11 +1234,11 @@ public:
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
     RAJA_MINLOC_UNSTRUCTURED(sd_val[threadId],
-                     sd_idx[threadId],
-                     sd_val[threadId],
-                     sd_idx[threadId],
-                     val,
-                     idx);
+                             sd_idx[threadId],
+                             sd_val[threadId],
+                             sd_idx[threadId],
+                             val,
+                             idx);
 
     return *this;
   }
@@ -1298,8 +1296,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1375,9 +1373,9 @@ public:
     __syncthreads();
 #else
     m_is_copy_host = true;
-    m_smem_offset =
-        getCudaSharedmemOffset(m_myID, BLOCK_SIZE,
-                               (sizeof(T) + sizeof(Index_type)));
+    m_smem_offset = getCudaSharedmemOffset(m_myID,
+                                           BLOCK_SIZE,
+                                           (sizeof(T) + sizeof(Index_type)));
 #endif
   }
 
@@ -1412,11 +1410,11 @@ public:
       for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
         if (threadId < i) {
           RAJA_MAXLOC_UNSTRUCTURED(sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId + i],
-                           sd_idx[threadId + i]);
+                                   sd_idx[threadId],
+                                   sd_val[threadId],
+                                   sd_idx[threadId],
+                                   sd_val[threadId + i],
+                                   sd_idx[threadId + i]);
         }
         __syncthreads();
       }
@@ -1424,11 +1422,11 @@ public:
       for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
         if (threadId < i) {
           RAJA_MAXLOC_UNSTRUCTURED(sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId],
-                           sd_idx[threadId],
-                           sd_val[threadId + i],
-                           sd_idx[threadId + i]);
+                                   sd_idx[threadId],
+                                   sd_val[threadId],
+                                   sd_idx[threadId],
+                                   sd_val[threadId + i],
+                                   sd_idx[threadId + i]);
         }
       }
 
@@ -1451,11 +1449,11 @@ public:
         int threads = blockDim.x * blockDim.y * blockDim.z;
         for (int i = threadId; i < blocks; i += threads) {
           RAJA_MAXLOC_UNSTRUCTURED(lmax.val,
-                           lmax.idx,
-                           lmax.val,
-                           lmax.idx,
-                           m_blockdata->values[i],
-                           m_blockdata->indices[i]);
+                                   lmax.idx,
+                                   lmax.val,
+                                   lmax.idx,
+                                   m_blockdata->values[i],
+                                   m_blockdata->indices[i]);
         }
         sd_val[threadId] = lmax.val;
         sd_idx[threadId] = lmax.idx;
@@ -1464,11 +1462,11 @@ public:
         for (int i = BLOCK_SIZE / 2; i >= WARP_SIZE; i /= 2) {
           if (threadId < i) {
             RAJA_MAXLOC_UNSTRUCTURED(sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId + i],
-                             sd_idx[threadId + i]);
+                                     sd_idx[threadId],
+                                     sd_val[threadId],
+                                     sd_idx[threadId],
+                                     sd_val[threadId + i],
+                                     sd_idx[threadId + i]);
           }
           __syncthreads();
         }
@@ -1476,21 +1474,21 @@ public:
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
           if (threadId < i) {
             RAJA_MAXLOC_UNSTRUCTURED(sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId],
-                             sd_idx[threadId],
-                             sd_val[threadId + i],
-                             sd_idx[threadId + i]);
+                                     sd_idx[threadId],
+                                     sd_val[threadId],
+                                     sd_idx[threadId],
+                                     sd_val[threadId + i],
+                                     sd_idx[threadId + i]);
           }
         }
 
         if (threadId < 1) {
           RAJA_MAXLOC_UNSTRUCTURED(m_tally_device->tally.val,
-                           m_tally_device->tally.idx,
-                           m_tally_device->tally.val,
-                           m_tally_device->tally.idx,
-                           sd_val[threadId],
-                           sd_idx[threadId]);
+                                   m_tally_device->tally.idx,
+                                   m_tally_device->tally.val,
+                                   m_tally_device->tally.idx,
+                                   sd_val[threadId],
+                                   sd_idx[threadId]);
         }
       }
     }
@@ -1500,8 +1498,6 @@ public:
       releaseCudaReductionId(m_myID);
     }
 #endif
-
-
   }
 
   /*!
@@ -1551,11 +1547,11 @@ public:
                    + (blockDim.x * blockDim.y) * threadIdx.z;
 
     RAJA_MAXLOC_UNSTRUCTURED(sd_val[threadId],
-                     sd_idx[threadId],
-                     sd_val[threadId],
-                     sd_idx[threadId],
-                     val,
-                     idx);
+                             sd_idx[threadId],
+                             sd_val[threadId],
+                             sd_idx[threadId],
+                             val,
+                             idx);
     return *this;
   }
 
@@ -1612,8 +1608,8 @@ private:
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
   static_assert(sizeofcheck,
-      "Error: type must be of size <= "
-      RAJA_STRINGIFY_MACRO(RAJA_CUDA_REDUCE_VAR_MAXSIZE));
+                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
+                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 }  // closing brace for RAJA namespace
