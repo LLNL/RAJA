@@ -64,6 +64,67 @@
 namespace RAJA
 {
 
+namespace reduce
+{
+
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp declare target
+#endif
+
+template <typename T>
+struct sum {
+  RAJA_HOST_DEVICE
+  void operator()(T &val, const T v) { val += v; }
+};
+
+template <typename T>
+struct min {
+  RAJA_HOST_DEVICE
+  void operator()(T &val, const T v)
+  {
+    if (v < val) val = v;
+  }
+};
+
+template <typename T>
+struct max {
+  RAJA_HOST_DEVICE
+  void operator()(T &val, const T v)
+  {
+    if (v > val) val = v;
+  }
+};
+
+template <typename T, typename I>
+struct minloc {
+  RAJA_HOST_DEVICE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v < val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+template <typename T, typename I>
+struct maxloc {
+  RAJA_HOST_DEVICE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v > val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp end declare target
+#endif
+
+}
+
 ///
 /// Macros for type agnostic reduction operations.
 ///

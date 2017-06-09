@@ -62,10 +62,6 @@
 
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/index/IndexSet.hpp"
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/policy/openmp/policy.hpp"
 
 #include <omp.h>
@@ -77,7 +73,7 @@ namespace impl
 {
 
 ///
-/// OpenMP parallel for policy implementation
+/// OpenMP target parallel for policy implementation
 ///
 
 template <size_t Teams, typename Iterable, typename Func>
