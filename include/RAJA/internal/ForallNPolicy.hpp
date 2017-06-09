@@ -98,7 +98,6 @@ struct ForallN_BindFirstArg_HostDevice {
   {
   }
 
-  RAJA_SUPPRESS_HD_WARN
   template <typename... ARGS>
   RAJA_INLINE RAJA_HOST_DEVICE void operator()(ARGS... args) const
   {
