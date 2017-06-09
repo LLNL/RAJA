@@ -54,6 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
 ///
 /// Define max number of reductions allowed within a RAJA traversal
