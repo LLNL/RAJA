@@ -137,9 +137,9 @@ RAJA_INLINE void forall_Icount(const IndexSet& c, LOOP_BODY loop_body)
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY, typename IndexType>
 RAJA_INLINE void forall_Icount(Container&& c,
-                               Index_type icount,
+                               IndexType icount,
                                LOOP_BODY loop_body)
 {
   using Iterator = decltype(std::begin(c));
