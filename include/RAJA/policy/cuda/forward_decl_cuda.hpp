@@ -1,24 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_cuda_HXX
-#define RAJA_forward_cuda_HXX
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -60,6 +39,30 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forward_cuda_HXX
+#define RAJA_forward_cuda_HXX
+
+#include "RAJA/config.hpp"
+
+
+#if defined(RAJA_ENABLE_CUDA)
+
+#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {
