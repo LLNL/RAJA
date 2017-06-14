@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_HXX
-#define RAJA_scan_HXX
+#ifndef RAJA_scan_HPP
+#define RAJA_scan_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

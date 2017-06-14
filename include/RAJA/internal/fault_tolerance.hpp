@@ -18,8 +18,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_fault_tolerance_HXX
-#define RAJA_fault_tolerance_HXX
+#ifndef RAJA_fault_tolerance_HPP
+#define RAJA_fault_tolerance_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -62,6 +62,8 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA/config.hpp"
 
 #ifdef RAJA_ENABLE_FT
 

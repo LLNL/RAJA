@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_RAJAVec_HXX
-#define RAJA_RAJAVec_HXX
+#ifndef RAJA_RAJAVec_HPP
+#define RAJA_RAJAVec_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

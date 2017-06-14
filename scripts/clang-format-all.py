@@ -2,13 +2,24 @@
 
 ##
 ## Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-## 
-## Produced at the Lawrence Livermore National Laboratory.
-## 
-## All rights reserved.
-## 
-## For release details and restrictions, please see raja/README-license.txt
 ##
+## Produced at the Lawrence Livermore National Laboratory.
+##
+## LLNL-CODE-689114
+##
+## All rights reserved.
+##
+## For additional details and restrictions, please see RAJA/LICENSE.txt
+##
+########################################################################### 
+## 
+## Script for running the code through clang format tool.
+## 
+## Configuration file is '.clang-format' in the top-level RAJA directory.
+## 
+########################################################################### 
+##
+
 import os, sys, argparse, glob, time
 import fnmatch
 

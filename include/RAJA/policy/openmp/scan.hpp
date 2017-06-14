@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_openmp_HXX
-#define RAJA_scan_openmp_HXX
+#ifndef RAJA_scan_openmp_HPP
+#define RAJA_scan_openmp_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,8 +55,8 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/policy/sequential/scan.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/sequential/scan.hpp"
 
 #include <omp.h>
 
