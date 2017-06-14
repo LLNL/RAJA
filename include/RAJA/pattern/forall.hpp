@@ -142,7 +142,8 @@ template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
           typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall_Icount(Container&& c, IndexType icount, LOOP_BODY loop_body)
 {
   static_assert(
@@ -208,16 +209,17 @@ template <typename EXEC_POLICY_T,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType>
-RAJA_INLINE typename std::
-    enable_if<std::is_integral<IndexType>::value
-              && RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE
+typename std::enable_if<
+  std::is_integral<IndexType>::value
+  && RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall_Icount(Iterator begin,
                   Iterator end,
                   IndexType icount,
                   LOOP_BODY loop_body)
 {
   auto len = std::distance(begin, end);
-  using SpanType = Span<Iterator, decltype(len)>;
+  using SpanType = impl::Span<Iterator, decltype(len)>;
   impl::forall_Icount(EXEC_POLICY_T(), SpanType{begin, len}, icount, loop_body);
 }
 
@@ -229,12 +231,13 @@ RAJA_INLINE typename std::
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename Iterator, typename LOOP_BODY>
-RAJA_INLINE typename std::
-    enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE
+typename std::enable_if<
+  RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall(EXEC_POLICY_T&& p, Iterator begin, Iterator end, LOOP_BODY loop_body)
 {
   auto len = std::distance(begin, end);
-  using SpanType = Span<Iterator, decltype(len)>;
+  using SpanType = impl::Span<Iterator, decltype(len)>;
   impl::forall(std::forward<EXEC_POLICY_T>(p), SpanType{begin, len}, loop_body);
 }
 
@@ -246,12 +249,12 @@ RAJA_INLINE typename std::
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename Iterator, typename LOOP_BODY>
-RAJA_INLINE typename std::
-    enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE
+typename std::enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall(Iterator begin, Iterator end, LOOP_BODY loop_body)
 {
   auto len = std::distance(begin, end);
-  using SpanType = Span<Iterator, decltype(len)>;
+  using SpanType = impl::Span<Iterator, decltype(len)>;
   impl::forall(EXEC_POLICY_T(), SpanType{begin, len}, loop_body);
 }
 
@@ -271,7 +274,8 @@ RAJA_INLINE typename std::
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall(IndexType begin, IndexType end, LOOP_BODY loop_body)
 {
   forall<EXEC_POLICY_T>(RangeSegment(begin, end), loop_body);
@@ -291,8 +295,9 @@ template <typename EXEC_POLICY_T,
           typename IndexType,
           typename OffsetType>
 RAJA_INLINE
-    typename std::enable_if<std::is_integral<IndexType>::value
-                            && std::is_integral<OffsetType>::value>::type
+typename std::enable_if<
+  std::is_integral<IndexType>::value
+  && std::is_integral<OffsetType>::value>::type
     forall_Icount(IndexType begin,
                   IndexType end,
                   OffsetType icount,
@@ -320,7 +325,8 @@ RAJA_INLINE
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall(IndexType begin, IndexType end, IndexType stride, LOOP_BODY loop_body)
 {
   impl::forall(EXEC_POLICY_T(),
@@ -342,8 +348,9 @@ template <typename EXEC_POLICY_T,
           typename IndexType,
           typename OffsetType>
 RAJA_INLINE
-    typename std::enable_if<std::is_integral<IndexType>::value
-                            && std::is_integral<OffsetType>::value>::type
+typename std::enable_if<
+  std::is_integral<IndexType>::value
+  && std::is_integral<OffsetType>::value>::type
     forall_Icount(IndexType begin,
                   IndexType end,
                   IndexType stride,
@@ -375,7 +382,8 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY,
           typename ArrayVal,
           typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall(const ArrayVal* idx, IndexType len, LOOP_BODY loop_body)
 {
   // turn into an iterator
@@ -397,9 +405,10 @@ template <typename EXEC_POLICY_T,
           typename IndexType,
           typename OffsetType>
 RAJA_INLINE
-    typename std::enable_if<std::is_integral<IndexType>::value
-                            && std::is_integral<ArrayIdxType>::value
-                            && std::is_integral<OffsetType>::value>::type
+typename std::enable_if<
+  std::is_integral<IndexType>::value
+  && std::is_integral<ArrayIdxType>::value
+  && std::is_integral<OffsetType>::value>::type
     forall_Icount(const ArrayIdxType* idx,
                   IndexType len,
                   OffsetType icount,

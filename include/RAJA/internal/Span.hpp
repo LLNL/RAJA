@@ -59,6 +59,8 @@
 
 namespace RAJA
 {
+namespace impl
+{
 
 template <typename ValueType, typename IndexType>
 struct Span {
@@ -81,6 +83,7 @@ private:
   IndexType length;
 };
 
+}  // end namespace impl
 }  // end namespace RAJA
 
 #endif /* RAJA_SPAN_HPP */
