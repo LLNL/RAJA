@@ -233,6 +233,31 @@ struct CudaReductionLocTallyType {
   GridSizeType retiredBlocks;
 };
 
+/*!
+ ******************************************************************************
+ *
+ * \brief Set the Max Number of Blocks that RAJA will launch
+ *
+ * Modulates the memblock size that non-atomic reducers use 
+ *
+ * \return bool true for success, false for failure
+ *
+ ******************************************************************************
+ */
+void setCudaMaxBlocks(unsigned int blocks);
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Set the Max Number of Reducers that RAJA will launch
+ *
+ * Modulates the memblock size that non-atomic reducers use 
+ *
+ * \return bool true for success, false for failure
+ *
+ ******************************************************************************
+ */
+void setCudaMaxReducers(unsigned int reducers);
 
 /*!
  ******************************************************************************

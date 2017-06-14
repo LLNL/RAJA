@@ -72,6 +72,18 @@ namespace RAJA
 
 namespace
 {
+
+
+/*!
+ * \brief Max Blocks that RAJA will Launch 
+ */
+unsigned int s_cuda_max_blocks = 0;
+
+/*!
+ * \brief Max Reducers that RAJA will Launch 
+ */
+unsigned int s_cuda_max_reducers = 0;
+
 /*!
  * \brief Number of currently active cuda reduction objects
  */
@@ -196,6 +208,56 @@ int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
  */
 int s_cuda_reduction_num_threads[RAJA_MAX_REDUCE_VARS] = {-1};
 }
+
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Set the Max Number of Blocks that RAJA will launch
+ *
+ * Modulates the memblock size that non-atomic reducers use 
+ *
+ * \return bool true for success, false for failure
+ *
+ ******************************************************************************
+ */
+void setCudaMaxBlocks(unsigned int blocks)
+{ 
+  if(s_cuda_reducer_active_count == 0) {
+    freeCudaReductionMemBlock();
+    s_cuda_max_blocks = blocks;
+  }
+  else {
+    std::cerr << "\n Cannot set CudaMaxBlocks -- we have active reducers present, "
+              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+    exit(1);
+  }
+}
+
+/*!
+ ******************************************************************************
+ *
+ * \brief Set the Max Number of Reducers that RAJA will launch
+ *
+ * Modulates the memblock size that non-atomic reducers use 
+ *
+ * \return bool true for success, false for failure
+ *
+ ******************************************************************************
+ */
+void setCudaMaxReducers(unsigned int reducers)
+{ 
+  if(s_cuda_reducer_active_count == 0) {
+    freeCudaReductionMemBlock();
+    s_cuda_max_reducers = reducers;
+  }
+  else {
+    std::cerr << "\n Cannot set CudaMaxReducers -- we have active reducers present, "
+              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+    exit(1);
+  }  
+}
+
 
 /*
 *******************************************************************************
