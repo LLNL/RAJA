@@ -4,11 +4,11 @@
  * \file
  *
  * \brief   Header file for basic RAJA configuration options.
- * 
- *          This file contains platform-specific parameters that control 
+ *
+ *          This file contains platform-specific parameters that control
  *          aspects of compilation of application code using RAJA. These
  *          parameters specify: SIMD unit width, data alignment information,
- *          inline directives, etc. 
+ *          inline directives, etc.
  *
  *          IMPORTANT: These options are set by CMake and depend on the options
  *          passed to it.
@@ -67,7 +67,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_ENABLE_FT 
+#cmakedefine RAJA_ENABLE_FT
 
 #define @RAJA_FP@
 #define @RAJA_PTR@
@@ -77,6 +77,7 @@
  */
 
 #cmakedefine RAJA_ENABLE_OPENMP
+#cmakedefine RAJA_ENABLE_TARGET_OPENMP
 #cmakedefine RAJA_ENABLE_CILK
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
@@ -137,8 +138,8 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 //  Platform-specific constants for range index set and data alignment:
 //
 //     RANGE_ALIGN - alignment of begin/end indices in range segments
-//                   (i.e., starting index and length of range segments 
-//                    constructed by index set builder methods will 
+//                   (i.e., starting index and length of range segments
+//                    constructed by index set builder methods will
 //                    be multiples of this value)
 //
 //     RANGE_MIN_LENGTH - used in index set builder methods
@@ -147,7 +148,7 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 //
 //     DATA_ALIGN - used in compiler-specific intrinsics and typedefs
 //                  to specify alignment of data, loop bounds, etc.;
-//                  units of "bytes" 
+//                  units of "bytes"
 
 const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
 const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
@@ -169,7 +170,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //
 //     RAJA_INLINE - macro to enforce method inlining
 //
-//     RAJA_ALIGN_DATA(<variable>) - macro to express alignment of data, 
+//     RAJA_ALIGN_DATA(<variable>) - macro to express alignment of data,
 //                              loop bounds, etc.
 //
 //     RAJA_SIMD - macro to express SIMD vectorization pragma to force
@@ -207,7 +208,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_SIMD  // TODO: Define this...
 
 
-#elif defined(RAJA_COMPILER_GNU) 
+#elif defined(RAJA_COMPILER_GNU)
 //
 // Configuration options for GNU compilers
 //
@@ -235,7 +236,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
 
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
-#define RAJA_SIMD   // TODO: Define this... 
+#define RAJA_SIMD   // TODO: Define this...
 
 
 #elif defined(RAJA_COMPILER_CLANG)

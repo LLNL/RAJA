@@ -74,13 +74,13 @@ namespace reduce
 
 template <typename T>
 struct sum {
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v) { val += v; }
 };
 
 template <typename T>
 struct min {
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
     if (v < val) val = v;
@@ -89,7 +89,7 @@ struct min {
 
 template <typename T>
 struct max {
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
     if (v > val) val = v;
@@ -98,7 +98,7 @@ struct max {
 
 template <typename T, typename I>
 struct minloc {
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, I &loc, const T v, const I l)
   {
     if (v < val) {
@@ -110,7 +110,7 @@ struct minloc {
 
 template <typename T, typename I>
 struct maxloc {
-  RAJA_HOST_DEVICE
+  RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, I &loc, const T v, const I l)
   {
     if (v > val) {
