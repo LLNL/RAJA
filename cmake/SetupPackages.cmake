@@ -1,12 +1,12 @@
 ###############################################################################
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-#    
+#
 # Produced at the Lawrence Livermore National Laboratory
-#    
+#
 # LLNL-CODE-689114
-# 
+#
 # All rights reserved.
-#  
+#
 # This file is part of RAJA.
 #
 # For additional details, please also read RAJA/LICENSE.
@@ -46,12 +46,6 @@ if (RAJA_ENABLE_OPENMP)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
     list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
     message(STATUS "OpenMP Enabled")
-    if (RAJA_ENABLE_TARGET_OPENMP)
-      set(RAJA_ENABLE_TARGET_OPENMP On)
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DRAJA_ENABLE_TARGET_OPENMP")
-    else()
-      set(RAJA_ENABLE_TARGET_OPENMP Off)
-    endif()
   else()
     message(WARNING "OpenMP NOT FOUND")
     set(RAJA_ENABLE_OPENMP Off)
@@ -96,7 +90,7 @@ if (RAJA_ENABLE_TESTS)
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG release-1.7.0
-      CMAKE_ARGS                
+      CMAKE_ARGS
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       INSTALL_COMMAND ""
