@@ -1,5 +1,3 @@
-add_definitions(-DDEBUG)
-
 raja_add_test(
   NAME chai-policy-tests
   SOURCES chai-policy-tests.cxx

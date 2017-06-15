@@ -249,7 +249,7 @@ void runLTimesTest(std::string const &policy,
         *lsum += total;
         
         // check answer with some reasonable tolerance
-        ASSERT_DOUBLE_EQ(total, phi(m, g, IZone(z)));
+        ASSERT_TRUE(equal(total, phi(m, g, IZone(z))));
       }
     }
   });
@@ -257,9 +257,9 @@ void runLTimesTest(std::string const &policy,
   rm->setExecutionSpace(chai::NONE);
 
 
-  ASSERT_DOUBLE_EQ(*lsum, double(pdsum));
-  ASSERT_DOUBLE_EQ(*lmin , double(pdmin));
-  ASSERT_DOUBLE_EQ(*lmax , double(pdmax)); 
+  ASSERT_TRUE(equal(*lsum, double(pdsum)));
+  ASSERT_TRUE(equal(*lmin , double(pdmin)));
+  ASSERT_TRUE(equal(*lmax , double(pdmax))); 
 //  ASSERT_DOUBLE_EQ(lminloc.val , double(pdminloc)); 
       //&& (lminloc.idx != pdminloc.getLoc())) 
   //ASSERT_DOUBLE_EQ(lmaxloc.val , double(pdmaxloc)); 
