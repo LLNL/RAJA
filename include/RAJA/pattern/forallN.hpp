@@ -108,6 +108,7 @@ struct ForallN_Executor<> {
   constexpr ForallN_Executor() {}
 
   template <typename BODY>
+  RAJA_HOST_DEVICE
   RAJA_INLINE void operator()(BODY const &body) const
   {
     body();
@@ -148,12 +149,17 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
  */
 template <typename BODY_in, typename... Idx>
 struct ForallN_IndexTypeConverter {
+  using Self = ForallN_IndexTypeConverter<BODY_in, Idx...>;
   using BODY = typename std::remove_reference<BODY_in>::type;
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
   // call 'policy' layer with next policy
   RAJA_SUPPRESS_HD_WARN
