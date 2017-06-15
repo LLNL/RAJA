@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MemUtils_CPU_HXX
-#define RAJA_MemUtils_CPU_HXX
+#ifndef RAJA_MemUtils_CPU_HPP
+#define RAJA_MemUtils_CPU_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -66,14 +66,15 @@ namespace RAJA
 ///
 /// Portable aligned memory allocation
 ///
-void * allocate_aligned(size_t alignment, size_t size);
+void* allocate_aligned(size_t alignment, size_t size);
 
 ///
 /// Portable aligned memory allocation
 ///
-template<typename T>
-T * allocate_aligned_type(size_t alignment, size_t size) {
-    return reinterpret_cast<T*>(allocate_aligned(alignment, size));
+template <typename T>
+T* allocate_aligned_type(size_t alignment, size_t size)
+{
+  return reinterpret_cast<T*>(allocate_aligned(alignment, size));
 }
 
 

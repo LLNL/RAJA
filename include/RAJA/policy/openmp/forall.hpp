@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_openmp_HXX
-#define RAJA_forall_openmp_HXX
+#ifndef RAJA_forall_openmp_HPP
+#define RAJA_forall_openmp_HPP
 
 #include "RAJA/config.hpp"
 
@@ -64,18 +64,16 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/index/RangeSegment.hpp"
-#include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/IndexSet.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
 #include <iostream>
 #include <thread>
 
-#if defined(_OPENMP)
 #include <omp.h>
-#endif
 
 
 namespace RAJA
@@ -85,7 +83,8 @@ namespace impl
 {
 
 template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info, LOOP_BODY&& loop_body);
+RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
+                                         LOOP_BODY&& loop_body);
 
 ///
 /// OpenMP parallel for policy implementation
@@ -99,8 +98,7 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
 #pragma omp parallel
   {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
-    forall<InnerPolicy>(std::forward<Iterable>(iter),
-                        std::forward<Func>(body));
+    forall<InnerPolicy>(std::forward<Iterable>(iter), std::forward<Func>(body));
   }
 }
 

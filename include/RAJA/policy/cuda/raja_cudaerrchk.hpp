@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_raja_cudaerrchk_HXX
-#define RAJA_raja_cudaerrchk_HXX
+#ifndef RAJA_raja_cudaerrchk_HPP
+#define RAJA_raja_cudaerrchk_HPP
 
 #include "RAJA/config.hpp"
 
@@ -78,8 +78,8 @@ namespace RAJA
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-#define cudaErrchk(ans)                          \
-  {                                              \
+#define cudaErrchk(ans)                            \
+  {                                                \
     ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
   }
 
@@ -98,10 +98,10 @@ inline void cudaAssert(cudaError_t code,
 /*!
  * \def RAJA_CUDA_CHECK_AND_SYNC(Async)
  * Macro that checks for errors and synchronizes based on paramater Async.
- */ 
-#define RAJA_CUDA_CHECK_AND_SYNC(Async) \
-  cudaErrchk(cudaPeekAtLastError()); \
-  if (!Async) { \
+ */
+#define RAJA_CUDA_CHECK_AND_SYNC(Async)  \
+  cudaErrchk(cudaPeekAtLastError());     \
+  if (!Async) {                          \
     cudaErrchk(cudaDeviceSynchronize()); \
   }
 

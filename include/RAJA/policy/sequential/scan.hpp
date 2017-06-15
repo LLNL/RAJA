@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_sequential_HXX
-#define RAJA_scan_sequential_HXX
+#ifndef RAJA_scan_sequential_HPP
+#define RAJA_scan_sequential_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -76,10 +76,7 @@ namespace scan
    initial value
 */
 template <typename Iter, typename BinFn>
-void inclusive_inplace(const ::RAJA::seq_exec&,
-                       Iter begin,
-                       Iter end,
-                       BinFn f)
+void inclusive_inplace(const ::RAJA::seq_exec&, Iter begin, Iter end, BinFn f)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   Value agg = *begin;

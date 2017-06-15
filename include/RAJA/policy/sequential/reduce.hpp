@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_reduce_sequential_HXX
-#define RAJA_reduce_sequential_HXX
+#ifndef RAJA_reduce_sequential_HPP
+#define RAJA_reduce_sequential_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -87,17 +87,13 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_m_val) :
-    m_parent(NULL), m_val(init_m_val)
-  {
-  }
+  explicit ReduceMin(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<seq_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val)
+  ReduceMin(const ReduceMin<seq_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
@@ -115,10 +111,7 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
@@ -146,7 +139,7 @@ private:
   //
   ReduceMin<seq_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
   mutable T m_val;
 };
 
@@ -168,18 +161,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_m_val, Index_type init_loc) :
-    m_parent(NULL), m_val(init_m_val), loc(init_loc)
+  explicit ReduceMinLoc(T init_m_val, Index_type init_loc)
+      : m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val),
-    loc(other.loc)
+  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        loc(other.loc)
   {
   }
 
@@ -197,10 +190,7 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
@@ -210,10 +200,7 @@ public:
   //
   // Method that returns index corresponding to reduced min value.
   //
-  Index_type getLoc()
-  {
-    return loc;
-  }
+  Index_type getLoc() { return loc; }
 
   //
   // Method that updates min and index value.
@@ -242,7 +229,7 @@ private:
   //
   ReduceMinLoc<seq_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   mutable Index_type loc;
@@ -266,18 +253,13 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_m_val) :
-    m_parent(NULL),
-    m_val(init_m_val)
-  {
-  }
+  explicit ReduceMax(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<seq_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val)
+  ReduceMax(const ReduceMax<seq_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
@@ -295,10 +277,7 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
@@ -326,7 +305,7 @@ private:
   //
   ReduceMax<seq_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
 };
@@ -349,20 +328,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_m_val, Index_type init_loc) :
-    m_parent(NULL),
-    m_val(init_m_val),
-    loc(init_loc)
+  explicit ReduceMaxLoc(T init_m_val, Index_type init_loc)
+      : m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_val),
-    loc(other.loc)
+  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        loc(other.loc)
   {
   }
 
@@ -380,10 +357,7 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
@@ -393,10 +367,7 @@ public:
   //
   // Method that returns index corresponding to reduced max value.
   //
-  Index_type getLoc()
-  {
-    return loc;
-  }
+  Index_type getLoc() { return loc; }
 
   //
   // Method that updates max and index value.
@@ -425,7 +396,7 @@ private:
   //
   ReduceMaxLoc<seq_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   mutable Index_type loc;
@@ -449,20 +420,18 @@ public:
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_m_val, T initializer = 0) :
-    m_parent(NULL),
-    m_val(init_m_val),
-    m_custom_init(initializer)
+  explicit ReduceSum(T init_m_val, T initializer = 0)
+      : m_parent(NULL), m_val(init_m_val), m_custom_init(initializer)
   {
   }
 
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<seq_reduce, T>& other) :
-    m_parent(other.m_parent ? other.m_parent : &other),
-    m_val(other.m_custom_init),
-    m_custom_init(other.m_custom_init)
+  ReduceSum(const ReduceSum<seq_reduce, T>& other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_custom_init),
+        m_custom_init(other.m_custom_init)
   {
   }
 
@@ -480,10 +449,7 @@ public:
   //
   // Operator that returns reduced sum value.
   //
-  operator T()
-  {
-    return m_val;
-  }
+  operator T() { return m_val; }
 
   //
   // Method that returns reduced sum value.
@@ -511,7 +477,7 @@ private:
   //
   ReduceSum<seq_reduce, T>();
 
-  const my_type * m_parent;
+  const my_type* m_parent;
 
   mutable T m_val;
   T m_custom_init;

@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_VIEW_HXX__
-#define RAJA_VIEW_HXX__
+#ifndef RAJA_VIEW_HPP
+#define RAJA_VIEW_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,6 +53,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
 #include "RAJA/util/Layout.hpp"
 
 namespace RAJA
@@ -74,9 +75,7 @@ struct View {
   {
   }
 
-  RAJA_INLINE void set_data(DataType *data_ptr) {
-      data = data_ptr;
-  }
+  RAJA_INLINE void set_data(DataType *data_ptr) { data = data_ptr; }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
@@ -104,9 +103,7 @@ struct TypedView {
   {
   }
 
-  RAJA_INLINE void set_data(DataType *data_ptr) {
-      base_.set_data(data_ptr);
-  }
+  RAJA_INLINE void set_data(DataType *data_ptr) { base_.set_data(data_ptr); }
 
   RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
   {

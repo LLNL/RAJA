@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_tile_HXX__
-#define RAJA_forallN_tile_HXX__
+#ifndef RAJA_forallN_tile_HPP
+#define RAJA_forallN_tile_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

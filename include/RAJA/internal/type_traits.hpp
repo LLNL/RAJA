@@ -10,8 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_type_traits_HXX
-#define RAJA_type_traits_HXX
+#ifndef RAJA_type_traits_HPP
+#define RAJA_type_traits_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -135,15 +135,22 @@ struct is_enum_same<T, A, A> : public std::true_type {
 };
 
 template <typename P_, Policy P>
-struct models_policy : public std::integral_constant<bool, is_enum_same<Policy, P_::policy, P>::value> {
+struct models_policy
+    : public std::
+          integral_constant<bool, is_enum_same<Policy, P_::policy, P>::value> {
 };
 
 template <typename P_, Launch L>
-struct models_launch : public std::integral_constant<bool, is_enum_same<Launch, P_::launch, L>::value> {
+struct models_launch
+    : public std::
+          integral_constant<bool, is_enum_same<Launch, P_::launch, L>::value> {
 };
 
 template <typename P_, Pattern P>
-struct models_pattern : public std::integral_constant<bool, is_enum_same<Pattern, P_::pattern, P>::value> {
+struct models_pattern
+    : public std::
+          integral_constant<bool,
+                            is_enum_same<Pattern, P_::pattern, P>::value> {
 };
 }
 
