@@ -49,6 +49,10 @@ macro(raja_add_executable)
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  if (RAJA_ENABLE_CHAI)
+    list (APPEND arg_DEPENDS_ON chai)
+  endif ()
+
   if (RAJA_ENABLE_CUDA) 
     if (RAJA_ENABLE_CLANG_CUDA) 
       add_executable(${arg_NAME} ${arg_SOURCES})
@@ -78,6 +82,10 @@ macro(raja_add_library)
 
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  if (RAJA_ENABLE_CHAI)
+    list (APPEND arg_DEPENDS_ON chai)
+  endif ()
 
   if (RAJA_ENABLE_CUDA)
     if (RAJA_ENABLE_CLANG_CUDA)
