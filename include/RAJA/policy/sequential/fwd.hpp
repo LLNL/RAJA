@@ -69,15 +69,15 @@ namespace impl
 {
 
 template <typename Func>
-RAJA_INLINE void forall(const PolicyBase &,
+RAJA_INLINE void forall(const seq_exec &,
                         const RangeSegment &iter,
                         Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body);
+RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const PolicyBase &,
+RAJA_INLINE void forall_Icount(const seq_exec &,
                                Iterable &&iter,
                                Index_type icount,
                                Func &&loop_body);

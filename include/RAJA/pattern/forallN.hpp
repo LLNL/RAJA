@@ -56,6 +56,7 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/internal/type_traits.hpp"
 #include "RAJA/util/defines.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
@@ -99,12 +100,15 @@ struct ExecList {
  *
  *  The default action is to call RAJA::forall to peel off outer loop nest.
  */
-template <typename POLICY_INIT, typename... POLICY_REST>
-struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
+template <bool maybe_cuda, typename POLICY_INIT, typename... POLICY_REST>
+struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::ISET TYPE_I;
   typedef typename POLICY_INIT::POLICY POLICY_I;
 
-  typedef ForallN_Executor<POLICY_REST...> NextExec;
+  static constexpr bool build_device = maybe_cuda ? 1 : is_cuda_policy<POLICY_I>::value;
+  typedef ForallN_Executor<build_device,
+                           POLICY_REST...>
+      NextExec;
 
   POLICY_INIT const is_i;
   NextExec const next_exec;
@@ -119,7 +123,7 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   template <typename BODY>
   RAJA_INLINE void operator()(BODY const &body) const
   {
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<build_device, NextExec, BODY> outer(next_exec, body);
     RAJA::impl::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
   }
 };
@@ -128,11 +132,21 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
  * \brief Execution termination case
  */
 template <>
-struct ForallN_Executor<> {
+struct ForallN_Executor<1> {
+  constexpr ForallN_Executor() {}
+
+  RAJA_SUPPRESS_HD_WARN
+  template <typename BODY>
+  RAJA_HOST_DEVICE RAJA_INLINE void operator()(BODY const &body) const
+  {
+    body();
+  }
+};
+template <>
+struct ForallN_Executor<0> {
   constexpr ForallN_Executor() {}
 
   template <typename BODY>
-  RAJA_HOST_DEVICE
   RAJA_INLINE void operator()(BODY const &body) const
   {
     body();
@@ -155,7 +169,7 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
                                 ARGS const &... args)
 {
   // Create executor object to launch loops
-  ForallN_Executor<ARGS...> exec(args...);
+  ForallN_Executor<0,ARGS...> exec(args...);
 
   // Launch loop body
   exec(body);
@@ -218,7 +232,8 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
   // call policy layer with next policy
   forallN_policy<NextPolicy, IDX_CONV>(NextPolicyTag(),
                                        IDX_CONV(body),
-                                       ForallN_PolicyPair<ExecPolicies, Ts>(args)...);
+                                       ForallN_PolicyPair<ExecPolicies, Ts>(
+                                           args)...);
 }
 
 namespace detail

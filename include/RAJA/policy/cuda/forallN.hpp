@@ -128,7 +128,10 @@ constexpr int numThreads(CudaDim const &dim)
 }
 
 template <typename POL>
-struct CudaPolicy {
+struct CudaPolicy
+    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
+                                              Launch::sync,
+                                              RAJA::Pattern::forall> {
 };
 
 template <typename POL, typename IDX>
@@ -339,13 +342,15 @@ struct gen_sequence<0, S...> {
   typedef integer_sequence<S...> type;
 };
 
-template <typename CuARG0,
+template <bool device,
+          typename CuARG0,
           typename ISET0,
           typename CuARG1,
           typename ISET1,
           typename... CuARGS,
           typename... ISETS>
-struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                         ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
                         ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> {
   ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;
@@ -394,8 +399,8 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   }
 };
 
-template <typename CuARG0, typename ISET0>
-struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
+template <bool device, typename CuARG0, typename ISET0>
+struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   ISET0 iset0;
 
   ForallN_Executor(ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const &iset0_)

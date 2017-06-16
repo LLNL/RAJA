@@ -56,6 +56,7 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/Iterators.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
+#include "RAJA/internal/type_traits.hpp"
 
 #include <iosfwd>
 
@@ -90,7 +91,9 @@ enum PushCopy {
   /// each segment.
   ///
   template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T>
-  struct ExecPolicy {
+  struct ExecPolicy : public RAJA::make_policy_pattern<
+                                              SEG_EXEC_POLICY_T::policy,
+                                              RAJA::Pattern::forall> {
     typedef SEG_ITER_POLICY_T seg_it;
     typedef SEG_EXEC_POLICY_T seg_exec;
   };

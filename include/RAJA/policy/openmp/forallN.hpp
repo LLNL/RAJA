@@ -87,8 +87,9 @@ struct OMP_Parallel {
  *  ForallN collapse nowait execution templates
  ******************************************************************/
 
-template <typename... PREST>
-struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+template <bool device, typename... PREST>
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeSegment>,
                         ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeSegment>,
@@ -96,7 +97,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset_i;
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset_j;
 
-  typedef ForallN_Executor<PREST...> NextExec;
+  typedef ForallN_Executor<device, PREST...> NextExec;
   NextExec next_exec;
 
   RAJA_INLINE
@@ -116,7 +117,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int end_i = iset_i.getEnd();
     int end_j = iset_j.getEnd();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<0,NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
@@ -131,8 +132,9 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   }
 };
 
-template <typename... PREST>
-struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+template <bool device, typename... PREST>
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeSegment>,
                         ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeSegment>,
@@ -143,7 +145,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset_j;
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeSegment> iset_k;
 
-  typedef ForallN_Executor<PREST...> NextExec;
+  typedef ForallN_Executor<device, PREST...> NextExec;
   NextExec next_exec;
 
   RAJA_INLINE
@@ -166,7 +168,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int end_j = iset_j.getEnd();
     int end_k = iset_k.getEnd();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<0,NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(3)
@@ -186,8 +188,9 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
 /*
  * Collapse RangeStrideSegments
  */
-template <typename... PREST>
-struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+template <bool device, typename... PREST>
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeStrideSegment>,
                         ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeStrideSegment>,
@@ -195,7 +198,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_i;
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_j;
 
-  typedef ForallN_Executor<PREST...> NextExec;
+  typedef ForallN_Executor<device, PREST...> NextExec;
   NextExec next_exec;
 
   RAJA_INLINE
@@ -220,7 +223,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int stride_j = iset_j.getStride();
 
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<0,NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(2)
@@ -235,8 +238,9 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   }
 };
 
-template <typename... PREST>
-struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
+template <bool device, typename... PREST>
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeStrideSegment>,
                         ForallN_PolicyPair<omp_collapse_nowait_exec,
                                            RangeStrideSegment>,
@@ -247,7 +251,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_j;
   ForallN_PolicyPair<omp_collapse_nowait_exec, RangeStrideSegment> iset_k;
 
-  typedef ForallN_Executor<PREST...> NextExec;
+  typedef ForallN_Executor<device, PREST...> NextExec;
   NextExec next_exec;
 
   RAJA_INLINE
@@ -276,7 +280,7 @@ struct ForallN_Executor<ForallN_PolicyPair<omp_collapse_nowait_exec,
     int stride_j = iset_j.getStride();
     int stride_k = iset_k.getStride();
 
-    ForallN_PeelOuter<NextExec, BODY> outer(next_exec, body);
+    ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
 #if !defined(RAJA_COMPILER_MSVC)
 #pragma omp for nowait collapse(3)

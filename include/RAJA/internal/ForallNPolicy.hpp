@@ -80,7 +80,7 @@ struct Execute {
 };
 
 
-template <typename... POLICY_REST>
+template <bool device, typename... POLICY_REST>
 struct ForallN_Executor {
 };
 
@@ -124,11 +124,55 @@ struct ForallN_BindFirstArg_HostDevice {
   }
 };
 
-template <typename NextExec, typename BODY_in>
+template <bool device, typename NextExec, typename BODY_in>
 struct ForallN_PeelOuter {
   NextExec const next_exec;
   using BODY = typename std::remove_reference<BODY_in>::type;
-  using Self = ForallN_PeelOuter<NextExec, BODY_in>;
+  using Self = ForallN_PeelOuter<device, NextExec, BODY_in>;
+  BODY const body;
+
+  RAJA_INLINE
+  constexpr ForallN_PeelOuter(NextExec const &ne, BODY const &b)
+      : next_exec(ne), body(b)
+  {
+  }
+
+  RAJA_INLINE
+  constexpr ForallN_PeelOuter(Self const &o)
+      : next_exec(o.next_exec), body(o.body)
+  {
+  }
+
+  RAJA_INLINE
+  void operator()(Index_type i) const
+  {
+    ForallN_BindFirstArg_HostDevice<BODY> inner(body, i);
+    next_exec(inner);
+  }
+
+  RAJA_INLINE
+  void operator()(Index_type i, Index_type j) const
+  {
+    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
+    next_exec(inner_j);
+  }
+
+  RAJA_INLINE
+  void operator()(Index_type i, Index_type j, Index_type k) const
+  {
+    ForallN_BindFirstArg_HostDevice<BODY> inner_i(body, i);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_i)> inner_j(inner_i, j);
+    ForallN_BindFirstArg_HostDevice<decltype(inner_j)> inner_k(inner_j, k);
+    next_exec(inner_k);
+  }
+};
+
+template <typename NextExec, typename BODY_in>
+struct ForallN_PeelOuter<1, NextExec, BODY_in> {
+  NextExec const next_exec;
+  using BODY = typename std::remove_reference<BODY_in>::type;
+  using Self = ForallN_PeelOuter<1, NextExec, BODY_in>;
   BODY const body;
 
   RAJA_INLINE
