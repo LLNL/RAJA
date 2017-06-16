@@ -81,7 +81,7 @@
 #cmakedefine RAJA_ENABLE_CILK
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
-
+#cmakedefine RAJA_ENABLE_CHAI
 #cmakedefine RAJA_ENABLE_CUB
 
 /*
