@@ -104,6 +104,7 @@
 //
 #include "RAJA/pattern/forall.hpp"
 
+
 //
 // Multidimensional layouts and views.
 //
