@@ -91,40 +91,34 @@ struct ForallN_Executor {
  */
 template <typename BODY, typename INDEX_TYPE = Index_type>
 struct ForallN_BindFirstArg_HostDevice {
+  using Self = ForallN_BindFirstArg_HostDevice<BODY, INDEX_TYPE>;
   BODY const body;
   INDEX_TYPE const i;
 
   RAJA_INLINE
+  RAJA_HOST_DEVICE
   constexpr ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0)
       : body(b), i(i0)
   {
   }
 
-  template <typename... ARGS>
-  RAJA_INLINE RAJA_HOST_DEVICE void operator()(ARGS... args) const
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ForallN_BindFirstArg_HostDevice(Self const &o)
+      : body(o.body), i(o.i)
   {
-    body(i, args...);
   }
-};
-
-/*!
- * \brief Functor that binds the first argument of a callable.
- *
- * This version has host-only constructor and host-only operator.
- */
-template <typename BODY, typename INDEX_TYPE = Index_type>
-struct ForallN_BindFirstArg_Host {
-  BODY const body;
-  INDEX_TYPE const i;
 
   RAJA_INLINE
-  constexpr ForallN_BindFirstArg_Host(BODY const &b, INDEX_TYPE i0)
-      : body(b), i(i0)
+  RAJA_HOST_DEVICE
+  constexpr ForallN_BindFirstArg_HostDevice(Self &&o)
+      : body(o.body), i(o.i)
   {
   }
 
+  RAJA_SUPPRESS_HD_WARN
   template <typename... ARGS>
-  RAJA_INLINE void operator()(ARGS... args) const
+  RAJA_INLINE RAJA_HOST_DEVICE void operator()(ARGS... args) const
   {
     body(i, args...);
   }
@@ -134,11 +128,20 @@ template <typename NextExec, typename BODY_in>
 struct ForallN_PeelOuter {
   NextExec const next_exec;
   using BODY = typename std::remove_reference<BODY_in>::type;
+  using Self = ForallN_PeelOuter<NextExec, BODY_in>;
   BODY const body;
 
   RAJA_INLINE
   constexpr ForallN_PeelOuter(NextExec const &ne, BODY const &b)
       : next_exec(ne), body(b)
+  {
+  }
+
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ForallN_PeelOuter(Self const &o)
+      : next_exec(o.next_exec), body(o.body)
   {
   }
 

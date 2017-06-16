@@ -1,85 +1,95 @@
 sudo: required
 dist: trusty
 language: cpp
-
+env:
+  global:
+    secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
 matrix:
   include:
-   - compiler: gcc-4
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-4.9
-     env: COMPILER=g++-4.9
-         - WARN="-DRAJA_ENABLE_WARNINGS=On"
-   - compiler: gcc-5
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-5
-     env: COMPILER=g++-5
-         - WARN="-DRAJA_ENABLE_WARNINGS=On"
-   - compiler: gcc-6
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-6
-     env: COMPILER=g++-6
-         - WARN=""
-         - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
-         - COVERAGE=t
-   - compiler: clang-3.6
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-5
-     env:
-         - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
-         - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-         - WARN=""
-   - compiler: clang-3.7
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-5
-     env:
-         - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-         - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-         - WARN=""
-   - compiler: clang-3.8
-     addons:
-       apt:
-         sources:
-           - ubuntu-toolchain-r-test
-         packages:
-           - g++-5
-     env:
-         - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-         - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
-         - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-         - WARN=""
+  - compiler: gcc-4
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-4.9
+    env: COMPILER=g++-4.9 - WARN="-DRAJA_ENABLE_WARNINGS=On"
+  - compiler: gcc-5
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env: COMPILER=g++-5 - WARN="-DRAJA_ENABLE_WARNINGS=On"
+  - compiler: gcc-6
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-6
+    env: COMPILER=g++-6 - WARN="" - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage'
+      -DCMAKE_CXX_FLAGS='-coverage'" - COVERAGE=t
+  - compiler: clang-3.6
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env:
+    - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
+    - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - WARN=""
+  - compiler: clang-3.7
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env:
+    - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+    - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - WARN=""
+  - compiler: clang-3.8
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env:
+    - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
+    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - WARN=""
+  - compiler: intel-17
+    env:
+      - COMPILER=icpc
+      - WARN=""
+      - TRAVIS_BUILD_INTEL="YES"
 cache:
-    directories:
-        - $HOME/llvm
+  directories:
+  - $HOME/llvm
 before_install:
-  - sudo apt-get update -qq
-  - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ; fi
-  - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-  - cd $HOME && curl -o cmake-tarball.tar.gz ${CMAKE_URL} && mkdir -p $HOME/cmake && cd $HOME/cmake && tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 && export PATH=${PWD}/bin:${PATH}
+- sudo apt-get update -qq
+- if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o
+  tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ;
+  fi
+- CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
+- cd $HOME && curl -o cmake-tarball.tar.gz ${CMAKE_URL} && mkdir -p $HOME/cmake &&
+  cd $HOME/cmake && tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 && export
+  PATH=${PWD}/bin:${PATH}
+- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
 script:
-  - cd $TRAVIS_BUILD_DIR
-  - mkdir travis-build && cd travis-build
-  - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
-  - make -j
-  - make test
+- source ~/.bashrc
+- cd $TRAVIS_BUILD_DIR
+- mkdir travis-build && cd travis-build
+- cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
+- make -j
+- make test
 after_success:
-  - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
+- if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
+- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi
