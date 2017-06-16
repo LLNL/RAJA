@@ -60,8 +60,10 @@
 #include <type_traits>
 #include "RAJA/policy/PolicyBase.hpp"
 
+
 namespace RAJA
 {
+
 namespace detail
 {
 
