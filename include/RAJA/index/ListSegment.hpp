@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_ListSegment_HXX
-#define RAJA_ListSegment_HXX
+#ifndef RAJA_ListSegment_HPP
+#define RAJA_ListSegment_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -120,10 +120,10 @@ public:
   /// Move-constructor for list segment.
   ///
   ListSegment(ListSegment&& other)
-    : BaseSegment(std::move(other)),
-      m_indx(other.m_indx),
-      m_len(other.m_len),
-      m_indx_own(other.m_indx_own)
+      : BaseSegment(std::move(other)),
+        m_indx(other.m_indx),
+        m_len(other.m_len),
+        m_indx_own(other.m_indx_own)
   {
     other.m_indx = nullptr;
   }
@@ -273,9 +273,11 @@ ListSegment::ListSegment(const T& indx)
                                  cudaMemAttachGlobal));
     using T_TYPE = typename std::remove_reference<decltype(indx[0])>::type;
     if (sizeof(T_TYPE) == sizeof(Index_type) && std::is_integral<T_TYPE>::value
-        && std::is_same<std::vector<T_TYPE>, typename std::decay<T>::type>::value) {
+        && std::is_same<std::vector<T_TYPE>,
+                        typename std::decay<T>::type>::value) {
       // this will bitwise copy signed or unsigned integral types
-      cudaErrchk(cudaMemcpy(m_indx, &indx[0], m_len * sizeof(Index_type), cudaMemcpyDefault));
+      cudaErrchk(cudaMemcpy(
+          m_indx, &indx[0], m_len * sizeof(Index_type), cudaMemcpyDefault));
     } else {
       cudaErrchk(cudaDeviceSynchronize());
       std::copy(indx.begin(), indx.end(), m_indx);

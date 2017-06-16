@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file defining generic forall templates.
+ * \brief   RAJA header file defining generic forallN templates.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_generic_HXX__
-#define RAJA_forallN_generic_HXX__
+#ifndef RAJA_forallN_generic_HPP
+#define RAJA_forallN_generic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,11 +53,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
-
-#include "RAJA/util/defines.hpp"
-
+#include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/defines.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -65,6 +64,31 @@
 
 namespace RAJA
 {
+
+/*!
+ * \brief Struct used to define forallN nested policies.
+ *
+ *  Typically, passed as first template argument to forallN templates.
+ */
+template <typename EXEC, typename NEXT = Execute>
+struct NestedPolicy {
+  typedef NEXT NextPolicy;
+  typedef EXEC ExecPolicies;
+};
+
+/*!
+ * \brief Struct that contains a policy for each loop nest in a forallN
+ *        construct.
+ *
+ *  Typically, passed as first template argument to NestedPolicy template,
+ *  followed by permutation, etc.
+ */
+template <typename... PLIST>
+struct ExecList {
+  constexpr const static size_t num_loops = sizeof...(PLIST);
+  typedef std::tuple<PLIST...> tuple;
+};
+
 
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
@@ -75,7 +99,6 @@ namespace RAJA
  *
  *  The default action is to call RAJA::forall to peel off outer loop nest.
  */
-
 template <typename POLICY_INIT, typename... POLICY_REST>
 struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::ISET TYPE_I;
@@ -87,7 +110,8 @@ struct ForallN_Executor<POLICY_INIT, POLICY_REST...> {
   NextExec const next_exec;
 
   template <typename... TYPE_REST>
-  constexpr ForallN_Executor(POLICY_INIT const &is_i0, TYPE_REST const &... is_rest)
+  constexpr ForallN_Executor(POLICY_INIT const &is_i0,
+                             TYPE_REST const &... is_rest)
       : is_i(is_i0), next_exec(is_rest...)
   {
   }
@@ -108,6 +132,7 @@ struct ForallN_Executor<> {
   constexpr ForallN_Executor() {}
 
   template <typename BODY>
+  RAJA_HOST_DEVICE
   RAJA_INLINE void operator()(BODY const &body) const
   {
     body();
@@ -148,12 +173,17 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
  */
 template <typename BODY_in, typename... Idx>
 struct ForallN_IndexTypeConverter {
+  using Self = ForallN_IndexTypeConverter<BODY_in, Idx...>;
   using BODY = typename std::remove_reference<BODY_in>::type;
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
   // call 'policy' layer with next policy
   RAJA_SUPPRESS_HD_WARN
@@ -192,13 +222,13 @@ RAJA_INLINE void forallN_impl_extract(RAJA::ExecList<ExecPolicies...>,
                                            args)...);
 }
 
-namespace detail {
+namespace detail
+{
 
-template<typename T, size_t Unused>
+template <typename T, size_t Unused>
 struct type_repeater {
-    using type=T;
+  using type = T;
 };
-
 }
 
 template <typename POLICY,
@@ -218,7 +248,8 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
   // Make it look like variadics can have defaults
   forallN_impl_extract<POLICY,
                        Indices...,
-                       typename detail::type_repeater<Index_type, Unspecified>::type...>(
+                       typename detail::type_repeater<Index_type,
+                                                      Unspecified>::type...>(
       typename POLICY::ExecPolicies(), body, args...);
 }
 
@@ -232,8 +263,8 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
                               Ts &&... args)
 {
   forallN_impl<POLICY, Indices...>(
-      VarOps::make_index_sequence<sizeof...(args)-1>(),
-      VarOps::make_index_sequence<sizeof...(args)-1 - sizeof...(Indices)>(),
+      VarOps::make_index_sequence<sizeof...(args) - 1>(),
+      VarOps::make_index_sequence<sizeof...(args) - 1 - sizeof...(Indices)>(),
       VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
       VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
 }
@@ -248,8 +279,8 @@ RAJA_INLINE void forallN(Ts &&... args)
 #endif
 
   fun_unpacker<POLICY, Indices...>(
-      VarOps::index_sequence<sizeof...(args)-1>{},
-      VarOps::make_index_sequence<sizeof...(args)-1>{},
+      VarOps::index_sequence<sizeof...(args) - 1>{},
+      VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
 
 #ifdef RAJA_ENABLE_CUDA

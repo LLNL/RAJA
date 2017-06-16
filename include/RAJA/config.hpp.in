@@ -21,8 +21,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_config_HXX
-#define RAJA_config_HXX
+#ifndef RAJA_config_HPP
+#define RAJA_config_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -80,7 +80,6 @@
 #cmakedefine RAJA_ENABLE_CILK
 #cmakedefine RAJA_ENABLE_CUDA
 #cmakedefine RAJA_ENABLE_CLANG_CUDA
-#cmakedefine RAJA_ENABLE_NESTED
 
 #cmakedefine RAJA_ENABLE_CUB
 
@@ -186,7 +185,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #endif
 
 
-#if defined(RAJA_COMPILER_ICC)
+#if defined(RAJA_COMPILER_INTEL)
 //
 // Configuration options for Intel compilers
 //

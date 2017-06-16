@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_tile_HXX__
-#define RAJA_forallN_tile_HXX__
+#ifndef RAJA_forallN_tile_HPP
+#define RAJA_forallN_tile_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -121,7 +121,7 @@ RAJA_INLINE void forallN_apply_tile(tile_none,
   // printf("TIDX=%d: policy=tile_none\n", (int)TIDX);
 
   // Pass thru, so just bind the index set
-  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
+  typedef ForallN_BindFirstArg_HostDevice<BODY, POLICY_INIT> BOUND;
   BOUND new_body(body, pi);
 
   // Recurse to the next policy
@@ -144,7 +144,7 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
 {
   // printf("TIDX=%d: policy=tile_fixed<%d>\n", TIDX, TileSize);
 
-  typedef ForallN_BindFirstArg_Host<BODY, POLICY_INIT> BOUND;
+  typedef ForallN_BindFirstArg_HostDevice<BODY, POLICY_INIT> BOUND;
 
   // tile loop
   Index_type i_begin = pi.getBegin();

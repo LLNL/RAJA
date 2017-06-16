@@ -9,8 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_DepGraphNode_HXX
-#define RAJA_DepGraphNode_HXX
+#ifndef RAJA_DepGraphNode_HPP
+#define RAJA_DepGraphNode_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

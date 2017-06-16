@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_INDEXVALUE_HXX__
-#define RAJA_INDEXVALUE_HXX__
+#ifndef RAJA_INDEXVALUE_HPP
+#define RAJA_INDEXVALUE_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,10 +53,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <string>
-#include "RAJA/util/defines.hpp"
+#include "RAJA/config.hpp"
 
+#include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
+
+#include <string>
 
 namespace RAJA
 {
@@ -97,7 +99,14 @@ public:
    */
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  Index_type operator*(void)const { return value; }
+  Index_type &operator*(void) { return value; }
+
+  /*!
+   * \brief Dereference provides cast-to-integer.
+   */
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  const Index_type &operator*(void)const { return value; }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
@@ -279,9 +288,10 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
   return TO{val};
 }
 template <typename TO, typename FROM>
-RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(typename FROM::IndexValueType val)
+RAJA_HOST_DEVICE RAJA_INLINE TO
+convertIndex_helper(typename FROM::IndexValueType val)
 {
-  return TO{*val};
+  return static_cast<TO>(*val);
 }
 
 template <typename TO, typename FROM>
@@ -289,7 +299,6 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
 {
   return convertIndex_helper<TO, FROM>(val);
 }
-
 
 
 }  // namespace RAJA
@@ -301,7 +310,7 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
   class TYPE : public RAJA::IndexValue<TYPE>                                   \
   {                                                                            \
   public:                                                                      \
-    typedef TYPE IndexValueType; \
+    typedef TYPE IndexValueType;                                               \
     RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() \
     {                                                                          \
     }                                                                          \
