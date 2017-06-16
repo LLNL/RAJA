@@ -56,13 +56,12 @@
 #include <tuple>
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/fwd.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 namespace RAJA
 {
 
-template <typename Selector, typename... Policies>
-class MultiPolicy;
 
 namespace detail
 {

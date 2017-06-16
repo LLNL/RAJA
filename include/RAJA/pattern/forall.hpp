@@ -103,7 +103,7 @@
 #include <iterator>
 #include <type_traits>
 
-#include "RAJA/policy/cuda/forward_decl_cuda.hpp"
+#include "RAJA/policy/fwd.hpp"
 
 
 namespace RAJA
