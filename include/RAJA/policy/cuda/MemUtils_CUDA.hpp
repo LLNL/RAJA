@@ -80,7 +80,7 @@ namespace RAJA
  * Reduction Tallies are computed into a small block to minimize memory motion
  * Set to Max Number of Reduction Variables
  */
-#define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
+//#define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
 /*!
  * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
@@ -117,9 +117,11 @@ struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
  *
  ******************************************************************************
  */
+
 struct RAJA_ALIGNED_ATTR(DATA_ALIGN) CudaReductionDummyBlockType {
   CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
+
 
 /*!
  ******************************************************************************

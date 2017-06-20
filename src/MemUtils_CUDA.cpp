@@ -95,16 +95,16 @@ int s_cuda_reducer_active_count = 0;
 int s_cuda_memblock_used_count = 0;
 
 /*!
- * \brief Static array used to keep track of which unique ids
+ * \brief bool array used to keep track of which unique ids
  * for CUDA reduction objects are used and which are not.
  */
-bool s_cuda_reduction_id_used[RAJA_MAX_REDUCE_VARS];
+bool *s_cuda_reduction_id_used = 0; // was static array based on RAJA_MAX_REDUCE_VARS
 
 /*!
- * \brief Static array used to keep track of which reduction
+ * \brief bool array used to keep track of which reduction
  * memblocks are in use.
  */
-bool s_cuda_reduction_memblock_used[RAJA_MAX_REDUCE_VARS];
+bool *s_cuda_reduction_memblock_used = 0; // was static array based on RAJA_MAX_REDUCE_VARS
 
 /*!
  * \brief Pointer to device memory block for RAJA-Cuda reductions.
@@ -168,7 +168,7 @@ int s_tally_dirty = 0;
  * True indicates a slot written to by the host, but not copied back to
  * the device tally block.
  */
-bool s_tally_block_dirty[RAJA_CUDA_REDUCE_TALLY_LENGTH] = {false};
+bool *s_tally_block_dirty = 0;
 
 //
 /////////////////////////////////////////////////////////////////////////////
@@ -195,7 +195,8 @@ int s_shared_memory_amount_total = 0;
  * Note: -1 indicates a reduction variable that is not participating in
  * the current forall.
  */
-int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
+// int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
+int *s_shared_memory_offsets = 0;
 /*!
  * \brief Holds the number of threads expected by each reduction variable.
  *
@@ -206,7 +207,8 @@ int s_shared_memory_offsets[RAJA_MAX_REDUCE_VARS] = {-1};
  * current forall and 0 represents a reduction variable whose execution does
  * not depend on the number of threads used by the execution policy.
  */
-int s_cuda_reduction_num_threads[RAJA_MAX_REDUCE_VARS] = {-1};
+//int s_cuda_reduction_num_threads[RAJA_MAX_REDUCE_VARS] = {-1};
+int *s_cuda_reduction_num_threads;
 }
 
 
@@ -249,7 +251,14 @@ void setCudaMaxReducers(unsigned int reducers)
 { 
   if(s_cuda_reducer_active_count == 0) {
     freeCudaReductionMemBlock();
+    freeCudaReductionTallyBlock();
     s_cuda_max_reducers = reducers;
+    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
+    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
+    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool)); 
+    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
+    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
+    std::cerr << "\n Reset cudaMaxReducers to " << s_cuda_max_reducers << std::endl;
   }
   else {
     std::cerr << "\n Cannot set CudaMaxReducers -- we have active reducers present, "
@@ -289,11 +298,14 @@ int getCudaReductionId()
 {
   static int first_time_called = true;
 
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
+
   if (first_time_called) {
     s_cuda_reducer_active_count = 0;
     s_cuda_memblock_used_count = 0;
-
-    for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
+    
+    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,lmaxreducers * sizeof(bool));
+    for (int id = 0; id < lmaxreducers; ++id) {
       s_cuda_reduction_id_used[id] = false;
     }
 
@@ -301,13 +313,13 @@ int getCudaReductionId()
   }
 
   int id = 0;
-  while (id < RAJA_MAX_REDUCE_VARS && s_cuda_reduction_id_used[id]) {
+  while (id < lmaxreducers && s_cuda_reduction_id_used[id]) {
     id++;
   }
 
-  if (id >= RAJA_MAX_REDUCE_VARS) {
+  if (id >= lmaxreducers) {
     std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+              << lmaxreducers << " , FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
     exit(1);
   }
 
@@ -326,12 +338,16 @@ int getCudaReductionId()
 */
 void releaseCudaReductionId(int id)
 {
-  if (id < RAJA_MAX_REDUCE_VARS) {
+
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
+  if (id < lmaxreducers) {
     s_cuda_reducer_active_count--;
     s_cuda_reduction_id_used[id] = false;
-    if (s_cuda_reduction_memblock_used[id]) {
-      s_cuda_memblock_used_count--;
-      s_cuda_reduction_memblock_used[id] = false;
+    if(s_cuda_reduction_memblock_used) {
+      if (s_cuda_reduction_memblock_used[id]) {
+        s_cuda_memblock_used_count--;
+        s_cuda_reduction_memblock_used[id] = false;
+      }
     }
   }
 }
@@ -346,12 +362,14 @@ void releaseCudaReductionId(int id)
 */
 void getCudaReductionMemBlock(int id, void** device_memblock)
 {
+
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (s_cuda_reduction_mem_block == 0) {
     cudaErrchk(
         cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                   sizeof(CudaReductionDummyBlockType) * RAJA_MAX_REDUCE_VARS));
-
-    for (int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+                   sizeof(CudaReductionDummyBlockType) * lmaxreducers));
+    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,lmaxreducers * sizeof(bool));
+    for (int i = 0; i < lmaxreducers; ++i) {
       s_cuda_reduction_memblock_used[i] = false;
     }
 
@@ -376,6 +394,14 @@ void freeCudaReductionMemBlock()
   if (s_cuda_reduction_mem_block != 0) {
     cudaErrchk(cudaFree(s_cuda_reduction_mem_block));
     s_cuda_reduction_mem_block = 0;
+    free(s_cuda_reduction_id_used); 
+    s_cuda_reduction_id_used = 0;
+    free(s_cuda_reduction_memblock_used);
+    s_cuda_reduction_memblock_used = 0;
+    free(s_cuda_reduction_num_threads);
+    s_cuda_reduction_num_threads = 0;
+    free(s_shared_memory_offsets);
+    s_shared_memory_offsets = 0;
   }
 }
 
@@ -391,17 +417,18 @@ void freeCudaReductionMemBlock()
 */
 void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 {
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (s_cuda_reduction_tally_block_host == 0) {
     s_cuda_reduction_tally_block_host =
-        new CudaReductionDummyTallyType[RAJA_CUDA_REDUCE_TALLY_LENGTH];
+        new CudaReductionDummyTallyType[lmaxreducers];
 
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
                           sizeof(CudaReductionDummyTallyType)
-                              * RAJA_CUDA_REDUCE_TALLY_LENGTH));
-
+                              * lmaxreducers));
+    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,lmaxreducers * sizeof(bool));
     s_tally_valid = true;
     s_tally_dirty = 0;
-    for (int i = 0; i < RAJA_CUDA_REDUCE_TALLY_LENGTH; ++i) {
+    for (int i = 0; i < lmaxreducers; ++i) {
       s_tally_block_dirty[i] = false;
     }
 
@@ -426,12 +453,13 @@ void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 */
 static void writeBackCudaReductionTallyBlock()
 {
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (s_tally_dirty > 0) {
     int first = 0;
-    while (first < RAJA_CUDA_REDUCE_TALLY_LENGTH) {
+    while (first < lmaxreducers) {
       if (s_tally_block_dirty[first]) {
         int end = first + 1;
-        while (end < RAJA_CUDA_REDUCE_TALLY_LENGTH
+        while (end < lmaxreducers 
                && s_tally_block_dirty[end]) {
           end++;
         }
@@ -466,22 +494,24 @@ static void writeBackCudaReductionTallyBlock()
 */
 static void readCudaReductionTallyBlockAsync()
 {
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpyAsync(&s_cuda_reduction_tally_block_host[0],
                                &s_cuda_reduction_tally_block_device[0],
                                sizeof(CudaReductionDummyTallyType)
-                                   * RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                                   * lmaxreducers,
                                cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
 }
 static void readCudaReductionTallyBlock()
 {
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpy(&s_cuda_reduction_tally_block_host[0],
                           &s_cuda_reduction_tally_block_device[0],
                           sizeof(CudaReductionDummyTallyType)
-                              * RAJA_CUDA_REDUCE_TALLY_LENGTH,
+                              * lmaxreducers,
                           cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
@@ -499,14 +529,15 @@ static void readCudaReductionTallyBlock()
 */
 void beforeCudaKernelLaunch()
 {
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   s_raja_cuda_forall_level++;
   if (s_raja_cuda_forall_level == 1) {
     if (s_cuda_reducer_active_count > 0) {
       s_shared_memory_amount_total = 0;
-      for (int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+      for (int i = 0; i < lmaxreducers; ++i) {
         s_shared_memory_offsets[i] = -1;
       }
-      for (int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+      for (int i = 0; i < lmaxreducers; ++i) {
         s_cuda_reduction_num_threads[i] = -1;
       }
 
@@ -582,6 +613,8 @@ void freeCudaReductionTallyBlock()
   if (s_cuda_reduction_tally_block_host != 0) {
     delete[] s_cuda_reduction_tally_block_host;
     cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
+    free(s_tally_block_dirty);
+    s_tally_block_dirty = 0;
     s_cuda_reduction_tally_block_host = 0;
   }
 }
@@ -596,7 +629,21 @@ void freeCudaReductionTallyBlock()
 */
 int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 {
-  assert(id < RAJA_MAX_REDUCE_VARS);
+
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
+  assert(id < lmaxreducers);
+
+  static int getCudaSharedmemOffset_first = true;
+
+  if(getCudaSharedmemOffset_first) {
+    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, lmaxreducers * sizeof(int));
+    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, lmaxreducers * sizeof(int));
+    for(int i=0; i < lmaxreducers; ++i) {
+      s_shared_memory_offsets[i] = -1;
+      s_cuda_reduction_num_threads[i] = -1;
+    }  
+    getCudaSharedmemOffset_first = false;
+  }
 
   if (s_raja_cuda_forall_level > 0) {
     if (s_shared_memory_offsets[id] < 0) {
@@ -631,28 +678,32 @@ int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 */
 int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 {
+
+  unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
   if (s_cuda_reducer_active_count > 0) {
     int launch_num_blocks = launchGridDim.x * launchGridDim.y * launchGridDim.z;
 
     int launch_num_threads =
         launchBlockDim.x * launchBlockDim.y * launchBlockDim.z;
 
-    for (int i = 0; i < RAJA_MAX_REDUCE_VARS; ++i) {
+    for (int i = 0; i < lmaxreducers; ++i) {
       int reducer_num_threads = s_cuda_reduction_num_threads[i];
 
       // check if reducer is active
       if (reducer_num_threads >= 0) {
 
         // check if reducer cares about number of blocks
-        if (s_cuda_reduction_memblock_used[i]
-            && launch_num_blocks > RAJA_CUDA_MAX_NUM_BLOCKS) {
-          std::cerr << "\n Cuda execution error: "
-                    << "Can't launch " << launch_num_blocks << " blocks, "
-                    << "RAJA_CUDA_MAX_NUM_BLOCKS = " << RAJA_CUDA_MAX_NUM_BLOCKS
-                    << ", "
-                    << "FILE: " << __FILE__ << " line: " << __LINE__
-                    << std::endl;
-          exit(1);
+        if(s_cuda_reduction_memblock_used) {
+          if (s_cuda_reduction_memblock_used[i]
+              && launch_num_blocks > RAJA_CUDA_MAX_NUM_BLOCKS) {
+            std::cerr << "\n Cuda execution error: "
+                      << "Can't launch " << launch_num_blocks << " blocks, "
+                      << "RAJA_CUDA_MAX_NUM_BLOCKS = " << RAJA_CUDA_MAX_NUM_BLOCKS
+                      << ", "
+                      << "FILE: " << __FILE__ << " line: " << __LINE__
+                      << std::endl;
+            exit(1);
+          }
         }
 
         // check if reducer cares about number of threads

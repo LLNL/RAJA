@@ -303,8 +303,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+       //&& (sizeof(CudaReductionBlockType<T>)
+       //    <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
@@ -507,8 +508,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+       //&& (sizeof(CudaReductionBlockType<T>)
+       //    <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
@@ -769,8 +771,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+       //&& (sizeof(CudaReductionBlockType<T>)
+       //    <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
@@ -977,8 +980,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+       //&& (sizeof(CudaReductionBlockType<T>)
+       //    <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
@@ -1290,8 +1294,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionLocTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionLocBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+       //&& (sizeof(CudaReductionLocBlockType<T>)
+       //    <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");
@@ -1602,8 +1607,9 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionLocTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       && (sizeof(CudaReductionLocBlockType<T>)
-           <= sizeof(CudaReductionDummyBlockType)));
+      // && (sizeof(CudaReductionLocBlockType<T>)
+      //     <= sizeof(CudaReductionDummyBlockType))
+       );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
                 "Error: block sizes must be between 32 and 1024");

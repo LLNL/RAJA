@@ -102,6 +102,8 @@ int main(int argc, char *argv[])
                     sizeof(double) * TEST_VEC_LEN,
                     cudaMemAttachGlobal);
 
+  setCudaMaxReducers(4); // test code path
+  setCudaMaxReducers(8);
   ///
   /// Define thread block size for CUDA exec policy
   ///
@@ -122,6 +124,8 @@ int main(int argc, char *argv[])
     {  // begin test 1
 
       double dtinit = 5.0;
+
+
 
       ReduceSum<cuda_reduce<block_size>, double> dsum0(0.0);
       ReduceSum<cuda_reduce<block_size>, double> dsum1(dtinit * 1.0);
@@ -182,6 +186,10 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 1
+
+
+
+#if 0
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -353,6 +361,7 @@ int main(int argc, char *argv[])
         }
       }
     }  // end test4
+#endif
   }    // end test repeat loop
 
   ///
