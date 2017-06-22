@@ -104,10 +104,15 @@ int main(int argc, char *argv[])
 
   setCudaMaxReducers(4); // test code path
   setCudaMaxReducers(8);
+
+
   ///
   /// Define thread block size for CUDA exec policy
   ///
   const size_t block_size = 256;
+
+  setCudaMaxBlocks(16); // test code path
+  setCudaMaxBlocks(TEST_VEC_LEN/block_size);
 
   ////////////////////////////////////////////////////////////////////////////
   // Run 3 different sum reduction tests in a loop

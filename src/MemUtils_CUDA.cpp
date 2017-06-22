@@ -228,6 +228,8 @@ void setCudaMaxBlocks(unsigned int blocks)
   if(s_cuda_reducer_active_count == 0) {
     freeCudaReductionMemBlock();
     s_cuda_max_blocks = blocks;
+    std::cerr << "\n Reset cudaMaxBlocks to " << s_cuda_max_blocks << std::endl;
+
   }
   else {
     std::cerr << "\n Cannot set CudaMaxBlocks -- we have active reducers present, "
