@@ -364,13 +364,17 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
 {
 
   unsigned int lmaxreducers = (s_cuda_max_reducers != 0) ? s_cuda_max_reducers : RAJA_MAX_REDUCE_VARS;
+  unsigned int lmaxblocks = (s_cuda_max_blocks != 0) ? s_cuda_max_blocks : RAJA_CUDA_REDUCE_BLOCK_LENGTH;
   if (s_cuda_reduction_mem_block == 0) {
     cudaErrchk(
         cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                   sizeof(CudaReductionDummyBlockType) * lmaxreducers));
+                   sizeof(CudaReductionDummyBlockType) * lmaxreducers * lmaxblocks ) );
+
     s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,lmaxreducers * sizeof(bool));
+
     for (int i = 0; i < lmaxreducers; ++i) {
       s_cuda_reduction_memblock_used[i] = false;
+
     }
 
     atexit(freeCudaReductionMemBlock);
@@ -379,7 +383,7 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
   s_cuda_memblock_used_count++;
   s_cuda_reduction_memblock_used[id] = true;
 
-  *device_memblock = &(s_cuda_reduction_mem_block[id]);
+  *device_memblock = s_cuda_reduction_mem_block + (id * lmaxblocks);
 }
 
 /*

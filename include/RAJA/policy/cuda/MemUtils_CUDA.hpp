@@ -117,11 +117,14 @@ struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
  *
  ******************************************************************************
  */
-
+#if 0
 struct RAJA_ALIGNED_ATTR(DATA_ALIGN) CudaReductionDummyBlockType {
   CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
 };
 
+#endif
+
+typedef CudaReductionDummyDataType CudaReductionDummyBlockType;
 
 /*!
  ******************************************************************************
@@ -145,6 +148,8 @@ struct CudaReductionDummyTallyType {
  *
  ******************************************************************************
  */
+
+/// NOT Currently Used
 template <typename T>
 struct CudaReductionBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
@@ -160,10 +165,20 @@ struct CudaReductionBlockType {
  *
  ******************************************************************************
  */
+
+#if 0
 template <typename T>
 struct CudaReductionLocBlockType {
   T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
   Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
+};
+
+#endif
+
+template <typename T>
+struct CudaReductionLocBlockType {
+  T value;
+  Index_type index;
 };
 
 /*!

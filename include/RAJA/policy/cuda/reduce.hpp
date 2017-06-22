@@ -303,8 +303,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       //&& (sizeof(CudaReductionBlockType<T>)
-       //    <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
@@ -508,8 +506,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       //&& (sizeof(CudaReductionBlockType<T>)
-       //    <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
@@ -633,8 +629,7 @@ public:
 
       bool lastBlock = false;
       if (threadId < 1) {
-        // write data to global memory block
-        m_blockdata->values[blockId] = temp;
+        m_blockdata[blockId] = temp;
         // ensure write visible to all threadblocks
         __threadfence();
         // increment counter, (wraps back to zero at second parameter)
@@ -652,7 +647,7 @@ public:
 
         int threads = blockDim.x * blockDim.y * blockDim.z;
         for (int i = threadId; i < blocks; i += threads) {
-          temp += m_blockdata->values[i];
+          temp += m_blockdata[i];
         }
         // any unused slots were initialized in copy constructor
         sd[threadId] = temp;
@@ -738,7 +733,7 @@ private:
   /*!
    * \brief Pointer to device data block for this reduction variable.
    */
-  CudaReductionBlockType<T> *m_blockdata = nullptr;
+  T *m_blockdata = nullptr;
 
   /*!
    * \brief Pointer to device tally block slot for this reduction variable.
@@ -771,8 +766,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       //&& (sizeof(CudaReductionBlockType<T>)
-       //    <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
@@ -980,8 +973,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       //&& (sizeof(CudaReductionBlockType<T>)
-       //    <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
@@ -1123,9 +1114,8 @@ public:
 
       bool lastBlock = false;
       if (threadId < 1) {
-        m_blockdata->values[blockId] = sd_val[threadId];
-        m_blockdata->indices[blockId] = sd_idx[threadId];
-
+        m_blockdata[blockId].value = sd_val[threadId];
+        m_blockdata[blockId].index = sd_idx[threadId];
         __threadfence();
         unsigned int oldBlockCount =
             atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
@@ -1143,8 +1133,8 @@ public:
                                    lmin.idx,
                                    lmin.val,
                                    lmin.idx,
-                                   m_blockdata->values[i],
-                                   m_blockdata->indices[i]);
+                                   m_blockdata[i].value,
+                                   m_blockdata[i].index);
         }
         sd_val[threadId] = lmin.val;
         sd_idx[threadId] = lmin.idx;
@@ -1294,8 +1284,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionLocTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-       //&& (sizeof(CudaReductionLocBlockType<T>)
-       //    <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
@@ -1437,8 +1425,8 @@ public:
 
       bool lastBlock = false;
       if (threadId < 1) {
-        m_blockdata->values[blockId] = sd_val[threadId];
-        m_blockdata->indices[blockId] = sd_idx[threadId];
+        m_blockdata[blockId].value = sd_val[threadId];
+        m_blockdata[blockId].index = sd_idx[threadId];
 
         __threadfence();
         unsigned int oldBlockCount =
@@ -1457,8 +1445,8 @@ public:
                                    lmax.idx,
                                    lmax.val,
                                    lmax.idx,
-                                   m_blockdata->values[i],
-                                   m_blockdata->indices[i]);
+                                   m_blockdata[i].value,
+                                   m_blockdata[i].index);
         }
         sd_val[threadId] = lmax.val;
         sd_idx[threadId] = lmax.idx;
@@ -1607,8 +1595,6 @@ private:
       ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
        && (sizeof(CudaReductionLocTallyType<T>)
            <= sizeof(CudaReductionDummyTallyType))
-      // && (sizeof(CudaReductionLocBlockType<T>)
-      //     <= sizeof(CudaReductionDummyBlockType))
        );
   static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
   static_assert(reasonableRangeCheck,
