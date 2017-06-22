@@ -70,9 +70,21 @@ matrix:
       - COMPILER=icpc
       - WARN=""
       - TRAVIS_BUILD_INTEL="YES"
+  - compiler: nvcc
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-4.9
+    env:
+      - COMPILER=g++-4.9
+      - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON"
+      - TRAVIS_BUILD_NVCC="YES"
 cache:
   directories:
   - $HOME/llvm
+  - /usr/local/cuda-8.0
 before_install:
 - sudo apt-get update -qq
 - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o
@@ -83,13 +95,21 @@ before_install:
   cd $HOME/cmake && tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 && export
   PATH=${PWD}/bin:${PATH}
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+  travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+  travis_retry sudo apt-get update -qq &&
+  travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
+  travis_retry sudo apt-get clean &&
+  export CUDA_HOME=/usr/local/cuda-8.0 &&
+  export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
+  export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
 - source ~/.bashrc
 - cd $TRAVIS_BUILD_DIR
 - mkdir travis-build && cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
 - make -j
-- make test
+- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then make test; fi
 after_success:
 - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi
