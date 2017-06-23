@@ -1,6 +1,7 @@
 #ifndef RAJA_INTERNAL_DEFINES_HXX
 #define RAJA_INTERNAL_DEFINES_HXX
 
+#include <cstdlib>
 #include <stdexcept>
 
 //
@@ -91,8 +92,8 @@
  ( ( (dividend) + (divisor) - 1 ) / (divisor) )
 
 inline void RAJA_ABORT_OR_THROW(const char *str) {
-    if  (getenv ("RAJA_NO_EXCEPT") != NULL) {
-        abort();
+    if  (std::getenv ("RAJA_NO_EXCEPT") != NULL) {
+        std::abort();
     } else {
         throw std::runtime_error(str);
     }
