@@ -55,6 +55,7 @@ void ignore_args(Ts... args)
 }
 template <metal::int_ index, typename Type>
 struct tuple_storage {
+  tuple_storage() = default;
   RAJA_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
 
   RAJA_HOST_DEVICE
@@ -70,9 +71,15 @@ public:
 
 template <typename... Types>
 struct tuple_helper;
+
+template <>
+struct tuple_helper<metal::list<>, metal::list<>>{};
+
 template <typename... Types, metal::int_... Indices>
 struct tuple_helper<metal::list<metal::number<Indices>...>, metal::list<Types...>>
     : public internal::tuple_storage<Indices, Types>... {
+
+  tuple_helper() = default;
 
   using Self = tuple_helper<metal::numbers<Indices...>, Types...>;
   RAJA_HOST_DEVICE constexpr tuple_helper(Types... args)

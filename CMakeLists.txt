@@ -84,6 +84,7 @@ include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
 include_directories(include)
+include_directories(include/RAJA/external)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
