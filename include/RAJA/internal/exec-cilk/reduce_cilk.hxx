@@ -64,7 +64,7 @@
 
 #include "RAJA/reducers.hxx"
 
-#include "RAJA/MemUtils_CPU.hxx"
+#include "RAJA/internal/MemUtils_CPU.hxx"
 
 #include <cilk/cilk.h>
 #include <cilk/cilk_api.h>
