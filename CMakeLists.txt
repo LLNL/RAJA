@@ -42,6 +42,7 @@
 
 cmake_minimum_required (VERSION 3.3)
 
+# C is required for googletest to find Threads
 project(RAJA LANGUAGES CXX C)
 
 # Set version number
@@ -56,6 +57,7 @@ option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+option(RAJA_ENABLE_CUB "Use cub for scans using CUDA" On)
 option(RAJA_ENABLE_CILK "Build Cilk support" Off)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
@@ -75,14 +77,17 @@ include(cmake/SetupPackages.cmake)
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
+# Sanity check for compiler compatibility
+include (cmake/CompilerCompatibility.cmake)
 
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
 
 include_directories(include)
 
-install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hxx)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hxx DESTINATION "include/RAJA")
+install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
+install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
+        DESTINATION "include/RAJA")
 
 add_subdirectory(src)
 
@@ -95,12 +100,7 @@ if(RAJA_ENABLE_EXAMPLES)
 endif()
 
 if (RAJA_ENABLE_DOCUMENTATION)
-  if (SPHINX_FOUND)
-    add_subdirectory(docs)
-  else ()
-      message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx not found. \
-      Documentation won't be built.")
-  endif ()
+  add_subdirectory(docs)
 endif ()
 
 if(RAJA_ENABLE_APPLICATIONS)

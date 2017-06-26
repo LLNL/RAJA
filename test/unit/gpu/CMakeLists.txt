@@ -41,50 +41,46 @@
 #
 ###############################################################################
 
-if (NOT RAJA_ENABLE_NESTED)
-  add_definitions(-DRAJA_ENABLE_NESTED)
-endif()
-
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 raja_add_test(
-  NAME reducemin
-  SOURCES ReduceMin.cxx)
+  NAME test-GPUreducemin
+  SOURCES ReduceMin.cpp)
 
 raja_add_test(
-  NAME reducemax
-  SOURCES ReduceMax.cxx)
+  NAME test-GPUreducemax
+  SOURCES ReduceMax.cpp)
 
 raja_add_test(
-  NAME reducesum
-  SOURCES ReduceSum.cxx)
+  NAME test-GPUreducesum
+  SOURCES ReduceSum.cpp)
 
 raja_add_test(
-  NAME traversal
-  SOURCES Traversal.cxx)
+  NAME test-GPUforall
+  SOURCES forall.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME nested
-    SOURCES Nested.cxx)
+    NAME test-GPUforallN
+    SOURCES forallN.cpp)
 endif()
 
 raja_add_test(
-  NAME reduceminloc
-  SOURCES ReduceMinLoc.cxx)
+  NAME test-GPUreduceminloc
+  SOURCES ReduceMinLoc.cpp)
 
 raja_add_test(
-  NAME reducemaxloc
-  SOURCES ReduceMaxLoc.cxx)
+  NAME test-GPUreducemaxloc
+  SOURCES ReduceMaxLoc.cpp)
 
 raja_add_test(
-  NAME forallN
-  SOURCES forallN.cxx
+  NAME test-GPUforallN-strided
+  SOURCES forallN-strided.cpp
   DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 if (NOT RAJA_ENABLE_CLANG_CUDA)
   raja_add_test(
-    NAME scan
-    SOURCES test-scan.cxx
+    NAME test-GPUscan
+    SOURCES test-scan.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif ()
