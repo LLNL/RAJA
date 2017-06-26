@@ -33,6 +33,16 @@ matrix:
          - WARN=""
          - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
          - COVERAGE=t
+   - compiler: gcc-6
+     addons:
+       apt:
+         sources:
+           - ubuntu-toolchain-r-test
+         packages:
+           - g++-6
+     env: COMPILER=g++-6
+         - WARN=""
+         - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CILK=On -DCMAKE_CXX_FLAGS=-fcilkplus"
    - compiler: clang-3.6
      addons:
        apt:
