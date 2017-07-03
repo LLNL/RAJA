@@ -150,17 +150,14 @@ public:
   // Constructor takes default value (default ctor is disabled).
   //
   explicit ReduceMin(T init_val)
-      : m_parent(NULL),
-        m_tally_host(NULL),
-        m_tally_device(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_val(init_val),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally = init_val;
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally = init_val;
   }
 
   //
@@ -168,19 +165,21 @@ public:
   //
   RAJA_HOST_DEVICE
   ReduceMin(const ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
-        m_tally_device(other.m_tally_device),
-        m_val(other.m_val),
 #if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
+      : m_parent(&other),
 #else
-        m_parent(other.m_parent ? other.m_parent : &other),
-        m_myID(other.m_myID)
+      : m_parent(other.m_parent),
 #endif
+        m_tally(other.m_tally),
+        m_val(other.m_val),
+        m_myID(other.m_myID)
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -192,11 +191,11 @@ public:
   RAJA_HOST_DEVICE
   ~ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       m_parent->min(m_val);
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int threadId = threadIdx.x + blockDim.x * threadIdx.y
                      + (blockDim.x * blockDim.y) * threadIdx.z;
@@ -204,13 +203,20 @@ public:
       T temp = block_reduce(m_val);
 
       if (threadId == 0) {
-        _atomicMin<T>(&m_tally_device->tally, temp);
+        if (temp < m_tally->tally) {
+          _atomicMin<T>(&m_tally->tally, temp);
+        }
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      m_parent->min(m_val);
+    }
+#endif
   }
 
   //
@@ -221,7 +227,7 @@ public:
   operator T()
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
-    return RAJA_MIN(m_val, m_tally_host->tally);
+    return RAJA_MIN(m_val, m_tally->tally);
   }
 
   //
@@ -257,12 +263,11 @@ private:
   ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionTallyTypeAtomic<T> *m_tally_host;
-  CudaReductionTallyTypeAtomic<T> *m_tally_device;
+  CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
   int m_myID;
 
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -367,17 +372,14 @@ public:
    * Note: Constructor only executes on the host.
    */
   explicit ReduceMax(T init_val)
-      : m_parent(NULL),
-        m_tally_host(NULL),
-        m_tally_device(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_val(init_val),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally = init_val;
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally = init_val;
   }
 
   /*!
@@ -390,19 +392,21 @@ public:
    */
   RAJA_HOST_DEVICE
   ReduceMax(const ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
-        m_tally_device(other.m_tally_device),
-        m_val(other.m_val),
 #if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
+      : m_parent(&other),
 #else
-        m_parent(other.m_parent ? other.m_parent : &other),
-        m_myID(other.m_myID)
+      : m_parent(other.m_parent),
 #endif
+        m_tally(other.m_tally),
+        m_val(other.m_val),
+        m_myID(other.m_myID)
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -418,11 +422,11 @@ public:
   RAJA_HOST_DEVICE
   ~ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       m_parent->max(m_val);
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int threadId = threadIdx.x + blockDim.x * threadIdx.y
                      + (blockDim.x * blockDim.y) * threadIdx.z;
@@ -430,13 +434,18 @@ public:
       T temp = block_reduce(m_val);
 
       if (threadId == 0) {
-        _atomicMax<T>(&m_tally_device->tally, temp);
+        _atomicMax<T>(&m_tally->tally, temp);
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      m_parent->max(m_val);
+    }
+#endif
   }
 
   /*!
@@ -447,7 +456,7 @@ public:
   operator T()
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
-    return RAJA_MAX(m_val, m_tally_host->tally);
+    return RAJA_MAX(m_val, m_tally->tally);
   }
 
   /*!
@@ -483,12 +492,11 @@ private:
   ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionTallyTypeAtomic<T> *m_tally_host;
-  CudaReductionTallyTypeAtomic<T> *m_tally_device;
+  CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
   int m_myID;
 
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -593,21 +601,18 @@ public:
    * Note: Constructor only executes on the host.
    */
   explicit ReduceSum(T init_val, T initializer = 0)
-      : m_parent(NULL),
-        m_tally_host(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_blockdata(NULL),
-        m_tally_device(NULL),
         m_val(init_val),
         m_custom_init(initializer),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
     getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally = initializer;
-    m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally = initializer;
+    m_tally->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
   /*!
@@ -620,21 +625,23 @@ public:
    */
   RAJA_HOST_DEVICE
   ReduceSum(const ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
+#if defined(__CUDA_ARCH__)
+      : m_parent(&other),
+#else
+      : m_parent(other.m_parent),
+#endif
+        m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
-        m_tally_device(other.m_tally_device),
         m_val(other.m_custom_init),
         m_custom_init(other.m_custom_init),
-#if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
-#else
-        m_parent(other.m_parent ? other.m_parent : &other),
         m_myID(other.m_myID)
-#endif
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -650,11 +657,11 @@ public:
   RAJA_HOST_DEVICE
   ~ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       *m_parent += m_val;
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int numBlocks = gridDim.x * gridDim.y * gridDim.z;
       int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -675,7 +682,7 @@ public:
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            atomicInc((unsigned int *)&m_tally->retiredBlocks,
                       (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
@@ -695,14 +702,19 @@ public:
 
         // one thread adds to tally
         if (threadId == 0) {
-          m_tally_device->tally += temp;
+          m_tally->tally += temp;
         }
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      *m_parent += m_val;
+    }
+#endif
   }
 
   /*!
@@ -713,7 +725,7 @@ public:
   operator T()
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
-    return (m_val + m_tally_host->tally);
+    return (m_val + m_tally->tally);
   }
 
   /*!
@@ -749,9 +761,8 @@ private:
   ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionTallyType<T> *m_tally_host;
+  CudaReductionTallyType<T> *m_tally;
   T *m_blockdata;
-  CudaReductionTallyType<T> *m_tally_device;
   mutable T m_val;
   T m_custom_init;
   int m_myID;
@@ -760,7 +771,7 @@ private:
   // Reduces the values in a cuda block into threadId = 0
   // __syncthreads must be called between succesive calls to this method
   //
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -869,18 +880,15 @@ public:
    * Note: Constructor only executes on the host.
    */
   explicit ReduceSum(T init_val, T initializer = 0)
-      : m_parent(NULL),
-        m_tally_host(NULL),
-        m_tally_device(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_val(init_val),
         m_custom_init(initializer),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally = initializer;
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally = initializer;
   }
 
   /*!
@@ -893,20 +901,22 @@ public:
    */
   RAJA_HOST_DEVICE
   ReduceSum(const ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
-        m_tally_device(other.m_tally_device),
+#if defined(__CUDA_ARCH__)
+      : m_parent(&other),
+#else
+      : m_parent(other.m_parent),
+#endif
+        m_tally(other.m_tally),
         m_val(other.m_custom_init),
         m_custom_init(other.m_custom_init),
-#if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
-#else
-        m_parent(other.m_parent ? other.m_parent : &other),
         m_myID(other.m_myID)
-#endif
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -921,11 +931,11 @@ public:
    */
   RAJA_HOST_DEVICE ~ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       *m_parent += m_val;
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int threadId = threadIdx.x + blockDim.x * threadIdx.y
                      + (blockDim.x * blockDim.y) * threadIdx.z;
@@ -934,13 +944,18 @@ public:
 
       // one thread adds to tally
       if (threadId == 0) {
-        _atomicAdd<T>(&(m_tally_device->tally), temp);
+        _atomicAdd<T>(&(m_tally->tally), temp);
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      *m_parent += m_val;
+    }
+#endif
   }
 
   /*!
@@ -951,7 +966,7 @@ public:
   operator T()
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
-    return (m_val + m_tally_host->tally);
+    return (m_val + m_tally->tally);
   }
 
   /*!
@@ -987,13 +1002,12 @@ private:
   ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionTallyType<T> *m_tally_host;
-  CudaReductionTallyType<T> *m_tally_device;
+  CudaReductionTallyType<T> *m_tally;
   mutable T m_val;
   T m_custom_init;
   int m_myID;
 
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -1101,22 +1115,19 @@ public:
    * Note: Constructor only executes on the host.
    */
   explicit ReduceMinLoc(T init_val, Index_type init_loc)
-      : m_parent(NULL),
-        m_tally_host(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_blockdata(NULL),
-        m_tally_device(NULL),
         m_val(init_val),
         m_idx(init_loc),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
     getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally.val = init_val;
-    m_tally_host->tally.idx = init_loc;
-    m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally.val = init_val;
+    m_tally->tally.idx = init_loc;
+    m_tally->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
   /*!
@@ -1129,21 +1140,23 @@ public:
    */
   RAJA_HOST_DEVICE
   ReduceMinLoc(const ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
+#if defined(__CUDA_ARCH__)
+      : m_parent(&other),
+#else
+      : m_parent(other.m_parent),
+#endif
+        m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
-        m_tally_device(other.m_tally_device),
         m_val(other.m_val),
         m_idx(other.m_idx),
-#if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
-#else
-        m_parent(other.m_parent ? other.m_parent : &other),
         m_myID(other.m_myID)
-#endif
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -1158,11 +1171,11 @@ public:
    */
   RAJA_HOST_DEVICE ~ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       m_parent->minloc(m_val, m_idx);
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int numBlocks = gridDim.x * gridDim.y * gridDim.z;
       int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -1186,7 +1199,7 @@ public:
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            atomicInc((unsigned int *)&m_tally->retiredBlocks,
                       (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
@@ -1209,16 +1222,21 @@ public:
 
         // one thread reduces to tally
         if (threadId == 0) {
-          RAJA_MINLOC_UNSTRUCTURED(m_tally_device->tally.val, m_tally_device->tally.idx,
-                                   m_tally_device->tally.val, m_tally_device->tally.idx,
-                                   temp_val,                  temp_idx);
+          RAJA_MINLOC_UNSTRUCTURED(m_tally->tally.val, m_tally->tally.idx,
+                                   m_tally->tally.val, m_tally->tally.idx,
+                                   temp_val,           temp_idx);
         }
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      m_parent->minloc(m_val, m_idx);
+    }
+#endif
   }
 
   /*!
@@ -1230,9 +1248,9 @@ public:
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
     T val; Index_type idx;
-    RAJA_MINLOC_UNSTRUCTURED(val,                     idx,
-                             m_val,                   m_idx,
-                             m_tally_host->tally.val, m_tally_host->tally.idx);
+    RAJA_MINLOC_UNSTRUCTURED(val,                idx,
+                             m_val,              m_idx,
+                             m_tally->tally.val, m_tally->tally.idx);
     RAJA_UNUSED_VAR(idx);
     return val;
   }
@@ -1253,9 +1271,9 @@ public:
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
     T val; Index_type idx;
-    RAJA_MINLOC_UNSTRUCTURED(val,                     idx,
-                             m_val,                   m_idx,
-                             m_tally_host->tally.val, m_tally_host->tally.idx);
+    RAJA_MINLOC_UNSTRUCTURED(val,                idx,
+                             m_val,              m_idx,
+                             m_tally->tally.val, m_tally->tally.idx);
     RAJA_UNUSED_VAR(val);
     return idx;
   }
@@ -1290,14 +1308,13 @@ private:
   ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionLocTallyType<T> *m_tally_host;
+  CudaReductionLocTallyType<T> *m_tally;
   CudaReductionLocType<T> *m_blockdata;
-  CudaReductionLocTallyType<T> *m_tally_device;
   mutable T m_val;
   mutable Index_type m_idx;
   int m_myID;
 
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   CudaReductionLocType<T> block_reduce(T val, Index_type idx)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -1417,22 +1434,19 @@ public:
    * Note: Constructor only executes on the host.
    */
   explicit ReduceMaxLoc(T init_val, Index_type init_loc)
-      : m_parent(NULL),
-        m_tally_host(NULL),
+      : m_parent(this),
+        m_tally(NULL),
         m_blockdata(NULL),
-        m_tally_device(NULL),
         m_val(init_val),
         m_idx(init_loc),
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
     getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlock(m_myID,
-                               (void **)&m_tally_host,
-                               (void **)&m_tally_device);
-    m_tally_host->tally.val = init_val;
-    m_tally_host->tally.idx = init_loc;
-    m_tally_host->retiredBlocks = static_cast<GridSizeType>(0);
+    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally->tally.val = init_val;
+    m_tally->tally.idx = init_loc;
+    m_tally->retiredBlocks = static_cast<GridSizeType>(0);
   }
 
   /*!
@@ -1445,21 +1459,23 @@ public:
    */
   RAJA_HOST_DEVICE
   ReduceMaxLoc(const ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T> &other)
-      : m_tally_host(other.m_tally_host),
+#if defined(__CUDA_ARCH__)
+      : m_parent(&other),
+#else
+      : m_parent(other.m_parent),
+#endif
+        m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
-        m_tally_device(other.m_tally_device),
         m_val(other.m_val),
         m_idx(other.m_idx),
-#if defined(__CUDA_ARCH__)
-        m_parent((other.m_myID == -2) ? &other : NULL ),
-        m_myID(-2)
-#else
-        m_parent(other.m_parent ? other.m_parent : &other),
         m_myID(other.m_myID)
-#endif
   {
 #if !defined(__CUDA_ARCH__)
-    getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
+    if (m_parent) {
+      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
+      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
+      if (offset >= 0) m_parent = NULL;
+    }
 #endif
   }
 
@@ -1474,11 +1490,11 @@ public:
    */
   RAJA_HOST_DEVICE ~ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T>()
   {
-    if (m_parent) {
+#if defined(__CUDA_ARCH__)
+    if (m_parent->m_parent) {
       m_parent->maxloc(m_val, m_idx);
     }
     else {
-#if defined(__CUDA_ARCH__)
 
       int numBlocks = gridDim.x * gridDim.y * gridDim.z;
       int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -1502,7 +1518,7 @@ public:
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            atomicInc((unsigned int *)&m_tally->retiredBlocks,
                       (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
@@ -1525,16 +1541,21 @@ public:
 
         // one thread reduces to tally
         if (threadId == 0) {
-          RAJA_MAXLOC_UNSTRUCTURED(m_tally_device->tally.val, m_tally_device->tally.idx,
-                                   m_tally_device->tally.val, m_tally_device->tally.idx,
-                                   temp_val,                  temp_idx);
+          RAJA_MAXLOC_UNSTRUCTURED(m_tally->tally.val, m_tally->tally.idx,
+                                   m_tally->tally.val, m_tally->tally.idx,
+                                   temp_val,           temp_idx);
         }
       }
+    }
 #else
+    if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
-#endif
     }
+    else if (m_parent) {
+      m_parent->maxloc(m_val, m_idx);
+    }
+#endif
   }
 
   /*!
@@ -1546,9 +1567,9 @@ public:
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
     T val; Index_type idx;
-    RAJA_MAXLOC_UNSTRUCTURED(val,                     idx,
-                             m_val,                   m_idx,
-                             m_tally_host->tally.val, m_tally_host->tally.idx);
+    RAJA_MAXLOC_UNSTRUCTURED(val,                idx,
+                             m_val,              m_idx,
+                             m_tally->tally.val, m_tally->tally.idx);
     RAJA_UNUSED_VAR(idx);
     return val;
   }
@@ -1569,9 +1590,9 @@ public:
   {
     beforeCudaReadTallyBlock<Async>(m_myID);
     T val; Index_type idx;
-    RAJA_MAXLOC_UNSTRUCTURED(val,                     idx,
-                             m_val,                   m_idx,
-                             m_tally_host->tally.val, m_tally_host->tally.idx);
+    RAJA_MAXLOC_UNSTRUCTURED(val,                idx,
+                             m_val,              m_idx,
+                             m_tally->tally.val, m_tally->tally.idx);
     RAJA_UNUSED_VAR(val);
     return idx;
   }
@@ -1606,14 +1627,13 @@ private:
   ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionLocTallyType<T> *m_tally_host;
+  CudaReductionLocTallyType<T> *m_tally;
   CudaReductionLocType<T> *m_blockdata;
-  CudaReductionLocTallyType<T> *m_tally_device;
   mutable T m_val;
   mutable Index_type m_idx;
   int m_myID;
 
-  RAJA_DEVICE
+  RAJA_DEVICE RAJA_INLINE
   CudaReductionLocType<T> block_reduce(T val, Index_type idx)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;

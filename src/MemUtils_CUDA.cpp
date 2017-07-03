@@ -206,8 +206,7 @@ int *s_shared_memory_offsets = 0;
  * current forall and 0 represents a reduction variable whose execution does
  * not depend on the number of threads used by the execution policy.
  */
-//int s_cuda_reduction_num_threads[RAJA_MAX_REDUCE_VARS] = {-1};
-int *s_cuda_reduction_num_threads;
+int *s_cuda_reduction_num_threads = 0;
 }
 
 
@@ -259,11 +258,11 @@ void setCudaMaxReducers(unsigned int reducers)
     freeCudaReductionMemBlock();
     freeCudaReductionTallyBlock();
     s_cuda_max_reducers = reducers;
-    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
-    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
-    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool)); 
-    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
-    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
+    // s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
+    // s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
+    // s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool)); 
+    // s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
+    // s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
     std::cerr << "\n Reset cudaMaxReducers to " << s_cuda_max_reducers << std::endl;
   }
   else {
@@ -302,30 +301,24 @@ int getCudaMemblockUsedCount() { return s_cuda_memblock_used_count; }
 */
 int getCudaReductionId()
 {
-  static int first_time_called = true;
-
-  unsigned int lmaxreducers = s_cuda_max_reducers;
-
-  if (first_time_called) {
+  if (s_cuda_reduction_id_used == 0) {
     s_cuda_reducer_active_count = 0;
     s_cuda_memblock_used_count = 0;
     
-    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,lmaxreducers * sizeof(bool));
-    for (int id = 0; id < lmaxreducers; ++id) {
+    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
+    for (int id = 0; id < s_cuda_max_reducers; ++id) {
       s_cuda_reduction_id_used[id] = false;
     }
-
-    first_time_called = false;
   }
 
   int id = 0;
-  while (id < lmaxreducers && s_cuda_reduction_id_used[id]) {
+  while (id < s_cuda_max_reducers && s_cuda_reduction_id_used[id]) {
     id++;
   }
 
-  if (id >= lmaxreducers) {
+  if (id >= s_cuda_max_reducers) {
     std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
-              << lmaxreducers << " , FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+              << s_cuda_max_reducers << " , FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
     exit(1);
   }
 
@@ -344,9 +337,7 @@ int getCudaReductionId()
 */
 void releaseCudaReductionId(int id)
 {
-
-  unsigned int lmaxreducers = s_cuda_max_reducers;
-  if (id < lmaxreducers) {
+  if (id < s_cuda_max_reducers) {
     s_cuda_reducer_active_count--;
     s_cuda_reduction_id_used[id] = false;
     if(s_cuda_reduction_memblock_used) {
@@ -368,17 +359,14 @@ void releaseCudaReductionId(int id)
 */
 void getCudaReductionMemBlock(int id, void** device_memblock)
 {
-
-  unsigned int lmaxreducers = s_cuda_max_reducers;
-  unsigned int lmaxblocks = s_cuda_max_blocks;
   if (s_cuda_reduction_mem_block == 0) {
     cudaErrchk(
         cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                   sizeof(CudaReductionDummyBlockType) * lmaxreducers * lmaxblocks ) );
+                   sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks * s_cuda_max_reducers ) );
 
-    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,lmaxreducers * sizeof(bool));
+    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
 
-    for (int i = 0; i < lmaxreducers; ++i) {
+    for (int i = 0; i < s_cuda_max_reducers; ++i) {
       s_cuda_reduction_memblock_used[i] = false;
 
     }
@@ -389,7 +377,7 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
   s_cuda_memblock_used_count++;
   s_cuda_reduction_memblock_used[id] = true;
 
-  *device_memblock = s_cuda_reduction_mem_block + (id * lmaxblocks);
+  *device_memblock = s_cuda_reduction_mem_block + (id * s_cuda_max_blocks);
 }
 
 /*
@@ -425,32 +413,39 @@ void freeCudaReductionMemBlock()
 *
 *******************************************************************************
 */
-void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
+void getCudaReductionTallyBlock(int id, void** tally)
 {
-  unsigned int lmaxreducers = s_cuda_max_reducers ;
   if (s_cuda_reduction_tally_block_host == 0) {
     s_cuda_reduction_tally_block_host =
-        new CudaReductionDummyTallyType[lmaxreducers];
+        new CudaReductionDummyTallyType[s_cuda_max_reducers];
 
     cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
                           sizeof(CudaReductionDummyTallyType)
-                              * lmaxreducers));
-    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,lmaxreducers * sizeof(bool));
+                              * s_cuda_max_reducers));
+    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool));
     s_tally_valid = true;
     s_tally_dirty = 0;
-    for (int i = 0; i < lmaxreducers; ++i) {
+    for (int i = 0; i < s_cuda_max_reducers; ++i) {
       s_tally_block_dirty[i] = false;
     }
 
     atexit(freeCudaReductionTallyBlock);
   }
 
+  if (s_raja_cuda_forall_level == 0) {
+    *tally = &s_cuda_reduction_tally_block_host[id];
+  } else {
+    *tally = &s_cuda_reduction_tally_block_device[id];
+  }
+}
+
+void getCudaReductionTallyBlockSetDirty(int id, void** tally)
+{
+  getCudaReductionTallyBlock(id, tally);
+
   s_tally_dirty += 1;
   // set block dirty
   s_tally_block_dirty[id] = true;
-
-  *host_tally = &(s_cuda_reduction_tally_block_host[id]);
-  *device_tally = &(s_cuda_reduction_tally_block_device[id]);
 }
 
 /*
@@ -463,13 +458,12 @@ void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally)
 */
 static void writeBackCudaReductionTallyBlock()
 {
-  unsigned int lmaxreducers = s_cuda_max_reducers;
   if (s_tally_dirty > 0) {
     int first = 0;
-    while (first < lmaxreducers) {
+    while (first < s_cuda_max_reducers) {
       if (s_tally_block_dirty[first]) {
         int end = first + 1;
-        while (end < lmaxreducers 
+        while (end < s_cuda_max_reducers 
                && s_tally_block_dirty[end]) {
           end++;
         }
@@ -504,24 +498,22 @@ static void writeBackCudaReductionTallyBlock()
 */
 static void readCudaReductionTallyBlockAsync()
 {
-  unsigned int lmaxreducers = s_cuda_max_reducers;
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpyAsync(&s_cuda_reduction_tally_block_host[0],
                                &s_cuda_reduction_tally_block_device[0],
                                sizeof(CudaReductionDummyTallyType)
-                                   * lmaxreducers,
+                                   * s_cuda_max_reducers,
                                cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
 }
 static void readCudaReductionTallyBlock()
 {
-  unsigned int lmaxreducers = s_cuda_max_reducers;
   if (!s_tally_valid) {
     cudaErrchk(cudaMemcpy(&s_cuda_reduction_tally_block_host[0],
                           &s_cuda_reduction_tally_block_device[0],
                           sizeof(CudaReductionDummyTallyType)
-                              * lmaxreducers,
+                              * s_cuda_max_reducers,
                           cudaMemcpyDeviceToHost));
     s_tally_valid = true;
   }
@@ -539,15 +531,12 @@ static void readCudaReductionTallyBlock()
 */
 void beforeCudaKernelLaunch()
 {
-  unsigned int lmaxreducers = s_cuda_max_reducers;
   s_raja_cuda_forall_level++;
   if (s_raja_cuda_forall_level == 1) {
     if (s_cuda_reducer_active_count > 0) {
       s_shared_memory_amount_total = 0;
-      for (int i = 0; i < lmaxreducers; ++i) {
+      for (int i = 0; i < s_cuda_max_reducers; ++i) {
         s_shared_memory_offsets[i] = -1;
-      }
-      for (int i = 0; i < lmaxreducers; ++i) {
         s_cuda_reduction_num_threads[i] = -1;
       }
 
@@ -565,7 +554,10 @@ void beforeCudaKernelLaunch()
 *
 *******************************************************************************
 */
-void afterCudaKernelLaunch() { s_raja_cuda_forall_level--; }
+void afterCudaKernelLaunch()
+{
+  s_raja_cuda_forall_level--;
+}
 
 /*
 *******************************************************************************
@@ -622,10 +614,11 @@ void freeCudaReductionTallyBlock()
 {
   if (s_cuda_reduction_tally_block_host != 0) {
     delete[] s_cuda_reduction_tally_block_host;
+    s_cuda_reduction_tally_block_host = 0;
     cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
+    s_cuda_reduction_tally_block_device = 0;
     free(s_tally_block_dirty);
     s_tally_block_dirty = 0;
-    s_cuda_reduction_tally_block_host = 0;
   }
 }
 
@@ -639,20 +632,15 @@ void freeCudaReductionTallyBlock()
 */
 int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 {
+  assert(id < s_cuda_max_reducers);
 
-  unsigned int lmaxreducers = s_cuda_max_reducers;
-  assert(id < lmaxreducers);
-
-  static int getCudaSharedmemOffset_first = true;
-
-  if(getCudaSharedmemOffset_first) {
-    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, lmaxreducers * sizeof(int));
-    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, lmaxreducers * sizeof(int));
-    for(int i=0; i < lmaxreducers; ++i) {
+  if(s_shared_memory_offsets == 0) {
+    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
+    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
+    for(int i=0; i < s_cuda_max_reducers; ++i) {
       s_shared_memory_offsets[i] = -1;
       s_cuda_reduction_num_threads[i] = -1;
-    }  
-    getCudaSharedmemOffset_first = false;
+    }
   }
 
   if (s_raja_cuda_forall_level > 0) {
@@ -688,15 +676,13 @@ int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 */
 int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 {
-
-  unsigned int lmaxreducers = s_cuda_max_reducers;
   if (s_cuda_reducer_active_count > 0) {
     int launch_num_blocks = launchGridDim.x * launchGridDim.y * launchGridDim.z;
 
     int launch_num_threads =
         launchBlockDim.x * launchBlockDim.y * launchBlockDim.z;
 
-    for (int i = 0; i < lmaxreducers; ++i) {
+    for (int i = 0; i < s_cuda_max_reducers; ++i) {
       int reducer_num_threads = s_cuda_reduction_num_threads[i];
 
       // check if reducer is active

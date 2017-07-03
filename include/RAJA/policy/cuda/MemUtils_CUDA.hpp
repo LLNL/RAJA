@@ -288,7 +288,8 @@ void releaseCudaReductionId(int id);
  *
  ******************************************************************************
  */
-void getCudaReductionTallyBlock(int id, void** host_tally, void** device_tally);
+void getCudaReductionTallyBlockSetDirty(int id, void** tally);
+void getCudaReductionTallyBlock(int id, void** tally);
 
 /*!
  ******************************************************************************
