@@ -130,8 +130,6 @@ int main(int argc, char *argv[])
 
       double dtinit = 5.0;
 
-
-
       ReduceSum<cuda_reduce<block_size>, double> dsum0(0.0);
       ReduceSum<cuda_reduce<block_size>, double> dsum1(dtinit * 1.0);
       ReduceSum<cuda_reduce<block_size>, double> dsum2(0.0);
@@ -191,10 +189,6 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 1
-
-
-
-#if 0
 
     ////////////////////////////////////////////////////////////////////////////
 
@@ -366,7 +360,6 @@ int main(int argc, char *argv[])
         }
       }
     }  // end test4
-#endif
   }    // end test repeat loop
 
   ///

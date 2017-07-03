@@ -62,25 +62,6 @@
 
 namespace RAJA
 {
-/*!
- * \def RAJA_CUDA_MAX_NUM_BLOCKS
- * Maximum number of blocks that RAJA will launch
- */
-#define RAJA_CUDA_MAX_NUM_BLOCKS (1024 * 16)
-
-/*!
- * \def RAJA_CUDA_REDUCE_BLOCK_LENGTH
- * Size of reduction memory block for each reducer object (value based on
- * rough estimate of "worst case" maximum number of blocks)
- */
-#define RAJA_CUDA_REDUCE_BLOCK_LENGTH RAJA_CUDA_MAX_NUM_BLOCKS
-
-/*!
- * \def RAJA_CUDA_REDUCE_TALLY_LENGTH
- * Reduction Tallies are computed into a small block to minimize memory motion
- * Set to Max Number of Reduction Variables
- */
-//#define RAJA_CUDA_REDUCE_TALLY_LENGTH RAJA_MAX_REDUCE_VARS
 
 /*!
  * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
@@ -117,12 +98,6 @@ struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
  *
  ******************************************************************************
  */
-#if 0
-struct RAJA_ALIGNED_ATTR(DATA_ALIGN) CudaReductionDummyBlockType {
-  CudaReductionDummyDataType values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
-};
-
-#endif
 
 typedef CudaReductionDummyDataType CudaReductionDummyBlockType;
 
@@ -141,23 +116,6 @@ struct CudaReductionDummyTallyType {
 /*!
  ******************************************************************************
  *
- * \brief Type used to simplify typed memory block use in cuda reductions.
- *
- * Must fit within the dummy block type (checked in static assert in the
- * reduction classes).
- *
- ******************************************************************************
- */
-
-/// NOT Currently Used
-template <typename T>
-struct CudaReductionBlockType {
-  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
-};
-
-/*!
- ******************************************************************************
- *
  * \brief Type used to simplify typed memory block use in cuda Loc reductions.
  *
  * Must fit within the dummy block type (checked in static assert in the
@@ -165,15 +123,6 @@ struct CudaReductionBlockType {
  *
  ******************************************************************************
  */
-
-#if 0
-template <typename T>
-struct CudaReductionLocBlockType {
-  T values[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
-  Index_type indices[RAJA_CUDA_REDUCE_BLOCK_LENGTH];
-};
-
-#endif
 
 template <typename T>
 struct CudaReductionLocBlockType {
@@ -262,6 +211,7 @@ struct CudaReductionLocTallyType {
  ******************************************************************************
  */
 void setCudaMaxBlocks(unsigned int blocks);
+unsigned int getCudaMaxBlocks();
 
 /*!
  ******************************************************************************
