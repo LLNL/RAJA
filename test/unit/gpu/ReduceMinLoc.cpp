@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
       s_ntests_run++;
 
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
-      RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+      RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
       IndexSet iset;
       iset.push_back(seg0);
