@@ -308,7 +308,7 @@ void releaseCudaReductionTallyBlock(int id);
  *
  ******************************************************************************
  */
-void beforeCudaKernelLaunch();
+void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim);
 
 /*!
  ******************************************************************************

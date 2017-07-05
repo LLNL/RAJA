@@ -385,12 +385,16 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body,
-                                                                   cargs...);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      beforeCudaKernelLaunch(dims.num_blocks, dims.num_threads);
+
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads
+          )>>>(body, cargs...);
+
+      RAJA_CUDA_CHECK_AND_SYNC(true);
+
+      afterCudaKernelLaunch();
+    }
   }
 };
 
@@ -410,11 +414,16 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body, c0);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      beforeCudaKernelLaunch(dims.num_blocks, dims.num_threads);
+      
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks, dims.num_threads
+          )>>>(body, c0);
+
+      RAJA_CUDA_CHECK_AND_SYNC(true);
+
+      afterCudaKernelLaunch();
+    }
   }
 };
 

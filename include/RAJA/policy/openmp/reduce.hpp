@@ -1065,6 +1065,6 @@ private:
 };
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
 #endif  // closing endif for header file include guard

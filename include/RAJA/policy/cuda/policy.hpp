@@ -188,7 +188,7 @@ static_assert(WARP_SIZE >= MAX_WARPS,
  * Macro that generates kernel launch parameters.
  */
 #define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
-  gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
+  gridSize, blockSize, 0, 0
 
 //
 // Three different variants of min/max reductions can be run by choosing

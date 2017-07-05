@@ -58,10 +58,6 @@
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/defines.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
-#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#endif
-
 namespace RAJA
 {
 
@@ -266,20 +262,10 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
 template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
-#ifdef RAJA_ENABLE_CUDA
-  // this call should be moved into a cuda file
-  // but must be made before loop_body is copied
-  beforeCudaKernelLaunch();
-#endif
-
   fun_unpacker<POLICY, Indices...>(
       VarOps::index_sequence<sizeof...(args) - 1>{},
       VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
-
-#ifdef RAJA_ENABLE_CUDA
-  afterCudaKernelLaunch();
-#endif
 }
 
 }  // namespace RAJA

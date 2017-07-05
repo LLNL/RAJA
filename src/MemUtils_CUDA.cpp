@@ -207,6 +207,9 @@ int *s_shared_memory_offsets = 0;
  * not depend on the number of threads used by the execution policy.
  */
 int *s_cuda_reduction_num_threads = 0;
+
+dim3 s_cuda_launch_gridDim = 0;
+dim3 s_cuda_launch_blockDim = 0;
 }
 
 
@@ -432,10 +435,10 @@ void getCudaReductionTallyBlock(int id, void** tally)
     atexit(freeCudaReductionTallyBlock);
   }
 
-  if (s_raja_cuda_forall_level == 0) {
-    *tally = &s_cuda_reduction_tally_block_host[id];
-  } else {
+  if (s_raja_cuda_forall_level > 0) {
     *tally = &s_cuda_reduction_tally_block_device[id];
+  } else {
+    *tally = &s_cuda_reduction_tally_block_host[id];
   }
 }
 
@@ -529,9 +532,10 @@ static void readCudaReductionTallyBlock()
 *
 *******************************************************************************
 */
-void beforeCudaKernelLaunch()
+void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim)
 {
   s_raja_cuda_forall_level++;
+
   if (s_raja_cuda_forall_level == 1) {
     if (s_cuda_reducer_active_count > 0) {
       s_shared_memory_amount_total = 0;
@@ -544,6 +548,9 @@ void beforeCudaKernelLaunch()
       writeBackCudaReductionTallyBlock();
     }
   }
+  
+  s_cuda_launch_gridDim = launchGridDim;
+  s_cuda_launch_blockDim = launchBlockDim;
 }
 
 /*
@@ -556,6 +563,9 @@ void beforeCudaKernelLaunch()
 */
 void afterCudaKernelLaunch()
 {
+  s_cuda_launch_gridDim = 0;
+  s_cuda_launch_blockDim = 0;
+
   s_raja_cuda_forall_level--;
 }
 
