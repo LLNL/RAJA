@@ -58,7 +58,7 @@
 namespace RAJA
 {
 
-enum class Policy { undefined, sequential, simd, openmp, target_openmp, cuda, cilk };
+enum class Policy { undefined, sequential, simd, openmp, target_openmp, cuda };
 
 enum class Launch { undefined, sync, async };
 

@@ -104,17 +104,17 @@ RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
   }
 }
 
-template <typename Iterable, typename Func>
+template <typename Iterable, typename Func, typename IndexType>
 RAJA_INLINE void forall_Icount(const PolicyBase &,
                                Iterable &&iter,
-                               Index_type icount,
+                               IndexType icount,
                                Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 

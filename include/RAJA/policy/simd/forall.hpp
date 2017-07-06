@@ -81,18 +81,18 @@ RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
   }
 }
 
-template <typename Iterable, typename Func>
+template <typename Iterable, typename Func, typename IndexType>
 RAJA_INLINE void forall_Icount(const simd_exec &,
                                Iterable &&iter,
-                               Index_type icount,
+                               IndexType icount,
                                Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   RAJA_SIMD
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 
@@ -117,12 +117,12 @@ RAJA_INLINE void forall_Icount(const simd_exec &,
 template <typename LOOP_BODY>
 RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
 {
-  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
+  const auto *RAJA_RESTRICT idx = iseg.getIndex();
+  auto len = iseg.getLength();
 
   RAJA_FT_BEGIN;
 
-  for (Index_type k = 0; k < len; ++k) {
+  for (decltype(len) k = 0; k < len; ++k) {
     loop_body(idx[k]);
   }
 
@@ -138,19 +138,19 @@ RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
  *
  ******************************************************************************
  */
-template <typename LOOP_BODY>
+template <typename LOOP_BODY, typename IndexType>
 RAJA_INLINE void forall_Icount(simd_exec,
                                const ListSegment &iseg,
-                               Index_type icount,
+                               IndexType icount,
                                LOOP_BODY loop_body)
 {
-  const Index_type *RAJA_RESTRICT idx = iseg.getIndex();
-  Index_type len = iseg.getLength();
+  const auto *RAJA_RESTRICT idx = iseg.getIndex();
+  auto len = iseg.getLength();
 
   RAJA_FT_BEGIN;
 
-  for (Index_type k = 0; k < len; ++k) {
-    loop_body(k + icount, idx[k]);
+  for (decltype(len) k = 0; k < len; ++k) {
+    loop_body(static_cast<IndexType>(k + icount), idx[k]);
   }
 
   RAJA_FT_END;

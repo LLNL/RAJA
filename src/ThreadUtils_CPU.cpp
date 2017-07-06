@@ -57,11 +57,6 @@
 #include <omp.h>
 #endif
 
-#if defined(RAJA_ENABLE_CILK)
-#include <cilk/cilk.h>
-#include <cilk/cilk_api.h>
-#endif
-
 #include <algorithm>
 
 namespace RAJA
@@ -80,10 +75,6 @@ int getMaxReduceThreadsCPU()
 
 #if defined(RAJA_ENABLE_OPENMP)
   nthreads = omp_get_max_threads();
-#endif
-#if defined(RAJA_ENABLE_CILK)
-  int nworkers = __cilkrts_get_nworkers();
-  nthreads = std::max(nthreads, nworkers);
 #endif
 
   return nthreads;
