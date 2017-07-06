@@ -3,16 +3,14 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
- *
- *          These methods should work on any platform.
+ * \brief   Header file for RAJA span constructs.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_sequential_HPP
-#define RAJA_forall_sequential_HPP
+
+#ifndef RAJA_SPAN_HPP
+#define RAJA_SPAN_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,70 +54,36 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
+#include <type_traits>
+#include "RAJA/internal/type_traits.hpp"
 
 namespace RAJA
 {
-
 namespace impl
 {
 
+template <typename ValueType, typename IndexType>
+struct Span {
+  using value_type = ValueType;
+  using index_type = IndexType;
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
+  static_assert(std::is_integral<IndexType>::value,
+                "IndexType must model Integral");
+  static_assert(RAJA::detail::is_random_access_iterator<ValueType>::value,
+                "ValueType must model RandomAccessIterator");
 
-template <typename Func>
-RAJA_INLINE void forall(const PolicyBase &,
-                        const RangeSegment &iter,
-                        Func &&loop_body)
-{
-  auto end = iter.getEnd();
-  for (auto ii = iter.getBegin(); ii < end; ++ii) {
-    loop_body(ii);
-  }
-}
+  ValueType begin() { return iterator; }
+  ValueType end() { return std::advance(iterator, length); }
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const PolicyBase &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
+  ValueType data() { return iterator; }
+  IndexType size() { return length; }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE void forall_Icount(const PolicyBase &,
-                               Iterable &&iter,
-                               IndexType icount,
-                               Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  }
-}
+private:
+  ValueType iterator;
+  IndexType length;
+};
 
-}  // closing brace for impl namespace
+}  // end namespace impl
+}  // end namespace RAJA
 
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+#endif /* RAJA_SPAN_HPP */

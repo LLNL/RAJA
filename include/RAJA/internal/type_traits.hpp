@@ -55,6 +55,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <iterator>
 #include <tuple>
 #include <type_traits>
 #include "RAJA/policy/PolicyBase.hpp"
@@ -65,6 +66,28 @@ namespace RAJA
 
 namespace detail
 {
+
+  template< class... >
+  struct voider { using type = void; };
+
+  template <class... Ts>
+  using void_t = typename voider<Ts...>::type;
+
+  template<class, class = void >
+  struct is_iterator : public std::false_type { };
+
+  template< class T >
+  struct is_iterator<T, void_t<typename std::iterator_traits<T>::iterator_category>> : public std::true_type  { };
+
+  template<typename T, bool = false>
+  struct is_random_access_iterator_impl : public std::false_type {};
+
+  template <typename T>
+  struct is_random_access_iterator_impl<T, true> : std::is_base_of<std::random_access_iterator_tag,
+                      typename std::iterator_traits<T>::iterator_category> {};
+
+  template <typename T, typename NoRefT = typename std::remove_reference<T>::type>
+  struct is_random_access_iterator : public is_random_access_iterator_impl<NoRefT,is_iterator<NoRefT>::value> {};
 
 template <typename T>
 struct function_traits : function_traits<decltype(&T::operator())> {
