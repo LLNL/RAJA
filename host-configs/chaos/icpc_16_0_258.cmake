@@ -3,6 +3,8 @@
 ##
 ## Produced at the Lawrence Livermore National Laboratory.
 ##
+## LLNL-CODE-689114
+##
 ## All rights reserved.
 ##
 ## For release details and restrictions, please see RAJA/LICENSE.
@@ -19,7 +21,6 @@ set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${COMMON_F
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} ${COMMON_FLAGS} -O0 -g" CACHE STRING "")
 
 set(RAJA_ENABLE_OPENMP On CACHE BOOL "")
-set(RAJA_ENABLE_CILK On CACHE BOOL "")
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
