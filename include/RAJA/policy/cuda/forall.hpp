@@ -171,7 +171,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY, typename IndexType, typename IndexType2>>
+template <typename Iterator, typename LOOP_BODY, typename IndexType, typename IndexType2>
 __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           const Iterator idx,
                                           IndexType length,
