@@ -74,7 +74,7 @@ tests and reviews, it will be merged into RAJA.
 RAJA uses Travis CI for continuous integration tests. Our tests are
 automatically run against every new pull request, and passing all tests is a
 requirement for merging your PR. If you are developing a bugfix or a new
-feature, please add a test that checks the correctness of your new code. SAMRAI
+feature, please add a test that checks the correctness of your new code. RAJA
 is used on a wide variety of systems with a number of configurations, and adding
 new tests helps ensure that all features work as expected across these
 environments.
