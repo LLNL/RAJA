@@ -192,9 +192,6 @@ struct is_openmp_policy : public detail::models_policy<P, Policy::openmp> {
 template <typename P>
 struct is_cuda_policy : public detail::models_policy<P, Policy::cuda> {
 };
-template <typename P>
-struct is_cilk_policy : public detail::models_policy<P, Policy::cilk> {
-};
 
 template <typename L>
 struct is_sync_launch : public detail::models_launch<L, Launch::sync> {
