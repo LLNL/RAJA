@@ -317,19 +317,22 @@ using nested_types = ::testing::Types<
                          RAJA::omp_target_parallel_for_exec<64>,
                          RAJA::seq_exec,
                          RAJA::seq_exec>>,
-    RAJA::omp_target_reduce<64>>,
+    RAJA::omp_target_reduce<64>>
+  ,
   std::tuple<
     RAJA::NestedPolicy<RAJA::ExecList<
-                         RAJA::seq_exec,
-                         RAJA::omp_target_parallel_for_exec<64>,
-                         RAJA::seq_exec>>,
-    RAJA::omp_target_reduce<64>>,
+                       RAJA::seq_exec,
+                       RAJA::omp_target_parallel_for_exec<64>,
+                       RAJA::seq_exec>>,
+    RAJA::omp_target_reduce<64>>
+  ,
   std::tuple<
     RAJA::NestedPolicy<RAJA::ExecList<
                          RAJA::seq_exec,
                          RAJA::seq_exec,
                          RAJA::omp_target_parallel_for_exec<64>>>,
-    RAJA::omp_target_reduce<64>>>;
+    RAJA::omp_target_reduce<64>>
+  >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce,
                               NestedReductionCorrectnessTest,
