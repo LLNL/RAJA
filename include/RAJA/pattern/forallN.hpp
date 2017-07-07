@@ -164,6 +164,7 @@ struct ForallN_IndexTypeConverter {
   RAJA_HOST_DEVICE
   constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
+  RAJA_HOST_DEVICE
   ~ForallN_IndexTypeConverter() {}
 
   // call 'policy' layer with next policy
