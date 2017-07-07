@@ -195,7 +195,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 template <size_t size, typename Policy, typename... rest>
 struct policy_invoker<0, size, Policy, rest...> {
   Policy _p;
-  policy_invoker(Policy p, rest... args) : _p(p) {}
+  policy_invoker(Policy p, rest... ) : _p(p) {}
   template <typename Iterable, typename Body>
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
