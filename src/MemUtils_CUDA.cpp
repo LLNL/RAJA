@@ -76,9 +76,11 @@
 namespace RAJA
 {
 
-
-// taken from libc++
-void* align(size_t alignment, size_t size, void*& ptr, size_t& space) noexcept
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Taken from libc++ 
+// See libc++ license in docs/Licenses/libc++ License
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
     void* r = nullptr;
     if (size <= space)
