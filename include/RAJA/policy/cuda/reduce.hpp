@@ -156,7 +156,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = init_val;
   }
 
@@ -176,9 +176,11 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionTallyTypeAtomic<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+      }
     }
 #endif
   }
@@ -210,7 +212,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -226,7 +228,7 @@ public:
   //
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     return RAJA_MIN(m_val, m_tally->tally);
   }
 
@@ -332,22 +334,6 @@ private:
 
     return temp;
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -378,7 +364,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = init_val;
   }
 
@@ -403,9 +389,11 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionTallyTypeAtomic<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+      }
     }
 #endif
   }
@@ -439,7 +427,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -455,7 +443,7 @@ public:
    */
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     return RAJA_MAX(m_val, m_tally->tally);
   }
 
@@ -561,22 +549,6 @@ private:
 
     return temp;
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -609,8 +581,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyType<T>>();
     m_tally->tally = initializer;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
   }
@@ -638,9 +609,12 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionTallyType<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+        m_blockdata = getCudaReductionMemBlock<T>(m_myID);
+      }
     }
 #endif
   }
@@ -708,7 +682,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -724,7 +698,7 @@ public:
    */
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     return (m_val + m_tally->tally);
   }
 
@@ -839,22 +813,6 @@ private:
 
     return temp;
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -887,7 +845,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = initializer;
   }
 
@@ -913,9 +871,11 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionTallyTypeAtomic<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+      }
     }
 #endif
   }
@@ -949,7 +909,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -965,7 +925,7 @@ public:
    */
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     return (m_val + m_tally->tally);
   }
 
@@ -1002,7 +962,7 @@ private:
   ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>();
 
   const my_type* m_parent;
-  CudaReductionTallyType<T> *m_tally;
+  CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
   T m_custom_init;
   int m_myID;
@@ -1075,22 +1035,6 @@ private:
 
     return temp;
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1123,8 +1067,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionLocTallyType<T>>();
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
@@ -1153,9 +1096,12 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionLocTallyType<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+        m_blockdata = getCudaReductionMemBlock<CudaReductionLocType<T>>(m_myID);
+      }
     }
 #endif
   }
@@ -1230,7 +1176,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -1246,7 +1192,7 @@ public:
    */
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     T val; Index_type idx;
     RAJA_MINLOC_UNSTRUCTURED(val,                idx,
                              m_val,              m_idx,
@@ -1269,7 +1215,7 @@ public:
    */
   Index_type getLoc()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     T val; Index_type idx;
     RAJA_MINLOC_UNSTRUCTURED(val,                idx,
                              m_val,              m_idx,
@@ -1394,22 +1340,6 @@ private:
 
     return {temp_val, temp_idx};
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionLocTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 /*!
@@ -1442,8 +1372,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
-    getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
+    m_tally = getCudaReductionTallyBlockHost<CudaReductionLocTallyType<T>>();
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
@@ -1472,9 +1401,12 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
-      getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
-      int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
-      if (offset >= 0) m_parent = NULL;
+      CudaReductionLocTallyType<T>* device_tally = getCudaReductionTallyBlockDevice(m_tally);
+      if (device_tally) {
+        m_tally = device_tally;
+        m_parent = NULL;
+        m_blockdata = getCudaReductionMemBlock<CudaReductionLocType<T>>(m_myID);
+      }
     }
 #endif
   }
@@ -1549,7 +1481,7 @@ public:
     }
 #else
     if (m_parent == this) {
-      releaseCudaReductionTallyBlock(m_myID);
+      releaseCudaReductionTallyBlockHost(m_tally);
       releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
@@ -1565,7 +1497,7 @@ public:
    */
   operator T()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     T val; Index_type idx;
     RAJA_MAXLOC_UNSTRUCTURED(val,                idx,
                              m_val,              m_idx,
@@ -1588,7 +1520,7 @@ public:
    */
   Index_type getLoc()
   {
-    beforeCudaReadTallyBlock<Async>(m_myID);
+    beforeCudaReadTallyBlock<Async>(m_tally);
     T val; Index_type idx;
     RAJA_MAXLOC_UNSTRUCTURED(val,                idx,
                              m_val,              m_idx,
@@ -1713,22 +1645,6 @@ private:
 
     return {temp_val, temp_idx};
   }
-
-  // Sanity checks for block size and template type size
-  static constexpr bool powerOfTwoCheck = (!(BLOCK_SIZE & (BLOCK_SIZE - 1)));
-  static constexpr bool reasonableRangeCheck =
-      ((BLOCK_SIZE >= WARP_SIZE) && (BLOCK_SIZE <= RAJA_CUDA_MAX_BLOCK_SIZE));
-  static constexpr bool sizeofcheck =
-      ((sizeof(T) <= sizeof(CudaReductionDummyDataType))
-       && (sizeof(CudaReductionLocTallyType<T>)
-           <= sizeof(CudaReductionDummyTallyType))
-       );
-  static_assert(powerOfTwoCheck, "Error: block sizes must be a power of 2");
-  static_assert(reasonableRangeCheck,
-                "Error: block sizes must be between 32 and 1024");
-  static_assert(sizeofcheck,
-                "Error: type must be of size <= " RAJA_STRINGIFY_MACRO(
-                    RAJA_CUDA_REDUCE_VAR_MAXSIZE));
 };
 
 }  // closing brace for RAJA namespace

@@ -57,123 +57,538 @@
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
+#include "RAJA/internal/MemUtils_CPU.hpp"
+
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+#include <cstddef>
+#include <cstdlib>
 #include <cassert>
+#include <memory>
+#include <mutex>
 #include <iostream>
 #include <string>
 
 namespace RAJA
 {
 
+
+// taken from libc++
+void* align(size_t alignment, size_t size, void*& ptr, size_t& space) noexcept
+{
+    void* r = nullptr;
+    if (size <= space)
+    {
+        char* p1 = static_cast<char*>(ptr);
+        char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
+        size_t d = static_cast<size_t>(p2 - p1);
+        if (d <= space - size)
+        {
+            r = p2;
+            ptr = r;
+            space -= d;
+        }
+    }
+    return r;
+}
+
+class TallyCache
+{
+public:
+
+  static const size_t default_cache_size = 4*1024;
+  static const size_t default_allocation_alignment  = 4*1024;
+  static const size_t default_alignment  = alignof(std::max_align_t);
+
+  explicit TallyCache(size_t allocation_size = default_cache_size, size_t allocation_alignment = default_allocation_alignment)
+  {
+    m_host_begin = (char*)RAJA::allocate_aligned(allocation_alignment, allocation_size*sizeof(char));
+    m_host_end = m_host_begin+allocation_size;
+    m_free_list = new cache_node{nullptr, m_host_begin, m_host_end, false};
+  }
+
+  // not thread safe, assume called from 1 thread
+  bool active()
+  {
+    bool is_active = m_used_list != nullptr;
+    if (!is_active && m_next) {
+      is_active = m_next->active();
+    }
+    return is_active;
+  }
+
+  // not thread safe, assume called from 1 thread
+  char* get_host_ptr(size_t size, size_t alignment = default_alignment)
+  {
+    char* host_ptr = nullptr;
+    bool error = false;
+
+    // { // thread safety
+    //   std::lock_guard<std::mutex> guard(m_mutex);
+
+      cache_node* free_node = m_free_list;
+
+      if (free_node) {
+        cache_node* prev_node = nullptr;
+
+        while(free_node) {
+
+          void* ptr = free_node->begin;
+          size_t size_node = free_node->end - free_node->begin;
+
+          if (RAJA::align(alignment, size, ptr, size_node)) {
+
+            free_node = remove_free_node(free_node, prev_node, (char*)ptr, size);
+            free_node = insert_used_node(free_node);
+
+            m_count_dirty++;
+            free_node->dirty = true;
+            host_ptr = free_node->begin;
+            break;
+          }
+
+        };
+
+      }
+
+      if (host_ptr == nullptr && m_used_list == nullptr) {
+        std::cerr << "\n TallyCache coudn't handle request for " << size << " bytes at " << alignment << " alignment, "
+                  << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+        error = true;
+      }
+
+    // } // end thread safety
+
+    if (error) {
+      std::abort();
+    }
+
+    if (host_ptr == nullptr) {
+      // ran out of room
+
+      if (m_next == nullptr) {
+        // allocate another cache with the same size
+        // thread safety
+        std::call_once(m_allocate_next_flag, [&] () {
+          m_next = new TallyCache(m_host_end-m_host_begin);
+        });
+      }
+
+      // get a pointer from that cache
+      host_ptr = m_next->get_host_ptr(size, alignment);
+    }
+
+    return host_ptr;
+  }
+
+  // not thread safe, assume called from 1 thread
+  char* get_host_ptr(char* device_ptr)
+  {
+    char* host_ptr = nullptr;
+    if (in_device_bounds(device_ptr)) {
+      host_ptr = m_host_begin + (device_ptr - m_device_begin);
+    } else if (m_next) {
+      host_ptr = m_next->get_host_ptr(device_ptr);
+    }
+    return host_ptr;
+  }
+
+  // thread safe, assume called from multiple threads
+  char* get_device_ptr(char* host_ptr)
+  {
+    char* device_ptr = nullptr;
+    if (m_device_begin == nullptr) {
+      // thread safety
+      std::call_once(m_allocate_device_ptr_flag, [&] () {
+        cudaErrchk(cudaMalloc(&m_device_begin, (m_host_end-m_host_begin)*sizeof(char)));
+      });
+    }
+    if (in_host_bounds(host_ptr)) {
+      device_ptr = m_device_begin + (host_ptr - m_host_begin);
+    } else if (m_next) {
+      device_ptr = m_next->get_device_ptr(host_ptr);
+    }
+    return device_ptr;
+  }
+
+  // not thread safe, assume called from 1 thread
+  void release_host_ptr(char* host_ptr)
+  {
+    if (in_host_bounds(host_ptr)) {
+
+      cache_node* prev_node = nullptr;
+      cache_node* node = m_used_list;
+      while(node) {
+
+        if (node->begin == host_ptr) break;
+
+        prev_node = node;
+        node = node->next;
+      }
+
+      if (node) {
+        node = remove_used_node(node, prev_node);
+        node = insert_free_node(node);
+      } else {
+        std::cerr << "\n TallyCache coudn't find node correspending to " << host_ptr << ", "
+                  << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+        std::abort();
+      }
+
+    } else if (m_next) {
+      m_next->release_host_ptr(host_ptr);
+    }
+  }
+
+  // thread safe, assume called from multiple threads
+  void write_back_dirty()
+  {
+    if (m_next) {
+      m_next->write_back_dirty();
+    }
+
+    { // thread safety
+      std::lock_guard<std::mutex> guard(m_mutex);
+
+      if (m_count_dirty > 0) {
+
+        cache_node* node = m_used_list;
+        while (node) {
+          if (node->dirty) {
+            // found a run of dirty nodes
+            char* host_end = node->end;
+            node->dirty = false;
+
+            while (node->next) {
+              // advance to last dirty node in the run
+              // this may include unused space between nodes
+              if (node->next->dirty) {
+                node = node->next;
+                node->dirty = false;
+              } else {
+                break;
+              }
+            }
+
+            char* host_begin = node->begin;
+
+            size_t len = host_end - host_begin;
+            char* device_begin = get_device_ptr(host_begin);
+
+            cudaErrchk(cudaMemcpyAsync(device_begin, host_begin, 
+                                       len*sizeof(char),
+                                       cudaMemcpyHostToDevice));
+          }
+
+          node = node->next;
+        }
+
+        m_count_dirty = 0;
+      }
+      
+      m_valid = false;
+
+    } // end thread safety
+  }
+
+  // not thread safe, assume called from 1 threads
+  void ensure_host_readable(char* host_ptr, bool async)
+  {
+
+    if (in_host_bounds(host_ptr)) { // // thread safety
+      // std::lock_guard<std::mutex> guard(m_mutex);
+
+      if (!m_valid) {
+
+        cache_node* node = m_used_list;
+        while (node) {
+          if (!node->dirty) {
+            // found a run of clean nodes
+            char* host_end = node->end;
+
+            while (node->next) {
+              // advance to last clean node in the run
+              // this may include unused space between nodes
+              if (!node->next->dirty) {
+                node = node->next;
+              } else {
+                break;
+              }
+            }
+
+            char* host_begin = node->begin;
+
+            size_t len = host_end - host_begin;
+            char* device_begin = get_device_ptr(host_begin);
+
+            if (async) {
+              cudaErrchk(cudaMemcpyAsync(host_begin, device_begin,
+                                         len*sizeof(char),
+                                         cudaMemcpyDeviceToHost));
+            } else {
+              cudaErrchk(cudaMemcpy(host_begin, device_begin,
+                                    len*sizeof(char),
+                                    cudaMemcpyDeviceToHost));
+            }
+
+          }
+
+          node = node->next;
+        }
+
+        m_valid = true;
+      }
+
+    } // // end thread safety
+    else if (m_next) {
+      m_next->ensure_host_readable(host_ptr, async);
+    }
+  }
+
+  ~TallyCache()
+  {
+    if (m_next) delete m_next;
+    if (m_host_begin) free_aligned(m_host_begin);
+    if (m_device_begin) cudaErrchk(cudaFree(m_device_begin));
+  }
+
+private:
+
+  struct cache_node
+  {
+    cache_node* next;
+    char* begin;
+    char* end;
+    bool  dirty;
+  };
+
+  std::once_flag m_allocate_next_flag;
+  std::once_flag m_allocate_device_ptr_flag;
+
+  std::mutex m_mutex;
+
+  TallyCache* m_next = nullptr;
+
+  // stored in order
+  cache_node* m_free_list  = nullptr;
+  // stored in reverse order
+  cache_node* m_used_list  = nullptr;
+  // extra nodes to avoid unnecessary calls to new/delete
+  cache_node* m_extra_list = nullptr;
+
+  char* m_host_begin   = nullptr;
+  char* m_host_end     = nullptr;
+  char* m_device_begin = nullptr;
+  char* m_device_end   = nullptr;
+
+  unsigned m_count_dirty = 0u;
+  bool m_valid = true;
+
+  bool in_host_bounds(char* host_ptr)
+  {
+    return m_host_begin <= host_ptr && host_ptr < m_host_end;
+  }
+
+  bool in_device_bounds(char* device_ptr)
+  {
+    return m_device_begin <= device_ptr && device_ptr < m_device_end;
+  }
+
+  cache_node* pop_extra_node()
+  {
+    cache_node* extra = m_extra_list;
+    if (extra) {
+      m_extra_list = extra->next;
+      extra->next = nullptr;
+    } else {
+      extra = new cache_node{nullptr, nullptr, nullptr, false};
+    }
+    return extra;
+  }
+
+  void push_extra_node(cache_node* extra)
+  {
+    extra->next  = m_extra_list;
+    extra->begin = nullptr;
+    extra->end   = nullptr;
+    extra->dirty = false;
+
+    m_extra_list = extra;
+  }
+
+  // returns a node for ptr, size by splitting free_node
+  cache_node* remove_free_node(cache_node* free_node, cache_node* prev_node, char* ptr, size_t size)
+  {
+    if (ptr+size < free_node->end) {
+      // make new node between free and next
+      cache_node* next_node = pop_extra_node();
+
+      next_node->next  = free_node->next;
+      next_node->begin = ptr+size;
+      next_node->end   = free_node->end;
+
+      free_node->next  = next_node;
+      free_node->end   = ptr+size;
+    }
+
+    if (free_node->begin != ptr) {
+      // starting at an offset into free node
+      if (prev_node) {
+        // make new node between prev, free
+        prev_node->next = pop_extra_node();
+        prev_node = prev_node->next;
+      } else {
+        // make new node at head of free list
+        m_free_list = pop_extra_node();
+        prev_node = m_free_list;
+      }
+
+      prev_node->next  = free_node;
+      prev_node->begin = free_node->begin;
+      prev_node->end   = ptr;
+
+      free_node->begin = ptr;
+    }
+
+    if (prev_node) {
+      prev_node->next = free_node->next;
+    } else {
+      m_free_list = free_node->next;
+    }
+
+    free_node->next = nullptr;
+
+    return free_node;
+  }
+
+  cache_node* insert_used_node(cache_node* used_node)
+  {
+    // traverse used list until the next node is less than used node
+    cache_node* prev_node = nullptr;
+    cache_node* next_node = m_used_list;
+    while (next_node) {
+
+      if (next_node->begin < used_node->begin) break;
+
+      prev_node = next_node;
+      next_node = next_node->next;
+    }
+
+    if (prev_node) {
+      used_node->next = prev_node->next;
+      prev_node->next = used_node;
+    } else {
+      used_node->next = m_used_list;
+      m_used_list = used_node;
+    }
+    return used_node;
+  }
+
+
+  // returns used_node
+  cache_node* remove_used_node(cache_node* used_node, cache_node* prev_node)
+  {
+
+    if (prev_node) {
+      prev_node->next = used_node->next;
+    } else {
+      m_used_list = used_node->next;
+    }
+
+    used_node->next = nullptr;
+
+    return used_node;
+  }
+
+  // returns the node contatining free_node's memory
+  cache_node* insert_free_node(cache_node* free_node)
+  {
+    // traverse free list until the next node is greater than free node
+    cache_node* prev_node = nullptr;
+    cache_node* next_node = m_free_list;
+    while (next_node) {
+
+      if (next_node->begin >= free_node->begin) break;
+
+      prev_node = next_node;
+      next_node = next_node->next;
+    }
+
+    if (prev_node) {
+      if (prev_node->end == free_node->begin) {
+        // merge free node into prev node
+
+        prev_node->end = free_node->end;
+
+        push_extra_node(free_node);
+
+        free_node = prev_node;
+
+      } else {
+        // insert free node after prev node
+        prev_node->next = free_node;
+        free_node->next = next_node;
+      }
+
+    } else {
+      free_node->next = m_free_list;
+      m_free_list = free_node;
+    }
+
+    if (next_node) {
+      if (free_node->end == next_node->begin) {
+        // merge next node into free node
+
+        free_node->next = next_node->next;
+        free_node->end  = next_node->end;
+
+        push_extra_node(next_node);
+      }
+    }
+
+    return free_node;
+  }
+
+};
+
+
 namespace
 {
-
 
 /*!
  * \brief Max Blocks that RAJA will Launch 
  */
 unsigned int s_cuda_max_blocks = 1024*16;
 
-/*!
- * \brief Max Reducers that RAJA will Launch 
- */
-unsigned int s_cuda_max_reducers = RAJA_MAX_REDUCE_VARS;
-
-/*!
- * \brief Number of currently active cuda reduction objects
- */
-int s_cuda_reducer_active_count = 0;
-
-/*!
- * \brief Number of cuda memblocks currently being used.
- */
-int s_cuda_memblock_used_count = 0;
+int s_cuda_max_reducers = RAJA_MAX_REDUCE_VARS;
 
 /*!
  * \brief bool array used to keep track of which unique ids
  * for CUDA reduction objects are used and which are not.
  */
-bool *s_cuda_reduction_id_used = 0; // was static array based on RAJA_MAX_REDUCE_VARS
-
-/*!
- * \brief bool array used to keep track of which reduction
- * memblocks are in use.
- */
-bool *s_cuda_reduction_memblock_used = 0; // was static array based on RAJA_MAX_REDUCE_VARS
+bool *s_cuda_reduction_id_used = nullptr;
 
 /*!
  * \brief Pointer to device memory block for RAJA-Cuda reductions.
  */
-CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
+CudaReductionDummyBlockType* s_cuda_reduction_mem_block = nullptr;
 
-/*!
- * \brief Pointer to the tally block on the device.
- *
- * The tally block is a number of contiguous slots in memory where the
- * results of cuda reduction variables are stored. This is done so all
- * results may be copied back to the host with one memcpy.
- */
-CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
-/*!
- * \brief Pointer to the tally block cache on the host.
- *
- * This cache allows multiple reads from the tally cache on the host to
- * incur only one memcpy from device memory. This cache also allows
- * multiple cuda reduction variables to be initialized without writing to
- * device memory. Changes to this cache are written back to the device
- * tally block in the next forall, before kernel launch so they are visible
- * on the device when needed.
- *
- * Note: This buffer must be allocated in pageable memory (not pinned).
- * CudaMemcpyAsync is always asynchronous with respect to managed memory.
- * However, while cudaMemcpyAsync is asynchronous to the host when used with
- * pinned or managed memory, it is synchronous to the host if the target
- * buffer is host pageable memory. Due to overheads associated with
- * synchronization of managed memory, using cudaMemcpyAsync with pageable
- * memory takes less time overall than using a synchronous routine. If
- * synchronizing managed memory incurs a smaller penalty inthe future, then
- * using other memory types could take less time.
- */
-CudaReductionDummyTallyType* s_cuda_reduction_tally_block_host = 0;
+
+
+
+std::once_flag s_allocate_tally_flag;
+
+TallyCache* s_tally_cache = nullptr;
 
 //
 /////////////////////////////////////////////////////////////////////////////
 //
-// Variables representing the state of the tally block cache on the host.
-//
-/////////////////////////////////////////////////////////////////////////////
-//
-
-/*!
- * \brief Validity of host tally block cache.
- *
- * Valid means that all slots are up to date and can be read from the cache.
- * Invalid means that only dirty slots are up to date.
- */
-bool s_tally_valid = true;
-/*
- * \brief The number of slots that should be written back to the device
- *        tally block.
- */
-int s_tally_dirty = 0;
-/*
- * \brief Holds the dirty status of each slot.
- *
- * True indicates a slot written to by the host, but not copied back to
- * the device tally block.
- */
-bool *s_tally_block_dirty = 0;
-
-//
-/////////////////////////////////////////////////////////////////////////////
-//
-// Variables representing the state of dynamic shared memory usage.
+// Variables representing the state of execution.
 //
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -182,34 +597,11 @@ bool *s_tally_block_dirty = 0;
  * \brief State of the host code, whether it is currently in a raja
  *        cuda forall function or not.
  */
-int s_raja_cuda_forall_level = 0;
-/*!
- * \brief The amount of shared memory currently earmarked for use in
- *        the current forall.
- */
-int s_shared_memory_amount_total = 0;
-/*!
- * \brief shared_memory_offsets holds the byte offsets into dynamic shared
- *        memory for each reduction variable.
- *
- * Note: -1 indicates a reduction variable that is not participating in
- * the current forall.
- */
-int *s_shared_memory_offsets = 0;
-/*!
- * \brief Holds the number of threads expected by each reduction variable.
- *
- * This is used to check the execution policy against the reduction policies
- * of participating reduction varaibles.
- *
- * Note: -1 indicates a reduction variable that is not participating in the
- * current forall and 0 represents a reduction variable whose execution does
- * not depend on the number of threads used by the execution policy.
- */
-int *s_cuda_reduction_num_threads = 0;
+thread_local int s_raja_cuda_forall_level = 0;
 
-dim3 s_cuda_launch_gridDim = 0;
-dim3 s_cuda_launch_blockDim = 0;
+thread_local dim3 s_cuda_launch_gridDim = 0;
+thread_local dim3 s_cuda_launch_blockDim = 0;
+
 }
 
 
@@ -226,7 +618,7 @@ dim3 s_cuda_launch_blockDim = 0;
  */
 void setCudaMaxBlocks(unsigned int blocks)
 { 
-  if(s_cuda_reducer_active_count == 0) {
+  if(!getCudaReducerActive()) {
     freeCudaReductionMemBlock();
     s_cuda_max_blocks = blocks;
     std::cerr << "\n Reset cudaMaxBlocks to " << s_cuda_max_blocks << std::endl;
@@ -235,13 +627,8 @@ void setCudaMaxBlocks(unsigned int blocks)
   else {
     std::cerr << "\n Cannot set CudaMaxBlocks -- we have active reducers present, "
               << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
+    std::abort();
   }
-}
-
-unsigned int getCudaMaxBlocks()
-{
-  return s_cuda_max_blocks;
 }
 
 /*!
@@ -257,21 +644,15 @@ unsigned int getCudaMaxBlocks()
  */
 void setCudaMaxReducers(unsigned int reducers)
 { 
-  if(s_cuda_reducer_active_count == 0) {
+  if(!getCudaReducerActive()) {
     freeCudaReductionMemBlock();
-    freeCudaReductionTallyBlock();
     s_cuda_max_reducers = reducers;
-    // s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
-    // s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
-    // s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool)); 
-    // s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
-    // s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
     std::cerr << "\n Reset cudaMaxReducers to " << s_cuda_max_reducers << std::endl;
   }
   else {
     std::cerr << "\n Cannot set CudaMaxReducers -- we have active reducers present, "
               << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
+    std::abort();
   }  
 }
 
@@ -283,16 +664,14 @@ void setCudaMaxReducers(unsigned int reducers)
 *
 *******************************************************************************
 */
-int getCudaReducerActiveCount() { return s_cuda_reducer_active_count; }
-
-/*
-*******************************************************************************
-*
-* Return number of active cuda memblocks.
-*
-*******************************************************************************
-*/
-int getCudaMemblockUsedCount() { return s_cuda_memblock_used_count; }
+bool getCudaReducerActive()
+{
+  bool active = false;
+  if (s_tally_cache) {
+    active = s_tally_cache->active();
+  }
+  return active;
+}
 
 /*
 *******************************************************************************
@@ -305,8 +684,6 @@ int getCudaMemblockUsedCount() { return s_cuda_memblock_used_count; }
 int getCudaReductionId()
 {
   if (s_cuda_reduction_id_used == 0) {
-    s_cuda_reducer_active_count = 0;
-    s_cuda_memblock_used_count = 0;
     
     s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
     for (int id = 0; id < s_cuda_max_reducers; ++id) {
@@ -325,7 +702,6 @@ int getCudaReductionId()
     exit(1);
   }
 
-  s_cuda_reducer_active_count++;
   s_cuda_reduction_id_used[id] = true;
 
   return id;
@@ -341,14 +717,7 @@ int getCudaReductionId()
 void releaseCudaReductionId(int id)
 {
   if (id < s_cuda_max_reducers) {
-    s_cuda_reducer_active_count--;
     s_cuda_reduction_id_used[id] = false;
-    if(s_cuda_reduction_memblock_used) {
-      if (s_cuda_reduction_memblock_used[id]) {
-        s_cuda_memblock_used_count--;
-        s_cuda_reduction_memblock_used[id] = false;
-      }
-    }
   }
 }
 
@@ -360,27 +729,41 @@ void releaseCudaReductionId(int id)
 *
 *******************************************************************************
 */
-void getCudaReductionMemBlock(int id, void** device_memblock)
+void* getCudaReductionMemBlockInternal(int id, size_t size, size_t alignment)
 {
-  if (s_cuda_reduction_mem_block == 0) {
-    cudaErrchk(
-        cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                   sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks * s_cuda_max_reducers ) );
+  void* device_memblock = nullptr;
 
-    s_cuda_reduction_memblock_used = (bool*)realloc(s_cuda_reduction_memblock_used,s_cuda_max_reducers * sizeof(bool));
+  if (s_raja_cuda_forall_level > 0) {
 
-    for (int i = 0; i < s_cuda_max_reducers; ++i) {
-      s_cuda_reduction_memblock_used[i] = false;
+    if (!s_cuda_reduction_mem_block) {
+      cudaErrchk(
+          cudaMalloc((void**)&s_cuda_reduction_mem_block,
+                     sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks * s_cuda_max_reducers ) );
 
+      atexit(freeCudaReductionMemBlock);
     }
 
-    atexit(freeCudaReductionMemBlock);
+    int numBlocks = s_cuda_launch_gridDim.x *
+                    s_cuda_launch_gridDim.y *
+                    s_cuda_launch_gridDim.z;
+
+    size_t allocation_size = size * numBlocks;
+    size_t max_allocation_size = sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks;
+
+    if (numBlocks > s_cuda_max_blocks) {
+      std::cerr << "\n CudaMaxBlocks too low for kernel with " << numBlocks << " blocks, "
+                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+      std::abort();
+    } else if (allocation_size > max_allocation_size) {
+      std::cerr << "\n Couldn't get a MemBlock of enough size, "
+                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+      std::abort();
+    }
+
+    device_memblock = s_cuda_reduction_mem_block + (id * s_cuda_max_blocks);
   }
 
-  s_cuda_memblock_used_count++;
-  s_cuda_reduction_memblock_used[id] = true;
-
-  *device_memblock = s_cuda_reduction_mem_block + (id * s_cuda_max_blocks);
+  return device_memblock;
 }
 
 /*
@@ -397,12 +780,6 @@ void freeCudaReductionMemBlock()
     s_cuda_reduction_mem_block = 0;
     free(s_cuda_reduction_id_used); 
     s_cuda_reduction_id_used = 0;
-    free(s_cuda_reduction_memblock_used);
-    s_cuda_reduction_memblock_used = 0;
-    free(s_cuda_reduction_num_threads);
-    s_cuda_reduction_num_threads = 0;
-    free(s_shared_memory_offsets);
-    s_shared_memory_offsets = 0;
   }
 }
 
@@ -416,110 +793,38 @@ void freeCudaReductionMemBlock()
 *
 *******************************************************************************
 */
-void getCudaReductionTallyBlock(int id, void** tally)
+void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr)
 {
-  if (s_cuda_reduction_tally_block_host == 0) {
-    s_cuda_reduction_tally_block_host =
-        new CudaReductionDummyTallyType[s_cuda_max_reducers];
-
-    cudaErrchk(cudaMalloc((void**)&s_cuda_reduction_tally_block_device,
-                          sizeof(CudaReductionDummyTallyType)
-                              * s_cuda_max_reducers));
-    s_tally_block_dirty = (bool *)realloc(s_tally_block_dirty,s_cuda_max_reducers * sizeof(bool));
-    s_tally_valid = true;
-    s_tally_dirty = 0;
-    for (int i = 0; i < s_cuda_max_reducers; ++i) {
-      s_tally_block_dirty[i] = false;
-    }
-
-    atexit(freeCudaReductionTallyBlock);
-  }
+  void* device_ptr = nullptr;
 
   if (s_raja_cuda_forall_level > 0) {
-    *tally = &s_cuda_reduction_tally_block_device[id];
-  } else {
-    *tally = &s_cuda_reduction_tally_block_host[id];
+    device_ptr = (void*)s_tally_cache->get_device_ptr((char*)host_ptr);
   }
+
+  return device_ptr;
 }
 
-void getCudaReductionTallyBlockSetDirty(int id, void** tally)
+void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment)
 {
-  getCudaReductionTallyBlock(id, tally);
-
-  s_tally_dirty += 1;
-  // set block dirty
-  s_tally_block_dirty[id] = true;
-}
-
-/*
-*******************************************************************************
-*
-* Write back dirty tally blocks to device tally blocks.
-* Can be called before tally blocks have been allocated.
-*
-*******************************************************************************
-*/
-static void writeBackCudaReductionTallyBlock()
-{
-  if (s_tally_dirty > 0) {
-    int first = 0;
-    while (first < s_cuda_max_reducers) {
-      if (s_tally_block_dirty[first]) {
-        int end = first + 1;
-        while (end < s_cuda_max_reducers 
-               && s_tally_block_dirty[end]) {
-          end++;
-        }
-        int len = (end - first);
-        cudaErrchk(cudaMemcpyAsync(&s_cuda_reduction_tally_block_device[first],
-                                   &s_cuda_reduction_tally_block_host[first],
-                                   sizeof(CudaReductionDummyTallyType) * len,
-                                   cudaMemcpyHostToDevice));
-
-        for (int i = first; i < end; ++i) {
-          s_tally_block_dirty[i] = false;
-        }
-        first = end + 1;
-      } else {
-        first++;
-      }
-    }
-    s_tally_dirty = 0;
+  if (!s_tally_cache) {
+    std::call_once(s_allocate_tally_flag, [&] () {
+      s_tally_cache = new TallyCache{};
+    });
   }
+
+  return s_tally_cache->get_host_ptr(size, alignment);
 }
 
 /*
 *******************************************************************************
 *
-* Read tally block from device if invalid on host.
-* Must be called after tally blocks have been allocated.
-* The Async version is synchronous on the host if
-* s_cuda_reduction_tally_block_host is allocated as pageable host memory
-* and not if allocated as pinned host memory or managed memory.
+* Release tally block of reduction variable with id.
 *
 *******************************************************************************
 */
-static void readCudaReductionTallyBlockAsync()
+void releaseCudaReductionTallyBlockHostInternal(void* host_ptr)
 {
-  if (!s_tally_valid) {
-    cudaErrchk(cudaMemcpyAsync(&s_cuda_reduction_tally_block_host[0],
-                               &s_cuda_reduction_tally_block_device[0],
-                               sizeof(CudaReductionDummyTallyType)
-                                   * s_cuda_max_reducers,
-                               cudaMemcpyDeviceToHost));
-    s_tally_valid = true;
-  }
-}
-static void readCudaReductionTallyBlock()
-{
-  if (!s_tally_valid) {
-    cudaErrchk(cudaMemcpy(&s_cuda_reduction_tally_block_host[0],
-                          &s_cuda_reduction_tally_block_device[0],
-                          sizeof(CudaReductionDummyTallyType)
-                              * s_cuda_max_reducers,
-                          cudaMemcpyDeviceToHost));
-    s_tally_valid = true;
-  }
+  s_tally_cache->release_host_ptr((char*)host_ptr);
 }
 
 /*
@@ -536,19 +841,13 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim)
 {
   s_raja_cuda_forall_level++;
 
-  if (s_raja_cuda_forall_level == 1) {
-    if (s_cuda_reducer_active_count > 0) {
-      s_shared_memory_amount_total = 0;
-      for (int i = 0; i < s_cuda_max_reducers; ++i) {
-        s_shared_memory_offsets[i] = -1;
-        s_cuda_reduction_num_threads[i] = -1;
-      }
+  if (s_raja_cuda_forall_level == 1 && s_tally_cache) {
+    if (s_tally_cache->active()) {
 
-      s_tally_valid = false;
-      writeBackCudaReductionTallyBlock();
+      s_tally_cache->write_back_dirty();
     }
   }
-  
+
   s_cuda_launch_gridDim = launchGridDim;
   s_cuda_launch_blockDim = launchBlockDim;
 }
@@ -582,152 +881,14 @@ void afterCudaKernelLaunch()
 *
 *******************************************************************************
 */
-void beforeCudaReadTallyBlockAsync(int id)
+void beforeCudaReadTallyBlockAsync(void* host_ptr)
 {
-  if (!s_tally_block_dirty[id]) {
-    writeBackCudaReductionTallyBlock();
-    readCudaReductionTallyBlockAsync();
-  }
+  s_tally_cache->ensure_host_readable((char*)host_ptr, true);
 }
 ///
-void beforeCudaReadTallyBlockSync(int id)
+void beforeCudaReadTallyBlockSync(void* host_ptr)
 {
-  if (!s_tally_block_dirty[id]) {
-    writeBackCudaReductionTallyBlock();
-    readCudaReductionTallyBlock();
-  }
-}
-
-/*
-*******************************************************************************
-*
-* Release tally block of reduction variable with id.
-*
-*******************************************************************************
-*/
-void releaseCudaReductionTallyBlock(int id)
-{
-  if (s_tally_block_dirty[id]) {
-    s_tally_block_dirty[id] = false;
-    s_tally_dirty -= 1;
-  }
-}
-
-/*
-*******************************************************************************
-*
-* Free managed memory blocks used in RAJA-Cuda reductions.
-*
-*******************************************************************************
-*/
-void freeCudaReductionTallyBlock()
-{
-  if (s_cuda_reduction_tally_block_host != 0) {
-    delete[] s_cuda_reduction_tally_block_host;
-    s_cuda_reduction_tally_block_host = 0;
-    cudaErrchk(cudaFree(s_cuda_reduction_tally_block_device));
-    s_cuda_reduction_tally_block_device = 0;
-    free(s_tally_block_dirty);
-    s_tally_block_dirty = 0;
-  }
-}
-
-/*
-*******************************************************************************
-*
-* Earmark num_threads * size bytes of dynamic shared memory and get the byte
-* offset.
-*
-*******************************************************************************
-*/
-int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
-{
-  assert(id < s_cuda_max_reducers);
-
-  if(s_shared_memory_offsets == 0) {
-    s_shared_memory_offsets = (int*)realloc(s_shared_memory_offsets, s_cuda_max_reducers * sizeof(int));
-    s_cuda_reduction_num_threads = (int*)realloc(s_cuda_reduction_num_threads, s_cuda_max_reducers * sizeof(int));
-    for(int i=0; i < s_cuda_max_reducers; ++i) {
-      s_shared_memory_offsets[i] = -1;
-      s_cuda_reduction_num_threads[i] = -1;
-    }
-  }
-
-  if (s_raja_cuda_forall_level > 0) {
-    if (s_shared_memory_offsets[id] < 0) {
-      // in a forall and have not yet gotten shared memory
-
-      s_shared_memory_offsets[id] = s_shared_memory_amount_total;
-
-      int num_threads =
-          reductionBlockDim.x * reductionBlockDim.y * reductionBlockDim.z;
-
-      // ignore reduction variables that don't use dynamic shared memory
-      s_cuda_reduction_num_threads[id] = (size > 0) ? num_threads : 0;
-
-      s_shared_memory_amount_total += num_threads * size;
-    }
-    return s_shared_memory_offsets[id];
-  } else {
-    return -1;
-  }
-}
-
-/*
-*******************************************************************************
-*
-* Get size in bytes of dynamic shared memory.
-* Check that the number of blocks launched is consistent with the max number of
-* blocks reduction variables can handle.
-* Check that execution policy num_threads is consistent with active reduction
-* policy num_threads.
-*
-*******************************************************************************
-*/
-int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
-{
-  if (s_cuda_reducer_active_count > 0) {
-    int launch_num_blocks = launchGridDim.x * launchGridDim.y * launchGridDim.z;
-
-    int launch_num_threads =
-        launchBlockDim.x * launchBlockDim.y * launchBlockDim.z;
-
-    for (int i = 0; i < s_cuda_max_reducers; ++i) {
-      int reducer_num_threads = s_cuda_reduction_num_threads[i];
-
-      // check if reducer is active
-      if (reducer_num_threads >= 0) {
-
-        // check if reducer cares about number of blocks
-        if(s_cuda_reduction_memblock_used) {
-          if (s_cuda_reduction_memblock_used[i]
-              && launch_num_blocks > getCudaMaxBlocks()) {
-            std::cerr << "\n Cuda execution error: "
-                      << "Can't launch " << launch_num_blocks << " blocks, "
-                      << "RAJA_CUDA_MAX_NUM_BLOCKS = " << getCudaMaxBlocks()
-                      << ", "
-                      << "FILE: " << __FILE__ << " line: " << __LINE__
-                      << std::endl;
-            exit(1);
-          }
-        }
-
-        // check if reducer cares about number of threads
-        if (reducer_num_threads > 0
-            && launch_num_threads > reducer_num_threads) {
-          std::cerr << "\n Cuda execution, reduction policy mismatch: "
-                    << "reduction policy with BLOCK_SIZE "
-                    << reducer_num_threads
-                    << " can't be used with execution policy with BLOCK_SIZE "
-                    << launch_num_threads << ", "
-                    << "FILE: " << __FILE__ << " line: " << __LINE__
-                    << std::endl;
-          exit(1);
-        }
-      }
-    }
-  }
-  return 0;
+  s_tally_cache->ensure_host_readable((char*)host_ptr, false);
 }
 
 }  // closing brace for RAJA namespace
