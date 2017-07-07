@@ -285,7 +285,7 @@ protected:
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
 {
-  return TO{val};
+  return TO(val);
 }
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO
