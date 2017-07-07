@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining view class used in forallN templates.
+ * \brief   RAJA header file defining a multi-dimensional view class.
  *
  ******************************************************************************
  */
@@ -63,23 +63,25 @@
 namespace RAJA
 {
 
-template <typename DataType, typename LayoutT>
+template <typename DataType, 
+          typename LayoutT, 
+          typename DataPointer = DataType*>
 struct View {
   LayoutT const layout;
-  DataType *data;
+  DataPointer data;
 
   template <typename... Args>
-  RAJA_INLINE constexpr View(DataType *data_ptr, Args... dim_sizes)
+  RAJA_INLINE constexpr View(DataPointer data_ptr, Args... dim_sizes)
       : layout(dim_sizes...), data(data_ptr)
   {
   }
 
-  RAJA_INLINE constexpr View(DataType *data_ptr, LayoutT &&layout)
+  RAJA_INLINE constexpr View(DataPointer data_ptr, LayoutT &&layout)
       : layout(layout), data(data_ptr)
   {
   }
 
-  RAJA_INLINE void set_data(DataType *data_ptr) { data = data_ptr; }
+  RAJA_INLINE void set_data(DataPointer data_ptr) { data = data_ptr; }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
@@ -90,88 +92,50 @@ struct View {
   }
 };
 
-template <typename DataType, typename LayoutT, typename... IndexTypes>
-struct TypedView {
-  using Base = View<DataType, LayoutT>;
+template <typename DataType, 
+          typename DataPointer, 
+          typename LayoutT, 
+          typename... IndexTypes>
+struct TypedViewBase {
+  using Base = View<DataType, LayoutT, DataPointer>;
 
   Base base_;
 
   template <typename... Args>
-  RAJA_INLINE constexpr TypedView(DataType *data_ptr, Args... dim_sizes)
+  RAJA_INLINE constexpr TypedViewBase(DataPointer data_ptr, Args... dim_sizes)
       : base_(data_ptr, dim_sizes...)
   {
   }
 
-  RAJA_INLINE constexpr TypedView(DataType *data_ptr, LayoutT &&layout)
+  RAJA_INLINE constexpr TypedViewBase(DataPointer data_ptr, LayoutT &&layout)
       : base_(data_ptr, layout)
   {
   }
 
-  RAJA_INLINE void set_data(DataType *data_ptr) { base_.set_data(data_ptr); }
+  RAJA_INLINE void set_data(DataPointer data_ptr) { base_.set_data(data_ptr); }
 
   RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
   {
     return base_.operator()(convertIndex<Index_type>(args)...);
   }
 };
+
+template <typename DataType, typename LayoutT, typename... IndexTypes>
+using TypedView = TypedViewBase<DataType, DataType*, LayoutT, IndexTypes...>;
 
 #if defined(RAJA_ENABLE_CHAI)
 
 template <typename DataType, typename LayoutT>
-struct ManagedArrayView {
-  LayoutT const layout;
-  chai::ManagedArray<DataType> array;
+using ManagedArrayView = View<DataType, 
+                              LayoutT, 
+                              chai::ManagedArray<DataType>>;
 
-  template <typename... Args>
-  RAJA_INLINE constexpr ManagedArrayView(chai::ManagedArray<DataType> data_ptr, Args... dim_sizes)
-      : layout(dim_sizes...), array(data_ptr)
-  {
-  }
-
-  RAJA_INLINE constexpr ManagedArrayView(chai::ManagedArray<DataType> data_ptr, LayoutT &&layout)
-      : layout(layout), array(data_ptr)
-  {
-  }
-
-  RAJA_INLINE void set_data(chai::ManagedArray<DataType> new_array) {
-      array = new_array;
-  }
-
-  // making this specifically typed would require unpacking the layout,
-  // this is easier to maintain
-  template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
-  {
-    return array[convertIndex<Index_type>(layout(args...))];
-  }
-};
 
 template <typename DataType, typename LayoutT, typename... IndexTypes>
-struct TypedManagedArrayView {
-  using Base = ManagedArrayView<DataType, LayoutT>;
-
-  Base base_;
-
-  template <typename... Args>
-  RAJA_INLINE constexpr TypedManagedArrayView(chai::ManagedArray<DataType> data_ptr, Args... dim_sizes)
-      : base_(data_ptr, dim_sizes...)
-  {
-  }
-
-  RAJA_INLINE constexpr TypedManagedArrayView(chai::ManagedArray<DataType> data_ptr, LayoutT &&layout)
-      : base_(data_ptr, layout)
-  {
-  }
-
-  RAJA_INLINE void set_data(chai::ManagedArray<DataType> new_array) {
-      base_.set_data(new_array);
-  }
-
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
-  {
-    return base_.operator()(convertIndex<Index_type>(args)...);
-  }
-};
+using TypedManagedArrayView = TypedViewBase<DataType,
+                                            chai::ManagedArray<DataType>,
+                                            LayoutT,
+                                            IndexTypes...>;
 
 #endif
 

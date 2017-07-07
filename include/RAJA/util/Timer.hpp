@@ -103,7 +103,7 @@ public:
     telapsed += DurationType(stop - start).count();
   }
 
-  ElapsedType elapsed() { return telapsed; }
+  ElapsedType elapsed() const { return telapsed; }
 
   void reset() { telapsed = 0; }
 
@@ -154,7 +154,7 @@ public:
         std::chrono::duration_cast<DurationType>(tstop - tstart).count();
   }
 
-  ElapsedType elapsed() { return telapsed; }
+  ElapsedType elapsed() const { return telapsed; }
 
   void reset() { telapsed = 0; }
 
@@ -200,7 +200,7 @@ public:
     set_elapsed();
   }
 
-  ElapsedType elapsed() { return (stime_elapsed + nstime_elapsed); }
+  ElapsedType elapsed() const { return (stime_elapsed + nstime_elapsed); }
 
   void reset()
   {
@@ -260,9 +260,9 @@ public:
     set_elapsed();
   }
 
-  ElapsedType elapsed()
+  ElapsedType elapsed() const
   {
-    return static_cast<Elapsed Type>(telapsed) / CLOCKS_PER_SEC;
+    return static_cast<ElapsedType>(telapsed) / CLOCKS_PER_SEC;
   }
 
   void reset() { telapsed = 0; }
