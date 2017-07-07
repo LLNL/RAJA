@@ -58,6 +58,8 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
+#include "RAJA/policy/PolicyBase.hpp"
+
 namespace RAJA
 {
 
@@ -147,8 +149,9 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
-namespace impl
-{
+namespace wrap {
+template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
+RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body);
 
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
@@ -182,7 +185,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
-      RAJA::impl::forall(_p, iter, body);
+      RAJA::wrap::forall(_p, iter, body);
     } else {
       NextInvoker::invoke(offset, iter, body);
     }
@@ -192,12 +195,12 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 template <size_t size, typename Policy, typename... rest>
 struct policy_invoker<0, size, Policy, rest...> {
   Policy _p;
-  policy_invoker(Policy p, rest... args) : _p(p) {}
+  policy_invoker(Policy p, rest... ) : _p(p) {}
   template <typename Iterable, typename Body>
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-      RAJA::impl::forall(_p, iter, body);
+      RAJA::wrap::forall(_p, iter, body);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }

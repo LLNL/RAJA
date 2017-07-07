@@ -155,12 +155,3 @@ using OpenMPTypes =
 
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
 #endif
-
-#if defined(RAJA_ENABLE_CILK)
-using CilkTypes =
-    ::testing::Types<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                     IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                     IndexSet::ExecPolicy<cilk_for_segit, simd_exec> >;
-
-INSTANTIATE_TYPED_TEST_CASE_P(Cilk, ForallTest, CilkTypes);
-#endif

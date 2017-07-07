@@ -91,10 +91,6 @@
 #include "RAJA/policy/openacc.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/cilk.hpp"
-#endif
-
 //
 // Strongly typed index class.
 //
@@ -107,6 +103,7 @@
 // in the files included below.
 //
 #include "RAJA/pattern/forall.hpp"
+
 
 //
 // Multidimensional layouts and views.
