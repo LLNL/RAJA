@@ -78,7 +78,7 @@ public:
 
   // const char *index_types[sizeof...(RangeInts)];
 
-  const IdxLin sizes[n_dims];
+  IdxLin sizes[n_dims];
   IdxLin strides[n_dims];
   IdxLin mods[n_dims];
 

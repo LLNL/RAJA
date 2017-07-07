@@ -61,31 +61,6 @@
 namespace RAJA
 {
 
-/*!
- * \brief Struct used to define forallN nested policies.
- *
- *  Typically, passed as first template argument to forallN templates.
- */
-template <typename EXEC, typename NEXT = Execute>
-struct NestedPolicy {
-  typedef NEXT NextPolicy;
-  typedef EXEC ExecPolicies;
-};
-
-/*!
- * \brief Struct that contains a policy for each loop nest in a forallN
- *        construct.
- *
- *  Typically, passed as first template argument to NestedPolicy template,
- *  followed by permutation, etc.
- */
-template <typename... PLIST>
-struct ExecList {
-  constexpr const static size_t num_loops = sizeof...(PLIST);
-  typedef std::tuple<PLIST...> tuple;
-};
-
-
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
  ******************************************************************/
@@ -128,6 +103,7 @@ struct ForallN_Executor<> {
   constexpr ForallN_Executor() {}
 
   template <typename BODY>
+  RAJA_HOST_DEVICE
   RAJA_INLINE void operator()(BODY const &body) const
   {
     body();
@@ -168,12 +144,17 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
  */
 template <typename BODY_in, typename... Idx>
 struct ForallN_IndexTypeConverter {
+  using Self = ForallN_IndexTypeConverter<BODY_in, Idx...>;
   using BODY = typename std::remove_reference<BODY_in>::type;
 
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
   // call 'policy' layer with next policy
   RAJA_SUPPRESS_HD_WARN
@@ -262,10 +243,20 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
 template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
+
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  rm->setExecutionSpace(detail::get_space<POLICY>::value);
+#endif
+
   fun_unpacker<POLICY, Indices...>(
       VarOps::index_sequence<sizeof...(args) - 1>{},
       VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
 }
 
 }  // namespace RAJA

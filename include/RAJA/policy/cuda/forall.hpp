@@ -105,15 +105,15 @@ namespace INTERNAL
  *
  ******************************************************************************
  */
-__device__ __forceinline__ Index_type getGlobalIdx_1D_1D()
+__device__ __forceinline__ unsigned int getGlobalIdx_1D_1D()
 {
-  Index_type blockId = blockIdx.x;
-  Index_type threadId = blockId * blockDim.x + threadIdx.x;
+  unsigned int blockId = blockIdx.x;
+  unsigned int threadId = blockId * blockDim.x + threadIdx.x;
   return threadId;
 }
-__device__ __forceinline__ Index_type getGlobalNumThreads_1D_1D()
+__device__ __forceinline__ unsigned int getGlobalNumThreads_1D_1D()
 {
-  Index_type numThreads = blockDim.x * gridDim.x;
+  unsigned int numThreads = blockDim.x * gridDim.x;
   return numThreads;
 }
 
@@ -124,18 +124,18 @@ __device__ __forceinline__ Index_type getGlobalNumThreads_1D_1D()
  *
  ******************************************************************************
  */
-__device__ __forceinline__ Index_type getGlobalIdx_3D_3D()
+__device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
 {
-  Index_type blockId =
+  unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  Index_type threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
                         + (threadIdx.z * (blockDim.x * blockDim.y))
                         + (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
-__device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
+__device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
 {
-  Index_type numThreads =
+  unsigned int numThreads =
       blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
@@ -150,15 +150,13 @@ __device__ __forceinline__ Index_type getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY>
+template <typename Iterator, typename LOOP_BODY, typename IndexType>
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
-                                   Index_type length)
+                                   IndexType length)
 {
   auto body = loop_body;
-
-  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
-
+  auto ii = static_cast<IndexType>(INTERNAL::getGlobalIdx_1D_1D());
   if (ii < length) {
     body(idx[ii]);
   }
@@ -173,18 +171,16 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY>
+template <typename Iterator, typename LOOP_BODY, typename IndexType, typename IndexType2>
 __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
                                           const Iterator idx,
-                                          Index_type length,
-                                          Index_type icount)
+                                          IndexType length,
+                                          IndexType2 icount)
 {
   auto body = loop_body;
-
-  Index_type ii = INTERNAL::getGlobalIdx_1D_1D();
-
+  auto ii = static_cast<IndexType>(INTERNAL::getGlobalIdx_1D_1D());
   if (ii < length) {
-    body(ii + icount, idx[ii]);
+    body(static_cast<IndexType>(ii + icount), idx[ii]);
   }
 }
 
@@ -204,11 +200,11 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
   auto begin = std::begin(iter);
   auto end   = std::end(iter);
 
-  Index_type len = std::distance(begin, end);
+  auto len = std::distance(begin, end);
 
   if (len > 0 && BLOCK_SIZE > 0) {
 
-    Index_type gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
     beforeCudaKernelLaunch(gridSize, BLOCK_SIZE);
 
@@ -226,27 +222,27 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 }
 
 
-template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
+template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY, typename IndexType>
 RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
                                Iterable&& iter,
-                               Index_type icount,
+                               IndexType icount,
                                LOOP_BODY&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end   = std::end(iter);
 
-  Index_type len = std::distance(begin, end);
+  auto len = std::distance(begin, end);
 
   if (len > 0 && BLOCK_SIZE > 0) {
 
-    Index_type gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
     beforeCudaKernelLaunch(gridSize, BLOCK_SIZE);
 
     RAJA_FT_BEGIN;
 
-    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BLOCK_SIZE)>>>(
-        loop_body, std::move(begin), len, icount);
+    forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(
+        gridSize, BLOCK_SIZE)>>>(loop_body, std::move(begin), len, icount);
 
     RAJA_CUDA_CHECK_AND_SYNC(Async);
 
@@ -309,8 +305,8 @@ RAJA_INLINE void forall_Icount(
     const IndexSet& iset,
     LOOP_BODY&& loop_body)
 {
-  int num_seg = iset.getNumSegments();
-  for (int isi = 0; isi < num_seg; ++isi) {
+  auto num_seg = iset.getNumSegments();
+  for (decltype(num_seg) isi = 0; isi < num_seg; ++isi) {
     const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
     executeRangeList_forall_Icount<cuda_exec<BLOCK_SIZE, true>>(seg_info,
                                                                 loop_body);
