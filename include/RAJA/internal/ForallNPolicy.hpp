@@ -132,27 +132,15 @@ struct ForallN_PeelOuter {
   BODY const body;
 
   RAJA_INLINE
-  RAJA_HOST_DEVICE
   constexpr ForallN_PeelOuter(NextExec const &ne, BODY const &b)
       : next_exec(ne), body(b)
   {
   }
 
-  RAJA_HOST_DEVICE
-  ~ForallN_PeelOuter() {}
-
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr ForallN_PeelOuter(Self const &o)
-      : next_exec(o.next_exec), body(o.body)
-  {
-  }
-
-  RAJA_SUPPRESS_HD_WARN
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr ForallN_PeelOuter(Self && o)
       : next_exec(o.next_exec), body(o.body)
   {
   }
