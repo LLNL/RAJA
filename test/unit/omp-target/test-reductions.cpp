@@ -112,6 +112,7 @@ protected:
     }
     array[0] = 0.0;
     array[array_length - 1] = -1.0;
+#pragma omp target enter data map(to:array[:array_length])
 
     sum = 0.0;
     min = array_length * 2;
@@ -136,7 +137,11 @@ protected:
     }
   }
 
-  virtual void TearDown() { free(array); }
+  virtual void TearDown() 
+  {
+#pragma omp target exit data map(release:array[:array_length])
+      free(array); 
+  }
 
   RAJA::Real_ptr array;
 
@@ -157,8 +162,12 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
 
   RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
 
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
-                           [=](int i) { sum_reducer += this->array[i]; });
+                           [=](int i) { sum_reducer += array[i]; });
 
   double raja_sum = (double)sum_reducer.get();
 
@@ -172,8 +181,12 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
 
   RAJA::ReduceMin<ReducePolicy, double> min_reducer(1024.0);
 
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
-                           [=](int i) { min_reducer.min(this->array[i]); });
+                           [=](int i) { min_reducer.min(array[i]); });
 
   double raja_min = (double)min_reducer.get();
 
@@ -187,8 +200,12 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
 
   RAJA::ReduceMax<ReducePolicy, double> max_reducer(0.0);
 
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
-                           [=](int i) { max_reducer.max(this->array[i]); });
+                           [=](int i) { max_reducer.max(array[i]); });
 
   double raja_max = (double)max_reducer.get();
 
@@ -202,9 +219,13 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
 
   RAJA::ReduceMinLoc<ReducePolicy, double> minloc_reducer(1024.0, 0);
 
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) {
-                             minloc_reducer.minloc(this->array[i], i);
+                             minloc_reducer.minloc(array[i], i);
                            });
 
   double raja_min = (double)minloc_reducer.get();
@@ -221,9 +242,13 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
 
   RAJA::ReduceMaxLoc<ReducePolicy, double> maxloc_reducer(0.0, -1);
 
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
   RAJA::forall<ExecPolicy>(RAJA::RangeSegment(0, this->array_length),
                            [=](int i) {
-                             maxloc_reducer.maxloc(this->array[i], i);
+                             maxloc_reducer.maxloc(array[i], i);
                            });
 
   double raja_max = (double)maxloc_reducer.get();
@@ -270,10 +295,15 @@ protected:
       array[i] = (RAJA::Real_type)val;
     }
 
+#pragma omp target enter data map(to: array[:x_size*y_size*z_size])
+
     sum = 4.0;
   }
 
-  virtual void TearDown() { free(array); }
+  virtual void TearDown() { 
+#pragma omp target exit data map(release: array[:x_size*y_size*z_size])
+      free(array); 
+  }
 
   RAJA::Real_ptr array;
 
@@ -296,6 +326,11 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
                                            this->x_size,
                                            this->y_size,
                                            this->z_size);
+  auto array = this->array;
+  // TODO: remove this when compilers (clang-coral and IBM XLC) are no longer
+  // broken for lambda capture
+#pragma omp target data use_device_ptr(array)
+  view.set_data(array);
 
   RAJA::forallN<ExecPolicy>(RAJA::RangeSegment(0, this->x_size),
                             RAJA::RangeSegment(0, this->y_size),

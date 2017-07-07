@@ -189,6 +189,7 @@ struct TargetReduce {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
+        // printf("%d:%p\n", tid, val.device);
         Reducer{}(val.device[tid], val.value);
       }
     }
@@ -220,9 +221,7 @@ struct TargetReduce {
   //! apply reduction (const version) -- still reduces internal values
   const TargetReduce &reduce(T rhsVal) const
   {
-    using NonConst = typename std::remove_const<decltype(this)>::type;
-    auto ptr = const_cast<NonConst>(this);
-    Reducer{}(ptr->val.value,rhsVal);
+    Reducer{}(val.value,rhsVal);
     return *this;
   }
 
@@ -290,9 +289,7 @@ struct TargetReduceLoc {
   //! apply reduction (const version) -- still reduces internal values
   const TargetReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
-    using NonConst = typename std::remove_const<decltype(this)>::type;
-    auto ptr = const_cast<NonConst>(this);
-    Reducer{}(ptr->val.value,ptr->loc.value,rhsVal,rhsLoc);
+    Reducer{}(val.value,loc.value,rhsVal,rhsLoc);
     return *this;
 
   }
