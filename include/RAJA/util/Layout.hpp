@@ -83,6 +83,17 @@ public:
   IdxLin mods[n_dims];
 
 
+
+  /*!
+   * Default constructor with zero sizes and strides.
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl()
+  {
+    for(size_t i = 0;i < n_dims;++ i){
+      sizes[i] = strides[i] = mods[i] = 0;
+    }
+  }
+
   // TODO: this should be constexpr in c++14 mode
   template <typename... Types>
   RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(Types... ns)
