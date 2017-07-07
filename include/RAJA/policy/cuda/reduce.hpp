@@ -62,6 +62,8 @@
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/util/basic_mempool.hpp"
+
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -609,7 +611,7 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
+    //getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
     getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
     m_tally->tally = initializer;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
@@ -638,6 +640,7 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
+      getCudaReductionMemBlockPool<T>((void**)&m_blockdata);
       getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
       int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, sizeof(T));
       if (offset >= 0) m_parent = NULL;

@@ -111,8 +111,8 @@ int main(int argc, char *argv[])
   ///
   const size_t block_size = 256;
 
-  setCudaMaxBlocks(16); // test code path
-  setCudaMaxBlocks(TEST_VEC_LEN/block_size);
+  //setCudaMaxBlocks(16); // test code path
+  //setCudaMaxBlocks(TEST_VEC_LEN/block_size);
 
   ////////////////////////////////////////////////////////////////////////////
   // Run 3 different sum reduction tests in a loop
@@ -126,6 +126,9 @@ int main(int argc, char *argv[])
     //        that reduction value can be retrieved and then subsequent
     //        reductions can be run with the same reduction objects.
     //
+    //
+    //
+#if 1
     {  // begin test 1
 
       double dtinit = 5.0;
@@ -253,7 +256,6 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 2
-
     ////////////////////////////////////////////////////////////////////////////
 
     //
@@ -315,13 +317,17 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 3
-
+#endif
     ////////////////////////////////////////////////////////////////////////////
 
     {  // Begin test4
 
-      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
-      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
+      //ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
+      //ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
+
+      ReduceSum<cuda_reduce<block_size>, double> dsumN(0.0);
+      ReduceSum<cuda_reduce<block_size>, double> dsumP(0.0);
+
 
       double neg_chk_val = 0.0;
       double pos_chk_val = 0.0;

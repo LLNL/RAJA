@@ -418,6 +418,11 @@ void freeCudaReductionTallyBlock();
  */
 void getCudaReductionMemBlock(int id, void** device_memblock);
 
+
+template<typename T>
+void getCudaReductionMemBlockPool(void** device_memblock);
+
+
 /*!
  ******************************************************************************
  *

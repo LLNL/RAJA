@@ -59,6 +59,8 @@
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/util/basic_mempool.hpp"
+
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
@@ -110,6 +112,8 @@ bool *s_cuda_reduction_memblock_used = 0; // was static array based on RAJA_MAX_
  * \brief Pointer to device memory block for RAJA-Cuda reductions.
  */
 CudaReductionDummyBlockType* s_cuda_reduction_mem_block = 0;
+
+basic_mempool::mempool <basic_mempool::cuda_allocator> * s_cuda_reduction_mem_block_pool = 0;
 
 /*!
  * \brief Pointer to the tally block on the device.
@@ -381,6 +385,26 @@ void getCudaReductionMemBlock(int id, void** device_memblock)
   s_cuda_reduction_memblock_used[id] = true;
 
   *device_memblock = s_cuda_reduction_mem_block + (id * s_cuda_max_blocks);
+}
+
+
+template<typename T>
+void getCudaReductionMemBlockPool(void** device_memblock)
+{
+  if (s_cuda_reduction_mem_block_pool == 0) {
+    s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
+    //atexit(freeCudaReductionMemBlock);
+  }
+
+  // assume beforeCudaKernelLaunch was called in order to grab dimensions 
+  dim3 dims = s_cuda_launch_gridDim;
+
+  size_t slots = dims.x * dims.y * dims.z;
+  if(slots) {
+    //fprintf(stderr,"mempool slots = %ld\n",slots);
+
+    *device_memblock = s_cuda_reduction_mem_block_pool->malloc<T>(slots);
+  }
 }
 
 /*
@@ -729,6 +753,12 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
   }
   return 0;
 }
+
+
+template void getCudaReductionMemBlockPool<double>(void**);
+template void getCudaReductionMemBlockPool<float>(void**);
+template void getCudaReductionMemBlockPool<int>(void**);
+
 
 }  // closing brace for RAJA namespace
 
