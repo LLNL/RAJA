@@ -204,23 +204,6 @@ void runMinReduceTests(Real_ptr in_array,
       is_indices);
 #endif
 
-#ifdef RAJA_ENABLE_CILK
-  runBasicMinReductionTest<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<seq_segit, cilk_for_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMinReductionTest<IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, seq_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMinReductionTest<IndexSet::ExecPolicy<cilk_for_segit, simd_exec>,
-                           cilk_reduce>("ExecPolicy<cilk_for_segit, simd_exec>",
-                                        in_array,
-                                        alen,
-                                        iset,
-                                        is_indices);
-#endif
-
   cout << "\n tests passed / test run: " << s_ntests_passed << " / "
        << s_ntests_run << endl;
 
@@ -349,24 +332,6 @@ void runMinLocReduceTests(Real_ptr in_array,
                                                    simd_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
-      in_array,
-      alen,
-      iset,
-      is_indices);
-#endif
-
-#ifdef RAJA_ENABLE_CILK
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<seq_segit, cilk_for_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, seq_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<cilk_for_segit, simd_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, simd_exec>",
       in_array,
       alen,
       iset,
@@ -504,23 +469,6 @@ void runMaxReduceTests(Real_ptr in_array,
       is_indices);
 #endif
 
-#ifdef RAJA_ENABLE_CILK
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<seq_segit, cilk_for_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, seq_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<cilk_for_segit, simd_exec>,
-                           cilk_reduce>("ExecPolicy<cilk_for_segit, simd_exec>",
-                                        in_array,
-                                        alen,
-                                        iset,
-                                        is_indices);
-#endif
-
   cout << "\n tests passed / test run: " << s_ntests_passed << " / "
        << s_ntests_run << endl;
 
@@ -649,24 +597,6 @@ void runMaxLocReduceTests(Real_ptr in_array,
                                                    simd_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
-      in_array,
-      alen,
-      iset,
-      is_indices);
-#endif
-
-#ifdef RAJA_ENABLE_CILK
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<seq_segit, cilk_for_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, seq_exec>", in_array, alen, iset, is_indices);
-
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<cilk_for_segit, simd_exec>,
-                              cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, simd_exec>",
       in_array,
       alen,
       iset,
@@ -816,23 +746,6 @@ void runSumReduceTests(Real_ptr in_array,
       alen,
       iset,
       is_indices);
-#endif
-
-#ifdef RAJA_ENABLE_CILK
-  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit, cilk_for_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<seq_segit, cilk_for_exec>", in_array, alen, iset, is_indices);
-
-  runBasicSumReductionTest<IndexSet::ExecPolicy<cilk_for_segit, seq_exec>,
-                           cilk_reduce>(
-      "ExecPolicy<cilk_for_segit, seq_exec>", in_array, alen, iset, is_indices);
-
-  runBasicSumReductionTest<IndexSet::ExecPolicy<cilk_for_segit, simd_exec>,
-                           cilk_reduce>("ExecPolicy<cilk_for_segit, simd_exec>",
-                                        in_array,
-                                        alen,
-                                        iset,
-                                        is_indices);
 #endif
 
   cout << "\n tests passed / test run: " << s_ntests_passed << " / "
