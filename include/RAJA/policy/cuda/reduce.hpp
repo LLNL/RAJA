@@ -611,7 +611,6 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    //getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
     getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
     m_tally->tally = initializer;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
@@ -713,6 +712,7 @@ public:
     if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
+      releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
       *m_parent += m_val;
@@ -1126,7 +1126,6 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
     getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
@@ -1156,6 +1155,7 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
+      getCudaReductionMemBlockPool<CudaReductionDummyBlockType>((void**)&m_blockdata);
       getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
       int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
       if (offset >= 0) m_parent = NULL;
@@ -1235,6 +1235,7 @@ public:
     if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
+      releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
       m_parent->minloc(m_val, m_idx);
@@ -1445,7 +1446,6 @@ public:
         m_myID(-1)
   {
     m_myID = getCudaReductionId();
-    getCudaReductionMemBlock(m_myID, (void **)&m_blockdata);
     getCudaReductionTallyBlockSetDirty(m_myID, (void **)&m_tally);
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
@@ -1475,6 +1475,7 @@ public:
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
+      getCudaReductionMemBlockPool<CudaReductionDummyBlockType>((void**)&m_blockdata);
       getCudaReductionTallyBlock(m_myID, (void **)&m_tally);
       int offset = getCudaSharedmemOffset(m_myID, BLOCK_SIZE, (sizeof(T) + sizeof(Index_type)));
       if (offset >= 0) m_parent = NULL;
@@ -1554,6 +1555,7 @@ public:
     if (m_parent == this) {
       releaseCudaReductionTallyBlock(m_myID);
       releaseCudaReductionId(m_myID);
+      releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
       m_parent->maxloc(m_val, m_idx);

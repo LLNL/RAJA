@@ -198,7 +198,7 @@ struct CudaReductionLocTallyType {
   CudaReductionLocType<T> tally;
   GridSizeType retiredBlocks;
 };
-
+#if 0
 /*!
  ******************************************************************************
  *
@@ -213,6 +213,8 @@ struct CudaReductionLocTallyType {
 void setCudaMaxBlocks(unsigned int blocks);
 unsigned int getCudaMaxBlocks();
 
+#endif
+#if 0
 /*!
  ******************************************************************************
  *
@@ -225,6 +227,8 @@ unsigned int getCudaMaxBlocks();
  ******************************************************************************
  */
 void setCudaMaxReducers(unsigned int reducers);
+
+#endif
 
 /*!
  ******************************************************************************
@@ -421,6 +425,8 @@ void getCudaReductionMemBlock(int id, void** device_memblock);
 
 template<typename T>
 void getCudaReductionMemBlockPool(void** device_memblock);
+
+void releaseCudaReductionMemBlockPool(void **device_memblock);
 
 
 /*!

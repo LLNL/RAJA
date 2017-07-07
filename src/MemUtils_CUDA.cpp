@@ -228,6 +228,8 @@ dim3 s_cuda_launch_blockDim = 0;
  *
  ******************************************************************************
  */
+
+#if 0  // No longer needed as we calculate blocks used for each kernel
 void setCudaMaxBlocks(unsigned int blocks)
 { 
   if(s_cuda_reducer_active_count == 0) {
@@ -248,6 +250,10 @@ unsigned int getCudaMaxBlocks()
   return s_cuda_max_blocks;
 }
 
+#endif
+
+
+#if 0
 /*!
  ******************************************************************************
  *
@@ -288,6 +294,8 @@ void setCudaMaxReducers(unsigned int reducers)
 *******************************************************************************
 */
 int getCudaReducerActiveCount() { return s_cuda_reducer_active_count; }
+
+#endif
 
 /*
 *******************************************************************************
@@ -402,10 +410,15 @@ void getCudaReductionMemBlockPool(void** device_memblock)
   size_t slots = dims.x * dims.y * dims.z;
   if(slots) {
     //fprintf(stderr,"mempool slots = %ld\n",slots);
-
     *device_memblock = s_cuda_reduction_mem_block_pool->malloc<T>(slots);
   }
 }
+
+void releaseCudaReductionMemBlockPool(void **device_memblock)
+{
+  s_cuda_reduction_mem_block_pool->free(*device_memblock);
+}
+
 
 /*
 *******************************************************************************
@@ -711,7 +724,7 @@ int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size)
 int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 {
   if (s_cuda_reducer_active_count > 0) {
-    int launch_num_blocks = launchGridDim.x * launchGridDim.y * launchGridDim.z;
+    //int launch_num_blocks = launchGridDim.x * launchGridDim.y * launchGridDim.z;
 
     int launch_num_threads =
         launchBlockDim.x * launchBlockDim.y * launchBlockDim.z;
@@ -721,11 +734,10 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 
       // check if reducer is active
       if (reducer_num_threads >= 0) {
-
+#if 0
         // check if reducer cares about number of blocks
         if(s_cuda_reduction_memblock_used) {
-          if (s_cuda_reduction_memblock_used[i]
-              && launch_num_blocks > getCudaMaxBlocks()) {
+          if (s_cuda_reduction_memblock_used[i] {
             std::cerr << "\n Cuda execution error: "
                       << "Can't launch " << launch_num_blocks << " blocks, "
                       << "RAJA_CUDA_MAX_NUM_BLOCKS = " << getCudaMaxBlocks()
@@ -735,7 +747,7 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
             exit(1);
           }
         }
-
+#endif
         // check if reducer cares about number of threads
         if (reducer_num_threads > 0
             && launch_num_threads > reducer_num_threads) {
@@ -758,6 +770,7 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 template void getCudaReductionMemBlockPool<double>(void**);
 template void getCudaReductionMemBlockPool<float>(void**);
 template void getCudaReductionMemBlockPool<int>(void**);
+template void getCudaReductionMemBlockPool<CudaReductionDummyBlockType>(void**);
 
 
 }  // closing brace for RAJA namespace

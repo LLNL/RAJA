@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
                     sizeof(double) * TEST_VEC_LEN,
                     cudaMemAttachGlobal);
 
-  setCudaMaxReducers(4); // test code path
-  setCudaMaxReducers(8);
+  //setCudaMaxReducers(4); // test code path
+  //setCudaMaxReducers(8);
 
 
   ///
@@ -322,12 +322,8 @@ int main(int argc, char *argv[])
 
     {  // Begin test4
 
-      //ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
-      //ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
-
-      ReduceSum<cuda_reduce<block_size>, double> dsumN(0.0);
-      ReduceSum<cuda_reduce<block_size>, double> dsumP(0.0);
-
+      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
+      ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
 
       double neg_chk_val = 0.0;
       double pos_chk_val = 0.0;
