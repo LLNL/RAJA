@@ -563,24 +563,6 @@ private:
 namespace
 {
 
-/*!
- * \brief Max Blocks that RAJA will Launch 
- */
-unsigned int s_cuda_max_blocks = 1024*16;
-
-int s_cuda_max_reducers = RAJA_MAX_REDUCE_VARS;
-
-/*!
- * \brief bool array used to keep track of which unique ids
- * for CUDA reduction objects are used and which are not.
- */
-bool *s_cuda_reduction_id_used = nullptr;
-
-/*!
- * \brief Pointer to device memory block for RAJA-Cuda reductions.
- */
-CudaReductionDummyBlockType* s_cuda_reduction_mem_block = nullptr;
-
 basic_mempool::mempool <basic_mempool::cuda_allocator> * s_cuda_reduction_mem_block_pool = 0;
 
 /*!
@@ -590,7 +572,7 @@ basic_mempool::mempool <basic_mempool::cuda_allocator> * s_cuda_reduction_mem_bl
  * results of cuda reduction variables are stored. This is done so all
  * results may be copied back to the host with one memcpy.
  */
-CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
+//CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
 
 std::once_flag s_allocate_tally_flag;
 
@@ -616,92 +598,6 @@ thread_local dim3 s_cuda_launch_blockDim = 0;
 }
 
 
-/*!
- ******************************************************************************
- *
- * \brief Set the Max Number of Blocks that RAJA will launch
- *
- * Modulates the memblock size that non-atomic reducers use 
- *
- * \return bool true for success, false for failure
- *
- ******************************************************************************
- */
-
-#if 0  // No longer needed as we calculate blocks used for each kernel
-void setCudaMaxBlocks(unsigned int blocks)
-{ 
-  if(!getCudaReducerActive()) {
-    freeCudaReductionMemBlock();
-    s_cuda_max_blocks = blocks;
-    std::cerr << "\n Reset cudaMaxBlocks to " << s_cuda_max_blocks << std::endl;
-
-  }
-  else {
-    std::cerr << "\n Cannot set CudaMaxBlocks -- we have active reducers present, "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    std::abort();
-  }
-}
-
-unsigned int getCudaMaxBlocks()
-{
-  return s_cuda_max_blocks;
-}
-
-#endif
-
-
-#if 0
-/*!
- ******************************************************************************
- *
- * \brief Set the Max Number of Reducers that RAJA will launch
- *
- * Modulates the memblock size that non-atomic reducers use 
- *
- * \return bool true for success, false for failure
- *
- ******************************************************************************
- */
-void setCudaMaxReducers(unsigned int reducers)
-{ 
-  if(!getCudaReducerActive()) {
-    freeCudaReductionMemBlock();
-    s_cuda_max_reducers = reducers;
-    std::cerr << "\n Reset cudaMaxReducers to " << s_cuda_max_reducers << std::endl;
-  }
-  else {
-    std::cerr << "\n Cannot set CudaMaxReducers -- we have active reducers present, "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    std::abort();
-  }  
-}
-
-
-/*
-*******************************************************************************
-*
-* Return number of active cuda reducer objects.
-*
-*******************************************************************************
-*/
-int getCudaReducerActiveCount() { return s_cuda_reducer_active_count; }
-
-#endif
-
-
-#if 0
-/*
-*******************************************************************************
-*
-* Return number of active cuda memblocks.
-*
-*******************************************************************************
-*/
-int getCudaMemblockUsedCount() { return s_cuda_memblock_used_count; }
-
-#endif
 
 
 bool getCudaReducerActive()
@@ -711,99 +607,6 @@ bool getCudaReducerActive()
     active = s_tally_cache->active();
   }
   return active;
-}
-
-/*
-*******************************************************************************
-*
-* Return next available valid reduction id, or complain and exit if
-* no valid id is available.
-*
-*******************************************************************************
-*/
-int getCudaReductionId()
-{
-  if (s_cuda_reduction_id_used == 0) {
-    
-    s_cuda_reduction_id_used = (bool*)realloc(s_cuda_reduction_id_used,s_cuda_max_reducers * sizeof(bool));
-    for (int id = 0; id < s_cuda_max_reducers; ++id) {
-      s_cuda_reduction_id_used[id] = false;
-    }
-  }
-
-  int id = 0;
-  while (id < s_cuda_max_reducers && s_cuda_reduction_id_used[id]) {
-    id++;
-  }
-
-  if (id >= s_cuda_max_reducers) {
-    std::cerr << "\n Exceeded allowable RAJA CUDA reduction count, "
-              << s_cuda_max_reducers << " , FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-    exit(1);
-  }
-
-  s_cuda_reduction_id_used[id] = true;
-
-  return id;
-}
-
-/*
-*******************************************************************************
-*
-* Release given reduction id and make inactive.
-*
-*******************************************************************************
-*/
-void releaseCudaReductionId(int id)
-{
-  if (id < s_cuda_max_reducers) {
-    s_cuda_reduction_id_used[id] = false;
-  }
-}
-
-/*
-*******************************************************************************
-*
-* Return pointer into RAJA-CUDA reduction device memory block
-* for reducer object with given id. Allocate block if not already allocated.
-*
-*******************************************************************************
-*/
-void* getCudaReductionMemBlockInternal(int id, size_t size, size_t alignment)
-{
-  void* device_memblock = nullptr;
-
-  if (s_raja_cuda_forall_level > 0) {
-
-    if (!s_cuda_reduction_mem_block) {
-      cudaErrchk(
-          cudaMalloc((void**)&s_cuda_reduction_mem_block,
-                     sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks * s_cuda_max_reducers ) );
-
-      atexit(freeCudaReductionMemBlock);
-    }
-
-    int numBlocks = s_cuda_launch_gridDim.x *
-                    s_cuda_launch_gridDim.y *
-                    s_cuda_launch_gridDim.z;
-
-    size_t allocation_size = size * numBlocks;
-    size_t max_allocation_size = sizeof(CudaReductionDummyBlockType) * s_cuda_max_blocks;
-
-    if (numBlocks > s_cuda_max_blocks) {
-      std::cerr << "\n CudaMaxBlocks too low for kernel with " << numBlocks << " blocks, "
-                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-      std::abort();
-    } else if (allocation_size > max_allocation_size) {
-      std::cerr << "\n Couldn't get a MemBlock of enough size, "
-                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-      std::abort();
-    }
-
-    device_memblock = s_cuda_reduction_mem_block + (id * s_cuda_max_blocks);
-  }
-
-  return device_memblock;
 }
 
 
@@ -828,24 +631,6 @@ void getCudaReductionMemBlockPool(void** device_memblock)
 void releaseCudaReductionMemBlockPool(void **device_memblock)
 {
   s_cuda_reduction_mem_block_pool->free(*device_memblock);
-}
-
-
-/*
-*******************************************************************************
-*
-* Free device memory blocks used in RAJA-Cuda reductions.
-*
-*******************************************************************************
-*/
-void freeCudaReductionMemBlock()
-{
-  if (s_cuda_reduction_mem_block != 0) {
-    cudaErrchk(cudaFree(s_cuda_reduction_mem_block));
-    s_cuda_reduction_mem_block = 0;
-    free(s_cuda_reduction_id_used); 
-    s_cuda_reduction_id_used = 0;
-  }
 }
 
 

@@ -154,10 +154,8 @@ public:
   explicit ReduceMin(T init_val)
       : m_parent(this),
         m_tally(NULL),
-        m_val(init_val),
-        m_myID(-1)
+        m_val(init_val)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = init_val;
   }
@@ -173,8 +171,7 @@ public:
       : m_parent(other.m_parent),
 #endif
         m_tally(other.m_tally),
-        m_val(other.m_val),
-        m_myID(other.m_myID)
+        m_val(other.m_val)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -215,7 +212,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
       m_parent->min(m_val);
@@ -269,7 +265,6 @@ private:
   const my_type* m_parent;
   CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
-  int m_myID;
 
   RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
@@ -362,10 +357,8 @@ public:
   explicit ReduceMax(T init_val)
       : m_parent(this),
         m_tally(NULL),
-        m_val(init_val),
-        m_myID(-1)
+        m_val(init_val)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = init_val;
   }
@@ -386,8 +379,7 @@ public:
       : m_parent(other.m_parent),
 #endif
         m_tally(other.m_tally),
-        m_val(other.m_val),
-        m_myID(other.m_myID)
+        m_val(other.m_val)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -430,7 +422,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
       m_parent->max(m_val);
@@ -484,7 +475,6 @@ private:
   const my_type* m_parent;
   CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
-  int m_myID;
 
   RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
@@ -579,10 +569,8 @@ public:
         m_tally(NULL),
         m_blockdata(NULL),
         m_val(init_val),
-        m_custom_init(initializer),
-        m_myID(-1)
+        m_custom_init(initializer)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyType<T>>();
     m_tally->tally = initializer;
     m_tally->retiredBlocks = static_cast<GridSizeType>(0);
@@ -606,8 +594,7 @@ public:
         m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
         m_val(other.m_custom_init),
-        m_custom_init(other.m_custom_init),
-        m_myID(other.m_myID)
+        m_custom_init(other.m_custom_init)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -685,7 +672,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
       releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
@@ -742,7 +728,6 @@ private:
   T *m_blockdata;
   mutable T m_val;
   T m_custom_init;
-  int m_myID;
 
   //
   // Reduces the values in a cuda block into threadId = 0
@@ -844,10 +829,8 @@ public:
       : m_parent(this),
         m_tally(NULL),
         m_val(init_val),
-        m_custom_init(initializer),
-        m_myID(-1)
+        m_custom_init(initializer)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionTallyTypeAtomic<T>>();
     m_tally->tally = initializer;
   }
@@ -869,8 +852,7 @@ public:
 #endif
         m_tally(other.m_tally),
         m_val(other.m_custom_init),
-        m_custom_init(other.m_custom_init),
-        m_myID(other.m_myID)
+        m_custom_init(other.m_custom_init)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -913,7 +895,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
     }
     else if (m_parent) {
       *m_parent += m_val;
@@ -968,7 +949,6 @@ private:
   CudaReductionTallyTypeAtomic<T> *m_tally;
   mutable T m_val;
   T m_custom_init;
-  int m_myID;
 
   RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
@@ -1066,10 +1046,8 @@ public:
         m_tally(NULL),
         m_blockdata(NULL),
         m_val(init_val),
-        m_idx(init_loc),
-        m_myID(-1)
+        m_idx(init_loc)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionLocTallyType<T>>();
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
@@ -1094,8 +1072,7 @@ public:
         m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
         m_val(other.m_val),
-        m_idx(other.m_idx),
-        m_myID(other.m_myID)
+        m_idx(other.m_idx)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -1103,9 +1080,7 @@ public:
       if (device_tally) {
         m_tally = device_tally;
         m_parent = NULL;
-        //getCudaReductionMemBlockPool<CudaReductionDummyBlockType>((void**)&m_blockdata);
         getCudaReductionMemBlockPool<CudaReductionLocType<T>>((void**)&m_blockdata);
-        //m_blockdata = getCudaReductionMemBlock<CudaReductionLocType<T>>(m_myID);
       }
     }
 #endif
@@ -1182,7 +1157,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
       releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
@@ -1264,7 +1238,6 @@ private:
   CudaReductionLocType<T> *m_blockdata;
   mutable T m_val;
   mutable Index_type m_idx;
-  int m_myID;
 
   RAJA_DEVICE RAJA_INLINE
   CudaReductionLocType<T> block_reduce(T val, Index_type idx)
@@ -1374,10 +1347,8 @@ public:
         m_tally(NULL),
         m_blockdata(NULL),
         m_val(init_val),
-        m_idx(init_loc),
-        m_myID(-1)
+        m_idx(init_loc)
   {
-    m_myID = getCudaReductionId();
     m_tally = getCudaReductionTallyBlockHost<CudaReductionLocTallyType<T>>();
     m_tally->tally.val = init_val;
     m_tally->tally.idx = init_loc;
@@ -1402,8 +1373,7 @@ public:
         m_tally(other.m_tally),
         m_blockdata(other.m_blockdata),
         m_val(other.m_val),
-        m_idx(other.m_idx),
-        m_myID(other.m_myID)
+        m_idx(other.m_idx)
   {
 #if !defined(__CUDA_ARCH__)
     if (m_parent) {
@@ -1411,9 +1381,7 @@ public:
       if (device_tally) {
         m_tally = device_tally;
         m_parent = NULL;
-        //getCudaReductionMemBlockPool<CudaReductionDummyBlockType>((void**)&m_blockdata);
         getCudaReductionMemBlockPool<CudaReductionLocType<T>>((void**)&m_blockdata);
-        //m_blockdata = getCudaReductionMemBlock<CudaReductionLocType<T>>(m_myID);
       }
     }
 #endif
@@ -1490,7 +1458,6 @@ public:
 #else
     if (m_parent == this) {
       releaseCudaReductionTallyBlockHost(m_tally);
-      releaseCudaReductionId(m_myID);
       releaseCudaReductionMemBlockPool((void**)&m_blockdata);
     }
     else if (m_parent) {
@@ -1572,7 +1539,6 @@ private:
   CudaReductionLocType<T> *m_blockdata;
   mutable T m_val;
   mutable Index_type m_idx;
-  int m_myID;
 
   RAJA_DEVICE RAJA_INLINE
   CudaReductionLocType<T> block_reduce(T val, Index_type idx)
