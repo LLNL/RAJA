@@ -690,6 +690,8 @@ int getCudaReducerActiveCount() { return s_cuda_reducer_active_count; }
 
 #endif
 
+
+#if 0
 /*
 *******************************************************************************
 *
@@ -698,6 +700,9 @@ int getCudaReducerActiveCount() { return s_cuda_reducer_active_count; }
 *******************************************************************************
 */
 int getCudaMemblockUsedCount() { return s_cuda_memblock_used_count; }
+
+#endif
+
 
 bool getCudaReducerActive()
 {
@@ -956,6 +961,9 @@ template void getCudaReductionMemBlockPool<double>(void**);
 template void getCudaReductionMemBlockPool<float>(void**);
 template void getCudaReductionMemBlockPool<int>(void**);
 template void getCudaReductionMemBlockPool<CudaReductionDummyBlockType>(void**);
+template void getCudaReductionMemBlockPool<CudaReductionLocType<double>>(void**);
+template void getCudaReductionMemBlockPool<CudaReductionLocType<float>>(void**);
+template void getCudaReductionMemBlockPool<CudaReductionLocType<int>>(void**);
 
 
 }  // closing brace for RAJA namespace
