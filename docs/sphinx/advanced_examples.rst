@@ -41,7 +41,7 @@ the directories containing the proxy app examples.
     illustrates ten different execution patterns that can be enabled using
     RAJA. These patterns include sequential execution, six variants
     using OpenMP (using RAJA IndexSets for tiling, permuting elements, 
-    coloring, dependency scheduling, etc.), CilkPlus, and two GPU variants
+    coloring, dependency scheduling, etc.), and two GPU variants
     that use CUDA. Some of these require specific initialization code 
     for data and RAJA IndexSets. However, all variations use the same 
     algorithm source code; different variations use different RAJA

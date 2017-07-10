@@ -60,6 +60,8 @@
 
 #include "RAJA/util/types.hpp"
 
+#include <cstddef>
+
 namespace RAJA
 {
 
@@ -211,7 +213,6 @@ struct CudaReductionLocTallyType {
  ******************************************************************************
  */
 void setCudaMaxBlocks(unsigned int blocks);
-unsigned int getCudaMaxBlocks();
 
 #endif
 #if 0
@@ -239,20 +240,7 @@ void setCudaMaxReducers(unsigned int reducers);
  *
  ******************************************************************************
  */
-int getCudaReducerActiveCount();
-
-/*!
- ******************************************************************************
- *
- * \brief Get the number of active cuda memblocks.
- *
- * \return int number of active cuda memblocks.
- *
- * note: getCudaMemblockUsedCount() is the number of active non-atomic reducers
- *
- ******************************************************************************
- */
-int getCudaMemblockUsedCount();
+bool getCudaReducerActive();
 
 /*!
  ******************************************************************************
@@ -292,8 +280,20 @@ void releaseCudaReductionId(int id);
  *
  ******************************************************************************
  */
-void getCudaReductionTallyBlockSetDirty(int id, void** tally);
-void getCudaReductionTallyBlock(int id, void** tally);
+void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr);
+void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment = alignof(std::max_align_t));
+
+template <typename T>
+T* getCudaReductionTallyBlockDevice(T* host_ptr)
+{
+  return (T*)getCudaReductionTallyBlockDeviceInternal((void*)host_ptr);
+}
+
+template <typename T>
+T* getCudaReductionTallyBlockHost()
+{
+  return (T*)getCudaReductionTallyBlockHostInternal(sizeof(T), alignof(T));
+}
 
 /*!
  ******************************************************************************
@@ -302,7 +302,13 @@ void getCudaReductionTallyBlock(int id, void** tally);
  *
  ******************************************************************************
  */
-void releaseCudaReductionTallyBlock(int id);
+void releaseCudaReductionTallyBlockHostInternal(void* host_ptr);
+
+template <typename T>
+void releaseCudaReductionTallyBlockHost(T* host_ptr)
+{
+  releaseCudaReductionTallyBlockHostInternal((void*)host_ptr);
+}
 
 /*!
  ******************************************************************************
@@ -331,7 +337,7 @@ void afterCudaKernelLaunch();
  *
  ******************************************************************************
  */
-void beforeCudaReadTallyBlockAsync(int id);
+void beforeCudaReadTallyBlockAsync(void* host_ptr);
 
 /*!
  ******************************************************************************
@@ -341,7 +347,7 @@ void beforeCudaReadTallyBlockAsync(int id);
  *
  ******************************************************************************
  */
-void beforeCudaReadTallyBlockSync(int id);
+void beforeCudaReadTallyBlockSync(void* host_ptr);
 
 /*!
  ******************************************************************************
@@ -351,53 +357,15 @@ void beforeCudaReadTallyBlockSync(int id);
  *
  ******************************************************************************
  */
-template <bool Async>
-void beforeCudaReadTallyBlock(int id)
+template <bool Async, typename T>
+void beforeCudaReadTallyBlock(T* host_ptr)
 {
   if (Async) {
-    beforeCudaReadTallyBlockAsync(id);
+    beforeCudaReadTallyBlockAsync((void*)host_ptr);
   } else {
-    beforeCudaReadTallyBlockSync(id);
+    beforeCudaReadTallyBlockSync((void*)host_ptr);
   }
 }
-
-/*!
- ******************************************************************************
- *
- * \brief  Earmark amount of device shared memory and get byte offset into
- *         device shared memory.
- *
- * \return int Byte offset into dynamic shared memory.
- *
- * \param[in] reductionBlockDim Dimensions of blocks expected by this
- *                              reduction variable.
- * \param[in] size Size of shared memory in bytes for each thread.
- *
- ******************************************************************************
- */
-int getCudaSharedmemOffset(int id, dim3 reductionBlockDim, int size);
-
-/*!
- ******************************************************************************
- *
- * \brief  Get the amount in bytes of shared memory required for the current
- *         kernel launch and checks the launch parameters.
- *
- * \param[in] launchGridDim GridDim kernel launch parameter.
- * \param[in] launchBlockDim BlockDim kernel launch parameter.
- *
- ******************************************************************************
- */
-int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim);
-
-/*!
- ******************************************************************************
- *
- * \brief  Free managed memory block used in RAJA-Cuda reductions.
- *
- ******************************************************************************
- */
-void freeCudaReductionTallyBlock();
 
 /*!
  ******************************************************************************
@@ -420,7 +388,13 @@ void freeCudaReductionTallyBlock();
  *
  ******************************************************************************
  */
-void getCudaReductionMemBlock(int id, void** device_memblock);
+void* getCudaReductionMemBlockInternal(int id, size_t size, size_t alignment = alignof(std::max_align_t));
+
+template <typename T>
+T* getCudaReductionMemBlock(int id)
+{
+  return (T*)getCudaReductionMemBlockInternal(id, sizeof(T), alignof(T));
+}
 
 
 template<typename T>
