@@ -44,9 +44,3 @@
 raja_add_executable(
   NAME example-raja-pi
   SOURCES pi.cxx)
-
-if(RAJA_ENABLE_TARGET_OPENMP)
-  raja_add_executable(
-    NAME example-raja-pi-offload
-    SOURCES pi_offload.cxx)
-endif()
