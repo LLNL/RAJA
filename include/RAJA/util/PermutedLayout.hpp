@@ -71,12 +71,13 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
                           std::array<size_t, Rank> permutation)
     -> Layout<Rank, IdxLin>
 {
-  std::array<IdxLin, Rank> strides, mods;
-  std::array<IdxLin, Rank> folded_strides, lmods;
+  std::array<IdxLin, Rank> strides;
+  std::array<IdxLin, Rank> folded_strides;
   for (size_t i = 0; i < Rank; ++i) {
-    folded_strides[i] = 1;
-    for (size_t j = 0; j < i; ++j) {
-      folded_strides[j] *= sizes[permutation[i]];
+    // If the size of dimension i is zero, then the stride is zero
+    folded_strides[i] = sizes[permutation[i]] ? 1 : 0;
+    for (size_t j = i+1; j < Rank; ++j) {
+      folded_strides[i] *= sizes[permutation[j]] ? sizes[permutation[j]] : 1;
     }
   }
 
@@ -84,16 +85,8 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
     strides[permutation[i]] = folded_strides[i];
   }
 
-  for (size_t i = 1; i < Rank; i++) {
-    lmods[i] = folded_strides[i - 1];
-  }
-  lmods[0] = RAJA::operators::limits<IdxLin>::max();
 
-  for (size_t i = 0; i < Rank; ++i) {
-    mods[permutation[i]] = lmods[i];
-  }
-
-  return Layout<Rank, IdxLin>(sizes, strides, mods);
+  return Layout<Rank, IdxLin>(sizes, strides);
 }
 
 

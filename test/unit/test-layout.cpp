@@ -53,7 +53,7 @@ RAJA_INDEX_VALUE(TIX, "TIX");
 RAJA_INDEX_VALUE(TIY, "TIY");
 RAJA_INDEX_VALUE(TIL, "TIL");
 
-TEST(LayoutTest, 1D)
+TEST(OffsetLayoutTest, 1D)
 {
   using layout = RAJA::OffsetLayout<1>;
 
@@ -116,7 +116,7 @@ TEST(LayoutTest, OffsetVsRegular)
   }
 }
 
-TEST(LayoutTest, 2D_IJ)
+TEST(OffsetLayoutTest, 2D_IJ)
 {
   /*
    * Construct a 2D layout:
@@ -143,7 +143,7 @@ TEST(LayoutTest, 2D_IJ)
   ASSERT_EQ(8, layout(1, 0));
 }
 
-TEST(LayoutTest, 2D_JI)
+TEST(OffsetLayoutTest, 2D_JI)
 {
   typedef RAJA::OffsetLayout<2> my_layout;
 
@@ -171,7 +171,7 @@ TEST(LayoutTest, 2D_JI)
   ASSERT_EQ(8, layout(1, 0));
 }
 
-TEST(LayoutTest, View)
+TEST(OffsetLayoutTest, View)
 {
   int* data = new int[10];
 
@@ -188,4 +188,200 @@ TEST(LayoutTest, View)
 
   ASSERT_EQ(data[0], view(1));
   ASSERT_EQ(data[9], view(10));
+}
+
+
+TEST(LayoutTest, 2D_IJ)
+{
+  typedef RAJA::Layout<2> my_layout;
+
+  /*
+   * Construct a 2D layout:
+   *
+   * I is stride 5
+   * J is stride 1
+   *
+   * Linear indices range from [0, 15)
+   *
+   */
+
+  // Construct using variadic "sizes" ctor
+  const my_layout layout_a(3, 5);
+
+  // Construct using copy ctor
+  const my_layout layout_b(layout_a);
+
+  // Test default ctor and assignment operator
+  my_layout layout;
+  layout = layout_b;
+
+
+  ASSERT_EQ(0, layout(0, 0));
+
+  ASSERT_EQ(5, layout(1, 0));
+  ASSERT_EQ(15, layout(3, 0));
+
+  ASSERT_EQ(1, layout(0, 1));
+  ASSERT_EQ(5, layout(0, 5));
+
+  // Check that we get the identity (mod 15)
+  for(int k = 0;k < 20;++ k){
+
+    // inverse map
+    int i, j;
+    layout.toIndices(k, i, j);
+
+    // forward map
+    int k2 = layout(i,j);
+
+    // check ident
+    ASSERT_EQ(k%15, k2);
+
+    // check with a and b
+    ASSERT_EQ(k2, layout_a(i,j));
+    ASSERT_EQ(k2, layout_b(i,j));
+  }
+}
+
+TEST(LayoutTest, 2D_JI)
+{
+  typedef RAJA::Layout<2> my_layout;
+
+  /*
+   * Construct a 2D layout:
+   *
+   * I is stride 1
+   * J is stride 3
+   *
+   * Linear indices range from [0, 15)
+   *
+   */
+  const my_layout layout =
+      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI::value);
+
+  ASSERT_EQ(0, layout(0, 0));
+
+  ASSERT_EQ(1, layout(1, 0));
+  ASSERT_EQ(3, layout(3, 0));
+
+  ASSERT_EQ(3, layout(0, 1));
+  ASSERT_EQ(15, layout(0, 5));
+
+  // Check that we get the identity (mod 15)
+  for(int k = 0;k < 20;++ k){
+
+    // inverse map
+    int i, j;
+    layout.toIndices(k, i, j);
+
+    // forward map
+    int k2 = layout(i,j);
+
+    ASSERT_EQ(k%15, k2);
+  }
+}
+
+
+TEST(LayoutTest, 2D_IJ_ProjJ)
+{
+  typedef RAJA::Layout<2> my_layout;
+
+  /*
+   * Construct a 2D projective layout:
+   *
+   * I is stride 1
+   * J is stride 0  -  projected out
+   *
+   * Linear indices range from [0, 7)
+   *
+   * values of J should have no effect on linear index
+   *
+   * All linear indices should produce J=0
+   *
+   */
+
+  // Construct using variadic "sizes" ctor
+  // Zero for J size should correctly produce projective layout
+  const my_layout layout(7, 0);
+
+  ASSERT_EQ(0, layout(0, 0));
+
+  ASSERT_EQ(1, layout(1, 0));
+  ASSERT_EQ(3, layout(3, 0));
+
+  // J should be projected out
+  ASSERT_EQ(0, layout(0, 1));
+  ASSERT_EQ(0, layout(0, 5));
+
+  // Check that we get the identity (mod 7)
+  for(int k = 0;k < 20;++ k){
+
+    // inverse map
+    int i, j;
+    layout.toIndices(k, i, j);
+
+    // forward map
+    int k2 = layout(i,j);
+
+    // check ident
+    ASSERT_EQ(k%7, k2);
+
+    // check projection of j
+    ASSERT_EQ(j, 0);
+  }
+}
+
+
+TEST(LayoutTest, 3D_KJI_ProjJ)
+{
+  typedef RAJA::Layout<3> my_layout;
+
+  /*
+   * Construct a 3D projective layout:
+   *
+   * I is stride 1
+   * J is stride 0  -  projected out
+   * K is stride 3
+   *
+   * Linear indices range from [0, 21)
+   *
+   * values of J should have no effect on linear index
+   *
+   * All linear indices should produce J=0
+   *
+   */
+
+  // Construct using variadic "sizes" ctor
+  // Zero for J size should correctly produce projective layout
+  const my_layout layout =
+      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI::value);
+
+  ASSERT_EQ(0, layout(0, 0, 0));
+
+  ASSERT_EQ(1, layout(1, 0, 0));
+  ASSERT_EQ(3, layout(3, 0, 0));
+
+  // J should be projected out
+  ASSERT_EQ(0, layout(0, 1, 0));
+  ASSERT_EQ(0, layout(0, 5, 0));
+
+  ASSERT_EQ(6, layout(0, 0, 2));
+  ASSERT_EQ(12, layout(0, 0, 4));
+
+  // Check that we get the identity (mod 21)
+  for(int x = 0;x < 40;++ x){
+
+    // inverse map
+    int i, j, k;
+    layout.toIndices(x, i, j, k);
+
+    // forward map
+    int x2 = layout(i,j,k);
+
+    // check ident
+    ASSERT_EQ(x%21, x2);
+
+    // check projection of j
+    ASSERT_EQ(j, 0);
+  }
 }
