@@ -1,12 +1,12 @@
 ###############################################################################
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-#    
+#
 # Produced at the Lawrence Livermore National Laboratory
-#    
+#
 # LLNL-CODE-689114
-# 
+#
 # All rights reserved.
-#  
+#
 # This file is part of RAJA.
 #
 # For additional details, please also read RAJA/LICENSE.
@@ -90,7 +90,7 @@ if (RAJA_ENABLE_TESTS)
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG release-1.7.0
-      CMAKE_ARGS                
+      CMAKE_ARGS
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
       INSTALL_COMMAND ""
