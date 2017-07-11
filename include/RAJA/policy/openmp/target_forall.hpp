@@ -3,19 +3,20 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for OpenMP execution.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for OpenMP.
  *
- *          These methods work only on platforms that support OpenMP.
+ *          These methods should work on any platform that supports OpenMP.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
+#ifndef RAJA_target_forall_openmp_HXX
+#define RAJA_target_forall_openmp_HXX
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,23 +60,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/policy/openmp/policy.hpp"
 
 #include <omp.h>
-#include <iostream>
-#include <thread>
 
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
+namespace RAJA
+{
 
-#include "RAJA/policy/openmp/forallN.hpp"
+namespace impl
+{
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
-#endif
+///
+/// OpenMP target parallel for policy implementation
+///
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+template <size_t Teams, typename Iterable, typename Func>
+RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
+                        Iterable&& iter,
+                        Func&& loop_body)
+{
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+#pragma omp target teams distribute parallel for num_teams(Teams) \
+  schedule(static,1) map(to: body)
+  for (Index_type i = 0; i < distance; ++i) {
+    Body ib = body;
+    ib(begin[i]);
+  }
+}
+
+template <size_t Teams, typename Iterable, typename Func>
+RAJA_INLINE void forall_Icount(const omp_target_parallel_for_exec<Teams>&,
+                               Iterable&& iter,
+                               Index_type icount,
+                               Func&& loop_body)
+{
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+#pragma omp target teams distribute parallel for num_teams(Teams) \
+    schedule(static, 1) map(to: body)
+  for (Index_type i = 0; i < distance; ++i) {
+    Body ib = body;
+    ib(i + icount, begin[i]);
+  }
+}
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for if defined(RAJA_TARGET_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
