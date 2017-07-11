@@ -14,13 +14,11 @@
 #ifndef BASIC_MEMPOOL_HXX_
 #define BASIC_MEMPOOL_HXX_
 
-//#include "Messages.h"
-//#include "MemoryMacros.h"
-
 #include <cassert>
 #include <list>
 #include <map>
 #include <cstddef>
+#include <cstdlib>
 
 namespace RAJA {
 
@@ -61,9 +59,9 @@ public:
       m_free_space({ free_value_type{ptr, static_cast<char*>(ptr)+size} }),
       m_used_space()
   {
-    //const char me[] = "memory_arena::memory_arena";
     if (m_allocation.begin == nullptr) {
-      //ctlerror_any(me, "Attempt to create memory_arena with no memory");
+      fprintf(stderr, "Attempt to create memory_arena with no memory");
+      std::abort();
     }
   }
 
@@ -121,7 +119,6 @@ public:
 
   bool give(void* ptr)
   {
-    //const char me[] = "memory_arena::give";
     if ( m_allocation.begin <= ptr && ptr < m_allocation.end ) {
 
       used_type::iterator found = m_used_space.find(ptr);
@@ -133,7 +130,8 @@ public:
         m_used_space.erase(found);
 
       } else {
-        //ctlerror_any(me, "Invalid free %p", ptr);
+        fprintf(stderr, "Invalid free %p", ptr);
+        std::abort();
       }
 
       return true;
@@ -164,7 +162,8 @@ private:
 
         // check if prev can cover next too
         if (next != invl) {
-          //ARES_ASSERT_ERROR(next->first != begin);
+          assert(next->first != begin);
+
           if (next->first == end) {
             // extend prev to cover next too
             prev->second = next->second;
@@ -178,7 +177,8 @@ private:
     }
 
     if (next != invl) {
-      //ARES_ASSERT_ERROR(next->first != begin);
+      assert(next->first != begin);
+      
       if (next->first == end) {
         // extend next to cover [begin, end)
         m_free_space.insert(next, free_value_type{begin, next->second});
@@ -299,7 +299,6 @@ public:
 
   void free(const void* cptr)
   {
-    //const char me[] = "mempool::free";
     void* ptr = const_cast<void*>(cptr);
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end; ++iter ) {
@@ -309,7 +308,7 @@ public:
       }
     }
     if (ptr != nullptr) {
-      //ctlerror_any(me, "Unknown pointer %p", ptr);
+      fprintf(stderr, "Unknown pointer %p", ptr);
     }
   }
 
@@ -322,27 +321,24 @@ private:
 };
 
 
-#if 0
 struct generic_allocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    return MALLOT(char, nbytes);
+    return malloc( nbytes);
   }
 
   // returns true on success, false on failure
   bool free(void* ptr)
   {
-    FREEMEM(ptr);
+    free(ptr);
     return true;
   }
 
 };
 
-#endif
-
-//#ifdef USE_CUDA
+#ifdef RAJA_ENABLE_CUDA
 struct cuda_pinned_allocator {
 
   // returns a valid pointer on success, nullptr on failure
@@ -382,8 +378,7 @@ struct cuda_allocator {
 
 };
 
-
-//#endif
+#endif
 
 } /* end namespace basic_mempool */
 
