@@ -226,6 +226,56 @@ template <size_t... RangeInts, typename IdxLin>
 constexpr size_t
     LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
 
+
+/*!
+ * @brief A mapping of n-dimensional index space to a linear index space.
+ *
+ * This is particularly useful for creating multi-dimensional arrays with the
+ * RAJA::View class, and other tasks such as mapping logical i,j,k zone
+ * indices to a flattened zone id.
+ *
+ * For example:
+ *
+ *     // Create a layout object
+ *     Layout<3> layout(5,7,11);
+ *
+ *     // Map from 3d index space to linear
+ *     int lin = layout(2,3,1);   // lin=198
+ *
+ *     // Map from linear space to 3d indices
+ *     int i, j, k;
+ *     layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
+ *
+ *
+ * The above example creates a 3-d layout object with dimension sizes 5, 7,
+ * and 11.  So the total index space covers 5*7*11=385 unique indices.
+ * The operator() provides a mapping from 3-d indices to linear, and the
+ * toIndices provides the inverse.
+ *
+ * The default striding has the first index (left-most)as the longest stride,
+ * and the last (right-most) index with stride-1.
+ *
+ * To achieve other striding, see the RAJA::make_permuted_layout function
+ * which can a permutation to the default striding.
+ *
+ * Layout supports projections, 0 or more dimensions may be of size zero.
+ * In this case, the linear index space is invariant for those dimensions,
+ * and toIndicies(...) will always produce a zero for that dimensions index.
+ *
+ * An example of a "projected" Layout:
+ *
+ *     // Create a layout with a degenerate dimensions
+ *     Layout<3> layout(3, 0, 5);
+ *
+ *     // The second (J) index is projected out
+ *     int lin1 = layout(0, 10, 0);   // lin1 = 0
+ *     int lin2 = layout(0, 5, 1);    // lin2 = 1
+ *
+ *     // The inverse mapping always produces a 0 for J
+ *     int i,j,k;
+ *     layout.toIndices(lin2, i, j, k); // i,j,k = {0, 0, 1}
+ *
+ */
 template <size_t n_dims, typename IdxLin = Index_type>
 using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
 
