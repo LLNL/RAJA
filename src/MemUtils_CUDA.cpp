@@ -626,7 +626,6 @@ void getCudaReductionMemBlockPool(void** device_memblock)
 {
 #endif
   if (s_cuda_reduction_mem_block_pool == 0) {
-    //fprintf(stderr,"Setup Mempool\n");
     s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
     //atexit(freeCudaReductionMemBlock);
   }
@@ -636,9 +635,7 @@ void getCudaReductionMemBlockPool(void** device_memblock)
 
   size_t slots = dims.x * dims.y * dims.z;
   if(slots) {
-    //fprintf(stderr,"mempool slots = %ld\n",slots);
     *device_memblock = s_cuda_reduction_mem_block_pool->malloc<T>(slots);
-    //fprintf(stderr,"Thread %d : device_memblock %p with slots %d\n",tid,*device_memblock,slots);
   }
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -653,7 +650,6 @@ void releaseCudaReductionMemBlockPool(void **device_memblock)
 {
 #endif
   if(*device_memblock) {
-    fprintf(stderr,"Release Pool %p\n",*device_memblock);
     s_cuda_reduction_mem_block_pool->free(*device_memblock);
   }
 #if defined(RAJA_ENABLE_OPENMP)
