@@ -60,6 +60,9 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/util/concepts.hpp"
+#include "RAJA/util/type_traits.hpp"
+
 namespace RAJA
 {
 
@@ -100,10 +103,9 @@ public:
     return s(i);
   }
 
-  detail::policy_invoker<sizeof...(Policies)-1,
-                         sizeof...(Policies),
-                         Policies...>
-      _policies;
+  detail::
+      policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
+          _policies;
 };
 
 namespace detail
@@ -149,9 +151,14 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
-namespace wrap {
-template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
-RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body);
+namespace wrap
+{
+
+template <typename ExecPolicy, typename Container, typename LoopBody>
+RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>> forall(
+    const ExecPolicy &p,
+    Container &&c,
+    LoopBody loop_body);
 
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
@@ -195,7 +202,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 template <size_t size, typename Policy, typename... rest>
 struct policy_invoker<0, size, Policy, rest...> {
   Policy _p;
-  policy_invoker(Policy p, rest... ) : _p(p) {}
+  policy_invoker(Policy p, rest...) : _p(p) {}
   template <typename Iterable, typename Body>
   void invoke(int offset, Iterable &&iter, Body &&body)
   {

@@ -102,9 +102,9 @@ using metalib::valid_expr;
 template <bool Bool>
 using bool_ = std::integral_constant<bool, Bool>;
 
-template <typename... BoolLike>
-auto conforms()
-    -> metalib::if_<metalib::all_of_t<BoolLike...>, std::true_type>;
+template <typename BoolLike>
+auto conforms(BoolLike)
+    -> metalib::if_<BoolLike, std::true_type>;
 
 /// metaprogramming concept for SFINAE checking of concepts
 template <template <typename...> class Thing, typename... Args>
@@ -243,14 +243,14 @@ using RandomAccessRange =
                   models<RandomAccessIterator<iterator_t<T>>>());
 
 template <typename T>
-using Integral = DefineConcept(conforms<std::is_integral<T>>());
+using Integral = DefineConcept(conforms(std::is_integral<T>()));
 
 template <typename T>
 using Signed = DefineConcept(models<Integral<T>>(),
-                             conforms<std::is_signed<T>>());
+                             conforms(std::is_signed<T>()));
 template <typename T>
 using Unsigned = DefineConcept(models<Integral<T>>(),
-                               conforms<std::is_unsigned<T>>());
+                               conforms(std::is_unsigned<T>()));
 
 }  // end namespace ___hidden_concepts
 
