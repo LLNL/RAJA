@@ -54,8 +54,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
 #include "RAJA/util/Operators.hpp"
+#include "RAJA/util/defines.hpp"
 
 ///
 /// Define max number of reductions allowed within a RAJA traversal
@@ -75,14 +75,14 @@ namespace reduce
 
 template <typename T>
 struct sum {
-  static constexpr T identity = T{0};
+  static constexpr T identity = T(0);
   RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v) { val += v; }
 };
 
 template <typename T>
 struct min {
-  static constexpr T identity = RAJA::operators::limits<T>::max();
+  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
@@ -92,7 +92,7 @@ struct min {
 
 template <typename T>
 struct max {
-  static constexpr T identity = RAJA::operators::limits<T>::min();
+  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
@@ -102,7 +102,7 @@ struct max {
 
 template <typename T, typename I>
 struct minloc {
-  static constexpr T identity = RAJA::operators::limits<T>::max();
+  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, I &loc, const T v, const I l)
   {
@@ -115,7 +115,7 @@ struct minloc {
 
 template <typename T, typename I>
 struct maxloc {
-  static constexpr T identity = RAJA::operators::limits<T>::min();
+  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE
   void operator()(T &val, I &loc, const T v, const I l)
   {
@@ -131,7 +131,6 @@ struct maxloc {
 #endif
 
 }
-
 
 ///
 /// Macros for type agnostic reduction operations.
