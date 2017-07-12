@@ -3,13 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA simd policy definitions.
+ * \brief   Header file for RAJA type trait definitions.
+ *
+ *          Definitions in this file will propagate to all RAJA header files.
  *
  ******************************************************************************
  */
 
-#ifndef policy_simd_HPP
-#define policy_simd_HPP
+#ifndef RAJA_type_traits_HPP
+#define RAJA_type_traits_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,24 +55,61 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/util/concepts.hpp"
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-///
-/// Segment execution policies
-///
 namespace RAJA
 {
 
-  using simd_exec = make_policy_pattern_t<Policy::simd, Pattern::forall>;
+namespace type_traits
+{
 
-}  // end of namespace RAJA
+  template <typename T>
+  using IterableValue = decltype(*std::begin(RAJA::concepts::val<T>()));
+
+  template <typename T>
+  using IteratorValue = decltype(*RAJA::concepts::val<T>());
+
+  template <typename T>
+  using is_bidirectional_iterator = concepts::requires_<concepts::BidirectionalIterator, T>;
+
+  template <typename T>
+  using is_bidirectional_range = concepts::requires_<concepts::BidirectionalRange, T>;
+
+  template <typename T>
+  using is_forward_iterator = concepts::requires_<concepts::ForwardIterator, T>;
+
+  template <typename T>
+  using is_forward_range = concepts::requires_<concepts::ForwardRange, T>;
+
+  template <typename T>
+  using is_random_access_iterator = concepts::requires_<concepts::RandomAccessIterator, T>;
+
+  template <typename T>
+  using is_random_access_range = concepts::requires_<concepts::RandomAccessRange, T>;
+
+  template <typename T>
+  using is_iterator = concepts::requires_<concepts::Iterator, T>;
+
+  template <typename T>
+  using is_range = concepts::requires_<concepts::Range, T>;
+
+  template <typename T>
+  using is_comparable = concepts::requires_<concepts::Comparable, T>;
+
+  template <typename T, typename U>
+  using is_comparable_to = concepts::requires_<concepts::ComparableTo, T, U>;
+
+  template <typename T>
+  using is_integral = concepts::requires_<concepts::Integral, T>;
+
+  template <typename T>
+  using is_signed = concepts::requires_<concepts::Signed, T>;
+
+  template <typename T>
+  using is_unsigned = concepts::requires_<concepts::Unsigned, T>;
+
+}  // end namespace type_traits
+
+}  // end namespace RAJA
 
 #endif

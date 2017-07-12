@@ -69,14 +69,13 @@ namespace RAJA
 ///
 /// Segment execution policies
 ///
-struct seq_exec
-    : public RAJA::make_policy_pattern<Policy::sequential, Pattern::forall> {
+struct seq_exec : make_policy_pattern_t<Policy::sequential, Pattern::forall> {
 };
 
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit : public seq_exec {
+struct seq_segit : make_policy_pattern_t<Policy::sequential, Pattern::forall> {
 };
 
 ///
@@ -86,8 +85,7 @@ struct seq_segit : public seq_exec {
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct seq_reduce
-    : public make_policy_pattern<Policy::sequential, Pattern::reduce> {
+struct seq_reduce : make_policy_pattern_t<Policy::sequential, Pattern::reduce> {
 };
 
 }  // closing brace for RAJA namespace

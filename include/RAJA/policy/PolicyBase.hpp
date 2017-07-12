@@ -53,103 +53,135 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <stddef.h>
+#include <cstddef>
+#include "RAJA/util/concepts.hpp"
+#include "RAJA/util/type_traits.hpp"
 
 namespace RAJA
 {
 
-enum class Policy { undefined, sequential, simd, openmp, cuda };
+enum class Policy { undefined, sequential, simd, openmp, openmp_target, cuda };
+
+enum class Pattern { undefined, forall, reduce, taskgraph };
 
 enum class Launch { undefined, sync, async };
 
-enum class Pattern {
-  undefined,
-  forall,
-  reduce,
-  taskgraph,
-};
-
-enum class Platform {
-  undefined = 0,
-  host = 1,
-  cuda = 2,
-  omp_target = 4
-};
+enum class Platform { undefined = 0, host = 1, cuda = 2, omp_target = 4 };
 
 struct PolicyBase {
 };
 
-template <Policy P = Policy::undefined,
-          Launch L = Launch::undefined,
-          Pattern Pat = Pattern::undefined,
-          Platform Plat = Platform::host
-          >
-struct PolicyBaseT : public PolicyBase {
-  static constexpr Policy policy = P;
-  static constexpr Launch launch = L;
-  static constexpr Pattern pattern = Pat;
-  static constexpr Platform platform = Plat;
+template <Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          Platform Platform_,
+          typename... Traits>
+struct PolicyBaseT : PolicyBase {
+  static constexpr Policy policy = Policy_;
+  static constexpr Pattern pattern = Pattern_;
+  static constexpr Launch launch = Launch_;
+  static constexpr Platform platform = Platform_;
 };
 
-template <typename Inner, typename... T>
-struct WrapperPolicy : public Inner {
+template <typename Inner>
+struct wrapper {
   using inner = Inner;
 };
 
-// "makers"
-
-template <typename Inner, typename... T>
-struct wrapper : public WrapperPolicy<Inner, T...> {
-};
-
-template <Policy Pol, Launch L, Pattern P>
-struct make_policy_launch_pattern : public PolicyBaseT<Pol, L, P> {
-};
-
-template <Policy Pol, Launch L, Pattern P, Platform Plat>
-struct make_policy_launch_pattern_platform : public PolicyBaseT<Pol, L, P, Plat> {
-};
-
-struct make_undefined
-    : public PolicyBaseT<Policy::undefined, Launch::undefined, Pattern::undefined> {
-};
-
-template <Policy P>
-struct make_policy
-    : public PolicyBaseT<P, Launch::undefined, Pattern::undefined> {
-};
-
-template <Launch L>
-struct make_launch
-    : public PolicyBaseT<Policy::undefined, L, Pattern::undefined> {
-};
-
-template <Pattern P>
-struct make_pattern
-    : public PolicyBaseT<Policy::undefined, Launch::undefined, P> {
-};
-
-template <Policy Pol, Launch L>
-struct make_policy_launch : public PolicyBaseT<Pol, L, Pattern::undefined> {
-};
-
-template <Policy Pol, Pattern P>
-struct make_policy_pattern : public PolicyBaseT<Pol, Launch::undefined, P> {
-};
-
-template <Policy Pol, Platform Plat>
-struct make_policy_platform : 
-  public PolicyBaseT<Pol, Launch::undefined, Pattern::undefined, Plat> {
-};
-
-template <Launch L, Pattern P>
-struct make_launch_pattern : public PolicyBaseT<Policy::undefined, L, P> {
-};
-
-template <Policy Pol, Pattern P, Platform Plat>
-struct make_policy_pattern_platform : public PolicyBaseT<Pol, Launch::undefined, P, Plat>
+namespace reduce
 {
+
+struct ordered {
 };
+
+}  // end namespace wrapper
+
+
+template <Policy Pol, Pattern Pat, typename... Args>
+using make_policy_pattern_t =
+    PolicyBaseT<Pol, Pat, Launch::undefined, Platform::undefined, Args...>;
+
+
+template <Policy Policy_,
+          Pattern Pattern_,
+          Launch Launch_,
+          Platform Platform_,
+          typename... Args>
+using make_policy_pattern_launch_platform_t =
+    PolicyBaseT<Policy_, Pattern_, Launch_, Platform_, Args...>;
+
+template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
+using make_policy_pattern_launch_t =
+    PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
+
+
+namespace concepts
+{
+
+namespace impl
+{
+template <typename T>
+using decay_t = typename std::decay<T>::type;
+}
+
+template <typename Pol>
+using ExecutionPolicy =
+  DefineConcept(conforms<std::is_same<Policy, impl::decay_t<decltype(Pol::policy)>>>(),
+                conforms<std::is_same<Pattern, impl::decay_t<decltype(Pol::pattern)>>>(),
+                conforms<std::is_same<Launch, impl::decay_t<decltype(Pol::launch)>>>(),
+                conforms<std::is_same<Platform, impl::decay_t<decltype(Pol::platform)>>>());
+
+template <typename Pol>
+using SequentialPolicy =
+    DefineConcept(models<ExecutionPolicy<Pol>>(),
+                  conforms<bool_<Pol::policy == Policy::sequential>>());
+
+template <typename Pol>
+using OpenMPPolicy =
+    DefineConcept(models<ExecutionPolicy<Pol>>(),
+                  conforms<bool_<Pol::policy == Policy::openmp>>());
+
+template <typename Pol>
+using OpenMPTargetPolicy =
+    DefineConcept(models<ExecutionPolicy<Pol>>(),
+                  conforms<bool_<Pol::policy == Policy::openmp_target>>());
+
+template <typename Pol>
+using CudaPolicy =
+    DefineConcept(models<ExecutionPolicy<Pol>>(),
+                  conforms<bool_<Pol::policy == Policy::cuda>>());
+
+template <typename Pol>
+using SimdPolicy =
+    DefineConcept(models<ExecutionPolicy<Pol>>(),
+                  conforms<bool_<Pol::policy == Policy::simd>>());
+
+}  // end namespace concepts
+
+namespace type_traits
+{
+
+template <typename Pol>
+using is_execution_policy = concepts::requires_<concepts::ExecutionPolicy, Pol>;
+
+template <typename Pol>
+using is_sequential_policy =
+    concepts::requires_<concepts::SequentialPolicy, Pol>;
+
+template <typename Pol>
+using is_openmp_policy = concepts::requires_<concepts::OpenMPPolicy, Pol>;
+
+template <typename Pol>
+using is_openmp_target_policy =
+    concepts::requires_<concepts::OpenMPTargetPolicy, Pol>;
+
+template <typename Pol>
+using is_cuda_policy = concepts::requires_<concepts::CudaPolicy, Pol>;
+
+template <typename Pol>
+using is_simd_policy = concepts::requires_<concepts::SimdPolicy, Pol>;
+
+}  // end namespace type_traits
 
 }  // end namespace RAJA
 

@@ -74,7 +74,7 @@ namespace RAJA
 {
 
 // HIDDEN namespace to encapsulate helper functions
-namespace HIDDEN
+namespace __hidden
 {
 /*!
  ******************************************************************************
@@ -625,7 +625,7 @@ public:
       if (threadId < WARP_SIZE) {
         temp = sd[threadId];
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-          temp += HIDDEN::shfl_xor<T>(temp, i);
+          temp += __hidden::shfl_xor<T>(temp, i);
         }
       }
 
@@ -666,7 +666,7 @@ public:
         if (threadId < WARP_SIZE) {
           temp = sd[threadId];
           for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-            temp += HIDDEN::shfl_xor<T>(temp, i);
+            temp += __hidden::shfl_xor<T>(temp, i);
           }
         }
 
@@ -881,7 +881,7 @@ public:
       if (threadId < WARP_SIZE) {
         temp = sd[threadId];
         for (int i = WARP_SIZE / 2; i > 0; i /= 2) {
-          temp += HIDDEN::shfl_xor<T>(temp, i);
+          temp += __hidden::shfl_xor<T>(temp, i);
         }
       }
 

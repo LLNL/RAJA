@@ -3,13 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA simd policy definitions.
+ * \brief   Header file for RAJA-specific type traits
+ *
+ *          Definitions in this file will propagate to all RAJA header files.
  *
  ******************************************************************************
  */
 
-#ifndef policy_simd_HPP
-#define policy_simd_HPP
+#ifndef RAJA_detector_HPP
+#define RAJA_detector_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,24 +55,56 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/PolicyBase.hpp"
+// implementation of N4502
+#include <type_traits>
+#include <tuple>
+#include <utility>
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+namespace RAJA {
 
-///
-/// Segment execution policies
-///
-namespace RAJA
-{
+// void_t
+namespace detail {
+template <class...> struct voider { using type = void; };
+}
+template <class... T> using void_t = typename detail::voider<T...>::type;
 
-  using simd_exec = make_policy_pattern_t<Policy::simd, Pattern::forall>;
+template <class Default, class, template <class...> class Op, class... Args>
+struct detector {
+  using value_t = std::false_type;
+  using type = Default;
+};
 
-}  // end of namespace RAJA
+template <class Default, template <class...> class Op, class... Args>
+struct detector<Default, void_t<Op<Args...>>, Op, Args...> {
+  using value_t = std::true_type;
+  using type = Op<Args...>;
+};
+
+struct nonesuch {
+  nonesuch() = delete;
+  ~nonesuch() = delete;
+  nonesuch(nonesuch const&) = delete;
+  void operator=(nonesuch const&) = delete;
+};
+
+template <template<class...> class Op, class... Args>
+using is_detected = typename detector<nonesuch, void, Op, Args...>::value_t;
+
+template <template<class...> class Op, class... Args>
+using detected_t = typename detector<nonesuch, void, Op, Args...>::type;
+
+template <class Default, template<class...> class Op, class... Args>
+using detected_or = detector<Default, void, Op, Args...>;
+
+template <class Default, template<class...> class Op, class... Args>
+using detected_or_t = typename detected_or<Default, Op, Args...>::type;
+
+template <class Expected, template<class...> class Op, class... Args>
+using is_detected_exact = std::is_same<Expected, detected_t<Op, Args...>>;
+
+template <class To, template <class...> class Op, class... Args>
+using is_detected_convertible = std::is_convertible<detected_t<Op, Args...>, To>;
+
+} // end namespace RAJA
 
 #endif

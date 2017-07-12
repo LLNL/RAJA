@@ -55,7 +55,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <type_traits>
-#include "RAJA/internal/type_traits.hpp"
+
+#include "RAJA/util/concepts.hpp"
 
 namespace RAJA
 {
@@ -69,7 +70,7 @@ struct Span {
 
   static_assert(std::is_integral<IndexType>::value,
                 "IndexType must model Integral");
-  static_assert(RAJA::detail::is_random_access_iterator<ValueType>::value,
+  static_assert(concepts::requires_<concepts::RandomAccessIterator, ValueType>::value,
                 "ValueType must model RandomAccessIterator");
 
   ValueType begin() { return iterator; }

@@ -56,7 +56,6 @@
 #include <cstdio>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/internal/type_traits.hpp"
 #include "RAJA/util/defines.hpp"
 
 namespace internal
@@ -104,12 +103,17 @@ template <typename ExecPolicy, typename T, bool inplace>
 struct storage : public storage_base {
 };
 
+#ifdef RAJA_ENABLE_CUDA
+template <typename Pol>
+using is_cuda_policy = RAJA::concepts::requires_<RAJA::concepts::CudaPolicy, ExecPolicy>;
+#endif
+
 template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
 
 #ifdef RAJA_ENABLE_CUDA
-  static constexpr bool UseGPU = RAJA::is_cuda_policy<ExecPolicy>::value;
+  static constexpr bool UseGPU = is_cuda_policy<ExecPolicy>::value;
   using StorageType = typename internal::storage<ExecPolicy, T, UseGPU>;
 #else
   using StorageType = typename internal::storage<ExecPolicy, T, false>;
@@ -141,7 +145,7 @@ struct storage<ExecPolicy, T, false> : public storage_base {
   using StorageType =
       typename internal::storage<ExecPolicy,
                                  T,
-                                 RAJA::is_cuda_policy<ExecPolicy>::value>;
+                                 is_cuda_policy<ExecPolicy>::value>;
 #else
   using StorageType = typename internal::storage<ExecPolicy, T, false>;
 #endif
