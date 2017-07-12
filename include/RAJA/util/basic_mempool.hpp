@@ -21,6 +21,7 @@
 #include <list>
 #include <map>
 #include <cstddef>
+#include <iostream>
 
 namespace RAJA {
 
@@ -106,6 +107,8 @@ public:
         if (align(alignment, nbytes, adj_ptr, cap)) {
 
           ptr_out = adj_ptr;
+
+          //std::cerr << "removing free chunk " << iter->first << "->" << iter->second << std::endl;
 
           remove_free_chunk(iter, adj_ptr, static_cast<char*>(adj_ptr) + nbytes);
 
@@ -342,7 +345,8 @@ struct generic_allocator {
 
 #endif
 
-//#ifdef USE_CUDA
+
+#if defined(RAJA_ENABLE_CUDA)
 struct cuda_pinned_allocator {
 
   // returns a valid pointer on success, nullptr on failure
@@ -383,7 +387,7 @@ struct cuda_allocator {
 };
 
 
-//#endif
+#endif
 
 } /* end namespace basic_mempool */
 

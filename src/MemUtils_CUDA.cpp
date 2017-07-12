@@ -67,6 +67,13 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+#include <omp.h>
+#endif
+
+
 #include <cstddef>
 #include <cstdlib>
 #include <cassert>
@@ -613,7 +620,13 @@ bool getCudaReducerActive()
 template<typename T>
 void getCudaReductionMemBlockPool(void** device_memblock)
 {
+
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical
+{
+#endif
   if (s_cuda_reduction_mem_block_pool == 0) {
+    //fprintf(stderr,"Setup Mempool\n");
     s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
     //atexit(freeCudaReductionMemBlock);
   }
@@ -625,12 +638,28 @@ void getCudaReductionMemBlockPool(void** device_memblock)
   if(slots) {
     //fprintf(stderr,"mempool slots = %ld\n",slots);
     *device_memblock = s_cuda_reduction_mem_block_pool->malloc<T>(slots);
+    //fprintf(stderr,"Thread %d : device_memblock %p with slots %d\n",tid,*device_memblock,slots);
   }
+
+#if defined(RAJA_ENABLE_OPENMP)
+}
+#endif
 }
 
 void releaseCudaReductionMemBlockPool(void **device_memblock)
 {
-  s_cuda_reduction_mem_block_pool->free(*device_memblock);
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical
+{
+#endif
+  if(*device_memblock) {
+    fprintf(stderr,"Release Pool %p\n",*device_memblock);
+    s_cuda_reduction_mem_block_pool->free(*device_memblock);
+  }
+#if defined(RAJA_ENABLE_OPENMP)
+}
+#endif
+
 }
 
 
@@ -689,7 +718,16 @@ void releaseCudaReductionTallyBlockHostInternal(void* host_ptr)
 */
 void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim)
 {
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical
+  {  
+#endif
+
   s_raja_cuda_forall_level++;
+
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 
   if (s_raja_cuda_forall_level == 1 && s_tally_cache) {
     if (s_tally_cache->active()) {
@@ -715,7 +753,16 @@ void afterCudaKernelLaunch()
   s_cuda_launch_gridDim = 0;
   s_cuda_launch_blockDim = 0;
 
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical
+  {
+#endif
+
   s_raja_cuda_forall_level--;
+
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 }
 
 /*
