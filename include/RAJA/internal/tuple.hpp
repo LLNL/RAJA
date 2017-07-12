@@ -158,7 +158,15 @@ struct tuple_element<i, tuple<Types...>> {
 
 template <int index, typename... Args>
 RAJA_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept
-    -> tpl_get_ret<tuple<Args...>, index>
+    -> tpl_get_ret<tuple<Args...>, index> const &
+{
+  static_assert(sizeof...(Args) > index, "index out of range");
+  return t.tpl_get_store<tuple<Args...>, index>::get_inner();
+}
+
+template <int index, typename... Args>
+RAJA_HOST_DEVICE constexpr auto get(tuple<Args...>& t) noexcept
+    -> tpl_get_ret<tuple<Args...>, index> &
 {
   static_assert(sizeof...(Args) > index, "index out of range");
   return t.tpl_get_store<tuple<Args...>, index>::get_inner();
@@ -169,6 +177,11 @@ struct tuple_size;
 
 template <typename... Args>
 struct tuple_size<tuple<Args...>> {
+  static constexpr size_t value = sizeof...(Args);
+};
+
+template <typename... Args>
+struct tuple_size<tuple<Args...>&> {
   static constexpr size_t value = sizeof...(Args);
 };
 
@@ -203,6 +216,27 @@ RAJA_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
     -> tuple<Lelem..., Relem...>
 {
   return make_tuple(get<Lidx>(l)..., get<Ridx>(r)...);
+}
+
+template <typename Fn, metal::int_... Sequence, typename TupleLike>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto invoke_with_order(
+    TupleLike&& t,
+    Fn&& f,
+    metal::numbers<Sequence...>) -> decltype(f(get<Sequence>(t)...))
+{
+  return f(get<Sequence>(t)...);
+}
+
+template <typename Fn, typename TupleLike>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr auto invoke(TupleLike&& t, Fn&& f)
+    -> decltype(
+        invoke_with_order(t,
+                          f,
+                          make_nums<tuple_size<TupleLike>::value>{}))
+{
+  return invoke_with_order(t,
+                           f,
+                           make_nums<tuple_size<TupleLike>::value>{});
 }
 }
 }
