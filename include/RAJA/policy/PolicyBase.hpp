@@ -60,7 +60,7 @@
 namespace RAJA
 {
 
-enum class Policy { undefined, sequential, simd, openmp, openmp_target, cuda };
+enum class Policy { undefined, sequential, simd, openmp, target_openmp, cuda };
 
 enum class Pattern { undefined, forall, reduce, taskgraph };
 
@@ -142,9 +142,9 @@ using OpenMPPolicy =
                   conforms<bool_<Pol::policy == Policy::openmp>>());
 
 template <typename Pol>
-using OpenMPTargetPolicy =
+using TargetOpenMPPolicy =
     DefineConcept(models<ExecutionPolicy<Pol>>(),
-                  conforms<bool_<Pol::policy == Policy::openmp_target>>());
+                  conforms<bool_<Pol::policy == Policy::target_openmp>>());
 
 template <typename Pol>
 using CudaPolicy =
@@ -172,8 +172,8 @@ template <typename Pol>
 using is_openmp_policy = concepts::requires_<concepts::OpenMPPolicy, Pol>;
 
 template <typename Pol>
-using is_openmp_target_policy =
-    concepts::requires_<concepts::OpenMPTargetPolicy, Pol>;
+using is_target_openmp_policy =
+    concepts::requires_<concepts::TargetOpenMPPolicy, Pol>;
 
 template <typename Pol>
 using is_cuda_policy = concepts::requires_<concepts::CudaPolicy, Pol>;
