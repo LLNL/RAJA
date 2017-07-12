@@ -242,15 +242,10 @@ template <typename ExecPolicy,
           typename Container,
           typename LoopBody,
           typename IndexType>
-RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>> forall_Icount(
-    Container&& c,
-    IndexType icount,
-    LoopBody loop_body)
+RAJA_INLINE enable_if<requires_<concepts::Range, Container>,
+                      requires_<concepts::Integral, IndexType>>
+forall_Icount(Container&& c, IndexType icount, LoopBody loop_body)
 {
-  static_assert(requires_<concepts::Range, Container>::value,
-                "Passed iterable does not appear to be an iterable -- does it "
-                "have .begin() or .end() ?");
-
   wrap::forall_Icount(ExecPolicy(),
                       std::forward<Container>(c),
                       icount,
@@ -266,12 +261,11 @@ RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>> forall_Icount(
  ******************************************************************************
  */
 template <typename ExecPolicy, typename Container, typename LoopBody>
-RAJA_INLINE void forall(ExecPolicy&& p, Container&& c, LoopBody loop_body)
+RAJA_INLINE enable_if<requires_<concepts::Range, Container>> forall(
+    ExecPolicy&& p,
+    Container&& c,
+    LoopBody loop_body)
 {
-  static_assert(requires_<concepts::Range, Container>::value,
-                "Passed iterable does not appear to be an iterable -- does it "
-                "have .begin() or .end() ?");
-
   wrap::forall(std::forward<ExecPolicy>(p),
                std::forward<Container>(c),
                loop_body);
@@ -285,12 +279,10 @@ RAJA_INLINE void forall(ExecPolicy&& p, Container&& c, LoopBody loop_body)
  ******************************************************************************
  */
 template <typename ExecPolicy, typename Container, typename LoopBody>
-RAJA_INLINE void forall(Container&& c, LoopBody loop_body)
+RAJA_INLINE enable_if<requires_<concepts::Range, Container>> forall(
+    Container&& c,
+    LoopBody loop_body)
 {
-  static_assert(requires_<concepts::Range, Container>::value,
-                "Passed iterable does not appear to be an iterable -- does it "
-                "have .begin() or .end() ?");
-
   impl::forall(ExecPolicy(), std::forward<Container>(c), loop_body);
 }
 
@@ -317,7 +309,7 @@ RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>,
                       requires_<concepts::Iterator, Iterator>>
 forall_Icount(Iterator begin,
               Iterator end,
-              IndexType icount,
+              const IndexType icount,
               LoopBody loop_body)
 {
   static_assert(requires_<concepts::RandomAccessIterator, Iterator>::value,
@@ -391,8 +383,8 @@ RAJA_INLINE enable_if<requires_<concepts::Iterator, Iterator>> forall(
  */
 template <typename ExecPolicy, typename LoopBody, typename IndexType>
 RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>> forall(
-    IndexType begin,
-    IndexType end,
+    const IndexType begin,
+    const IndexType end,
     LoopBody loop_body)
 {
   wrap::forall(ExecPolicy{}, RangeSegment(begin, end), loop_body);
@@ -413,9 +405,9 @@ template <typename ExecPolicy,
           typename OffsetType>
 RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>,
                       requires_<concepts::Integral, OffsetType>>
-forall_Icount(IndexType begin,
-              IndexType end,
-              OffsetType icount,
+forall_Icount(const IndexType begin,
+              const IndexType end,
+              const OffsetType icount,
               LoopBody loop_body)
 {
   wrap::forall_Icount(ExecPolicy(),
@@ -441,9 +433,9 @@ forall_Icount(IndexType begin,
  */
 template <typename ExecPolicy, typename LoopBody, typename IndexType>
 RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>> forall(
-    IndexType begin,
-    IndexType end,
-    IndexType stride,
+    const IndexType begin,
+    const IndexType end,
+    const IndexType stride,
     LoopBody loop_body)
 {
   wrap::forall(ExecPolicy(), RangeStrideSegment(begin, end, stride), loop_body);
@@ -464,10 +456,10 @@ template <typename ExecPolicy,
           typename OffsetType>
 RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>,
                       requires_<concepts::Integral, OffsetType>>
-forall_Icount(IndexType begin,
-              IndexType end,
-              IndexType stride,
-              OffsetType icount,
+forall_Icount(const IndexType begin,
+              const IndexType end,
+              const IndexType stride,
+              const OffsetType icount,
               LoopBody loop_body)
 {
   wrap::forall_Icount(ExecPolicy(),
@@ -497,7 +489,7 @@ template <typename ExecPolicy,
           typename IndexType>
 RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>> forall(
     const ArrayVal* idx,
-    IndexType len,
+    const IndexType len,
     LoopBody loop_body)
 {
   // turn into an iterator
@@ -522,8 +514,8 @@ RAJA_INLINE enable_if<requires_<concepts::Integral, IndexType>,
                       requires_<concepts::Integral, OffsetType>,
                       requires_<concepts::Integral, ArrayIdxType>>
 forall_Icount(const ArrayIdxType* idx,
-              IndexType len,
-              OffsetType icount,
+              const IndexType len,
+              const OffsetType icount,
               LoopBody loop_body)
 {
   // turn into an iterator

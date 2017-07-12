@@ -58,6 +58,8 @@
 #include "RAJA/internal/detector.hpp"
 #include "RAJA/internal/metalib.hpp"
 
+#include <iterator>
+
 namespace RAJA
 {
 
@@ -131,7 +133,16 @@ using enable_if = typename std::enable_if<all_of<Args...>::value>::type;
 namespace ___hidden_concepts
 {
 
-using namespace RAJA::concepts;
+  using RAJA::concepts::models;
+  using RAJA::concepts::conforms;
+  using RAJA::concepts::has_type;
+  using RAJA::concepts::ref;
+  using RAJA::concepts::cref;
+  using RAJA::concepts::val;
+  using RAJA::concepts::cval;
+  using RAJA::concepts::valid_expr;
+  using RAJA::concepts::convertible_to;
+
 
 template <typename T>
 using LessThanComparable = DefineConcept(convertible_to<bool>(val<T>()
@@ -170,28 +181,29 @@ using ComparableTo = DefineConcept(convertible_to<bool>(val<U>() < val<T>()),
 template <typename T>
 using Comparable = ComparableTo<T, T>;
 
+template <typename T>
+using plain_t = typename std::remove_reference<T>::type;
+template <typename T>
+using diff_t = decltype(val<plain_t<T>>() - val<plain_t<T>>());
+template <typename T>
+using iterator_t = decltype(ref<plain_t<T>>().begin());
 
-template <typename T>
-using diff_t = decltype(val<T>() - val<T>());
-template <typename T>
-using iterator_t = decltype(ref<T>().begin());
-
-template <typename T>
+template <typename T_, typename T = plain_t<T_>>
 using Iterator = DefineConcept(*val<T>(), has_type<T &>(++ref<T>()));
 
-template <typename T>
+template <typename T_, typename T = plain_t<T_>>
 using ForwardIterator = DefineConcept(models<Iterator<T>>(),
                                       ref<T>()++,
                                       *ref<T>()++);
 
-template <typename T>
+template <typename T_, typename T = plain_t<T_>>
 using BidirectionalIterator =
     DefineConcept(models<ForwardIterator<T>>(),
                   has_type<T &>(--ref<T>()),
                   convertible_to<T const &>(ref<T>()--),
                   *ref<T>()--);
 
-template <typename T>
+template <typename T_, typename T = plain_t<T_>>
 using RandomAccessIterator =
     DefineConcept(models<BidirectionalIterator<T>>(),
                   models<Comparable<T>>(),
@@ -202,11 +214,11 @@ using RandomAccessIterator =
                   has_type<T>(val<T>() - val<diff_t<T>>()),
                   val<T>()[val<diff_t<T>>()]);
 
-template <typename T>
-using HasMemberBegin = DefineConcept(ref<T>().begin());
+template <typename T_, typename T = plain_t<T_>>
+using HasMemberBegin = DefineConcept(val<T>().begin());
 
-template <typename T>
-using HasMemberEnd = DefineConcept(ref<T>().end());
+template <typename T_, typename T = plain_t<T_>>
+using HasMemberEnd = DefineConcept(val<T>().end());
 
 template <typename T>
 using HasBeginEnd = DefineConcept(models<HasMemberBegin<T>>(),
