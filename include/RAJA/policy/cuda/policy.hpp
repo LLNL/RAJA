@@ -55,6 +55,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/pattern/reduce.hpp"
 
 namespace RAJA
 {
@@ -185,11 +186,11 @@ static_assert(WARP_SIZE >= MAX_WARPS,
       "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 
 /*!
- * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize)
+ * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream)
  * Macro that generates kernel launch parameters.
  */
-#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
-  gridSize, blockSize, 0, 0
+#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream) \
+  gridSize, blockSize, 0, stream
 
 //
 // Three different variants of min/max reductions can be run by choosing

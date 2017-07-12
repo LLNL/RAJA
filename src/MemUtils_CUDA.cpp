@@ -55,6 +55,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/policy/cuda/policy.hpp"
+
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
@@ -81,6 +83,7 @@
 #include <mutex>
 #include <iostream>
 #include <string>
+#include <unordered_map>
 
 namespace RAJA
 {
@@ -115,14 +118,15 @@ public:
   static const size_t default_allocation_alignment  = 4*1024;
   static const size_t default_alignment  = alignof(std::max_align_t);
 
-  explicit TallyCache(size_t allocation_size = default_cache_size, size_t allocation_alignment = default_allocation_alignment)
+  explicit TallyCache(cudaStream_t stream, size_t allocation_size = default_cache_size, size_t allocation_alignment = default_allocation_alignment)
   {
+    m_stream = stream;
     m_host_begin = (char*)RAJA::allocate_aligned(allocation_alignment, allocation_size*sizeof(char));
     m_host_end = m_host_begin+allocation_size;
     m_free_list = new cache_node{nullptr, m_host_begin, m_host_end, false};
+    m_allocation_alignment = allocation_alignment;
   }
 
-  // not thread safe, assume called from 1 thread
   bool active()
   {
     bool is_active = m_used_list != nullptr;
@@ -136,57 +140,44 @@ public:
   char* get_host_ptr(size_t size, size_t alignment = default_alignment)
   {
     char* host_ptr = nullptr;
-    bool error = false;
 
-    // { // thread safety
-    //   std::lock_guard<std::mutex> guard(m_mutex);
+    cache_node* free_node = m_free_list;
 
-      cache_node* free_node = m_free_list;
+    if (free_node) {
+      cache_node* prev_node = nullptr;
 
-      if (free_node) {
-        cache_node* prev_node = nullptr;
+      while(free_node) {
 
-        while(free_node) {
+        void* ptr = free_node->begin;
+        size_t size_node = free_node->end - free_node->begin;
 
-          void* ptr = free_node->begin;
-          size_t size_node = free_node->end - free_node->begin;
+        if (RAJA::align(alignment, size, ptr, size_node)) {
 
-          if (RAJA::align(alignment, size, ptr, size_node)) {
+          free_node = remove_free_node(free_node, prev_node, (char*)ptr, size);
+          free_node = insert_used_node(free_node);
 
-            free_node = remove_free_node(free_node, prev_node, (char*)ptr, size);
-            free_node = insert_used_node(free_node);
+          m_count_dirty++;
+          free_node->dirty = true;
+          host_ptr = free_node->begin;
+          break;
+        }
 
-            m_count_dirty++;
-            free_node->dirty = true;
-            host_ptr = free_node->begin;
-            break;
-          }
+      };
 
-        };
+    }
 
-      }
-
-      if (host_ptr == nullptr && m_used_list == nullptr) {
-        std::cerr << "\n TallyCache coudn't handle request for " << size << " bytes at " << alignment << " alignment, "
-                  << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
-        error = true;
-      }
-
-    // } // end thread safety
-
-    if (error) {
+    if (host_ptr == nullptr && m_used_list == nullptr) {
+      std::cerr << "\n TallyCache coudn't handle request for " << size << " bytes at " << alignment << " alignment, "
+                << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
       std::abort();
     }
 
     if (host_ptr == nullptr) {
       // ran out of room
 
-      if (m_next == nullptr) {
-        // allocate another cache with the same size
-        // thread safety
-        std::call_once(m_allocate_next_flag, [&] () {
-          m_next = new TallyCache(m_host_end-m_host_begin);
-        });
+      // allocate another cache with the same size
+      if (!m_next) {
+        m_next = new TallyCache(m_stream, m_host_end-m_host_begin, m_allocation_alignment);
       }
 
       // get a pointer from that cache
@@ -196,7 +187,6 @@ public:
     return host_ptr;
   }
 
-  // not thread safe, assume called from 1 thread
   char* get_host_ptr(char* device_ptr)
   {
     char* host_ptr = nullptr;
@@ -208,16 +198,14 @@ public:
     return host_ptr;
   }
 
-  // thread safe, assume called from multiple threads
   char* get_device_ptr(char* host_ptr)
   {
     char* device_ptr = nullptr;
-    if (m_device_begin == nullptr) {
-      // thread safety
-      std::call_once(m_allocate_device_ptr_flag, [&] () {
-        cudaErrchk(cudaMalloc(&m_device_begin, (m_host_end-m_host_begin)*sizeof(char)));
-      });
+
+    if (!m_device_begin) {
+      cudaErrchk(cudaMalloc(&m_device_begin, (m_host_end-m_host_begin)*sizeof(char)));
     }
+
     if (in_host_bounds(host_ptr)) {
       device_ptr = m_device_begin + (host_ptr - m_host_begin);
     } else if (m_next) {
@@ -226,7 +214,6 @@ public:
     return device_ptr;
   }
 
-  // not thread safe, assume called from 1 thread
   void release_host_ptr(char* host_ptr)
   {
     if (in_host_bounds(host_ptr)) {
@@ -255,63 +242,56 @@ public:
     }
   }
 
-  // thread safe, assume called from multiple threads
   void write_back_dirty()
   {
     if (m_next) {
       m_next->write_back_dirty();
     }
 
-    { // thread safety
-      std::lock_guard<std::mutex> guard(m_mutex);
+    if (m_count_dirty > 0) {
 
-      if (m_count_dirty > 0) {
+      cache_node* node = m_used_list;
+      while (node) {
+        if (node->dirty) {
+          // found a run of dirty nodes
+          char* host_end = node->end;
+          node->dirty = false;
 
-        cache_node* node = m_used_list;
-        while (node) {
-          if (node->dirty) {
-            // found a run of dirty nodes
-            char* host_end = node->end;
-            node->dirty = false;
-
-            while (node->next) {
-              // advance to last dirty node in the run
-              // this may include unused space between nodes
-              if (node->next->dirty) {
-                node = node->next;
-                node->dirty = false;
-              } else {
-                break;
-              }
+          while (node->next) {
+            // advance to last dirty node in the run
+            // this may include unused space between nodes
+            if (node->next->dirty) {
+              node = node->next;
+              node->dirty = false;
+            } else {
+              break;
             }
-
-            char* host_begin = node->begin;
-
-            size_t len = host_end - host_begin;
-            char* device_begin = get_device_ptr(host_begin);
-
-            cudaErrchk(cudaMemcpyAsync(device_begin, host_begin, 
-                                       len*sizeof(char),
-                                       cudaMemcpyHostToDevice));
           }
 
-          node = node->next;
+          char* host_begin = node->begin;
+
+          size_t len = host_end - host_begin;
+          char* device_begin = get_device_ptr(host_begin);
+
+          cudaErrchk(cudaMemcpyAsync(device_begin, host_begin, 
+                                     len*sizeof(char),
+                                     cudaMemcpyHostToDevice, m_stream));
         }
 
-        m_count_dirty = 0;
+        node = node->next;
       }
-      
-      m_valid = false;
 
-    } // end thread safety
+      m_count_dirty = 0;
+    }
+    
+    m_valid = false;
+
   }
 
-  // not thread safe, assume called from 1 threads
   void ensure_host_readable(char* host_ptr, bool async)
   {
 
-    if (in_host_bounds(host_ptr)) { // // thread safety
-      // std::lock_guard<std::mutex> guard(m_mutex);
+    if (in_host_bounds(host_ptr)) {
 
       if (!m_valid) {
 
@@ -336,14 +316,12 @@ public:
             size_t len = host_end - host_begin;
             char* device_begin = get_device_ptr(host_begin);
 
-            if (async) {
-              cudaErrchk(cudaMemcpyAsync(host_begin, device_begin,
-                                         len*sizeof(char),
-                                         cudaMemcpyDeviceToHost));
-            } else {
-              cudaErrchk(cudaMemcpy(host_begin, device_begin,
-                                    len*sizeof(char),
-                                    cudaMemcpyDeviceToHost));
+            cudaErrchk(cudaMemcpyAsync(host_begin, device_begin,
+                                       len*sizeof(char),
+                                       cudaMemcpyDeviceToHost,
+                                       m_stream));
+            if (!async) {
+              cudaErrchk(cudaStreamSynchronize(m_stream));
             }
 
           }
@@ -354,7 +332,7 @@ public:
         m_valid = true;
       }
 
-    } // // end thread safety
+    }
     else if (m_next) {
       m_next->ensure_host_readable(host_ptr, async);
     }
@@ -377,10 +355,8 @@ private:
     bool  dirty;
   };
 
-  std::once_flag m_allocate_next_flag;
-  std::once_flag m_allocate_device_ptr_flag;
-
-  std::mutex m_mutex;
+  cudaStream_t m_stream = 0;
+  size_t m_allocation_alignment = default_allocation_alignment;
 
   TallyCache* m_next = nullptr;
 
@@ -579,9 +555,6 @@ basic_mempool::mempool <basic_mempool::cuda_allocator> * s_cuda_reduction_mem_bl
  * results of cuda reduction variables are stored. This is done so all
  * results may be copied back to the host with one memcpy.
  */
-//CudaReductionDummyTallyType* s_cuda_reduction_tally_block_device = 0;
-
-std::once_flag s_allocate_tally_flag;
 
 TallyCache* s_tally_cache = nullptr;
 
@@ -607,55 +580,45 @@ thread_local dim3 s_cuda_launch_blockDim = 0;
 
 
 
-bool getCudaReducerActive()
+void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
 {
-  bool active = false;
-  if (s_tally_cache) {
-    active = s_tally_cache->active();
-  }
-  return active;
-}
-
-
-template<typename T>
-void getCudaReductionMemBlockPool(void** device_memblock)
-{
+  void* ptr = nullptr;
 
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical
-{
+#pragma omp critical (MemUtils_CUDA)
+  {
 #endif
-  if (s_cuda_reduction_mem_block_pool == 0) {
-    s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
-    //atexit(freeCudaReductionMemBlock);
-  }
+    if (s_cuda_reduction_mem_block_pool == 0) {
+      s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
+      //atexit(freeCudaReductionMemBlock);
+    }
 
-  // assume beforeCudaKernelLaunch was called in order to grab dimensions 
-  dim3 dims = s_cuda_launch_gridDim;
+    // assume beforeCudaKernelLaunch was called in order to grab dimensions 
+    dim3 dims = s_cuda_launch_gridDim;
 
-  size_t slots = dims.x * dims.y * dims.z;
-  if(slots) {
-    *device_memblock = s_cuda_reduction_mem_block_pool->malloc<T>(slots);
-  }
-
+    size_t slots = dims.x * dims.y * dims.z;
+    if(slots) {
+      ptr = (void*)s_cuda_reduction_mem_block_pool->malloc<char>(slots*size, alignment);
+    }
 #if defined(RAJA_ENABLE_OPENMP)
-}
-#endif
-}
-
-void releaseCudaReductionMemBlockPool(void **device_memblock)
-{
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical
-{
-#endif
-  if(*device_memblock) {
-    s_cuda_reduction_mem_block_pool->free(*device_memblock);
   }
-#if defined(RAJA_ENABLE_OPENMP)
-}
 #endif
 
+  return ptr;
+}
+
+void releaseCudaReductionMemBlockPoolInternal(void *device_memblock)
+{
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {
+#endif
+    if(device_memblock) {
+      s_cuda_reduction_mem_block_pool->free(device_memblock);
+    }
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 }
 
 
@@ -672,22 +635,37 @@ void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr)
 {
   void* device_ptr = nullptr;
 
-  if (s_raja_cuda_forall_level > 0) {
-    device_ptr = (void*)s_tally_cache->get_device_ptr((char*)host_ptr);
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {
+#endif
+    if (s_raja_cuda_forall_level > 0) {
+      device_ptr = (void*)s_tally_cache->get_device_ptr((char*)host_ptr);
+    }
+#if defined(RAJA_ENABLE_OPENMP)
   }
+#endif
 
   return device_ptr;
 }
 
 void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment)
 {
-  if (!s_tally_cache) {
-    std::call_once(s_allocate_tally_flag, [&] () {
-      s_tally_cache = new TallyCache{};
-    });
-  }
+  void* ptr = nullptr;
 
-  return s_tally_cache->get_host_ptr(size, alignment);
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {
+#endif
+    if (!s_tally_cache) {
+      s_tally_cache = new TallyCache{0};
+    }
+
+    ptr = s_tally_cache->get_host_ptr(size, alignment);
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
+  return ptr;
 }
 
 /*
@@ -699,7 +677,14 @@ void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment)
 */
 void releaseCudaReductionTallyBlockHostInternal(void* host_ptr)
 {
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {
+#endif
   s_tally_cache->release_host_ptr((char*)host_ptr);
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 }
 
 /*
@@ -712,28 +697,26 @@ void releaseCudaReductionTallyBlockHostInternal(void* host_ptr)
 *
 *******************************************************************************
 */
-void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim)
+void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical
+#pragma omp critical (MemUtils_CUDA)
   {  
 #endif
+    s_raja_cuda_forall_level++;
 
-  s_raja_cuda_forall_level++;
+    if (s_raja_cuda_forall_level == 1 && s_tally_cache) {
 
+      if (s_tally_cache->active()) {
+        s_tally_cache->write_back_dirty();
+      }
+    }
+
+    s_cuda_launch_gridDim = launchGridDim;
+    s_cuda_launch_blockDim = launchBlockDim;
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
-
-  if (s_raja_cuda_forall_level == 1 && s_tally_cache) {
-    if (s_tally_cache->active()) {
-
-      s_tally_cache->write_back_dirty();
-    }
-  }
-
-  s_cuda_launch_gridDim = launchGridDim;
-  s_cuda_launch_blockDim = launchBlockDim;
 }
 
 /*
@@ -744,18 +727,16 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim)
 *
 *******************************************************************************
 */
-void afterCudaKernelLaunch()
+void afterCudaKernelLaunch(cudaStream_t stream)
 {
-  s_cuda_launch_gridDim = 0;
-  s_cuda_launch_blockDim = 0;
-
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical
-  {
+#pragma omp critical (MemUtils_CUDA)
+  {  
 #endif
+    s_cuda_launch_gridDim = 0;
+    s_cuda_launch_blockDim = 0;
 
-  s_raja_cuda_forall_level--;
-
+    s_raja_cuda_forall_level--;
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
@@ -776,22 +757,27 @@ void afterCudaKernelLaunch()
 */
 void beforeCudaReadTallyBlockAsync(void* host_ptr)
 {
-  s_tally_cache->ensure_host_readable((char*)host_ptr, true);
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {  
+#endif
+    s_tally_cache->ensure_host_readable((char*)host_ptr, true);
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 }
 ///
 void beforeCudaReadTallyBlockSync(void* host_ptr)
 {
-  s_tally_cache->ensure_host_readable((char*)host_ptr, false);
+#if defined(RAJA_ENABLE_OPENMP)
+#pragma omp critical (MemUtils_CUDA)
+  {  
+#endif
+    s_tally_cache->ensure_host_readable((char*)host_ptr, false);
+#if defined(RAJA_ENABLE_OPENMP)
+  }
+#endif
 }
-
-
-template void getCudaReductionMemBlockPool<double>(void**);
-template void getCudaReductionMemBlockPool<float>(void**);
-template void getCudaReductionMemBlockPool<int>(void**);
-template void getCudaReductionMemBlockPool<CudaReductionDummyBlockType>(void**);
-template void getCudaReductionMemBlockPool<CudaReductionLocType<double>>(void**);
-template void getCudaReductionMemBlockPool<CudaReductionLocType<float>>(void**);
-template void getCudaReductionMemBlockPool<CudaReductionLocType<int>>(void**);
 
 
 }  // closing brace for RAJA namespace

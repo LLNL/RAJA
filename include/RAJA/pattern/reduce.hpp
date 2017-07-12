@@ -54,6 +54,8 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
+#include "RAJA/util/Operators.hpp"
 
 ///
 /// Define max number of reductions allowed within a RAJA traversal
@@ -63,6 +65,73 @@
 
 namespace RAJA
 {
+
+namespace reduce
+{
+
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp declare target
+#endif
+
+template <typename T>
+struct sum {
+  static constexpr T identity = T{0};
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, const T v) { val += v; }
+};
+
+template <typename T>
+struct min {
+  static constexpr T identity = RAJA::operators::limits<T>::max();
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, const T v)
+  {
+    if (v < val) val = v;
+  }
+};
+
+template <typename T>
+struct max {
+  static constexpr T identity = RAJA::operators::limits<T>::min();
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, const T v)
+  {
+    if (v > val) val = v;
+  }
+};
+
+template <typename T, typename I>
+struct minloc {
+  static constexpr T identity = RAJA::operators::limits<T>::max();
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v < val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+template <typename T, typename I>
+struct maxloc {
+  static constexpr T identity = RAJA::operators::limits<T>::min();
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v > val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp end declare target
+#endif
+
+}
+
 
 ///
 /// Macros for type agnostic reduction operations.

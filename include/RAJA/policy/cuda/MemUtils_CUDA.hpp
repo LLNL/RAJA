@@ -66,73 +66,6 @@ namespace RAJA
 {
 
 /*!
- * \def RAJA_CUDA_REDUCE_VAR_MAXSIZE
- * Size in bytes used in CudaReductionDummyDataType for array allocation to
- * accommodate the template type used in reductions.
- *
- * Note: Includes the size of the index variable for Loc reductions.
- */
-#define RAJA_CUDA_REDUCE_VAR_MAXSIZE 16
-
-/*!
- * \brief Type used to keep track of the grid size on the device
- */
-typedef unsigned int GridSizeType;
-
-/*!
- ******************************************************************************
- *
- * \brief Type representing a single typed value for a cuda reduction.
- *
- * Enough space for a double value and an index value.
- *
- ******************************************************************************
- */
-struct RAJA_ALIGNED_ATTR(RAJA_CUDA_REDUCE_VAR_MAXSIZE)
-    CudaReductionDummyDataType {
-  unsigned char data[RAJA_CUDA_REDUCE_VAR_MAXSIZE];
-};
-
-/*!
- ******************************************************************************
- *
- * \brief Type representing a memory block for a cuda reduction.
- *
- ******************************************************************************
- */
-
-typedef CudaReductionDummyDataType CudaReductionDummyBlockType;
-
-/*!
- ******************************************************************************
- *
- * \brief Type representing enough memory to hold a slot in the tally block.
- *
- ******************************************************************************
- */
-struct CudaReductionDummyTallyType {
-  CudaReductionDummyDataType dummy_val;
-  GridSizeType dummy_retiredBlocks;
-};
-
-/*!
- ******************************************************************************
- *
- * \brief Type used to simplify typed memory block use in cuda Loc reductions.
- *
- * Must fit within the dummy block type (checked in static assert in the
- * reduction classes).
- *
- ******************************************************************************
- */
-
-template <typename T>
-struct CudaReductionLocBlockType {
-  T value;
-  Index_type index;
-};
-
-/*!
  ******************************************************************************
  *
  * \brief Type used to simplify hold value and location in cuda Loc reductions.
@@ -142,10 +75,10 @@ struct CudaReductionLocBlockType {
  *
  ******************************************************************************
  */
-template <typename T>
+template <typename T, typename IndexType>
 struct CudaReductionLocType {
   T val;
-  Index_type idx;
+  IndexType idx;
 };
 
 /*!
@@ -164,7 +97,7 @@ struct CudaReductionLocType {
 template <typename T>
 struct CudaReductionTallyType {
   T tally;
-  GridSizeType retiredBlocks;
+  unsigned int retiredBlocks;
 };
 
 /*!
@@ -195,73 +128,16 @@ struct CudaReductionTallyTypeAtomic {
  *
  ******************************************************************************
  */
-template <typename T>
+template <typename T, typename IndexType>
 struct CudaReductionLocTallyType {
-  CudaReductionLocType<T> tally;
-  GridSizeType retiredBlocks;
+  CudaReductionLocType<T, IndexType> tally;
+  unsigned int retiredBlocks;
 };
-#if 0
-/*!
- ******************************************************************************
- *
- * \brief Set the Max Number of Blocks that RAJA will launch
- *
- * Modulates the memblock size that non-atomic reducers use 
- *
- * \return bool true for success, false for failure
- *
- ******************************************************************************
- */
-void setCudaMaxBlocks(unsigned int blocks);
 
-#endif
-#if 0
-/*!
- ******************************************************************************
- *
- * \brief Set the Max Number of Reducers that RAJA will launch
- *
- * Modulates the memblock size that non-atomic reducers use 
- *
- * \return bool true for success, false for failure
- *
- ******************************************************************************
- */
-void setCudaMaxReducers(unsigned int reducers);
 
-#endif
-
-/*!
- ******************************************************************************
- *
- * \brief Get the number of active cuda reducer objects.
- *
- * \return int number of active cuda reducer objects.
- *
- ******************************************************************************
- */
-bool getCudaReducerActive();
-
-/*!
- ******************************************************************************
- *
- * \brief Get a valid reduction id, or complain and exit if no valid id is
- *        available.
- *
- * \return int the next available valid reduction id.
- *
- ******************************************************************************
- */
-int getCudaReductionId();
-
-/*!
- ******************************************************************************
- *
- * \brief Release given reduction id and make inactive.
- *
- ******************************************************************************
- */
-void releaseCudaReductionId(int id);
+void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr);
+void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment = alignof(std::max_align_t));
+void releaseCudaReductionTallyBlockHostInternal(void* host_ptr);
 
 /*!
  ******************************************************************************
@@ -280,8 +156,6 @@ void releaseCudaReductionId(int id);
  *
  ******************************************************************************
  */
-void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr);
-void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment = alignof(std::max_align_t));
 
 template <typename T>
 T* getCudaReductionTallyBlockDevice(T* host_ptr)
@@ -302,8 +176,6 @@ T* getCudaReductionTallyBlockHost()
  *
  ******************************************************************************
  */
-void releaseCudaReductionTallyBlockHostInternal(void* host_ptr);
-
 template <typename T>
 void releaseCudaReductionTallyBlockHost(T* host_ptr)
 {
@@ -318,7 +190,7 @@ void releaseCudaReductionTallyBlockHost(T* host_ptr)
  *
  ******************************************************************************
  */
-void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim);
+void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
 
 /*!
  ******************************************************************************
@@ -327,7 +199,7 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim);
  *
  ******************************************************************************
  */
-void afterCudaKernelLaunch();
+void afterCudaKernelLaunch(cudaStream_t stream);
 
 /*!
  ******************************************************************************
@@ -367,6 +239,10 @@ void beforeCudaReadTallyBlock(T* host_ptr)
   }
 }
 
+
+void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment = alignof(std::max_align_t));
+void releaseCudaReductionMemBlockPoolInternal(void* device_memblock);
+
 /*!
  ******************************************************************************
  *
@@ -388,29 +264,17 @@ void beforeCudaReadTallyBlock(T* host_ptr)
  *
  ******************************************************************************
  */
-void* getCudaReductionMemBlockInternal(int id, size_t size, size_t alignment = alignof(std::max_align_t));
-
 template <typename T>
-T* getCudaReductionMemBlock(int id)
+T* getCudaReductionMemBlockPool()
 {
-  return (T*)getCudaReductionMemBlockInternal(id, sizeof(T), alignof(T));
+  return (T*)getCudaReductionMemBlockPoolInternal(sizeof(T), alignof(T));
 }
 
-
-template<typename T>
-void getCudaReductionMemBlockPool(void** device_memblock);
-
-void releaseCudaReductionMemBlockPool(void **device_memblock);
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Free device memory blocks used in RAJA-Cuda reductions.
- *
- ******************************************************************************
- */
-void freeCudaReductionMemBlock();
+template <typename T>
+void releaseCudaReductionMemBlockPool(T *device_memblock)
+{
+  releaseCudaReductionMemBlockPoolInternal((void*)device_memblock);
+}
 
 }  // closing brace for RAJA namespace
 

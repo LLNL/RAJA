@@ -96,13 +96,13 @@ inline void cudaAssert(cudaError_t code,
 }
 
 /*!
- * \def RAJA_CUDA_CHECK_AND_SYNC(Async)
+ * \def RAJA_CUDA_CHECK_AND_SYNC(Async, stream)
  * Macro that checks for errors and synchronizes based on paramater Async.
  */
-#define RAJA_CUDA_CHECK_AND_SYNC(Async)  \
+#define RAJA_CUDA_CHECK_AND_SYNC(Async, stream)  \
   cudaErrchk(cudaPeekAtLastError());     \
   if (!Async) {                          \
-    cudaErrchk(cudaDeviceSynchronize()); \
+    cudaErrchk(cudaStreamSynchronize(stream)); \
   }
 
 }  // closing brace for RAJA namespace
