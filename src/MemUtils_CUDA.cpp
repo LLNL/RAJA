@@ -63,6 +63,8 @@
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/util/align.hpp"
+
 #include "RAJA/util/basic_mempool.hpp"
 
 #include "RAJA/pattern/reduce.hpp"
@@ -88,27 +90,6 @@
 namespace RAJA
 {
 
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Taken from libc++ 
-// See libc++ license in docs/Licenses/libc++ License
-//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
-{
-    void* r = nullptr;
-    if (size <= space)
-    {
-        char* p1 = static_cast<char*>(ptr);
-        char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
-        size_t d = static_cast<size_t>(p2 - p1);
-        if (d <= space - size)
-        {
-            r = p2;
-            ptr = r;
-            space -= d;
-        }
-    }
-    return r;
-}
 
 class TallyCache
 {
@@ -546,7 +527,7 @@ private:
 namespace
 {
 
-basic_mempool::mempool <basic_mempool::cuda_allocator> * s_cuda_reduction_mem_block_pool = 0;
+cuda::device_mempool_type& s_cuda_reduction_mem_block_pool = cuda::device_mempool_type::getInstance();
 
 /*!
  * \brief Pointer to the tally block on the device.
@@ -588,17 +569,12 @@ void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
 #pragma omp critical (MemUtils_CUDA)
   {
 #endif
-    if (s_cuda_reduction_mem_block_pool == 0) {
-      s_cuda_reduction_mem_block_pool = new basic_mempool::mempool<basic_mempool::cuda_allocator>;
-      //atexit(freeCudaReductionMemBlock);
-    }
-
     // assume beforeCudaKernelLaunch was called in order to grab dimensions 
     dim3 dims = s_cuda_launch_gridDim;
 
     size_t slots = dims.x * dims.y * dims.z;
     if(slots) {
-      ptr = (void*)s_cuda_reduction_mem_block_pool->malloc<char>(slots*size, alignment);
+      ptr = (void*)s_cuda_reduction_mem_block_pool.malloc<char>(slots*size, alignment);
     }
 #if defined(RAJA_ENABLE_OPENMP)
   }
@@ -614,7 +590,7 @@ void releaseCudaReductionMemBlockPoolInternal(void *device_memblock)
   {
 #endif
     if(device_memblock) {
-      s_cuda_reduction_mem_block_pool->free(device_memblock);
+      s_cuda_reduction_mem_block_pool.free(device_memblock);
     }
 #if defined(RAJA_ENABLE_OPENMP)
   }

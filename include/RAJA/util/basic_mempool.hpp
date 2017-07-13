@@ -1,18 +1,59 @@
-/*
- * $Id$
- */
-
 /*!
- *******************************************************************************
- * \file basic_mempool.hxx
+ ******************************************************************************
  *
- * \date June 07, 2017
- * \author Jason Burmark (burmark1@llnl.gov)
- *******************************************************************************
+ * \file
+ *
+ * \brief   RAJA header file containing an implementation of a memory pool.
+ *
+ ******************************************************************************
  */
 
-#ifndef BASIC_MEMPOOL_HXX_
-#define BASIC_MEMPOOL_HXX_
+#ifndef RAJA_BASIC_MEMPOOL_HPP
+#define RAJA_BASIC_MEMPOOL_HPP
+
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For additional details, please also read RAJA/LICENSE.
+//
+// Redistribution and use in source and binary forms, with or without
+// modification, are permitted provided that the following conditions are met:
+//
+// * Redistributions of source code must retain the above copyright notice,
+//   this list of conditions and the disclaimer below.
+//
+// * Redistributions in binary form must reproduce the above copyright notice,
+//   this list of conditions and the disclaimer (as noted below) in the
+//   documentation and/or other materials provided with the distribution.
+//
+// * Neither the name of the LLNS/LLNL nor the names of its contributors may
+//   be used to endorse or promote products derived from this software without
+//   specific prior written permission.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
+// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
+// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+// POSSIBILITY OF SUCH DAMAGE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#include "RAJA/util/align.hpp"
 
 #include <cassert>
 #include <list>
@@ -30,24 +71,6 @@ namespace detail {
 class memory_arena {
 public:
 
-  // taken from libc++
-  static void* align(size_t alignment, size_t size, void*& ptr, size_t& space) noexcept
-  {
-      void* r = nullptr;
-      if (size <= space)
-      {
-          char* p1 = static_cast<char*>(ptr);
-          char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
-          size_t d = static_cast<size_t>(p2 - p1);
-          if (d <= space - size)
-          {
-              r = p2;
-              ptr = r;
-              space -= d;
-          }
-      }
-      return r;
-  }
 
   using free_type = std::map<void*, void*>;
   using free_value_type = typename free_type::value_type;
@@ -101,7 +124,7 @@ public:
         void* adj_ptr = iter->first;
         size_t cap = static_cast<char*>(iter->second) - static_cast<char*>(adj_ptr);
 
-        if (align(alignment, nbytes, adj_ptr, cap)) {
+        if (::RAJA::align(alignment, nbytes, adj_ptr, cap)) {
 
           ptr_out = adj_ptr;
 
@@ -260,12 +283,12 @@ public:
 
   }
 
-  size_t default_arena_size()
+  size_t arena_size()
   {
     return m_default_arena_size;
   }
 
-  size_t default_arena_size(size_t new_size)
+  size_t arena_size(size_t new_size)
   {
     size_t prev_size = m_default_arena_size;
     m_default_arena_size = new_size;
@@ -337,48 +360,6 @@ struct generic_allocator {
   }
 
 };
-
-#ifdef RAJA_ENABLE_CUDA
-struct cuda_pinned_allocator {
-
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    cudaHostAlloc(&ptr, nbytes, cudaHostAllocMapped);
-    return ptr;
-  }
-
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    cudaFreeHost(ptr);
-    return true;
-  }
-
-};
-
-
-struct cuda_allocator {
-
-  // returns a valid pointer on success, nullptr on failure
-  void* malloc(size_t nbytes)
-  {
-    void* ptr;
-    cudaMalloc(&ptr, nbytes);
-    return ptr;
-  }
-
-  // returns true on success, false on failure
-  bool free(void* ptr)
-  {
-    cudaFree(ptr);
-    return true;
-  }
-
-};
-
-#endif
 
 } /* end namespace basic_mempool */
 

@@ -71,7 +71,7 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <cuda.h>
- 
+
 #if defined(RAJA_ENABLE_OPENMP)
 #include <omp.h>
 #endif

@@ -60,74 +60,101 @@
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/util/basic_mempool.hpp"
+
+#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+
 #include <cstddef>
 
 namespace RAJA
 {
 
-/*!
- ******************************************************************************
- *
- * \brief Type used to simplify hold value and location in cuda Loc reductions.
- *
- * Must fit within the dummy type (checked in static assert in the
- * reduction classes).
- *
- ******************************************************************************
- */
+namespace cuda
+{
+
+struct pinned_allocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    cudaErrchk(cudaHostAlloc(&ptr, nbytes, cudaHostAllocMapped));
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    cudaErrchk(cudaFreeHost(ptr));
+    return true;
+  }
+
+};
+
+struct device_allocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    cudaErrchk(cudaMalloc(&ptr, nbytes));
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    cudaErrchk(cudaFree(ptr));
+    return true;
+  }
+
+};
+
+
+struct device_zeroed_allocator {
+
+  // returns a valid pointer on success, nullptr on failure
+  void* malloc(size_t nbytes)
+  {
+    void* ptr;
+    cudaErrchk(cudaMalloc(&ptr, nbytes));
+    cudaErrchk(cudaMemset(ptr, 0, nbytes));
+    return ptr;
+  }
+
+  // returns true on success, false on failure
+  bool free(void* ptr)
+  {
+    cudaErrchk(cudaFree(ptr));
+    return true;
+  }
+
+};
+
+using device_mempool_type = basic_mempool::mempool<cuda::device_allocator>;
+using device_zeroed_mempool_type = basic_mempool::mempool<cuda::device_zeroed_allocator>;
+using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
+
+} // end namespace cuda
+
+
 template <typename T, typename IndexType>
 struct CudaReductionLocType {
   T val;
   IndexType idx;
 };
 
-/*!
- ******************************************************************************
- *
- * \brief Type used to simplify hold tally value in cuda reductions.
- *
- * Must fit within the dummy tally type (checked in static assert in the
- * reduction classes).
- *
- * Note: Retired blocks is used to count the number of blocks that finished
- * and wrote their portion of the reduction to the memory block.
- *
- ******************************************************************************
- */
 template <typename T>
 struct CudaReductionTallyType {
   T tally;
   unsigned int retiredBlocks;
 };
 
-/*!
- ******************************************************************************
- *
- * \brief Type used to simplify hold tally value in cuda atomic reductions.
- *
- * Must fit within the dummy tally type (checked in static assert in the
- * reduction classes).
- *
- ******************************************************************************
- */
 template <typename T>
 struct CudaReductionTallyTypeAtomic {
   T tally;
 };
 
-/*!
- ******************************************************************************
- *
- * \brief Type used to simplify hold tally value in cuda Loc reductions.
- *
- * Must fit within the dummy tally type (checked in static assert in the
- * reduction classes).
- *
- * Note: Retired blocks is used to count the number of blocks that finished
- * and wrote their portion of the reduction to the memory block.
- *
- ******************************************************************************
- */
 template <typename T, typename IndexType>
 struct CudaReductionLocTallyType {
   CudaReductionLocType<T, IndexType> tally;
@@ -139,23 +166,6 @@ void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr);
 void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment = alignof(std::max_align_t));
 void releaseCudaReductionTallyBlockHostInternal(void* host_ptr);
 
-/*!
- ******************************************************************************
- *
- * \brief Get tally block for reducer object with given id.
- *
- * \param[out] host_tally pointer to host tally cache slot.
- * \param[out] device_tally pointer to device tally slot.
- *
- * NOTE: Tally Block size will be:
- *
- *          sizeof(CudaReductionDummyTallyType) * RAJA_MAX_REDUCE_VARS
- *
- *       For each reducer object, we want a chunk of device memory that
- *       holds the reduced value and a small number of anciliary variables.
- *
- ******************************************************************************
- */
 
 template <typename T>
 T* getCudaReductionTallyBlockDevice(T* host_ptr)
@@ -169,66 +179,18 @@ T* getCudaReductionTallyBlockHost()
   return (T*)getCudaReductionTallyBlockHostInternal(sizeof(T), alignof(T));
 }
 
-/*!
- ******************************************************************************
- *
- * \brief Release tally block for reducer object with given id.
- *
- ******************************************************************************
- */
 template <typename T>
 void releaseCudaReductionTallyBlockHost(T* host_ptr)
 {
   releaseCudaReductionTallyBlockHostInternal((void*)host_ptr);
 }
 
-/*!
- ******************************************************************************
- *
- * \brief Sets up state variales before the loop body is copied and the kernel
- *        is launched.
- *
- ******************************************************************************
- */
 void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
-
-/*!
- ******************************************************************************
- *
- * \brief Resets state variables after kernel launch.
- *
- ******************************************************************************
- */
 void afterCudaKernelLaunch(cudaStream_t stream);
 
-/*!
- ******************************************************************************
- *
- * \brief Updates host tally cache for read by reduction variable with id and
- * an asynchronous reduction policy.
- *
- ******************************************************************************
- */
 void beforeCudaReadTallyBlockAsync(void* host_ptr);
-
-/*!
- ******************************************************************************
- *
- * \brief Updates host tally cache for read by reduction variable with id and
- * a synchronous reduction policy.
- *
- ******************************************************************************
- */
 void beforeCudaReadTallyBlockSync(void* host_ptr);
 
-/*!
- ******************************************************************************
- *
- * \brief Updates host tally cache for read by reduction variable with id and
- * templated on Async from the reduction policy.
- *
- ******************************************************************************
- */
 template <bool Async, typename T>
 void beforeCudaReadTallyBlock(T* host_ptr)
 {
@@ -239,31 +201,9 @@ void beforeCudaReadTallyBlock(T* host_ptr)
   }
 }
 
-
 void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment = alignof(std::max_align_t));
 void releaseCudaReductionMemBlockPoolInternal(void* device_memblock);
 
-/*!
- ******************************************************************************
- *
- * \brief  Get device memory block for RAJA-CUDA reduction variable  with
- *         given id.
- *
- *         Allocates data block if it isn't allocated already.
- *
- * \param[out] device_memblock Pointer to device memory block.
- *
- * NOTE: Total Block size will be:
- *
- *          sizeof(CudaReductionDummyDataType) *
- *            RAJA_MAX_REDUCE_VARS * RAJA_CUDA_REDUCE_BLOCK_LENGTH
- *
- *       For each reducer object, we want a chunk of device memory that
- *       holds RAJA_CUDA_REDUCE_BLOCK_LENGTH slots for the reduction
- *       value for each thread block.
- *
- ******************************************************************************
- */
 template <typename T>
 T* getCudaReductionMemBlockPool()
 {
