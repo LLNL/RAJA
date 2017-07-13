@@ -556,8 +556,55 @@ thread_local int s_raja_cuda_forall_level = 0;
 thread_local dim3 s_cuda_launch_gridDim = 0;
 thread_local dim3 s_cuda_launch_blockDim = 0;
 
+thread_local cudaStream_t s_stream = 0; 
+
+
 }
 
+namespace cuda 
+{
+
+std::unordred_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cuda_stream, bool>::value_type(0, true));
+
+void synchronize()
+{
+  bool synchronize = false;
+  for (auto& val : s_stream_info) {
+    if (!val.second) {
+      synchronize = true;
+      val.second = true;
+    }
+  }
+  if (synchronize) {
+    cudaErrchk(cudaDeviceSynchronize());
+  }
+}
+
+void synchronize(cudaStream_t stream)
+{
+  auto iter = s_stream_info.find(stream);
+  if (iter != s_stream_info.end() ) {
+    if (!iter->second) {
+      iter->second = true;
+      cudaErrchk(cudaStreamSynchronize(stream));
+    }
+  } else {
+    fprintf(stderr, "Cannot synchronize unknown stream.\n");
+    std::abort();
+  }
+}
+
+void launch(cudaStream_t) {
+  auto iter = s_stream_info.find(stream);
+  if (iter != s_stream_info.end()) {
+    iter->second = false;
+  } else {
+    fprintf(stderr, "Cannot launch using unknown stream.\n");
+    std::abort();
+  }
+}
+
+}
 
 
 
@@ -690,6 +737,7 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_
 
     s_cuda_launch_gridDim = launchGridDim;
     s_cuda_launch_blockDim = launchBlockDim;
+    s_stream = stream;
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
@@ -711,6 +759,9 @@ void afterCudaKernelLaunch(cudaStream_t stream)
 #endif
     s_cuda_launch_gridDim = 0;
     s_cuda_launch_blockDim = 0;
+
+    cuda::launch(s_stream);
+    s_stream = 0;
 
     s_raja_cuda_forall_level--;
 #if defined(RAJA_ENABLE_OPENMP)

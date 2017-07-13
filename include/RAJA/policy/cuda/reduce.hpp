@@ -182,6 +182,52 @@ T shfl(T var, int srcLane)
 
 }  // end internal namespace for internal functions
 
+template <typename T>
+class PinnedTally
+{
+public:
+  struct Node {
+    T value;
+    Node* next;
+  };
+
+  PinnedTally()
+    : node_list(nullptr)
+  {
+
+  }
+
+  const Node* last_node()
+  {
+    return node_list;
+  }
+
+  Node* new_node()
+  {
+    Node* n = ::RAJA::cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
+    n->next = node_list;
+    node_list = n;
+    return n;
+  }
+
+  void free_list()
+  {
+    while (node_list) {
+      Node* n = node_list;
+      node_list = node_list->next;
+      ::RAJA::cuda::pinned_mempool_type::getInstance().free(n);
+    }
+  }
+
+  ~PinnedTally()
+  {
+    free_list();
+  }
+
+private:
+  Node* node_list;
+};
+
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -195,17 +241,12 @@ namespace cuda
 
 //! Information necessary for Cuda offload to be considered
 struct Offload_Info {
-  cudaStream_t stream{0};
 
-  Offload_Info() = delete;
-  Offload_Info(cudaStream_t _stream)
-      : stream{_stream}
-  {
-  }
+  // Offload_Info() = delete;
+  Offload_Info() = default;
 
   RAJA_HOST_DEVICE
-  Offload_Info(const Offload_Info &other)
-      : stream{other.stream}
+  Offload_Info(const Offload_Info &)
   {
   }
 };
@@ -213,8 +254,17 @@ struct Offload_Info {
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device pointer
 template <bool Async, typename Reducer, typename T>
 struct Reduce_Data {
+  union tally_u {
+    PinnedTally<T>* tally_list;
+    typename PinnedTally<T>::Node *node;
+
+    tally_u(PinnedTally<T>* list) : tally_list(list) {};
+    tally_u(typename PinnedTally<T>::Node *n) : node(n) {};
+  };
+
   mutable T value;
-  CudaReductionTallyType<T> *tally;
+  tally_u tally;
+  unsigned int *dev_counter;
   T *device;
   bool own_device_ptr;
 
@@ -227,22 +277,22 @@ struct Reduce_Data {
    */
   explicit Reduce_Data(T initValue)
       : value{initValue},
-        tally{getCudaReductionTallyBlockHost<CudaReductionTallyType<T>>()},
+        tally{new PinnedTally<T>},
+        dev_counter{nullptr},
         device{nullptr},
         own_device_ptr{false}
   {
-    if (!tally) {
+    if (!tally.tally_list) {
       printf("Unable to allocate tally space on host\n");
       std::abort();
     }
-    tally->tally = Reducer::identity;
-    tally->retiredBlocks = 0u;
   }
 
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data &other)
       : value{Reducer::identity},
         tally{other.tally},
+        dev_counter{other.dev_counter},
         device{other.device},
         own_device_ptr{false}
   {
@@ -252,13 +302,14 @@ struct Reduce_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    CudaReductionTallyType<T>* device_tally = getCudaReductionTallyBlockDevice(tally);
-    if (device_tally) {
-      tally = device_tally;
-      device = getCudaReductionMemBlockPool<T>();
+    T* device_ptr = getCudaReductionMemBlockPool<T>();
+    if (device_ptr) {
+      device = device_ptr;
+      dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      tally.node = tally.tally_list->new_node();
       own_device_ptr = true;
     }
-    return device_tally != nullptr;
+    return device_ptr != nullptr;
   }
 
   RAJA_INLINE
@@ -267,6 +318,8 @@ struct Reduce_Data {
     if(own_device_ptr && device) {
       releaseCudaReductionMemBlockPool(device);
       device = nullptr;
+      device_zeroed_mempool_type::getInstance().free(dev_counter);
+      dev_counter = nullptr;
     }
   }
 
@@ -280,14 +333,14 @@ struct Reduce_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    beforeCudaReadTallyBlock<Async>(tally);
+    cudaErrchk(cudaDeviceSynchronize());
   }
 
   //! frees all data from the offload information passed
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    releaseCudaReductionTallyBlockHost(tally);
+    tally.tally_list->free_list();
   }
 };
 
@@ -460,7 +513,7 @@ struct CudaReduce {
 
   explicit CudaReduce(T init_val)
       : parent{this},
-        info{0},
+        info{},
         val(init_val)
   {
   }
@@ -526,7 +579,7 @@ struct CudaReduce {
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc(&val.tally->retiredBlocks, (numBlocks - 1));
+            atomicInc(val.dev_counter, (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
 
@@ -545,7 +598,7 @@ struct CudaReduce {
 
         // one thread updates tally
         if (threadId == 0) {
-          Reducer{}(val.tally->tally, temp);
+          val.tally.node->value = temp;
         }
       }
     } else {
@@ -557,10 +610,16 @@ struct CudaReduce {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    val.deviceToHost(info);
-    T value = val.value;
-    Reducer{}(value, val.tally->tally);
-    return value;
+    auto n = val.tally.tally_list->last_node();
+    if (n) {
+      val.deviceToHost(info);
+      while (n) {
+        Reducer{}(val.value, n->value);
+        n = n->next;
+      }
+      val.cleanup(info);
+    }
+    return val.value;
   }
   //! alias for operator T()
   T get() { return operator T(); }
@@ -672,7 +731,7 @@ struct CudaReduceAtomic {
 
   explicit CudaReduceAtomic(T init_val)
       : parent{this},
-        info{0},
+        info{},
         val{init_val}
   {
   }
@@ -738,9 +797,15 @@ struct CudaReduceAtomic {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    val.deviceToHost(info);
-    T value = val.value;
-    Reducer{}(value, val.tally->tally);
+    auto n = val.tally.tally_list->last_node();
+    if (n) {
+      val.deviceToHost(info);
+      while (n) {
+        Reducer{}(val.value, n->value);
+        n = n->next;
+      }
+      val.cleanup(info);
+    }
     return value;
   }
   //! alias for operator T()
@@ -851,7 +916,7 @@ struct CudaReduceLoc {
   CudaReduceLoc() = delete;
   explicit CudaReduceLoc(T init_val, IndexType init_loc)
       : parent{this},
-        info{0},
+        info{},
         val{init_val, init_loc}
   {
   }
@@ -952,12 +1017,15 @@ struct CudaReduceLoc {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    val.deviceToHost(info);
-    T value = val.value;
-    IndexType index = val.index;
-    Reducer{}(value, index, val.tally->tally.val, val.tally->tally.idx);
-    RAJA_UNUSED_VAR(index);
-    return value;
+    auto n = val.tally.tally_list->last_node();
+    if (n) {
+      val.deviceToHost(info);
+      while (n) {
+        Reducer{}(val.value, val.index, n->val.val, n->val.idx);
+        n = n->next;
+      }
+    }
+    return val.value;
   }
   //! alias for operator T()
   T get() { return operator T(); }
@@ -965,12 +1033,8 @@ struct CudaReduceLoc {
   //! map result value back to host if not done already; return aggregate location
   IndexType getLoc()
   {
-    val.deviceToHost(info);
-    T value = val.value;
-    IndexType index = val.index;
-    Reducer{}(value, index, val.tally->tally.val, val.tally->tally.idx);
-    RAJA_UNUSED_VAR(value);
-    return index;
+    get();
+    return val.index;
   }
 
   //! apply reduction
@@ -1128,12 +1192,58 @@ struct ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
   }
 };
 
+//! specialization of ReduceMin for cuda_reduce_atomic
+template <size_t BLOCK_SIZE, bool Async, typename T>
+struct ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
+    : public CudaReduceAtomic<Async, RAJA::reduce::min<T>, T> {
+  using self = ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
+  using parent = CudaReduceAtomic<Async, RAJA::reduce::min<T>, T>;
+  using parent::parent;
+  //! enable min() for ReduceMin -- alias for reduce()
+  RAJA_HOST_DEVICE
+  self &min(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+  //! enable min() for ReduceMin -- alias for reduce()
+  RAJA_HOST_DEVICE
+  const self &min(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
+
+//! specialization of ReduceMax for cuda_reduce_atomic
+template <size_t BLOCK_SIZE, bool Async, typename T>
+struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
+    : public CudaReduceAtomic<Async, RAJA::reduce::max<T>, T> {
+  using self = ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
+  using parent = CudaReduceAtomic<Async, RAJA::reduce::max<T>, T>;
+  using parent::parent;
+  //! enable max() for ReduceMax -- alias for reduce()
+  RAJA_HOST_DEVICE
+  self &max(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+  //! enable max() for ReduceMax -- alias for reduce()
+  RAJA_HOST_DEVICE
+  const self &max(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
+
 //! specialization of ReduceMin for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduceAtomic<Async, RAJA::reduce::min<T>, T> {
+    : public CudaReduce<Async, RAJA::reduce::min<T>, T> {
   using self = ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduceAtomic<Async, RAJA::reduce::min<T>, T>;
+  using parent = CudaReduce<Async, RAJA::reduce::min<T>, T>;
   using parent::parent;
   //! enable min() for ReduceMin -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1154,9 +1264,9 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMax for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduceAtomic<Async, RAJA::reduce::max<T>, T> {
+    : public CudaReduce<Async, RAJA::reduce::max<T>, T> {
   using self = ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduceAtomic<Async, RAJA::reduce::max<T>, T>;
+  using parent = CudaReduce<Async, RAJA::reduce::max<T>, T>;
   using parent::parent;
   //! enable max() for ReduceMax -- alias for reduce()
   RAJA_HOST_DEVICE

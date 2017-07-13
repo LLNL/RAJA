@@ -135,6 +135,9 @@ using device_mempool_type = basic_mempool::mempool<cuda::device_allocator>;
 using device_zeroed_mempool_type = basic_mempool::mempool<cuda::device_zeroed_allocator>;
 using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
 
+void synchronize();
+void synchronize(cudaStream_t stream);
+
 } // end namespace cuda
 
 
