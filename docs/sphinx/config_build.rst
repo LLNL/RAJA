@@ -105,7 +105,6 @@ The following list describes the RAJA CMake variables and their defaults.
       ======================   ======================
       RAJA_ENABLE_OPENMP       On 
       RAJA_ENABLE_CUDA         Off 
-      RAJA_ENABLE_CILK         Off 
       ======================   ======================
 
   * **Data Types, Sizes, Alignment Parameters, etc.**
