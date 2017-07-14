@@ -752,7 +752,7 @@ struct CudaReduce {
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc(val.dev_counter, (numBlocks - 1));
+            atomicInc(val.device_count, (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
 
@@ -1180,7 +1180,7 @@ struct CudaReduceLoc {
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc(&val.device_count, (numBlocks - 1));
+            atomicInc(val.device_count, (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
 
@@ -1218,7 +1218,7 @@ struct CudaReduceLoc {
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
-        Reducer{}(val.value, val.index, n->val, n->idx);
+        Reducer{}(val.value, val.index, (*n).val, (*n).idx);
       }
       val.cleanup(info);
     }
