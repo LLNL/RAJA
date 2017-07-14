@@ -94,11 +94,6 @@ public:
   memory_arena(memory_arena &&) = default;
   memory_arena& operator=(memory_arena &&) = default;
 
-  ~memory_arena()
-  {
-
-  }
-
   size_t capacity()
   {
     return static_cast<char*>(m_allocation.end) - static_cast<char*>(m_allocation.begin);
@@ -281,6 +276,22 @@ public:
       m_alloc()
   {
 
+  }
+
+  ~mempool()
+  {
+    // With static objects like mempool, cudaErrorCudartUnloading is a possible error wwith cudaFree
+    // So no more cuda calls here
+  }
+
+
+  void free_chunks()
+  {
+    while (!m_arenas.empty()) {
+      void *allocation_ptr = m_arenas.front().get_allocation();
+      m_alloc.free(allocation_ptr);
+      m_arenas.pop_front();
+    }
   }
 
   size_t arena_size()

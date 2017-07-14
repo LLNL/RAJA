@@ -114,7 +114,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par{0}, begin, end, begin, binary_op);
+  ::thrust::inclusive_scan(::thrust::cuda::par, begin, end, begin, binary_op);
 #endif
   RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
 }
@@ -151,7 +151,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
   ::thrust::exclusive_scan(
-      ::thrust::cuda::par{0}, begin, end, begin, init, binary_op);
+      ::thrust::cuda::par, begin, end, begin, init, binary_op);
 #endif
   RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
 }
@@ -187,7 +187,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par{0}, begin, end, out, binary_op);
+  ::thrust::inclusive_scan(::thrust::cuda::par, begin, end, out, binary_op);
 #endif
   RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
 }
@@ -225,7 +225,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::exclusive_scan(::thrust::cuda::par{0}, begin, end, out, init, binary_op);
+  ::thrust::exclusive_scan(::thrust::cuda::par, begin, end, out, init, binary_op);
 #endif
   RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
 }

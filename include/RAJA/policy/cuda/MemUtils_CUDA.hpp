@@ -203,6 +203,7 @@ void beforeCudaReadTallyBlock(T* host_ptr)
 
 void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment = alignof(std::max_align_t));
 void releaseCudaReductionMemBlockPoolInternal(void* device_memblock);
+void freeCudaReductionMemBlockPool();
 
 template <typename T>
 T* getCudaReductionMemBlockPool()

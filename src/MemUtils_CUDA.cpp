@@ -560,10 +560,16 @@ thread_local dim3 s_cuda_launch_blockDim = 0;
 
 
 
+void freeCudaReductionMemBlockPool()
+{
+  s_cuda_reduction_mem_block_pool.free_chunks();
+}
+
 
 void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
 {
   void* ptr = nullptr;
+  static bool firstTime=true;
 
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (MemUtils_CUDA)
@@ -575,6 +581,10 @@ void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
     size_t slots = dims.x * dims.y * dims.z;
     if(slots) {
       ptr = (void*)s_cuda_reduction_mem_block_pool.malloc<char>(slots*size, alignment);
+      if(firstTime) {
+        std::atexit(freeCudaReductionMemBlockPool);
+        firstTime=false;
+      }
     }
 #if defined(RAJA_ENABLE_OPENMP)
   }
@@ -596,6 +606,8 @@ void releaseCudaReductionMemBlockPoolInternal(void *device_memblock)
   }
 #endif
 }
+
+
 
 
 /*
