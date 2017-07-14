@@ -41,6 +41,15 @@
 #
 ###############################################################################
 
-raja_add_executable(
+set(RAJA_EXAMPLE_PI_DEPENDS RAJA)
+if (RAJA_ENABLE_OPENMP)
+  list(APPEND RAJA_EXAMPLE_PI_DEPENDS openmp)
+endif()
+if (ENABLE_CUDA)
+  list(APPEND RAJA_EXAMPLE_PI_DEPENDS cuda)
+endif()
+
+blt_add_executable(
   NAME example-raja-pi
-  SOURCES pi.cxx)
+  SOURCES pi.cxx
+  DEPENDS_ON ${RAJA_EXAMPLE_PI_DEPENDS})

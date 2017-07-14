@@ -42,6 +42,14 @@
 
 macro(raja_add_executable)
 
+if (RAJA_BUILD_BLT)
+  if (RAJA_ENABLE_CUDA)
+    blt_add_executable(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA cuda ${arg_DEPENDS_ON})
+  else()
+    blt_add_executable(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA ${arg_DEPENDS_ON})
+  endif()
+else()
+
   set(options )
   set(singleValueArgs NAME)
   set(multiValueArgs SOURCES DEPENDS_ON)
@@ -73,9 +81,19 @@ macro(raja_add_executable)
     add_executable(${arg_NAME} ${arg_SOURCES})
     target_link_libraries(${arg_NAME} RAJA ${arg_DEPENDS_ON})
   endif()
+endif()
 endmacro(raja_add_executable)
 
 macro(raja_add_library)
+
+if (RAJA_BUILD_BLT)
+  if (RAJA_ENABLE_CUDA)
+    blt_add_library(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA cuda ${arg_DEPENDS_ON})
+  else()
+    blt_add_library(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA ${arg_DEPENDS_ON})
+  endif()
+
+else()
   set(options )
   set(singleValueArgs NAME)
   set(multiValueArgs SOURCES DEPENDS_ON)
@@ -115,6 +133,7 @@ macro(raja_add_library)
       CXX_STANDARD 11
       CXX_STANDARD_REQUIRED YES)
   endif()
+endif()
 endmacro(raja_add_library)
 
 macro(raja_add_test)
