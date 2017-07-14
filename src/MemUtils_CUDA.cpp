@@ -642,7 +642,7 @@ void releaseReductionMemBlockPoolInternal(void *device_memblock)
 *
 *******************************************************************************
 */
-void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream)
+void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (MemUtils_CUDA)
@@ -673,7 +673,7 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_
 *
 *******************************************************************************
 */
-void afterCudaKernelLaunch()
+void afterKernelLaunch(bool Async)
 {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (MemUtils_CUDA)
@@ -683,9 +683,14 @@ void afterCudaKernelLaunch()
     s_cuda_launch_blockDim = 0;
 
     cuda::launch(s_stream);
-    s_stream = 0;
 
     s_raja_cuda_forall_level--;
+    
+    cudaErrchk(cudaPeekAtLastError());
+    if (!Async) {
+      cudaErrchk(cuda::synchronize(s_stream));
+    }
+    s_stream = 0;
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
