@@ -126,34 +126,34 @@ using decay_t = typename std::decay<T>::type;
 
 template <typename Pol>
 using ExecutionPolicy =
-  DefineConcept(conforms<std::is_same<Policy, impl::decay_t<decltype(Pol::policy)>>>(),
-                conforms<std::is_same<Pattern, impl::decay_t<decltype(Pol::pattern)>>>(),
-                conforms<std::is_same<Launch, impl::decay_t<decltype(Pol::launch)>>>(),
-                conforms<std::is_same<Platform, impl::decay_t<decltype(Pol::platform)>>>());
+  DefineConcept(has_type<RAJA::Policy>(impl::decay_t<decltype(Pol::policy)>()),
+                has_type<RAJA::Pattern>(impl::decay_t<decltype(Pol::pattern)>()),
+                has_type<RAJA::Launch>(impl::decay_t<decltype(Pol::launch)>()),
+                has_type<RAJA::Platform>(impl::decay_t<decltype(Pol::platform)>()));
 
 template <typename Pol>
 using SequentialPolicy =
-    DefineConcept(models<ExecutionPolicy<Pol>>(),
+  DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::sequential>>());
 
 template <typename Pol>
 using OpenMPPolicy =
-    DefineConcept(models<ExecutionPolicy<Pol>>(),
+    DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::openmp>>());
 
 template <typename Pol>
 using TargetOpenMPPolicy =
-    DefineConcept(models<ExecutionPolicy<Pol>>(),
+    DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::target_openmp>>());
 
 template <typename Pol>
 using CudaPolicy =
-    DefineConcept(models<ExecutionPolicy<Pol>>(),
+    DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::cuda>>());
 
 template <typename Pol>
 using SimdPolicy =
-    DefineConcept(models<ExecutionPolicy<Pol>>(),
+    DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::simd>>());
 
 }  // end namespace concepts

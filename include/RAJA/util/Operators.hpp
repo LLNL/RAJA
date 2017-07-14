@@ -59,6 +59,8 @@
 
 #include "RAJA/util/defines.hpp"
 
+#include "RAJA/util/concepts.hpp"
+
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
@@ -230,10 +232,8 @@ struct larger_of<T, U, false> {
 
 template <typename T, typename U>
 struct larger_of {
-  using type =
-      typename detail::larger_of<T,
-                                 U,
-                                 (size_of<T>::value > size_of<U>::value)>::type;
+  using type = typename detail::
+      larger_of<T, U, (size_of<T>::value > size_of<U>::value)>::type;
 };
 
 }  // closing brace for types namespace
@@ -542,6 +542,28 @@ struct safe_plus
 };
 
 }  // closing brace for operators namespace
+
+namespace concepts
+{
+
+template <typename Fun, typename Ret, typename T = Ret, typename U = T>
+using BinaryFunction = DefineConcept(
+                                     val<decay<Fun>>()(RAJA::concepts::convertible_to<decay<Ret>>(val<decay<T>>(), val<decay<U>>())));
+
+template <typename Fun, typename Ret, typename T = Ret>
+using UnaryFunction = DefineConcept(val<decay<Fun>>()(convertible_to<decay<Ret>>(val<decay<T>>())));
+
+}
+
+namespace type_traits
+{
+
+template <typename Fun, typename Ret, typename T = Ret, typename U = T>
+using is_binary_function = concepts::requires_<concepts::BinaryFunction, Ret, T, U>;
+
+template <typename Fun, typename Ret, typename T = Ret>
+using is_unary_function = concepts::requires_<concepts::UnaryFunction, Ret, T>;
+}
 
 }  // closing brace for RAJA namespace
 
