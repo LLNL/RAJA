@@ -217,7 +217,7 @@ public:
         return ret;
     }
     
-    cudaStream& operator*()
+    cudaStream_t& operator*()
     {
       return m_sn->stream;
     }
@@ -283,22 +283,22 @@ public:
   
   PinnedTally(const PinnedTally&) = delete;
   
-  StreamItertor streamBegin()
+  StreamIterator streamBegin()
   {
     return{stream_list};
   }
   
-  StreamItertor streamEnd()
+  StreamIterator streamEnd()
   {
     return{nullptr};
   }
   
-  StreamNodeItertor begin()
+  StreamNodeIterator begin()
   {
     return{stream_list, stream_list ? stream_list->node_list : nullptr};
   }
   
-  StreamNodeItertor end()
+  StreamNodeIterator end()
   {
     return{nullptr, nullptr};
   }
@@ -410,7 +410,7 @@ struct Reduce_Data {
   }
   
   RAJA_INLINE
-  void delete()
+  void clear()
   {
       delete tally.list; tally.list = nullptr;
   }
@@ -508,7 +508,7 @@ struct ReduceAtomic_Data {
   }
   
   RAJA_INLINE
-  void delete()
+  void clear()
   {
       delete tally.list; tally.list = nullptr;
   }
@@ -567,8 +567,8 @@ template <bool Async, typename Reducer, typename T, typename IndexType>
 struct ReduceLoc_Data {
   union tally_u {
     PinnedTally<LocType<T, IndexType>>* list;
-    CudaReductionLocType<T, IndexType> *val_ptr;
-    tally_u(PinnedTally<CudaReductionLocType<T, IndexType>>* l) : list(l) {};
+    LocType<T, IndexType> *val_ptr;
+    tally_u(PinnedTally<LocType<T, IndexType>>* l) : list(l) {};
     tally_u(LocType<T, IndexType> *v_ptr) : val_ptr(v_ptr) {};
   };
   
@@ -611,7 +611,7 @@ struct ReduceLoc_Data {
   }
   
   RAJA_INLINE
-  void delete()
+  void clear()
   {
       delete tally.list; tally.list = nullptr;
   }
@@ -706,7 +706,7 @@ struct CudaReduce {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.delete();
+      val.clear();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduce)
@@ -939,7 +939,7 @@ struct CudaReduceAtomic {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.delete();
+      val.clear();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduceAtomic)
@@ -1133,7 +1133,7 @@ struct CudaReduceLoc {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.delete();
+      val.clear();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduceLoc)
