@@ -557,7 +557,7 @@ thread_local dim3 s_launchBlockDim = 0;
 
 thread_local cudaStream_t s_stream = 0;
 
-std::unordered_map<cudaStream_t, bool> s_stream_info{ {0, true} };
+std::unordered_map<cudaStream_t, bool> s_stream_info{ {cudaStream_t(0), true} };
 
 void synchronize()
 {
@@ -649,14 +649,6 @@ void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t st
   {  
 #endif
     s_forall_level++;
-
-    if (s_forall_level == 1 && s_tally_cache) {
-
-      if (s_tally_cache->active()) {
-        s_tally_cache->write_back_dirty();
-      }
-    }
-
     s_launchGridDim = launchGridDim;
     s_launchBlockDim = launchBlockDim;
     s_stream = stream;

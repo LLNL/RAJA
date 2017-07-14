@@ -204,17 +204,15 @@ public:
     
     const StreamIterator& operator++()
     {
-        if (m_sn) {
-          m_sn = m_sn->next;
-        }
-        return *this;
+      m_sn = m_sn->next;
+      return *this;
     }
     
     StreamIterator operator++(int)
     {
-        StreamIterator ret = *this;
-        this->operator++();
-        return ret;
+      StreamIterator ret = *this;
+      this->operator++();
+      return ret;
     }
     
     cudaStream_t& operator*()
@@ -247,22 +245,23 @@ public:
     
     const StreamNodeIterator& operator++()
     {
-        if (m_n) {
-          m_n = m_n->next;   
-        } else if (m_sn) {
-          m_sn = m_sn->next;
-          if (m_sn) {
-            m_n = m_sn->node_list;   
-          }
-        }
-        return *this;
+      if (m_n->next) {
+        m_n = m_n->next;
+      } else if (m_sn->next) {
+        m_sn = m_sn->next;
+        m_n = m_sn->node_list;
+      } else {
+        m_sn = nullptr;
+        m_n = nullptr;
+      }
+      return *this;
     }
     
     StreamNodeIterator operator++(int)
     {
-        StreamNodeIterator ret = *this;
-        this->operator++();
-        return ret;
+      StreamNodeIterator ret = *this;
+      this->operator++();
+      return ret;
     }
     
     T& operator*()
@@ -272,7 +271,7 @@ public:
     
     bool operator==(const StreamNodeIterator& rhs) const
     {
-      return m_sn == rhs.m_sn && m_n == rhs.m_n;
+      return m_n == rhs.m_n;
     }
     
     bool operator!=(const StreamNodeIterator& rhs) const
@@ -323,6 +322,7 @@ public:
     if (!sn) {
       sn = (StreamNode*)malloc(sizeof(StreamNode));
       sn->next = stream_list;
+      sn->stream = stream;
       sn->node_list = nullptr;
       stream_list = sn;
     }
@@ -423,7 +423,7 @@ struct Reduce_Data {
   RAJA_INLINE
   void clear()
   {
-      delete tally.list; tally.list = nullptr;
+    delete tally.list; tally.list = nullptr;
   }
 
   //! transfers from the host to the device -- exit() is called upon failure
@@ -521,7 +521,7 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   void clear()
   {
-      delete tally.list; tally.list = nullptr;
+    delete tally.list; tally.list = nullptr;
   }
 
   //! transfers from the host to the device -- exit() is called upon failure
@@ -624,7 +624,7 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   void clear()
   {
-      delete tally.list; tally.list = nullptr;
+    delete tally.list; tally.list = nullptr;
   }
 
   //! transfers from the host to the device -- exit() is called upon failure
