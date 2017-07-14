@@ -243,11 +243,11 @@ public:
     const StreamNodeIterator& operator++()
     {
         if (m_n) {
-          m_n = m_n->next);   
+          m_n = m_n->next;   
         } else if (m_sn) {
           m_sn = m_sn->next;
           if (m_sn) {
-            n = m_sn->node_list;   
+            m_n = m_sn->node_list;   
           }
         }
         return *this;
@@ -520,7 +520,7 @@ struct ReduceAtomic_Data {
     T* device_ptr = getReductionMemBlockPool<T>(1);
     if (device_ptr) {
       device = device_ptr;
-      dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      device_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
@@ -532,7 +532,7 @@ struct ReduceAtomic_Data {
   {
     if(own_device_ptr) {
       releaseReductionMemBlockPool(device);  device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
+      device_zeroed_mempool_type::getInstance().free(device_counter);  dev_counter = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
     }
@@ -624,7 +624,7 @@ struct ReduceLoc_Data {
     if (device_ptr) {
       device = device_ptr;
       deviceLoc = getReductionMemBlockPool<IndexType>();;
-      dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      device_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
@@ -637,7 +637,7 @@ struct ReduceLoc_Data {
     if(own_device_ptr) {
       releaseReductionMemBlockPool(device);  device = nullptr;
       releaseReductionMemBlockPool(deviceLoc);  deviceLoc = nullptr;
-      device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
+      device_zeroed_mempool_type::getInstance().free(device_counter);  dev_counter = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
     }
