@@ -476,7 +476,7 @@ struct ReduceAtomic_Data {
   };
   
   mutable T value;
-  tally_u *tally;
+  tally_u tally;
   unsigned int* device_count;
   T* device;
   bool own_device_ptr;
