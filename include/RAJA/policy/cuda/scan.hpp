@@ -98,6 +98,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter end,
                        Function binary_op)
 {
+  cuda::beforeKernelLaunch(0, 0, 0);
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -116,7 +117,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 #else
   ::thrust::inclusive_scan(::thrust::cuda::par{0}, begin, end, begin, binary_op);
 #endif
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  cuda::afterKernelLaunch(Async);
 }
 
 /*!
@@ -134,6 +135,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        Function binary_op,
                        T init)
 {
+  cuda::beforeKernelLaunch(0, 0, 0);
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -153,7 +155,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   ::thrust::exclusive_scan(
       ::thrust::cuda::par{0}, begin, end, begin, init, binary_op);
 #endif
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  cuda::afterKernelLaunch(Async);
 }
 
 /*!
@@ -171,6 +173,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                OutputIter out,
                Function binary_op)
 {
+  cuda::beforeKernelLaunch(0, 0, 0);
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -189,7 +192,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 #else
   ::thrust::inclusive_scan(::thrust::cuda::par{0}, begin, end, out, binary_op);
 #endif
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  cuda::afterKernelLaunch(Async);
 }
 
 /*!
@@ -209,6 +212,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                Function binary_op,
                T init)
 {
+  cuda::beforeKernelLaunch(0, 0, 0);
 #if defined(RAJA_ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
@@ -227,7 +231,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 #else
   ::thrust::exclusive_scan(::thrust::cuda::par{0}, begin, end, out, init, binary_op);
 #endif
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  cuda::afterKernelLaunch(Async);
 }
 
 }  // closing brace for scan namespace
