@@ -167,7 +167,7 @@ struct LocType {
 };
 
 void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
-void afterKernelLaunch();
+void afterKernelLaunch(bool Async);
 
 void* getReductionMemBlockPoolInternal(size_t len, size_t size, size_t alignment = alignof(std::max_align_t));
 void releaseReductionMemBlockPoolInternal(void* device_memblock);
