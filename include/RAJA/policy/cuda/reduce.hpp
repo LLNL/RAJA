@@ -427,7 +427,7 @@ struct Reduce_Data {
     if (device_ptr) {
       device = device_ptr;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value();
+      tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return device_ptr != nullptr;
@@ -525,7 +525,7 @@ struct ReduceAtomic_Data {
     if (device_ptr) {
       device = device_ptr;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value();
+      tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return device_ptr != nullptr;
@@ -629,7 +629,7 @@ struct ReduceLoc_Data {
       device = device_ptr;
       deviceLoc = getCudaReductionMemBlockPool<IndexType>();;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value();
+      tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return device_ptr != nullptr;
