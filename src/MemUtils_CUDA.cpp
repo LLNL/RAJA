@@ -557,7 +557,7 @@ thread_local dim3 s_launchBlockDim = 0;
 
 thread_local cudaStream_t s_stream = 0;
 
-std::unordred_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cuda_stream, bool>::value_type(0, true));
+std::unordered_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cuda_stream, bool>::value_type(0, true));
 
 void synchronize()
 {
@@ -648,17 +648,17 @@ void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t st
 #pragma omp critical (MemUtils_CUDA)
   {  
 #endif
-    s_raja_cuda_forall_level++;
+    s_forall_level++;
 
-    if (s_raja_cuda_forall_level == 1 && s_tally_cache) {
+    if (s_forall_level == 1 && s_tally_cache) {
 
       if (s_tally_cache->active()) {
         s_tally_cache->write_back_dirty();
       }
     }
 
-    s_cuda_launch_gridDim = launchGridDim;
-    s_cuda_launch_blockDim = launchBlockDim;
+    s_launchGridDim = launchGridDim;
+    s_launchBlockDim = launchBlockDim;
     s_stream = stream;
 #if defined(RAJA_ENABLE_OPENMP)
   }
@@ -688,7 +688,7 @@ void afterKernelLaunch(bool Async)
     
     cudaErrchk(cudaPeekAtLastError());
     if (!Async) {
-      cudaErrchk(cuda::synchronize(s_stream));
+      cuda::synchronize(s_stream);
     }
     s_stream = 0;
 #if defined(RAJA_ENABLE_OPENMP)
