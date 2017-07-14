@@ -412,6 +412,12 @@ struct Reduce_Data {
         own_device_ptr{false}
   {
   }
+  
+  RAJA_INLINE
+  void delete()
+  {
+      delete tally.list; tally.list = nullptr;
+  }
 
   //! transfers from the host to the device -- exit() is called upon failure
   RAJA_INLINE
@@ -504,6 +510,12 @@ struct ReduceAtomic_Data {
         own_device_ptr{false}
   {
   }
+  
+  RAJA_INLINE
+  void delete()
+  {
+      delete tally.list; tally.list = nullptr;
+  }
 
   //! transfers from the host to the device -- exit() is called upon failure
   RAJA_INLINE
@@ -540,14 +552,17 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    beforeCudaReadTallyBlock<Async>(tally);
+    auto end = tally.list->streamEnd();
+    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+      cuda::synchronize(*s);
+    }
   }
 
   //! frees all data from the offload information passed
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    releaseCudaReductionTallyBlockHost(tally);
+    tally.list->free_list();
   }
 };
 
@@ -598,6 +613,12 @@ struct ReduceLoc_Data {
         own_device_ptr{false}
   {
   }
+  
+  RAJA_INLINE
+  void delete()
+  {
+      delete tally.list; tally.list = nullptr;
+  }
 
   //! transfers from the host to the device -- exit() is called upon failure
   RAJA_INLINE
@@ -636,14 +657,17 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    beforeCudaReadTallyBlock<Async>(tally);
+    auto end = tally.list->streamEnd();
+    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+      cuda::synchronize(*s);
+    }
   }
 
   //! frees all data from the offload information passed
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    releaseCudaReductionTallyBlockHost(tally);
+    tally.list->free_list();
   }
 };
 
@@ -686,7 +710,7 @@ struct CudaReduce {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.cleanup(info);
+      val.delete();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduce)
@@ -919,7 +943,7 @@ struct CudaReduceAtomic {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.cleanup(info);
+      val.delete();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduceAtomic)
@@ -1113,7 +1137,7 @@ struct CudaReduceLoc {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.cleanup(info);
+      val.delete();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (CudaReduceLoc)
