@@ -138,20 +138,20 @@ using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
 void synchronize();
 void synchronize(cudaStream_t stream);
 
-extern thread_local dim3 s_gridDim;
-extern thread_local dim3 s_blockDim;
+extern thread_local dim3 s_launchGridDim;
+extern thread_local dim3 s_launchBlockDim;
 extern thread_local cudaStream_t s_stream;
 
 RAJA_INLINE
 dim3 currentGridDim()
 {
-  return s_gridDim;
+  return s_launchGridDim;
 }
 
 RAJA_INLINE
 dim3 currentBlockDim()
 {
-  return s_blockDim;
+  return s_launchBlockDim;
 }
 
 RAJA_INLINE
