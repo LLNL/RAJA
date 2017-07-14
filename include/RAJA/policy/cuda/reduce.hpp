@@ -323,6 +323,7 @@ public:
     if (!sn) {
       StreamNode* sn = (StreamNode*)malloc(sizeof(StreamNode));
       sn->next = stream_list;
+      sn->node_list = nullptr
       stream_list = sn;
     }
     Node* n = cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
