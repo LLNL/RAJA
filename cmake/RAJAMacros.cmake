@@ -42,7 +42,7 @@
 
 macro(raja_add_executable)
 
-if (RAJA_BUILD_BLT)
+if (RAJA_BUILD_WITH_BLT)
   if (RAJA_ENABLE_CUDA)
     blt_add_executable(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA cuda ${arg_DEPENDS_ON})
   else()
@@ -86,7 +86,7 @@ endmacro(raja_add_executable)
 
 macro(raja_add_library)
 
-if (RAJA_BUILD_BLT)
+if (RAJA_BUILD_WITH_BLT)
   if (RAJA_ENABLE_CUDA)
     blt_add_library(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS RAJA cuda ${arg_DEPENDS_ON})
   else()
