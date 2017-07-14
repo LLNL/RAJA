@@ -222,9 +222,14 @@ public:
       return m_sn->stream;
     }
     
-    bool operator=(const StreamIterator& rhs)
+    bool operator==(const StreamIterator& rhs) const
     {
       return m_sn == rhs.m_sn;
+    }
+    
+    bool operator!=(const StreamIterator& rhs) const
+    {
+      return !this->operator==(rhs);
     }
     
   private:
@@ -265,9 +270,14 @@ public:
       return m_n->value;
     }
     
-    bool operator=(const StreamNodeIterator& rhs)
+    bool operator==(const StreamNodeIterator& rhs) const
     {
       return m_sn == rhs.m_sn && m_n == rhs.m_n;
+    }
+    
+    bool operator!=(const StreamNodeIterator& rhs) const
+    {
+      return !this->operator==(rhs);
     }
     
   private:
