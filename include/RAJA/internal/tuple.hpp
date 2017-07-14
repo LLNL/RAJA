@@ -155,6 +155,8 @@ template <metal::int_ i, typename... Types>
 struct tuple_element<i, tuple<Types...>> {
   using type = metal::at<metal::list<Types...>, metal::number<i>>;
 };
+template <metal::int_ i, typename T>
+using tuple_element_t = typename tuple_element<i, T>::type;
 
 template <int index, typename... Args>
 RAJA_HOST_DEVICE constexpr auto get(const tuple<Args...>& t) noexcept
