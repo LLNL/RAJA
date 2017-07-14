@@ -389,7 +389,7 @@ struct Reduce_Data {
 
   mutable T value;
   tally_u tally;
-  unsigned int *dev_counter;
+  unsigned int *device_count;
   T *device;
   bool own_device_ptr;
 
@@ -403,7 +403,7 @@ struct Reduce_Data {
   explicit Reduce_Data(T initValue)
       : value{initValue},
         tally{new PinnedTally<T>},
-        dev_counter{nullptr},
+        device_count{nullptr},
         device{nullptr},
         own_device_ptr{false}
   {
@@ -413,7 +413,7 @@ struct Reduce_Data {
   Reduce_Data(const Reduce_Data &other)
       : value{Reducer::identity},
         tally{other.tally},
-        dev_counter{other.dev_counter},
+        device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
   {
@@ -432,7 +432,7 @@ struct Reduce_Data {
     T* device_ptr = getReductionMemBlockPool<T>();
     if (device_ptr) {
       device = device_ptr;
-      dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
@@ -444,7 +444,7 @@ struct Reduce_Data {
   {
     if(own_device_ptr) {
       releaseReductionMemBlockPool(device);  device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
+      device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
     }
