@@ -978,7 +978,7 @@ struct CudaReduceAtomic {
       if (threadId == 0) {
         while(((volatile unsigned int*)val.device_count)[0] < 2u);
         __threadfence();
-        RAJA::reduce::atomic_operators<Reducer>{}(val.device, temp);
+        RAJA::reduce::atomic_operators<Reducer>{}(val.device[0], temp);
         __threadfence();
         unsigned int old_val = atomicInc(val.device_count, 1u + numBlocks);
         if (old_val == 1u + numBlocks) {
