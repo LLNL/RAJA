@@ -177,19 +177,19 @@ T* getReductionMemBlockPool()
 {
   dim3 gridDim = currentGridDim();
   size_t len = gridDim.x * gridDim.y * gridDim.z;
-  return (T*)getCudaReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
+  return (T*)getReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
 }
 
 template <typename T>
 T* getReductionMemBlockPool(size_t len)
 {
-  return (T*)getCudaReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
+  return (T*)getReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
 }
 
 template <typename T>
 void releaseReductionMemBlockPool(T *device_memblock)
 {
-  releaseCudaReductionMemBlockPoolInternal((void*)device_memblock);
+  releaseReductionMemBlockPoolInternal((void*)device_memblock);
 }
 
 } // end namespace cuda
