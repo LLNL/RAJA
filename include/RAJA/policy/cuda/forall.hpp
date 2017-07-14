@@ -206,18 +206,16 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 
     auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
-    beforeCudaKernelLaunch(gridSize, BLOCK_SIZE, 0);
+    cuda::beforeKernelLaunch(gridSize, BLOCK_SIZE, 0);
 
     RAJA_FT_BEGIN;
 
     forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(
         gridSize, BLOCK_SIZE, 0)>>>(loop_body, std::move(begin), len);
 
-    RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
-
     RAJA_FT_END;
 
-    afterCudaKernelLaunch(0);
+    cuda::afterKernelLaunch(Async);
   }
 }
 
@@ -237,18 +235,16 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 
     auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
 
-    beforeCudaKernelLaunch(gridSize, BLOCK_SIZE, 0);
+    cuda::beforeKernelLaunch(gridSize, BLOCK_SIZE, 0);
 
     RAJA_FT_BEGIN;
 
     forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(
         gridSize, BLOCK_SIZE, 0)>>>(loop_body, std::move(begin), len, icount);
 
-    RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
-
     RAJA_FT_END;
 
-    afterCudaKernelLaunch(0);
+    cuda::afterKernelLaunch(Async);
   }
 }
 
@@ -284,7 +280,7 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  if (!Async) cuda::synchronize();
 }
 
 /*!
@@ -313,7 +309,7 @@ RAJA_INLINE void forall_Icount(
 
   }  // iterate over segments of index set
 
-  RAJA_CUDA_CHECK_AND_SYNC(Async, 0);
+  if (!Async) cuda::synchronize();
 }
 
 }  // closing brace for impl namespace
