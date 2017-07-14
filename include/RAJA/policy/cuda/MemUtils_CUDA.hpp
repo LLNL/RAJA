@@ -138,86 +138,61 @@ using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
 void synchronize();
 void synchronize(cudaStream_t stream);
 
-} // end namespace cuda
+extern thread_local dim3 s_gridDim;
+extern thread_local dim3 s_blockDim;
+extern thread_local cudaStream_t s_stream;
 
+RAJA_INLINE
+dim3 currentGridDim()
+{
+  return s_gridDim;
+}
+
+RAJA_INLINE
+dim3 currentBlockDim()
+{
+  return s_blockDim;
+}
+
+RAJA_INLINE
+cudaStream_t currentStream()
+{
+  return s_stream;
+}
 
 template <typename T, typename IndexType>
-struct CudaReductionLocType {
+struct LocType {
   T val;
   IndexType idx;
 };
 
-template <typename T>
-struct CudaReductionTallyType {
-  T tally;
-  unsigned int retiredBlocks;
-};
+void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
+void afterKernelLaunch();
+
+void* getReductionMemBlockPoolInternal(size_t len, size_t size, size_t alignment = alignof(std::max_align_t));
+void releaseReductionMemBlockPoolInternal(void* device_memblock);
 
 template <typename T>
-struct CudaReductionTallyTypeAtomic {
-  T tally;
-};
-
-template <typename T, typename IndexType>
-struct CudaReductionLocTallyType {
-  CudaReductionLocType<T, IndexType> tally;
-  unsigned int retiredBlocks;
-};
-
-
-void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr);
-void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment = alignof(std::max_align_t));
-void releaseCudaReductionTallyBlockHostInternal(void* host_ptr);
-
-
-template <typename T>
-T* getCudaReductionTallyBlockDevice(T* host_ptr)
+T* getReductionMemBlockPool()
 {
-  return (T*)getCudaReductionTallyBlockDeviceInternal((void*)host_ptr);
+  dim3 gridDim = currentGridDim();
+  size_t len = gridDim.x * gridDim.y * gridDim.z;
+  return (T*)getCudaReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
 }
 
 template <typename T>
-T* getCudaReductionTallyBlockHost()
+T* getReductionMemBlockPool(size_t len)
 {
-  return (T*)getCudaReductionTallyBlockHostInternal(sizeof(T), alignof(T));
+  return (T*)getCudaReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
 }
 
 template <typename T>
-void releaseCudaReductionTallyBlockHost(T* host_ptr)
-{
-  releaseCudaReductionTallyBlockHostInternal((void*)host_ptr);
-}
-
-void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
-void afterCudaKernelLaunch(cudaStream_t stream);
-
-void beforeCudaReadTallyBlockAsync(void* host_ptr);
-void beforeCudaReadTallyBlockSync(void* host_ptr);
-
-template <bool Async, typename T>
-void beforeCudaReadTallyBlock(T* host_ptr)
-{
-  if (Async) {
-    beforeCudaReadTallyBlockAsync((void*)host_ptr);
-  } else {
-    beforeCudaReadTallyBlockSync((void*)host_ptr);
-  }
-}
-
-void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment = alignof(std::max_align_t));
-void releaseCudaReductionMemBlockPoolInternal(void* device_memblock);
-
-template <typename T>
-T* getCudaReductionMemBlockPool()
-{
-  return (T*)getCudaReductionMemBlockPoolInternal(sizeof(T), alignof(T));
-}
-
-template <typename T>
-void releaseCudaReductionMemBlockPool(T *device_memblock)
+void releaseReductionMemBlockPool(T *device_memblock)
 {
   releaseCudaReductionMemBlockPoolInternal((void*)device_memblock);
 }
+
+} // end namespace cuda
 
 }  // closing brace for RAJA namespace
 
