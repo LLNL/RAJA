@@ -187,35 +187,158 @@ class PinnedTally
 {
 public:
   struct Node {
-    T value;
     Node* next;
+    T value;
   };
+  struct StreamNode {
+    StreamNode* next;
+    cudaStream_t stream;
+    Node* node_list;
+  };
+  
+  
+  
+  class StreamIterator {
+  public:
+    StreamIterator() = delete;
+    
+    StreamIterator(StreamNode* sn)
+      : m_sn(sn)
+    {
+    }
+    
+    const StreamIterator& operator++()
+    {
+        if (m_sn) {
+          m_sn = m_sn->next;
+        }
+        return *this;
+    }
+    
+    StreamIterator operator++(int)
+    {
+        StreamIterator ret = *this;
+        this->operator++();
+        return ret;
+    }
+    
+    cudaStream& operator*()
+    {
+      return m_sn->stream;
+    }
+    
+    bool operator=(const StreamIterator& rhs)
+    {
+      return m_sn == rhs.m_sn;
+    }
+    
+  private:
+    StreamNode* m_sn;
+  };
+  
+  class StreamNodeIterator {
+  public:
+    StreamNodeIterator() = delete;
+    
+    StreamNodeIterator(StreamNode* sn)
+      : m_sn(sn), m_n(sn ? sn->node_list : nullptr)
+    {
+    }
+    
+    const StreamNodeIterator& operator++()
+    {
+        if (m_n) {
+          m_n = m_n->next);   
+        } else if (m_sn) {
+          m_sn = m_sn->next;
+          if (m_sn) {
+            n = m_sn->node_list;   
+          }
+        }
+        return *this;
+    }
+    
+    StreamNodeIterator operator++(int)
+    {
+        StreamNodeIterator ret = *this;
+        this->operator++();
+        return ret;
+    }
+    
+    T& operator*()
+    {
+      return m_n->value;
+    }
+    
+    bool operator=(const StreamNodeIterator& rhs)
+    {
+      return m_sn == rhs.m_sn && m_n == rhs.m_n;
+    }
+    
+  private:
+    StreamNode* m_sn;
+    Node* m_n;
+  };
+  
+  
 
   PinnedTally()
-    : node_list(nullptr)
+    : stream_list(nullptr)
   {
 
   }
-
-  const Node* last_node()
+  
+  PinnedTally(const PinnedTally&) = delete;
+  
+  StreamItertor streamBegin()
   {
-    return node_list;
+    return{stream_list};
+  }
+  
+  StreamItertor streamEnd()
+  {
+    return{nullptr};
+  }
+  
+  StreamNodeItertor begin()
+  {
+    return{stream_list};
+  }
+  
+  StreamNodeItertor end()
+  {
+    return{nullptr};
   }
 
-  Node* new_node()
+  T* new_value(cudaStream_t stream)
   {
+    StreamNode* sn = stream_list;
+    while(sn) {
+      if (sn->stream == stream) break;
+      sn = sn->next;
+    }
+    if (!sn) {
+      StreamNode* sn = (StreamNode*)malloc(sizeof(StreamNode));
+      sn->next = stream_list;
+      stream_list = sn;
+    }
     Node* n = ::RAJA::cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
-    n->next = node_list;
-    node_list = n;
-    return n;
+    n->next = sn->node_list;
+    sn->node_list = n;
+    return &n->value;
   }
 
   void free_list()
   {
-    while (node_list) {
-      Node* n = node_list;
-      node_list = node_list->next;
-      ::RAJA::cuda::pinned_mempool_type::getInstance().free(n);
+    while (stream_list) {
+      StreamNode* s = stream_list;
+      stream_list = s->next;
+      while (s->node_list) {
+        Node* n = s->node_list;
+        s->node_list = n->next;
+        ::RAJA::cuda::pinned_mempool_type::getInstance().free(n);
+      }
+      free(s);
     }
   }
 
@@ -225,7 +348,7 @@ public:
   }
 
 private:
-  Node* node_list;
+  StreamNode* stream_list;
 };
 
 //
@@ -255,11 +378,11 @@ struct Offload_Info {
 template <bool Async, typename Reducer, typename T>
 struct Reduce_Data {
   union tally_u {
-    PinnedTally<T>* tally_list;
-    typename PinnedTally<T>::Node *node;
+    PinnedTally<T>* list;
+    T *value;
 
-    tally_u(PinnedTally<T>* list) : tally_list(list) {};
-    tally_u(typename PinnedTally<T>::Node *n) : node(n) {};
+    tally_u(PinnedTally<T>* l) : list(l) {};
+    tally_u(T *v_ptr) : value(v_ptr) {};
   };
 
   mutable T value;
@@ -282,10 +405,6 @@ struct Reduce_Data {
         device{nullptr},
         own_device_ptr{false}
   {
-    if (!tally.tally_list) {
-      printf("Unable to allocate tally space on host\n");
-      std::abort();
-    }
   }
 
   RAJA_HOST_DEVICE
@@ -306,7 +425,7 @@ struct Reduce_Data {
     if (device_ptr) {
       device = device_ptr;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.node = tally.tally_list->new_node();
+      tally.value = tally.list->new_value();
       own_device_ptr = true;
     }
     return device_ptr != nullptr;
@@ -333,14 +452,17 @@ struct Reduce_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    cudaErrchk(cudaDeviceSynchronize());
+    auto end = tally.list->streamEnd();
+    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+      cuda::synchronize(*s);
+    }
   }
 
   //! frees all data from the offload information passed
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    tally.tally_list->free_list();
+    tally.list->free_list();
   }
 };
 
@@ -598,7 +720,7 @@ struct CudaReduce {
 
         // one thread updates tally
         if (threadId == 0) {
-          val.tally.node->value = temp;
+          *val.tally.value = temp;
         }
       }
     } else {
@@ -610,12 +732,12 @@ struct CudaReduce {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = val.tally.tally_list->last_node();
-    if (n) {
+    auto n = val.tally.list->begin();
+    auto end = val.tally.list->end();
+    if (n != end) {
       val.deviceToHost(info);
-      while (n) {
-        Reducer{}(val.value, n->value);
-        n = n->next;
+      for ( ; n != end; ++n) {
+        Reducer{}(val.value, *n);
       }
       val.cleanup(info);
     }
