@@ -257,7 +257,7 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
       cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(
           dims.num_blocks, dims.num_threads, 0)>>>(body, c0);
 
-      cuda::afterCudaKernelLaunch(true);
+      cuda::afterKernelLaunch(true);
     }
   }
 };
