@@ -321,7 +321,7 @@ public:
       sn = sn->next;
     }
     if (!sn) {
-      StreamNode* sn = (StreamNode*)malloc(sizeof(StreamNode));
+      sn = (StreamNode*)malloc(sizeof(StreamNode));
       sn->next = stream_list;
       sn->node_list = nullptr;
       stream_list = sn;
@@ -336,12 +336,12 @@ public:
   {
     while (stream_list) {
       StreamNode* s = stream_list;
-      stream_list = s->next;
       while (s->node_list) {
         Node* n = s->node_list;
         s->node_list = n->next;
         cuda::pinned_mempool_type::getInstance().free(n);
       }
+      stream_list = s->next;
       free(s);
     }
   }
