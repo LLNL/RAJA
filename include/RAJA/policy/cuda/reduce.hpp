@@ -193,8 +193,6 @@ public:
     Node* node_list;
   };
   
-  
-  
   class StreamIterator {
   public:
     StreamIterator() = delete;
@@ -277,8 +275,6 @@ public:
     Node* m_n;
   };
   
-  
-
   PinnedTally()
     : stream_list(nullptr)
   {
@@ -319,7 +315,7 @@ public:
       sn->next = stream_list;
       stream_list = sn;
     }
-    Node* n = ::RAJA::cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
+    Node* n = cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
     n->next = sn->node_list;
     sn->node_list = n;
     return &n->value;
@@ -333,7 +329,7 @@ public:
       while (s->node_list) {
         Node* n = s->node_list;
         s->node_list = n->next;
-        ::RAJA::cuda::pinned_mempool_type::getInstance().free(n);
+        cuda::pinned_mempool_type::getInstance().free(n);
       }
       free(s);
     }
@@ -423,7 +419,7 @@ struct Reduce_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getCudaReductionMemBlockPool<T>();
+    T* device_ptr = getReductionMemBlockPool<T>();
     if (device_ptr) {
       device = device_ptr;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
@@ -437,7 +433,7 @@ struct Reduce_Data {
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseCudaReductionMemBlockPool(device);  device = nullptr;
+      releaseReductionMemBlockPool(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -456,7 +452,7 @@ struct Reduce_Data {
   {
     auto end = tally.list->streamEnd();
     for(auto s = tally.list->streamBegin(); s != end; ++s) {
-      cuda::synchronize(*s);
+      synchronize(*s);
     }
   }
 
@@ -521,7 +517,7 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getCudaReductionMemBlockPool<T>(1);
+    T* device_ptr = getReductionMemBlockPool<T>(1);
     if (device_ptr) {
       device = device_ptr;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
@@ -535,7 +531,7 @@ struct ReduceAtomic_Data {
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseCudaReductionMemBlockPool(device);  device = nullptr;
+      releaseReductionMemBlockPool(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -554,7 +550,7 @@ struct ReduceAtomic_Data {
   {
     auto end = tally.list->streamEnd();
     for(auto s = tally.list->streamBegin(); s != end; ++s) {
-      cuda::synchronize(*s);
+      synchronize(*s);
     }
   }
 
@@ -570,10 +566,10 @@ struct ReduceAtomic_Data {
 template <bool Async, typename Reducer, typename T, typename IndexType>
 struct ReduceLoc_Data {
   union tally_u {
-    PinnedTally<CudaReductionLocType<T, IndexType>>* list;
+    PinnedTally<LocType<T, IndexType>>* list;
     CudaReductionLocType<T, IndexType> *val_ptr;
     tally_u(PinnedTally<CudaReductionLocType<T, IndexType>>* l) : list(l) {};
-    tally_u(CudaReductionLocType<T, IndexType> *v_ptr) : val_ptr(v_ptr) {};
+    tally_u(LocType<T, IndexType> *v_ptr) : val_ptr(v_ptr) {};
   };
   
   mutable T value;
@@ -594,7 +590,7 @@ struct ReduceLoc_Data {
   explicit ReduceLoc_Data(T initValue, IndexType initIndex)
       : value{initValue},
         index{initIndex},
-        tally{new PinnedTally<CudaReductionLocType<T, IndexType>>},
+        tally{new PinnedTally<LocType<T, IndexType>>},
         device_count{nullptr},
         device{nullptr},
         deviceLoc{nullptr},
@@ -624,10 +620,10 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getCudaReductionMemBlockPool<T>();
+    T* device_ptr = getReductionMemBlockPool<T>();
     if (device_ptr) {
       device = device_ptr;
-      deviceLoc = getCudaReductionMemBlockPool<IndexType>();;
+      deviceLoc = getReductionMemBlockPool<IndexType>();;
       dev_counter = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
@@ -639,8 +635,8 @@ struct ReduceLoc_Data {
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseCudaReductionMemBlockPool(device);  device = nullptr;
-      releaseCudaReductionMemBlockPool(deviceLoc);  deviceLoc = nullptr;
+      releaseReductionMemBlockPool(device);  device = nullptr;
+      releaseReductionMemBlockPool(deviceLoc);  deviceLoc = nullptr;
       device_zeroed_mempool_type::getInstance().free(dev_counter);  dev_counter = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -659,7 +655,7 @@ struct ReduceLoc_Data {
   {
     auto end = tally.list->streamEnd();
     for(auto s = tally.list->streamBegin(); s != end; ++s) {
-      cuda::synchronize(*s);
+      synchronize(*s);
     }
   }
 
@@ -1163,7 +1159,7 @@ struct CudaReduceLoc {
       int threadId = threadIdx.x + blockDim.x * threadIdx.y
                      + (blockDim.x * blockDim.y) * threadIdx.z;
 
-      CudaReductionLocType<T, IndexType> temp = block_reduce(val.value, val.index);
+      cuda::LocType<T, IndexType> temp = block_reduce(val.value, val.index);
 
       // one thread per block writes to device
       bool lastBlock = false;
@@ -1259,7 +1255,7 @@ private:
   // __syncthreads must be called between succesive calls to this method
   //
   RAJA_DEVICE RAJA_INLINE
-  CudaReductionLocType<T, IndexType> block_reduce(T val, IndexType idx)
+  cuda::LocType<T, IndexType> block_reduce(T val, IndexType idx)
   {
     int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
@@ -1269,7 +1265,7 @@ private:
     int warpId = threadId % WARP_SIZE;
     int warpNum = threadId / WARP_SIZE;
 
-    CudaReductionLocType<T, IndexType> temp;
+    cuda::LocType<T, IndexType> temp;
     temp.val = val;
     temp.idx = idx;
 
