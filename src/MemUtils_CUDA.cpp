@@ -557,7 +557,7 @@ thread_local dim3 s_launchBlockDim = 0;
 
 thread_local cudaStream_t s_stream = 0;
 
-std::unordered_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cudaStream_t, bool>::value_type(0, true));
+std::unordered_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cudaStream_t, bool>::value_type(cudaStream_t(0), true));
 
 void synchronize()
 {
@@ -679,12 +679,12 @@ void afterKernelLaunch(bool Async)
 #pragma omp critical (MemUtils_CUDA)
   {  
 #endif
-    s_cuda_launch_gridDim = 0;
-    s_cuda_launch_blockDim = 0;
+    s_launchGridDim = 0;
+    s_launchBlockDim = 0;
 
     cuda::launch(s_stream);
 
-    s_raja_cuda_forall_level--;
+    s_forall_level--;
     
     cudaErrchk(cudaPeekAtLastError());
     if (!Async) {
@@ -696,6 +696,7 @@ void afterKernelLaunch(bool Async)
 #endif
 }
 
+}  // closing brace for cuda namespace
 
 }  // closing brace for RAJA namespace
 
