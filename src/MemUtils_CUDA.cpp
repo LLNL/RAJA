@@ -90,6 +90,8 @@
 namespace RAJA
 {
 
+namespace cuda
+{
 
 class TallyCache
 {
@@ -524,10 +526,7 @@ private:
 };
 
 
-namespace
-{
-
-cuda::device_mempool_type& s_cuda_reduction_mem_block_pool = cuda::device_mempool_type::getInstance();
+device_mempool_type& s_cuda_reduction_mem_block_pool = device_mempool_type::getInstance();
 
 /*!
  * \brief Pointer to the tally block on the device.
@@ -551,18 +550,12 @@ TallyCache* s_tally_cache = nullptr;
  * \brief State of the host code, whether it is currently in a raja
  *        cuda forall function or not.
  */
-thread_local int s_raja_cuda_forall_level = 0;
+thread_local int s_forall_level = 0;
 
-thread_local dim3 s_cuda_launch_gridDim = 0;
-thread_local dim3 s_cuda_launch_blockDim = 0;
+thread_local dim3 s_launchGridDim = 0;
+thread_local dim3 s_launchBlockDim = 0;
 
-thread_local cudaStream_t s_stream = 0; 
-
-
-}
-
-namespace cuda 
-{
+thread_local cudaStream_t s_stream = 0;
 
 std::unordred_map<cudaStream_t, bool> s_stream_info(std::unordered_map<cuda_stream, bool>::value_type(0, true));
 
@@ -594,7 +587,8 @@ void synchronize(cudaStream_t stream)
   }
 }
 
-void launch(cudaStream_t) {
+void launch(cudaStream_t stream)
+{
   auto iter = s_stream_info.find(stream);
   if (iter != s_stream_info.end()) {
     iter->second = false;
@@ -604,11 +598,8 @@ void launch(cudaStream_t) {
   }
 }
 
-}
 
-
-
-void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
+void* getReductionMemBlockPoolInternal(size_t len, size_t size, size_t alignment)
 {
   void* ptr = nullptr;
 
@@ -617,11 +608,8 @@ void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
   {
 #endif
     // assume beforeCudaKernelLaunch was called in order to grab dimensions 
-    dim3 dims = s_cuda_launch_gridDim;
-
-    size_t slots = dims.x * dims.y * dims.z;
-    if(slots) {
-      ptr = (void*)s_cuda_reduction_mem_block_pool.malloc<char>(slots*size, alignment);
+    if(s_forall_level > 0) {
+      ptr = (void*)s_cuda_reduction_mem_block_pool.malloc<char>(len*size, alignment);
     }
 #if defined(RAJA_ENABLE_OPENMP)
   }
@@ -630,7 +618,7 @@ void* getCudaReductionMemBlockPoolInternal(size_t size, size_t alignment)
   return ptr;
 }
 
-void releaseCudaReductionMemBlockPoolInternal(void *device_memblock)
+void releaseReductionMemBlockPoolInternal(void *device_memblock)
 {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (MemUtils_CUDA)
@@ -639,72 +627,6 @@ void releaseCudaReductionMemBlockPoolInternal(void *device_memblock)
     if(device_memblock) {
       s_cuda_reduction_mem_block_pool.free(device_memblock);
     }
-#if defined(RAJA_ENABLE_OPENMP)
-  }
-#endif
-}
-
-
-/*
-*******************************************************************************
-*
-* Return pointer into RAJA-CUDA reduction host tally block cache
-* and device tally block for reducer object with given id.
-* Allocate blocks if not already allocated.
-*
-*******************************************************************************
-*/
-void* getCudaReductionTallyBlockDeviceInternal(void* host_ptr)
-{
-  void* device_ptr = nullptr;
-
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (MemUtils_CUDA)
-  {
-#endif
-    if (s_raja_cuda_forall_level > 0) {
-      device_ptr = (void*)s_tally_cache->get_device_ptr((char*)host_ptr);
-    }
-#if defined(RAJA_ENABLE_OPENMP)
-  }
-#endif
-
-  return device_ptr;
-}
-
-void* getCudaReductionTallyBlockHostInternal(size_t size, size_t alignment)
-{
-  void* ptr = nullptr;
-
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (MemUtils_CUDA)
-  {
-#endif
-    if (!s_tally_cache) {
-      s_tally_cache = new TallyCache{0};
-    }
-
-    ptr = s_tally_cache->get_host_ptr(size, alignment);
-#if defined(RAJA_ENABLE_OPENMP)
-  }
-#endif
-  return ptr;
-}
-
-/*
-*******************************************************************************
-*
-* Release tally block of reduction variable with id.
-*
-*******************************************************************************
-*/
-void releaseCudaReductionTallyBlockHostInternal(void* host_ptr)
-{
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (MemUtils_CUDA)
-  {
-#endif
-  s_tally_cache->release_host_ptr((char*)host_ptr);
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
@@ -751,7 +673,7 @@ void beforeCudaKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_
 *
 *******************************************************************************
 */
-void afterCudaKernelLaunch(cudaStream_t stream)
+void afterCudaKernelLaunch()
 {
 #if defined(RAJA_ENABLE_OPENMP)
 #pragma omp critical (MemUtils_CUDA)
@@ -764,43 +686,6 @@ void afterCudaKernelLaunch(cudaStream_t stream)
     s_stream = 0;
 
     s_raja_cuda_forall_level--;
-#if defined(RAJA_ENABLE_OPENMP)
-  }
-#endif
-}
-
-/*
-*******************************************************************************
-*
-* Must be called before reading the tally block cache on the host.
-* Ensures that the host tally block cache for cuda reduction variable id can
-* be read.
-* Writes any host changes to the tally block cache to the device before
-* updating the host tally blocks with the values on the GPU.
-* The Async version is only asynchronous with regards to managed memory and
-* is synchronous to host code.
-*
-*******************************************************************************
-*/
-void beforeCudaReadTallyBlockAsync(void* host_ptr)
-{
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (MemUtils_CUDA)
-  {  
-#endif
-    s_tally_cache->ensure_host_readable((char*)host_ptr, true);
-#if defined(RAJA_ENABLE_OPENMP)
-  }
-#endif
-}
-///
-void beforeCudaReadTallyBlockSync(void* host_ptr)
-{
-#if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (MemUtils_CUDA)
-  {  
-#endif
-    s_tally_cache->ensure_host_readable((char*)host_ptr, false);
 #if defined(RAJA_ENABLE_OPENMP)
   }
 #endif
