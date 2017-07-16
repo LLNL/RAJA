@@ -55,6 +55,7 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/index/IndexSetSegInfo.hpp"
 #include "RAJA/internal/RAJAVec.hpp"
 

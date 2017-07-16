@@ -62,51 +62,28 @@ namespace RAJA
 
 namespace type_traits
 {
+  DefineTypeTraitFromConcept(is_iterator, RAJA::concepts::Iterator);
+  DefineTypeTraitFromConcept(is_forward_iterator, RAJA::concepts::ForwardIterator);
+  DefineTypeTraitFromConcept(is_bidirectional_iterator, RAJA::concepts::BidirectionalIterator);
+  DefineTypeTraitFromConcept(is_random_access_iterator, RAJA::concepts::RandomAccessIterator);
+
+  DefineTypeTraitFromConcept(is_range, RAJA::concepts::Range);
+  DefineTypeTraitFromConcept(is_forward_range, RAJA::concepts::ForwardRange);
+  DefineTypeTraitFromConcept(is_bidirectional_range, RAJA::concepts::BidirectionalRange);
+  DefineTypeTraitFromConcept(is_random_access_range, RAJA::concepts::RandomAccessRange);
+
+  DefineTypeTraitFromConcept(is_comparable, RAJA::concepts::Comparable);
+  DefineTypeTraitFromConcept(is_comparable_to, RAJA::concepts::ComparableTo);
+
+  DefineTypeTraitFromConcept(is_integral, RAJA::concepts::Integral);
+  DefineTypeTraitFromConcept(is_signed, RAJA::concepts::Signed);
+  DefineTypeTraitFromConcept(is_unsigned, RAJA::concepts::Unsigned);
 
   template <typename T>
   using IterableValue = decltype(*std::begin(RAJA::concepts::val<T>()));
 
   template <typename T>
   using IteratorValue = decltype(*RAJA::concepts::val<T>());
-
-  template <typename T>
-  using is_bidirectional_iterator = concepts::requires_<concepts::BidirectionalIterator, T>;
-
-  template <typename T>
-  using is_bidirectional_range = concepts::requires_<concepts::BidirectionalRange, T>;
-
-  template <typename T>
-  using is_forward_iterator = concepts::requires_<concepts::ForwardIterator, T>;
-
-  template <typename T>
-  using is_forward_range = concepts::requires_<concepts::ForwardRange, T>;
-
-  template <typename T>
-  using is_random_access_iterator = concepts::requires_<concepts::RandomAccessIterator, T>;
-
-  template <typename T>
-  using is_random_access_range = concepts::requires_<concepts::RandomAccessRange, T>;
-
-  template <typename T>
-  using is_iterator = concepts::requires_<concepts::Iterator, T>;
-
-  template <typename T>
-  using is_range = concepts::requires_<concepts::Range, T>;
-
-  template <typename T>
-  using is_comparable = concepts::requires_<concepts::Comparable, T>;
-
-  template <typename T, typename U>
-  using is_comparable_to = concepts::requires_<concepts::ComparableTo, T, U>;
-
-  template <typename T>
-  using is_integral = concepts::requires_<concepts::Integral, T>;
-
-  template <typename T>
-  using is_signed = concepts::requires_<concepts::Signed, T>;
-
-  template <typename T>
-  using is_unsigned = concepts::requires_<concepts::Unsigned, T>;
 
 }  // end namespace type_traits
 

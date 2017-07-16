@@ -125,15 +125,15 @@ using decay_t = typename std::decay<T>::type;
 }
 
 template <typename Pol>
-using ExecutionPolicy =
-  DefineConcept(has_type<RAJA::Policy>(impl::decay_t<decltype(Pol::policy)>()),
-                has_type<RAJA::Pattern>(impl::decay_t<decltype(Pol::pattern)>()),
-                has_type<RAJA::Launch>(impl::decay_t<decltype(Pol::launch)>()),
-                has_type<RAJA::Platform>(impl::decay_t<decltype(Pol::platform)>()));
+using ExecutionPolicy = DefineConcept(
+    has_type<RAJA::Policy>(decay<decltype(decay<Pol>::policy)>()),
+    has_type<RAJA::Pattern>(decay<decltype(decay<Pol>::pattern)>()),
+    has_type<RAJA::Launch>(decay<decltype(decay<Pol>::launch)>()),
+    has_type<RAJA::Platform>(decay<decltype(decay<Pol>::platform)>()));
 
 template <typename Pol>
 using SequentialPolicy =
-  DefineConcept(ExecutionPolicy<Pol>(),
+    DefineConcept(ExecutionPolicy<Pol>(),
                   conforms<bool_<Pol::policy == Policy::sequential>>());
 
 template <typename Pol>
@@ -161,25 +161,15 @@ using SimdPolicy =
 namespace type_traits
 {
 
-template <typename Pol>
-using is_execution_policy = concepts::requires_<concepts::ExecutionPolicy, Pol>;
-
-template <typename Pol>
-using is_sequential_policy =
-    concepts::requires_<concepts::SequentialPolicy, Pol>;
-
-template <typename Pol>
-using is_openmp_policy = concepts::requires_<concepts::OpenMPPolicy, Pol>;
-
-template <typename Pol>
-using is_target_openmp_policy =
-    concepts::requires_<concepts::TargetOpenMPPolicy, Pol>;
-
-template <typename Pol>
-using is_cuda_policy = concepts::requires_<concepts::CudaPolicy, Pol>;
-
-template <typename Pol>
-using is_simd_policy = concepts::requires_<concepts::SimdPolicy, Pol>;
+DefineTypeTraitFromConcept(is_execution_policy,
+                           RAJA::concepts::ExecutionPolicy);
+DefineTypeTraitFromConcept(is_sequential_policy,
+                           RAJA::concepts::SequentialPolicy);
+DefineTypeTraitFromConcept(is_openmp_policy, RAJA::concepts::OpenMPPolicy);
+DefineTypeTraitFromConcept(is_target_openmp_policy,
+                           RAJA::concepts::TargetOpenMPPolicy);
+DefineTypeTraitFromConcept(is_cuda_policy, RAJA::concepts::CudaPolicy);
+DefineTypeTraitFromConcept(is_simd_policy, RAJA::concepts::SimdPolicy);
 
 }  // end namespace type_traits
 

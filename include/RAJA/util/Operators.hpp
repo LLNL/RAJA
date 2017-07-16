@@ -1,3 +1,4 @@
+
 /*!
  ******************************************************************************
  *
@@ -546,24 +547,34 @@ struct safe_plus
 namespace concepts
 {
 
-template <typename Fun, typename Ret, typename T = Ret, typename U = T>
+template <typename Function,
+          typename Return,
+          typename Arg1 = Return,
+          typename Arg2 = Arg1>
 using BinaryFunction = DefineConcept(
-                                     val<decay<Fun>>()(RAJA::concepts::convertible_to<decay<Ret>>(val<decay<T>>(), val<decay<U>>())));
+    convertible_to<Return>(val<Function>()(val<Arg1>(), val<Arg2>())));
 
-template <typename Fun, typename Ret, typename T = Ret>
-using UnaryFunction = DefineConcept(val<decay<Fun>>()(convertible_to<decay<Ret>>(val<decay<T>>())));
+template <typename Function, typename Return, typename Arg = Return>
+using UnaryFunction =
+    DefineConcept(convertible_to<Return>(val<Function>()(val<Arg>())));
 
-}
-
-namespace type_traits
+namespace detail
 {
 
 template <typename Fun, typename Ret, typename T = Ret, typename U = T>
-using is_binary_function = concepts::requires_<concepts::BinaryFunction, Ret, T, U>;
+using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
 
 template <typename Fun, typename Ret, typename T = Ret>
-using is_unary_function = concepts::requires_<concepts::UnaryFunction, Ret, T>;
-}
+using is_unary_function = requires_<UnaryFunction, Ret, T>;
+}  // closing brace for detail
+
+}  // closing brace for concepts
+
+namespace type_traits
+{
+  DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
+  DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
+}  // closing type_traits
 
 }  // closing brace for RAJA namespace
 

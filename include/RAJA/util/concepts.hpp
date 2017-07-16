@@ -206,10 +206,13 @@ struct detector<void_t<Op<Args...>>, Op, Args...> {
 
 template <template <class...> class Op, class... Args>
 using detected = typename detector<void, Op, Args...>::type;
-}
+} // end brace namespace detail
 
 template <template <class...> class Op, class... Args>
-using requires_ = typename detail::detector<void, Op, Args...>::value_t;
+struct requires_ : detail::detector<void, Op, Args...>::value_t{};
+
+  template <typename T>
+  using negate = metalib::negate_t<T>;
 
 /// metafunction to get instance of value type for concepts
 template <typename T>
@@ -264,6 +267,10 @@ using concepts::metalib::bool_;
 template <typename... T>
 RAJA::concepts::metalib::true_type ___valid_expr___(T &&...) noexcept;
 #define DefineConcept(...) decltype(___valid_expr___(__VA_ARGS__))
+
+#define DefineTypeTraitFromConcept(TTName, ConceptName) \
+template <typename ... Args> \
+using TTName = RAJA::concepts::requires_<ConceptName, Args...>
 
 namespace ___hidden_concepts
 {
