@@ -68,7 +68,20 @@ namespace basic_mempool {
 namespace detail {
 
 
-class memory_arena {
+/*! \class MemoryArena
+ ******************************************************************************
+ *
+ * \brief  MemoryArena is a map based subclass for class MemPool  
+ * provides book-keeping to divy a large chunk of pre-allocated memory to avoid          
+ * the overhead of  malloc/free or cudaMalloc/cudaFree, etc
+ *
+ * get/give are the primary calls used by class MemPool to get aligned memory 
+ * from the pool or give it back
+ * 
+ *
+ ******************************************************************************
+ */
+class MemoryArena {
 public:
 
 
@@ -77,22 +90,22 @@ public:
   using used_type = std::map<void*, void*>;
   using used_value_type = typename used_type::value_type;
 
-  memory_arena(void* ptr, size_t size)
+  MemoryArena(void* ptr, size_t size)
     : m_allocation{ ptr, static_cast<char*>(ptr)+size },
       m_free_space({ free_value_type{ptr, static_cast<char*>(ptr)+size} }),
       m_used_space()
   {
     if (m_allocation.begin == nullptr) {
-      fprintf(stderr, "Attempt to create memory_arena with no memory");
+      fprintf(stderr, "Attempt to create MemoryArena with no memory");
       std::abort();
     }
   }
 
-  memory_arena(memory_arena const&) = delete;
-  memory_arena& operator=(memory_arena const&) = delete;
+  MemoryArena(MemoryArena const&) = delete;
+  MemoryArena& operator=(MemoryArena const&) = delete;
 
-  memory_arena(memory_arena &&) = default;
-  memory_arena& operator=(memory_arena &&) = default;
+  MemoryArena(MemoryArena &&) = default;
+  MemoryArena& operator=(MemoryArena &&) = default;
 
   size_t capacity()
   {
@@ -257,20 +270,58 @@ private:
 
 
 
+/*! \class MemPool
+ ******************************************************************************
+ *
+ * \brief  MemPool pre-allocates a large chunk of memory and provides generic 
+ * malloc/free for the user to allocate aligned data within the pool
+ *
+ * MemPool uses MemoryArena to do the heavy lifting of maintaining access to 
+ * the used/free space.         
+ * 
+ * MemPool provides an example generic_allocator which can guide more specialized
+ * allocators. The following are some examples 
+ * 
+ * using device_mempool_type = basic_mempool::MemPool<cuda::DeviceAllocator>;
+ * using device_zeroed_mempool_type = basic_mempool::MemPool<cuda::DeviceZeroedAllocator>;
+ * using pinned_mempool_type = basic_mempool::MemPool<cuda::PinnedAllocator>;
+ *
+ * The user provides the specialized allocator, for example :
+ * struct DeviceAllocator {
+ *
+ *  // returns a valid pointer on success, nullptr on failure
+ *  void* malloc(size_t nbytes)
+ *  {
+ *    void* ptr;
+ *    cudaErrchk(cudaMalloc(&ptr, nbytes));
+ *    return ptr;
+ *  }
+ *
+ *  // returns true on success, false on failure
+ *  bool free(void* ptr)
+ *  {
+ *    cudaErrchk(cudaFree(ptr));
+ *    return true;
+ *  }
+ * };
+ *
+ * 
+ ******************************************************************************
+ */
 template < typename allocator_t >
-class mempool {
+class MemPool {
 public:
   using allocator_type = allocator_t;
 
-  static inline mempool<allocator_t>& getInstance()
+  static inline MemPool<allocator_t>& getInstance()
   {
-    static mempool<allocator_t> pool{};
+    static MemPool<allocator_t> pool{};
     return pool;
   }
 
   static const size_t default_default_arena_size = 32ull*1024ull*1024ull;
 
-  mempool()
+  MemPool()
     : m_arenas(),
       m_default_arena_size(default_default_arena_size),
       m_alloc()
@@ -278,9 +329,9 @@ public:
 
   }
 
-  ~mempool()
+  ~MemPool()
   {
-    // With static objects like mempool, cudaErrorCudartUnloading is a possible error wwith cudaFree
+    // With static objects like MemPool, cudaErrorCudartUnloading is a possible error wwith cudaFree
     // So no more cuda calls here
   }
 
@@ -347,7 +398,7 @@ public:
   }
 
 private:
-  using arena_container_type = std::list<detail::memory_arena>;
+  using arena_container_type = std::list<detail::MemoryArena>;
 
   arena_container_type m_arenas;
   size_t m_default_arena_size;

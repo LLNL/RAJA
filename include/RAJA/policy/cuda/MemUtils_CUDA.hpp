@@ -72,7 +72,7 @@ namespace RAJA
 namespace cuda
 {
 
-struct pinned_allocator {
+struct PinnedAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -91,7 +91,7 @@ struct pinned_allocator {
 
 };
 
-struct device_allocator {
+struct DeviceAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -111,7 +111,7 @@ struct device_allocator {
 };
 
 
-struct device_zeroed_allocator {
+struct DeviceZeroedAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -131,9 +131,9 @@ struct device_zeroed_allocator {
 
 };
 
-using device_mempool_type = basic_mempool::mempool<cuda::device_allocator>;
-using device_zeroed_mempool_type = basic_mempool::mempool<cuda::device_zeroed_allocator>;
-using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
+using device_mempool_type = basic_mempool::MemPool<cuda::DeviceAllocator>;
+using device_zeroed_mempool_type = basic_mempool::MemPool<cuda::DeviceZeroedAllocator>;
+using pinned_mempool_type = basic_mempool::MemPool<cuda::PinnedAllocator>;
 
 } // end namespace cuda
 

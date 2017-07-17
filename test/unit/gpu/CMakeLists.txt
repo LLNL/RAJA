@@ -78,9 +78,9 @@ raja_add_test(
   SOURCES forallN-strided.cpp
   DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-#if (NOT RAJA_ENABLE_CLANG_CUDA)
-#  raja_add_test(
-#    NAME test-GPUscan
-#    SOURCES test-scan.cpp
-#    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-#endif ()
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  raja_add_test(
+    NAME test-GPUscan
+    SOURCES test-scan.cpp
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif ()

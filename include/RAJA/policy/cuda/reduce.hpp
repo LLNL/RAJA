@@ -81,7 +81,6 @@ namespace RAJA
 
 namespace reduce
 {
-
 template <typename T>
 struct atomic_operators
 {
@@ -129,6 +128,7 @@ struct atomic_operators<max<T>>
 #endif
   }
 };
+
 
 } // end namespace reduce
 
