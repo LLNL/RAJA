@@ -92,8 +92,8 @@ macro(raja_add_library)
 ##  else()
 ##    blt_add_library(NAME ${arg_NAME} SOURCES ${arg_SOURCES} DEPENDS_ON RAJA ${arg_DEPENDS_ON})
 #  endif()
-
-else()
+#
+#else()
   set(options )
   set(singleValueArgs NAME)
   set(multiValueArgs SOURCES DEPENDS_ON)
