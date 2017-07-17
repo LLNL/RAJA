@@ -225,14 +225,12 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      beforeCudaKernelLaunch(dims.num_blocks, dims.num_threads, 0);
+      cuda::beforeKernelLaunch(dims.num_blocks, dims.num_threads, 0);
 
       cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(
           dims.num_blocks, dims.num_threads, 0)>>>(body, cargs...);
 
-      RAJA_CUDA_CHECK_AND_SYNC(true, 0);
-
-      afterCudaKernelLaunch(0);
+      cuda::afterKernelLaunch(true);
     }
   }
 };
@@ -254,14 +252,12 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      beforeCudaKernelLaunch(dims.num_blocks, dims.num_threads, 0);
+      cuda::beforeKernelLaunch(dims.num_blocks, dims.num_threads, 0);
       
       cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(
           dims.num_blocks, dims.num_threads, 0)>>>(body, c0);
 
-      RAJA_CUDA_CHECK_AND_SYNC(true, 0);
-
-      afterCudaKernelLaunch(0);
+      cuda::afterKernelLaunch(true);
     }
   }
 };
