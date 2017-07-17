@@ -55,7 +55,6 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/type_traits.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/Operators.hpp"
@@ -106,7 +105,7 @@ inclusive_scan_inplace(const ExecPolicy &p,
                        Function binop = Function{})
 {
   using R = detail::IterVal<Iter>;
-  static_assert(type_traits::is_binary_function<Function, R>::value,
+  static_assert(type_traits::is_binary_function<Function, R, R, R>::value,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
@@ -180,7 +179,7 @@ inclusive_scan(const ExecPolicy &p,
 {
   using R = detail::IterVal<IterOut>;
   using T = detail::IterVal<Iter>;
-  static_assert(type_traits::is_binary_function<Function, R, T>::value,
+  static_assert(type_traits::is_binary_function<Function, R, T, R>::value,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_iterator<Iter>::value,
                 "Iterator must model RandomAccessIterator");
@@ -258,7 +257,7 @@ concepts::
                            Function binop = Function{})
 {
   using R = detail::ContainerVal<Container>;
-  static_assert(type_traits::is_binary_function<Function, R>::value,
+  static_assert(type_traits::is_binary_function<Function, R, R, R>::value,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");
@@ -330,7 +329,7 @@ inclusive_scan(const ExecPolicy &p,
 {
   using R = detail::IterVal<IterOut>;
   using T = detail::ContainerVal<Container>;
-  static_assert(type_traits::is_binary_function<Function, R, T>::value,
+  static_assert(type_traits::is_binary_function<Function, R, T, R>::value,
                 "Function must model BinaryFunction");
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container must model RandomAccessRange");

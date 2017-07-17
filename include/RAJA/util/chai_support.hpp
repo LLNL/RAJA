@@ -9,8 +9,6 @@
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 
-#include "RAJA/internal/type_traits.hpp"
-
 namespace RAJA {
 namespace detail {
 
@@ -48,7 +46,7 @@ struct get_space_impl<Platform::undefined> {
 
 template<typename... Ts>
 struct get_space_from_list {
-  static constexpr chai::ExecutionSpace value = 
+  static constexpr chai::ExecutionSpace value =
     get_space_impl<VarOps::foldl(max_platform(), Ts::platform...)>::value;
 };
 
@@ -67,7 +65,7 @@ struct get_space_from_list<RAJA::IndexSet::ExecPolicy<SEG, EXEC>> {
 };
 
 template <typename TAGS, typename... POLICIES>
-struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...>, TAGS > > : 
+struct get_space<RAJA::NestedPolicy< RAJA::ExecList<POLICIES...>, TAGS > > :
   public get_space_from_list<POLICIES...> {};
 
 }

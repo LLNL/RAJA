@@ -61,7 +61,6 @@
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/type_traits.hpp"
 
 namespace RAJA
 {

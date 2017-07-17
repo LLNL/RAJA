@@ -55,7 +55,6 @@
 
 #include <cstddef>
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/type_traits.hpp"
 
 namespace RAJA
 {
@@ -118,18 +117,12 @@ using make_policy_pattern_launch_t =
 namespace concepts
 {
 
-namespace impl
-{
-template <typename T>
-using decay_t = typename std::decay<T>::type;
-}
-
 template <typename Pol>
 using ExecutionPolicy = DefineConcept(
-    has_type<RAJA::Policy>(decay<decltype(decay<Pol>::policy)>()),
-    has_type<RAJA::Pattern>(decay<decltype(decay<Pol>::pattern)>()),
-    has_type<RAJA::Launch>(decay<decltype(decay<Pol>::launch)>()),
-    has_type<RAJA::Platform>(decay<decltype(decay<Pol>::platform)>()));
+    has_type<RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
+    has_type<RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
+    has_type<RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
+    has_type<RAJA::Platform>(types::decay_t<decltype(Pol::platform)>()));
 
 template <typename Pol>
 using SequentialPolicy =

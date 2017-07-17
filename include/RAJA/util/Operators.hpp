@@ -561,10 +561,10 @@ using UnaryFunction =
 namespace detail
 {
 
-template <typename Fun, typename Ret, typename T = Ret, typename U = T>
+template <typename Fun, typename Ret, typename T, typename U>
 using is_binary_function = requires_<BinaryFunction, Ret, T, U>;
 
-template <typename Fun, typename Ret, typename T = Ret>
+template <typename Fun, typename Ret, typename T>
 using is_unary_function = requires_<UnaryFunction, Ret, T>;
 }  // closing brace for detail
 

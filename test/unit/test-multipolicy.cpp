@@ -50,6 +50,11 @@
 
 TEST(multipolicy, basic)
 {
+  static_assert(RAJA::type_traits::is_range<RAJA::RangeSegment>::value, "RangeSegment check");
+  static_assert(RAJA::type_traits::is_integral<RAJA::Index_type>::value, "Index_type check");
+  static_assert(RAJA::type_traits::is_execution_policy<RAJA::seq_exec>::value, "seq_exec check");
+  static_assert(RAJA::type_traits::is_execution_policy<RAJA::omp_parallel_for_exec>::value, "omp_parallel_for_exec check");
+
   auto mp =
       RAJA::make_multi_policy<RAJA::seq_exec, RAJA::omp_parallel_for_exec>(
           [](const RAJA::RangeSegment& r) {

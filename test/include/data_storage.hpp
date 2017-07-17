@@ -59,7 +59,6 @@
 #include "RAJA/util/defines.hpp"
 
 #include "RAJA/util/concepts.hpp"
-#include "RAJA/util/type_traits.hpp"
 
 namespace internal
 {

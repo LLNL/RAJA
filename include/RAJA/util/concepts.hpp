@@ -64,9 +64,6 @@ namespace RAJA
 namespace concepts
 {
 
-template <typename T>
-using decay = typename std::remove_reference<typename std::remove_cv<typename std::decay<T>::type>::type>::type;
-
 namespace metalib
 {
 
@@ -183,36 +180,66 @@ using any_of_t = any_of<Bs::value...>;
 
 }  // end namespace metalib
 
+}  // end namespace concepts
+
+}  // end namespace RAJA
+
+template <typename... T>
+RAJA::concepts::metalib::true_type ___valid_expr___(T &&...) noexcept;
+#define DefineConcept(...) decltype(___valid_expr___(__VA_ARGS__))
+
+#define DefineTypeTraitFromConcept(TTName, ConceptName) \
+  template <typename... Args>                           \
+  using TTName = RAJA::concepts::requires_<ConceptName, Args...>
+
+namespace RAJA
+{
+
+namespace concepts
+{
+
 namespace detail
 {
+
+template <class...>
+struct TL {
+};
+
 template <class...>
 struct voider {
   using type = void;
 };
 
-template <class... T>
-using void_t = typename voider<T...>::type;
-
-template <class, template <class...> class Op, class... Args>
+template <class Default,
+          class /* always void*/,
+          template <class...> class Concept,
+          class TArgs>
 struct detector {
   using value_t = metalib::false_type;
+  using type = Default;
 };
 
-template <template <class...> class Op, class... Args>
-struct detector<void_t<Op<Args...>>, Op, Args...> {
+template <class Default, template <class...> class Concept, class... Args>
+struct detector<Default,
+                typename voider<Concept<Args...>>::type,
+                Concept,
+                TL<Args...>> {
   using value_t = metalib::true_type;
-  using type = metalib::true_type;
+  using type = Concept<Args...>;
 };
 
-template <template <class...> class Op, class... Args>
-using detected = typename detector<void, Op, Args...>::type;
-} // end brace namespace detail
+template <template <class...> class Concept, class TArgs>
+using is_detected = detector<void, void, Concept, TArgs>;
 
-template <template <class...> class Op, class... Args>
-struct requires_ : detail::detector<void, Op, Args...>::value_t{};
+template <template <class...> class Concept, class TArgs>
+using detected = typename is_detected<Concept, TArgs>::value_t;
 
-  template <typename T>
-  using negate = metalib::negate_t<T>;
+}  // end namespace detail
+
+template <typename T>
+using negate = metalib::negate_t<T>;
+
+using concepts::metalib::bool_;
 
 /// metafunction to get instance of value type for concepts
 template <typename T>
@@ -234,48 +261,51 @@ constexpr auto convertible_to(U &&u) noexcept
 /// metafunction for use within decltype expression to validate type of
 /// expression
 template <typename T, typename U>
-constexpr auto has_type(U &&) noexcept
-    -> metalib::if_<std::is_same<T, U>, metalib::true_type>;
-
-template <template <class...> class Concept, class... Ts>
-constexpr detail::detected<Concept, Ts...> models() noexcept;
+metalib::if_<std::is_same<T, U>, metalib::true_type> has_type(U &&) noexcept;
 
 template <typename BoolLike>
-constexpr auto conforms(BoolLike) noexcept
-    -> metalib::if_<BoolLike, metalib::true_type>;
+metalib::if_<BoolLike, metalib::true_type> conforms(BoolLike) noexcept;
+
+template <typename BoolLike>
+metalib::if_c<!BoolLike::value, metalib::true_type> not_(BoolLike) noexcept;
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
 using all_of = metalib::all_of_t<Args...>;
 
+/// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
 using none_of = metalib::none_of_t<Args...>;
 
+/// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
 using any_of = metalib::any_of_t<Args...>;
 
+/// SFINAE multiple type traits
 template <typename... Args>
 using enable_if = typename std::enable_if<all_of<Args...>::value>::type;
 
-using concepts::metalib::bool_;
+/// SFINAE concept checking
+template <template <class...> class Op, class... Args>
+using requires_ = detail::detected<Op, detail::TL<Args...>>;
 
-}  // end namespace concepts
-
-}  // end namespace RAJA
-
-
-template <typename... T>
-RAJA::concepts::metalib::true_type ___valid_expr___(T &&...) noexcept;
-#define DefineConcept(...) decltype(___valid_expr___(__VA_ARGS__))
-
-#define DefineTypeTraitFromConcept(TTName, ConceptName) \
-template <typename ... Args> \
-using TTName = RAJA::concepts::requires_<ConceptName, Args...>
-
-namespace ___hidden_concepts
+namespace types
 {
 
-using namespace RAJA::concepts;
+template <typename T>
+using decay_t =
+    typename std::remove_reference<typename std::remove_cv<T>::type>::type;
+
+template <typename T>
+using plain_t = typename std::remove_reference<T>::type;
+
+template <typename T>
+using diff_t = decltype(val<plain_t<T>>() - val<plain_t<T>>());
+
+template <typename T>
+using iterator_t = decltype(std::begin(val<plain_t<T>>()));
+
+}  // end namespace types
 
 template <typename T>
 using LessThanComparable = DefineConcept(convertible_to<bool>(val<T>()
@@ -315,15 +345,6 @@ template <typename T>
 using Comparable = ComparableTo<T, T>;
 
 template <typename T>
-using plain_t = typename std::remove_reference<T>::type;
-
-template <typename T>
-using diff_t = decltype(val<plain_t<T>>() - val<plain_t<T>>());
-
-template <typename T>
-using iterator_t = decltype(std::begin(val<plain_t<T>>()));
-
-template <typename T>
 using Iterator = DefineConcept(*val<T>(), has_type<T &>(++val<T &>()));
 
 template <typename T>
@@ -342,70 +363,84 @@ template <typename T>
 using RandomAccessIterator =
     DefineConcept(BidirectionalIterator<T>(),
                   Comparable<T>(),
-                  has_type<T &>(val<T &>() += val<diff_t<T>>()),
-                  has_type<T>(val<T>() + val<diff_t<T>>()),
-                  has_type<T>(val<diff_t<T>>() + val<T>()),
-                  has_type<T &>(val<T &>() -= val<diff_t<T>>()),
-                  has_type<T>(val<T>() - val<diff_t<T>>()),
-                  val<T>()[val<diff_t<T>>()]);
+                  has_type<T &>(val<T &>() += val<types::diff_t<T>>()),
+                  has_type<T>(val<T>() + val<types::diff_t<T>>()),
+                  has_type<T>(val<types::diff_t<T>>() + val<T>()),
+                  has_type<T &>(val<T &>() -= val<types::diff_t<T>>()),
+                  has_type<T>(val<T>() - val<types::diff_t<T>>()),
+                  val<T>()[val<types::diff_t<T>>()]);
 
 template <typename T>
 using HasBeginEnd = DefineConcept(std::begin(val<T>()), std::end(val<T>()));
 
 template <typename T>
-using Range = DefineConcept(HasBeginEnd<T>(), Iterator<iterator_t<T>>());
+using Range = DefineConcept(HasBeginEnd<T>(), Iterator<types::iterator_t<T>>());
 
 template <typename T>
 using ForwardRange = DefineConcept(HasBeginEnd<T>(),
-                                   ForwardIterator<iterator_t<T>>());
+                                   ForwardIterator<types::iterator_t<T>>());
 
 template <typename T>
 using BidirectionalRange =
-    DefineConcept(HasBeginEnd<T>(), BidirectionalIterator<iterator_t<T>>());
+    DefineConcept(HasBeginEnd<T>(),
+                  BidirectionalIterator<types::iterator_t<T>>());
 
 template <typename T>
-using RandomAccessRange = DefineConcept(HasBeginEnd<T>(),
-                                        RandomAccessIterator<iterator_t<T>>());
+using RandomAccessRange =
+    DefineConcept(HasBeginEnd<T>(),
+                  RandomAccessIterator<types::iterator_t<T>>());
+
+template <typename T>
+using Arithmetic = DefineConcept(conforms(std::is_arithmetic<T>()));
+
+template <typename T>
+using FloatingPoint = DefineConcept(conforms(std::is_floating_point<T>()));
 
 template <typename T>
 using Integral = DefineConcept(conforms(std::is_integral<T>()));
 
 template <typename T>
 using Signed = DefineConcept(Integral<T>(), conforms(std::is_signed<T>()));
+
 template <typename T>
 using Unsigned = DefineConcept(Integral<T>(), conforms(std::is_unsigned<T>()));
 
-}  // end namespace ___hidden_concepts
-
-namespace RAJA
-{
-namespace concepts
-{
-
-using ___hidden_concepts::EqualityComparable;
-using ___hidden_concepts::LessThanComparable;
-using ___hidden_concepts::GreaterThanComparable;
-using ___hidden_concepts::LessEqualComparable;
-using ___hidden_concepts::GreaterEqualComparable;
-
-using ___hidden_concepts::Comparable;
-using ___hidden_concepts::ComparableTo;
-
-using ___hidden_concepts::Iterator;
-using ___hidden_concepts::ForwardIterator;
-using ___hidden_concepts::BidirectionalIterator;
-using ___hidden_concepts::RandomAccessIterator;
-
-using ___hidden_concepts::Range;
-using ___hidden_concepts::ForwardRange;
-using ___hidden_concepts::BidirectionalRange;
-using ___hidden_concepts::RandomAccessRange;
-
-using ___hidden_concepts::Integral;
-using ___hidden_concepts::Signed;
-using ___hidden_concepts::Unsigned;
-
 }  // end namespace concepts
+
+namespace type_traits
+{
+DefineTypeTraitFromConcept(is_iterator, RAJA::concepts::Iterator);
+DefineTypeTraitFromConcept(is_forward_iterator,
+                           RAJA::concepts::ForwardIterator);
+DefineTypeTraitFromConcept(is_bidirectional_iterator,
+                           RAJA::concepts::BidirectionalIterator);
+DefineTypeTraitFromConcept(is_random_access_iterator,
+                           RAJA::concepts::RandomAccessIterator);
+
+DefineTypeTraitFromConcept(is_range, RAJA::concepts::Range);
+DefineTypeTraitFromConcept(is_forward_range, RAJA::concepts::ForwardRange);
+DefineTypeTraitFromConcept(is_bidirectional_range,
+                           RAJA::concepts::BidirectionalRange);
+DefineTypeTraitFromConcept(is_random_access_range,
+                           RAJA::concepts::RandomAccessRange);
+
+DefineTypeTraitFromConcept(is_comparable, RAJA::concepts::Comparable);
+DefineTypeTraitFromConcept(is_comparable_to, RAJA::concepts::ComparableTo);
+
+DefineTypeTraitFromConcept(is_arithmetic, RAJA::concepts::Arithmetic);
+DefineTypeTraitFromConcept(is_floating_point, RAJA::concepts::FloatingPoint);
+DefineTypeTraitFromConcept(is_integral, RAJA::concepts::Integral);
+DefineTypeTraitFromConcept(is_signed, RAJA::concepts::Signed);
+DefineTypeTraitFromConcept(is_unsigned, RAJA::concepts::Unsigned);
+
+template <typename T>
+using IterableValue = decltype(*std::begin(RAJA::concepts::val<T>()));
+
+template <typename T>
+using IteratorValue = decltype(*RAJA::concepts::val<T>());
+
+}  // end namespace type_traits
+
 }  // end namespace RAJA
 
 #endif

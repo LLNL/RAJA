@@ -57,14 +57,13 @@
 
 #include "RAJA/util/defines.hpp"
 
-#include "RAJA/util/type_traits.hpp"
+#include "RAJA/util/concepts.hpp"
 
 #include "RAJA/policy/sequential/policy.hpp"
 
 #include <algorithm>
 #include <functional>
 #include <iterator>
-#include <type_traits>
 
 namespace RAJA
 {
