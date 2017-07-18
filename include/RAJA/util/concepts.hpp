@@ -164,31 +164,38 @@ struct blist;
 
 /// negation metafunction of a value type
 template <typename T>
-using negate_t = bool_<!T::value>;
+struct negate_t : bool_<!T::value> {
+};
 
 /// all_of metafunction of a value type list -- all must be "true"
 template <bool... Bs>
-using all_of = metalib::is_same<blist<true, Bs...>, blist<Bs..., true>>;
+struct all_of : metalib::is_same<blist<true, Bs...>, blist<Bs..., true>> {
+};
 
 /// none_of metafunction of a value type list -- all must be "false"
 template <bool... Bs>
-using none_of = metalib::is_same<blist<false, Bs...>, blist<Bs..., false>>;
+struct none_of : metalib::is_same<blist<false, Bs...>, blist<Bs..., false>> {
+};
 
 /// any_of metafunction of a value type list -- at least one must be "true""
 template <bool... Bs>
-using any_of = negate_t<none_of<Bs...>>;
+struct any_of : negate_t<none_of<Bs...>> {
+};
 
 /// all_of metafunction of a bool list -- all must be "true"
 template <typename... Bs>
-using all_of_t = all_of<Bs::value...>;
+struct all_of_t : all_of<Bs::value...> {
+};
 
 /// none_of metafunction of a bool list -- all must be "false"
 template <typename... Bs>
-using none_of_t = none_of<Bs::value...>;
+struct none_of_t : none_of<Bs::value...> {
+};
 
 /// any_of metafunction of a bool list -- at least one must be "true""
 template <typename... Bs>
-using any_of_t = any_of<Bs::value...>;
+struct any_of_t : any_of<Bs::value...> {
+};
 
 }  // end namespace metalib
 
@@ -200,9 +207,10 @@ template <typename... T>
 RAJA::concepts::metalib::true_type ___valid_expr___(T &&...) noexcept;
 #define DefineConcept(...) decltype(___valid_expr___(__VA_ARGS__))
 
-#define DefineTypeTraitFromConcept(TTName, ConceptName) \
-  template <typename... Args>                           \
-  using TTName = RAJA::concepts::requires_<ConceptName, Args...>
+#define DefineTypeTraitFromConcept(TTName, ConceptName)             \
+  template <typename... Args>                                       \
+  struct TTName : RAJA::concepts::requires_<ConceptName, Args...> { \
+  }
 
 namespace RAJA
 {
@@ -281,6 +289,10 @@ constexpr auto conforms(BoolLike) noexcept
     -> metalib::if_<BoolLike, metalib::true_type>;
 
 template <typename BoolLike>
+constexpr auto conforms() noexcept
+    -> metalib::if_<BoolLike, metalib::true_type>;
+
+template <typename BoolLike>
 constexpr auto not_(BoolLike) noexcept
     -> metalib::if_c<!BoolLike::value, metalib::true_type>;
 
@@ -289,23 +301,27 @@ constexpr auto is() noexcept -> metalib::if_c<Val, metalib::true_type>;
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
-using all_of = metalib::all_of_t<Args...>;
+struct all_of : metalib::all_of_t<Args...> {
+};
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
-using none_of = metalib::none_of_t<Args...>;
+struct none_of : metalib::none_of_t<Args...> {
+};
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
-using any_of = metalib::any_of_t<Args...>;
+struct any_of : metalib::any_of_t<Args...> {
+};
 
 /// SFINAE multiple type traits
 template <typename... Args>
-using enable_if = typename std::enable_if<all_of<Args...>::value>::type;
+using enable_if = typename std::enable_if<all_of<Args...>::value, void>::type;
 
 /// SFINAE concept checking
 template <template <class...> class Op, class... Args>
-using requires_ = detail::detected<Op, detail::TL<Args...>>;
+struct requires_ : detail::detected<Op, detail::TL<Args...>> {
+};
 
 namespace types
 {
@@ -326,102 +342,127 @@ using iterator_t = decltype(std::begin(val<plain_t<T>>()));
 }  // end namespace types
 
 template <typename T>
-using LessThanComparable = DefineConcept(convertible_to<bool>(val<T>()
-                                                              < val<T>()));
+struct LessThanComparable
+    : DefineConcept(convertible_to<bool>(val<T>() < val<T>())) {
+};
 
 template <typename T>
-using GreaterThanComparable = DefineConcept(convertible_to<bool>(val<T>()
-                                                                 > val<T>()));
+struct GreaterThanComparable
+    : DefineConcept(convertible_to<bool>(val<T>() > val<T>())) {
+};
 
 template <typename T>
-using LessEqualComparable = DefineConcept(convertible_to<bool>(val<T>()
-                                                               <= val<T>()));
+struct LessEqualComparable
+    : DefineConcept(convertible_to<bool>(val<T>() <= val<T>())) {
+};
 
 template <typename T>
-using GreaterEqualComparable = DefineConcept(convertible_to<bool>(val<T>()
-                                                                  >= val<T>()));
+struct GreaterEqualComparable
+    : DefineConcept(convertible_to<bool>(val<T>() >= val<T>())) {
+};
 
 template <typename T>
-using EqualityComparable = DefineConcept(convertible_to<bool>(val<T>()
-                                                              == val<T>()));
+struct EqualityComparable
+    : DefineConcept(convertible_to<bool>(val<T>() == val<T>())) {
+};
 
 template <typename T, typename U>
-using ComparableTo = DefineConcept(convertible_to<bool>(val<U>() < val<T>()),
-                                   convertible_to<bool>(val<T>() < val<U>()),
-                                   convertible_to<bool>(val<U>() <= val<T>()),
-                                   convertible_to<bool>(val<T>() <= val<U>()),
-                                   convertible_to<bool>(val<U>() > val<T>()),
-                                   convertible_to<bool>(val<T>() > val<U>()),
-                                   convertible_to<bool>(val<U>() >= val<T>()),
-                                   convertible_to<bool>(val<T>() >= val<U>()),
-                                   convertible_to<bool>(val<U>() == val<T>()),
-                                   convertible_to<bool>(val<T>() == val<U>()),
-                                   convertible_to<bool>(val<U>() != val<T>()),
-                                   convertible_to<bool>(val<T>() != val<U>()));
+struct ComparableTo
+    : DefineConcept(convertible_to<bool>(val<U>() < val<T>()),
+                    convertible_to<bool>(val<T>() < val<U>()),
+                    convertible_to<bool>(val<U>() <= val<T>()),
+                    convertible_to<bool>(val<T>() <= val<U>()),
+                    convertible_to<bool>(val<U>() > val<T>()),
+                    convertible_to<bool>(val<T>() > val<U>()),
+                    convertible_to<bool>(val<U>() >= val<T>()),
+                    convertible_to<bool>(val<T>() >= val<U>()),
+                    convertible_to<bool>(val<U>() == val<T>()),
+                    convertible_to<bool>(val<T>() == val<U>()),
+                    convertible_to<bool>(val<U>() != val<T>()),
+                    convertible_to<bool>(val<T>() != val<U>())) {
+};
 
 template <typename T>
-using Comparable = ComparableTo<T, T>;
+struct Comparable : ComparableTo<T, T> {
+};
 
 template <typename T>
-using Iterator = DefineConcept(*val<T>(), has_type<T &>(++val<T &>()));
+struct Arithmetic : DefineConcept(conforms(std::is_arithmetic<T>())) {
+};
 
 template <typename T>
-using ForwardIterator = DefineConcept(Iterator<T>(),
-                                      val<T &>()++,
-                                      *val<T &>()++);
+struct FloatingPoint : DefineConcept(conforms(std::is_floating_point<T>())) {
+};
 
 template <typename T>
-using BidirectionalIterator =
-    DefineConcept(ForwardIterator<T>(),
-                  has_type<T &>(--val<T &>()),
-                  convertible_to<T const &>(val<T &>()--),
-                  *val<T &>()--);
+struct Integral : DefineConcept(conforms(std::is_integral<T>())) {
+};
 
 template <typename T>
-using RandomAccessIterator =
-    DefineConcept(BidirectionalIterator<T>(),
-                  Comparable<T>(),
-                  has_type<T &>(val<T &>() += val<types::diff_t<T>>()),
-                  has_type<T>(val<T>() + val<types::diff_t<T>>()),
-                  has_type<T>(val<types::diff_t<T>>() + val<T>()),
-                  has_type<T &>(val<T &>() -= val<types::diff_t<T>>()),
-                  has_type<T>(val<T>() - val<types::diff_t<T>>()),
-                  val<T>()[val<types::diff_t<T>>()]);
+struct Signed : DefineConcept(Integral<T>(), conforms(std::is_signed<T>())) {
+};
 
 template <typename T>
-using HasBeginEnd = DefineConcept(std::begin(val<T>()), std::end(val<T>()));
+struct Unsigned
+    : DefineConcept(Integral<T>(), conforms(std::is_unsigned<T>())) {
+};
 
 template <typename T>
-using Range = DefineConcept(HasBeginEnd<T>(), Iterator<types::iterator_t<T>>());
+struct Iterator : DefineConcept(not_(Integral<T>()),  // hacky NVCC 8 workaround
+                                *(val<T>()),
+                                has_type<T &>(++val<T &>())) {
+};
 
 template <typename T>
-using ForwardRange = DefineConcept(HasBeginEnd<T>(),
-                                   ForwardIterator<types::iterator_t<T>>());
+struct ForwardIterator
+    : DefineConcept(Iterator<T>(), val<T &>()++, *val<T &>()++) {
+};
 
 template <typename T>
-using BidirectionalRange =
-    DefineConcept(HasBeginEnd<T>(),
-                  BidirectionalIterator<types::iterator_t<T>>());
+struct BidirectionalIterator
+    : DefineConcept(ForwardIterator<T>(),
+                    has_type<T &>(--val<T &>()),
+                    convertible_to<T const &>(val<T &>()--),
+                    *val<T &>()--) {
+};
 
 template <typename T>
-using RandomAccessRange =
-    DefineConcept(HasBeginEnd<T>(),
-                  RandomAccessIterator<types::iterator_t<T>>());
+struct RandomAccessIterator
+    : DefineConcept(BidirectionalIterator<T>(),
+                    Comparable<T>(),
+                    has_type<T &>(val<T &>() += val<types::diff_t<T>>()),
+                    has_type<T>(val<T>() + val<types::diff_t<T>>()),
+                    has_type<T>(val<types::diff_t<T>>() + val<T>()),
+                    has_type<T &>(val<T &>() -= val<types::diff_t<T>>()),
+                    has_type<T>(val<T>() - val<types::diff_t<T>>()),
+                    val<T>()[val<types::diff_t<T>>()]) {
+};
 
 template <typename T>
-using Arithmetic = DefineConcept(conforms(std::is_arithmetic<T>()));
+struct HasBeginEnd : DefineConcept(std::begin(val<T>()), std::end(val<T>())) {
+};
 
 template <typename T>
-using FloatingPoint = DefineConcept(conforms(std::is_floating_point<T>()));
+struct Range
+    : DefineConcept(HasBeginEnd<T>(), Iterator<types::iterator_t<T>>()) {
+};
 
 template <typename T>
-using Integral = DefineConcept(conforms(std::is_integral<T>()));
+struct ForwardRange
+    : DefineConcept(HasBeginEnd<T>(), ForwardIterator<types::iterator_t<T>>()) {
+};
 
 template <typename T>
-using Signed = DefineConcept(Integral<T>(), conforms(std::is_signed<T>()));
+struct BidirectionalRange
+    : DefineConcept(HasBeginEnd<T>(),
+                    BidirectionalIterator<types::iterator_t<T>>()) {
+};
 
 template <typename T>
-using Unsigned = DefineConcept(Integral<T>(), conforms(std::is_unsigned<T>()));
+struct RandomAccessRange
+    : DefineConcept(HasBeginEnd<T>(),
+                    RandomAccessIterator<types::iterator_t<T>>()) {
+};
 
 }  // end namespace concepts
 

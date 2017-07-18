@@ -551,12 +551,15 @@ template <typename Function,
           typename Return,
           typename Arg1 = Return,
           typename Arg2 = Arg1>
-using BinaryFunction = DefineConcept(
-    convertible_to<Return>(val<Function>()(val<Arg1>(), val<Arg2>())));
+struct BinaryFunction
+    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg1>(),
+                                                           val<Arg2>()))) {
+};
 
 template <typename Function, typename Return, typename Arg = Return>
-using UnaryFunction =
-    DefineConcept(convertible_to<Return>(val<Function>()(val<Arg>())));
+struct UnaryFunction
+    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg>()))) {
+};
 
 namespace detail
 {
@@ -572,8 +575,8 @@ using is_unary_function = requires_<UnaryFunction, Ret, T>;
 
 namespace type_traits
 {
-  DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
-  DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
+DefineTypeTraitFromConcept(is_binary_function, RAJA::concepts::BinaryFunction);
+DefineTypeTraitFromConcept(is_unary_function, RAJA::concepts::UnaryFunction);
 }  // closing type_traits
 
 }  // closing brace for RAJA namespace

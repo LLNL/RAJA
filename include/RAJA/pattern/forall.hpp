@@ -308,13 +308,15 @@ template <typename ExecPolicy,
           typename Iterator,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>,
-                                type_traits::is_iterator<Iterator>>
-forall_Icount(ExecPolicy&& p,
-              Iterator begin,
-              Iterator end,
-              const IndexType icount,
-              LoopBody&& loop_body)
+RAJA_INLINE concepts::
+    enable_if<type_traits::is_integral<IndexType>,
+              type_traits::is_iterator<Iterator>,
+              concepts::negate<type_traits::is_integral<Iterator>>>
+    forall_Icount(ExecPolicy&& p,
+                  Iterator begin,
+                  Iterator end,
+                  const IndexType icount,
+                  LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_iterator<Iterator>::value,
                 "Iterator pair does not meet requirement of "
@@ -336,11 +338,10 @@ forall_Icount(ExecPolicy&& p,
  ******************************************************************************
  */
 template <typename ExecPolicy, typename Iterator, typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_iterator<Iterator>> forall(
-    ExecPolicy&& p,
-    Iterator begin,
-    Iterator end,
-    LoopBody&& loop_body)
+RAJA_INLINE concepts::
+    enable_if<type_traits::is_iterator<Iterator>,
+              concepts::negate<type_traits::is_integral<Iterator>>>
+    forall(ExecPolicy&& p, Iterator begin, Iterator end, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_iterator<Iterator>::value,
                 "Iterator pair does not meet requirement of "
@@ -368,11 +369,12 @@ RAJA_INLINE concepts::enable_if<type_traits::is_iterator<Iterator>> forall(
  *
  ******************************************************************************
  */
+
 template <typename ExecPolicy, typename IndexType, typename LoopBody>
 RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>> forall(
     ExecPolicy&& p,
-    const IndexType begin,
-    const IndexType end,
+    IndexType begin,
+    IndexType end,
     LoopBody&& loop_body)
 {
   wrap::forall(std::forward<ExecPolicy>(p),
@@ -396,9 +398,9 @@ template <typename ExecPolicy,
 RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>,
                                 type_traits::is_integral<OffsetType>>
 forall_Icount(ExecPolicy&& p,
-              const IndexType begin,
-              const IndexType end,
-              const OffsetType icount,
+              IndexType begin,
+              IndexType end,
+              OffsetType icount,
               LoopBody&& loop_body)
 {
   wrap::forall_Icount(std::forward<ExecPolicy>(p),
@@ -425,9 +427,9 @@ forall_Icount(ExecPolicy&& p,
 template <typename ExecPolicy, typename IndexType, typename LoopBody>
 RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>> forall(
     ExecPolicy&& p,
-    const IndexType begin,
-    const IndexType end,
-    const IndexType stride,
+    IndexType begin,
+    IndexType end,
+    IndexType stride,
     LoopBody&& loop_body)
 {
   wrap::forall(std::forward<ExecPolicy>(p),
@@ -451,10 +453,10 @@ template <typename ExecPolicy,
 RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>,
                                 type_traits::is_integral<OffsetType>>
 forall_Icount(ExecPolicy&& p,
-              const IndexType begin,
-              const IndexType end,
-              const IndexType stride,
-              const OffsetType icount,
+              IndexType begin,
+              IndexType end,
+              IndexType stride,
+              OffsetType icount,
               LoopBody&& loop_body)
 {
   wrap::forall_Icount(std::forward<ExecPolicy>(p),
@@ -482,11 +484,13 @@ template <typename ExecPolicy,
           typename ArrayVal,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>> forall(
-    ExecPolicy&& p,
-    const ArrayVal* idx,
-    const IndexType len,
-    LoopBody&& loop_body)
+RAJA_INLINE concepts::
+    enable_if<type_traits::is_integral<IndexType>,
+              concepts::negate<type_traits::is_iterator<IndexType>>>
+    forall(ExecPolicy&& p,
+           const ArrayVal* idx,
+           const IndexType len,
+           LoopBody&& loop_body)
 {
   // turn into an iterator
   wrap::forall(std::forward<ExecPolicy>(p),
@@ -508,14 +512,18 @@ template <typename ExecPolicy,
           typename IndexType,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>,
-                                type_traits::is_integral<OffsetType>,
-                                type_traits::is_integral<ArrayIdxType>>
-forall_Icount(ExecPolicy&& p,
-              const ArrayIdxType* idx,
-              const IndexType len,
-              const OffsetType icount,
-              LoopBody&& loop_body)
+RAJA_INLINE concepts::
+    enable_if<type_traits::is_integral<IndexType>,
+              concepts::negate<type_traits::is_iterator<IndexType>>,
+              type_traits::is_integral<OffsetType>,
+              concepts::negate<type_traits::is_iterator<OffsetType>>,
+              type_traits::is_integral<ArrayIdxType>,
+              concepts::negate<type_traits::is_iterator<ArrayIdxType>>>
+    forall_Icount(ExecPolicy&& p,
+                  const ArrayIdxType* idx,
+                  const IndexType len,
+                  const OffsetType icount,
+                  LoopBody&& loop_body)
 {
   // turn into an iterator
   forall_Icount(std::forward<ExecPolicy>(p),
@@ -536,7 +544,8 @@ RAJA_INLINE void forall(Args&&... args)
 }
 
 /*!
- * \brief Conversion from template-based policy to value-based policy for forall_Icount
+ * \brief Conversion from template-based policy to value-based policy for
+ * forall_Icount
  *
  * this reduces implementation overhead and perfectly forwards all arguments
  */

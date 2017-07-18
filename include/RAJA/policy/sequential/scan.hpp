@@ -75,8 +75,9 @@ namespace scan
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn>
-void inclusive_inplace(const PolicyBase &, Iter begin, Iter end, BinFn f)
+template <typename ExecPolicy, typename Iter, typename BinFn>
+concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
+inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
 {
   auto agg = *begin;
   for (Iter i = ++begin; i != end; ++i) {
@@ -89,8 +90,9 @@ void inclusive_inplace(const PolicyBase &, Iter begin, Iter end, BinFn f)
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn, typename T>
-void exclusive_inplace(const PolicyBase &, Iter begin, Iter end, BinFn f, T v)
+template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
+concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
+exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
 {
   const int n = end - begin;
   decltype(*begin) agg = v;
@@ -105,8 +107,13 @@ void exclusive_inplace(const PolicyBase &, Iter begin, Iter end, BinFn f, T v)
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn>
-void inclusive(const PolicyBase &, Iter begin, Iter end, OutIter out, BinFn f)
+template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
+concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
+    const ExecPolicy &,
+    const Iter begin,
+    const Iter end,
+    OutIter out,
+    BinFn f)
 {
   auto agg = *begin;
   *out++ = agg;
@@ -120,13 +127,18 @@ void inclusive(const PolicyBase &, Iter begin, Iter end, OutIter out, BinFn f)
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn, typename T>
-void exclusive(const PolicyBase &,
-               Iter begin,
-               Iter end,
-               OutIter out,
-               BinFn f,
-               T v)
+template <typename ExecPolicy,
+          typename Iter,
+          typename OutIter,
+          typename BinFn,
+          typename T>
+concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
+    const ExecPolicy &,
+    const Iter begin,
+    const Iter end,
+    OutIter out,
+    BinFn f,
+    T v)
 {
   decltype(*begin) agg = v;
   OutIter o = out;

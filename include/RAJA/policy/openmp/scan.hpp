@@ -73,9 +73,6 @@ namespace impl
 namespace scan
 {
 
-using concepts::requires_;
-using concepts::enable_if;
-
 RAJA_INLINE
 int firstIndex(int n, int p, int pid)
 {
@@ -87,7 +84,7 @@ int firstIndex(int n, int p, int pid)
    initial value
 */
 template <typename Policy, typename Iter, typename BinFn>
-enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
     const Policy&,
     Iter begin,
     Iter end,
@@ -119,7 +116,7 @@ enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
    initial value
 */
 template <typename Policy, typename Iter, typename BinFn, typename ValueT>
-enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
     const Policy&,
     Iter begin,
     Iter end,
@@ -154,11 +151,12 @@ enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
    initial value
 */
 template <typename Policy, typename Iter, typename OutIter, typename BinFn>
-enable_if<type_traits::is_openmp_policy<Policy>> inclusive(const Policy& exec,
-                                                           Iter begin,
-                                                           Iter end,
-                                                           OutIter out,
-                                                           BinFn f)
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive(
+    const Policy& exec,
+    Iter begin,
+    Iter end,
+    OutIter out,
+    BinFn f)
 {
   ::std::copy(begin, end, out);
   inclusive_inplace(exec, out, out + (end - begin), f);
@@ -173,12 +171,13 @@ template <typename Policy,
           typename OutIter,
           typename BinFn,
           typename ValueT>
-enable_if<type_traits::is_openmp_policy<Policy>> exclusive(const Policy& exec,
-                                                           Iter begin,
-                                                           Iter end,
-                                                           OutIter out,
-                                                           BinFn f,
-                                                           ValueT v)
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive(
+    const Policy& exec,
+    Iter begin,
+    Iter end,
+    OutIter out,
+    BinFn f,
+    ValueT v)
 {
   ::std::copy(begin, end, out);
   exclusive_inplace(exec, out, out + (end - begin), f, v);

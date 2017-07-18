@@ -102,6 +102,30 @@ struct platform_of {
   static constexpr Platform value = PolicyType::platform;
 };
 
+template <typename PolicyType, RAJA::Policy P_>
+struct policy_is
+    : concepts::bool_<policy_of<concepts::types::decay_t<PolicyType>>::value
+                      == P_> {
+};
+
+template <typename PolicyType, RAJA::Pattern P_>
+struct pattern_is
+    : concepts::bool_<pattern_of<concepts::types::decay_t<PolicyType>>::value
+                      == P_> {
+};
+
+template <typename PolicyType, RAJA::Launch L_>
+struct launch_is
+    : concepts::bool_<launch_of<concepts::types::decay_t<PolicyType>>::value
+                      == L_> {
+};
+
+template <typename PolicyType, RAJA::Platform P_>
+struct platform_is
+    : concepts::bool_<platform_of<concepts::types::decay_t<PolicyType>>::value
+                      == P_> {
+};
+
 template <typename Inner>
 struct wrapper {
   using inner = Inner;
@@ -132,63 +156,43 @@ template <Policy Policy_, Pattern Pattern_, Launch Launch_, typename... Args>
 using make_policy_pattern_launch_t =
     PolicyBaseT<Policy_, Pattern_, Launch_, Platform::undefined, Args...>;
 
-
 namespace concepts
 {
 
-namespace detail
-{
-template <typename Pol, RAJA::Policy Expected>
-struct policy_is : bool_<Pol::policy == Expected> {
+template <typename Pol>
+struct ExecutionPolicy
+    : DefineConcept(
+          has_type<::RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
+          has_type<::RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
+          has_type<::RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
+          has_type<::RAJA::Platform>(
+              types::decay_t<decltype(Pol::platform)>())) {
 };
-}
-
-template <typename Pol>
-using ExecutionPolicy = DefineConcept(
-    has_type<::RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
-    has_type<::RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
-    has_type<::RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
-    has_type<::RAJA::Platform>(types::decay_t<decltype(Pol::platform)>()));
-
-template <typename Pol>
-using SequentialPolicy =
-    DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms(detail::policy_is<Pol, RAJA::Policy::sequential>()));
-
-template <typename Pol>
-using OpenMPPolicy =
-    DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms(detail::policy_is<Pol, RAJA::Policy::openmp>()));
-
-template <typename Pol>
-using TargetOpenMPPolicy = DefineConcept(
-    ExecutionPolicy<Pol>(),
-    conforms(detail::policy_is<Pol, RAJA::Policy::target_openmp>()));
-
-template <typename Pol>
-using CudaPolicy =
-    DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms(detail::policy_is<Pol, RAJA::Policy::cuda>()));
-
-template <typename Pol>
-using SimdPolicy =
-    DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms(detail::policy_is<Pol, RAJA::Policy::simd>()));
 
 }  // end namespace concepts
 
 namespace type_traits
 {
 
+template <typename Pol>
+struct is_sequential_policy : RAJA::policy_is<Pol, RAJA::Policy::sequential> {
+};
+template <typename Pol>
+struct is_simd_policy : RAJA::policy_is<Pol, RAJA::Policy::simd> {
+};
+template <typename Pol>
+struct is_openmp_policy : RAJA::policy_is<Pol, RAJA::Policy::openmp> {
+};
+template <typename Pol>
+struct is_target_openmp_policy
+    : RAJA::policy_is<Pol, RAJA::Policy::target_openmp> {
+};
+template <typename Pol>
+struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
+};
+
 DefineTypeTraitFromConcept(is_execution_policy,
                            RAJA::concepts::ExecutionPolicy);
-DefineTypeTraitFromConcept(is_sequential_policy,
-                           RAJA::concepts::SequentialPolicy);
-DefineTypeTraitFromConcept(is_openmp_policy, RAJA::concepts::OpenMPPolicy);
-DefineTypeTraitFromConcept(is_target_openmp_policy,
-                           RAJA::concepts::TargetOpenMPPolicy);
-DefineTypeTraitFromConcept(is_cuda_policy, RAJA::concepts::CudaPolicy);
-DefineTypeTraitFromConcept(is_simd_policy, RAJA::concepts::SimdPolicy);
 
 }  // end namespace type_traits
 
