@@ -48,56 +48,55 @@
 #include "RAJA/util/defines.hpp"
 
 // Solve for loop currents in structured resistor array
-//Similar discretizationt to solving the Possion Equation
+//Similar discretization to solving the Possion Equation
 //with zero dirichlet boundary condtions
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   //----[Setting up solver]-------
-  int N  = 1000;
-  int NN = (N+2)*(N+2);
-  double tol = 1e-5;  
-  double resI2 = 1, V, invD; 
-  double *I    = new double [(N+2)*(N+2)];
-  double *Iold = new double [(N+2)*(N+2)];
+  double tol = 1e-5;
+  int maxIter = 10000;
+  int N = 100;
+  int NN=(N+2)*(N+2);
+  double resI2 = 1, V, invD;
+  double *I    = new double [NN]; memset(I,0,NN*sizeof(double));
+  double *Iold = new double [NN]; memset(Iold,0,NN*sizeof(double));
 
-  unsigned int iteration=0;
   //----[Standard C approach]-----
+  unsigned int iteration=0;
   while(resI2>tol*tol){
-    resI2 = 0; 
     
-    invD = 1./4;
-    V    = 0;
-
-    for(unsigned int n=1; n<=N; ++n){
-      for(unsigned int m=1; m<=N; ++m){
-
-        unsigned id = n*(N+2) + m;
+    resI2 = 0;
+    invD = 1./4.0;
+    V    = 0.0;
+    
+    for(unsigned int n=1;n<=N;++n){
+      for(unsigned int m=1;m<=N;++m){
+        unsigned int id = n*(N+2) + m;
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-
-        if(m==1 && n==1){
-          V    = 1;
-          invD = 1./3;
-          I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-        }
 
       }
     }
-    
+
+    //Cell (1,1) is a special case
+    invD = 1./3.; V =1; int id = 1*(N+2) + 1;
+    I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
+
     //Reduction step
-    for(int k=0; k<NN; ++k){
+    for(unsigned int k=0; k<NN; k++){
       resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
-      Iold[k]   = I[k];
+      Iold[k]=I[k];
     }
-    
-    ++iteration;
-    if(!(iteration%100)){
-      printf("at iteration %d resI = %g\n", iteration, sqrt(resI2));
+
+    if(iteration > maxIter){        
+      std::cout<<"too many iterations!"<<std::endl;
+      exit(-1);
     }
+    iteration++;
   }
 
   printf("Iterations: %d\n", iteration);
-  printf("Top right current: %lg\n", I[N+N*(N+2)]);
+  printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("Memory usage: %lg GB\n", (N+2)*(N+2)*sizeof(double)/1.e9);
 
   
