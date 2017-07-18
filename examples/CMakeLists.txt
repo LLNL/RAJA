@@ -48,3 +48,7 @@ raja_add_executable(
 raja_add_executable(
   NAME addVectors
   SOURCES addVectors.cxx)
+
+raja_add_executable(
+  NAME matrixMultiply
+  SOURCES matrixMultiply.cxx)
