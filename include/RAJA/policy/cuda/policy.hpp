@@ -56,6 +56,8 @@
 #include "RAJA/config.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/policy/cuda/atomics.hpp"
+
 namespace RAJA
 {
 
@@ -125,14 +127,41 @@ namespace detail
 {
 template <bool Async>
 struct get_launch {
-  static constexpr RAJA::Launch value = Async ? RAJA::Launch::async : RAJA::Launch::sync;
+  static constexpr RAJA::Launch value =
+      Async ? RAJA::Launch::async : RAJA::Launch::sync;
 };
 
+template <Pattern P_, bool Async, typename... Args>
+using cuda_policy =
+    make_policy_pattern_launch_platform_t<Policy::cuda,
+                                          P_,
+                                          get_launch<Async>::value,
+                                          Platform::cuda,
+                                          Args...>;
+template <typename... Args>
+using cuda_forall_policy =
+    make_policy_pattern_launch_platform_t<Policy::cuda,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::cuda,
+                                          Args...>;
+
+}
+
+namespace cuda
+{
+template <unsigned int N>
+struct BlockSize {
+  static constexpr unsigned int block_size = N;
+};
+
+struct Atomic {
+};
 }
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec
-  : public RAJA::make_policy_pattern_launch_platform_t<Policy::cuda, Pattern::forall, detail::get_launch<Async>::value, Platform::cuda> {
+    : detail::cuda_policy<Pattern::forall, Async, cuda::BlockSize<BLOCK_SIZE>> {
 };
 
 //
@@ -148,14 +177,18 @@ struct cuda_exec
 ///
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce : public RAJA::make_policy_pattern_launch_t<Policy::cuda, Pattern::reduce, detail::get_launch<Async>::value> {
+struct cuda_reduce
+    : detail::cuda_policy<Pattern::reduce, Async, cuda::BlockSize<BLOCK_SIZE>> {
 };
 
 template <size_t BLOCK_SIZE>
 using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic : public RAJA::make_policy_pattern_launch_t<Policy::cuda, Pattern::reduce, detail::get_launch<Async>::value> {
+struct cuda_reduce_atomic : detail::cuda_policy<Pattern::reduce,
+                                                Async,
+                                                cuda::BlockSize<BLOCK_SIZE>,
+                                                cuda::Atomic> {
 };
 
 template <size_t BLOCK_SIZE>
@@ -174,378 +207,6 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
  */
 #define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
   gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
-
-//
-// Three different variants of min/max reductions can be run by choosing
-// one of these macros. Only one should be defined!!!
-//
-//#define RAJA_USE_ATOMIC_ONE
-#define RAJA_USE_ATOMIC_TWO
-//#define RAJA_USE_NO_ATOMICS
-
-#define ull_to_double(x) __longlong_as_double(x)
-#define double_to_ull(x) __double_as_longlong(x)
-
-/*!
- ******************************************************************************
- *
- * \brief Generics of atomic update methods used in reduction variables.
- *
- * The generic version just wraps the nvidia cuda atomics.
- * Specializations implement other atomics using atomic CAS.
- *
- ******************************************************************************
- */
-template <typename T>
-__device__ inline T _atomicMin(T *address, T value)
-{
-  return atomicMin(address, value);
-}
-///
-template <typename T>
-__device__ inline T _atomicMax(T *address, T value)
-{
-  return atomicMax(address, value);
-}
-///
-template <typename T>
-__device__ inline T _atomicAdd(T *address, T value)
-{
-  return atomicAdd(address, value);
-}
-
-//
-// Template specializations for atomic update methods not defined by nvidia
-// cuda.
-//
-#if defined(RAJA_USE_ATOMIC_ONE)
-/*!
- ******************************************************************************
- *
- * \brief Atomic min and max update methods used to gather current
- *        min or max reduction value.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline double _atomicMin(double *address, double value)
-{
-  double temp = *(reinterpret_cast<double volatile *>(address));
-  if (temp > value) {
-    unsigned long long oldval, newval, readback;
-    oldval = double_to_ull(temp);
-    newval = double_to_ull(value);
-    unsigned long long *address_as_ull =
-        reinterpret_cast<unsigned long long *>(address);
-
-    while ((readback = atomicCAS(address_as_ull, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = double_to_ull(RAJA_MIN(ull_to_double(oldval), value));
-    }
-    temp = ull_to_double(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline float _atomicMin(float *address, float value)
-{
-  float temp = *(reinterpret_cast<float volatile *>(address));
-  if (temp > value) {
-    int oldval, newval, readback;
-    oldval = __float_as_int(temp);
-    newval = __float_as_int(value);
-    int *address_as_i = reinterpret_cast<int *>(address);
-
-    while ((readback = atomicCAS(address_as_i, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = __float_as_int(RAJA_MIN(__int_as_float(oldval), value));
-    }
-    temp = __int_as_float(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline double _atomicMax(double *address, double value)
-{
-  double temp = *(reinterpret_cast<double volatile *>(address));
-  if (temp < value) {
-    unsigned long long oldval, newval, readback;
-    oldval = double_to_ull(temp);
-    newval = double_to_ull(value);
-    unsigned long long *address_as_ull =
-        reinterpret_cast<unsigned long long *>(address);
-
-    while ((readback = atomicCAS(address_as_ull, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = double_to_ull(RAJA_MAX(ull_to_double(oldval), value));
-    }
-    temp = ull_to_double(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline float _atomicMax(float *address, float value)
-{
-  float temp = *(reinterpret_cast<float volatile *>(address));
-  if (temp < value) {
-    int oldval, newval, readback;
-    oldval = __float_as_int(temp);
-    newval = __float_as_int(value);
-    int *address_as_i = reinterpret_cast<int *>(address);
-
-    while ((readback = atomicCAS(address_as_i, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = __float_as_int(RAJA_MAX(__int_as_float(oldval), value));
-    }
-    temp = __int_as_float(oldval);
-  }
-  return temp;
-}
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-// don't specialize for 64-bit min/max if they exist
-#else
-///
-template <>
-__device__ inline unsigned long long int _atomicMin(
-    unsigned long long int *address,
-    unsigned long long int value)
-{
-  unsigned long long int temp =
-      *(reinterpret_cast<unsigned long long int volatile *>(address));
-  if (temp > value) {
-    unsigned long long int oldval, newval;
-    oldval = temp;
-    newval = value;
-
-    while ((readback = atomicCAS(address, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = RAJA_MIN(oldval, value);
-    }
-  }
-  return readback;
-}
-///
-template <>
-__device__ inline unsigned long long int _atomicMax(
-    unsigned long long int *address,
-    unsigned long long int value)
-{
-  unsigned long long int readback =
-      *(reinterpret_cast<unsigned long long int volatile *>(address));
-  if (readback < value) {
-    unsigned long long int oldval, newval;
-    oldval = readback;
-    newval = value;
-
-    while ((readback = atomicCAS(address, oldval, newval)) != oldval) {
-      oldval = readback;
-      newval = RAJA_MAX(oldval, value);
-    }
-  }
-  return readback;
-}
-#endif
-
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-// don't specialize for 64-bit add if it exists
-#else
-/*!
- ******************************************************************************
- *
- * \brief Atomic add update methods used to accumulate to memory locations.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline double _atomicAdd(double *address, double value)
-{
-  unsigned long long oldval, newval, readback;
-
-  oldval = __double_as_longlong(*address);
-  newval = __double_as_longlong(__longlong_as_double(oldval) + value);
-  while ((readback = atomicCAS((unsigned long long *)address, oldval, newval))
-         != oldval) {
-    oldval = readback;
-    newval = __double_as_longlong(__longlong_as_double(oldval) + value);
-  }
-  return __longlong_as_double(oldval);
-}
-#endif
-
-#elif defined(RAJA_USE_ATOMIC_TWO)
-
-/*!
- ******************************************************************************
- *
- * \brief Alternative atomic min and max update methods used to gather current
- *        min or max reduction value.
- *
- *        These appear to be more robust than the ones above, not sure why.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline double _atomicMin(double *address, double value)
-{
-  double temp = *(reinterpret_cast<double volatile *>(address));
-  if (temp > value) {
-    unsigned long long *address_as_ull =
-        reinterpret_cast<unsigned long long *>(address);
-
-    unsigned long long assumed;
-    unsigned long long oldval = double_to_ull(temp);
-    do {
-      assumed = oldval;
-      oldval =
-          atomicCAS(address_as_ull,
-                    assumed,
-                    double_to_ull(RAJA_MIN(ull_to_double(assumed), value)));
-    } while (assumed != oldval);
-    temp = ull_to_double(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline float _atomicMin(float *address, float value)
-{
-  float temp = *(reinterpret_cast<float volatile *>(address));
-  if (temp > value) {
-    int *address_as_i = (int *)address;
-    int assumed;
-    int oldval = __float_as_int(temp);
-    do {
-      assumed = oldval;
-      oldval =
-          atomicCAS(address_as_i,
-                    assumed,
-                    __float_as_int(RAJA_MIN(__int_as_float(assumed), value)));
-    } while (assumed != oldval);
-    temp = __int_as_float(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline double _atomicMax(double *address, double value)
-{
-  double temp = *(reinterpret_cast<double volatile *>(address));
-  if (temp < value) {
-    unsigned long long *address_as_ull =
-        reinterpret_cast<unsigned long long *>(address);
-
-    unsigned long long assumed;
-    unsigned long long oldval = double_to_ull(temp);
-    do {
-      assumed = oldval;
-      oldval =
-          atomicCAS(address_as_ull,
-                    assumed,
-                    double_to_ull(RAJA_MAX(ull_to_double(assumed), value)));
-    } while (assumed != oldval);
-    temp = ull_to_double(oldval);
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline float _atomicMax(float *address, float value)
-{
-  float temp = *(reinterpret_cast<float volatile *>(address));
-  if (temp < value) {
-    int *address_as_i = (int *)address;
-    int assumed;
-    int oldval = __float_as_int(temp);
-    do {
-      assumed = oldval;
-      oldval =
-          atomicCAS(address_as_i,
-                    assumed,
-                    __float_as_int(RAJA_MAX(__int_as_float(assumed), value)));
-    } while (assumed != oldval);
-    temp = __int_as_float(oldval);
-  }
-  return temp;
-}
-
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 350
-// don't specialize for 64-bit min/max if they exist
-#else
-///
-template <>
-__device__ inline unsigned long long int _atomicMin(
-    unsigned long long int *address,
-    unsigned long long int value)
-{
-  unsigned long long int temp =
-      *(reinterpret_cast<unsigned long long int volatile *>(address));
-  if (temp > value) {
-    unsigned long long int assumed;
-    unsigned long long int oldval = temp;
-    do {
-      assumed = oldval;
-      oldval = atomicCAS(address, assumed, RAJA_MIN(assumed, value));
-    } while (assumed != oldval);
-    temp = oldval;
-  }
-  return temp;
-}
-///
-template <>
-__device__ inline unsigned long long int _atomicMax(
-    unsigned long long int *address,
-    unsigned long long int value)
-{
-  unsigned long long int temp =
-      *(reinterpret_cast<unsigned long long int volatile *>(address));
-  if (temp < value) {
-    unsigned long long int assumed;
-    unsigned long long int oldval = temp;
-    do {
-      assumed = oldval;
-      oldval = atomicCAS(address, assumed, RAJA_MAX(assumed, value));
-    } while (assumed != oldval);
-    temp = oldval;
-  }
-  return temp;
-}
-#endif
-
-#if !defined(__CUDA_ARCH__) || __CUDA_ARCH__ >= 600
-// don't specialize for doubles if they exist
-#else
-/*!
- ******************************************************************************
- *
- * \brief Atomic add update methods used to accumulate to memory locations.
- *
- ******************************************************************************
- */
-template <>
-__device__ inline double _atomicAdd(double *address, double value)
-{
-  unsigned long long int *address_as_ull = (unsigned long long int *)address;
-  unsigned long long int oldval = *address_as_ull, assumed;
-
-  do {
-    assumed = oldval;
-    oldval =
-        atomicCAS(address_as_ull,
-                  assumed,
-                  __double_as_longlong(__longlong_as_double(oldval) + value));
-  } while (assumed != oldval);
-  return __longlong_as_double(oldval);
-}
-#endif
-
-#elif !defined(RAJA_USE_NO_ATOMICS)
-
-#error "one of the options for using/not using atomics must be specified"
-
-#endif
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
@@ -569,11 +230,6 @@ struct CudaDim {
   }
 };
 
-template <typename POL>
-struct CudaPolicy :
-  public RAJA::make_policy_pattern_launch_platform_t<Policy::cuda, Pattern::forall, Launch::undefined, Platform::cuda> {
-};
-
 template <typename POL, typename IDX>
 struct CudaIndexPair : public POL {
   template <typename IS>
@@ -594,7 +250,7 @@ struct CudaThreadBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThreadBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -628,27 +284,13 @@ struct CudaThreadBlock {
   }
 };
 
-/*
- * These execution policies map a loop nest to the block and threads of a
- * given dimension with the number of THREADS per block specifies.
- */
-
-template <int THREADS>
-using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
-
-template <int THREADS>
-using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
-
-template <int THREADS>
-using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
-
 template <typename VIEWDIM>
 struct CudaThread {
   int distance;
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThread(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -664,20 +306,8 @@ struct CudaThread {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_threads) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_threads) = distance; }
 };
-
-/* These execution policies map the given loop nest to the threads in the
-   specified dimensions (not blocks)
- */
-using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
-
-using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
-
-using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
 
 template <typename VIEWDIM>
 struct CudaBlock {
@@ -685,7 +315,7 @@ struct CudaBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -701,20 +331,43 @@ struct CudaBlock {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_blocks) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_blocks) = distance; }
 };
+
+template <typename ... T>
+using CudaPolicy = detail::cuda_forall_policy<T...>;
+
+/*
+ * These execution policies map a loop nest to the block and threads of a
+ * given dimension with the number of THREADS per block specifies.
+ */
+
+template <int THREADS>
+using cuda_threadblock_x_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3x, THREADS>>;
+
+template <int THREADS>
+using cuda_threadblock_y_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3y, THREADS>>;
+
+template <int THREADS>
+using cuda_threadblock_z_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3z, THREADS>>;
+
+/* These execution policies map the given loop nest to the threads in the
+   specified dimensions (not blocks)
+ */
+using cuda_thread_x_exec = detail::cuda_forall_policy<CudaThread<Dim3x>>;
+
+using cuda_thread_y_exec = detail::cuda_forall_policy<CudaThread<Dim3y>>;
+
+using cuda_thread_z_exec = detail::cuda_forall_policy<CudaThread<Dim3z>>;
 
 /* These execution policies map the given loop nest to the blocks in the
    specified dimensions (not threads)
  */
-using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
+using cuda_block_x_exec = detail::cuda_forall_policy<CudaBlock<Dim3x>>;
 
-using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
+using cuda_block_y_exec = detail::cuda_forall_policy<CudaBlock<Dim3y>>;
 
-using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
+using cuda_block_z_exec = detail::cuda_forall_policy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 
