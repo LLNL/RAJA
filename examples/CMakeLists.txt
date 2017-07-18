@@ -52,3 +52,7 @@ raja_add_executable(
 raja_add_executable(
   NAME matrixMultiply
   SOURCES matrixMultiply.cxx)
+
+raja_add_executable(
+  NAME jacobi
+  SOURCES jacobi.cxx)
