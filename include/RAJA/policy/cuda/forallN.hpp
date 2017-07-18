@@ -225,23 +225,17 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      bool Async = false;
+      bool Async = true;
       cudaStream_t stream = 0;
 
-#pragma omp critical
-      {
-      auto body = RAJA::cuda::createLaunchBody(
-          dims.num_blocks, dims.num_threads, 0, stream, loop_body);
-
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          std::move(body), cargs...);
+          RAJA::cuda::createLaunchBody(
+              dims.num_blocks, dims.num_threads, 0, stream, std::move(loop_body)),
+          cargs...);
       cudaErrchk(cudaPeekAtLastError());
 
       cuda::launch(stream);
       if (!Async) cuda::synchronize(stream);
-      fflush(stderr);
-      fflush(stdout);
-      }
     }
   }
 };
@@ -263,23 +257,17 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      bool Async = false;
+      bool Async = true;
       cudaStream_t stream = 0;
 
-#pragma omp critical
-      {
-      auto body = RAJA::cuda::createLaunchBody(
-          dims.num_blocks, dims.num_threads, 0, stream, loop_body);
-
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          std::move(body), c0);
+          RAJA::cuda::createLaunchBody(
+              dims.num_blocks, dims.num_threads, 0, stream, std::move(loop_body)),
+          c0);
       cudaErrchk(cudaPeekAtLastError());
 
       cuda::launch(stream);
       if (!Async) cuda::synchronize(stream);
-      fflush(stderr);
-      fflush(stdout);
-      }
     }
   }
 };

@@ -210,11 +210,11 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 
     cudaStream_t stream = 0;
 
-    auto body = RAJA::cuda::createLaunchBody(
-        gridSize, BLOCK_SIZE, 0, stream, loop_body);
-
     forall_cuda_kernel<<<gridSize, BLOCK_SIZE, 0, stream>>>(
-        std::move(body), std::move(begin), len);
+        RAJA::cuda::createLaunchBody(
+            gridSize, BLOCK_SIZE, 0, stream,
+            std::forward<LOOP_BODY>(loop_body)),
+        std::move(begin), len);
     cudaErrchk(cudaPeekAtLastError());
 
     cuda::launch(stream);
@@ -244,11 +244,11 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
 
     cudaStream_t stream = 0;
 
-    auto body = RAJA::cuda::createLaunchBody(
-        gridSize, BLOCK_SIZE, 0, stream, loop_body);
-
     forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE, 0, stream>>>(
-        std::move(body), std::move(begin), len, icount);
+        RAJA::cuda::createLaunchBody(
+            gridSize, BLOCK_SIZE, 0, stream,
+            std::forward<LOOP_BODY>(loop_body)),
+        std::move(begin), len, icount);
     cudaErrchk(cudaPeekAtLastError());
 
     cuda::launch(stream);

@@ -78,9 +78,6 @@
 #include "RAJA/policy/openmp/mutex.hpp"
 #endif
 
-#include <cstdio>
-#include <cstdlib>
-
 namespace RAJA
 {
 
@@ -291,7 +288,7 @@ public:
   PinnedTally()
     : stream_list(nullptr)
   {
-      fprintf(stderr, "PinnedTally constructor: %p\n", this);
+
   }
   
   PinnedTally(const PinnedTally&) = delete;
@@ -344,22 +341,20 @@ public:
     Node* n = cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
     n->next = sn->node_list;
     sn->node_list = n;
-      fprintf(stderr, "PinnedTally new_value: %p  %p  %p  %p\n", this, (void*)stream, &n->value, n->next ? &n->next->value : nullptr);
     return &n->value;
   }
 
   void free_list()
   {
     while (stream_list) {
-      StreamNode* sn = stream_list;
-      while (sn->node_list) {
-        Node* n = sn->node_list;
-        sn->node_list = n->next;
-        fprintf(stderr, "PinnedTally free_list: %p  %p  %p\n", this, (void*)sn->stream, &n->value);
+      StreamNode* s = stream_list;
+      while (s->node_list) {
+        Node* n = s->node_list;
+        s->node_list = n->next;
         cuda::pinned_mempool_type::getInstance().free(n);
       }
-      stream_list = sn->next;
-      free(sn);
+      stream_list = s->next;
+      free(s);
     }
   }
 
@@ -459,9 +454,6 @@ struct Reduce_Data {
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
-      unsigned int dev_c = -1;
-      cudaMemcpy(&dev_c, device_count, sizeof(unsigned int), cudaMemcpyDefault);
-      fprintf(stderr, "PinnedTally setupForDevice: %p  %u\n", tally.val_ptr, dev_c);
     }
     return act;
   }
@@ -794,7 +786,6 @@ struct CudaReduce {
 
         // one thread updates tally
         if (threadId == 0) {
-          printf("Reducer tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = temp;
         }
       }
@@ -812,7 +803,6 @@ struct CudaReduce {
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
-        fprintf(stderr, "Reducer operator T: %p  %e\n", &(*n), *n);
         Reducer{}(val.value, *n);
       }
       val.cleanup(info);
@@ -1001,7 +991,6 @@ struct CudaReduceAtomic {
         __threadfence();
         unsigned int old_val = atomicInc(val.device_count, 1u + numBlocks);
         if (old_val == 1u + numBlocks) {
-          printf("Reducer atomic tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = val.device[0];
         }
       }
@@ -1215,7 +1204,6 @@ struct CudaReduceLoc {
 
         // one thread updates tally
         if (threadId == 0) {
-          printf("Reducer atomic tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = temp;
         }
       }

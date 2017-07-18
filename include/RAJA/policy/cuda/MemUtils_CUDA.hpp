@@ -153,8 +153,11 @@ struct cudaInfo {
   dim3         gridDim  = 0;
   dim3         blockDim = 0;
   cudaStream_t stream   = 0;
-  omp::mutex   lock;
   bool         active   = false;
+#if defined(RAJA_ENABLE_OPENMP)
+  cudaInfo*    thread_states = nullptr;
+  omp::mutex   lock;
+#endif
 };
 
 template < typename T >
@@ -192,7 +195,6 @@ void synchronize()
     }
   }
   if (synchronize) {
-    fprintf(stderr, "cuda::synchronize:\n");
     cudaErrchk(cudaDeviceSynchronize());
   }
 }
@@ -207,7 +209,6 @@ void synchronize(cudaStream_t stream)
   if (iter != g_stream_info_map.end() ) {
     if (!iter->second) {
       iter->second = true;
-      fprintf(stderr, "cuda::synchronize: %p\n", (void*)stream);
       cudaErrchk(cudaStreamSynchronize(stream));
     }
   } else {
@@ -224,10 +225,8 @@ void launch(cudaStream_t stream)
 #endif
   auto iter = g_stream_info_map.find(stream);
   if (iter != g_stream_info_map.end()) {
-    fprintf(stderr, "cuda::launch: %p  %s\n", (void*)stream, iter->second ? "sync" : "async");
     iter->second = false;
   } else {
-    fprintf(stderr, "cuda::launch: %p  %s\n", (void*)stream, "new stream");
     g_stream_info_map.emplace(stream, false);
   }
 }
@@ -237,25 +236,47 @@ void launch(cudaStream_t stream)
 RAJA_INLINE
 bool currentlyActive()
 {
+#if defined(RAJA_ENABLE_OPENMP)
+  {
+    omp::lock_guard<omp::mutex> lock(g_status.lock);
+    if (!g_status.thread_states) {
+      g_status.thread_states = new cudaInfo[omp_get_max_threads()];
+    }
+  }
+  return g_status.thread_states[omp_get_thread_num()].active;
+#else
   return g_status.active;
+#endif
 }
 
 RAJA_INLINE
 dim3 currentGridDim()
 {
+#if defined(RAJA_ENABLE_OPENMP)
+  return g_status.thread_states[omp_get_thread_num()].gridDim;
+#else
   return g_status.gridDim;
+#endif
 }
 
 RAJA_INLINE
 dim3 currentBlockDim()
 {
+#if defined(RAJA_ENABLE_OPENMP)
+  return g_status.thread_states[omp_get_thread_num()].blockDim;
+#else
   return g_status.blockDim;
+#endif
 }
 
 RAJA_INLINE
 cudaStream_t currentStream()
 {
+#if defined(RAJA_ENABLE_OPENMP)
+  return g_status.thread_states[omp_get_thread_num()].stream;
+#else
   return g_status.stream;
+#endif
 }
 
 template < typename LOOP_BODY >
@@ -265,13 +286,22 @@ typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
   LOOP_BODY&& loop_body)
 {
 #if defined(RAJA_ENABLE_OPENMP)
-  omp::lock_guard<omp::mutex> lock(g_status.lock);
+  {
+    omp::lock_guard<omp::mutex> lock(g_status.lock);
+    if (!g_status.thread_states) {
+      g_status.thread_states = new cudaInfo[omp_get_max_threads()];
+    }
+  }
+  int tid = omp_get_thread_num();
+  cudaInfo& tl_status = g_status.thread_states[tid];
+#else
+  cudaInfo& tl_status = g_status;
 #endif
-  SetterResetter<bool> active_srer(g_status.active, true);
+  SetterResetter<bool> active_srer(tl_status.active, true);
 
-  g_status.stream   = stream;
-  g_status.gridDim  = gridDim;
-  g_status.blockDim = blockDim;
+  tl_status.stream   = stream;
+  tl_status.gridDim  = gridDim;
+  tl_status.blockDim = blockDim;
 
   return {loop_body};
 }
