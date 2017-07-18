@@ -82,6 +82,26 @@ struct PolicyBaseT : PolicyBase {
   static constexpr Platform platform = Platform_;
 };
 
+template <typename PolicyType>
+struct policy_of {
+  static constexpr Policy value = PolicyType::policy;
+};
+
+template <typename PolicyType>
+struct pattern_of {
+  static constexpr Pattern value = PolicyType::pattern;
+};
+
+template <typename PolicyType>
+struct launch_of {
+  static constexpr Launch value = PolicyType::launch;
+};
+
+template <typename PolicyType>
+struct platform_of {
+  static constexpr Platform value = PolicyType::platform;
+};
+
 template <typename Inner>
 struct wrapper {
   using inner = Inner;
@@ -100,7 +120,6 @@ template <Policy Pol, Pattern Pat, typename... Args>
 using make_policy_pattern_t =
     PolicyBaseT<Pol, Pat, Launch::undefined, Platform::undefined, Args...>;
 
-
 template <Policy Policy_,
           Pattern Pattern_,
           Launch Launch_,
@@ -117,37 +136,44 @@ using make_policy_pattern_launch_t =
 namespace concepts
 {
 
+namespace detail
+{
+template <typename Pol, RAJA::Policy Expected>
+struct policy_is : bool_<Pol::policy == Expected> {
+};
+}
+
 template <typename Pol>
 using ExecutionPolicy = DefineConcept(
-    has_type<RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
-    has_type<RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
-    has_type<RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
-    has_type<RAJA::Platform>(types::decay_t<decltype(Pol::platform)>()));
+    has_type<::RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
+    has_type<::RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
+    has_type<::RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
+    has_type<::RAJA::Platform>(types::decay_t<decltype(Pol::platform)>()));
 
 template <typename Pol>
 using SequentialPolicy =
     DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms<bool_<Pol::policy == Policy::sequential>>());
+                  conforms(detail::policy_is<Pol, RAJA::Policy::sequential>()));
 
 template <typename Pol>
 using OpenMPPolicy =
     DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms<bool_<Pol::policy == Policy::openmp>>());
+                  conforms(detail::policy_is<Pol, RAJA::Policy::openmp>()));
 
 template <typename Pol>
-using TargetOpenMPPolicy =
-    DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms<bool_<Pol::policy == Policy::target_openmp>>());
+using TargetOpenMPPolicy = DefineConcept(
+    ExecutionPolicy<Pol>(),
+    conforms(detail::policy_is<Pol, RAJA::Policy::target_openmp>()));
 
 template <typename Pol>
 using CudaPolicy =
     DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms<bool_<Pol::policy == Policy::cuda>>());
+                  conforms(detail::policy_is<Pol, RAJA::Policy::cuda>()));
 
 template <typename Pol>
 using SimdPolicy =
     DefineConcept(ExecutionPolicy<Pol>(),
-                  conforms<bool_<Pol::policy == Policy::simd>>());
+                  conforms(detail::policy_is<Pol, RAJA::Policy::simd>()));
 
 }  // end namespace concepts
 

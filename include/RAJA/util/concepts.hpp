@@ -67,10 +67,13 @@ namespace concepts
 namespace metalib
 {
 
-template <typename T, T Val>
+template <class T, T v>
 struct integral_constant {
-  using type = T;
-  static constexpr T value = Val;
+  static constexpr T value = v;
+  using value_type = T;
+  using type = integral_constant;
+  constexpr operator value_type() const noexcept { return value; }
+  constexpr value_type operator()() const noexcept { return value; }
 };
 
 template <bool B>
@@ -146,6 +149,15 @@ using if_ = typename impl::_if_<list<Ts...>>::type;
 template <bool If, typename... Args>
 using if_c = typename impl::_if_<list<bool_<If>, Args...>>::type;
 
+
+template <typename T, typename U>
+struct is_same : false_type {
+};
+
+template <typename T>
+struct is_same<T, T> : true_type {
+};
+
 /// bool list -- use for {all,none,any}_of metafunctions
 template <bool...>
 struct blist;
@@ -156,11 +168,11 @@ using negate_t = bool_<!T::value>;
 
 /// all_of metafunction of a value type list -- all must be "true"
 template <bool... Bs>
-using all_of = std::is_same<blist<true, Bs...>, blist<Bs..., true>>;
+using all_of = metalib::is_same<blist<true, Bs...>, blist<Bs..., true>>;
 
 /// none_of metafunction of a value type list -- all must be "false"
 template <bool... Bs>
-using none_of = std::is_same<blist<false, Bs...>, blist<Bs..., false>>;
+using none_of = metalib::is_same<blist<false, Bs...>, blist<Bs..., false>>;
 
 /// any_of metafunction of a value type list -- at least one must be "true""
 template <bool... Bs>
@@ -261,13 +273,19 @@ constexpr auto convertible_to(U &&u) noexcept
 /// metafunction for use within decltype expression to validate type of
 /// expression
 template <typename T, typename U>
-metalib::if_<std::is_same<T, U>, metalib::true_type> has_type(U &&) noexcept;
+constexpr auto has_type(U &&) noexcept
+    -> metalib::if_<metalib::is_same<T, U>, metalib::true_type>;
 
 template <typename BoolLike>
-metalib::if_<BoolLike, metalib::true_type> conforms(BoolLike) noexcept;
+constexpr auto conforms(BoolLike) noexcept
+    -> metalib::if_<BoolLike, metalib::true_type>;
 
 template <typename BoolLike>
-metalib::if_c<!BoolLike::value, metalib::true_type> not_(BoolLike) noexcept;
+constexpr auto not_(BoolLike) noexcept
+    -> metalib::if_c<!BoolLike::value, metalib::true_type>;
+
+template <bool Val>
+constexpr auto is() noexcept -> metalib::if_c<Val, metalib::true_type>;
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>

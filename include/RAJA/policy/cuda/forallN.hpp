@@ -93,17 +93,15 @@ struct ForallN_BindFirstArg_Device {
   }
 };
 
-namespace cuda
-{
 
 RAJA_INLINE
-constexpr int numBlocks(Dim const &dim)
+constexpr int numBlocks(CudaDim const &dim)
 {
   return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
 }
 
 RAJA_INLINE
-constexpr int numThreads(Dim const &dim)
+constexpr int numThreads(CudaDim const &dim)
 {
   return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
 }
@@ -136,16 +134,16 @@ auto make_cuda_iter_wrapper(const CUDA_EXEC &pol, const Iterator &i)
  *
  */
 template <typename BODY, typename... ARGS>
-RAJA_INLINE __device__ void checkBounds(BODY &body, int i, ARGS... args)
+RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i, ARGS... args)
 {
   if (i > INT_MIN) {
     ForallN_BindFirstArg_Device<BODY> bound(body, i);
-    checkBounds(bound, args...);
+    cudaCheckBounds(bound, args...);
   }
 }
 
 template <typename BODY>
-RAJA_INLINE __device__ void checkBounds(BODY &body, int i)
+RAJA_INLINE __device__ void cudaCheckBounds(BODY &body, int i)
 {
   if (i > INT_MIN) {
     body(i);
@@ -158,16 +156,14 @@ RAJA_INLINE __device__ void checkBounds(BODY &body, int i)
  * to N-argument function
  */
 template <typename BODY, typename... CARGS>
-__global__ void launcherN(BODY loop_body, CARGS... cargs)
+__global__ void cudaLauncherN(BODY loop_body, CARGS... cargs)
 {
   // force reduction object copy constructors and destructors to run
   auto body = loop_body;
 
   // Compute indices and then pass through the bounds-checking mechanism
-  checkBounds(body, (cargs())...);
+  cudaCheckBounds(body, (cargs())...);
 }
-
-} // end namespace cuda
 
 template <int...>
 struct integer_sequence {
@@ -212,7 +208,7 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   template <typename BODY, int... N>
   RAJA_INLINE void unpackIndexSets(BODY body, integer_sequence<N...>) const
   {
-    cuda::Dim dims;
+    CudaDim dims;
 
     callLauncher(dims,
                  body,
@@ -223,12 +219,12 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   }
 
   template <typename BODY, typename... CARGS>
-  RAJA_INLINE void callLauncher(cuda::Dim const &dims,
+  RAJA_INLINE void callLauncher(CudaDim const &dims,
                                 BODY body,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cuda::launcherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
                                               dims.num_threads)>>>(body,
                                                                    cargs...);
     }
@@ -249,11 +245,11 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   template <typename BODY>
   RAJA_INLINE void operator()(BODY body) const
   {
-    cuda::Dim dims;
+    CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cuda::launcherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
+      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
                                               dims.num_threads)>>>(body, c0);
     }
 
