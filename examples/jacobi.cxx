@@ -47,6 +47,9 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
+
+#define block_size 256
+
 // Solve for loop currents in structured resistor array
 //Similar discretization to solving the Possion Equation
 //with zero dirichlet boundary condtions
@@ -58,29 +61,34 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int maxIter = 10000;
   int N = 100;
   int NN=(N+2)*(N+2);
-  double resI2 = 1, V, invD;
-  double *I    = new double [NN]; memset(I,0,NN*sizeof(double));
-  double *Iold = new double [NN]; memset(Iold,0,NN*sizeof(double));
+  unsigned int iteration;
+  double resI2, V, invD;
+  double *I    = new double [NN]; 
+  double *Iold = new double [NN]; 
+
+  memset(I,0,NN*sizeof(double));
+  memset(Iold,0,NN*sizeof(double));
 
   //----[Standard C approach]-----
-  unsigned int iteration=0;
+  resI2 = 1; 
   while(resI2>tol*tol){
     
-    resI2 = 0;
-    invD = 1./4.0;
-    V    = 0.0;
-    
+    resI2 = 0;    
     for(unsigned int n=1;n<=N;++n){
       for(unsigned int m=1;m<=N;++m){
-        unsigned int id = n*(N+2) + m;
-        I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
 
+        unsigned int id = n*(N+2) + m;
+        //Cell (1,1) is a special case
+        if(n==1 && m==1){
+          invD = 1./3.; V =1; 
+          I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
+        }else{
+          invD = 1./4.0; V = 0.0;    
+          I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
+        }
+        
       }
     }
-
-    //Cell (1,1) is a special case
-    invD = 1./3.; V =1; int id = 1*(N+2) + 1;
-    I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
 
     //Reduction step
     for(unsigned int k=0; k<NN; k++){
@@ -92,12 +100,66 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       std::cout<<"too many iterations!"<<std::endl;
       exit(-1);
     }
+
     iteration++;
   }
-
-  printf("Iterations: %d\n", iteration);
+  printf("Standard C/Cpp Loops: \n");
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
-  printf("Memory usage: %lg GB\n", (N+2)*(N+2)*sizeof(double)/1.e9);
+  printf("No of iterations: %d \n \n \n",iteration);
+  //======================================
+
+  
+
+  //----[RAJA: Nested Sequential Policy]---------
+  //RAJA does not allow variables to be modified inside the loop
+  resI2 = 1; iteration = 0; 
+  memset(I,0,NN*sizeof(double));
+  memset(Iold,0,NN*sizeof(double));
+  while(resI2 > tol*tol){
+    
+    
+    RAJA::forallN< RAJA::NestedPolicy<
+    RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
+    RAJA::RangeSegment(1, (N+1)),
+    RAJA::RangeSegment(1, (N+1)),
+    [=](int m, int n) { 
+
+      unsigned int id = n*(N+2) + m;
+      if(n==1 && m==1){
+        double invD = 1./3.; double V = 1; 
+        I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
+      }else{
+        double invD2 = 1./4.0; double V2 = 0.0;
+        I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
+      }
+
+  });
+
+
+    //Reduction step    
+    RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
+    RAJA::forall<RAJA::seq_reduce>(0, NN, [=](int k) {
+        RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
+        Iold[k]=I[k];
+      });
+
+
+    resI2 = RAJA_resI2; 
+    if(iteration > maxIter){        
+      std::cout<<"too many iterations!"<<std::endl;
+      exit(-1);
+    }
+    iteration++;
+  }
+  printf("RAJA Nested Loop Sequential Policy: \n");
+  printf("Top right current: %lg \n", I[N+N*(N+2)]);
+  printf("No of iterations: %d \n",iteration);
+  //======================================
+
+
+
+
+  
 
   
 
