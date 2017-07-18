@@ -44,3 +44,7 @@
 raja_add_executable(
   NAME example-raja-pi
   SOURCES pi.cxx)
+
+raja_add_executable(
+  NAME addVectors
+  SOURCES addVectors.cxx)
