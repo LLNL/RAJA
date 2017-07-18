@@ -185,13 +185,6 @@ const int MAX_WARPS = RAJA_CUDA_MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
       "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 
-/*!
- * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream)
- * Macro that generates kernel launch parameters.
- */
-#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream) \
-  gridSize, blockSize, 0, stream
-
 //
 // Three different variants of min/max reductions can be run by choosing
 // one of these macros. Only one should be defined!!!

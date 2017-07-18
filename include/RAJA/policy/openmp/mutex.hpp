@@ -1,17 +1,19 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Implementation file for routines used to manage
- *          memory for CUDA reductions and other operations.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing RAJA scan declarations.
+*
+******************************************************************************
+*/
+
+#ifndef RAJA_scan_openmp_HPP
+#define RAJA_scan_openmp_HPP
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,38 +57,85 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-
-#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-
-#include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
 #include <omp.h>
-#endif
 
 namespace RAJA
 {
 
-namespace cuda
+namespace omp
 {
 
-//
-/////////////////////////////////////////////////////////////////////////////
-//
-// Variables representing the state of execution.
-//
-/////////////////////////////////////////////////////////////////////////////
-//
+class mutex {
+public:
+  using native_handle_type = omp_lock_t;
 
-/*!
- * \brief State of the host code.
- */
-cudaInfo g_status;
+  mutex()
+  {
+    omp_init_lock(&m_lock);
+  }
 
-std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
+  mutex( const mutex& ) = delete;
+  mutex( mutex&& ) = delete;
+  mutex& operator=( const mutex& ) = delete;
+  mutex& operator=( mutex&& ) = delete;
 
-}  // closing brace for cuda namespace
+  void lock()
+  {
+    omp_set_lock(&m_lock);
+  }
 
-}  // closing brace for RAJA namespace
+  bool try_lock()
+  {
+    return omp_test_lock(&m_lock) != 0;
+  }
 
-#endif  // if defined(RAJA_ENABLE_CUDA)
+  void unlock()
+  {
+    omp_unset_lock(&m_lock);
+  }
+
+  native_handle_type& native_handle()
+  {
+    return m_lock;
+  }
+
+  ~mutex()
+  {
+    omp_destroy_lock(&m_lock);
+  }
+
+private:
+  native_handle_type m_lock;
+};
+
+template < typename mutex_type >
+class lock_guard {
+public:
+  
+  explicit lock_guard( mutex_type& m )
+    : m_mutex(m)
+  {
+    m_mutex.lock();
+  }
+
+  lock_guard( const lock_guard& ) = delete;
+  lock_guard( lock_guard&& ) = delete;
+  lock_guard& operator=( const lock_guard& ) = delete;
+  lock_guard& operator=( lock_guard&& ) = delete;
+
+  ~lock_guard()
+  {
+    m_mutex.unlock();
+  }
+
+private:
+  mutex_type& m_mutex;
+};
+
+} // namespace omp
+
+}  // namespace RAJA
+
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+
+#endif  // closing endif for header file include guard

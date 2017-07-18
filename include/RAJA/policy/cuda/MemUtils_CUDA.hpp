@@ -64,13 +64,27 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/mutex.hpp"
+#endif
+
 #include <cstddef>
+#include <cstdio>
+#include <cassert>
+#include <unordered_map>
+#include <type_traits>
 
 namespace RAJA
 {
 
 namespace cuda
 {
+
+template <typename T, typename IndexType>
+struct LocType {
+  T val;
+  IndexType idx;
+};
 
 struct pinned_allocator {
 
@@ -135,61 +149,131 @@ using device_mempool_type = basic_mempool::mempool<cuda::device_allocator>;
 using device_zeroed_mempool_type = basic_mempool::mempool<cuda::device_zeroed_allocator>;
 using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
 
-void synchronize();
-void synchronize(cudaStream_t stream);
+struct cudaInfo {
+  dim3         gridDim  = 0;
+  dim3         blockDim = 0;
+  cudaStream_t stream   = 0;
+  omp::mutex   lock;
+  bool         active   = false;
+};
 
-extern thread_local dim3 s_launchGridDim;
-extern thread_local dim3 s_launchBlockDim;
-extern thread_local cudaStream_t s_stream;
+template < typename T >
+class SetterResetter {
+public:
+  SetterResetter(T& val, T new_val)
+    : m_val(val), m_old_val(val)
+  {
+    m_val = new_val;
+  }
+  ~SetterResetter()
+  {
+    m_val = m_old_val;
+  }
+private:
+  T& m_val;
+  T  m_old_val;
+};
+
+extern cudaInfo g_status;
+
+extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
+
+RAJA_INLINE
+void synchronize()
+{
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::lock_guard<omp::mutex> lock(g_status.lock);
+#endif
+  bool synchronize = false;
+  for (auto& val : g_stream_info_map) {
+    if (!val.second) {
+      synchronize = true;
+      val.second = true;
+    }
+  }
+  if (synchronize) {
+    fprintf(stderr, "cuda::synchronize:\n");
+    cudaErrchk(cudaDeviceSynchronize());
+  }
+}
+
+RAJA_INLINE
+void synchronize(cudaStream_t stream)
+{
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::lock_guard<omp::mutex> lock(g_status.lock);
+#endif
+  auto iter = g_stream_info_map.find(stream);
+  if (iter != g_stream_info_map.end() ) {
+    if (!iter->second) {
+      iter->second = true;
+      fprintf(stderr, "cuda::synchronize: %p\n", (void*)stream);
+      cudaErrchk(cudaStreamSynchronize(stream));
+    }
+  } else {
+    fprintf(stderr, "Cannot synchronize unknown stream.\n");
+    std::abort();
+  }
+}
+
+RAJA_INLINE
+void launch(cudaStream_t stream)
+{
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::lock_guard<omp::mutex> lock(g_status.lock);
+#endif
+  auto iter = g_stream_info_map.find(stream);
+  if (iter != g_stream_info_map.end()) {
+    fprintf(stderr, "cuda::launch: %p  %s\n", (void*)stream, iter->second ? "sync" : "async");
+    iter->second = false;
+  } else {
+    fprintf(stderr, "cuda::launch: %p  %s\n", (void*)stream, "new stream");
+    g_stream_info_map.emplace(stream, false);
+  }
+}
+
+// unthread-safe calls
+
+RAJA_INLINE
+bool currentlyActive()
+{
+  return g_status.active;
+}
 
 RAJA_INLINE
 dim3 currentGridDim()
 {
-  return s_launchGridDim;
+  return g_status.gridDim;
 }
 
 RAJA_INLINE
 dim3 currentBlockDim()
 {
-  return s_launchBlockDim;
+  return g_status.blockDim;
 }
 
 RAJA_INLINE
 cudaStream_t currentStream()
 {
-  return s_stream;
+  return g_status.stream;
 }
 
-template <typename T, typename IndexType>
-struct LocType {
-  T val;
-  IndexType idx;
-};
-
-void beforeKernelLaunch(dim3 launchGridDim, dim3 launchBlockDim, cudaStream_t stream);
-void afterKernelLaunch(bool Async);
-
-void* getReductionMemBlockPoolInternal(size_t len, size_t size, size_t alignment = alignof(std::max_align_t));
-void releaseReductionMemBlockPoolInternal(void* device_memblock);
-
-template <typename T>
-T* getReductionMemBlockPool()
+template < typename LOOP_BODY >
+RAJA_INLINE
+typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
+  dim3 gridDim, dim3 blockDim, size_t dynamic_smem, cudaStream_t stream,
+  LOOP_BODY&& loop_body)
 {
-  dim3 gridDim = currentGridDim();
-  size_t len = gridDim.x * gridDim.y * gridDim.z;
-  return (T*)getReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
-}
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::lock_guard<omp::mutex> lock(g_status.lock);
+#endif
+  SetterResetter<bool> active_srer(g_status.active, true);
 
-template <typename T>
-T* getReductionMemBlockPool(size_t len)
-{
-  return (T*)getReductionMemBlockPoolInternal(len, sizeof(T), alignof(T));
-}
+  g_status.stream   = stream;
+  g_status.gridDim  = gridDim;
+  g_status.blockDim = blockDim;
 
-template <typename T>
-void releaseReductionMemBlockPool(T *device_memblock)
-{
-  releaseReductionMemBlockPoolInternal((void*)device_memblock);
+  return {loop_body};
 }
 
 } // end namespace cuda

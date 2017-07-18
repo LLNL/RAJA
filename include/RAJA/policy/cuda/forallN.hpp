@@ -220,17 +220,28 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
 
   template <typename BODY, typename... CARGS>
   RAJA_INLINE void callLauncher(CudaDim const &dims,
-                                BODY body,
+                                BODY loop_body,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      cuda::beforeKernelLaunch(dims.num_blocks, dims.num_threads, 0);
+      bool Async = false;
+      cudaStream_t stream = 0;
 
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(
-          dims.num_blocks, dims.num_threads, 0)>>>(body, cargs...);
+#pragma omp critical
+      {
+      auto body = RAJA::cuda::createLaunchBody(
+          dims.num_blocks, dims.num_threads, 0, stream, loop_body);
 
-      cuda::afterKernelLaunch(true);
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          std::move(body), cargs...);
+      cudaErrchk(cudaPeekAtLastError());
+
+      cuda::launch(stream);
+      if (!Async) cuda::synchronize(stream);
+      fflush(stderr);
+      fflush(stdout);
+      }
     }
   }
 };
@@ -245,19 +256,30 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   }
 
   template <typename BODY>
-  RAJA_INLINE void operator()(BODY body) const
+  RAJA_INLINE void operator()(BODY loop_body) const
   {
     CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
 
-      cuda::beforeKernelLaunch(dims.num_blocks, dims.num_threads, 0);
-      
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(
-          dims.num_blocks, dims.num_threads, 0)>>>(body, c0);
+      bool Async = false;
+      cudaStream_t stream = 0;
 
-      cuda::afterKernelLaunch(true);
+#pragma omp critical
+      {
+      auto body = RAJA::cuda::createLaunchBody(
+          dims.num_blocks, dims.num_threads, 0, stream, loop_body);
+
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          std::move(body), c0);
+      cudaErrchk(cudaPeekAtLastError());
+
+      cuda::launch(stream);
+      if (!Async) cuda::synchronize(stream);
+      fflush(stderr);
+      fflush(stdout);
+      }
     }
   }
 };

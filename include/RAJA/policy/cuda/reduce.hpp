@@ -67,14 +67,19 @@
 #include "RAJA/pattern/reduce.hpp"
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+
 #include "RAJA/policy/cuda/policy.hpp"
+
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <cuda.h>
 
 #if defined(RAJA_ENABLE_OPENMP)
-#include <omp.h>
+#include "RAJA/policy/openmp/mutex.hpp"
 #endif
+
+#include <cstdio>
+#include <cstdlib>
 
 namespace RAJA
 {
@@ -127,9 +132,8 @@ struct atomic_operators<max<T>>
   }
 };
 
-} // end namespace reduce
+} // namespace reduce
 
-// internal namespace to encapsulate helper functions
 namespace internal
 {
 /*!
@@ -177,7 +181,7 @@ T shfl(T var, int srcLane)
 }
 
 
-}  // end internal namespace for internal functions
+}  // namespace internal
 
 template <typename T>
 class PinnedTally
@@ -287,10 +291,18 @@ public:
   PinnedTally()
     : stream_list(nullptr)
   {
-
+      fprintf(stderr, "PinnedTally constructor: %p\n", this);
   }
   
   PinnedTally(const PinnedTally&) = delete;
+
+
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::mutex& mutex()
+  {
+    return m_mutex;
+  }
+#endif
   
   StreamIterator streamBegin()
   {
@@ -314,6 +326,9 @@ public:
 
   T* new_value(cudaStream_t stream)
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(mutex());
+#endif
     StreamNode* sn = stream_list;
     while(sn) {
       if (sn->stream == stream) break;
@@ -329,20 +344,22 @@ public:
     Node* n = cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
     n->next = sn->node_list;
     sn->node_list = n;
+      fprintf(stderr, "PinnedTally new_value: %p  %p  %p  %p\n", this, (void*)stream, &n->value, n->next ? &n->next->value : nullptr);
     return &n->value;
   }
 
   void free_list()
   {
     while (stream_list) {
-      StreamNode* s = stream_list;
-      while (s->node_list) {
-        Node* n = s->node_list;
-        s->node_list = n->next;
+      StreamNode* sn = stream_list;
+      while (sn->node_list) {
+        Node* n = sn->node_list;
+        sn->node_list = n->next;
+        fprintf(stderr, "PinnedTally free_list: %p  %p  %p\n", this, (void*)sn->stream, &n->value);
         cuda::pinned_mempool_type::getInstance().free(n);
       }
-      stream_list = s->next;
-      free(s);
+      stream_list = sn->next;
+      free(sn);
     }
   }
 
@@ -353,6 +370,10 @@ public:
 
 private:
   StreamNode* stream_list;
+
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::mutex m_mutex;
+#endif
 };
 
 //
@@ -421,7 +442,7 @@ struct Reduce_Data {
   }
   
   RAJA_INLINE
-  void clear()
+  void destroy()
   {
     delete tally.list; tally.list = nullptr;
   }
@@ -430,21 +451,26 @@ struct Reduce_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getReductionMemBlockPool<T>();
-    if (device_ptr) {
-      device = device_ptr;
+    bool act = !device && currentlyActive();
+    if (act) {
+      dim3 gridDim = currentGridDim();
+      size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
+      device = device_mempool_type::getInstance().malloc<T>(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
+      unsigned int dev_c = -1;
+      cudaMemcpy(&dev_c, device_count, sizeof(unsigned int), cudaMemcpyDefault);
+      fprintf(stderr, "PinnedTally setupForDevice: %p  %u\n", tally.val_ptr, dev_c);
     }
-    return device_ptr != nullptr;
+    return act;
   }
 
   RAJA_INLINE
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseReductionMemBlockPool(device);  device = nullptr;
+      device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -519,7 +545,7 @@ struct ReduceAtomic_Data {
   }
   
   RAJA_INLINE
-  void clear()
+  void destroy()
   {
     delete tally.list; tally.list = nullptr;
   }
@@ -528,21 +554,21 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getReductionMemBlockPool<T>(1);
-    if (device_ptr) {
-      device = device_ptr;
+    bool act = !device && currentlyActive();
+    if (act) {
+      device = device_mempool_type::getInstance().malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
-    return device_ptr != nullptr;
+    return act;
   }
 
   RAJA_INLINE
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseReductionMemBlockPool(device);  device = nullptr;
+      device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -622,7 +648,7 @@ struct ReduceLoc_Data {
   }
   
   RAJA_INLINE
-  void clear()
+  void destroy()
   {
     delete tally.list; tally.list = nullptr;
   }
@@ -631,23 +657,25 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    T* device_ptr = getReductionMemBlockPool<T>();
-    if (device_ptr) {
-      device = device_ptr;
-      deviceLoc = getReductionMemBlockPool<IndexType>();;
+    bool act = !device && currentlyActive();
+    if (act) {
+      dim3 gridDim = currentGridDim();
+      size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
+      device = device_mempool_type::getInstance().malloc<T>(numBlocks);
+      deviceLoc = device_mempool_type::getInstance().malloc<IndexType>(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
       tally.val_ptr = tally.list->new_value(currentStream());
       own_device_ptr = true;
     }
-    return device_ptr != nullptr;
+    return act;
   }
 
   RAJA_INLINE
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      releaseReductionMemBlockPool(device);  device = nullptr;
-      releaseReductionMemBlockPool(deviceLoc);  deviceLoc = nullptr;
+      device_mempool_type::getInstance().free(device);  device = nullptr;
+      device_mempool_type::getInstance().free(deviceLoc);  deviceLoc = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       tally.val_ptr = nullptr;
       own_device_ptr = false;
@@ -717,19 +745,13 @@ struct CudaReduce {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.clear();
+      val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (CudaReduce)
-      {
+      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
-        parent->reduce(val.value);
-#if defined(RAJA_ENABLE_OPENMP)
-      }
-#endif
+      parent->reduce(val.value);
     } else {
-      // currently avoiding double free by knowing only
-      // one copy with parent == nullptr will be created
       val.teardownForDevice(info);
     }
 #else
@@ -772,6 +794,7 @@ struct CudaReduce {
 
         // one thread updates tally
         if (threadId == 0) {
+          printf("Reducer tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = temp;
         }
       }
@@ -789,6 +812,7 @@ struct CudaReduce {
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
+        fprintf(stderr, "Reducer operator T: %p  %e\n", &(*n), *n);
         Reducer{}(val.value, *n);
       }
       val.cleanup(info);
@@ -950,19 +974,13 @@ struct CudaReduceAtomic {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.clear();
+      val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (CudaReduceAtomic)
-      {
+      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
-        parent->reduce(val.value);
-#if defined(RAJA_ENABLE_OPENMP)
-      }
-#endif
+      parent->reduce(val.value);
     } else {
-      // currently avoiding double free by knowing only
-      // one copy with parent == nullptr will be created
       val.teardownForDevice(info);
     }
 #else
@@ -983,6 +1001,7 @@ struct CudaReduceAtomic {
         __threadfence();
         unsigned int old_val = atomicInc(val.device_count, 1u + numBlocks);
         if (old_val == 1u + numBlocks) {
+          printf("Reducer atomic tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = val.device[0];
         }
       }
@@ -1144,19 +1163,13 @@ struct CudaReduceLoc {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.clear();
+      val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-#pragma omp critical (CudaReduceLoc)
-      {
+      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
-        parent->reduce(val.value, val.index);
-#if defined(RAJA_ENABLE_OPENMP)
-      }
-#endif
+      parent->reduce(val.value, val.index);
     } else {
-      // currently avoiding double free by knowing only
-      // one copy with parent == nullptr will be created
       val.teardownForDevice(info);
     }
 #else
@@ -1202,6 +1215,7 @@ struct CudaReduceLoc {
 
         // one thread updates tally
         if (threadId == 0) {
+          printf("Reducer atomic tally write: %p  %e  %p  %p\n", val.tally.val_ptr, temp, val.device, val.device_count);
           val.tally.val_ptr[0] = temp;
         }
       }

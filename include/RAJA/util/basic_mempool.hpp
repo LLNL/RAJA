@@ -55,6 +55,10 @@
 
 #include "RAJA/util/align.hpp"
 
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/mutex.hpp"
+#endif
+
 #include <cassert>
 #include <list>
 #include <map>
@@ -287,6 +291,10 @@ public:
 
   void free_chunks()
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(m_mutex);
+#endif
+
     while (!m_arenas.empty()) {
       void *allocation_ptr = m_arenas.front().get_allocation();
       m_alloc.free(allocation_ptr);
@@ -296,11 +304,19 @@ public:
 
   size_t arena_size()
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(m_mutex);
+#endif
+
     return m_default_arena_size;
   }
 
   size_t arena_size(size_t new_size)
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(m_mutex);
+#endif
+
     size_t prev_size = m_default_arena_size;
     m_default_arena_size = new_size;
     return prev_size;
@@ -309,6 +325,10 @@ public:
   template <typename T>
   T* malloc(size_t nTs, size_t alignment = alignof(T))
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(m_mutex);
+#endif
+
     const size_t size = nTs*sizeof(T);
     void* ptr = nullptr;
     arena_container_type::iterator end = m_arenas.end();
@@ -333,6 +353,10 @@ public:
 
   void free(const void* cptr)
   {
+#if defined(RAJA_ENABLE_OPENMP)
+    omp::lock_guard<omp::mutex> lock(m_mutex);
+#endif
+
     void* ptr = const_cast<void*>(cptr);
     arena_container_type::iterator end = m_arenas.end();
     for (arena_container_type::iterator iter = m_arenas.begin(); iter != end; ++iter ) {
@@ -348,6 +372,10 @@ public:
 
 private:
   using arena_container_type = std::list<detail::memory_arena>;
+
+#if defined(RAJA_ENABLE_OPENMP)
+  omp::mutex m_mutex;
+#endif
 
   arena_container_type m_arenas;
   size_t m_default_arena_size;
