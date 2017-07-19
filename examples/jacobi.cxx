@@ -218,11 +218,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   cudaMemcpy(d_Iold,Iold,sizeof(double)*NN,cudaMemcpyHostToDevice);
   
   while(resI2 > tol*tol){
-    
-    if(iteration==0){
-      std::cout<<"Entered the for looop"<<std::endl;
-    }
-    
+        
     RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<16>,
     RAJA::cuda_threadblock_x_exec<16>>>>(
     RAJA::RangeSegment(1, (N+1)), RAJA::RangeSegment(1, (N+1)), [=] __device__ (int m, int n) {
