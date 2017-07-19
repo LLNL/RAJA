@@ -47,67 +47,44 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-//Stencil Radius
-#define sr 1
+#define sr 2 //Stencil Radius
 #define PI 3.14159265359
 
-#if 0
-for(int r = -sr; r<=sr; ++r){
-  const int x   = (tx + r)%nx; 
-  const int id0 = x + ty*nx; 
-  lap += ct*coeff[sr+r]*P2[id0]; 
-  
-  const int y   = (ty + r)%nx; 
-  const int id1 = tx + y*nx; 
-  lap += ct*coeff[sr+r]*P2[id1];
- }
-#endif
-
 double wave_sol(double t, double x, double y){
-  return cos(2*M_PI*t)*sin(2*M_PI*x)*sin(2*M_PI*y);
+  return cos(2.*PI*t)*sin(2.*PI*x)*sin(2.*PI*y);
 }
 
 //P_3 = 2*P2 - P1 + laplace(P2)
 
 //Assume periodic boundary conditions
-void cpp_solver(double *P1, double *P2, int nx, int ny,double dt,double dx,double cc){
+//void cpp_solver(double *P1, double *P2, int nx, int ny,double dt,double dx,double cc){
+void cpp_solver(double *P1, double *P2, int nx, double ct){
   
-  //double coeff[3] = {-5.0/2.0,4.0/3.0,-1.0/12.0};
-  //double coeff[3] = {1,-2,1};
-
-  double ct = (cc*dt*dt)/(dx*dx);
-
+  //double coeff[3] = {1.0,-2.0,1.0}; //second order scheme
+  double coeff[5] = {-1.0/12.0,4.0/3.0,-5.0/2.0,4.0/3.0,-1.0/12.0}; //fourth order scheme
+  
   // loop over points
-  for(int ty=0; ty<ny; ++ty){
+  for(int ty=0; ty<nx; ++ty){
     for(int tx=0; tx<nx; ++tx){
 
       const int id = tx + ty*nx;
       double P_old  = P1[id]; 
       double P_curr = P2[id]; 
       
-      //Compute Stencil
+      //Compute laplacian
       double lap = 0.0;
 
-      //lap = ct*(P2[id-1] - 2*P2[id] + P2[id+1] + P2[id+nx] - 2*P2[id] + P2[id-nx]); 
-      //lap += ct*(P2[id-1] + P2[id+1] + P2[id+nx] + P2[id-nx]);  
-#if 0      
-      int left  = ((tx-1) + ty*nx)%(nx*ny);
-      int right = ((tx+1) + ty*nx)%(nx*ny);
-      int up    = ((tx)   + (ty+1)*nx)%(nx*ny);
-      int down  = ((tx)   + (ty-1)*nx)%(nx*ny);
-#endif
+      for(int r=-sr; r<=sr; ++r){
+        const int xi  = (tx+r+nx)%nx;
+        const int idx = xi + nx*ty;
+        lap += coeff[r+sr]*P2[idx]; 
 
-      int left  = ( (tx-1)%nx) + ty*nx;
-      int right = ( (tx+1+nx)%nx) + ty*nx;
-      int up    = tx + ( (ty+1)%ny )*nx;
-      int down  = tx + ( (ty-1+nx)%ny )*nx;
+        const int yi  = (ty+r+nx)%nx;
+        const int idy = tx + nx*yi;
+        lap += coeff[r+sr]*P2[idy];
+      }
 
-
-
-      lap = ct*(P2[left] -2*P2[id] + P2[right] + P2[up] -2*P2[id] + P2[down]);            
-      
-      P1[id] = 2*P_curr - P_old + lap; 
-
+      P1[id] = 2*P_curr - P_old + ct*lap;
     }
   }
  
@@ -120,7 +97,7 @@ void cpp_solver(double *P1, double *P2, int nx, int ny,double dt,double dx,doubl
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  double factor = 80;
+  double factor = 8.0;
   
   //Wave speed
   double cc = 1./2.0;
@@ -129,18 +106,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double xo = -1; 
   double dx = 0.1250/factor;
   int nx    = 16*factor;
-  int nt    = 10;
-
+  double T     = 0.82;
   int entries = nx*nx;
 
   //Storage for Approximated Solution
   double *P1 = new double[entries];
   double *P2 = new double[entries];
 
-  //Storage for Analytic Solution
   
   //Time Stepping details
-  double dt = 0.01*(dx/sqrt(cc)); 
+  double dt, nt;
+  dt = 0.01*(dx/sqrt(cc));
+  nt = ceil(T/dt);
+  dt = T/nt;
+  std::cout<<"nt: "<<nt<<std::endl;
 
   //poulate field
   int iter=0; 
@@ -151,8 +130,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       double x = xo + tx*dx;
       double y = xo + ty*dx;
       
-      P1[iter] = wave_sol(0,x,y);
-      P2[iter] = wave_sol(dt,x,y);
+      P1[iter] = wave_sol(-dt,x,y);
+      P2[iter] = wave_sol(0,x,y);
       iter++;
     }
   }
@@ -160,11 +139,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //Evolve the solution
   double time = 0; 
+  double ct = (cc*dt*dt)/(dx*dx);
+
   for(int k=0; k<nt; ++k){
-
-    cpp_solver(P1,P2,nx,nx,dt,dx,cc);
-    time += 2*dt; 
-
+    cpp_solver(P1,P2,nx,ct);
+    time += dt; 
+    
     double *Temp = P2;
     P2 = P1; 
     P1 = Temp;
@@ -178,20 +158,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   for(int ty=0; ty<nx; ty++){
     for(int tx=0; tx<nx; tx++){
       
-      int id = tx + nx*ty;      
+      int id   = tx + nx*ty;
       double x = xo + tx*dx;
       double y = xo + ty*dx;
-      
-      double myErr = abs(P1[id] - wave_sol(time,x,y));
+            
+      double myErr = fabs(P2[id] - wave_sol(time,x,y));
       if(myErr > err) err = myErr; 
     }
   }
 
-  std::cout<<"Err: "<<err<<" hx:"<<dx<<std::endl;
-
-  
- 
-
+  std::cout<<"Err: "<<err<<" hx:"<<dx<<std::endl;  
   delete[] P1, P2; 
 
 
