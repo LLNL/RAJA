@@ -3,19 +3,14 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for Intel CilkPlus execution.
- *
- *          These methods work only on platforms that support Cilk Plus.
+ * \brief   Header file for RAJA span constructs.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_cilk_HPP
-#define RAJA_cilk_HPP
 
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CILK)
+#ifndef RAJA_SPAN_HPP
+#define RAJA_SPAN_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,11 +54,36 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <type_traits>
+#include "RAJA/internal/type_traits.hpp"
 
-#include "RAJA/policy/cilk/forall.hpp"
-#include "RAJA/policy/cilk/policy.hpp"
-#include "RAJA/policy/cilk/reduce.hpp"
+namespace RAJA
+{
+namespace impl
+{
 
-#endif  // closing endif for if defined(RAJA_ENABLE_CILK)
+template <typename ValueType, typename IndexType>
+struct Span {
+  using value_type = ValueType;
+  using index_type = IndexType;
 
-#endif  // closing endif for header file include guard
+  static_assert(std::is_integral<IndexType>::value,
+                "IndexType must model Integral");
+  static_assert(RAJA::detail::is_random_access_iterator<ValueType>::value,
+                "ValueType must model RandomAccessIterator");
+
+  ValueType begin() { return iterator; }
+  ValueType end() { return std::advance(iterator, length); }
+
+  ValueType data() { return iterator; }
+  IndexType size() { return length; }
+
+private:
+  ValueType iterator;
+  IndexType length;
+};
+
+}  // end namespace impl
+}  // end namespace RAJA
+
+#endif /* RAJA_SPAN_HPP */

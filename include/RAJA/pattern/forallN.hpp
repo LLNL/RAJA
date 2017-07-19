@@ -62,33 +62,12 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_CHAI)
+#include "RAJA/util/chai_support.hpp"
+#endif
+
 namespace RAJA
 {
-
-/*!
- * \brief Struct used to define forallN nested policies.
- *
- *  Typically, passed as first template argument to forallN templates.
- */
-template <typename EXEC, typename NEXT = Execute>
-struct NestedPolicy {
-  typedef NEXT NextPolicy;
-  typedef EXEC ExecPolicies;
-};
-
-/*!
- * \brief Struct that contains a policy for each loop nest in a forallN
- *        construct.
- *
- *  Typically, passed as first template argument to NestedPolicy template,
- *  followed by permutation, etc.
- */
-template <typename... PLIST>
-struct ExecList {
-  constexpr const static size_t num_loops = sizeof...(PLIST);
-  typedef std::tuple<PLIST...> tuple;
-};
-
 
 /******************************************************************
  *  ForallN_Executor(): Default Executor for loops
@@ -185,6 +164,9 @@ struct ForallN_IndexTypeConverter {
   RAJA_HOST_DEVICE
   constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
+  RAJA_HOST_DEVICE
+  ~ForallN_IndexTypeConverter() {}
+
   // call 'policy' layer with next policy
   RAJA_SUPPRESS_HD_WARN
   template <typename... ARGS>
@@ -278,10 +260,19 @@ RAJA_INLINE void forallN(Ts &&... args)
   beforeCudaKernelLaunch();
 #endif
 
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  rm->setExecutionSpace(detail::get_space<POLICY>::value);
+#endif
+
   fun_unpacker<POLICY, Indices...>(
       VarOps::index_sequence<sizeof...(args) - 1>{},
       VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
 
 #ifdef RAJA_ENABLE_CUDA
   afterCudaKernelLaunch();

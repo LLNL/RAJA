@@ -82,6 +82,14 @@ endif()
 
 
 if (RAJA_ENABLE_TESTS)
+
+#
+# This conditional prevents build problems resulting from BLT and
+# RAJA each having their own copy of googletest.
+#
+if (RAJA_BUILD_WITH_BLT)
+else()
+
   include(ExternalProject)
   # Set default ExternalProject root directory
   SET_DIRECTORY_PROPERTIES(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/tpl)
@@ -129,7 +137,17 @@ if (RAJA_ENABLE_TESTS)
   enable_testing()
 endif ()
 
+endif ()
+
 if (RAJA_ENABLE_DOCUMENTATION)
   find_package(Sphinx)
   find_package(Doxygen)
 endif ()
+
+if (RAJA_ENABLE_CHAI)
+  message(STATUS "CHAI enabled")
+
+  find_package(chai)
+
+  include_directories(${CHAI_INCLUDE_DIRS})
+endif()
