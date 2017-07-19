@@ -115,7 +115,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par(stream), begin, end, begin, binary_op);
+  ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, begin, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -154,7 +154,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
   ::thrust::exclusive_scan(
-      ::thrust::cuda::par(stream), begin, end, begin, init, binary_op);
+      ::thrust::cuda::par.on(stream), begin, end, begin, init, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -192,7 +192,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par(stream), begin, end, out, binary_op);
+  ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -232,7 +232,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Free temporary storage
   cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
 #else
-  ::thrust::exclusive_scan(::thrust::cuda::par(stream), begin, end, out, init, binary_op);
+  ::thrust::exclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, init, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
