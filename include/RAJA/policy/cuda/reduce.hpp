@@ -145,7 +145,7 @@ namespace internal
  */
 template <typename T>
 RAJA_DEVICE RAJA_INLINE
-T shfl_xor(T var, int laneMask)
+T shfl_xor_sync(T var, int laneMask)
 {
   const int int_sizeof_T = (sizeof(T) + sizeof(int) - 1) / sizeof(int);
   union {
@@ -155,14 +155,18 @@ T shfl_xor(T var, int laneMask)
   Tunion.var = var;
 
   for (int i = 0; i < int_sizeof_T; ++i) {
+#if (__CUDACC_VER_MAJOR__ >= 9)
+    Tunion.arr[i] = ::__shfl_xor_sync(Tunion.arr[i], laneMask);
+#else
     Tunion.arr[i] = ::__shfl_xor(Tunion.arr[i], laneMask);
+#endif
   }
   return Tunion.var;
 }
 
 template <typename T>
 RAJA_DEVICE RAJA_INLINE
-T shfl(T var, int srcLane)
+T shfl_sync(T var, int srcLane)
 {
   const int int_sizeof_T = (sizeof(T) + sizeof(int) - 1) / sizeof(int);
   union {
@@ -172,7 +176,11 @@ T shfl(T var, int srcLane)
   Tunion.var = var;
 
   for (int i = 0; i < int_sizeof_T; ++i) {
+#if (__CUDACC_VER_MAJOR__ >= 9)
+    Tunion.arr[i] = ::__shfl_sync(Tunion.arr[i], srcLane);
+#else
     Tunion.arr[i] = ::__shfl(Tunion.arr[i], srcLane);
+#endif
   }
   return Tunion.var;
 }
@@ -858,7 +866,7 @@ private:
 
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs = internal::shfl_xor<T>(temp, i);
+        T rhs = internal::shfl_xor_sync<T>(temp, i);
         Reducer{}(temp, rhs);
       }
 
@@ -867,7 +875,7 @@ private:
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
         int srcLane = threadId ^ i;
-        T rhs = internal::shfl<T>(temp, srcLane);
+        T rhs = internal::shfl_sync<T>(temp, srcLane);
         // only add from threads that exist (don't double count own value)
         if (srcLane < numThreads) {
           Reducer{}(temp, rhs);
@@ -898,7 +906,7 @@ private:
         }
 
         for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs = internal::shfl_xor<T>(temp, i);
+          T rhs = internal::shfl_xor_sync<T>(temp, i);
           Reducer{}(temp, rhs);
         }
       }
@@ -1063,7 +1071,7 @@ private:
 
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs = internal::shfl_xor<T>(temp, i);
+        T rhs = internal::shfl_xor_sync<T>(temp, i);
         Reducer{}(temp, rhs);
       }
 
@@ -1072,7 +1080,7 @@ private:
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
         int srcLane = threadId ^ i;
-        T rhs = internal::shfl<T>(temp, srcLane);
+        T rhs = internal::shfl_sync<T>(temp, srcLane);
         // only add from threads that exist (don't double count own value)
         if (srcLane < numThreads) {
           Reducer{}(temp, rhs);
@@ -1103,7 +1111,7 @@ private:
         }
 
         for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs = internal::shfl_xor<T>(temp, i);
+          T rhs = internal::shfl_xor_sync<T>(temp, i);
           Reducer{}(temp, rhs);
         }
       }
@@ -1286,8 +1294,8 @@ private:
 
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs_val = internal::shfl_xor<T>(temp.val, i);
-        IndexType rhs_idx = internal::shfl_xor<T>(temp.idx, i);
+        T rhs_val = internal::shfl_xor_sync<T>(temp.val, i);
+        IndexType rhs_idx = internal::shfl_xor_sync<T>(temp.idx, i);
         Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
       }
 
@@ -1296,8 +1304,8 @@ private:
       // reduce each warp
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
         int srcLane = threadId ^ i;
-        T rhs_val = internal::shfl<T>(temp.val, srcLane);
-        IndexType rhs_idx = internal::shfl<T>(temp.idx, srcLane);
+        T rhs_val = internal::shfl_sync<T>(temp.val, srcLane);
+        IndexType rhs_idx = internal::shfl_sync<T>(temp.idx, srcLane);
         // only add from threads that exist (don't double count own value)
         if (srcLane < numThreads) {
           Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
@@ -1332,8 +1340,8 @@ private:
         }
 
         for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs_val = internal::shfl_xor<T>(temp.val, i);
-          IndexType rhs_idx = internal::shfl_xor<T>(temp.idx, i);
+          T rhs_val = internal::shfl_xor_sync<T>(temp.val, i);
+          IndexType rhs_idx = internal::shfl_xor_sync<T>(temp.idx, i);
           Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
         }
       }
