@@ -69,6 +69,7 @@ namespace RAJA
 namespace reduce
 {
 
+
 #ifdef RAJA_ENABLE_TARGET_OPENMP
 #pragma omp declare target
 #endif
@@ -130,7 +131,7 @@ struct maxloc {
 #pragma omp end declare target
 #endif
 
-}
+} // namespace reduce
 
 ///
 /// Macros for type agnostic reduction operations.

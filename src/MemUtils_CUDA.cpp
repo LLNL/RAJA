@@ -60,10 +60,6 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include <omp.h>
-#endif
-
 namespace RAJA
 {
 
@@ -78,11 +74,10 @@ namespace cuda
 /////////////////////////////////////////////////////////////////////////////
 //
 
-/*!
- * \brief State of the host code.
- */
+//! State of the host code
 cudaInfo g_status;
 
+//! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
 
 }  // closing brace for cuda namespace

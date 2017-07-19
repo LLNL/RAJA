@@ -3,17 +3,15 @@
 *
 * \file
 *
-* \brief   Header file providing RAJA scan declarations.
+* \brief   Header file providing functionality similar to std mutex header.
 *
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_openmp_HPP
-#define RAJA_scan_openmp_HPP
+#ifndef RAJA_util_mutex_HPP
+#define RAJA_util_mutex_HPP
 
 #include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -57,14 +55,18 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#if defined(RAJA_ENABLE_OPENMP)
 #include <omp.h>
+#endif
 
 namespace RAJA
 {
 
+#if defined(RAJA_ENABLE_OPENMP)
 namespace omp
 {
 
+//! class wrapping omp_lock_t with std::mutex interface
 class mutex {
 public:
   using native_handle_type = omp_lock_t;
@@ -108,6 +110,10 @@ private:
   native_handle_type m_lock;
 };
 
+} // namespace omp
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+
+//! class providing functionality of std::lock_guard
 template < typename mutex_type >
 class lock_guard {
 public:
@@ -132,10 +138,6 @@ private:
   mutex_type& m_mutex;
 };
 
-} // namespace omp
-
 }  // namespace RAJA
-
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

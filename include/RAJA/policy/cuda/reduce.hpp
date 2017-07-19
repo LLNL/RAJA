@@ -74,9 +74,7 @@
 
 #include <cuda.h>
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/mutex.hpp"
-#endif
+#include "RAJA/util/mutex.hpp"
 
 namespace RAJA
 {
@@ -84,50 +82,43 @@ namespace RAJA
 namespace reduce
 {
 
-template <typename T>
-struct atomic_operators;
+namespace cuda
+{
+//! atomic operator version of Reducer object
+template <typename Reducer>
+struct atomic;
 
 template <typename T>
-struct atomic_operators<sum<T>>
+struct atomic<sum<T>>
 {
-  RAJA_HOST_DEVICE RAJA_INLINE
+  RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-#ifdef __CUDA_ARCH__
     RAJA::_atomicAdd(&val, v);
-#else
-    val += v;
-#endif
   }
 };
 
 template <typename T>
-struct atomic_operators<min<T>>
+struct atomic<min<T>>
 {
-  RAJA_HOST_DEVICE RAJA_INLINE
+  RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-#ifdef __CUDA_ARCH__
     RAJA::_atomicMin(&val, v);
-#else
-    if (v < val) val = v;
-#endif
   }
 };
 
 template <typename T>
-struct atomic_operators<max<T>>
+struct atomic<max<T>>
 {
-  RAJA_HOST_DEVICE RAJA_INLINE
+  RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-#ifdef __CUDA_ARCH__
     RAJA::_atomicMax(&val, v);
-#else
-    if (v > val) val = v;
-#endif
   }
 };
+
+} // namespace cuda
 
 } // namespace reduce
 
@@ -243,6 +234,14 @@ public:
     StreamNode* m_sn;
   };
   
+  /*!
+   ******************************************************************************
+   *
+   * \brief  Class defining a simple semephore-based data structure for
+   *         managing a node in a dependency graph.
+   *
+   ******************************************************************************
+   */
   class StreamNodeIterator {
   public:
     StreamNodeIterator() = delete;
@@ -332,7 +331,7 @@ public:
   T* new_value(cudaStream_t stream)
   {
 #if defined(RAJA_ENABLE_OPENMP)
-    omp::lock_guard<omp::mutex> lock(mutex());
+    lock_guard<omp::mutex> lock(mutex());
 #endif
     StreamNode* sn = stream_list;
     while(sn) {
@@ -454,7 +453,7 @@ struct Reduce_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    bool act = !device && currentlyActive();
+    bool act = !device && setupReducers();
     if (act) {
       dim3 gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
@@ -554,7 +553,7 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    bool act = !device && currentlyActive();
+    bool act = !device && setupReducers();
     if (act) {
       device = device_mempool_type::getInstance().malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
@@ -657,7 +656,7 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    bool act = !device && currentlyActive();
+    bool act = !device && setupReducers();
     if (act) {
       dim3 gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
@@ -748,7 +747,7 @@ struct CudaReduce {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value);
     } else {
@@ -845,10 +844,7 @@ private:
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::Reduce_Data<Async, Reducer, T> val;
 
-  //
-  // Reduces the values in a cuda block into threadId = 0
-  // __syncthreads must be called between succesive calls to this method
-  //
+  //! reduce values in block into thread 0
   RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
@@ -975,7 +971,7 @@ struct CudaReduceAtomic {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value);
     } else {
@@ -995,7 +991,7 @@ struct CudaReduceAtomic {
       if (threadId == 0) {
         while(((volatile unsigned int*)val.device_count)[0] < 2u);
         __threadfence();
-        RAJA::reduce::atomic_operators<Reducer>{}(val.device[0], temp);
+        RAJA::reduce::cuda::atomic<Reducer>{}(val.device[0], temp);
         __threadfence();
         unsigned int old_val = atomicInc(val.device_count, 1u + numBlocks);
         if (old_val == 1u + numBlocks) {
@@ -1050,10 +1046,8 @@ private:
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::ReduceAtomic_Data<Async, Reducer, T> val;
 
-  //
-  // Reduces the values in a cuda block into threadId = 0
-  // __syncthreads must be called between succesive calls to this method
-  //
+  
+  //! reduce values in block into thread 0
   RAJA_DEVICE RAJA_INLINE
   T block_reduce(T val)
   {
@@ -1154,7 +1148,8 @@ struct CudaReduceLoc {
 #endif
   }
 
-  //! apply reduction on device upon destruction
+  //! fold result into parent or cleanup on host if own resources
+  //  apply reduction on device upon destruction
   RAJA_HOST_DEVICE
   ~CudaReduceLoc()
   {
@@ -1163,7 +1158,7 @@ struct CudaReduceLoc {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP)
-      omp::lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value, val.index);
     } else {
@@ -1271,10 +1266,8 @@ private:
   //! storage for reduction data for value and location
   cuda::ReduceLoc_Data<Async, Reducer, T, IndexType> val;
 
-  //
-  // Reduces the values in a cuda block into threadId = 0
-  // __syncthreads must be called between succesive calls to this method
-  //
+  
+  //! reduce values in block into thread 0
   RAJA_DEVICE RAJA_INLINE
   cuda::LocType<T, IndexType> block_reduce(T val, IndexType idx)
   {

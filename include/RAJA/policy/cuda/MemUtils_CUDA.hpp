@@ -64,9 +64,7 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/mutex.hpp"
-#endif
+#include "RAJA/util/mutex.hpp"
 
 #include <cstddef>
 #include <cstdio>
@@ -80,13 +78,15 @@ namespace RAJA
 namespace cuda
 {
 
+//! class used to combine data and location in cuda loc reductions
 template <typename T, typename IndexType>
 struct LocType {
   T val;
   IndexType idx;
 };
 
-struct pinned_allocator {
+//! Allocator for pinned memory for use in basic_mempool
+struct PinnedAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -105,7 +105,8 @@ struct pinned_allocator {
 
 };
 
-struct device_allocator {
+//! Allocator for device memory for use in basic_mempool
+struct DeviceAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -124,8 +125,9 @@ struct device_allocator {
 
 };
 
-
-struct device_zeroed_allocator {
+//! Allocator for pre-zeroed device memory for use in basic_mempool
+//  Note: Memory must be zero when returned to mempool
+struct DeviceZeroedAllocator {
 
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
@@ -145,21 +147,23 @@ struct device_zeroed_allocator {
 
 };
 
-using device_mempool_type = basic_mempool::mempool<cuda::device_allocator>;
-using device_zeroed_mempool_type = basic_mempool::mempool<cuda::device_zeroed_allocator>;
-using pinned_mempool_type = basic_mempool::mempool<cuda::pinned_allocator>;
+using device_mempool_type = basic_mempool::MemPool<cuda::DeviceAllocator>;
+using device_zeroed_mempool_type = basic_mempool::MemPool<cuda::DeviceZeroedAllocator>;
+using pinned_mempool_type = basic_mempool::MemPool<cuda::PinnedAllocator>;
 
+//! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
   dim3         gridDim  = 0;
   dim3         blockDim = 0;
   cudaStream_t stream   = 0;
-  bool         active   = false;
+  bool         setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP)
   cudaInfo*    thread_states = nullptr;
   omp::mutex   lock;
 #endif
 };
 
+//! class that changes a value on construction then resets it at destruction
 template < typename T >
 class SetterResetter {
 public:
@@ -168,6 +172,7 @@ public:
   {
     m_val = new_val;
   }
+  SetterResetter(const SetterResetter&) = delete;
   ~SetterResetter()
   {
     m_val = m_old_val;
@@ -181,11 +186,12 @@ extern cudaInfo g_status;
 
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
+//! Ensure all streams in use are synchronized wrt raja kernel launches
 RAJA_INLINE
 void synchronize()
 {
 #if defined(RAJA_ENABLE_OPENMP)
-  omp::lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(g_status.lock);
 #endif
   bool synchronize = false;
   for (auto& val : g_stream_info_map) {
@@ -199,11 +205,12 @@ void synchronize()
   }
 }
 
+//! Ensure stream is synchronized wrt raja kernel launches
 RAJA_INLINE
 void synchronize(cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP)
-  omp::lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(g_status.lock);
 #endif
   auto iter = g_stream_info_map.find(stream);
   if (iter != g_stream_info_map.end() ) {
@@ -217,11 +224,12 @@ void synchronize(cudaStream_t stream)
   }
 }
 
+//! Indicate stream is asynchronous
 RAJA_INLINE
 void launch(cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP)
-  omp::lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(g_status.lock);
 #endif
   auto iter = g_stream_info_map.find(stream);
   if (iter != g_stream_info_map.end()) {
@@ -231,24 +239,24 @@ void launch(cudaStream_t stream)
   }
 }
 
-// unthread-safe calls
-
+//! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
-bool currentlyActive()
+bool setupReducers()
 {
 #if defined(RAJA_ENABLE_OPENMP)
   {
-    omp::lock_guard<omp::mutex> lock(g_status.lock);
+    lock_guard<omp::mutex> lock(g_status.lock);
     if (!g_status.thread_states) {
       g_status.thread_states = new cudaInfo[omp_get_max_threads()];
     }
   }
-  return g_status.thread_states[omp_get_thread_num()].active;
+  return g_status.thread_states[omp_get_thread_num()].setup_reducers;
 #else
-  return g_status.active;
+  return g_status.setup_reducers;
 #endif
 }
 
+//! get gridDim of current launch
 RAJA_INLINE
 dim3 currentGridDim()
 {
@@ -259,6 +267,7 @@ dim3 currentGridDim()
 #endif
 }
 
+//! get blockDim of current launch
 RAJA_INLINE
 dim3 currentBlockDim()
 {
@@ -269,6 +278,7 @@ dim3 currentBlockDim()
 #endif
 }
 
+//! get stream for current launch
 RAJA_INLINE
 cudaStream_t currentStream()
 {
@@ -279,6 +289,7 @@ cudaStream_t currentStream()
 #endif
 }
 
+//! create copy of loop_body that is setup for device execution
 template < typename LOOP_BODY >
 RAJA_INLINE
 typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
@@ -287,7 +298,7 @@ typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
 {
 #if defined(RAJA_ENABLE_OPENMP)
   {
-    omp::lock_guard<omp::mutex> lock(g_status.lock);
+    lock_guard<omp::mutex> lock(g_status.lock);
     if (!g_status.thread_states) {
       g_status.thread_states = new cudaInfo[omp_get_max_threads()];
     }
@@ -297,7 +308,7 @@ typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
 #else
   cudaInfo& tl_status = g_status;
 #endif
-  SetterResetter<bool> active_srer(tl_status.active, true);
+  SetterResetter<bool> setup_reducers_srer(tl_status.setup_reducers, true);
 
   tl_status.stream   = stream;
   tl_status.gridDim  = gridDim;
