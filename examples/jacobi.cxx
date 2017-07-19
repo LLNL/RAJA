@@ -155,7 +155,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n",iteration);
   //======================================
 
-
+#if defined(RAJA_ENABLE_OPENMP)
   //----[RAJA: Nested OpenMP Policy]---------
   //RAJA does not allow variables to be modified inside the loop
   resI2 = 1; iteration = 0; 
@@ -200,9 +200,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
+#endif
 
 
-
+#if defined(RAJA_ENABLE_CUDA)
   //----[RAJA: Nested CUDA Policy]---------
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
@@ -255,6 +256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("Top right current: %lg \n", d_I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
+#endif
   
   //Clean up
   delete [] I, Iold;
