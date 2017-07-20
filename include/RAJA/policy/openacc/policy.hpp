@@ -66,10 +66,10 @@ struct config : public T... {
 /// Segment execution policies
 ///
 template <typename InnerPolicy, typename Config = acc::config<>>
-struct acc_parallel_exec : public RAJA::wrap<InnerPolicy> {
+struct acc_parallel_exec : public RAJA::wrapper<InnerPolicy> {
 };
 template <typename InnerPolicy, typename Config = acc::config<>>
-struct acc_kernels_exec : public RAJA::wrap<InnerPolicy> {
+struct acc_kernels_exec : public RAJA::wrapper<InnerPolicy> {
 };
 
 template <typename Config = acc::config<>>
