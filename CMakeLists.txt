@@ -47,13 +47,14 @@ project(RAJA LANGUAGES CXX C)
 
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
-set(RAJA_VERSION_MINOR 2)
-set(RAJA_VERSION_PATCHLEVEL 5)
+set(RAJA_VERSION_MINOR 3)
+set(RAJA_VERSION_PATCHLEVEL 0)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
+option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
 option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")

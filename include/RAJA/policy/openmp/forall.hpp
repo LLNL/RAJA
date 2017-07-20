@@ -75,7 +75,6 @@
 
 #include <omp.h>
 
-
 namespace RAJA
 {
 
@@ -299,3 +298,5 @@ RAJA_INLINE void forall(
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
+
+#include "RAJA/policy/openmp/target_forall.hpp"

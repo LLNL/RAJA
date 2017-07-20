@@ -42,5 +42,5 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME example-raja-pi 
+  NAME example-raja-pi
   SOURCES pi.cxx)
