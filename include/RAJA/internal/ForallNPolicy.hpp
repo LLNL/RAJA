@@ -217,6 +217,30 @@ struct ForallN_PeelOuter<1, NextExec, BODY_in> {
   }
 };
 
+/*!
+ * \brief Struct used to define forallN nested policies.
+ *
+ *  Typically, passed as first template argument to forallN templates.
+ */
+template <typename EXEC, typename NEXT = Execute>
+struct NestedPolicy {
+  typedef NEXT NextPolicy;
+  typedef EXEC ExecPolicies;
+};
+
+/*!
+ * \brief Struct that contains a policy for each loop nest in a forallN
+ *        construct.
+ *
+ *  Typically, passed as first template argument to NestedPolicy template,
+ *  followed by permutation, etc.
+ */
+template <typename... PLIST>
+struct ExecList {
+  constexpr const static size_t num_loops = sizeof...(PLIST);
+  typedef std::tuple<PLIST...> tuple;
+};
+
 }  // end of RAJA namespace
 
 #endif

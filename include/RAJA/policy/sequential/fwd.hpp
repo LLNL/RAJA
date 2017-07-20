@@ -57,8 +57,9 @@
 #ifndef RAJA_forward_sequential_HXX
 #define RAJA_forward_sequential_HXX
 
-#include "RAJA/config.hpp"
+#include <type_traits>
 
+#include "RAJA/config.hpp"
 
 #include "RAJA/policy/sequential/policy.hpp"
 
@@ -69,17 +70,17 @@ namespace impl
 {
 
 template <typename Func>
-RAJA_INLINE void forall(const seq_exec &,
+RAJA_INLINE void forall(const seq_exec &, const PolicyBase &,
                         const RangeSegment &iter,
                         Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body);
+RAJA_INLINE void forall(const seq_exec &, const PolicyBase &, Iterable &&iter, Func &&loop_body);
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const seq_exec &,
+  template <typename Iterable, typename IndexType, typename Func>
+  RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type forall_Icount(const seq_exec &, const PolicyBase &,
                                Iterable &&iter,
-                               Index_type icount,
+                               IndexType icount,
                                Func &&loop_body);
 
 }  // closing brace for impl namespace

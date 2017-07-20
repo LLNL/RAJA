@@ -211,6 +211,23 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
   return foldl(adder(), args...);
 }
 
+
+struct maxer {
+  template <typename Result>
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(const Result& l,
+                                                           const Result& r) const
+  {
+    return l > r ? l : r;
+  }
+};
+
+template <typename Result, typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
+{
+  return foldl(maxer(), args...);
+}
+
+
 // template<typename Result, size_t N>
 // struct product_first_n;
 //
@@ -235,7 +252,7 @@ template <size_t... Ints>
 struct integer_sequence {
   using type = integer_sequence;
   static constexpr size_t size = sizeof...(Ints);
-  static constexpr std::array<size_t, sizeof...(Ints)> value{Ints...};
+  static constexpr std::array<size_t, sizeof...(Ints)> value{{Ints...}};
 };
 
 template <template <class...> class Seq, class First, class... Ints>

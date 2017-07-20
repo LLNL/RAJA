@@ -55,9 +55,6 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CILK)
-#include "RAJA/policy/cilk/fwd.hpp"
-#endif
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/fwd.hpp"
 #endif
@@ -75,14 +72,26 @@ class MultiPolicy;
 namespace impl
 {
 
-template <typename... Policies,
+template <typename Iterable,
+          typename Body,
           typename Selector,
-          typename Iterable,
-          typename Body>
+          typename... Policies>
 RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&iter,
-                        Body &&body);
+                        Iterable &&,
+                        Body &&);
 } // end namespace impl
+
+namespace wrap {
+
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
+                        Iterable &&,
+                        Body &&);
+
+}
 
 } // end namespace RAJA
 

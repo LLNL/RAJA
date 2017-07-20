@@ -57,8 +57,9 @@
 #ifndef RAJA_forward_simd_HXX
 #define RAJA_forward_simd_HXX
 
-#include "RAJA/config.hpp"
+#include <type_traits>
 
+#include "RAJA/config.hpp"
 
 #include "RAJA/policy/simd/policy.hpp"
 
@@ -68,26 +69,31 @@ namespace RAJA
 namespace impl
 {
 
+// SIMD forall(ListSegment)
+template <typename LSegment, typename Func>
+RAJA_INLINE
+typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
+forall(const simd_exec &, LSegment &&, Func &&);
+
+// SIMD forall(Iterable)
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body);
+RAJA_INLINE
+typename std::enable_if<!std::is_base_of<ListSegment, Iterable>::value>::type
+forall(const simd_exec &, Iterable &&, Func &&);
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const simd_exec &,
-                               Iterable &&iter,
-                               Index_type icount,
-                               Func &&loop_body);
+// SIMD forall(ListSegment)
+template <typename LSegment, typename IndexType, typename Func>
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value
+                        && std::is_base_of<ListSegment, LSegment>::value>::type
+forall_Icount(const simd_exec &, LSegment &&, IndexType, Func &&);
 
-template <typename LOOP_BODY>
-RAJA_INLINE void forall(simd_exec,
-                        const ListSegment &iseg,
-                        LOOP_BODY loop_body);
-
-template <typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(simd_exec,
-                               const ListSegment &iseg,
-                               Index_type icount,
-                               LOOP_BODY loop_body);
-
+// SIMD forall(Iterable)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
+                                    && !std::is_base_of<ListSegment,
+                                                       Iterable>::value>::type
+forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
 
 }  // closing brace for impl namespace
 

@@ -3,13 +3,14 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA Cilk policy definitions.
+ * \brief   Header file for RAJA span constructs.
  *
  ******************************************************************************
  */
 
-#ifndef policy_cilk_HPP
-#define policy_cilk_HPP
+
+#ifndef RAJA_SPAN_HPP
+#define RAJA_SPAN_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,43 +54,36 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/PolicyBase.hpp"
+#include <type_traits>
+#include "RAJA/internal/type_traits.hpp"
 
 namespace RAJA
 {
+namespace impl
+{
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+template <typename ValueType, typename IndexType>
+struct Span {
+  using value_type = ValueType;
+  using index_type = IndexType;
 
-///
-/// Segment execution policies
-///
-struct cilk_for_exec : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
-                                                        RAJA::Pattern::forall> {
+  static_assert(std::is_integral<IndexType>::value,
+                "IndexType must model Integral");
+  static_assert(RAJA::detail::is_random_access_iterator<ValueType>::value,
+                "ValueType must model RandomAccessIterator");
+
+  ValueType begin() { return iterator; }
+  ValueType end() { return std::advance(iterator, length); }
+
+  ValueType data() { return iterator; }
+  IndexType size() { return length; }
+
+private:
+  ValueType iterator;
+  IndexType length;
 };
 
-///
-/// Index set segment iteration policies
-///
-struct cilk_for_segit : public cilk_for_exec {
-};
+}  // end namespace impl
+}  // end namespace RAJA
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct cilk_reduce : public RAJA::make_policy_pattern<RAJA::Policy::cilk,
-                                                      RAJA::Pattern::reduce> {
-};
-
-}  // closing brace for RAJA namespace
-
-#endif
+#endif /* RAJA_SPAN_HPP */

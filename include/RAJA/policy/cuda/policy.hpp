@@ -136,9 +136,10 @@ struct get_launch<false> {
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
+    : public RAJA::make_policy_launch_pattern_platform<RAJA::Policy::cuda,
                                               detail::get_launch<Async>::value,
-                                              RAJA::Pattern::forall> {
+                                              RAJA::Pattern::forall,
+                                              RAJA::Platform::cuda> {
 };
 
 //
@@ -558,6 +559,176 @@ __device__ inline double _atomicAdd(double *address, double value)
 #error one of the options for using/not using atomics must be specified
 
 #endif
+
+/*!
+ * \brief Struct that contains two CUDA dim3's that represent the number of
+ * thread block and the number of blocks.
+ *
+ * This is passed to the execution policies to setup the kernel launch.
+ */
+struct CudaDim {
+  cuda_dim_t num_threads;
+  cuda_dim_t num_blocks;
+
+  __host__ __device__ void print(void) const
+  {
+    printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
+           num_blocks.x,
+           num_blocks.y,
+           num_blocks.z,
+           num_threads.x,
+           num_threads.y,
+           num_threads.z);
+  }
+};
+
+template <typename POL>
+struct CudaPolicy :
+  public RAJA::make_policy_platform<RAJA::Policy::cuda, RAJA::Platform::cuda>
+{
+};
+
+template <typename POL, typename IDX>
+struct CudaIndexPair : public POL {
+  template <typename IS>
+  RAJA_INLINE constexpr CudaIndexPair(CudaDim &dims, IS const &is)
+      : POL(dims, is)
+  {
+  }
+
+  typedef IDX INDEX;
+};
+
+/** Provides a range from 0 to N_iter - 1
+ * 
+ */
+template <typename VIEWDIM, int threads_per_block>
+struct CudaThreadBlock {
+  int distance;
+
+  VIEWDIM view;
+
+  template<typename Iterable>
+  CudaThreadBlock(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
+  {
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void)
+  {
+    int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
+    if (idx >= distance) {
+      idx = INT_MIN;
+    }
+    return idx;
+  }
+
+  void inline setDims(CudaDim &dims)
+  {
+    int n = distance;
+    if (n < threads_per_block) {
+      view(dims.num_threads) = n;
+      view(dims.num_blocks) = 1;
+    } else {
+      view(dims.num_threads) = threads_per_block;
+
+      int blocks = n / threads_per_block;
+      if (n % threads_per_block) {
+        ++blocks;
+      }
+      view(dims.num_blocks) = blocks;
+    }
+  }
+};
+
+/*
+ * These execution policies map a loop nest to the block and threads of a
+ * given dimension with the number of THREADS per block specifies.
+ */
+
+template <int THREADS>
+using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
+
+template <int THREADS>
+using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
+
+template <int THREADS>
+using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
+
+template <typename VIEWDIM>
+struct CudaThread {
+  int distance;
+
+  VIEWDIM view;
+
+  template<typename Iterable>
+  CudaThread(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
+  {
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void)
+  {
+    int idx = view(threadIdx);
+    if (idx >= distance) {
+      idx = INT_MIN;
+    }
+    return idx;
+  }
+
+  void inline setDims(CudaDim &dims)
+  {
+    view(dims.num_threads) = distance;
+  }
+};
+
+/* These execution policies map the given loop nest to the threads in the
+   specified dimensions (not blocks)
+ */
+using cuda_thread_x_exec = CudaPolicy<CudaThread<Dim3x>>;
+
+using cuda_thread_y_exec = CudaPolicy<CudaThread<Dim3y>>;
+
+using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
+
+template <typename VIEWDIM>
+struct CudaBlock {
+  int distance;
+
+  VIEWDIM view;
+
+  template<typename Iterable>
+  CudaBlock(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
+  {
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void)
+  {
+    int idx = view(blockIdx);
+    if (idx >= distance) {
+      idx = INT_MIN;
+    }
+    return idx;
+  }
+
+  void inline setDims(CudaDim &dims)
+  {
+    view(dims.num_blocks) = distance;
+  }
+};
+
+/* These execution policies map the given loop nest to the blocks in the
+   specified dimensions (not threads)
+ */
+using cuda_block_x_exec = CudaPolicy<CudaBlock<Dim3x>>;
+
+using cuda_block_y_exec = CudaPolicy<CudaBlock<Dim3y>>;
+
+using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 

@@ -70,36 +70,44 @@ namespace RAJA
 namespace impl
 {
 
-//
-////////////////////////////////////////////////////////////////////////
-//
-// Function templates for CUDA execution over iterables.
-//
-////////////////////////////////////////////////////////////////////////
-//
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
+RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
+                        Iterable&&,
+                        LoopBody&&);
 
-template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
-                        Iterable&& iter,
-                        LOOP_BODY&& loop_body);
 
-template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
-                               Iterable&& iter,
-                               Index_type icount,
-                               LOOP_BODY&& loop_body);
+template <typename Iterable,
+          typename IndexType,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(cuda_exec<BlockSize, Async>,
+              Iterable&&,
+              IndexType,
+              LoopBody&&);
 
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
-RAJA_INLINE void forall(ExecPolicy<seq_segit,
-                                   cuda_exec<BLOCK_SIZE, Async>>,
-                        const IndexSet<SEG_TYPES ...>& iset,
-                        LOOP_BODY&& loop_body);
 
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY, typename ... SEG_TYPES>
-RAJA_INLINE void forall_Icount(ExecPolicy<seq_segit,
-                                          cuda_exec<BLOCK_SIZE, Async>>,
-                               const IndexSet<SEG_TYPES ...>& iset,
-                               LOOP_BODY&& loop_body);
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                        const IndexSet<SegmentTypes...>&,
+                        LoopBody&&);
+
+
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall_Icount(
+    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+    const IndexSet<SegmentTypes...>&,
+    LoopBody&&);
 
 }  // closing brace for impl namespace
 

@@ -57,8 +57,9 @@
 #ifndef RAJA_forward_openmp_HXX
 #define RAJA_forward_openmp_HXX
 
-#include "RAJA/config.hpp"
+#include <type_traits>
 
+#include "RAJA/config.hpp"
 
 #include "RAJA/policy/openmp/policy.hpp"
 
@@ -68,51 +69,54 @@ namespace RAJA
 namespace impl
 {
 
-template <typename Iterable, typename InnerPolicy, typename Func>
+
+template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
-                        Iterable&& iter,
-                        Func&& loop_body);
+                        Iterable&&,
+                        Func&&);
 
-template <typename Iterable, typename InnerPolicy, typename Func>
-RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body);
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_for_nowait_exec&,
-                        Iterable&& iter,
-                        Func&& loop_body);
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const omp_for_nowait_exec&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body);
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          typename InnerPolicy>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_parallel_exec<InnerPolicy>&,
+              Iterable&&,
+              IndexType,
+              Func&&);
+///
+/// OpenMP for nowait policy implementation
+///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body);
+RAJA_INLINE void forall(const omp_for_nowait_exec&, Iterable&&, Func&&);
+
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_nowait_exec&, Iterable&&, IndexType, Func&&);
+///
+/// OpenMP parallel for policy implementation
+///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const omp_for_exec&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body);
+RAJA_INLINE void forall(const omp_for_exec&, Iterable&&, Func&&);
+
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_exec&, Iterable&&, IndexType, Func&&);
+///
+/// OpenMP parallel for static policy implementation
+///
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
-                        Iterable&& iter,
-                        Func&& loop_body);
+RAJA_INLINE void forall(const omp_for_static<ChunkSize>&, Iterable&&, Func&&);
 
-
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body);
-
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_static<ChunkSize>&, Iterable&&, IndexType, Func&&);
 
 }  // closing brace for impl namespace
 
