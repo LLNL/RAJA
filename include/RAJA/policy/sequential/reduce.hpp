@@ -84,15 +84,18 @@ class ReduceMin<seq_reduce, T>
   using my_type = ReduceMin<seq_reduce, T>;
 
 public:
+
+
+  ReduceMin() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMin(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
+  RAJA_HOST_DEVICE explicit ReduceMin(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<seq_reduce, T>& other)
+  RAJA_HOST_DEVICE ReduceMin(const ReduceMin<seq_reduce, T>& other)
       : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
@@ -101,7 +104,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceMin<seq_reduce, T>()
+  RAJA_HOST_DEVICE ~ReduceMin<seq_reduce, T>()
   {
     if (m_parent) {
       m_parent->min(m_val);
@@ -111,33 +114,29 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T() { return m_val; }
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
   //
-  T get() { return operator T(); }
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
   //
   // Method that updates min value.
   //
-  ReduceMin<seq_reduce, T>& min(T rhs)
+  RAJA_HOST_DEVICE ReduceMin<seq_reduce, T>& min(T rhs)
   {
     m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
-  const ReduceMin<seq_reduce, T>& min(T rhs) const
+  RAJA_HOST_DEVICE const ReduceMin<seq_reduce, T>& min(T rhs) const
   {
     m_val = RAJA_MIN(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMin<seq_reduce, T>();
 
   const my_type* m_parent;
   mutable T m_val;
@@ -158,10 +157,12 @@ class ReduceMinLoc<seq_reduce, T>
   using my_type = ReduceMinLoc<seq_reduce, T>;
 
 public:
+
+  ReduceMinLoc() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMinLoc(T init_m_val, Index_type init_loc)
+  RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_m_val, Index_type init_loc)
       : m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
   }
@@ -169,7 +170,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
+  RAJA_HOST_DEVICE ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
       : m_parent(other.m_parent ? other.m_parent : &other),
         m_val(other.m_val),
         loc(other.loc)
@@ -180,7 +181,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceMinLoc<seq_reduce, T>()
+  RAJA_HOST_DEVICE ~ReduceMinLoc<seq_reduce, T>()
   {
     if (m_parent) {
       m_parent->minloc(m_val, loc);
@@ -190,22 +191,22 @@ public:
   //
   // Operator that returns reduced min value.
   //
-  operator T() { return m_val; }
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
   //
   // Method that returns reduced min value.
   //
-  T get() { return operator T(); }
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
   //
   // Method that returns index corresponding to reduced min value.
   //
-  Index_type getLoc() { return loc; }
+  RAJA_HOST_DEVICE Index_type getLoc() { return loc; }
 
   //
   // Method that updates min and index value.
   //
-  ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx)
+  RAJA_HOST_DEVICE ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx)
   {
     if (rhs < m_val) {
       m_val = rhs;
@@ -214,7 +215,7 @@ public:
     return *this;
   }
 
-  const ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx) const
+  RAJA_HOST_DEVICE const ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx) const
   {
     if (rhs < m_val) {
       m_val = rhs;
@@ -227,7 +228,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMinLoc<seq_reduce, T>();
 
   const my_type* m_parent;
 
@@ -250,15 +250,18 @@ class ReduceMax<seq_reduce, T>
   using my_type = ReduceMax<seq_reduce, T>;
 
 public:
+
+  ReduceMax() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMax(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
+  RAJA_HOST_DEVICE explicit ReduceMax(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
 
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<seq_reduce, T>& other)
+  RAJA_HOST_DEVICE ReduceMax(const ReduceMax<seq_reduce, T>& other)
       : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
@@ -267,7 +270,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceMax<seq_reduce, T>()
+  RAJA_HOST_DEVICE ~ReduceMax<seq_reduce, T>()
   {
     if (m_parent) {
       m_parent->max(m_val);
@@ -277,23 +280,23 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T() { return m_val; }
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
   //
-  T get() { return operator T(); }
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
   //
   // Method that updates max value.
   //
-  ReduceMax<seq_reduce, T>& max(T rhs)
+  RAJA_HOST_DEVICE ReduceMax<seq_reduce, T>& max(T rhs)
   {
     m_val = RAJA_MAX(rhs, m_val);
     return *this;
   }
 
-  const ReduceMax<seq_reduce, T>& max(T rhs) const
+  RAJA_HOST_DEVICE const ReduceMax<seq_reduce, T>& max(T rhs) const
   {
     m_val = RAJA_MAX(rhs, m_val);
     return *this;
@@ -303,8 +306,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMax<seq_reduce, T>();
-
   const my_type* m_parent;
 
   mutable T m_val;
@@ -325,10 +326,13 @@ class ReduceMaxLoc<seq_reduce, T>
   using my_type = ReduceMaxLoc<seq_reduce, T>;
 
 public:
+
+  ReduceMaxLoc() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceMaxLoc(T init_m_val, Index_type init_loc)
+  RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_m_val, Index_type init_loc)
       : m_parent(NULL), m_val(init_m_val), loc(init_loc)
   {
   }
@@ -336,7 +340,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
+  RAJA_HOST_DEVICE ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
       : m_parent(other.m_parent ? other.m_parent : &other),
         m_val(other.m_val),
         loc(other.loc)
@@ -347,7 +351,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceMaxLoc<seq_reduce, T>()
+  RAJA_HOST_DEVICE ~ReduceMaxLoc<seq_reduce, T>()
   {
     if (m_parent) {
       m_parent->maxloc(m_val, loc);
@@ -357,22 +361,22 @@ public:
   //
   // Operator that returns reduced max value.
   //
-  operator T() { return m_val; }
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
   //
   // Method that returns reduced max value.
   //
-  T get() { return operator T(); }
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
   //
   // Method that returns index corresponding to reduced max value.
   //
-  Index_type getLoc() { return loc; }
+  RAJA_HOST_DEVICE Index_type getLoc() { return loc; }
 
   //
   // Method that updates max and index value.
   //
-  ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx)
+  RAJA_HOST_DEVICE ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx)
   {
     if (rhs > m_val) {
       m_val = rhs;
@@ -381,7 +385,7 @@ public:
     return *this;
   }
 
-  const ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx) const
+  RAJA_HOST_DEVICE const ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx) const
   {
     if (rhs > m_val) {
       m_val = rhs;
@@ -394,7 +398,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMaxLoc<seq_reduce, T>();
 
   const my_type* m_parent;
 
@@ -417,10 +420,13 @@ class ReduceSum<seq_reduce, T>
   using my_type = ReduceSum<seq_reduce, T>;
 
 public:
+
+  ReduceSum() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
-  explicit ReduceSum(T init_m_val, T initializer = 0)
+  RAJA_HOST_DEVICE explicit ReduceSum(T init_m_val, T initializer = 0)
       : m_parent(NULL), m_val(init_m_val), m_custom_init(initializer)
   {
   }
@@ -428,7 +434,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<seq_reduce, T>& other)
+  RAJA_HOST_DEVICE ReduceSum(const ReduceSum<seq_reduce, T>& other)
       : m_parent(other.m_parent ? other.m_parent : &other),
         m_val(other.m_custom_init),
         m_custom_init(other.m_custom_init)
@@ -439,7 +445,7 @@ public:
   // Destruction releases the shared memory block chunk for reduction id
   // and id itself for others to use.
   //
-  ~ReduceSum<seq_reduce, T>()
+  RAJA_HOST_DEVICE ~ReduceSum<seq_reduce, T>()
   {
     if (m_parent) {
       *m_parent += m_val;
@@ -449,23 +455,23 @@ public:
   //
   // Operator that returns reduced sum value.
   //
-  operator T() { return m_val; }
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
   //
   // Method that returns reduced sum value.
   //
-  T get() { return operator T(); }
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
   //
   // += operator that adds value to sum.
   //
-  ReduceSum<seq_reduce, T>& operator+=(T rhs)
+  RAJA_HOST_DEVICE ReduceSum<seq_reduce, T>& operator+=(T rhs)
   {
     this->m_val += rhs;
     return *this;
   }
 
-  const ReduceSum<seq_reduce, T>& operator+=(T rhs) const
+  RAJA_HOST_DEVICE const ReduceSum<seq_reduce, T>& operator+=(T rhs) const
   {
     this->m_val += rhs;
     return *this;
@@ -475,8 +481,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceSum<seq_reduce, T>();
-
   const my_type* m_parent;
 
   mutable T m_val;

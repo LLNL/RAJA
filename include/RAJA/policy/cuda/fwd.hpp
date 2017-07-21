@@ -96,7 +96,7 @@ template <typename LoopBody,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const IndexSet<SegmentTypes...>&,
+                        const StaticIndexSet<SegmentTypes...>&,
                         LoopBody&&);
 
 
@@ -106,7 +106,7 @@ template <typename LoopBody,
           typename... SegmentTypes>
 RAJA_INLINE void forall_Icount(
     ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const IndexSet<SegmentTypes...>&,
+    const StaticIndexSet<SegmentTypes...>&,
     LoopBody&&);
 
 }  // closing brace for impl namespace

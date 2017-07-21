@@ -89,7 +89,7 @@ int main(int argc, char *argv[])
   //
   // Construct index set with mix of Range and List segments.
   //
-  IndexSet<RAJA::RangeSegment, RAJA::ListSegment> iset;
+  IndexSet iset;
 
   Index_type rbeg;
   Index_type rend;

@@ -68,5 +68,5 @@ enum IndexSetBuildMethod {
 //  Initialize index set by adding segments as indicated by enum value.
 //  Return last index in IndexSet.
 //
-RAJA::Index_type buildIndexSet(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>* hindex,
+RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex,
                                IndexSetBuildMethod use_vector);

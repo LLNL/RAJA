@@ -293,7 +293,7 @@ template <typename LoopBody,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const IndexSet<SegmentTypes...>& iset,
+                        const StaticIndexSet<SegmentTypes...>& iset,
                         LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
@@ -326,7 +326,7 @@ template <typename LoopBody,
           typename... SegmentTypes>
 RAJA_INLINE void forall_Icount(
     ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const IndexSet<SegmentTypes...>& iset,
+    const StaticIndexSet<SegmentTypes...>& iset,
     LoopBody&& loop_body)
 {
   auto num_seg = iset.getNumSegments();

@@ -61,8 +61,6 @@
 namespace RAJA
 {
 
-class BaseSegment;
-
 /*!
  ******************************************************************************
  *
@@ -82,6 +80,7 @@ class BaseSegment;
  *
  ******************************************************************************
  */
+template <typename SegmentType>
 class IndexSetSegInfo
 {
 public:
@@ -94,19 +93,17 @@ public:
         m_icount(UndefinedValue),
         m_dep_graph_node(0)
   {
-    ;
   }
 
   ///
   /// Ctor to create segment info for give segment.
   ///
-  IndexSetSegInfo(BaseSegment* segment, bool owns_segment)
+  IndexSetSegInfo(SegmentType* segment, bool owns_segment)
       : m_segment(segment),
         m_owns_segment(owns_segment),
         m_icount(UndefinedValue),
         m_dep_graph_node(0)
   {
-    ;
   }
 
   ~IndexSetSegInfo()
@@ -121,12 +118,12 @@ public:
   ///
   /// Retrieve const pointer to base-type segment object.
   ///
-  const BaseSegment* getSegment() const { return m_segment; }
+  const SegmentType* getSegment() const { return m_segment; }
 
   ///
   /// Retrieve pointer to base-type segment object.
   ///
-  BaseSegment* getSegment() { return m_segment; }
+  SegmentType* getSegment() { return m_segment; }
 
   ///
   /// Return true if IndexSetSegInfo object owns segment (set at construction);
@@ -161,7 +158,7 @@ public:
   void initDepGraphNode() { m_dep_graph_node = new DepGraphNode(); }
 
 private:
-  BaseSegment* m_segment;
+  SegmentType* m_segment;
   bool m_owns_segment;
 
   Index_type m_icount;

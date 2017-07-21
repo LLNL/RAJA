@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file defining range segment classes.
+ * \brief   RAJA header file defining typed rangesegment classes.
  *
  ******************************************************************************
  */
@@ -55,11 +55,7 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/index/BaseSegment.hpp"
 #include "RAJA/internal/Iterators.hpp"
-
-#include <algorithm>
-#include <iosfwd>
 
 namespace RAJA
 {
@@ -67,182 +63,9 @@ namespace RAJA
 /*!
  ******************************************************************************
  *
- * \brief  Segment class representing a contiguous range of indices.
+ * \brief  Segment class representing a contiguous typed range of indices
  *
- *         Range is specified by begin and end values.
- *         Traversal executes as:
- *            for (i = m_begin; i < m_end; ++i) {
- *               expression using i as array index.
- *            }
- *
- ******************************************************************************
- */
-class RangeSegment : public BaseSegment
-{
-public:
-  ///
-  /// Default range segment ctor.
-  ///
-  /// Segment undefined until begin/end values set.
-  ///
-  RangeSegment()
-      : BaseSegment(_RangeSeg_), m_begin(UndefinedValue), m_end(UndefinedValue)
-  {
-    ;
-  }
-
-  ///
-  /// Construct range segment with [begin, end) specified.
-  ///
-  RangeSegment(Index_type begin, Index_type end)
-      : BaseSegment(_RangeSeg_), m_begin(begin), m_end(end)
-  {
-    ;
-  }
-
-  ///
-  /// Destructor defined because some compilers don't appear to inline the
-  /// one they generate.
-  ///
-  ~RangeSegment() { ; }
-
-  ///
-  /// Copy ctor defined because some compilers don't appear to inline the
-  /// one they generate.
-  ///
-  RangeSegment(const RangeSegment& other)
-      : BaseSegment(_RangeSeg_), m_begin(other.m_begin), m_end(other.m_end)
-  {
-    ;
-  }
-
-  ///
-  /// Copy assignment operator defined because some compilers don't
-  /// appear to inline the one they generate.
-  ///
-  RangeSegment& operator=(const RangeSegment& rhs)
-  {
-    if (&rhs != this) {
-      RangeSegment copy(rhs);
-      this->swap(copy);
-    }
-    return *this;
-  }
-
-  ///
-  /// Swap function for copy-and-swap idiom.
-  ///
-  void swap(RangeSegment& other)
-  {
-    using std::swap;
-    swap(m_begin, other.m_begin);
-    swap(m_end, other.m_end);
-  }
-
-  ///
-  /// Return starting index for range.
-  ///
-  Index_type getBegin() const { return m_begin; }
-
-  ///
-  /// Set starting index for range.
-  ///
-  void setBegin(Index_type begin) { m_begin = begin; }
-
-  ///
-  /// Return one past last index for range.
-  ///
-  Index_type getEnd() const { return m_end; }
-
-  ///
-  /// Set one past last index for range.
-  ///
-  void setEnd(Index_type end) { m_end = end; }
-
-  ///
-  /// Return number of indices represented by range.
-  ///
-  Index_type getLength() const { return (m_end - m_begin); }
-
-  ///
-  /// Return 'Owned' indicating that segment object owns the data
-  /// representing its indices.
-  ///
-  IndexOwnership getIndexOwnership() const { return Owned; }
-
-  ///
-  /// Equality operator returns true if segments are equal; else false.
-  ///
-  bool operator==(const RangeSegment& other) const
-  {
-    return ((m_begin == other.m_begin) && (m_end == other.m_end));
-  }
-
-  ///
-  /// Inequality operator returns true if segments are not equal, else false.
-  ///
-  bool operator!=(const RangeSegment& other) const
-  {
-    return (!(*this == other));
-  }
-
-  ///
-  /// Equality operator returns true if segments are equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator==(const BaseSegment& other) const
-  {
-    const RangeSegment* o_ptr = dynamic_cast<const RangeSegment*>(&other);
-    if (o_ptr) {
-      return (*this == *o_ptr);
-    } else {
-      return false;
-    }
-  }
-
-  ///
-  /// Inquality operator returns true if segments are not equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator!=(const BaseSegment& other) const
-  {
-    return (!(*this == other));
-  }
-
-  ///
-  /// Print segment data to given output stream.
-  ///
-  void print(std::ostream& os) const;
-
-  using iterator = Iterators::numeric_iterator<Index_type>;
-
-  ///
-  /// Get an iterator to the end.
-  ///
-  iterator end() const { return iterator(m_end); }
-
-  ///
-  /// Get an iterator to the beginning.
-  ///
-  iterator begin() const { return iterator(m_begin); }
-
-  ///
-  /// Return the number of elements in the range.
-  ///
-  Index_type size() const { return m_end - m_begin; }
-
-
-private:
-  Index_type m_begin;
-  Index_type m_end;
-};
-
-/*!
- ******************************************************************************
- *
- * \brief  Segment class representing a contiguous range of indices with stride.
- *
- *         Range is specified by begin and end values.
+ *         Typed Range is specified by begin and end values.
  *         Traversal executes as:
  *            for (i = m_begin; i < m_end; i += m_stride) {
  *               expression using i as array index.
@@ -250,199 +73,157 @@ private:
  *
  ******************************************************************************
  */
-class RangeStrideSegment : public BaseSegment
-{
-public:
-  ///
-  /// Default range segment with stride ctor.
-  ///
-  /// Segment undefined until begin/end/stride values set.
-  ///
-  RangeStrideSegment()
-      : BaseSegment(_RangeStrideSeg_),
-        m_begin(UndefinedValue),
-        m_end(UndefinedValue),
-        m_stride(UndefinedValue)
+template <typename StorageT>
+struct TypedRangeSegment {
+  using iterator = Iterators::numeric_iterator<StorageT>;
+  using value_type = StorageT;
+
+  RAJA_HOST_DEVICE TypedRangeSegment(StorageT begin, StorageT end)
+      : m_begin(iterator(begin)), m_end(iterator(end)), m_size(end - begin)
   {
-    ;
   }
 
-  ///
-  /// Construct range segment [begin, end) and stride specified.
-  ///
-  RangeStrideSegment(Index_type begin, Index_type end, Index_type stride)
-      : BaseSegment(_RangeStrideSeg_),
-        m_begin(begin),
-        m_end(end),
-        m_stride(stride)
+  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
   {
-    ;
   }
 
-  ///
-  /// Destructor defined because some compilers don't appear to inline the
-  /// one they generate.
-  ///
-  ~RangeStrideSegment() { ; }
+  RAJA_HOST_DEVICE TypedRangeSegment() = default;
+  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment&&) = default;
+  RAJA_HOST_DEVICE ~TypedRangeSegment() {}
+  RAJA_HOST_DEVICE TypedRangeSegment& operator=(TypedRangeSegment const&) =
+      default;
 
-  ///
-  /// Copy ctor defined because some compilers don't appear to inline the
-  /// one they generate.
-  ///
-  RangeStrideSegment(const RangeStrideSegment& other)
-      : BaseSegment(_RangeStrideSeg_),
-        m_begin(other.m_begin),
-        m_end(other.m_end),
-        m_stride(other.m_stride)
-  {
-    ;
-  }
-
-  ///
-  /// Copy assignment operator defined because some compilers don't
-  /// appear to inline the one they generate.
-  ///
-  RangeStrideSegment& operator=(const RangeStrideSegment& rhs)
-  {
-    if (&rhs != this) {
-      RangeStrideSegment copy(rhs);
-      this->swap(copy);
-    }
-    return *this;
-  }
-
-  ///
-  /// Swap function for copy-and-swap idiom.
-  ///
-  void swap(RangeStrideSegment& other)
+  RAJA_HOST_DEVICE void swap(TypedRangeSegment& other)
   {
     using std::swap;
     swap(m_begin, other.m_begin);
     swap(m_end, other.m_end);
-    swap(m_stride, other.m_stride);
   }
 
-  ///
-  /// Return starting index for range.
-  ///
-  Index_type getBegin() const { return m_begin; }
+  RAJA_HOST_DEVICE iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
 
-  ///
-  /// Set starting index for range.
-  ///
-  void setBegin(Index_type begin) { m_begin = begin; }
-
-  ///
-  /// Return one past last index for range.
-  ///
-  Index_type getEnd() const { return m_end; }
-
-  ///
-  /// Set one past last index for range.
-  ///
-  void setEnd(Index_type end) { m_end = end; }
-
-  ///
-  /// Return stride for range.
-  ///
-  Index_type getStride() const { return m_stride; }
-
-  ///
-  /// Set stride for range.
-  ///
-  void setStride(Index_type stride) { m_stride = stride; }
-
-  ///
-  /// Return number of indices represented by range.
-  ///
-  Index_type getLength() const
-  {
-    return (m_end - m_begin) >= m_stride
-               ? (m_end - m_begin) % m_stride ? (m_end - m_begin) / m_stride + 1
-                                              : (m_end - m_begin) / m_stride
-               : 0;
+  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const &o) {
+    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
   }
-
-  ///
-  /// Return 'Owned' indicating that segment object owns the data
-  /// representing its indices.
-  ///
-  IndexOwnership getIndexOwnership() const { return Owned; }
-
-  ///
-  /// Equality operator returns true if segments are equal; else false.
-  ///
-  bool operator==(const RangeStrideSegment& other) const
-  {
-    return ((m_begin == other.m_begin) && (m_end == other.m_end)
-            && (m_stride == other.m_stride));
-  }
-
-  ///
-  /// Inequality operator returns true if segments are not equal, else false.
-  ///
-  bool operator!=(const RangeStrideSegment& other) const
-  {
-    return (!(*this == other));
-  }
-
-  ///
-  /// Equality operator returns true if segments are equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator==(const BaseSegment& other) const
-  {
-    const RangeStrideSegment* o_ptr =
-        dynamic_cast<const RangeStrideSegment*>(&other);
-    if (o_ptr) {
-      return (*this == *o_ptr);
-    } else {
-      return false;
-    }
-  }
-
-  ///
-  /// Inquality operator returns true if segments are not equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator!=(const BaseSegment& other) const
-  {
-    return (!(*this == other));
-  }
-
-  ///
-  /// Print segment data to given output stream.
-  ///
-  void print(std::ostream& os) const;
-
-  using iterator = Iterators::strided_numeric_iterator<Index_type>;
-
-  ///
-  /// Get an iterator to the end.
-  ///
-  iterator end() const { return iterator(m_end, m_stride); }
-
-  ///
-  /// Get an iterator to the beginning.
-  ///
-  iterator begin() const { return iterator(m_begin, m_stride); }
-
-  ///
-  /// Return the number of elements in the range.
-  ///
-  Index_type size() const { return getLength(); }
 
 private:
-  Index_type m_begin;
-  Index_type m_end;
-  Index_type m_stride;
+  iterator m_begin;
+  iterator m_end;
+  StorageT m_size;
 };
 
-//
-// TODO: Add multi-dim'l ranges, and ability to easily repeat segments using
-//       an offset in an index set, others?
-//
+template <class StorageT>
+struct TypedRangeStrideSegment
+{
+  using iterator = Iterators::strided_numeric_iterator<StorageT>;
+  using value_type = StorageT;
+
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(StorageT begin,
+                                           StorageT end,
+                                           StorageT stride)
+      : m_begin(iterator(begin, stride)),
+        m_end(iterator(end, stride)),
+        m_size((end - begin) >= stride
+                   ? (end - begin) % stride ? (end - begin) / stride + 1
+                                            : (end - begin) / stride
+                   : 0)
+  {
+  }
+
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+  {
+  }
+
+  RAJA_HOST_DEVICE TypedRangeStrideSegment() = default;
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&&) = default;
+  RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
+  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(
+      TypedRangeStrideSegment const&) = default;
+
+  ///
+  /// Swap function for copy-and-swap idiom.
+  ///
+  RAJA_HOST_DEVICE void swap(TypedRangeStrideSegment& other)
+  {
+    using std::swap;
+    swap(m_begin, other.m_begin);
+    swap(m_end, other.m_end);
+    swap(m_size, other.m_size);
+  }
+
+  RAJA_HOST_DEVICE iterator begin() const { return m_begin; }
+  RAJA_HOST_DEVICE iterator end() const { return m_end; }
+  RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+
+  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const &o) {
+    return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
+  }
+
+private:
+  iterator m_begin;
+  iterator m_end;
+  StorageT m_size;
+};
+
+using RangeSegment = TypedRangeSegment<Index_type>;
+using RangeStrideSegment = TypedRangeStrideSegment<Index_type>;
+
+template <typename T, typename... Rest>
+struct common_type
+    : std::common_type<T, typename std::common_type<Rest...>::type> {
+};
+
+template <typename T>
+struct common_type<T> {
+  using type = T;
+};
+
+template <typename... Ts>
+using common_type_t = typename common_type<Ts...>::type;
+
+template <typename BeginT,
+          typename EndT,
+          typename Common = common_type_t<BeginT, EndT>>
+TypedRangeSegment<Common> make_range(BeginT&& begin, EndT&& end)
+{
+  return {begin, end};
+}
+
+template <typename BeginT,
+          typename EndT,
+          typename StrideT,
+          typename Common = common_type_t<BeginT, EndT, StrideT>>
+TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
+                                                   EndT&& end,
+                                                   StrideT&& stride)
+{
+  return {begin, end, stride};
+}
 
 }  // closing brace for RAJA namespace
+
+namespace std
+{
+
+template <typename T>
+RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
+                      RAJA::TypedRangeSegment<T>& b)
+{
+  a.swap(b);
+}
+
+template <typename T>
+RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
+                      RAJA::TypedRangeStrideSegment<T>& b)
+{
+  a.swap(b);
+}
+
+}  // closing brace for std namespace
+
 
 #endif  // closing endif for header file include guard

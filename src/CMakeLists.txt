@@ -43,11 +43,9 @@
 set (raja_sources
   AlignedRangeIndexSetBuilders.cpp
   DepGraphNode.cpp
-  ListSegment.cpp
   LockFreeIndexSetBuilders.cpp
   MemUtils_CPU.cpp
   MemUtils_CUDA.cpp
-  RangeSegment.cpp
   ThreadUtils_CPU.cpp)
 
 raja_add_library(

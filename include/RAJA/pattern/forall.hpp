@@ -147,7 +147,7 @@ template <typename SEG_IT_POLICY_T,
           typename LOOP_BODY,
           typename... SEG_TYPES>
 RAJA_INLINE void forall(ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
-                        const IndexSet<SEG_TYPES...>& iset,
+                        const StaticIndexSet<SEG_TYPES...>& iset,
                         LOOP_BODY loop_body)
 {
   impl::forall(SEG_IT_POLICY_T(), iset, [=](int segID) {
@@ -170,7 +170,7 @@ template <typename SEG_IT_POLICY_T,
           typename... SEG_TYPES,
           typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(ExecPolicy<SEG_IT_POLICY_T, SEG_EXEC_POLICY_T>,
-                               const IndexSet<SEG_TYPES...>& iset,
+                               const StaticIndexSet<SEG_TYPES...>& iset,
                                LOOP_BODY loop_body)
 {
   // no need for icount variant here
@@ -269,7 +269,7 @@ forall_Icount(EXEC_POLICY_T&& p,
  */
 template <typename ExecPolicy, typename LoopBody, typename... SEG_TYPES>
 RAJA_INLINE void forall(const ExecPolicy& p,
-                        const IndexSet<SEG_TYPES...>& c,
+                        const StaticIndexSet<SEG_TYPES...>& c,
                         LoopBody loop_body)
 {
 
@@ -288,7 +288,7 @@ RAJA_INLINE void forall(const ExecPolicy& p,
 
 template <typename ExecPolicy, typename LoopBody, typename... SEG_TYPES>
 RAJA_INLINE void forall_Icount(const ExecPolicy& p,
-                               const IndexSet<SEG_TYPES...>& c,
+                               const StaticIndexSet<SEG_TYPES...>& c,
                                LoopBody loop_body)
 {
 
@@ -316,13 +316,14 @@ RAJA_INLINE void forall_Icount(const ExecPolicy& p,
  ******************************************************************************
  */
 template <typename ExecPolicy, typename LoopBody, typename... Segs>
-RAJA_INLINE void forall_Icount(const IndexSet<Segs...>& c, LoopBody loop_body)
+RAJA_INLINE void forall_Icount(const StaticIndexSet<Segs...>& c,
+                               LoopBody loop_body)
 {
   wrap::forall_Icount(ExecPolicy(), c, loop_body);
 }
 
 template <typename ExecPolicy, typename LoopBody, typename... Segs>
-RAJA_INLINE void forall(const IndexSet<Segs...>& c, LoopBody loop_body)
+RAJA_INLINE void forall(const StaticIndexSet<Segs...>& c, LoopBody loop_body)
 {
   wrap::forall(ExecPolicy(), c, loop_body);
 }
@@ -408,11 +409,16 @@ RAJA_INLINE typename std::
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall(IndexType begin, IndexType end, LOOP_BODY loop_body)
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY,
+          typename IndexType1,
+          typename IndexType2>
+RAJA_INLINE
+    typename std::enable_if<std::is_integral<IndexType1>::value
+                            && std::is_integral<IndexType2>::value>::type
+    forall(IndexType1 begin, IndexType2 end, LOOP_BODY loop_body)
 {
-  wrap::forall(EXEC_POLICY_T{}, RangeSegment(begin, end), loop_body);
+  wrap::forall(EXEC_POLICY_T{}, make_range(begin, end), loop_body);
 }
 
 /*!
@@ -426,18 +432,20 @@ forall(IndexType begin, IndexType end, LOOP_BODY loop_body)
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY,
-          typename IndexType,
+          typename IndexType1,
+          typename IndexType2,
           typename OffsetType>
 RAJA_INLINE
-    typename std::enable_if<std::is_integral<IndexType>::value
+    typename std::enable_if<std::is_integral<IndexType1>::value
+                            && std::is_integral<IndexType2>::value
                             && std::is_integral<OffsetType>::value>::type
-    forall_Icount(IndexType begin,
-                  IndexType end,
+    forall_Icount(IndexType1 begin,
+                  IndexType2 end,
                   OffsetType icount,
                   LOOP_BODY loop_body)
 {
   wrap::forall_Icount(EXEC_POLICY_T(),
-                      RangeSegment(begin, end),
+                      make_range(begin, end),
                       icount,
                       loop_body);
 }
@@ -457,12 +465,22 @@ RAJA_INLINE
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall(IndexType begin, IndexType end, IndexType stride, LOOP_BODY loop_body)
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY,
+          typename IndexType1,
+          typename IndexType2,
+          typename IndexType3>
+RAJA_INLINE
+    typename std::enable_if<std::is_integral<IndexType1>::value
+                            && std::is_integral<IndexType2>::value
+                            && std::is_integral<IndexType3>::value>::type
+    forall(IndexType1 begin,
+           IndexType2 end,
+           IndexType3 stride,
+           LOOP_BODY loop_body)
 {
   wrap::forall(EXEC_POLICY_T(),
-               RangeStrideSegment(begin, end, stride),
+               make_strided_range(begin, end, stride),
                loop_body);
 }
 
@@ -477,19 +495,23 @@ forall(IndexType begin, IndexType end, IndexType stride, LOOP_BODY loop_body)
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY,
-          typename IndexType,
+          typename IndexType1,
+          typename IndexType2,
+          typename IndexType3,
           typename OffsetType>
 RAJA_INLINE
-    typename std::enable_if<std::is_integral<IndexType>::value
+    typename std::enable_if<std::is_integral<IndexType1>::value
+                            && std::is_integral<IndexType2>::value
+                            && std::is_integral<IndexType3>::value
                             && std::is_integral<OffsetType>::value>::type
-    forall_Icount(IndexType begin,
-                  IndexType end,
-                  IndexType stride,
+    forall_Icount(IndexType1 begin,
+                  IndexType2 end,
+                  IndexType3 stride,
                   OffsetType icount,
                   LOOP_BODY loop_body)
 {
   wrap::forall_Icount(EXEC_POLICY_T(),
-                      RangeStrideSegment(begin, end, stride),
+                      make_strided_range(begin, end, stride),
                       icount,
                       loop_body);
 }

@@ -90,6 +90,8 @@ class ReduceMin<omp_reduce, T>
   using my_type = ReduceMin<omp_reduce, T>;
 
 public:
+
+  ReduceMin() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -146,7 +148,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMin<omp_reduce, T>();
 
   const my_type* m_parent;
   mutable T m_val;
@@ -167,6 +168,9 @@ class ReduceMinLoc<omp_reduce, T>
   using my_type = ReduceMinLoc<omp_reduce, T>;
 
 public:
+  ReduceMinLoc() = delete;
+
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -239,7 +243,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMinLoc<omp_reduce, T>();
 
   const my_type* m_parent;
 
@@ -262,6 +265,8 @@ class ReduceMax<omp_reduce, T>
   using my_type = ReduceMax<omp_reduce, T>;
 
 public:
+  ReduceMax() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -318,7 +323,6 @@ private:
   //
   // Default ctor is declared private and not implemented.
   //
-  ReduceMax<omp_reduce, T>();
 
   const my_type* m_parent;
 
@@ -340,6 +344,9 @@ class ReduceMaxLoc<omp_reduce, T>
   using my_type = ReduceMaxLoc<omp_reduce, T>;
 
 public:
+
+  ReduceMaxLoc() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -409,10 +416,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMaxLoc<omp_reduce, T>();
 
   const my_type* m_parent;
 
@@ -435,6 +438,9 @@ class ReduceSum<omp_reduce, T>
   using my_type = ReduceSum<omp_reduce, T>;
 
 public:
+
+  ReduceSum() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -493,10 +499,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<omp_reduce, T>();
 
   const my_type* m_parent;
 
@@ -521,6 +523,9 @@ template <typename T>
 class ReduceMin<omp_reduce_ordered, T>
 {
 public:
+
+  ReduceMin() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -593,11 +598,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMin<omp_reduce_ordered, T>();
-
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
@@ -622,6 +622,9 @@ template <typename T>
 class ReduceMinLoc<omp_reduce_ordered, T>
 {
 public:
+
+  ReduceMinLoc() = delete;
+
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -717,10 +720,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMinLoc<omp_reduce_ordered, T>();
 
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
@@ -749,6 +748,8 @@ template <typename T>
 class ReduceMax<omp_reduce_ordered, T>
 {
 public:
+
+  ReduceMax() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -821,10 +822,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMax<omp_reduce_ordered, T>();
 
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
@@ -850,6 +847,8 @@ template <typename T>
 class ReduceMaxLoc<omp_reduce_ordered, T>
 {
 public:
+
+  ReduceMaxLoc() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -945,10 +944,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMaxLoc<omp_reduce_ordered, T>();
 
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
@@ -977,6 +972,8 @@ template <typename T>
 class ReduceSum<omp_reduce_ordered, T>
 {
 public:
+
+  ReduceSum() = delete;
   //
   // Constructor takes default value (default ctor is disabled).
   //
@@ -1049,10 +1046,6 @@ public:
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<omp_reduce_ordered, T>();
 
   static const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
@@ -1070,4 +1063,3 @@ private:
 #endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard
-

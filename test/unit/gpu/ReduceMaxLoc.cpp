@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
       RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
 
-      IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
+      IndexSet iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
 
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
       RangeSegment seg2(4860, 10110);
       RangeSegment seg3(20490, 32003);
 
-      IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> iset;
+      IndexSet iset;
       iset.push_back(seg0);
       iset.push_back(seg1);
       iset.push_back(seg2);

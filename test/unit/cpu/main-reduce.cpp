@@ -90,7 +90,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
@@ -158,7 +158,7 @@ void runBasicMinReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN REDUCE tests...." << endl;
@@ -220,7 +220,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                                 const RAJA::IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
@@ -291,7 +291,7 @@ void runBasicMinLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                          const RAJA::IndexSet& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN-LOC REDUCE tests...." << endl;
@@ -353,7 +353,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
@@ -422,7 +422,7 @@ void runBasicMaxReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX REDUCE tests...." << endl;
@@ -484,7 +484,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                                 const RAJA::IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
@@ -556,7 +556,7 @@ void runBasicMaxLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                          const RAJA::IndexSet& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX-LOC REDUCE tests...." << endl;
@@ -618,7 +618,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type RAJA_UNUSED_ARG(alen),
-                              const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   //
@@ -674,7 +674,7 @@ void runBasicSumReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runSumReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall SUM REDUCE tests...." << endl;
@@ -768,7 +768,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   //  All methods to construct index sets should generate equivalent results.
   //
-  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>  index[NumBuildMethods];
+  RAJA::IndexSet  index[NumBuildMethods];
   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
     last_indx =
         max(last_indx,
@@ -792,7 +792,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   ///////////////////////////////////////////////////////////////////////////
 
-  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& iset = index[0];
+  RAJA::IndexSet& iset = index[0];
 
   const Index_type array_length = last_indx + 1;
 

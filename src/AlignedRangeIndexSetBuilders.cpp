@@ -66,7 +66,7 @@ namespace RAJA
 *************************************************************************
 */
 
-void buildIndexSetAligned(RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment>& hiset,
+void buildIndexSetAligned(RAJA::IndexSet& hiset,
                           const Index_type* const indices_in,
                           Index_type length)
 {

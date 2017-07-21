@@ -63,7 +63,7 @@ protected:
   }
 
   RAJA::RAJAVec<RAJA::Index_type> is_indices;
-  RAJA::IndexSet<RAJA::RangeSegment, RAJA::ListSegment, RAJA::RangeStrideSegment> index_sets_[NumBuildMethods];
+  RAJA::IndexSet index_sets_[NumBuildMethods];
 };
 
 TEST_F(IndexSetTest, IndexSetEquality)
