@@ -45,15 +45,111 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
+#include "RAJA/index/IndexSetBuilders.hpp"
 
-//Sparse Matrix-Vector Multiply
+//Where is this?
+
+/*Sparse Matrix
+  A = [3 0 1 0]
+      [0 0 0 0]
+      [0 2 4 1]
+      [1 0 0 1]
+ */
+
+using namespace RAJA;
+void setup(double *A,double *x, double *col_index, double *row_ptr){
+
+  //Populate Matrix
+  A[0] = 3; A[1] = 1; A[2] = 2; A[3] = 4;  
+  A[4] = 1; A[5] = 1; A[6] = 1;
+  
+  //Vector to multiply with
+  x[0] = 1; x[1] = 1;  
+  x[2] = 1; x[3] = 1;
+  
+  //populate column index
+  col_index[0] = 0;  col_index[1] = 2; col_index[2] = 1;  col_index[3] = 2;
+  col_index[4] = 3;  col_index[5] = 0; col_index[6] = 3;
+
+  //Row pointers
+  row_ptr[0] = 0; row_ptr[1] = 2; row_ptr[2] = 2;  
+  row_ptr[3] = 5; row_ptr[4] = 7;  
+}
+
+
+
+//Sparse Matrix-Vector Multiply using CSR format
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout<<"Example 5: Sparse Matrix-Vector Multipy"<<std::endl;
+  std::cout<<"Example 5: Sparse Matrix-Vector Multipy"<<std::endl; 
+
+  int n       = 4; //A is an nxn matrix
+  int nzr_ct  = 7; //number of non-zeros in A
+  int cInd_ct = 7; //column index
+  int rPtr_ct = 5; //Row pointers
+
+  double *A      = new double[nzr_ct];
+  int *col_index = new int[cInd_ct];
+  int *row_ptr   = new int[rPtr_ct];
+
+  double *x         = new double[n];
+  double *y         = new double[n];
+
+ 
+  //----[C-Style Loop]-----------
+  for(int row=0; row<n; ++row){    
+    double dot = 0.0;
+    int row_start = row_ptr[row];
+    int row_end   = row_ptr[row+1];    
+    for(int elem = row_start; elem < row_end; ++elem){
+      dot += A[elem]*x[col_index[elem]];
+    }    
+    y[row] = dot;
+  }
+  //==============================
+
+#if 0
+  RAJA::IndexSet myIndexSet;
+  int elems [] = {0,1,2,3,4,5,6,7};
+  RAJA::buildIndexSetAligned(myIndexSet,col_index,cInd_ct); 
+
+  RAJA::forall<RAJA::seq_exec>(myIndexSet,[=](int i){
+      std::cout<<i<<std::endl;
+    });
+#endif
+  
 
 
 
+  
+
+#if 0
+  //Introduce IndexSet    
+  //----[RAJA-Style Execution]----
+  std::cout<<"RAJA: Squential Policy"<<std::endl;
+  RAJA::forall<RAJA::seq_exec>(0,n,[=](int row){
+
+      double dot    = 0.0;
+      int row_start = row_ptr[row];
+      int row_end   = row_ptr[row+1];
+      for(int elem = row_start; elem < row_end; ++elem){
+        dot += A[elem]*x[col_index[elem]];
+      }
+      y[row] = dot; 
+    }
+  //==============================
+#endif
+
+  for(int i=0; i<n; ++i){
+    std::cout<<y[i]<<std::endl;
+  }
+
+  
+
+
+
+  delete[] A, cInd_ct, rPtr_ct;
 
 
   return 0;

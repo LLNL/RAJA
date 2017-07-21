@@ -56,3 +56,15 @@ raja_add_executable(
 raja_add_executable(
   NAME jacobi
   SOURCES jacobi.cxx)
+
+raja_add_executable(
+  NAME wave
+  SOURCES wave.cxx)
+
+raja_add_executable(
+  NAME spMatVec
+  SOURCES spMatVec.cxx)
+
+raja_add_executable(
+  NAME coloring
+  SOURCES coloring.cxx)
