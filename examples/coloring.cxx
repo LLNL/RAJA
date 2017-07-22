@@ -41,54 +41,72 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
+#include <algorithm>
 #include <iostream>
+#include <initializer_list>
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/index/RangeSegment.hpp"
 
-
-//Colring Example
+//Given a checkered board with 4 colors
+//This codes picks out the indeces for 
+//each color and creates a list of segments
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   int n         = 4;
-  int entries   = n*n;
-  int numCells  = 4;
-  int *A        = new int[entries];
-  int *colorSet = new int[entries];
-
-  A[0]  = 0; A[1]  = 0; A[2]   = 1; A[3]  = 1;
-  A[4]  = 0; A[5]  = 0; A[6]   = 1; A[7]  = 1; 
-  A[8]  = 2; A[9]  = 2; A[10]  = 3; A[11] = 3; 
-  A[12] = 2; A[13] = 2; A[14]  = 3; A[15] = 3;
-
-  colorSet[0]  = 0; colorSet[1]   = 1; colorSet[2]   = 4;  colorSet[3]  = 5;
-  colorSet[4]  = 2; colorSet[5]   = 3; colorSet[6]   = 3;  colorSet[7]  = 7;
-  colorSet[8]  = 8; colorSet[9]   = 9; colorSet[10]  = 12; colorSet[11] = 13;
-  colorSet[12] = 10; colorSet[13] = 11; colorSet[14] = 14; colorSet[15] = 15;
-
+  int *A        = new int[n*n];
   
-  RAJA::RangeStrideSegment myRange(0,numCells,4);
-
-
-  //How do I use RangeStrideSegment?
-
-  //RAJA::forall<RAJA::seq_exec>(myRange,[=](int i){
-  //std::cout<<"i = "<<i<<std::endl;
-  //});
-
-
+  auto init = {0, 1, 0, 1, 
+               2, 3, 2, 3, 
+               0, 1, 0, 1,
+               2, 3, 2, 3};
   
-
-
-
+  std::copy(init.begin(), init.end(), A);
  
-  //RAJA::IndexSet segments;
-  //int elems [] = {0,1,2,3,4,5,6,7};                  
-  //RAJA::buildIndexSetAligned(segments,col_index,cInd_ct);    
 
-  delete[] A, colorSet;
+  RAJA::IndexSet colorset;
 
+  // populate IndexSet
+  {  
+    // helps make address calculations easier
+    RAJA::View<int,RAJA::Layout<2>> Aview(A, 4, 4);
+    
+    // buffer used for intermediate indicy storage
+    auto idx = RAJA::allocate_aligned_type<RAJA::Index_type>(64, n * n / 4);
+  
+    // iterate over each dimension (D=2 for this example)
+    for (int xdim : {0, 1}) {
+      for (int ydim : {0, 1}) {
+        
+        RAJA::Index_type count = 0;
+        
+        // iterate over each extent in each dimension, incrementing by two to
+        // safely advance over neighbors
+        for (int xiter = xdim; xiter < n; xiter += 2) {
+          for (int yiter = ydim; yiter < n; yiter += 2) {
+            
+            // add the computed index to the buffer
+            idx[count] = std::distance(A, std::addressof(Aview(xiter, yiter)));
+            ++count;
+          }
+        }
+
+        // insert the indicies added from the buffer as a new ListSegment
+        colorset.push_back(RAJA::ListSegment(idx, count));
+      }
+    }
+    
+    // clear temporary buffer
+    RAJA::free_aligned(idx);
+  }
+
+  using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+  
+  RAJA::forall<ColorPolicy>(colorset, [&](int idx) {
+      printf("A[%d] = %d\n", idx, A[idx]);
+    });
+  
   return 0;
 }
