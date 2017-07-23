@@ -83,10 +83,10 @@ public:
   ReduceMin &operator=(const ReduceMin &) = delete;
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE ReduceMin(ReduceMin &&) = default;
+  ReduceMin(ReduceMin &&) = default;
 
   //! compiler-generated move assignment
-  RAJA_HOST_DEVICE ReduceMin &operator=(ReduceMin &&) = default;
+  ReduceMin &operator=(ReduceMin &&) = default;
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMin(T init_val)
@@ -161,10 +161,10 @@ public:
   ReduceMinLoc &operator=(const ReduceMinLoc &) = delete;
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE ReduceMinLoc(ReduceMinLoc &&) = default;
+  ReduceMinLoc(ReduceMinLoc &&) = default;
 
   //! compiler-generated move assignment
-  RAJA_HOST_DEVICE ReduceMinLoc &operator=(ReduceMinLoc &&) = default;
+  ReduceMinLoc &operator=(ReduceMinLoc &&) = default;
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_val, Index_type init_idx)
@@ -246,10 +246,10 @@ public:
   ReduceMax &operator=(const ReduceMax &) = delete;
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE ReduceMax(ReduceMax &&) = default;
+  ReduceMax(ReduceMax &&) = default;
 
   //! compiler-generated move assignment
-  RAJA_HOST_DEVICE ReduceMax &operator=(ReduceMax &&) = default;
+  ReduceMax &operator=(ReduceMax &&) = default;
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMax(T init_val)
@@ -324,10 +324,10 @@ public:
   ReduceSum &operator=(const ReduceSum &) = delete;
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE ReduceSum(ReduceSum &&) = default;
+  ReduceSum(ReduceSum &&) = default;
 
   //! compiler-generated move assignment
-  RAJA_HOST_DEVICE ReduceSum &operator=(ReduceSum &&) = default;
+  ReduceSum &operator=(ReduceSum &&) = default;
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceSum(T init_val, T initializer = T())
@@ -403,10 +403,10 @@ public:
   ReduceMaxLoc &operator=(const ReduceMaxLoc &) = delete;
 
   //! compiler-generated move constructor
-  RAJA_HOST_DEVICE ReduceMaxLoc(ReduceMaxLoc &&) = default;
+  ReduceMaxLoc(ReduceMaxLoc &&) = default;
 
   //! compiler-generated move assignment
-  RAJA_HOST_DEVICE ReduceMaxLoc &operator=(ReduceMaxLoc &&) = default;
+  ReduceMaxLoc &operator=(ReduceMaxLoc &&) = default;
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_val, Index_type init_idx)

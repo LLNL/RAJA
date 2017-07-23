@@ -98,15 +98,15 @@ namespace INTERNAL
  *
  ******************************************************************************
  */
-__device__ __forceinline__ size_t getGlobalIdx_1D_1D()
+__device__ __forceinline__ unsigned int getGlobalIdx_1D_1D()
 {
-  size_t blockId = blockIdx.x;
-  size_t threadId = blockId * blockDim.x + threadIdx.x;
+  unsigned int blockId = blockIdx.x;
+  unsigned int threadId = blockId * blockDim.x + threadIdx.x;
   return threadId;
 }
-__device__ __forceinline__ size_t getGlobalNumThreads_1D_1D()
+__device__ __forceinline__ unsigned int getGlobalNumThreads_1D_1D()
 {
-  size_t numThreads = blockDim.x * gridDim.x;
+  unsigned int numThreads = blockDim.x * gridDim.x;
   return numThreads;
 }
 
@@ -117,18 +117,18 @@ __device__ __forceinline__ size_t getGlobalNumThreads_1D_1D()
  *
  ******************************************************************************
  */
-__device__ __forceinline__ size_t getGlobalIdx_3D_3D()
+__device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
 {
-  size_t blockId =
+  unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
-  size_t threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
+  unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
                           + (threadIdx.z * (blockDim.x * blockDim.y))
                           + (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
-__device__ __forceinline__ size_t getGlobalNumThreads_3D_3D()
+__device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
 {
-  size_t numThreads =
+  unsigned int numThreads =
       blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
@@ -187,10 +187,7 @@ __global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
                         Iterable&& iter,
                         LoopBody&& loop_body)
@@ -217,8 +214,9 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
     auto len = std::distance(begin, end);
     auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
 
-    INTERNAL::forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BlockSize)>>>(
-        body, std::move(begin), len);
+    INTERNAL::
+        forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BlockSize)>>>(
+            body, std::move(begin), len);
   }
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
@@ -261,7 +259,8 @@ forall_Icount(cuda_exec<BlockSize, Async>,
     auto len = std::distance(begin, end);
     auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
 
-    INTERNAL::forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BlockSize)>>>(
+    INTERNAL::forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize,
+                                                                  BlockSize)>>>(
         body, std::move(begin), len, static_cast<IndexType>(icount + offset));
   }
 

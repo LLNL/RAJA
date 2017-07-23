@@ -84,10 +84,9 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::ISET TYPE_I;
   typedef typename POLICY_INIT::POLICY POLICY_I;
 
-  static constexpr bool build_device = maybe_cuda ? 1 : is_cuda_policy<POLICY_I>::value;
-  typedef ForallN_Executor<build_device,
-                           POLICY_REST...>
-      NextExec;
+  static constexpr bool build_device =
+      maybe_cuda ? 1 : is_cuda_policy<POLICY_I>::value;
+  typedef ForallN_Executor<build_device, POLICY_REST...> NextExec;
 
   POLICY_INIT const is_i;
   NextExec const next_exec;
@@ -148,7 +147,7 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
                                 ARGS const &... args)
 {
   // Create executor object to launch loops
-  ForallN_Executor<0,ARGS...> exec(args...);
+  ForallN_Executor<0, ARGS...> exec(args...);
 
   // Launch loop body
   exec(body);
@@ -166,6 +165,7 @@ RAJA_INLINE void forallN_policy(ForallN_Execute_Tag,
  */
 template <typename BODY_in, typename... Idx>
 struct ForallN_IndexTypeConverter {
+
   using Self = ForallN_IndexTypeConverter<BODY_in, Idx...>;
   using BODY = typename std::remove_reference<BODY_in>::type;
 
@@ -173,11 +173,14 @@ struct ForallN_IndexTypeConverter {
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr explicit ForallN_IndexTypeConverter(BODY const &b) : body(b) {}
+
   RAJA_SUPPRESS_HD_WARN
   RAJA_INLINE
   RAJA_HOST_DEVICE
   constexpr ForallN_IndexTypeConverter(Self const &o) : body(o.body) {}
 
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_INLINE
   RAJA_HOST_DEVICE
   ~ForallN_IndexTypeConverter() {}
 
@@ -275,7 +278,7 @@ RAJA_INLINE void forallN(Ts &&... args)
 #endif
 
 #if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  chai::ArrayManager *rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(detail::get_space<POLICY>::value);
 #endif
 

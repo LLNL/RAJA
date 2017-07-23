@@ -119,21 +119,28 @@ struct TypedRangeSegment {
   {
   }
 
-  //! compiler generated constructor
+  //! disable compiler generated constructor
   RAJA_HOST_DEVICE TypedRangeSegment() = delete;
 
-  //! compiler generated move constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment&&) = default;
+  //! move constructor
+  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment&& o)
+      : m_begin(std::move(o.m_begin)),
+        m_end(std::move(o.m_end)),
+        m_size(std::move(o.m_size))
+  {
+  }
 
-  //! compiler generated copy constructor
-  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment const&) = default;
+  //! copy constructor
+  RAJA_HOST_DEVICE TypedRangeSegment(TypedRangeSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+  {
+  }
 
-  //! compiler generated destructor
-  RAJA_HOST_DEVICE ~TypedRangeSegment() = default;
+  //! destructor
+  RAJA_HOST_DEVICE ~TypedRangeSegment() {}
 
   //! compiler generated assignment
-  RAJA_HOST_DEVICE TypedRangeSegment& operator=(TypedRangeSegment const&) =
-      default;
+  TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
 
   //! swap one TypedRangeSegment with another
   /*!
@@ -255,22 +262,28 @@ struct TypedRangeStrideSegment {
   {
   }
 
-  //! compiler generated constructor
+  //! disable compiler generated constructor
   RAJA_HOST_DEVICE TypedRangeStrideSegment() = delete;
 
-  //! compiler generated move constructor
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&&) = default;
+  //! move constructor
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment&& o)
+      : m_begin(std::move(o.m_begin)),
+        m_end(std::move(o.m_end)),
+        m_size(std::move(o.m_size))
+  {
+  }
 
-  //! compiler generated copy constructor
-  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const&) =
-      default;
+  //! copy constructor
+  RAJA_HOST_DEVICE TypedRangeStrideSegment(TypedRangeStrideSegment const& o)
+      : m_begin(o.m_begin), m_end(o.m_end), m_size(o.m_size)
+  {
+  }
 
-  //! compiler generated destructor
-  RAJA_HOST_DEVICE ~TypedRangeStrideSegment() = default;
+  //! destructor
+  RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
 
   //! compiler generated assignment
-  RAJA_HOST_DEVICE TypedRangeStrideSegment& operator=(
-      TypedRangeStrideSegment const&) = default;
+  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
 
   //! swap one TypedRangeStrideSegment with another
   /*!
@@ -333,7 +346,8 @@ using RangeSegment = TypedRangeSegment<Index_type>;
 //! Alias for TypedRangeStrideSegment<Index_type>
 using RangeStrideSegment = TypedRangeStrideSegment<Index_type>;
 
-namespace detail {
+namespace detail
+{
 
 template <typename T, typename... Rest>
 struct common_type
@@ -348,7 +362,7 @@ struct common_type<T> {
 template <typename... Ts>
 using common_type_t = typename common_type<Ts...>::type;
 
-} // closing brace for namespace detail
+}  // closing brace for namespace detail
 
 //! make function for TypedRangeSegment
 /*!
