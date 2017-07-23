@@ -929,17 +929,17 @@ public:
   ///
   /// Get an iterator to the end.
   ///
-  iterator end() const { return 0; }
+  iterator end() const { return iterator(getNumSegments()); }
 
   ///
   /// Get an iterator to the beginning.
   ///
-  iterator begin() const { return 0; }
+  iterator begin() const { return iterator(0); }
 
   ///
   /// Return the number of elements in the range.
   ///
-  Index_type size() const { return 0; }
+  Index_type size() const { return getNumSegments(); }
 
 private:
 

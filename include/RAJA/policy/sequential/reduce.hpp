@@ -59,432 +59,415 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
-
 #include "RAJA/pattern/reduce.hpp"
-
 #include "RAJA/policy/sequential/policy.hpp"
-
-#include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
 {
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
- * \brief  Min reducer class template for use in sequential reduction.
+ * \brief  Min reducer class template for use in sequential execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
-template <typename T>
-class ReduceMin<seq_reduce, T>
-{
-  using my_type = ReduceMin<seq_reduce, T>;
+template <typename T> class ReduceMin<seq_reduce, T> {
+  static constexpr const RAJA::reduce::min<T> Reduce{};
 
 public:
-
-
+  //! prohibit compiler-generated default ctor
   ReduceMin() = delete;
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  RAJA_HOST_DEVICE explicit ReduceMin(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
 
-  //
-  // Copy ctor.
-  //
-  RAJA_HOST_DEVICE ReduceMin(const ReduceMin<seq_reduce, T>& other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
-  {
+  //! prohibit compiler-generated copy assignment
+  ReduceMin &operator=(const ReduceMin &) = delete;
+
+  //! compiler-generated move constructor
+  RAJA_HOST_DEVICE ReduceMin(ReduceMin &&) = default;
+
+  //! compiler-generated move assignment
+  RAJA_HOST_DEVICE ReduceMin &operator=(ReduceMin &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMin(T init_val)
+      : m_parent(nullptr), m_val(init_val) {}
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMin(const ReduceMin &other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val) {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  RAJA_HOST_DEVICE ~ReduceMin<seq_reduce, T>()
-  {
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMin() {
     if (m_parent) {
-      m_parent->min(m_val);
+      Reduce(m_parent->m_val, m_val);
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced min value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that updates min value.
-  //
-  RAJA_HOST_DEVICE ReduceMin<seq_reduce, T>& min(T rhs)
-  {
-    m_val = RAJA_MIN(m_val, rhs);
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMin &min(T rhs) const {
+    Reduce(m_val, rhs);
     return *this;
   }
 
-  RAJA_HOST_DEVICE const ReduceMin<seq_reduce, T>& min(T rhs) const
-  {
-    m_val = RAJA_MIN(m_val, rhs);
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMin &min(T rhs) {
+    Reduce(m_val, rhs);
     return *this;
   }
 
 private:
-
-  const my_type* m_parent;
+  //! pointer to the parent ReduceMin object
+  const ReduceMin *m_parent;
   mutable T m_val;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
- * \brief  Min-loc reducer class template for use in sequential reduction.
+ * \brief  MinLoc reducer class template for use in sequential execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
-template <typename T>
-class ReduceMinLoc<seq_reduce, T>
-{
-  using my_type = ReduceMinLoc<seq_reduce, T>;
+template <typename T> class ReduceMinLoc<seq_reduce, T> {
+  static constexpr const RAJA::reduce::minloc<T, Index_type> Reduce{};
 
 public:
-
+  //! prohibit compiler-generated default ctor
   ReduceMinLoc() = delete;
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_m_val, Index_type init_loc)
-      : m_parent(NULL), m_val(init_m_val), loc(init_loc)
-  {
-  }
 
-  //
-  // Copy ctor.
-  //
-  RAJA_HOST_DEVICE ReduceMinLoc(const ReduceMinLoc<seq_reduce, T>& other)
-      : m_parent(other.m_parent ? other.m_parent : &other),
-        m_val(other.m_val),
-        loc(other.loc)
-  {
-  }
+  //! prohibit compiler-generated copy assignment
+  ReduceMinLoc &operator=(const ReduceMinLoc &) = delete;
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  RAJA_HOST_DEVICE ~ReduceMinLoc<seq_reduce, T>()
-  {
+  //! compiler-generated move constructor
+  RAJA_HOST_DEVICE ReduceMinLoc(ReduceMinLoc &&) = default;
+
+  //! compiler-generated move assignment
+  RAJA_HOST_DEVICE ReduceMinLoc &operator=(ReduceMinLoc &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_val, Index_type init_idx)
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx) {}
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMinLoc(const ReduceMinLoc &other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val),
+        m_idx(other.m_idx) {}
+
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMinLoc() {
     if (m_parent) {
-      m_parent->minloc(m_val, loc);
+      Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced min value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that returns index corresponding to reduced min value.
-  //
-  RAJA_HOST_DEVICE Index_type getLoc() { return loc; }
+  //! return the index location of the minimum value
+  /*!
+   *  \return the index location
+   */
+  RAJA_HOST_DEVICE Index_type getLoc() { return m_idx; }
 
-  //
-  // Method that updates min and index value.
-  //
-  RAJA_HOST_DEVICE ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx)
-  {
-    if (rhs < m_val) {
-      m_val = rhs;
-      loc = idx;
-    }
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMinLoc &minloc(T rhs, Index_type idx) const {
+    Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
 
-  RAJA_HOST_DEVICE const ReduceMinLoc<seq_reduce, T>& minloc(T rhs, Index_type idx) const
-  {
-    if (rhs < m_val) {
-      m_val = rhs;
-      loc = idx;
-    }
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMinLoc &minloc(T rhs, Index_type idx) {
+    Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceMinLoc object
+  const ReduceMinLoc *m_parent;
   mutable T m_val;
-  mutable Index_type loc;
+  mutable Index_type m_idx;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
- * \brief  Max reducer class template for use in sequential reduction.
+ * \brief  Max reducer class template for use in sequential execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
-template <typename T>
-class ReduceMax<seq_reduce, T>
-{
-  using my_type = ReduceMax<seq_reduce, T>;
+template <typename T> class ReduceMax<seq_reduce, T> {
+  static constexpr const RAJA::reduce::max<T> Reduce{};
 
 public:
-
+  //! prohibit compiler-generated default ctor
   ReduceMax() = delete;
 
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  RAJA_HOST_DEVICE explicit ReduceMax(T init_m_val) : m_parent(NULL), m_val(init_m_val) {}
+  //! prohibit compiler-generated copy assignment
+  ReduceMax &operator=(const ReduceMax &) = delete;
 
-  //
-  // Copy ctor.
-  //
-  RAJA_HOST_DEVICE ReduceMax(const ReduceMax<seq_reduce, T>& other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
-  {
+  //! compiler-generated move constructor
+  RAJA_HOST_DEVICE ReduceMax(ReduceMax &&) = default;
+
+  //! compiler-generated move assignment
+  RAJA_HOST_DEVICE ReduceMax &operator=(ReduceMax &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMax(T init_val)
+      : m_parent(nullptr), m_val(init_val) {}
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMax(const ReduceMax &other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val) {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  RAJA_HOST_DEVICE ~ReduceMax<seq_reduce, T>()
-  {
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMax() {
     if (m_parent) {
-      m_parent->max(m_val);
+      Reduce(m_parent->m_val, m_val);
     }
   }
 
-  //
-  // Operator that returns reduced max value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced max value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that updates max value.
-  //
-  RAJA_HOST_DEVICE ReduceMax<seq_reduce, T>& max(T rhs)
-  {
-    m_val = RAJA_MAX(rhs, m_val);
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMax &max(T rhs) const {
+    Reduce(m_val, rhs);
     return *this;
   }
 
-  RAJA_HOST_DEVICE const ReduceMax<seq_reduce, T>& max(T rhs) const
-  {
-    m_val = RAJA_MAX(rhs, m_val);
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMax &max(T rhs) {
+    Reduce(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceMax object
+  const ReduceMax *m_parent;
   mutable T m_val;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
- * \brief  Max-loc reducer class template for use in sequential reduction.
+ * \brief  Sum reducer class template for use in sequential execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
-template <typename T>
-class ReduceMaxLoc<seq_reduce, T>
-{
-  using my_type = ReduceMaxLoc<seq_reduce, T>;
+template <typename T> class ReduceSum<seq_reduce, T> {
+  static constexpr const RAJA::reduce::sum<T> Reduce{};
 
 public:
-
-  ReduceMaxLoc() = delete;
-
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_m_val, Index_type init_loc)
-      : m_parent(NULL), m_val(init_m_val), loc(init_loc)
-  {
-  }
-
-  //
-  // Copy ctor.
-  //
-  RAJA_HOST_DEVICE ReduceMaxLoc(const ReduceMaxLoc<seq_reduce, T>& other)
-      : m_parent(other.m_parent ? other.m_parent : &other),
-        m_val(other.m_val),
-        loc(other.loc)
-  {
-  }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  RAJA_HOST_DEVICE ~ReduceMaxLoc<seq_reduce, T>()
-  {
-    if (m_parent) {
-      m_parent->maxloc(m_val, loc);
-    }
-  }
-
-  //
-  // Operator that returns reduced max value.
-  //
-  RAJA_HOST_DEVICE operator T() { return m_val; }
-
-  //
-  // Method that returns reduced max value.
-  //
-  RAJA_HOST_DEVICE T get() { return operator T(); }
-
-  //
-  // Method that returns index corresponding to reduced max value.
-  //
-  RAJA_HOST_DEVICE Index_type getLoc() { return loc; }
-
-  //
-  // Method that updates max and index value.
-  //
-  RAJA_HOST_DEVICE ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx)
-  {
-    if (rhs > m_val) {
-      m_val = rhs;
-      loc = idx;
-    }
-    return *this;
-  }
-
-  RAJA_HOST_DEVICE const ReduceMaxLoc<seq_reduce, T>& maxloc(T rhs, Index_type idx) const
-  {
-    if (rhs > m_val) {
-      m_val = rhs;
-      loc = idx;
-    }
-    return *this;
-  }
-
-private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-
-  const my_type* m_parent;
-
-  mutable T m_val;
-  mutable Index_type loc;
-};
-
-/*!
- ******************************************************************************
- *
- * \brief  Sum reducer class template for use in sequential reduction.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceSum<seq_reduce, T>
-{
-  using my_type = ReduceSum<seq_reduce, T>;
-
-public:
-
+  //! prohibit compiler-generated default ctor
   ReduceSum() = delete;
 
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  RAJA_HOST_DEVICE explicit ReduceSum(T init_m_val, T initializer = 0)
-      : m_parent(NULL), m_val(init_m_val), m_custom_init(initializer)
-  {
-  }
+  //! prohibit compiler-generated copy assignment
+  ReduceSum &operator=(const ReduceSum &) = delete;
 
-  //
-  // Copy ctor.
-  //
-  RAJA_HOST_DEVICE ReduceSum(const ReduceSum<seq_reduce, T>& other)
+  //! compiler-generated move constructor
+  RAJA_HOST_DEVICE ReduceSum(ReduceSum &&) = default;
+
+  //! compiler-generated move assignment
+  RAJA_HOST_DEVICE ReduceSum &operator=(ReduceSum &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceSum(T init_val, T initializer = T())
+      : m_parent(nullptr), m_val(init_val), m_custom_init(initializer) {}
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceSum(const ReduceSum &other)
       : m_parent(other.m_parent ? other.m_parent : &other),
-        m_val(other.m_custom_init),
-        m_custom_init(other.m_custom_init)
-  {
-  }
+        m_val(other.m_custom_init), m_custom_init(other.m_custom_init) {}
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  RAJA_HOST_DEVICE ~ReduceSum<seq_reduce, T>()
-  {
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceSum() {
     if (m_parent) {
-      *m_parent += m_val;
+      Reduce(m_parent->m_val, m_val);
     }
   }
 
-  //
-  // Operator that returns reduced sum value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced sum value.
-  //
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
   RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // += operator that adds value to sum.
-  //
-  RAJA_HOST_DEVICE ReduceSum<seq_reduce, T>& operator+=(T rhs)
-  {
-    this->m_val += rhs;
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceSum &operator+=(T rhs) const {
+    Reduce(m_val, rhs);
     return *this;
   }
 
-  RAJA_HOST_DEVICE const ReduceSum<seq_reduce, T>& operator+=(T rhs) const
-  {
-    this->m_val += rhs;
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceSum &operator+=(T rhs) {
+    Reduce(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceSum object
+  const ReduceSum *m_parent;
   mutable T m_val;
-  T m_custom_init;
+  const T m_custom_init;
+};
+
+/*!
+ **************************************************************************
+ *
+ * \brief  MaxLoc reducer class template for use in sequential execution.
+ *
+ **************************************************************************
+ */
+template <typename T> class ReduceMaxLoc<seq_reduce, T> {
+  static constexpr const RAJA::reduce::maxloc<T, Index_type> Reduce{};
+
+public:
+  //! prohibit compiler-generated default ctor
+  ReduceMaxLoc() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  ReduceMaxLoc &operator=(const ReduceMaxLoc &) = delete;
+
+  //! compiler-generated move constructor
+  RAJA_HOST_DEVICE ReduceMaxLoc(ReduceMaxLoc &&) = default;
+
+  //! compiler-generated move assignment
+  RAJA_HOST_DEVICE ReduceMaxLoc &operator=(ReduceMaxLoc &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_val, Index_type init_idx)
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx) {}
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMaxLoc(const ReduceMaxLoc &other)
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val),
+        m_idx(other.m_idx) {}
+
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMaxLoc() {
+    if (m_parent) {
+      Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+    }
+  }
+
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
+
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
+
+  //! return the index location of the maximum value
+  /*!
+   *  \return the index location
+   */
+  RAJA_HOST_DEVICE Index_type getLoc() { return m_idx; }
+
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMaxLoc &maxloc(T rhs, Index_type idx) const {
+    Reduce(m_val, m_idx, rhs, idx);
+    return *this;
+  }
+
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMaxLoc &maxloc(T rhs, Index_type idx) {
+    Reduce(m_val, m_idx, rhs, idx);
+    return *this;
+  }
+
+private:
+  //! pointer to the parent ReduceMaxLoc object
+  const ReduceMaxLoc *m_parent;
+  mutable T m_val;
+  mutable Index_type m_idx;
 };
 
 }  // closing brace for RAJA namespace
