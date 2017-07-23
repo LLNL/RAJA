@@ -57,11 +57,11 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/policy/openmp/policy.hpp"
-
+#include <type_traits>
 #include <omp.h>
 
 namespace RAJA
@@ -71,36 +71,28 @@ namespace RAJA
  *  ForallN CUDA policies
  ******************************************************************/
 
+namespace detail
+{
+
 struct ForallN_OMP_Parallel_Tag {
 };
+
+template <typename Iter>
+using CollapsePolPair = ForallN_PolicyPair<omp_collapse_nowait_exec, Iter>;
+
+template <typename T>
+using no_const = typename std::remove_const<T>::type;
+
+} // closing brace for namespace detail
+
 template <typename NEXT = Execute>
 struct OMP_Parallel {
   // Identify this policy
-  using PolicyTag = ForallN_OMP_Parallel_Tag;
+  using PolicyTag = detail::ForallN_OMP_Parallel_Tag;
 
   // The next nested-loop execution policy
   using NextPolicy = NEXT;
 };
-
-
-template <typename Iter>
-using OMP_PolicyPair = ForallN_PolicyPair<omp_collapse_nowait_exec, Iter>;
-
-namespace detail
-{
-template <typename T>
-struct no_const {
-  using type = T;
-};
-
-template <typename T>
-struct no_const<T const> {
-  using type = T;
-};
-}
-
-template <typename T>
-using no_const = typename detail::no_const<T>::type;
 
 /******************************************************************
  *  ForallN collapse nowait execution templates
@@ -108,19 +100,19 @@ using no_const = typename detail::no_const<T>::type;
 
 template <typename Iterable1, typename Iterable2, typename... PREST>
 struct ForallN_Executor<false,
-                        OMP_PolicyPair<Iterable1>,
-                        OMP_PolicyPair<Iterable2>,
+                        detail::CollapsePolPair<Iterable1>,
+                        detail::CollapsePolPair<Iterable2>,
                         PREST...> {
 
-  OMP_PolicyPair<Iterable1> iset_i;
-  OMP_PolicyPair<Iterable2> iset_j;
+  detail::CollapsePolPair<Iterable1> iset_i;
+  detail::CollapsePolPair<Iterable2> iset_j;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
-  constexpr ForallN_Executor(OMP_PolicyPair<Iterable1> const &i,
-                             OMP_PolicyPair<Iterable2> const &j,
+  constexpr ForallN_Executor(detail::CollapsePolPair<Iterable1> const &i,
+                             detail::CollapsePolPair<Iterable2> const &j,
                              PREST const &... prest)
       : iset_i(i), iset_j(j), next_exec(prest...)
   {
@@ -133,6 +125,8 @@ struct ForallN_Executor<false,
     const auto size_i = iset_i.size();
     const auto begin_j = iset_j.begin();
     const auto size_j = iset_j.size();
+
+    using detail::no_const;
 
     ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
@@ -154,22 +148,22 @@ template <typename Iterable1,
           typename Iterable3,
           typename... PREST>
 struct ForallN_Executor<false,
-                        OMP_PolicyPair<Iterable1>,
-                        OMP_PolicyPair<Iterable2>,
-                        OMP_PolicyPair<Iterable3>,
+                        detail::CollapsePolPair<Iterable1>,
+                        detail::CollapsePolPair<Iterable2>,
+                        detail::CollapsePolPair<Iterable3>,
                         PREST...> {
-  OMP_PolicyPair<Iterable1> iset_i;
-  OMP_PolicyPair<Iterable2> iset_j;
-  OMP_PolicyPair<Iterable3> iset_k;
+  detail::CollapsePolPair<Iterable1> iset_i;
+  detail::CollapsePolPair<Iterable2> iset_j;
+  detail::CollapsePolPair<Iterable3> iset_k;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
   constexpr ForallN_Executor(
-      OMP_PolicyPair<Iterable1> const &i,
-      OMP_PolicyPair<Iterable2> const &j,
-      OMP_PolicyPair<Iterable3> const &k,
+      detail::CollapsePolPair<Iterable1> const &i,
+      detail::CollapsePolPair<Iterable2> const &j,
+      detail::CollapsePolPair<Iterable3> const &k,
       PREST... prest)
     : iset_i(i), iset_j(j), iset_k(k), next_exec(prest...)
   {
@@ -184,6 +178,8 @@ struct ForallN_Executor<false,
     const auto size_j = iset_j.size();
     const auto begin_k = iset_k.begin();
     const auto size_k = iset_k.size();
+
+    using detail::no_const;
 
     ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
@@ -210,7 +206,7 @@ struct ForallN_Executor<false,
  * \brief Tiling policy front-end function.
  */
 template <typename POLICY, typename BODY, typename... PARGS>
-RAJA_INLINE void forallN_policy(ForallN_OMP_Parallel_Tag,
+RAJA_INLINE void forallN_policy(detail::ForallN_OMP_Parallel_Tag,
                                 BODY body,
                                 PARGS... pargs)
 {

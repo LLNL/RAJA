@@ -61,9 +61,9 @@
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #endif
 
-#include <algorithm>
+#include <memory>
 #include <type_traits>
-#include <vector>
+#include <utility>
 
 namespace RAJA
 {
@@ -87,6 +87,8 @@ class TypedListSegment
 public:
   using value_type = T;
   using iterator = T*;
+
+  TypedListSegment() = delete;
 
   ///
   /// Construct list segment from given array with specified length.
@@ -113,45 +115,44 @@ public:
   explicit TypedListSegment(const Container& container)
       : m_data(0), m_size(container.size()), m_owned(Unowned)
   {
-    if (container.size() > 0) {
+    if (container.size() <= 0)
+      return;
+
 #if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaMallocManaged((void**)&m_data,
-                                   m_size * sizeof(T),
-                                   cudaMemAttachGlobal));
-      using ContainerType =
-          typename std::remove_const<typename std::remove_reference<decltype(
-              *container.begin())>::type>::type;
-      if (!std::is_pointer<ContainerType>::value
-          && sizeof(ContainerType) == sizeof(value_type)) {
-        // this will bitwise copy signed or unsigned integral types
-        cudaErrchk(cudaMemcpy(m_data,
-                              std::addressof(container[0]),
-                              m_size * sizeof(value_type),
-                              cudaMemcpyDefault));
-      } else {
-        cudaErrchk(cudaDeviceSynchronize());
-        auto self = m_data;
-        auto other = container.begin();
-        auto end = container.end();
-        while (other != end) {
-          *self = *other;
-          ++self;
-          ++other;
-        }
-      }
-#else
-      m_data = new value_type[container.size()];
+    cudaErrchk(cudaMallocManaged((void**)&m_data,
+                                 m_size * sizeof(T),
+                                 cudaMemAttachGlobal));
+    using ContainerType = decltype(*container.begin());
+
+    // this will bitwise copy signed or unsigned integral types
+    if (!std::is_pointer<ContainerType>::value
+        && sizeof(ContainerType) == sizeof(value_type)) {
+      cudaErrchk(cudaMemcpy(m_data,
+                            std::addressof(container[0]),
+                            m_size * sizeof(value_type),
+                            cudaMemcpyDefault));
+      cudaErrchk(cudaDeviceSynchronize());
+    } else {
+      // use a traditional for-loop
+      cudaErrchk(cudaDeviceSynchronize());
       auto self = m_data;
-      auto other = container.begin();
       auto end = container.end();
-      while (other != end) {
+      for (auto other = container.begin(); other != end; ++other) {
         *self = *other;
         ++self;
-        ++other;
       }
-#endif
-      m_owned = Owned;
     }
+#else
+    // CPU -- allocate buffer
+    m_data = new value_type[container.size()];
+    auto self = m_data;
+    auto end = container.end();
+    for (auto other = container.begin(); other != end; ++other) {
+      *self = *other;
+      ++self;
+    }
+#endif
+    m_owned = Owned;
   }
 
   ///
@@ -159,42 +160,22 @@ public:
   ///
   TypedListSegment(const TypedListSegment& other)
   {
+    // future TODO: switch to member initialization list ... somehow
     initIndexData(other.m_data, other.m_size, other.m_owned);
-  }
-
-  ///
-  /// Copy-assignment for list segment.
-  ///
-  TypedListSegment& operator=(const TypedListSegment& rhs)
-  {
-    if (&rhs != this) {
-      TypedListSegment copy(rhs);
-      this->swap(copy);
-    }
-    return *this;
   }
 
   ///
   /// Move-constructor for list segment.
   ///
-  TypedListSegment(TypedListSegment&&) = default;
-
-  ///
-  /// Move-assignment for list segment.
-  ///
-  TypedListSegment& operator=(TypedListSegment&& rhs)
+  TypedListSegment(TypedListSegment&& rhs)
+      : m_data(rhs.m_data), m_size(rhs.m_size), m_owned(rhs.m_owned)
   {
-    if (this != &rhs) {
-      m_data = rhs.m_data;
-      m_size = rhs.m_size;
-      m_owned = rhs.m_owned;
-      rhs.m_data = nullptr;
-    }
-    return *this;
+    // make the rhs non-owning so it's destructor won't have any side effects
+    rhs.m_owned = Unowned;
   }
 
   ///
-  /// Destroy segment including its contents.
+  /// Destroy segment including its contents
   ///
   ~TypedListSegment()
   {
@@ -208,9 +189,19 @@ public:
   }
 
   ///
+  /// Copy-assignment for list segment.
+  ///
+  TypedListSegment& operator=(const TypedListSegment&) = default;
+
+  ///
+  /// Move-assignment for list segment.
+  ///
+  TypedListSegment& operator=(TypedListSegment&&) = default;
+
+  ///
   /// Swap function for copy-and-swap idiom.
   ///
-  void swap(TypedListSegment& other)
+  RAJA_HOST_DEVICE void swap(TypedListSegment& other)
   {
     using std::swap;
     swap(m_data, other.m_data);
@@ -222,11 +213,13 @@ public:
   RAJA_HOST_DEVICE iterator begin() const { return m_data; }
   RAJA_HOST_DEVICE Index_type size() const { return m_size; }
 
-  IndexOwnership getIndexOwnership() const { return m_owned; }
+  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
-  bool indicesEqual(const value_type* container, Index_type len) const
+  RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
+                                     Index_type len) const
   {
-    if (len != m_size || container == 0 || m_data == 0) return false;
+    if (len != m_size || container == nullptr || m_data == nullptr)
+      return false;
 
     for (Index_type i = 0; i < m_size; ++i)
       if (m_data[i] != container[i]) return false;
@@ -237,7 +230,7 @@ public:
   ///
   /// Equality operator returns true if segments are equal; else false.
   ///
-  bool operator==(const TypedListSegment& other) const
+  RAJA_HOST_DEVICE bool operator==(const TypedListSegment& other) const
   {
     return (indicesEqual(other.m_data, other.m_size));
   }
@@ -245,12 +238,10 @@ public:
   ///
   /// Inequality operator returns true if segments are not equal, else false.
   ///
-  bool operator!=(const TypedListSegment& other) const
+  RAJA_HOST_DEVICE bool operator!=(const TypedListSegment& other) const
   {
     return (!(*this == other));
   }
-
-  TypedListSegment() = delete;
 
 private:
   //
@@ -273,7 +264,7 @@ private:
       if (m_owned == Owned) {
 #if defined(RAJA_ENABLE_CUDA)
         cudaErrchk(cudaMallocManaged((void**)&m_data,
-                                     m_size * sizeof(Index_type),
+                                     m_size * sizeof(value_type),
                                      cudaMemAttachGlobal));
         cudaErrchk(cudaMemcpy(
             m_data, container, m_size * sizeof(value_type), cudaMemcpyDefault));
@@ -285,26 +276,30 @@ private:
 #endif
       } else {
         // Uh-oh. Using evil const_cast....
-        m_data = const_cast<Index_type*>(container);
+        m_data = const_cast<value_type*>(container);
       }
     }
   }
 
+  //! buffer storage for list data
   value_type* RAJA_RESTRICT m_data;
+  //! size of list segment
   Index_type m_size;
+  //! ownership flag to guide data copying/management
   IndexOwnership m_owned;
 };
 
+//! alias for A TypedListSegment with storage type @Index_type
 using ListSegment = TypedListSegment<Index_type>;
 
 }  // closing brace for RAJA namespace
 
-/*!
- *  Specialization of std swap method.
- */
 namespace std
 {
 
+/*!
+ *  Specialization of std swap method.
+ */
 template <typename T>
 RAJA_INLINE void swap(RAJA::TypedListSegment<T>& a,
                       RAJA::TypedListSegment<T>& b)
