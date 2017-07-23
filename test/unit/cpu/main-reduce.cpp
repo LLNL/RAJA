@@ -54,6 +54,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/internal/MemUtils_CPU.hpp"
 #include "RAJA/util/defines.hpp"
 
 using namespace RAJA;
@@ -94,7 +95,7 @@ void runBasicMinReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -224,7 +225,7 @@ void runBasicMinLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -357,7 +358,7 @@ void runBasicMaxReductionTest(const string& policy,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -488,7 +489,7 @@ void runBasicMaxLocReductionTest(const string& policy,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -801,7 +802,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   Real_ptr parent;
   parent =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
+    (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);

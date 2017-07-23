@@ -61,6 +61,7 @@
 #include "RAJA/util/types.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
 {

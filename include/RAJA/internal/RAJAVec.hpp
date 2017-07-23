@@ -57,6 +57,9 @@
 #include "RAJA/config.hpp"
 
 #include <algorithm>
+#include <utility>
+
+#include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
 {
