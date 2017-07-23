@@ -85,13 +85,16 @@ template <typename T>
 class TypedListSegment
 {
 public:
+  //! value type for storage
   using value_type = T;
+  //! iterator type for storage (will always be a pointer and conform to RandomAccessIterator
   using iterator = T*;
 
+  //! prevent compiler from providing a default constructor
   TypedListSegment() = delete;
 
   ///
-  /// Construct list segment from given array with specified length.
+  /// \brief Construct list segment from given array with specified length.
   ///
   /// By default the ctor performs deep copy of array elements.
   /// If 'Unowned' is passed as last argument, the constructed object
@@ -102,6 +105,7 @@ public:
                    Index_type length,
                    IndexOwnership owned = Owned)
   {
+    // future TODO -- change to initializer list somehow
     initIndexData(values, length, owned);
   }
 
@@ -179,7 +183,7 @@ public:
   ///
   ~TypedListSegment()
   {
-    if (m_data && m_owned == Owned) {
+    if (m_data != nullptr && m_owned == Owned) {
 #if defined(RAJA_ENABLE_CUDA)
       cudaErrchk(cudaFree(m_data));
 #else
@@ -209,12 +213,17 @@ public:
     swap(m_owned, other.m_owned);
   }
 
+  //! accessor to get the end iterator for a TypedListSegment
   RAJA_HOST_DEVICE iterator end() const { return m_data + m_size; }
+  //! accessor to get the begin iterator for a TypedListSegment
   RAJA_HOST_DEVICE iterator begin() const { return m_data; }
+  //! accessor to retrieve the total number of elements in a TypedListSegment
   RAJA_HOST_DEVICE Index_type size() const { return m_size; }
 
+  //! get ownership of the data (Owned/Unowned)
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
+  //! checks a pointer and size (Span) for equality to all elements in the TypedListSegment
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {
@@ -252,8 +261,8 @@ private:
                      Index_type len,
                      IndexOwnership container_own)
   {
-    if (len <= 0 || container == 0) {
-      m_data = 0;
+    if (len <= 0 || container == nullptr) {
+      m_data = nullptr;
       m_size = 0;
       m_owned = Unowned;
 
@@ -298,7 +307,7 @@ namespace std
 {
 
 /*!
- *  Specialization of std swap method.
+ *  Specialization of std::swap for TypedListSegment
  */
 template <typename T>
 RAJA_INLINE void swap(RAJA::TypedListSegment<T>& a,
