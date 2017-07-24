@@ -47,24 +47,20 @@ raja_add_executable(
 
 raja_add_executable(
   NAME addVectors
-  SOURCES addVectors.cxx)
+  SOURCES addVectors2.cxx)
 
 raja_add_executable(
   NAME matrixMultiply
-  SOURCES matrixMultiply.cxx)
+  SOURCES matrixMultiply2.cxx)
 
 raja_add_executable(
   NAME jacobi
-  SOURCES jacobi.cxx)
+  SOURCES jacobi2.cxx)
 
 raja_add_executable(
   NAME wave
-  SOURCES wave.cxx)
-
-raja_add_executable(
-  NAME spMatVec
-  SOURCES spMatVec.cxx)
+  SOURCES wave2.cxx)
 
 raja_add_executable(
   NAME coloring
-  SOURCES coloring.cxx)
+  SOURCES coloring2.cxx)

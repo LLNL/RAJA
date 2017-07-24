@@ -46,8 +46,6 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-#define CUDA_BLOCK_SIZE 256
-
 void checkSolution(double *C, int in_N);
 
 template <typename T>
@@ -74,6 +72,8 @@ void deallocate(T* &ptr) {
 }
 
 /*Example 2: Multiplying Two Matrices
+  
+  -----[New Concepts]-------------
   1. Introduces nesting of forall loops (Not currently supported in CUDA)
   2. Introduces the forallN variant of the RAJA loop
 */
@@ -155,7 +155,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //----[RAJA: Sequential Policy - forallN policy]-----------
   //nested forall loops may be collaped into a single forallN loop
-  std::cout<<"RAJA: Sequential Policy - nested forallN"<<std::endl;
+  std::cout<<"RAJA: Sequential Policy - forallN"<<std::endl;
   RAJA::forallN< RAJA::NestedPolicy<
   RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
   RAJA::RangeSegment(0, N),
@@ -174,7 +174,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
   //----[RAJA: Omp/Sequential Policy - forallN policy]-----------
-  std::cout<<"RAJA: Omp/Sequential policy - nested forallN"<<std::endl;
+  std::cout<<"RAJA: Omp/Sequential policy - forallN"<<std::endl;
   RAJA::forallN< RAJA::NestedPolicy<
   RAJA::ExecList<RAJA::omp_parallel_for_exec,RAJA::seq_exec >>>(
   RAJA::RangeSegment(0, N),
@@ -193,9 +193,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)  
-  std::cout<<"RAJA: CUDA policy - nested forallN"<<std::endl;
+  std::cout<<"RAJA: CUDA policy - forallN"<<std::endl;
   RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<16>,
-  RAJA::cuda_threadblock_x_exec<16>>>>(
+    RAJA::cuda_threadblock_x_exec<16>>>>(
   RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, N), [=] __device__ (int c, int r) {
                                            
     int cId = c+r*N; double dot=0.0;
@@ -207,10 +207,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     C[cId] = dot;
     
   });
-  cudaDeviceSynchronize(); //Perhaps this hide this inside the lambda call?
+  cudaDeviceSynchronize(); //Perhaps hide this inside the lambda call?
   checkSolution(C,N);
   std::cout<<"\n"<<std::endl;
 #endif
+
+  deallocate(A);
+  deallocate(B);
+  deallocate(C);
   
   return 0;
 }

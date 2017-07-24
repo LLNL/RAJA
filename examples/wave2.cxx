@@ -248,8 +248,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   ct = (cc*dt*dt)/(grid.dx*grid.dx); //Merge coefficients to a single coefficient
 
   
-
-  //----[C-Loop Style]------
+  //----[C++-Loop Style]------
   std::cout<<"C++-Style Loop"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
