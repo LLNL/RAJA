@@ -51,7 +51,7 @@
 void checkSolution(int *C, int in_N);
 
 
-//RAJA does not do memory management. 
+//RAJA does not do memory management
 int * allocate(RAJA::Index_type size) {
   int * ptr;
 #if defined(RAJA_ENABLE_CUDA)
@@ -74,13 +74,16 @@ void deallocate(int* &ptr) {
 }
 
 /*Example 1: Adding Two Vectors
+  Details: Adds two vectors of length N
 
-  -----[New Concepts]---------------
-  1. Introduces the forall for loop and basic RAJA policies. 
+  -----[RAJA-Concepts]---------------
+  1. Introduces the forall loop and basic RAJA policies
 
   ----[RAJA forall loop]---------------
   RAJA::forall<RAJA::exec_policy>(RAJA::range_policy,[=](index i)) {
-  //body
+
+         //body
+
   });
   
   ----[Arguments]--------------
@@ -116,14 +119,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //======================================
      
   
-  /* 
-  //----[RAJA: Sequential Policy]---------
-  RAJA::seq_exec -  Executes the loop in serial     
+  /*----[RAJA: Sequential Policy]---------  
+  RAJA::seq_exec -  Executes the loop sequentially
 
-  RAJA::RangeSegment(start,stop) - generates a list of numbers, 
-  which is may be used to iterate over a for loop. 
+  RAJA::RangeSegment(start,stop) - generates a sequence of numbers
+  which a RAJA loop may use to iterate on
+ 
   start - starting number of the sequence
-  stop  - generated numbers up, but not including N
+  stop  - ending number the sequence is generated to but not included
   */
   std::cout<<"RAJA: Sequential Policy"<<std::endl;
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int i) {
@@ -155,11 +158,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   //----[RAJA: CUDA Policy]---------
   /*
-    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API. 
+    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes RAJA-loop using the CUDA API
     Each thread is assigned to an iteration of the loop
 
-    CUDA_BLOCK_SIZE - specifies the number of threads per block
-    on a one dimension compute grid
+    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension    
    */
   std::cout<<"RAJA: CUDA Policy"<<std::endl;  
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0,N),[=] __device__(int i) {
