@@ -74,9 +74,11 @@ void deallocate(int* &ptr) {
 }
 
 /*Example 1: Adding Two Vectors
-  Details: Adds two vectors of length N
 
-  -----[RAJA-Concepts]---------------
+  ----[Details]---------------------
+  Adds two vectors of length N
+
+  -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
   ----[RAJA forall loop]---------------
@@ -110,7 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
   //----[Standard C++ loop]---------------
-  std::cout<<"Standard C++ loop"<<std::endl;
+  std::cout<<"Traditional C++ Loop"<<std::endl;
   for(int i=0; i<N; ++i) {
     C[i] = A[i] + B[i];
   }
