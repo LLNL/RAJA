@@ -90,7 +90,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int maxIter = 10000;
   int N = 100;
   int NN=(N+2)*(N+2);
-  unsigned int iteration;
+  int iteration;
   double resI2, V, invD;
 
   double *I    = allocate<double>(NN);
@@ -109,10 +109,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   while(resI2>tol*tol){
     
     //Iteration of the Jacobi Scheme
-    for(unsigned int n=1;n<=N;++n){
-      for(unsigned int m=1;m<=N;++m){
+    for(int n=1;n<=N;++n){
+      for(int m=1;m<=N;++m){
 
-        unsigned int id = n*(N+2) + m;
+        int id = n*(N+2) + m;
         //Cell (1,1) is a special case
         if(n==1 && m==1){
           invD = 1./3.; V =1; 
@@ -127,7 +127,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     //Compute ||I - I_{old}||_{\ifinity} 
     resI2 = 0.0; 
-    for(unsigned int k=0; k<NN; k++){
+    for(int k=0; k<NN; k++){
       resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
       Iold[k]=I[k];
     }
@@ -156,7 +156,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::RangeSegment(1, (N+1)),
     [=](int m, int n) { 
 
-      unsigned int id = n*(N+2) + m;
+      int id = n*(N+2) + m;
       if(n==1 && m==1){
         double invD = 1./3.; double V = 1; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
@@ -209,7 +209,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::RangeSegment(1, (N+1)),
     [=](int m, int n) { 
       
-      unsigned int id = n*(N+2) + m;
+      int id = n*(N+2) + m;
       if(n==1 && m==1){
         double invD = 1./3.; double V = 1; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
@@ -254,7 +254,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>>(
     RAJA::RangeSegment(1, (N+1)), RAJA::RangeSegment(1, (N+1)), [=] __device__ (int m, int n) {
      
-      unsigned int id = n*(N+2) + m;
+      int id = n*(N+2) + m;
       if(n==1 && m==1){
         double invD = 1./3.; double V = 1; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
