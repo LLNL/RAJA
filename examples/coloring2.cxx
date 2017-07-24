@@ -52,6 +52,8 @@
 
 /*
   Example 5: Coloring
+
+  ----[Details]-------------------
   Assuming a grid with the following contents
   
   grid = [1, 2, 1, 2,
@@ -59,10 +61,11 @@
           1, 2, 1, 2,
           3, 4, 3, 4];
 
-  This code illustrates how to create a forall loop which
-  first iterates entries which hold a 1 value, then 2, etc...
-  Here each number will will be treated as corresponding to a numeber.
-
+  This codes illustrates how to create custom list on which
+  a RAJA forall loop may iterate on. Here the loop will first iterate 
+  over indeces with a 1 value then 2, etc... The numbers may be viewed as
+  corresponding to a color. 
+  
   //--------[New Concepts]---------
   1. Constructing custom IndexSets
   2. RAJA::View
@@ -123,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::free_aligned(idx);
 
   
-  //----[RAJA Sequantial Policy]---------
+  //----[RAJA Sequential Policy]---------
   //RAJA: Seq_segit - Sequational Segment Iteraion
   using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;  
   RAJA::forall<ColorPolicy>(colorset, [&](int idx) {
