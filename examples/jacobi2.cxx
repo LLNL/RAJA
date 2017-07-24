@@ -77,9 +77,40 @@ void deallocate(T* &ptr) {
 
 /*Example 3: Jacobi Method For Solving a Linear System
 
-  ----[New Concept]---------------
-  1. RAJA Style Reduction
+  ----[Details]--------------------
+  The following code uses the jacobi method to compute the currents in a
+  structured grid by solving a linear system correspoding to kirchoff's 
+  circuit law. 
 
+  The structured N x N circuit may be visualized as follows: 
+
+  - Dash lines correspond to lossless wires,
+  - The circles correspond to lossless juntions
+  - The [] correspond to 1 Ohm resistors
+  - The [x] corresponds to a 1 volt DC battery which powers the grid
+  
+  o--[]--o--[]--o--[]--o--[]--o
+  |      |      |      |      |  
+  []    []     []     []     []     
+  |      |      |      |      |
+  o--[]--o--[]--o--[]--o--[]--o
+  |      |      |      |      |  
+  []    []     []     []     []     
+  |      |      |      |      |
+  o--[]--o--[]--o--[]--o--[]--o
+  |      |      |      |      |  
+  []    []     []     []     []     
+  |      |      |      |      |
+  o--[]--o--[]--o--[]--o--[]--o
+  |      |      |      |      |  
+  [x]    []     []     []     []     
+  |      |      |      |      |
+  o--[]--o--[]--o--[]--o--[]--o
+
+
+  ----[RAJA Concepts]---------------
+  1. RAJA Reduction
+  2. RAJA::omp_collapse_nowait_exec
 */
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -103,8 +134,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memset(Iold,0,NN*sizeof(double));
 
 
-  //----[Standard C approach]-----
-  printf("Standard C++/loop\n");
+  //----[Standard C++ Loops]-----
+  printf("Traditional  C++ Loop \n");
   resI2 = 1;  iteration = 0; 
 
   //Carry out iterations of the Jacobi scheme until a tolerance is met
@@ -115,7 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       for(int m=1;m<=N;++m){
 
         int id = n*(N+2) + m;
-        //Cell (1,1) is a special case
+        //Cell (1,1) is a special case due to battery
         if(n==1 && m==1){
           invD = 1./3.; V =1; 
           I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
@@ -127,7 +158,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       }
     }
 
-    //Compute ||I - I_{old}||_{\ifinity} 
+    //Compute ||I - I_{old}||_{\ifinity}    
     resI2 = 0.0; 
     for(int k=0; k<NN; k++){
       resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
@@ -135,7 +166,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
     
     if(iteration > maxIter){        
-      printf("Standard C++ loop - too many iterations!\n");
+      printf("Traditional C++ loop - Maxed out on iterations \n");
       exit(-1);
     }
 
@@ -146,7 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //======================================
 
   //----[RAJA: Nested Sequential Policy]---------
-  printf("RAJA Nested Loop Sequential Policy: \n");
+  printf("RAJA: Sequential Nested Loop Policy \n"); 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
@@ -154,8 +185,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         
     RAJA::forallN< RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
-    RAJA::RangeSegment(1, (N+1)),
-    RAJA::RangeSegment(1, (N+1)),
+    RAJA::RangeSegment(1, N+1),
+    RAJA::RangeSegment(1, N+1),
     [=](int m, int n) { 
 
       int id = n*(N+2) + m;
@@ -171,8 +202,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     /*----[Reduction step]---------
       The RAJA API introduces an accumulation variable
-      ReduceSum creates a thread-safe variable tailored to each execution policy
-      Analogous to introducing an atompic operator in omp
+      "ReduceSum" which creates a thread-safe variable tailored to
+      each execution policy. 
+
+      Analogous to introducing an atomic operator in OpenMP
     */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::seq_reduce>(0, NN, [=](int k) {
@@ -183,7 +216,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2; 
     if(iteration > maxIter){        
-      printf("RAJA-Seq - too many iterations\n");
+      printf("RAJA::Sequential - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -200,9 +233,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memset(Iold,0,NN*sizeof(double));
   while(resI2 > tol*tol){
         
-
     /*
-      RAJA::omp_collapse_nowait_exec - parallizes nested loops without introducing nested parallism      
+      RAJA::omp_collapse_nowait_exec -
+      parallizes nested loops without introducing nested parallism
     */
 
     RAJA::forallN< RAJA::NestedPolicy<
@@ -232,12 +265,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2; 
     if(iteration > maxIter){        
-      std::cout<<"RAJA:OpenMP - too many iterations!"<<std::endl;
+      printf("RAJA::OpenMP - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
   }
-  printf("RAJA Nested Loop Sequential Policy: \n");
+  printf("RAJA: OpenMP Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
@@ -282,7 +315,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     iteration++;
   }
   cudaDeviceSynchronize();
-  printf("RAJA Nested Loop CUDA Policy: \n");
+  printf("RAJA: CUDA Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
