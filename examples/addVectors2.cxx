@@ -111,7 +111,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
 
 
-  //----[Standard C++ loop]---------------
+  //----[Standard C++ Loop]---------------
   std::cout<<"Traditional C++ Loop"<<std::endl;
   for(int i=0; i<N; ++i) {
     C[i] = A[i] + B[i];
@@ -126,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::RangeSegment(start,stop) - generates a sequence of numbers
   which a RAJA loop may use to iterate on
- 
+
   start - starting number of the sequence
   stop  - ending number the sequence is generated to but not included
   */
