@@ -121,14 +121,16 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   // Clear temporary buffer
   RAJA::free_aligned(idx);
+
   
-  //----[RAJA Policy]---------
+  //----[RAJA Sequantial Policy]---------
   //RAJA: Seq_segit - Sequational Segment Iteraion
   using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;  
   RAJA::forall<ColorPolicy>(colorset, [&](int idx) {
       printf("A[%d] = %d\n", idx, A[idx]);
     });  
   //==========================
+
 
   
   return 0;
