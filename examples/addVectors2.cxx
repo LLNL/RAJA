@@ -74,17 +74,20 @@ void deallocate(int* &ptr) {
 }
 
 /*Example 1: Adding Two Vectors
-  
-  Introduces the forall for loop and basic RAJA policies.   
 
-  //----[RAJA forall loop]---------------
+  -----[New Concepts]---------------
+  1. Introduces the forall for loop and basic RAJA policies. 
+
+  ----[RAJA forall loop]---------------
   RAJA::forall<RAJA::exec_policy>(RAJA::range_policy,[=](index i)) {
   //body
   });
   
+  ----[Arguments]--------------
+  [=] Corresponds to pass by copy
+  [&] Corresponds to pass by reference
   RAJA::exec_policy  - specifies where and how the traversal occurs
-  RAJA::range_policy - provides a list in which the index may iterate on  
-
+  RAJA::range_policy - provides a list in which the index may iterate on
  */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
@@ -97,7 +100,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int *C = allocate(N);
   
   //Populate vectors
-  for(int i=0; i<N; ++i){
+  for(int i=0; i<N; ++i) {
     A[i] = i;
     B[i] = i;
   }
@@ -105,7 +108,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //----[Standard C++ loop]---------------
   std::cout<<"Standard C++ loop"<<std::endl;
-  for(int i=0; i<N; ++i){
+  for(int i=0; i<N; ++i) {
     C[i] = A[i] + B[i];
   }
   checkSolution(C,N);
@@ -123,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   stop  - generated numbers up, but not including N
   */
   std::cout<<"RAJA: Sequential Policy"<<std::endl;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int i){
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int i) {
       C[i] = A[i] + B[i];     
     });
   checkSolution(C,N);
@@ -139,7 +142,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
    */  
 
   std::cout<<"RAJA: OpenMP Policy"<<std::endl;
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0,N),[=](int i){
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0,N),[=](int i) {
       C[i] = A[i] + B[i];     
     });
   checkSolution(C,N);
@@ -159,7 +162,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     on a one dimension compute grid
    */
   std::cout<<"RAJA: CUDA Policy"<<std::endl;  
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0,N),[=] __device__(int i){
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0,N),[=] __device__(int i) {
       C[i] = A[i] + B[i];
     });
 
