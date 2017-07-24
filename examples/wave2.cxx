@@ -60,6 +60,7 @@ typedef struct grid{
 
 template <typename T>
 T* allocate(RAJA::Index_type size) {
+
   T* ptr;
 #if defined(RAJA_ENABLE_CUDA)
   cudaMallocManaged((void**)&ptr, sizeof(T)*size,cudaMemAttachGlobal);
@@ -164,7 +165,7 @@ struct Wave<DefaultCPP, DefaultCPP> {
 
 };
 
-// RAJA implementation for CUDA                                                                                              
+// RAJA implementation for CUDA
 template <size_t BLOCK_SIZE>
 struct Wave<RAJA::cuda_exec<BLOCK_SIZE>, RAJA::cuda_exec<BLOCK_SIZE> > {
   template <typename T>
@@ -210,9 +211,14 @@ double wave_sol(double t, double x, double y);
 void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid);
 void compute_err(double *P, double tf, grid_s grid);
 
-/* Example 4: Two dimensional solver for the acoustic wave eqation P_tt = c^2(P_xx + P_yy)
-   Scheme uses a second order spatial discretization for P_tt and a
-   fourth order spatial discretization in space. Periodic boundary conditions are assumed.
+/*
+  Example 4: Two dimensional solver for the acoustic wave eqation P_tt = cc(P_xx + P_yy)  
+
+  ------[Details]----------------------
+  Scheme uses a second order finite diffrence discretization for P_tt and a
+  fourth order spatial discretization in space. Periodic boundary conditions are assumed.
+  NOTE: The x and y dimensions are discretized identically. 
+
  */
 
 //
@@ -242,14 +248,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   
   //Parameters for time stepping
   double dt, nt,time, ct;
-  dt = 0.01*(grid.dx/sqrt(cc));  //intial step size, we must obey CFL condition
-  nt = ceil(T/dt); //total number of time steps
-  dt = T/nt; //final time-step 
+  dt = 0.01*(grid.dx/sqrt(cc));  //Intial step size, we must obey CFL condition
+  nt = ceil(T/dt); //Total number of time steps
+  dt = T/nt; //Final time-step 
   ct = (cc*dt*dt)/(grid.dx*grid.dx); //Merge coefficients to a single coefficient
 
   
-  //----[C++-Loop Style]------
-  std::cout<<"C++-Style Loop"<<std::endl;
+  //----[Standard C++ Loop]------------
+  std::cout<<"Traditional C++ Loop"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k){
@@ -262,11 +268,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     P1 = Temp;
   }  
   compute_err(P2, time, grid);
-  std::cout<<"Evolved solution to time: "<<time<<"\n \n"<<std::endl;
+  std::cout<<"Evolved Solution To Time: "<<time<<"\n \n"<<std::endl;
   //========================
 
   //---[RAJA-Style Sequential Policy]--
-  std::cout<<"RAJA-Style Sequential Loop"<<std::endl;
+  std::cout<<"RAJA: Sequential Policy"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k){
@@ -279,11 +285,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     P1 = Temp;
   }  
   compute_err(P2, time, grid);
-  std::cout<<"Evolved solution to time: "<<time<<"\n \n"<<std::endl;
+  std::cout<<"Evolved Solution To Time: "<<time<<"\n \n"<<std::endl;
   //===================================
   
   //---[RAJA-Style Omp/Seq Policy]--
-  std::cout<<"RAJA-Style OMP/Seq Loop"<<std::endl;
+  std::cout<<"RAJA: OMP/Seq Policy"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k){
@@ -296,13 +302,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     P1 = Temp;
   }  
   compute_err(P2, time, grid);
-  std::cout<<"Evolved solution to time: "<<time<<"\n \n"<<std::endl;
+  std::cout<<"Evolved Solution To Time: "<<time<<"\n \n"<<std::endl;
   //===================================
 
   //---[RAJA-Style CUDA Policy]--
-  std::cout<<"RAJA-Style CUDA Loop"<<std::endl;
-  time = 0; 
-
+  std::cout<<"RAJA: CUDA Policy"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k){
@@ -316,7 +320,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }  
   cudaDeviceSynchronize();
   compute_err(P2, time, grid); 
-  std::cout<<"Evolved solution to time: "<<time<<"\n \n"<<std::endl;
+  std::cout<<"Evolved Solution To Time: "<<time<<"\n \n"<<std::endl;
   //===================================
 
   deallocate(P1);
