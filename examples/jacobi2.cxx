@@ -74,9 +74,11 @@ void deallocate(T* &ptr) {
 }
 
 
+
 /*Example 3: Jacobi Method For Solving a Linear System
 
-  1. Introduces reduction operator
+  ----[New Concept]---------------
+  1. RAJA Style Reduction
 
 */
 
@@ -285,6 +287,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n",iteration);
   //======================================
 #endif
+
+  deallocate(I);
+  deallocate(Iold);
 
   return 0;
 }
