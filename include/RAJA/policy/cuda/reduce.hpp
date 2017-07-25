@@ -94,7 +94,7 @@ struct atomic<sum<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::_atomicAdd(&val, v);
+    RAJA::cuda::atomicAdd(&val, v);
   }
 };
 
@@ -104,7 +104,7 @@ struct atomic<min<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::_atomicMin(&val, v);
+    RAJA::cuda::atomicMin(&val, v);
   }
 };
 
@@ -114,7 +114,7 @@ struct atomic<max<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::_atomicMax(&val, v);
+    RAJA::cuda::atomicMax(&val, v);
   }
 };
 
@@ -730,16 +730,14 @@ struct ReduceLoc_Data {
   }
 };
 
-}  // end namespace cuda
-
 //! Cuda Reduction entity -- generalize on reduction, and type
 template <bool Async, typename Reducer, typename T>
-struct CudaReduce {
-  CudaReduce() = delete;
+struct Reduce {
+  Reduce() = delete;
 
   //! create a reduce object
   //  the original object's parent is itself
-  explicit CudaReduce(T init_val)
+  explicit Reduce(T init_val)
       : parent{this},
         info{},
         val(init_val)
@@ -748,7 +746,7 @@ struct CudaReduce {
 
   //! copy and on host attempt to setup for device
   RAJA_HOST_DEVICE
-  CudaReduce(const CudaReduce & other)
+  Reduce(const Reduce & other)
 #if !defined(__CUDA_ARCH__)
       : parent{other.parent},
 #else
@@ -769,7 +767,7 @@ struct CudaReduce {
   //! apply reduction upon destruction and cleanup resources owned by this copy
   //  on device store in pinned buffer on host
   RAJA_HOST_DEVICE
-  ~CudaReduce()
+  ~Reduce()
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
@@ -803,7 +801,7 @@ struct CudaReduce {
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc(val.device_count, (numBlocks - 1));
+            ::atomicInc(val.device_count, (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
 
@@ -850,7 +848,7 @@ struct CudaReduce {
 
   //! apply reduction
   RAJA_HOST_DEVICE
-  CudaReduce &reduce(T rhsVal)
+  Reduce &reduce(T rhsVal)
   {
     Reducer{}(val.value, rhsVal);
     return *this;
@@ -858,7 +856,7 @@ struct CudaReduce {
 
   //! apply reduction (const version) -- still reduces internal values
   RAJA_HOST_DEVICE
-  const CudaReduce &reduce(T rhsVal) const
+  const Reduce &reduce(T rhsVal) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
     auto ptr = const_cast<NonConst>(this);
@@ -867,7 +865,7 @@ struct CudaReduce {
   }
 
 private:
-  const CudaReduce<Async, Reducer, T>* parent;
+  const Reduce<Async, Reducer, T>* parent;
   //! storage for offload information (host ID, device ID)
   cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
@@ -947,12 +945,12 @@ private:
 
 //! Cuda Reduction Atomic entity -- generalize on reduction, and type
 template <bool Async, typename Reducer, typename T>
-struct CudaReduceAtomic {
-  CudaReduceAtomic() = delete;
+struct ReduceAtomic {
+  ReduceAtomic() = delete;
 
   //! create a reduce object
   //  the original object's parent is itself
-  explicit CudaReduceAtomic(T init_val)
+  explicit ReduceAtomic(T init_val)
       : parent{this},
         info{},
         val{init_val}
@@ -962,7 +960,7 @@ struct CudaReduceAtomic {
   //! copy and on host attempt to setup for device
   //  on device initialize device memory
   RAJA_HOST_DEVICE
-  CudaReduceAtomic(const CudaReduceAtomic & other)
+  ReduceAtomic(const ReduceAtomic & other)
 #if !defined(__CUDA_ARCH__)
       : parent{other.parent},
 #else
@@ -984,11 +982,11 @@ struct CudaReduceAtomic {
                      + (blockDim.x * blockDim.y) * threadIdx.z;
                      
       if (threadId == 0) {
-        unsigned int old_val = atomicCAS(val.device_count, 0u, 1u);
+        unsigned int old_val = ::atomicCAS(val.device_count, 0u, 1u);
         if (old_val == 0u) {
           val.device[0] = Reducer::identity;
           __threadfence();
-          atomicAdd(val.device_count, 1u);
+          ::atomicAdd(val.device_count, 1u);
         }
       }
     }
@@ -998,7 +996,7 @@ struct CudaReduceAtomic {
   //! apply reduction upon destruction and cleanup resources owned by this copy
   //  on device store in pinned buffer on host
   RAJA_HOST_DEVICE
-  ~CudaReduceAtomic()
+  ~ReduceAtomic()
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
@@ -1027,7 +1025,7 @@ struct CudaReduceAtomic {
         __threadfence();
         RAJA::reduce::cuda::atomic<Reducer>{}(val.device[0], temp);
         __threadfence();
-        unsigned int old_val = atomicInc(val.device_count, 1u + numBlocks);
+        unsigned int old_val = ::atomicInc(val.device_count, 1u + numBlocks);
         if (old_val == 1u + numBlocks) {
           val.tally.val_ptr[0] = val.device[0];
         }
@@ -1057,7 +1055,7 @@ struct CudaReduceAtomic {
 
   //! apply reduction
   RAJA_HOST_DEVICE
-  CudaReduceAtomic &reduce(T rhsVal)
+  ReduceAtomic &reduce(T rhsVal)
   {
     Reducer{}(val.value, rhsVal);
     return *this;
@@ -1065,7 +1063,7 @@ struct CudaReduceAtomic {
 
   //! apply reduction (const version) -- still reduces internal values
   RAJA_HOST_DEVICE
-  const CudaReduceAtomic &reduce(T rhsVal) const
+  const ReduceAtomic &reduce(T rhsVal) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
     auto ptr = const_cast<NonConst>(this);
@@ -1074,7 +1072,7 @@ struct CudaReduceAtomic {
   }
 
 private:
-  const CudaReduceAtomic<Async, Reducer, T>* parent;
+  const ReduceAtomic<Async, Reducer, T>* parent;
   //! storage for offload information (host ID, device ID)
   cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
@@ -1154,12 +1152,12 @@ private:
 
 //! Cuda Reduction Location entity -- generalize on reduction, and type
 template <bool Async, typename Reducer, typename T, typename IndexType>
-struct CudaReduceLoc {
-  CudaReduceLoc() = delete;
+struct ReduceLoc {
+  ReduceLoc() = delete;
 
   //! create a reduce object
   //  the original object's parent is itself
-  explicit CudaReduceLoc(T init_val, IndexType init_loc)
+  explicit ReduceLoc(T init_val, IndexType init_loc)
       : parent{this},
         info{},
         val{init_val, init_loc}
@@ -1168,7 +1166,7 @@ struct CudaReduceLoc {
 
   //! copy and on host attempt to setup for device
   RAJA_HOST_DEVICE
-  CudaReduceLoc(const CudaReduceLoc & other)
+  ReduceLoc(const ReduceLoc & other)
 #if !defined(__CUDA_ARCH__)
       : parent{other.parent},
 #else
@@ -1189,7 +1187,7 @@ struct CudaReduceLoc {
   //! apply reduction upon destruction and cleanup resources owned by this copy
   //  on device store in pinned buffer on host
   RAJA_HOST_DEVICE
-  ~CudaReduceLoc()
+  ~ReduceLoc()
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
@@ -1224,7 +1222,7 @@ struct CudaReduceLoc {
         __threadfence();
         // increment counter, (wraps back to zero if old val == second parameter)
         unsigned int oldBlockCount =
-            atomicInc(val.device_count, (numBlocks - 1));
+            ::atomicInc(val.device_count, (numBlocks - 1));
         lastBlock = (oldBlockCount == (numBlocks - 1));
       }
 
@@ -1280,7 +1278,7 @@ struct CudaReduceLoc {
 
   //! apply reduction
   RAJA_HOST_DEVICE
-  CudaReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
+  ReduceLoc &reduce(T rhsVal, IndexType rhsLoc)
   {
     Reducer{}(val.value, val.index, rhsVal, rhsLoc);
     return *this;
@@ -1288,7 +1286,7 @@ struct CudaReduceLoc {
 
   //! apply reduction (const version) -- still reduces internal values
   RAJA_HOST_DEVICE
-  const CudaReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
+  const ReduceLoc &reduce(T rhsVal, IndexType rhsLoc) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
     auto ptr = const_cast<NonConst>(this);
@@ -1298,7 +1296,7 @@ struct CudaReduceLoc {
   }
 
 private:
-  const CudaReduceLoc<Async, Reducer, T, IndexType>* parent;
+  const ReduceLoc<Async, Reducer, T, IndexType>* parent;
   //! storage for offload information
   cuda::Offload_Info info;
   //! storage for reduction data for value and location
@@ -1385,12 +1383,14 @@ private:
   }
 };
 
+}  // end namespace cuda
+
 //! specialization of ReduceSum for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduce<Async, RAJA::reduce::sum<T>, T> {
+    : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T> {
   using self = ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduce<Async, RAJA::reduce::sum<T>, T>;
+  using parent = cuda::Reduce<Async, RAJA::reduce::sum<T>, T>;
   using parent::parent;
   //! enable operator+= for ReduceSum -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1411,9 +1411,9 @@ struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceSum for cuda_reduce_atomic
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
-    : public CudaReduceAtomic<Async, RAJA::reduce::sum<T>, T> {
+    : public cuda::ReduceAtomic<Async, RAJA::reduce::sum<T>, T> {
   using self = ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduceAtomic<Async, RAJA::reduce::sum<T>, T>;
+  using parent = cuda::ReduceAtomic<Async, RAJA::reduce::sum<T>, T>;
   using parent::parent;
   //! enable operator+= for ReduceSum -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1434,9 +1434,9 @@ struct ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMin for cuda_reduce_atomic
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
-    : public CudaReduceAtomic<Async, RAJA::reduce::min<T>, T> {
+    : public cuda::ReduceAtomic<Async, RAJA::reduce::min<T>, T> {
   using self = ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduceAtomic<Async, RAJA::reduce::min<T>, T>;
+  using parent = cuda::ReduceAtomic<Async, RAJA::reduce::min<T>, T>;
   using parent::parent;
   //! enable min() for ReduceMin -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1457,9 +1457,9 @@ struct ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMax for cuda_reduce_atomic
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
-    : public CudaReduceAtomic<Async, RAJA::reduce::max<T>, T> {
+    : public cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T> {
   using self = ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduceAtomic<Async, RAJA::reduce::max<T>, T>;
+  using parent = cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T>;
   using parent::parent;
   //! enable max() for ReduceMax -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1480,9 +1480,9 @@ struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMin for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduce<Async, RAJA::reduce::min<T>, T> {
+    : public cuda::Reduce<Async, RAJA::reduce::min<T>, T> {
   using self = ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduce<Async, RAJA::reduce::min<T>, T>;
+  using parent = cuda::Reduce<Async, RAJA::reduce::min<T>, T>;
   using parent::parent;
   //! enable min() for ReduceMin -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1503,9 +1503,9 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMax for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduce<Async, RAJA::reduce::max<T>, T> {
+    : public cuda::Reduce<Async, RAJA::reduce::max<T>, T> {
   using self = ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>;
-  using parent = CudaReduce<Async, RAJA::reduce::max<T>, T>;
+  using parent = cuda::Reduce<Async, RAJA::reduce::max<T>, T>;
   using parent::parent;
   //! enable max() for ReduceMax -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1526,10 +1526,10 @@ struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMinLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduceLoc<Async, RAJA::reduce::minloc<T, Index_type>, T, Index_type> {
+    : public cuda::ReduceLoc<Async, RAJA::reduce::minloc<T, Index_type>, T, Index_type> {
   using self = ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>;
   using parent =
-    CudaReduceLoc<Async, RAJA::reduce::minloc<T, Index_type>, T, Index_type>;
+    cuda::ReduceLoc<Async, RAJA::reduce::minloc<T, Index_type>, T, Index_type>;
   using parent::parent;
   //! enable minloc() for ReduceMinLoc -- alias for reduce()
   RAJA_HOST_DEVICE
@@ -1550,10 +1550,10 @@ struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>
 //! specialization of ReduceMaxLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T>
-    : public CudaReduceLoc<Async, RAJA::reduce::maxloc<T, Index_type>, T, Index_type> {
+    : public cuda::ReduceLoc<Async, RAJA::reduce::maxloc<T, Index_type>, T, Index_type> {
   using self = ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T>;
   using parent =
-    CudaReduceLoc<Async, RAJA::reduce::maxloc<T, Index_type>, T, Index_type>;
+    cuda::ReduceLoc<Async, RAJA::reduce::maxloc<T, Index_type>, T, Index_type>;
   using parent::parent;
   //! enable maxloc() for ReduceMaxLoc -- alias for reduce()
   RAJA_HOST_DEVICE

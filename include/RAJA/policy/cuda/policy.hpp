@@ -175,17 +175,20 @@ struct cuda_reduce_atomic
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
 
+namespace cuda
+{
+
 //
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
 constexpr int WARP_SIZE = 32;
-constexpr int RAJA_CUDA_MAX_BLOCK_SIZE = 1024;
-constexpr int MAX_WARPS = RAJA_CUDA_MAX_BLOCK_SIZE / WARP_SIZE;
+constexpr int MAX_BLOCK_SIZE = 1024;
+constexpr int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
       "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
-static_assert(RAJA_CUDA_MAX_BLOCK_SIZE % WARP_SIZE == 0,
-      "RAJA Assumption Broken: RAJA_CUDA_MAX_BLOCK_SIZE not "
+static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
+      "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
       "a multiple of WARP_SIZE");
 
 //
@@ -210,21 +213,21 @@ static_assert(RAJA_CUDA_MAX_BLOCK_SIZE % WARP_SIZE == 0,
  ******************************************************************************
  */
 template <typename T>
-__device__ inline T _atomicMin(T *address, T value)
+__device__ inline T atomicMin(T *address, T value)
 {
-  return atomicMin(address, value);
+  return ::atomicMin(address, value);
 }
 ///
 template <typename T>
-__device__ inline T _atomicMax(T *address, T value)
+__device__ inline T atomicMax(T *address, T value)
 {
-  return atomicMax(address, value);
+  return ::atomicMax(address, value);
 }
 ///
 template <typename T>
-__device__ inline T _atomicAdd(T *address, T value)
+__device__ inline T atomicAdd(T *address, T value)
 {
-  return atomicAdd(address, value);
+  return ::atomicAdd(address, value);
 }
 
 //
@@ -241,7 +244,7 @@ __device__ inline T _atomicAdd(T *address, T value)
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicMin(double *address, double value)
+__device__ inline double atomicMin(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -251,7 +254,7 @@ __device__ inline double _atomicMin(double *address, double value)
     unsigned long long *address_as_ull =
         reinterpret_cast<unsigned long long *>(address);
 
-    while ((readback = atomicCAS(address_as_ull, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address_as_ull, oldval, newval)) != oldval) {
       oldval = readback;
       newval = double_to_ull(RAJA_MIN(ull_to_double(oldval), value));
     }
@@ -261,7 +264,7 @@ __device__ inline double _atomicMin(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMin(float *address, float value)
+__device__ inline float atomicMin(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -270,7 +273,7 @@ __device__ inline float _atomicMin(float *address, float value)
     newval = __float_as_int(value);
     int *address_as_i = reinterpret_cast<int *>(address);
 
-    while ((readback = atomicCAS(address_as_i, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address_as_i, oldval, newval)) != oldval) {
       oldval = readback;
       newval = __float_as_int(RAJA_MIN(__int_as_float(oldval), value));
     }
@@ -280,7 +283,7 @@ __device__ inline float _atomicMin(float *address, float value)
 }
 ///
 template <>
-__device__ inline double _atomicMax(double *address, double value)
+__device__ inline double atomicMax(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -290,7 +293,7 @@ __device__ inline double _atomicMax(double *address, double value)
     unsigned long long *address_as_ull =
         reinterpret_cast<unsigned long long *>(address);
 
-    while ((readback = atomicCAS(address_as_ull, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address_as_ull, oldval, newval)) != oldval) {
       oldval = readback;
       newval = double_to_ull(RAJA_MAX(ull_to_double(oldval), value));
     }
@@ -300,7 +303,7 @@ __device__ inline double _atomicMax(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMax(float *address, float value)
+__device__ inline float atomicMax(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -309,7 +312,7 @@ __device__ inline float _atomicMax(float *address, float value)
     newval = __float_as_int(value);
     int *address_as_i = reinterpret_cast<int *>(address);
 
-    while ((readback = atomicCAS(address_as_i, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address_as_i, oldval, newval)) != oldval) {
       oldval = readback;
       newval = __float_as_int(RAJA_MAX(__int_as_float(oldval), value));
     }
@@ -322,7 +325,7 @@ __device__ inline float _atomicMax(float *address, float value)
 #else
 ///
 template <>
-__device__ inline unsigned long long int _atomicMin(
+__device__ inline unsigned long long int atomicMin(
     unsigned long long int *address,
     unsigned long long int value)
 {
@@ -333,7 +336,7 @@ __device__ inline unsigned long long int _atomicMin(
     oldval = temp;
     newval = value;
 
-    while ((readback = atomicCAS(address, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address, oldval, newval)) != oldval) {
       oldval = readback;
       newval = RAJA_MIN(oldval, value);
     }
@@ -342,7 +345,7 @@ __device__ inline unsigned long long int _atomicMin(
 }
 ///
 template <>
-__device__ inline unsigned long long int _atomicMax(
+__device__ inline unsigned long long int atomicMax(
     unsigned long long int *address,
     unsigned long long int value)
 {
@@ -353,7 +356,7 @@ __device__ inline unsigned long long int _atomicMax(
     oldval = readback;
     newval = value;
 
-    while ((readback = atomicCAS(address, oldval, newval)) != oldval) {
+    while ((readback = ::atomicCAS(address, oldval, newval)) != oldval) {
       oldval = readback;
       newval = RAJA_MAX(oldval, value);
     }
@@ -373,13 +376,13 @@ __device__ inline unsigned long long int _atomicMax(
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicAdd(double *address, double value)
+__device__ inline double atomicAdd(double *address, double value)
 {
   unsigned long long oldval, newval, readback;
 
   oldval = __double_as_longlong(*address);
   newval = __double_as_longlong(__longlong_as_double(oldval) + value);
-  while ((readback = atomicCAS((unsigned long long *)address, oldval, newval))
+  while ((readback = ::atomicCAS((unsigned long long *)address, oldval, newval))
          != oldval) {
     oldval = readback;
     newval = __double_as_longlong(__longlong_as_double(oldval) + value);
@@ -401,7 +404,7 @@ __device__ inline double _atomicAdd(double *address, double value)
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicMin(double *address, double value)
+__device__ inline double atomicMin(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp > value) {
@@ -413,7 +416,7 @@ __device__ inline double _atomicMin(double *address, double value)
     do {
       assumed = oldval;
       oldval =
-          atomicCAS(address_as_ull,
+          ::atomicCAS(address_as_ull,
                     assumed,
                     double_to_ull(RAJA_MIN(ull_to_double(assumed), value)));
     } while (assumed != oldval);
@@ -423,7 +426,7 @@ __device__ inline double _atomicMin(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMin(float *address, float value)
+__device__ inline float atomicMin(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp > value) {
@@ -433,7 +436,7 @@ __device__ inline float _atomicMin(float *address, float value)
     do {
       assumed = oldval;
       oldval =
-          atomicCAS(address_as_i,
+          ::atomicCAS(address_as_i,
                     assumed,
                     __float_as_int(RAJA_MIN(__int_as_float(assumed), value)));
     } while (assumed != oldval);
@@ -443,7 +446,7 @@ __device__ inline float _atomicMin(float *address, float value)
 }
 ///
 template <>
-__device__ inline double _atomicMax(double *address, double value)
+__device__ inline double atomicMax(double *address, double value)
 {
   double temp = *(reinterpret_cast<double volatile *>(address));
   if (temp < value) {
@@ -455,7 +458,7 @@ __device__ inline double _atomicMax(double *address, double value)
     do {
       assumed = oldval;
       oldval =
-          atomicCAS(address_as_ull,
+          ::atomicCAS(address_as_ull,
                     assumed,
                     double_to_ull(RAJA_MAX(ull_to_double(assumed), value)));
     } while (assumed != oldval);
@@ -465,7 +468,7 @@ __device__ inline double _atomicMax(double *address, double value)
 }
 ///
 template <>
-__device__ inline float _atomicMax(float *address, float value)
+__device__ inline float atomicMax(float *address, float value)
 {
   float temp = *(reinterpret_cast<float volatile *>(address));
   if (temp < value) {
@@ -475,7 +478,7 @@ __device__ inline float _atomicMax(float *address, float value)
     do {
       assumed = oldval;
       oldval =
-          atomicCAS(address_as_i,
+          ::atomicCAS(address_as_i,
                     assumed,
                     __float_as_int(RAJA_MAX(__int_as_float(assumed), value)));
     } while (assumed != oldval);
@@ -489,7 +492,7 @@ __device__ inline float _atomicMax(float *address, float value)
 #else
 ///
 template <>
-__device__ inline unsigned long long int _atomicMin(
+__device__ inline unsigned long long int atomicMin(
     unsigned long long int *address,
     unsigned long long int value)
 {
@@ -500,7 +503,7 @@ __device__ inline unsigned long long int _atomicMin(
     unsigned long long int oldval = temp;
     do {
       assumed = oldval;
-      oldval = atomicCAS(address, assumed, RAJA_MIN(assumed, value));
+      oldval = ::atomicCAS(address, assumed, RAJA_MIN(assumed, value));
     } while (assumed != oldval);
     temp = oldval;
   }
@@ -508,7 +511,7 @@ __device__ inline unsigned long long int _atomicMin(
 }
 ///
 template <>
-__device__ inline unsigned long long int _atomicMax(
+__device__ inline unsigned long long int atomicMax(
     unsigned long long int *address,
     unsigned long long int value)
 {
@@ -519,7 +522,7 @@ __device__ inline unsigned long long int _atomicMax(
     unsigned long long int oldval = temp;
     do {
       assumed = oldval;
-      oldval = atomicCAS(address, assumed, RAJA_MAX(assumed, value));
+      oldval = ::atomicCAS(address, assumed, RAJA_MAX(assumed, value));
     } while (assumed != oldval);
     temp = oldval;
   }
@@ -538,7 +541,7 @@ __device__ inline unsigned long long int _atomicMax(
  ******************************************************************************
  */
 template <>
-__device__ inline double _atomicAdd(double *address, double value)
+__device__ inline double atomicAdd(double *address, double value)
 {
   unsigned long long int *address_as_ull = (unsigned long long int *)address;
   unsigned long long int oldval = *address_as_ull, assumed;
@@ -546,7 +549,7 @@ __device__ inline double _atomicAdd(double *address, double value)
   do {
     assumed = oldval;
     oldval =
-        atomicCAS(address_as_ull,
+        ::atomicCAS(address_as_ull,
                   assumed,
                   __double_as_longlong(__longlong_as_double(oldval) + value));
   } while (assumed != oldval);
@@ -559,6 +562,8 @@ __device__ inline double _atomicAdd(double *address, double value)
 #error one of the options for using/not using atomics must be specified
 
 #endif
+
+} // namespace cuda
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
