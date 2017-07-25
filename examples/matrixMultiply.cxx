@@ -71,8 +71,8 @@ void deallocate(T* &ptr) {
   }
 }
 
-/*Example 2: Multiplying Two Matrices
-
+/*  
+  Example 2: Multiplying Two Matrices
   
   ----[Details]--------------------
   Multiplies two N x N matrices
@@ -80,9 +80,7 @@ void deallocate(T* &ptr) {
   -----[RAJA Concepts]-------------
   1. Introduces nesting of forall loops (Not currently supported in CUDA)
   2. Introduces forallN variant of the RAJA loop
-
 */
-
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -95,13 +93,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double *B = allocate<double>(NN);
   double *C = allocate<double>(NN);
 
-  //Populate Matrix
   for(int i=0; i<NN; ++i) {
     A[i] = 1.0;
     B[i] = 1.0;
   }
 
-  //----[Standard C++ loop]---------------  
+
   std::cout<<"Standard C++ Loop"<<std::endl;
   for(int r=0; r<N; ++r) {
     for(int c=0; c<N; ++c) {
@@ -122,11 +119,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout<<"\n"<<std::endl;
   //======================================
 
-  //-----[RAJA: Sequential Policy - Single Forall loop]----------
+
   std::cout<<"RAJA: Sequential Policy - Single forall"<<std::endl;
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,NN),[=](int i) {
-
-      //Generate column and row index
+      /*
+        Generate column and row index
+      */
       int c = i%N; int r=i/N;
       
       int cId = c+r*N; double dot=0.0;
@@ -144,11 +142,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout<<"\n"<<std::endl;
   //======================================
 
-  //-----[RAJA: Sequential Policy - Nested Forall Statements]---
-  /*
-     Forall loops may be nested under sequential and OpenMP policies only
-  */
+  
   std::cout<<"RAJA: Sequential Policy - Nested forall"<<std::endl;
+  /*
+    Forall loops may be nested under sequential and omp policies
+  */
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int r) {
       RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int c) {
       
@@ -168,12 +166,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::cout<<"\n"<<std::endl;
   //======================================
 
-  /*----[RAJA: Sequential Policy - ForallN Policy]-----------
-    
-    Nested forall loops may be collapsed into a single forallN loop
-
-  */
   std::cout<<"RAJA: Sequential Policy - forallN"<<std::endl;
+  /*    
+    Nested forall loops may be collapsed into a single forallN loop
+  */
   RAJA::forallN< RAJA::NestedPolicy<
   RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
   RAJA::RangeSegment(0, N),
@@ -195,8 +191,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //===========================================
 
 #if defined(RAJA_ENABLE_OPENMP)
-  //----[RAJA: Omp/Sequential Policy - forallN]-----------
-  std::cout<<"RAJA: Omp/Sequential Policy - forallN"<<std::endl;
+  std::cout<<"RAJA: OpenMP/Sequential Policy - forallN"<<std::endl;
+  /*
+    Here the outer loop is excuted in parallel while the inner loop 
+    is executed sequentially
+  */
   RAJA::forallN< RAJA::NestedPolicy<
   RAJA::ExecList<RAJA::omp_parallel_for_exec,RAJA::seq_exec >>>(
   RAJA::RangeSegment(0, N),
@@ -218,12 +217,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)  
-  /*----[RAJA: CUDA Policy - forallN]---------------
-    
-    This example illustrates creating two-dimensional thread blocks
-    
-  */
   std::cout<<"RAJA: CUDA Policy - forallN"<<std::endl;
+  /*
+    This example illustrates creating two-dimensional thread blocks as described 
+    under the CUDA nomenclature    
+  */
   RAJA::forallN<RAJA::NestedPolicy<
   RAJA::ExecList<
   RAJA::cuda_threadblock_y_exec<16>,
@@ -254,7 +252,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 }
 
 void checkSolution(double *C, int in_N) {
-
 
   bool eFlag = true;
   for(int id=0; id<in_N*in_N; ++id) {
