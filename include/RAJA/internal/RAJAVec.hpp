@@ -57,6 +57,9 @@
 #include "RAJA/config.hpp"
 
 #include <algorithm>
+#include <utility>
+
+#include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
 {
@@ -77,14 +80,14 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename T>
+template <typename T, typename _Allocator = std::allocator<T> >
 class RAJAVec
 {
 public:
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_t init_cap = 0) : m_capacity(0), m_size(0), m_data(0)
+  explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator()) : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
   {
     grow_cap(init_cap);
   }
@@ -125,7 +128,7 @@ public:
   ///
   ~RAJAVec()
   {
-    if (m_capacity > 0) delete[] m_data;
+    if (m_capacity > 0) m_allocator.deallocate(m_data, m_capacity);
   }
 
   using iterator = T*;
@@ -154,6 +157,25 @@ public:
   /// Return current size of vector.
   ///
   size_t size() const { return m_size; }
+
+  RAJA_INLINE
+  void resize(size_t new_size){
+    grow_cap(new_size);
+    m_size = new_size;
+  }
+
+  RAJA_INLINE
+  void resize(size_t new_size, T const &new_value){
+    grow_cap(new_size);
+
+    if(new_size > m_size){
+      for(size_t i = m_size;i < new_size;++ i){
+        m_data[i] = new_value;
+      }
+    }
+
+    m_size = new_size;
+  }
 
   ///
   /// Const bracket operator.
@@ -214,13 +236,13 @@ private:
     }
 
     if (m_capacity < target_cap) {
-      T* tdata = new T[target_cap];
+      T* tdata = m_allocator.allocate(target_cap);
 
       if (m_data) {
         for (size_t i = 0; (i < m_size) && (i < target_cap); ++i) {
           tdata[i] = m_data[i];
         }
-        delete[] m_data;
+        m_allocator.deallocate(m_data, m_capacity);
       }
 
       m_data = tdata;
@@ -247,6 +269,8 @@ private:
     m_size++;
   }
 
+  typedef _Allocator allocator_type;
+  allocator_type m_allocator;
   size_t m_capacity;
   size_t m_size;
   T* m_data;
@@ -259,10 +283,10 @@ private:
 *
 *************************************************************************
 */
-template <typename T>
-const size_t RAJAVec<T>::s_init_cap = 8;
-template <typename T>
-const double RAJAVec<T>::s_grow_fac = 1.5;
+template <typename T, typename _Allocator>
+const size_t RAJAVec<T, _Allocator>::s_init_cap = 8;
+template <typename T, typename _Allocator>
+const double RAJAVec<T, _Allocator>::s_grow_fac = 1.5;
 
 }  // closing brace for RAJA namespace
 

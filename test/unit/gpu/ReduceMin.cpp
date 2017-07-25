@@ -175,7 +175,7 @@ int main(int argc, char *argv[])
 
       dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
             dmin0.min(dvalue[i]);
             dmin1.min(2 * dvalue[i]);
@@ -236,7 +236,7 @@ int main(int argc, char *argv[])
 
       dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
             dmin0.min(dvalue[i]);
             dmin1.min(2 * dvalue[i]);

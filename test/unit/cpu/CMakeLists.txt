@@ -77,6 +77,5 @@ if (NOT MSVC)
   raja_add_test(
     NAME test-forall
     SOURCES test-forall.cpp
-    DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}) 
+    DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif ()
-

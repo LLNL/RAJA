@@ -54,6 +54,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/internal/MemUtils_CPU.hpp"
 #include "RAJA/util/defines.hpp"
 
 using namespace RAJA;
@@ -90,11 +91,11 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const IndexSet& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -114,7 +115,7 @@ void runBasicMinReductionTest(const string& policy,
 #if 0
    cout << "ref_min_indx = " << ref_min_indx << endl;
    cout << "ref_min_val = " << ref_min_val << endl;
-   cout << "test_array[ref_min_indx] = " 
+   cout << "test_array[ref_min_indx] = "
              << test_array[ref_min_indx] << endl;
 #endif
 
@@ -158,7 +159,7 @@ void runBasicMinReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN REDUCE tests...." << endl;
@@ -167,16 +168,16 @@ void runMinReduceTests(Real_ptr in_array,
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
-  runBasicMinReductionTest<IndexSet::ExecPolicy<seq_segit, seq_exec>,
+  runBasicMinReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
 
-  runBasicMinReductionTest<IndexSet::ExecPolicy<seq_segit, simd_exec>,
+  runBasicMinReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
 #ifdef RAJA_ENABLE_OPENMP
-  runBasicMinReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicMinReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -185,7 +186,7 @@ void runMinReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMinReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMinReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 seq_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -194,7 +195,7 @@ void runMinReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMinReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMinReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 simd_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -220,11 +221,11 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMinLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const IndexSet& iset,
+                                 const RAJA::IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values positve
@@ -244,7 +245,7 @@ void runBasicMinLocReductionTest(const string& policy,
 #if 0
    cout << "ref_min_indx = " << ref_min_indx << endl;
    cout << "ref_min_val = " << ref_min_val << endl;
-   cout << "test_array[ref_min_indx] = " 
+   cout << "test_array[ref_min_indx] = "
              << test_array[ref_min_indx] << endl;
 #endif
 
@@ -260,8 +261,7 @@ void runBasicMinLocReductionTest(const string& policy,
     s_ntests_run_total++;
 
     //    cout << "k = " << k << endl;
-
-    forall<ISET_POLICY_T>(iset, [=](Index_type idx) {
+    forallN<NestedPolicy<ExecList<ISET_POLICY_T> > >(iset, [=](Index_type idx) {
       tmin0.minloc(k * test_array[idx], idx);
       tmin1.minloc(test_array[idx], idx);
     });
@@ -292,7 +292,7 @@ void runBasicMinLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMinLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const IndexSet& iset,
+                          const RAJA::IndexSet& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MIN-LOC REDUCE tests...." << endl;
@@ -301,16 +301,16 @@ void runMinLocReduceTests(Real_ptr in_array,
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<seq_segit, seq_exec>,
+  runBasicMinLocReductionTest<ExecPolicy<seq_segit, seq_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
 
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<seq_segit, simd_exec>,
+  runBasicMinLocReductionTest<ExecPolicy<seq_segit, simd_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
 #ifdef RAJA_ENABLE_OPENMP
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicMinLocReductionTest<ExecPolicy<seq_segit,
                                                    omp_parallel_for_exec>,
                               omp_reduce>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -319,7 +319,7 @@ void runMinLocReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMinLocReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                    seq_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -328,7 +328,7 @@ void runMinLocReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMinLocReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMinLocReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                    simd_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -354,11 +354,11 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type alen,
-                              const IndexSet& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -378,7 +378,7 @@ void runBasicMaxReductionTest(const string& policy,
 #if 0
    cout << "ref_max_indx = " << ref_max_indx << endl;
    cout << "ref_max_val = " << ref_max_val << endl;
-   cout << "test_array[ref_max_indx] = " 
+   cout << "test_array[ref_max_indx] = "
              << test_array[ref_max_indx] << endl;
 #endif
 
@@ -423,7 +423,7 @@ void runBasicMaxReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX REDUCE tests...." << endl;
@@ -432,16 +432,16 @@ void runMaxReduceTests(Real_ptr in_array,
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<seq_segit, seq_exec>,
+  runBasicMaxReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
 
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<seq_segit, simd_exec>,
+  runBasicMaxReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
 #ifdef RAJA_ENABLE_OPENMP
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicMaxReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -450,7 +450,7 @@ void runMaxReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMaxReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 seq_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -459,7 +459,7 @@ void runMaxReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMaxReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMaxReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 simd_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -485,11 +485,11 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicMaxLocReductionTest(const string& policy,
                                  Real_ptr in_array,
                                  Index_type alen,
-                                 const IndexSet& iset,
+                                 const RAJA::IndexSet& iset,
                                  const RAJAVec<Index_type>& is_indices)
 {
   Real_ptr test_array;
-  test_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+  test_array = (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
 
   //
   // Make all test array values negative
@@ -509,7 +509,7 @@ void runBasicMaxLocReductionTest(const string& policy,
 #if 0
    cout << "ref_max_indx = " << ref_max_indx << endl;
    cout << "ref_max_val = " << ref_max_val << endl;
-   cout << "test_array[ref_max_indx] = " 
+   cout << "test_array[ref_max_indx] = "
              << test_array[ref_max_indx] << endl;
 #endif
 
@@ -557,7 +557,7 @@ void runBasicMaxLocReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runMaxLocReduceTests(Real_ptr in_array,
                           Index_type alen,
-                          const IndexSet& iset,
+                          const RAJA::IndexSet& iset,
                           const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall MAX-LOC REDUCE tests...." << endl;
@@ -566,16 +566,16 @@ void runMaxLocReduceTests(Real_ptr in_array,
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<seq_segit, seq_exec>,
+  runBasicMaxLocReductionTest<ExecPolicy<seq_segit, seq_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
 
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<seq_segit, simd_exec>,
+  runBasicMaxLocReductionTest<ExecPolicy<seq_segit, simd_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
 #ifdef RAJA_ENABLE_OPENMP
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicMaxLocReductionTest<ExecPolicy<seq_segit,
                                                    omp_parallel_for_exec>,
                               omp_reduce>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -584,7 +584,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMaxLocReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                    seq_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -593,7 +593,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicMaxLocReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicMaxLocReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                    simd_exec>,
                               omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -619,7 +619,7 @@ template <typename ISET_POLICY_T, typename REDUCE_POLICY_T>
 void runBasicSumReductionTest(const string& policy,
                               Real_ptr in_array,
                               Index_type RAJA_UNUSED_ARG(alen),
-                              const IndexSet& iset,
+                              const RAJA::IndexSet& iset,
                               const RAJAVec<Index_type>& is_indices)
 {
   //
@@ -675,7 +675,7 @@ void runBasicSumReductionTest(const string& policy,
 ///////////////////////////////////////////////////////////////////////////
 void runSumReduceTests(Real_ptr in_array,
                        Index_type alen,
-                       const IndexSet& iset,
+                       const RAJA::IndexSet& iset,
                        const RAJAVec<Index_type>& is_indices)
 {
   cout << "\n\n   BEGIN RAJA::forall SUM REDUCE tests...." << endl;
@@ -684,16 +684,16 @@ void runSumReduceTests(Real_ptr in_array,
   s_ntests_run = 0;
   s_ntests_passed = 0;
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit, seq_exec>,
+  runBasicSumReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit, simd_exec>,
+  runBasicSumReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
 #ifdef RAJA_ENABLE_OPENMP
-  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicSumReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -702,7 +702,7 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicSumReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 seq_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -711,7 +711,7 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicSumReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 simd_exec>,
                            omp_reduce>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -720,7 +720,7 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<seq_segit,
+  runBasicSumReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce_ordered>(
       "ExecPolicy<seq_segit, omp_parallel_for_exec>",
@@ -729,7 +729,7 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicSumReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 seq_exec>,
                            omp_reduce_ordered>(
       "ExecPolicy<omp_parallel_for_segit, seq_exec>",
@@ -738,7 +738,7 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 
-  runBasicSumReductionTest<IndexSet::ExecPolicy<omp_parallel_for_segit,
+  runBasicSumReductionTest<ExecPolicy<omp_parallel_for_segit,
                                                 simd_exec>,
                            omp_reduce_ordered>(
       "ExecPolicy<omp_parallel_for_segit, simd_exec>",
@@ -747,7 +747,6 @@ void runSumReduceTests(Real_ptr in_array,
       iset,
       is_indices);
 #endif
-
   cout << "\n tests passed / test run: " << s_ntests_passed << " / "
        << s_ntests_run << endl;
 
@@ -770,7 +769,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   //  All methods to construct index sets should generate equivalent results.
   //
-  IndexSet index[NumBuildMethods];
+  RAJA::IndexSet  index[NumBuildMethods];
   for (unsigned ibuild = 0; ibuild < NumBuildMethods; ++ibuild) {
     last_indx =
         max(last_indx,
@@ -794,7 +793,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   ///////////////////////////////////////////////////////////////////////////
 
-  IndexSet& iset = index[0];
+  RAJA::IndexSet& iset = index[0];
 
   const Index_type array_length = last_indx + 1;
 
@@ -803,7 +802,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
   //
   Real_ptr parent;
   parent =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
+    (Real_ptr)RAJA::allocate_aligned(DATA_ALIGN, array_length * sizeof(Real_type));
 
   for (Index_type i = 0; i < array_length; ++i) {
     parent[i] = Real_type(rand() % 65536);
@@ -846,8 +845,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
    for (Index_type i = 0; i < is_indices.size(); ++i) {
       ref_sum += parent[ is_indices[i] ];
    }
-  
-   double osum1 = 0.0; 
+
+   double osum1 = 0.0;
    double osum2 = 5.0;
 
    double omin1 = 1.0e+20;
@@ -856,19 +855,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
 #pragma omp parallel for reduction(+ : osum1, osum2) reduction(min : omin1, \
                                                                omin2)
    for (int i = 0; i < len; ++i) {
-      osum1 += parent[ is_indices[i] ]; 
+      osum1 += parent[ is_indices[i] ];
       osum2 += 1.0;
       if ( min_array[ i ] < omin1 ) omin1 = min_array[ i ];
       if ( min_array[ i ] < omin2 ) omin2 = min_array[ i ];
-   } 
+   }
 
-   cout << "\n\nReduceSum OpenMP: osum1 = " << osum1 
+   cout << "\n\nReduceSum OpenMP: osum1 = " << osum1
              << " -- ( " << ref_sum << " )" << endl;
-   cout << "ReduceSum OpenMP: osum2 = " << osum2 
+   cout << "ReduceSum OpenMP: osum2 = " << osum2
              << " -- ( " << iset.getLength() + 5.0 << " )" << endl;
-   cout << "ReduceMin OpenMP: omin1 = " << omin1 
+   cout << "ReduceMin OpenMP: omin1 = " << omin1
              << " -- ( " << ref_min_val << " )" << endl;
-   cout << "ReduceMin OpenMP: omin2 = " << omin2 
+   cout << "ReduceMin OpenMP: omin2 = " << omin2
              << " -- ( " << -200.0 << " )" << endl;
 
 #endif
