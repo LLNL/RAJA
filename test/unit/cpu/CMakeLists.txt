@@ -41,7 +41,6 @@
 #
 ###############################################################################
 
-set_source_files_properties(buildIndexSet.cpp PROPERTIES CUDA_SOURCE_PROPERTY_FORMAT OBJ)
 raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
 target_link_libraries(bis RAJA)
 
