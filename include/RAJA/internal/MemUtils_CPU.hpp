@@ -58,7 +58,7 @@
 
 #include "RAJA/util/types.hpp"
 
-#include <stddef.h>
+#include <cstddef>
 
 namespace RAJA
 {

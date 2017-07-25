@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   RAJA header file defining segment base class.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_BaseSegment_HPP
-#define RAJA_BaseSegment_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -53,98 +40,59 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-#include "RAJA/util/types.hpp"
-
-namespace RAJA
-{
-
 /*!
  ******************************************************************************
  *
- * \brief  Base class for all segment classes.
+ * \file
+ *
+ * \brief   Forward declarations for impl::forall overloads
  *
  ******************************************************************************
  */
-class BaseSegment
+
+#ifndef RAJA_policy_fwd_HPP
+#define RAJA_policy_fwd_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/policy/cuda/fwd.hpp"
+#endif
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/fwd.hpp"
+#endif
+#include "RAJA/policy/sequential/fwd.hpp"
+#include "RAJA/policy/simd/fwd.hpp"
+
+namespace RAJA
 {
-public:
-  ///
-  /// Ctor for base segment type.
-  ///
-  explicit BaseSegment(SegmentType type) : m_type(type), m_private(0) { ; }
+template <typename Selector, typename... Policies>
+class MultiPolicy;
 
-  /*
-   * Using compiler-generated copy ctor, copy assignment.
-   */
+namespace impl
+{
 
-  ///
-  /// Virtual dtor.
-  ///
-  virtual ~BaseSegment() { ; }
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
+                        Iterable &&,
+                        Body &&);
+} // end namespace impl
 
-  ///
-  /// Get index count associated with start of segment.
-  ///
-  SegmentType getType() const { return m_type; }
+namespace wrap {
 
-  ///
-  /// Retrieve pointer to private data. Must be cast to proper type by user.
-  ///
-  void* getPrivate() const { return m_private; }
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
+                        Iterable &&,
+                        Body &&);
 
-  ///
-  /// Set pointer to private data. Can be used to associate any data
-  /// to segment.
-  ///
-  /// NOTE: Caller retains ownership of data object.
-  ///
-  void setPrivate(void* ptr) { m_private = ptr; }
+}
 
-  //
-  // Pure virtual methods that must be provided by concrete segment classes.
-  //
-
-  ///
-  /// Get segment length (i.e., number of indices in segment).
-  ///
-  virtual Index_type getLength() const = 0;
-
-  ///
-  /// Return enum value indicating whether segment owns the data rapresenting
-  /// its indices.
-  ///
-  virtual IndexOwnership getIndexOwnership() const = 0;
-
-  ///
-  /// Pure virtual equality operator returns true if segments are equal;
-  /// else false.
-  ///
-  virtual bool operator==(const BaseSegment& other) const = 0;
-
-  ///
-  /// Pure virtual inequality operator returns true if segments are not
-  /// equal, else false.
-  ///
-  virtual bool operator!=(const BaseSegment& other) const = 0;
-
-private:
-  ///
-  /// The default ctor is not implemented.
-  ///
-  BaseSegment();
-
-  ///
-  /// Enum value indicating segment type.
-  ///
-  SegmentType m_type;
-
-  ///
-  /// Pointer that can be used to hold arbitrary data associated with segment.
-  ///
-  void* m_private;
-};
-
-}  // closing brace for RAJA namespace
+} // end namespace RAJA
 
 #endif  // closing endif for header file include guard

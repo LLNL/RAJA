@@ -16,6 +16,8 @@
 #define RAJA_forall_cuda_HPP
 
 #include "RAJA/config.hpp"
+#include "RAJA/pattern/forall.hpp"
+
 
 #if defined(RAJA_ENABLE_CUDA)
 
@@ -77,15 +79,6 @@ namespace RAJA
 
 namespace impl
 {
-
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                                         LOOP_BODY&& loop_body);
-
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall_Icount(const IndexSetSegInfo* seg_info,
-                                                LOOP_BODY&& loop_body);
-
 //
 //////////////////////////////////////////////////////////////////////
 //
@@ -129,8 +122,8 @@ __device__ __forceinline__ unsigned int getGlobalIdx_3D_3D()
   unsigned int blockId =
       blockIdx.x + blockIdx.y * gridDim.x + gridDim.x * gridDim.y * blockIdx.z;
   unsigned int threadId = blockId * (blockDim.x * blockDim.y * blockDim.z)
-                        + (threadIdx.z * (blockDim.x * blockDim.y))
-                        + (threadIdx.y * blockDim.x) + threadIdx.x;
+                          + (threadIdx.z * (blockDim.x * blockDim.y))
+                          + (threadIdx.y * blockDim.x) + threadIdx.x;
   return threadId;
 }
 __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
@@ -139,9 +132,6 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
       blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
-
-}  // end INTERNAL namespace for helper functions
-
 
 /*!
  ******************************************************************************
@@ -156,7 +146,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    IndexType length)
 {
   auto body = loop_body;
-  auto ii = static_cast<IndexType>(INTERNAL::getGlobalIdx_1D_1D());
+  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
     body(idx[ii]);
   }
@@ -171,18 +161,23 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY, typename IndexType, typename IndexType2>
-__global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
+template <typename Iterator,
+          typename LoopBody,
+          typename IndexType,
+          typename IndexType2>
+__global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
                                           const Iterator idx,
                                           IndexType length,
                                           IndexType2 icount)
 {
   auto body = loop_body;
-  auto ii = static_cast<IndexType>(INTERNAL::getGlobalIdx_1D_1D());
+  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
   if (ii < length) {
     body(static_cast<IndexType>(ii + icount), idx[ii]);
   }
 }
+
+}  // end INTERNAL namespace for helper functions
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -192,10 +187,10 @@ __global__ void forall_Icount_cuda_kernel(LOOP_BODY loop_body,
 ////////////////////////////////////////////////////////////////////////
 //
 
-template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY>
-RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
                         Iterable&& iter,
-                        LOOP_BODY&& loop_body)
+                        LoopBody&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end   = std::end(iter);
@@ -225,11 +220,16 @@ RAJA_INLINE void forall(cuda_exec<BLOCK_SIZE, Async>,
 }
 
 
-template <size_t BLOCK_SIZE, bool Async, typename Iterable, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
-                               Iterable&& iter,
-                               IndexType icount,
-                               LOOP_BODY&& loop_body)
+template <typename Iterable,
+          typename IndexType,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(cuda_exec<BlockSize, Async>,
+              Iterable&& iter,
+              IndexType icount,
+              LoopBody&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end   = std::end(iter);
@@ -276,22 +276,25 @@ RAJA_INLINE void forall_Icount(cuda_exec<BLOCK_SIZE, Async>,
  *
  ******************************************************************************
  */
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY>
-RAJA_INLINE void forall(
-    IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
-    const IndexSet& iset,
-    LOOP_BODY&& loop_body)
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                        const StaticIndexSet<SegmentTypes...>& iset,
+                        LoopBody&& loop_body)
 {
-
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
-    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall<cuda_exec<BLOCK_SIZE, true>>(seg_info, loop_body);
-
+    iset.segmentCall(isi,
+                     CallForall(),
+                     cuda_exec<BlockSize, Async>(),
+                     loop_body);
   }  // iterate over segments of index set
 
   if (!Async) cuda::synchronize();
 }
+
 
 /*!
  ******************************************************************************
@@ -305,17 +308,21 @@ RAJA_INLINE void forall(
  *
  ******************************************************************************
  */
-template <size_t BLOCK_SIZE, bool Async, typename LOOP_BODY>
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
 RAJA_INLINE void forall_Icount(
-    IndexSet::ExecPolicy<seq_segit, cuda_exec<BLOCK_SIZE, Async>>,
-    const IndexSet& iset,
-    LOOP_BODY&& loop_body)
+    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+    const StaticIndexSet<SegmentTypes...>& iset,
+    LoopBody&& loop_body)
 {
   auto num_seg = iset.getNumSegments();
   for (decltype(num_seg) isi = 0; isi < num_seg; ++isi) {
-    const IndexSetSegInfo* seg_info = iset.getSegmentInfo(isi);
-    executeRangeList_forall_Icount<cuda_exec<BLOCK_SIZE, true>>(seg_info,
-                                                                loop_body);
+    iset.segmentCall(isi,
+                     CallForallIcount(iset.getStartingIcount(isi)),
+                     cuda_exec<BlockSize>(),
+                     loop_body);
 
   }  // iterate over segments of index set
 

@@ -57,22 +57,14 @@
 
 #include "RAJA/config.hpp"
 
+#include <cstddef>
+
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
 
 namespace RAJA
 {
-
-///
-/// Enum describing index set types.
-///
-enum SegmentType {
-  _RangeSeg_,
-  _RangeStrideSeg_,
-  _ListSeg_,
-  _UnknownSeg_  // Keep last; used for default in case stmts
-};
 
 ///
 /// Enumeration used to indicate whether IndexSet objects own data
@@ -83,7 +75,7 @@ enum IndexOwnership { Unowned, Owned };
 ///
 /// Type use for all loop indexing in RAJA constructs.
 ///
-typedef int Index_type;
+using Index_type = std::ptrdiff_t;
 
 ///
 /// Integer value for undefined indices and other integer values.

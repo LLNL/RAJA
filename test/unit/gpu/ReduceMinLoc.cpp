@@ -190,7 +190,7 @@ int main(int argc, char *argv[])
       dvalue[index] = droll;
       dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
             dmin0.minloc(dvalue[i], i);
             dmin1.minloc(2 * dvalue[i], i);
@@ -258,7 +258,7 @@ int main(int argc, char *argv[])
       dvalue[index] = droll;
       dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
-      forall<IndexSet::ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+      forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
           iset, [=] __device__(int i) {
             dmin0.minloc(dvalue[i], i);
             dmin1.minloc(2 * dvalue[i], i);
