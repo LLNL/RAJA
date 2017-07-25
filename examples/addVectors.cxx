@@ -110,7 +110,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
 
   //----[Standard C++ Loop]---------------
-  std::cout<<"Traditional C++ Loop"<<std::endl;
+  std::cout<<"Standard C++ Loop"<<std::endl;
   for(int i=0; i<N; ++i) {
     C[i] = A[i] + B[i];
   }
