@@ -41,7 +41,6 @@
 ###############################################################################
 
 macro(raja_add_executable)
-
   set(options )
   set(singleValueArgs NAME)
   set(multiValueArgs SOURCES DEPENDS_ON)
@@ -67,7 +66,7 @@ macro(raja_add_executable)
         PROPERTIES
         CUDA_SOURCE_PROPERTY_FORMAT OBJ)
       cuda_add_executable(${arg_NAME} ${arg_SOURCES})
-      target_link_libraries(${arg_NAME} RAJA ${arg_DEPENDS_ON})
+      target_link_libraries(${arg_NAME} PUBLIC RAJA ${arg_DEPENDS_ON})
     endif()
   else ()
     add_executable(${arg_NAME} ${arg_SOURCES})
