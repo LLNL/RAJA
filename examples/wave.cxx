@@ -86,7 +86,7 @@ void deallocate(T* &ptr) {
 
 struct DefaultCPP{};
 
-// Generic RAJA implementation for CPU                                                                                       
+//Generic RAJA implementation for CPU
 template <typename Policy1, typename Policy2>
 struct Wave {
   template <typename T>  
@@ -127,7 +127,7 @@ struct Wave {
 };
 
 
-// Generic CPP implementation                                                                                                
+// Generic CPP implementation
 template <>
 struct Wave<DefaultCPP, DefaultCPP> {
   template <typename T>
@@ -136,8 +136,8 @@ struct Wave<DefaultCPP, DefaultCPP> {
     double coeff[5] = {-1.0/12.0,4.0/3.0,-5.0/2.0,4.0/3.0,-1.0/12.0}; //fourth order scheme
     
     // loop over points
-    for(int ty=0; ty<nx; ++ty){
-      for(int tx=0; tx<nx; ++tx){
+    for(int ty=0; ty<nx; ++ty) {
+      for(int tx=0; tx<nx; ++tx) {
         
         const int id = tx + ty*nx;
         T P_old  = P1[id]; 
@@ -146,7 +146,7 @@ struct Wave<DefaultCPP, DefaultCPP> {
         //Compute laplacian
         T lap = 0.0;
         
-        for(int r=-sr; r<=sr; ++r){
+        for(int r=-sr; r<=sr; ++r) {
           const int xi  = (tx+r+nx)%nx;
           const int idx = xi + nx*ty;
           lap += coeff[r+sr]*P2[idx]; 
@@ -169,7 +169,7 @@ struct Wave<DefaultCPP, DefaultCPP> {
 template <size_t BLOCK_SIZE>
 struct Wave<RAJA::cuda_exec<BLOCK_SIZE>, RAJA::cuda_exec<BLOCK_SIZE> > {
   template <typename T>
-    void operator()(T* P1, T* P2, int nx, double ct){
+    void operator()(T* P1, T* P2, int nx, double ct) {
 
     RAJA::forallN<RAJA::NestedPolicy<
     RAJA::ExecList<
@@ -187,7 +187,7 @@ struct Wave<RAJA::cuda_exec<BLOCK_SIZE>, RAJA::cuda_exec<BLOCK_SIZE> > {
     //Compute laplacian
     T lap = 0.0;
     
-    for(int r=-sr; r<=sr; ++r){
+    for(int r=-sr; r<=sr; ++r) {
       const int xi  = (tidx+r+nx)%nx;
       const int idx = xi + nx*tidy;
       lap += coeff[r+sr]*P2[idx]; 
@@ -215,14 +215,11 @@ void compute_err(double *P, double tf, grid_s grid);
   Example 4: Two dimensional solver for the acoustic wave eqation P_tt = cc(P_xx + P_yy)  
 
   ------[Details]----------------------
-  Scheme uses a second order finite diffrence discretization for P_tt and a
+  Scheme uses a second order temporal finite diffrence discretization and a
   fourth order spatial discretization in space. Periodic boundary conditions are assumed.
   NOTE: The x and y dimensions are discretized identically. 
 
- */
-
-//
-//Second order in time and fourth order in space
+*/
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -248,17 +245,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   
   //Parameters for time stepping
   double dt, nt,time, ct;
-  dt = 0.01*(grid.dx/sqrt(cc));  //Intial step size, we must obey CFL condition
+  dt = 0.01*(grid.dx/sqrt(cc));  //Intial step size
   nt = ceil(T/dt); //Total number of time steps
   dt = T/nt; //Final time-step 
   ct = (cc*dt*dt)/(grid.dx*grid.dx); //Merge coefficients to a single coefficient
 
   
   //----[Standard C++ Loop]------------
-  std::cout<<"Traditional C++ Loop"<<std::endl;
+  std::cout<<"Standard C++ Loop"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
-  for(int k=0; k<nt; ++k){
+  for(int k=0; k<nt; ++k) {
     
     Wave<DefaultCPP, DefaultCPP>()(P1,P2,grid.nx,ct);
     time += dt; 
@@ -272,10 +269,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //========================
 
   //---[RAJA-Style Sequential Policy]--
-  std::cout<<"RAJA: Sequential Policy"<<std::endl;
+  std::cout<<"RAJA: Sequential Policy - forallN"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
-  for(int k=0; k<nt; ++k){
+  for(int k=0; k<nt; ++k) {
     
     Wave<RAJA::seq_exec, RAJA::seq_exec>()(P1,P2,grid.nx,ct);
     time += dt; 
@@ -289,10 +286,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //===================================
   
   //---[RAJA-Style Omp/Seq Policy]--
-  std::cout<<"RAJA: OMP/Seq Policy"<<std::endl;
+  std::cout<<"RAJA: OMP/Seq Policy - forallN"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
-  for(int k=0; k<nt; ++k){
+  for(int k=0; k<nt; ++k) {
     
     Wave<RAJA::omp_parallel_for_exec, RAJA::seq_exec>()(P1,P2,grid.nx,ct);
     time += dt; 
@@ -306,10 +303,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //===================================
 
   //---[RAJA-Style CUDA Policy]--
-  std::cout<<"RAJA: CUDA Policy"<<std::endl;
+  std::cout<<"RAJA: CUDA Policy - forallN"<<std::endl;
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
-  for(int k=0; k<nt; ++k){
+  for(int k=0; k<nt; ++k) {
     
     Wave<RAJA::cuda_exec<CUDA_BLOCK_SIZE>,RAJA::cuda_exec<CUDA_BLOCK_SIZE> >()(P1,P2,grid.nx,ct);
     time += dt; 
@@ -330,24 +327,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 }
 
 
-//Analytic solution is assumed to be 
+//Analytic solution
 //P(t,x,y) = Cos(2*PI*t)*Sin(2*PI*x)*Sin(2*PI*y)
-double wave_sol(double t, double x, double y){
+double wave_sol(double t, double x, double y) {
   return cos(2.*PI*t)*sin(2.*PI*x)*sin(2.*PI*y);
 }
 
-//Compute ||P_{analytic} - P_{approx}||_{inf} 
-void compute_err(double *P, double tf, grid_s grid){
+//Compute ||P_{analytic}(:) - P_{approx}(:)||_{inf} 
+void compute_err(double *P, double tf, grid_s grid) {
 
   double err=-1; 
-  for(int ty=0; ty<grid.nx; ty++){
-    for(int tx=0; tx<grid.nx; tx++){
+  for(int ty=0; ty<grid.nx; ++ty) {
+    for(int tx=0; tx<grid.nx; ++tx) {
       
       int id   = tx + grid.nx*ty;
       double x = grid.ox + tx*grid.dx;
       double y = grid.ox + ty*grid.dx;
             
-      double myErr = fabs(P[id] - wave_sol(tf,x,y));
+      double myErr = abs(P[id] - wave_sol(tf,x,y));
       if(myErr > err) err = myErr; 
     }
   }
@@ -355,18 +352,18 @@ void compute_err(double *P, double tf, grid_s grid){
 }
 
 
-//Set initial condition. 
-void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid){
+//Set initial condition
+void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid) {
 
-  //poulate field
+  //Populate field
   int iter=0; 
-  for(int ty=0; ty<grid.nx; ty++){
-    for(int tx=0; tx<grid.nx; tx++){
+  for(int ty=0; ty<grid.nx; ++ty) {
+    for(int tx=0; tx<grid.nx; ++tx) {
       
       double x = grid.ox + tx*grid.dx;
       double y = grid.ox + ty*grid.dx;
       
-      P1[iter] = wave_sol(-t0,x,y);
+      P1[iter] = wave_sol(t0,x,y);
       P2[iter] = wave_sol(t1,x,y);
       iter++;
     }
