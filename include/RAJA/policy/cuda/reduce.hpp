@@ -1454,29 +1454,6 @@ struct ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
   }
 };
 
-//! specialization of ReduceMax for cuda_reduce_atomic
-template <size_t BLOCK_SIZE, bool Async, typename T>
-struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
-    : public cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T> {
-  using self = ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
-  using parent = cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T>;
-  using parent::parent;
-  //! enable max() for ReduceMax -- alias for reduce()
-  RAJA_HOST_DEVICE
-  self &max(T rhsVal)
-  {
-    parent::reduce(rhsVal);
-    return *this;
-  }
-  //! enable max() for ReduceMax -- alias for reduce()
-  RAJA_HOST_DEVICE
-  const self &max(T rhsVal) const
-  {
-    parent::reduce(rhsVal);
-    return *this;
-  }
-};
-
 //! specialization of ReduceMin for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, typename T>
 struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
@@ -1494,6 +1471,29 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
   //! enable min() for ReduceMin -- alias for reduce()
   RAJA_HOST_DEVICE
   const self &min(T rhsVal) const
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+};
+
+//! specialization of ReduceMax for cuda_reduce_atomic
+template <size_t BLOCK_SIZE, bool Async, typename T>
+struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
+    : public cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T> {
+  using self = ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
+  using parent = cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T>;
+  using parent::parent;
+  //! enable max() for ReduceMax -- alias for reduce()
+  RAJA_HOST_DEVICE
+  self &max(T rhsVal)
+  {
+    parent::reduce(rhsVal);
+    return *this;
+  }
+  //! enable max() for ReduceMax -- alias for reduce()
+  RAJA_HOST_DEVICE
+  const self &max(T rhsVal) const
   {
     parent::reduce(rhsVal);
     return *this;
