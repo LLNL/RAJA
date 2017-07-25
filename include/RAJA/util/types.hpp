@@ -56,6 +56,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+#include <cstddef>
 
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
@@ -83,7 +84,7 @@ enum IndexOwnership { Unowned, Owned };
 ///
 /// Type use for all loop indexing in RAJA constructs.
 ///
-typedef int Index_type;
+typedef std::ptrdiff_t Index_type;
 
 ///
 /// Integer value for undefined indices and other integer values.

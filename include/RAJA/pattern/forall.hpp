@@ -132,7 +132,8 @@ namespace RAJA
  *
  ******************************************************************************
  */
-namespace wrap {
+namespace wrap
+{
 
 /*!
  ******************************************************************************
@@ -146,12 +147,15 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
 {
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  auto space = detail::get_space< typename std::remove_reference<decltype(p)>::type >::value;
+  auto space = detail::get_space<
+      typename std::remove_reference<decltype(p)>::type>::value;
   rm->setExecutionSpace(space);
 #endif
 
   typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
-  impl::forall(std::forward<EXEC_POLICY_T>(p), std::forward<Container>(c), body);
+  impl::forall(std::forward<EXEC_POLICY_T>(p),
+               std::forward<Container>(c),
+               body);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -166,7 +170,9 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void forall_Icount(EXEC_POLICY_T&&p, const IndexSet& c, LOOP_BODY loop_body)
+RAJA_INLINE void forall_Icount(EXEC_POLICY_T&& p,
+                               const IndexSet& c,
+                               LOOP_BODY loop_body)
 {
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -213,7 +219,6 @@ RAJA_INLINE void forall_Icount(EXEC_POLICY_T&& p,
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
-
 }
 
 /*!
@@ -227,7 +232,7 @@ template <typename EXEC_POLICY_T, typename LOOP_BODY>
 RAJA_INLINE void forall_Icount(const IndexSet& c, LOOP_BODY loop_body)
 {
 
-    wrap::forall_Icount(EXEC_POLICY_T(), c, loop_body);
+  wrap::forall_Icount(EXEC_POLICY_T(), c, loop_body);
 }
 
 /*!
@@ -241,20 +246,18 @@ template <typename EXEC_POLICY_T,
           typename Container,
           typename LOOP_BODY,
           typename IndexType>
-RAJA_INLINE
-typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall_Icount(Container&& c, IndexType icount, LOOP_BODY loop_body)
 {
   static_assert(
       RAJA::detail::is_random_access_iterator<decltype(std::begin(c))>::value,
       "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
-  wrap::forall_Icount(EXEC_POLICY_T(), 
-                      std::forward<Container>(c), 
+  wrap::forall_Icount(EXEC_POLICY_T(),
+                      std::forward<Container>(c),
                       icount,
                       loop_body);
 }
-
 
 
 /*!
@@ -270,8 +273,8 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
   static_assert(
       RAJA::detail::is_random_access_iterator<decltype(std::begin(c))>::value,
       "Iterators passed to RAJA must be Random Access or Contiguous iterators");
-  wrap::forall(std::forward<EXEC_POLICY_T>(p), 
-               std::forward<Container>(c), 
+  wrap::forall(std::forward<EXEC_POLICY_T>(p),
+               std::forward<Container>(c),
                loop_body);
 }
 
@@ -310,10 +313,9 @@ template <typename EXEC_POLICY_T,
           typename Iterator,
           typename LOOP_BODY,
           typename IndexType>
-RAJA_INLINE
-typename std::enable_if<
-  std::is_integral<IndexType>::value
-  && RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE typename std::
+    enable_if<std::is_integral<IndexType>::value
+              && RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall_Icount(Iterator begin,
                   Iterator end,
                   IndexType icount,
@@ -332,9 +334,8 @@ typename std::enable_if<
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename Iterator, typename LOOP_BODY>
-RAJA_INLINE
-typename std::enable_if<
-  RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE typename std::
+    enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall(EXEC_POLICY_T&& p, Iterator begin, Iterator end, LOOP_BODY loop_body)
 {
   auto len = std::distance(begin, end);
@@ -350,8 +351,8 @@ typename std::enable_if<
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename Iterator, typename LOOP_BODY>
-RAJA_INLINE
-typename std::enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
+RAJA_INLINE typename std::
+    enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value>::type
     forall(Iterator begin, Iterator end, LOOP_BODY loop_body)
 {
   auto len = std::distance(begin, end);
@@ -374,12 +375,16 @@ typename std::enable_if<RAJA::detail::is_random_access_iterator<Iterator>::value
  *
  ******************************************************************************
  */
-template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE
-typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall(IndexType begin, IndexType end, LOOP_BODY loop_body)
+template <typename EXEC_POLICY_T,
+          typename LOOP_BODY,
+          typename IndexType1,
+          typename IndexType2>
+RAJA_INLINE typename std::
+    enable_if<std::is_convertible<IndexType1, Index_type>::value
+              && std::is_convertible<IndexType2, Index_type>::value>::type
+    forall(IndexType1 begin, IndexType2 end, LOOP_BODY loop_body)
 {
-    wrap::forall(EXEC_POLICY_T{}, RangeSegment(begin, end), loop_body);
+  wrap::forall(EXEC_POLICY_T{}, RangeSegment(begin, end), loop_body);
 }
 
 /*!
@@ -393,21 +398,22 @@ forall(IndexType begin, IndexType end, LOOP_BODY loop_body)
  */
 template <typename EXEC_POLICY_T,
           typename LOOP_BODY,
-          typename IndexType,
+          typename IndexType1,
+          typename IndexType2,
           typename OffsetType>
-RAJA_INLINE
-typename std::enable_if<
-  std::is_integral<IndexType>::value
-  && std::is_integral<OffsetType>::value>::type
-    forall_Icount(IndexType begin,
-                  IndexType end,
+RAJA_INLINE typename std::
+    enable_if<std::is_convertible<IndexType1, Index_type>::value
+              && std::is_convertible<IndexType2, Index_type>::value
+              && std::is_integral<OffsetType>::value>::type
+    forall_Icount(IndexType1 begin,
+                  IndexType2 end,
                   OffsetType icount,
                   LOOP_BODY loop_body)
 {
-    wrap::forall_Icount(EXEC_POLICY_T(), 
-                        RangeSegment(begin, end), 
-                        icount,
-                        loop_body);
+  wrap::forall_Icount(EXEC_POLICY_T(),
+                      RangeSegment(begin, end),
+                      icount,
+                      loop_body);
 }
 
 //
@@ -426,13 +432,12 @@ typename std::enable_if<
  ******************************************************************************
  */
 template <typename EXEC_POLICY_T, typename LOOP_BODY, typename IndexType>
-RAJA_INLINE
-typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall(IndexType begin, IndexType end, IndexType stride, LOOP_BODY loop_body)
 {
-  wrap::forall(EXEC_POLICY_T(), 
-              RangeStrideSegment(begin, end, stride),
-              loop_body);
+  wrap::forall(EXEC_POLICY_T(),
+               RangeStrideSegment(begin, end, stride),
+               loop_body);
 }
 
 /*!
@@ -449,19 +454,18 @@ template <typename EXEC_POLICY_T,
           typename IndexType,
           typename OffsetType>
 RAJA_INLINE
-typename std::enable_if<
-  std::is_integral<IndexType>::value
-  && std::is_integral<OffsetType>::value>::type
+    typename std::enable_if<std::is_integral<IndexType>::value
+                            && std::is_integral<OffsetType>::value>::type
     forall_Icount(IndexType begin,
                   IndexType end,
                   IndexType stride,
                   OffsetType icount,
                   LOOP_BODY loop_body)
 {
-    wrap::forall_Icount(EXEC_POLICY_T(),
-                        RangeStrideSegment(begin, end, stride),
-                        icount,
-                        loop_body);
+  wrap::forall_Icount(EXEC_POLICY_T(),
+                      RangeStrideSegment(begin, end, stride),
+                      icount,
+                      loop_body);
 }
 
 //
@@ -483,12 +487,11 @@ template <typename EXEC_POLICY_T,
           typename LOOP_BODY,
           typename ArrayVal,
           typename IndexType>
-RAJA_INLINE
-typename std::enable_if<std::is_integral<IndexType>::value>::type
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall(const ArrayVal* idx, IndexType len, LOOP_BODY loop_body)
 {
   // turn into an iterator
-    wrap::forall(EXEC_POLICY_T{}, ListSegment(idx, len, Unowned), loop_body);
+  wrap::forall(EXEC_POLICY_T{}, ListSegment(idx, len, Unowned), loop_body);
 }
 
 /*!
@@ -506,10 +509,9 @@ template <typename EXEC_POLICY_T,
           typename IndexType,
           typename OffsetType>
 RAJA_INLINE
-typename std::enable_if<
-  std::is_integral<IndexType>::value
-  && std::is_integral<ArrayIdxType>::value
-  && std::is_integral<OffsetType>::value>::type
+    typename std::enable_if<std::is_integral<IndexType>::value
+                            && std::is_integral<ArrayIdxType>::value
+                            && std::is_integral<OffsetType>::value>::type
     forall_Icount(const ArrayIdxType* idx,
                   IndexType len,
                   OffsetType icount,
