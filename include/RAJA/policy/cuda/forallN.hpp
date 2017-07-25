@@ -220,7 +220,8 @@ struct ForallN_Executor<device,
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
           RAJA::cuda::createLaunchBody(
-              dims.num_blocks, dims.num_threads, 0, stream, std::move(loop_body)),
+              dims.num_blocks, dims.num_threads, 0, stream,
+              std::move(loop_body)),
           cargs...);
       cudaErrchk(cudaPeekAtLastError());
 
@@ -252,7 +253,8 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
           RAJA::cuda::createLaunchBody(
-              dims.num_blocks, dims.num_threads, 0, stream, std::move(loop_body)),
+              dims.num_blocks, dims.num_threads, 0, stream,
+              std::move(loop_body)),
           c0);
       cudaErrchk(cudaPeekAtLastError());
 

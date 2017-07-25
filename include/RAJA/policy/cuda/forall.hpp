@@ -197,18 +197,18 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
 
   auto len = std::distance(begin, end);
 
-  if (len > 0 && BLOCK_SIZE > 0) {
+  if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     cudaStream_t stream = 0;
 
-    forall_cuda_kernel<<<gridSize, BLOCK_SIZE, 0, stream>>>(
+    INTERNAL::forall_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
         RAJA::cuda::createLaunchBody(
-            gridSize, BLOCK_SIZE, 0, stream,
-            std::forward<LOOP_BODY>(loop_body)),
+            gridSize, BlockSize, 0, stream,
+            std::forward<LoopBody>(loop_body)),
         std::move(begin), len);
     cudaErrchk(cudaPeekAtLastError());
 
@@ -236,18 +236,18 @@ forall_Icount(cuda_exec<BlockSize, Async>,
 
   auto len = std::distance(begin, end);
 
-  if (len > 0 && BLOCK_SIZE > 0) {
+  if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BLOCK_SIZE);
+    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     cudaStream_t stream = 0;
 
-    forall_Icount_cuda_kernel<<<gridSize, BLOCK_SIZE, 0, stream>>>(
+    INTERNAL::forall_Icount_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
         RAJA::cuda::createLaunchBody(
-            gridSize, BLOCK_SIZE, 0, stream,
-            std::forward<LOOP_BODY>(loop_body)),
+            gridSize, BlockSize, 0, stream,
+            std::forward<LoopBody>(loop_body)),
         std::move(begin), len, icount);
     cudaErrchk(cudaPeekAtLastError());
 
