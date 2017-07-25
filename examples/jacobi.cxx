@@ -218,7 +218,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2; 
     if(iteration > maxIter) {
-      printf("RAJA::Sequential - Maxed out on iterations! \n");
+      printf("RAJA: Sequential - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -269,12 +269,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2; 
     if(iteration > maxIter) {
-      printf("RAJA::OpenMP - Maxed out on iterations! \n");
+      printf("RAJA: OpenMP - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
   }
-  printf("RAJA::OpenMP Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
@@ -315,13 +314,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     resI2 = RAJA_resI2; 
     
     if(iteration > maxIter) {
-      printf("RAJA::CUDA - Maxed out on iterations! \n");
+      printf("RAJA: CUDA - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
   }
   cudaDeviceSynchronize();
-  printf("RAJA::CUDA Nested Loop Policy \n"); 
+  printf("RAJA: CUDA Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
