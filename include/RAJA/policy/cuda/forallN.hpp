@@ -66,6 +66,7 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
+#include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 
 
@@ -165,26 +166,15 @@ __global__ void cudaLauncherN(BODY loop_body, CARGS... cargs)
   cudaCheckBounds(body, (cargs())...);
 }
 
-template <int...>
-struct integer_sequence {
-};
-
-template <int N, int... S>
-struct gen_sequence : gen_sequence<N - 1, N - 1, S...> {
-};
-
-template <int... S>
-struct gen_sequence<0, S...> {
-  typedef integer_sequence<S...> type;
-};
-
-template <typename CuARG0,
+template <bool device,
+          typename CuARG0,
           typename ISET0,
           typename CuARG1,
           typename ISET1,
           typename... CuARGS,
           typename... ISETS>
-struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
+struct ForallN_Executor<device,
+                        ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
                         ForallN_PolicyPair<CudaPolicy<CuARG1>, ISET1>,
                         ForallN_PolicyPair<CudaPolicy<CuARGS>, ISETS>...> {
   ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> iset0;
@@ -202,11 +192,11 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   template <typename BODY>
   RAJA_INLINE void operator()(BODY body) const
   {
-    unpackIndexSets(body, typename gen_sequence<sizeof...(CuARGS)>::type());
+    unpackIndexSets(body, VarOps::make_index_sequence<sizeof...(CuARGS)>{});
   }
 
-  template <typename BODY, int... N>
-  RAJA_INLINE void unpackIndexSets(BODY body, integer_sequence<N...>) const
+  template <typename BODY, size_t... N>
+  RAJA_INLINE void unpackIndexSets(BODY body, VarOps::index_sequence<N...>) const
   {
     CudaDim dims;
 
@@ -233,8 +223,8 @@ struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>,
   }
 };
 
-template <typename CuARG0, typename ISET0>
-struct ForallN_Executor<ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
+template <bool device, typename CuARG0, typename ISET0>
+struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   ISET0 iset0;
 
   ForallN_Executor(ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0> const &iset0_)

@@ -56,15 +56,13 @@
 #include <tuple>
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/fwd.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
-
-template <typename Selector, typename... Policies>
-class MultiPolicy;
 
 namespace detail
 {
@@ -150,6 +148,7 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 }
 
 namespace wrap {
+
 template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
 RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body);
 
@@ -158,10 +157,10 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body);
 /// \param p MultiPolicy to use for selection
 /// \param iter iterable of items to supply to body
 /// \param body functor, will receive each value produced by iterable iter
-template <typename... Policies,
+template <typename Iterable,
+          typename Body,
           typename Selector,
-          typename Iterable,
-          typename Body>
+          typename... Policies>
 RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
                         Iterable &&iter,
                         Body &&body)
@@ -206,7 +205,9 @@ struct policy_invoker<0, size, Policy, rest...> {
     }
   }
 };
-}
-}
+
+} // end namespace detail
+
+} // end namespace RAJA
 
 #endif

@@ -77,14 +77,14 @@ template <typename T>
 struct sum {
   static constexpr T identity = T(0);
   RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v) { val += v; }
+  void operator()(T &val, const T v) const { val += v; }
 };
 
 template <typename T>
 struct min {
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
+  void operator()(T &val, const T v) const
   {
     if (v < val) val = v;
   }
@@ -94,7 +94,7 @@ template <typename T>
 struct max {
   static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
+  void operator()(T &val, const T v) const
   {
     if (v > val) val = v;
   }
@@ -104,7 +104,7 @@ template <typename T, typename I>
 struct minloc {
   static constexpr T identity = T(::RAJA::operators::limits<T>::max());
   RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, I &loc, const T v, const I l)
+  void operator()(T &val, I &loc, const T v, const I l) const
   {
     if (v < val) {
       loc = l;
@@ -117,7 +117,7 @@ template <typename T, typename I>
 struct maxloc {
   static constexpr T identity = T(::RAJA::operators::limits<T>::min());
   RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, I &loc, const T v, const I l)
+  void operator()(T &val, I &loc, const T v, const I l) const
   {
     if (v > val) {
       loc = l;
