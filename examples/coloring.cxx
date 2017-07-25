@@ -19,7 +19,7 @@
 //
 // * Redistributions in binary form must reproduce the above copyright notice,
 //   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
+//   documentation and/or other materials provided with the distribution. 
 //
 // * Neither the name of the LLNS/LLNL nor the names of its contributors may
 //   be used to endorse or promote products derived from this software without
@@ -61,12 +61,12 @@
           1, 2, 1, 2,
           3, 4, 3, 4];
 
-  This codes illustrates how to create custom list on which
+  This codes illustrates how to create custom RAJA index set on which
   a RAJA forall loop may iterate on. Here the loop will first iterate 
-  over indeces with a 1 value then 2, etc... The numbers may be viewed as
+  over indeces with a value of 1 then 2, etc... The numbers may be viewed as
   corresponding to a color. 
   
-  //--------[New Concepts]---------
+  //--------[RAJA Concepts]---------
   1. Constructing custom IndexSets
   2. RAJA::View
   3. RAJA::List_Segment
@@ -91,10 +91,10 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //Defining a custom IndexSet
   RAJA::IndexSet colorset;
 
-  //RAJA::View allows us introduce a two dimensional array
+  //RAJA::View introduces multidimensional arrays
   RAJA::View<int,RAJA::Layout<2>> Aview(A, n, n);
   
-  // buffer used for intermediate indicy storage
+  //Buffer used for intermediate indicy storage
   RAJA::Index_type *idx = RAJA::allocate_aligned_type<RAJA::Index_type>(64, n * n / 4);
 
 
@@ -125,16 +125,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   // Clear temporary buffer
   RAJA::free_aligned(idx);
 
-  
-  //----[RAJA Sequential Policy]---------
-  //RAJA: Seq_segit - Sequational Segment Iteraion
-  using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;  
+
+  //----[RAJA Sequential/OMP execution]---------
+  //RAJA: Seq_segit - Sequational Segment Iteraion  
+  using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
   RAJA::forall<ColorPolicy>(colorset, [&](int idx) {
       printf("A[%d] = %d\n", idx, A[idx]);
-    });  
+    });    
   //==========================
-
-
   
   return 0;
 }
