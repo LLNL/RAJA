@@ -111,6 +111,7 @@ void deallocate(T* &ptr) {
   ----[RAJA Concepts]---------------
   1. RAJA Reduction
   2. RAJA::omp_collapse_nowait_exec
+
 */
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -134,21 +135,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   memset(Iold,0,NN*sizeof(double));
 
 
-  //----[Standard C++ Loops]-----
-  printf("Traditional  C++ Loop \n");
+  //----[Standard C++ Loop]------
+  printf("Standard  C++ Loop \n");
   resI2 = 1;  iteration = 0; 
 
   //Carry out iterations of the Jacobi scheme until a tolerance is met
-  while(resI2>tol*tol){
+  while(resI2>tol*tol) {
     
     //Iteration of the Jacobi Scheme
-    for(int n=1;n<=N;++n){
-      for(int m=1;m<=N;++m){
+    for(int n=1;n<=N;++n) {
+      for(int m=1;m<=N;++m) {
 
         int id = n*(N+2) + m;
+
         //Cell (1,1) is a special case due to battery
-        if(n==1 && m==1){
-          invD = 1./3.; V =1; 
+        if(n==1 && m==1) {
+          invD = 1./3.0; V = 1.0; 
           I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
         }else{
           invD = 1./4.0; V = 0.0;    
@@ -158,15 +160,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       }
     }
 
-    //Compute ||I - I_{old}||_{\ifinity}    
+    //Compute ||I - I_{old}||_{l2} and update Iold
     resI2 = 0.0; 
-    for(int k=0; k<NN; k++){
+    for(int k=0; k<NN; k++) {
       resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
       Iold[k]=I[k];
     }
     
-    if(iteration > maxIter){        
-      printf("Traditional C++ loop - Maxed out on iterations \n");
+    if(iteration > maxIter) {        
+      printf("Standard C++ Loop - Maxed out on iterations \n");
       exit(-1);
     }
 
@@ -176,12 +178,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n",iteration);
   //======================================
 
-  //----[RAJA: Nested Sequential Policy]---------
-  printf("RAJA: Sequential Nested Loop Policy \n"); 
+  //----[RAJA: Sequential Policy - Nested forallN]---------
+  printf("RAJA: Sequential Policy - Nested forallN \n"); 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
-  while(resI2 > tol*tol){
+  while(resI2 > tol*tol) {
         
     RAJA::forallN< RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
@@ -190,11 +192,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     [=](int m, int n) { 
 
       int id = n*(N+2) + m;
-      if(n==1 && m==1){
-        double invD = 1./3.; double V = 1; 
+      if(n==1 && m==1) {
+        double invD = 1.0/3.0; double V = 1.0; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }else{
-        double invD2 = 1./4.0; double V2 = 0.0;
+        double invD2 = 1.0/4.0; double V2 = 0.0;
         I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }
 
@@ -215,7 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     
     resI2 = RAJA_resI2; 
-    if(iteration > maxIter){        
+    if(iteration > maxIter) {
       printf("RAJA::Sequential - Maxed out on iterations! \n");
       exit(-1);
     }
@@ -227,17 +229,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-  //----[RAJA: Nested OpenMP Policy]---------
+
+  //----[RAJA: OpenMP Policy - forallN]---------
+  printf("RAJA: OpenMP Policy - Nested forallN \n");
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
-  while(resI2 > tol*tol){
+  while(resI2 > tol*tol) {
         
     /*
       RAJA::omp_collapse_nowait_exec -
       parallizes nested loops without introducing nested parallism
     */
-
+    
     RAJA::forallN< RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>>>(
     RAJA::RangeSegment(1, (N+1)),
@@ -245,11 +249,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     [=](int m, int n) { 
       
       int id = n*(N+2) + m;
-      if(n==1 && m==1){
-        double invD = 1./3.; double V = 1; 
+      if(n==1 && m==1) {
+        double invD = 1.0/3.0; double V = 1.0; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }else{
-        double invD2 = 1./4.0; double V2 = 0.0;
+        double invD2 = 1.0/4.0; double V2 = 0.0;
         I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }
 
@@ -264,13 +268,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     
     resI2 = RAJA_resI2; 
-    if(iteration > maxIter){        
+    if(iteration > maxIter) {
       printf("RAJA::OpenMP - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
   }
-  printf("RAJA: OpenMP Nested Loop Policy \n"); 
+  printf("RAJA::OpenMP Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
@@ -278,20 +282,22 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_CUDA)
+
   //----[RAJA: Nested CUDA Policy]---------
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
     
-  while(resI2 > tol*tol){
+  while(resI2 > tol*tol) {
         
-    RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,
+    RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<
+    RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,
     RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>>(
     RAJA::RangeSegment(1, (N+1)), RAJA::RangeSegment(1, (N+1)), [=] __device__ (int m, int n) {
      
       int id = n*(N+2) + m;
-      if(n==1 && m==1){
-        double invD = 1./3.; double V = 1; 
+      if(n==1 && m==1) {
+        double invD = 1./3.; double V = 1.0; 
         I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }else{
         double invD2 = 1./4.0; double V2 = 0.0;
@@ -308,14 +314,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     resI2 = RAJA_resI2; 
     
-    if(iteration > maxIter){        
-      std::cout<<"CUDA : too many iterations!"<<std::endl;
+    if(iteration > maxIter) {
+      printf("RAJA::CUDA - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
   }
   cudaDeviceSynchronize();
-  printf("RAJA: CUDA Nested Loop Policy \n"); 
+  printf("RAJA::CUDA Nested Loop Policy \n"); 
   printf("Top right current: %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
