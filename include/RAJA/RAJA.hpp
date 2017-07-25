@@ -69,6 +69,8 @@
 
 #include "RAJA/util/Operators.hpp"
 
+#include "RAJA/util/basic_mempool.hpp"
+
 //
 // All platforms must support sequential execution.
 //

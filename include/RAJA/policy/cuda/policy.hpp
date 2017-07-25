@@ -55,6 +55,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/pattern/reduce.hpp"
 
 namespace RAJA
 {
@@ -179,14 +180,17 @@ using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
 // values for CUDA warp size and max block size.
 //
 const int WARP_SIZE = 32;
-const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
+const int RAJA_CUDA_MAX_BLOCK_SIZE = 1024;
+const int MAX_WARPS = RAJA_CUDA_MAX_BLOCK_SIZE / WARP_SIZE;
+static_assert(WARP_SIZE >= MAX_WARPS,
+      "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 
 /*!
- * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize)
+ * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream)
  * Macro that generates kernel launch parameters.
  */
-#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
-  gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
+#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize, stream) \
+  gridSize, blockSize, 0, stream
 
 //
 // Three different variants of min/max reductions can be run by choosing

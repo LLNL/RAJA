@@ -102,10 +102,17 @@ int main(int argc, char *argv[])
                     sizeof(double) * TEST_VEC_LEN,
                     cudaMemAttachGlobal);
 
+  //setCudaMaxReducers(4); // test code path
+  //setCudaMaxReducers(8);
+
+
   ///
   /// Define thread block size for CUDA exec policy
   ///
   const size_t block_size = 256;
+
+  //setCudaMaxBlocks(16); // test code path
+  //setCudaMaxBlocks(TEST_VEC_LEN/block_size);
 
   ////////////////////////////////////////////////////////////////////////////
   // Run 3 different sum reduction tests in a loop
@@ -119,6 +126,9 @@ int main(int argc, char *argv[])
     //        that reduction value can be retrieved and then subsequent
     //        reductions can be run with the same reduction objects.
     //
+    //
+    //
+#if 1
     {  // begin test 1
 
       double dtinit = 5.0;
@@ -196,7 +206,7 @@ int main(int argc, char *argv[])
       s_ntests_run++;
 
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
-      RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+      RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
       IndexSet iset;
       iset.push_back(seg0);
@@ -246,7 +256,6 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 2
-
     ////////////////////////////////////////////////////////////////////////////
 
     //
@@ -308,7 +317,7 @@ int main(int argc, char *argv[])
       }
 
     }  // end test 3
-
+#endif
     ////////////////////////////////////////////////////////////////////////////
 
     {  // Begin test4

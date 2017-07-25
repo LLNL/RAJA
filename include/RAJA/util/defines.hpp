@@ -122,7 +122,8 @@
  * \endcode
  *******************************************************************************
  */
-#define RAJA_UNUSED_VAR(_x) static_cast<void>(_x)
+template < typename... T >
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)

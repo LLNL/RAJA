@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
   mt19937 mt(rd());
   uniform_real_distribution<double> dist(-10, 10);
   uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
-
+  
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
     cout << "\t tcount = " << tcount << endl;
 
@@ -170,7 +170,7 @@ int main(int argc, char *argv[])
       s_ntests_run++;
 
       RangeSegment seg0(0, TEST_VEC_LEN / 2);
-      RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+      RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
       IndexSet iset;
       iset.push_back(seg0);

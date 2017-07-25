@@ -106,7 +106,7 @@ int main(int argc, char *argv[])
   mt19937 mt(rd());
   uniform_real_distribution<double> dist(-10, 10);
   uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
-
+  
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
     cout << "\t tcount = " << tcount << endl;
 
