@@ -122,6 +122,9 @@ struct atomic<max<T>>
 
 } // namespace reduce
 
+namespace cuda
+{
+
 namespace internal
 {
 /*!
@@ -389,9 +392,6 @@ private:
 //
 //////////////////////////////////////////////////////////////////////
 //
-
-namespace cuda
-{
 
 //! Information necessary for Cuda offload to be considered
 struct Offload_Info {
