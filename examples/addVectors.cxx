@@ -51,7 +51,7 @@
 void checkSolution(int *C, int in_N);
 
 
-//RAJA does not do memory management
+//User is reposible for memory management
 int * allocate(RAJA::Index_type size) {
   int * ptr;
 #if defined(RAJA_ENABLE_CUDA)
@@ -81,7 +81,6 @@ void deallocate(int* &ptr) {
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
-  ----[RAJA forall loop]---------------
   RAJA::forall<RAJA::exec_policy>(RAJA::range_policy,[=](index i)) {
 
          //body
@@ -89,9 +88,9 @@ void deallocate(int* &ptr) {
   });
   
   ----[Arguments]--------------
-  [=] Corresponds to pass by copy
-  [&] Corresponds to pass by reference
-  RAJA::exec_policy  - specifies where and how the traversal occurs
+  [=] Pass by copy
+  [&] Pass by reference
+  RAJA::exec_policy  - specifies how the traversal occurs
   RAJA::range_policy - provides a list in which the index may iterate on
  */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -110,7 +109,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     B[i] = i;
   }
 
-
   //----[Standard C++ Loop]---------------
   std::cout<<"Traditional C++ Loop"<<std::endl;
   for(int i=0; i<N; ++i) {
@@ -125,7 +123,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::seq_exec -  Executes the loop sequentially
 
   RAJA::RangeSegment(start,stop) - generates a sequence of numbers
-  which a RAJA loop may use to iterate on
+  on which a RAJA loop may iterate on
 
   start - starting number of the sequence
   stop  - ending number the sequence is generated to but not included
@@ -140,8 +138,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-  //----[RAJA: OpenMP Policy]---------
-  /*
+  /*----[RAJA: OpenMP Policy]---------
     RAJA::omp_parallel_for_exec - executes the for loop using the
     #pragma omp parallel for directive
    */  
@@ -158,12 +155,11 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  //----[RAJA: CUDA Policy]---------
-  /*
+  /*----[RAJA: CUDA Policy]---------
     RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes RAJA-loop using the CUDA API
     Each thread is assigned to an iteration of the loop
 
-    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension    
+    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension
    */
   std::cout<<"RAJA: CUDA Policy"<<std::endl;  
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0,N),[=] __device__(int i) {
@@ -184,7 +180,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 void checkSolution(int *C, int in_N){
 
-  bool eFlag = true;
+  bool eFlag = true; 
   for(int i=0; i<in_N; ++i){
     if( (C[i] - (i+i)) > 1e-9){
       std::cout<<"Error in result!"<<std::endl;
