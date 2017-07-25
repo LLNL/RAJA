@@ -179,11 +179,14 @@ using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-const int WARP_SIZE = 32;
-const int RAJA_CUDA_MAX_BLOCK_SIZE = 1024;
-const int MAX_WARPS = RAJA_CUDA_MAX_BLOCK_SIZE / WARP_SIZE;
+constexpr int WARP_SIZE = 32;
+constexpr int RAJA_CUDA_MAX_BLOCK_SIZE = 1024;
+constexpr int MAX_WARPS = RAJA_CUDA_MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
       "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
+static_assert(RAJA_CUDA_MAX_BLOCK_SIZE % WARP_SIZE == 0,
+      "RAJA Assumption Broken: RAJA_CUDA_MAX_BLOCK_SIZE not "
+      "a multiple of WARP_SIZE");
 
 //
 // Three different variants of min/max reductions can be run by choosing
