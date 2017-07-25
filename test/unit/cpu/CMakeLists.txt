@@ -42,7 +42,6 @@
 ###############################################################################
 
 raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
-target_link_libraries(bis RAJA)
 
 raja_add_test(
   NAME test-reduce
