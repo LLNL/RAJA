@@ -127,7 +127,7 @@ struct atomic<max<T>>
 namespace cuda
 {
 
-namespace internal
+namespace impl
 {
 /*!
  ******************************************************************************
@@ -181,8 +181,316 @@ T shfl_sync(T var, int srcLane)
   return Tunion.var;
 }
 
+//! reduce values in block into thread 0
+template <typename Reducer, typename T>
+RAJA_DEVICE RAJA_INLINE
+T block_reduce(T val)
+{
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
-}  // namespace internal
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                 + (blockDim.x * blockDim.y) * threadIdx.z;
+
+  int warpId = threadId % WARP_SIZE;
+  int warpNum = threadId / WARP_SIZE;
+
+  T temp = val;
+
+  if (numThreads % WARP_SIZE == 0) {
+
+    // reduce each warp
+    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+      T rhs = shfl_xor_sync<T>(temp, i);
+      Reducer{}(temp, rhs);
+    }
+
+  } else {
+
+    // reduce each warp
+    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+      int srcLane = threadId ^ i;
+      T rhs = shfl_sync<T>(temp, srcLane);
+      // only add from threads that exist (don't double count own value)
+      if (srcLane < numThreads) {
+        Reducer{}(temp, rhs);
+      }
+    }
+
+  }
+
+  // reduce per warp values
+  if (numThreads > WARP_SIZE) {
+
+    __shared__ T sd[MAX_WARPS];
+    
+    // write per warp values to shared memory
+    if (warpId == 0) {
+      sd[warpNum] = temp;
+    }
+
+    __syncthreads();
+
+    if (warpNum == 0) {
+
+      // read per warp values
+      if (warpId*WARP_SIZE < numThreads) {
+        temp = sd[warpId];
+      } else {
+        temp = Reducer::identity;
+      }
+
+      for (int i = 1; i < WARP_SIZE ; i *= 2) {
+        T rhs = shfl_xor_sync<T>(temp, i);
+        Reducer{}(temp, rhs);
+      }
+    }
+
+    __syncthreads();
+
+  }
+
+  return temp;
+}
+
+//! reduce values in block into thread 0
+template <typename Reducer, typename T, typename IndexType>
+RAJA_DEVICE RAJA_INLINE
+cuda::LocType<T, IndexType> block_reduce(cuda::LocType<T, IndexType> val)
+{
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                 + (blockDim.x * blockDim.y) * threadIdx.z;
+
+  int warpId = threadId % WARP_SIZE;
+  int warpNum = threadId / WARP_SIZE;
+
+  cuda::LocType<T, IndexType> temp = val;
+
+  if (numThreads % WARP_SIZE == 0) {
+
+    // reduce each warp
+    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+      T rhs_val = shfl_xor_sync<T>(temp.val, i);
+      IndexType rhs_idx = shfl_xor_sync<T>(temp.idx, i);
+      Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
+    }
+
+  } else {
+
+    // reduce each warp
+    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+      int srcLane = threadId ^ i;
+      T rhs_val = shfl_sync<T>(temp.val, srcLane);
+      IndexType rhs_idx = shfl_sync<T>(temp.idx, srcLane);
+      // only add from threads that exist (don't double count own value)
+      if (srcLane < numThreads) {
+        Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
+      }
+    }
+
+  }
+
+  // reduce per warp values
+  if (numThreads > WARP_SIZE) {
+
+    __shared__ T sd_val[MAX_WARPS];
+    __shared__ IndexType sd_idx[MAX_WARPS];
+    
+    // write per warp values to shared memory
+    if (warpId == 0) {
+      sd_val[warpNum] = temp.val;
+      sd_idx[warpNum] = temp.idx;
+    }
+
+    __syncthreads();
+
+    if (warpNum == 0) {
+
+      // read per warp values
+      if (warpId*WARP_SIZE < numThreads) {
+        temp.val = sd_val[warpId];
+        temp.idx = sd_idx[warpId];
+      } else {
+        temp.val = Reducer::identity;
+        temp.idx = IndexType{-1};
+      }
+
+      for (int i = 1; i < WARP_SIZE ; i *= 2) {
+        T rhs_val = shfl_xor_sync<T>(temp.val, i);
+        IndexType rhs_idx = shfl_xor_sync<T>(temp.idx, i);
+        Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
+      }
+    }
+
+    __syncthreads();
+
+  }
+
+  return temp;
+}
+
+
+//! reduce values in grid into thread 0 of last running block
+//  returns true if put reduced value in val
+template <typename Reducer, typename T>
+RAJA_DEVICE RAJA_INLINE
+bool grid_reduce(T& val,
+                 T* device_mem,
+                 unsigned int* device_count)
+{
+  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  unsigned int wrap_around = numBlocks - 1;
+
+  int blockId = blockIdx.x + gridDim.x * blockIdx.y
+                + (gridDim.x * gridDim.y) * blockIdx.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                 + (blockDim.x * blockDim.y) * threadIdx.z;
+
+  T temp = block_reduce<Reducer>(val);
+
+  // one thread per block writes to device_mem
+  bool lastBlock = false;
+  if (threadId == 0) {
+    device_mem[blockId] = temp;
+    // ensure write visible to all threadblocks
+    __threadfence();
+    // increment counter, (wraps back to zero if old count == wrap_around)
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    lastBlock = (old_count == wrap_around);
+  }
+
+  // returns non-zero value if any thread passes in a non-zero value
+  lastBlock = __syncthreads_or(lastBlock);
+
+  // last block accumulates values from device_mem
+  if (lastBlock) {
+    temp = Reducer::identity;
+
+    for (int i = threadId; i < numBlocks; i += numThreads) {
+      Reducer{}(temp, device_mem[i]);
+    }
+    
+    temp = block_reduce<Reducer>(temp);
+
+    // one thread updates tally
+    if (threadId == 0) {
+      val = temp;
+    }
+  }
+
+  return lastBlock && threadId == 0;
+}
+
+
+//! reduce values in grid into thread 0 of last running block
+//  returns true if put reduced value in val
+template <typename Reducer, typename T>
+RAJA_DEVICE RAJA_INLINE
+bool grid_reduce_atomic(T& val,
+                        T* device_mem,
+                        unsigned int* device_count)
+{
+  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
+  unsigned int wrap_around = numBlocks + 1;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                 + (blockDim.x * blockDim.y) * threadIdx.z;
+
+  // one thread in first block initializes device_mem
+  if (threadId == 0) {
+    unsigned int old_val = ::atomicCAS(device_count, 0u, 1u);
+    if (old_val == 0u) {
+      *device_mem = Reducer::identity;
+      __threadfence();
+      ::atomicAdd(device_count, 1u);
+    }
+  }
+
+  T temp = block_reduce<Reducer>(val);
+
+  // one thread per block performs atomic on device_mem
+  bool lastBlock = false;
+  if (threadId == 0) {
+    // thread waits for device_mem to be initialized
+    while(static_cast<volatile unsigned int*>(device_count)[0] < 2u);
+    __threadfence();
+    RAJA::reduce::cuda::atomic<Reducer>{}(*device_mem, temp);
+    __threadfence();
+    // increment counter, (wraps back to zero if old count == wrap_around)
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    lastBlock = (old_count == wrap_around);
+
+    // last block gets value from device_mem
+    if (lastBlock) {
+      val = *device_mem;
+    }
+  }
+
+  return lastBlock;
+}
+
+
+//! reduce values in grid into thread 0 of last running block
+//  returns true if put reduced value in val
+template <typename Reducer, typename T, typename IndexType>
+RAJA_DEVICE RAJA_INLINE
+bool grid_reduceLoc(cuda::LocType<T, IndexType>& val,
+                    T* device_mem,
+                    Index_type* deviceLoc_mem,
+                    unsigned int* device_count)
+{
+  int numBlocks = gridDim.x * gridDim.y * gridDim.z;
+  int numThreads = blockDim.x * blockDim.y * blockDim.z;
+  unsigned int wrap_around = numBlocks - 1;
+
+  int blockId = blockIdx.x + gridDim.x * blockIdx.y
+                + (gridDim.x * gridDim.y) * blockIdx.z;
+
+  int threadId = threadIdx.x + blockDim.x * threadIdx.y
+                 + (blockDim.x * blockDim.y) * threadIdx.z;
+
+  cuda::LocType<T, IndexType> temp = block_reduce<Reducer>(val);
+
+  // one thread per block writes to device_mem
+  bool lastBlock = false;
+  if (threadId == 0) {
+    device_mem[blockId]    = temp.val;
+    deviceLoc_mem[blockId] = temp.idx;
+    // ensure write visible to all threadblocks
+    __threadfence();
+    // increment counter, (wraps back to zero if old count == wrap_around)
+    unsigned int old_count = ::atomicInc(device_count, wrap_around);
+    lastBlock = (old_count == wrap_around);
+  }
+
+  // returns non-zero value if any thread passes in a non-zero value
+  lastBlock = __syncthreads_or(lastBlock);
+
+  // last block accumulates values from device_mem
+  if (lastBlock) {
+    temp.val = Reducer::identity;
+    temp.idx = IndexType(-1);
+
+    for (int i = threadId; i < numBlocks; i += numThreads) {
+      Reducer{}(temp.val,      temp.idx,
+                device_mem[i], deviceLoc_mem[i]);
+    }
+    
+    temp = block_reduce<Reducer>(temp);
+
+    // one thread updates tally
+    if (threadId == 0) {
+      val = temp;
+    }
+  }
+
+  return lastBlock && threadId == 0;
+}
+
+}  // namespace impl
 
 //! Object that manages pinned memory buffers for reduction results
 //  use one per reducer object
@@ -784,46 +1092,12 @@ struct Reduce {
     }
 #else
     if (!parent->parent) {
-      int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
-      int blockId = blockIdx.x + gridDim.x * blockIdx.y
-                    + (gridDim.x * gridDim.y) * blockIdx.z;
+      T temp = val.value;
 
-      int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                     + (blockDim.x * blockDim.y) * threadIdx.z;
-
-      T temp = block_reduce(val.value);
-
-      // one thread per block writes to device
-      bool lastBlock = false;
-      if (threadId == 0) {
-        val.device[blockId] = temp;
-        // ensure write visible to all threadblocks
-        __threadfence();
-        // increment counter, (wraps back to zero if old val == second parameter)
-        unsigned int oldBlockCount =
-            ::atomicInc(val.device_count, (numBlocks - 1));
-        lastBlock = (oldBlockCount == (numBlocks - 1));
-      }
-
-      // returns non-zero value if any thread passes in a non-zero value
-      lastBlock = __syncthreads_or(lastBlock);
-
-      // last block accumulates values from device
-      if (lastBlock) {
-        temp = Reducer::identity;
-
-        for (int i = threadId; i < numBlocks; i += numThreads) {
-          Reducer{}(temp, val.device[i]);
-        }
-        
-        temp = block_reduce(temp);
-
-        // one thread updates tally
-        if (threadId == 0) {
-          val.tally.val_ptr[0] = temp;
-        }
+      if (impl::grid_reduce<Reducer>(temp, val.device,
+                                     val.device_count)) {
+        val.tally.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value);
@@ -872,76 +1146,6 @@ private:
   cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::Reduce_Data<Async, Reducer, T> val;
-
-  //! reduce values in block into thread 0
-  RAJA_DEVICE RAJA_INLINE
-  T block_reduce(T val)
-  {
-    int numThreads = blockDim.x * blockDim.y * blockDim.z;
-
-    int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                   + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int warpId = threadId % WARP_SIZE;
-    int warpNum = threadId / WARP_SIZE;
-
-    T temp = val;
-
-    if (numThreads % WARP_SIZE == 0) {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs = internal::shfl_xor_sync<T>(temp, i);
-        Reducer{}(temp, rhs);
-      }
-
-    } else {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        int srcLane = threadId ^ i;
-        T rhs = internal::shfl_sync<T>(temp, srcLane);
-        // only add from threads that exist (don't double count own value)
-        if (srcLane < numThreads) {
-          Reducer{}(temp, rhs);
-        }
-      }
-
-    }
-
-    // reduce per warp values
-    if (numThreads > WARP_SIZE) {
-
-      __shared__ T sd[MAX_WARPS];
-      
-      // write per warp values to shared memory
-      if (warpId == 0) {
-        sd[warpNum] = temp;
-      }
-
-      __syncthreads();
-
-      if (warpNum == 0) {
-
-        // read per warp values
-        if (warpId*WARP_SIZE < numThreads) {
-          temp = sd[warpId];
-        } else {
-          temp = Reducer::identity;
-        }
-
-        for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs = internal::shfl_xor_sync<T>(temp, i);
-          Reducer{}(temp, rhs);
-        }
-      }
-
-      __syncthreads();
-
-    }
-
-    return temp;
-  }
 };
 
 
@@ -977,21 +1181,6 @@ struct ReduceAtomic {
         parent = nullptr;
       }
     }
-#else
-    if (!parent->parent) {
-        
-      int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                     + (blockDim.x * blockDim.y) * threadIdx.z;
-                     
-      if (threadId == 0) {
-        unsigned int old_val = ::atomicCAS(val.device_count, 0u, 1u);
-        if (old_val == 0u) {
-          val.device[0] = Reducer::identity;
-          __threadfence();
-          ::atomicAdd(val.device_count, 1u);
-        }
-      }
-    }
 #endif
   }
 
@@ -1014,23 +1203,11 @@ struct ReduceAtomic {
 #else
     if (!parent->parent) {
 
-      unsigned int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-    
-      int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                     + (blockDim.x * blockDim.y) * threadIdx.z;
+      T temp = val.value;
 
-      T temp = block_reduce(val.value);
-
-      // one thread adds to tally
-      if (threadId == 0) {
-        while(((volatile unsigned int*)val.device_count)[0] < 2u);
-        __threadfence();
-        RAJA::reduce::cuda::atomic<Reducer>{}(val.device[0], temp);
-        __threadfence();
-        unsigned int old_val = ::atomicInc(val.device_count, 1u + numBlocks);
-        if (old_val == 1u + numBlocks) {
-          val.tally.val_ptr[0] = val.device[0];
-        }
+      if (impl::grid_reduce_atomic<Reducer>(temp, val.device,
+                                            val.device_count)) {
+        val.tally.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value);
@@ -1079,77 +1256,6 @@ private:
   cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::ReduceAtomic_Data<Async, Reducer, T> val;
-
-  
-  //! reduce values in block into thread 0
-  RAJA_DEVICE RAJA_INLINE
-  T block_reduce(T val)
-  {
-    int numThreads = blockDim.x * blockDim.y * blockDim.z;
-
-    int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                   + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int warpId = threadId % WARP_SIZE;
-    int warpNum = threadId / WARP_SIZE;
-
-    T temp = val;
-
-    if (numThreads % WARP_SIZE == 0) {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs = internal::shfl_xor_sync<T>(temp, i);
-        Reducer{}(temp, rhs);
-      }
-
-    } else {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        int srcLane = threadId ^ i;
-        T rhs = internal::shfl_sync<T>(temp, srcLane);
-        // only add from threads that exist (don't double count own value)
-        if (srcLane < numThreads) {
-          Reducer{}(temp, rhs);
-        }
-      }
-
-    }
-
-    // reduce per warp values
-    if (numThreads > WARP_SIZE) {
-
-      __shared__ T sd[MAX_WARPS];
-      
-      // write per warp values to shared memory
-      if (warpId == 0) {
-        sd[warpNum] = temp;
-      }
-
-      __syncthreads();
-
-      if (warpNum == 0) {
-
-        // read per warp values
-        if (warpId*WARP_SIZE < numThreads) {
-          temp = sd[warpId];
-        } else {
-          temp = Reducer::identity;
-        }
-
-        for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs = internal::shfl_xor_sync<T>(temp, i);
-          Reducer{}(temp, rhs);
-        }
-      }
-
-      __syncthreads();
-
-    }
-
-    return temp;
-  }
 };
 
 //! Cuda Reduction Location entity -- generalize on reduction, and type
@@ -1204,49 +1310,12 @@ struct ReduceLoc {
     }
 #else
     if (!parent->parent) {
-      int numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
-      int blockId = blockIdx.x + gridDim.x * blockIdx.y
-                    + (gridDim.x * gridDim.y) * blockIdx.z;
+      cuda::LocType<T, IndexType> temp{val.value, val.index};
 
-      int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                     + (blockDim.x * blockDim.y) * threadIdx.z;
-
-      cuda::LocType<T, IndexType> temp = block_reduce(val.value, val.index);
-
-      // one thread per block writes to device
-      bool lastBlock = false;
-      if (threadId == 0) {
-        val.device[blockId]    = temp.val;
-        val.deviceLoc[blockId] = temp.idx;
-        // ensure write visible to all threadblocks
-        __threadfence();
-        // increment counter, (wraps back to zero if old val == second parameter)
-        unsigned int oldBlockCount =
-            ::atomicInc(val.device_count, (numBlocks - 1));
-        lastBlock = (oldBlockCount == (numBlocks - 1));
-      }
-
-      // returns non-zero value if any thread passes in a non-zero value
-      lastBlock = __syncthreads_or(lastBlock);
-
-      // last block accumulates values from device
-      if (lastBlock) {
-        temp.val = Reducer::identity;
-        temp.idx = IndexType(-1);
-
-        for (int i = threadId; i < numBlocks; i += numThreads) {
-          Reducer{}(temp.val,      temp.idx,
-                    val.device[i], val.deviceLoc[i]);
-        }
-        
-        temp = block_reduce(temp.val, temp.idx);
-
-        // one thread updates tally
-        if (threadId == 0) {
-          val.tally.val_ptr[0] = temp;
-        }
+      if (impl::grid_reduceLoc<Reducer>(temp, val.device, val.deviceLoc,
+                                  val.device_count)) {
+        val.tally.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value, val.index);
@@ -1303,86 +1372,6 @@ private:
   cuda::Offload_Info info;
   //! storage for reduction data for value and location
   cuda::ReduceLoc_Data<Async, Reducer, T, IndexType> val;
-
-  
-  //! reduce values in block into thread 0
-  RAJA_DEVICE RAJA_INLINE
-  cuda::LocType<T, IndexType> block_reduce(T val, IndexType idx)
-  {
-    int numThreads = blockDim.x * blockDim.y * blockDim.z;
-
-    int threadId = threadIdx.x + blockDim.x * threadIdx.y
-                   + (blockDim.x * blockDim.y) * threadIdx.z;
-
-    int warpId = threadId % WARP_SIZE;
-    int warpNum = threadId / WARP_SIZE;
-
-    cuda::LocType<T, IndexType> temp;
-    temp.val = val;
-    temp.idx = idx;
-
-    if (numThreads % WARP_SIZE == 0) {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        T rhs_val = internal::shfl_xor_sync<T>(temp.val, i);
-        IndexType rhs_idx = internal::shfl_xor_sync<T>(temp.idx, i);
-        Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
-      }
-
-    } else {
-
-      // reduce each warp
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
-        int srcLane = threadId ^ i;
-        T rhs_val = internal::shfl_sync<T>(temp.val, srcLane);
-        IndexType rhs_idx = internal::shfl_sync<T>(temp.idx, srcLane);
-        // only add from threads that exist (don't double count own value)
-        if (srcLane < numThreads) {
-          Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
-        }
-      }
-
-    }
-
-    // reduce per warp values
-    if (numThreads > WARP_SIZE) {
-
-      __shared__ T sd_val[MAX_WARPS];
-      __shared__ IndexType sd_idx[MAX_WARPS];
-      
-      // write per warp values to shared memory
-      if (warpId == 0) {
-        sd_val[warpNum] = temp.val;
-        sd_idx[warpNum] = temp.idx;
-      }
-
-      __syncthreads();
-
-      if (warpNum == 0) {
-
-        // read per warp values
-        if (warpId*WARP_SIZE < numThreads) {
-          temp.val = sd_val[warpId];
-          temp.idx = sd_idx[warpId];
-        } else {
-          temp.val = Reducer::identity;
-          temp.idx = IndexType{-1};
-        }
-
-        for (int i = 1; i < WARP_SIZE ; i *= 2) {
-          T rhs_val = internal::shfl_xor_sync<T>(temp.val, i);
-          IndexType rhs_idx = internal::shfl_xor_sync<T>(temp.idx, i);
-          Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
-        }
-      }
-
-      __syncthreads();
-
-    }
-
-    return temp;
-  }
 };
 
 }  // end namespace cuda
