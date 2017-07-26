@@ -254,6 +254,10 @@ using is_detected = detector<void, void, Concept, TArgs>;
 template <template <class...> class Concept, class TArgs>
 using detected = typename is_detected<Concept, TArgs>::value_t;
 
+
+template <typename Ret, typename T>
+Ret returns(T const &) noexcept;
+
 }  // end namespace detail
 
 template <typename T>
@@ -263,20 +267,17 @@ using concepts::metalib::bool_;
 
 /// metafunction to get instance of value type for concepts
 template <typename T>
-T &&val() noexcept;
+auto val() noexcept -> decltype(std::declval<T>());
 
 /// metafunction to get instance of const type for concepts
 template <typename T>
-T const &&cval() noexcept;
-
-template <typename Ret, typename T>
-Ret returns(T const &) noexcept;
+auto cval() noexcept -> decltype(std::declval<T const>());
 
 /// metafunction for use within decltype expression to validate return type is
 /// convertible to given type
 template <typename T, typename U>
 constexpr auto convertible_to(U &&u) noexcept
-    -> decltype(returns<metalib::true_type>(static_cast<T>((U &&) u)));
+    -> decltype(detail::returns<metalib::true_type>(static_cast<T>((U &&) u)));
 
 /// metafunction for use within decltype expression to validate type of
 /// expression
@@ -285,19 +286,12 @@ constexpr auto has_type(U &&) noexcept
     -> metalib::if_<metalib::is_same<T, U>, metalib::true_type>;
 
 template <typename BoolLike>
-constexpr auto conforms(BoolLike) noexcept
+constexpr auto is(BoolLike) noexcept
     -> metalib::if_<BoolLike, metalib::true_type>;
 
 template <typename BoolLike>
-constexpr auto conforms() noexcept
-    -> metalib::if_<BoolLike, metalib::true_type>;
-
-template <typename BoolLike>
-constexpr auto not_(BoolLike) noexcept
+constexpr auto is_not(BoolLike) noexcept
     -> metalib::if_c<!BoolLike::value, metalib::true_type>;
-
-template <bool Val>
-constexpr auto is() noexcept -> metalib::if_c<Val, metalib::true_type>;
 
 /// metaprogramming concept for SFINAE checking of aggregating concepts
 template <typename... Args>
@@ -387,30 +381,30 @@ struct Comparable : ComparableTo<T, T> {
 };
 
 template <typename T>
-struct Arithmetic : DefineConcept(conforms(std::is_arithmetic<T>())) {
+struct Arithmetic : DefineConcept(is(std::is_arithmetic<T>())) {
 };
 
 template <typename T>
-struct FloatingPoint : DefineConcept(conforms(std::is_floating_point<T>())) {
+struct FloatingPoint : DefineConcept(is(std::is_floating_point<T>())) {
 };
 
 template <typename T>
-struct Integral : DefineConcept(conforms(std::is_integral<T>())) {
+struct Integral : DefineConcept(is(std::is_integral<T>())) {
 };
 
 template <typename T>
-struct Signed : DefineConcept(Integral<T>(), conforms(std::is_signed<T>())) {
+struct Signed : DefineConcept(Integral<T>(), is(std::is_signed<T>())) {
 };
 
 template <typename T>
-struct Unsigned
-    : DefineConcept(Integral<T>(), conforms(std::is_unsigned<T>())) {
+struct Unsigned : DefineConcept(Integral<T>(), is(std::is_unsigned<T>())) {
 };
 
 template <typename T>
-struct Iterator : DefineConcept(not_(Integral<T>()),  // hacky NVCC 8 workaround
-                                *(val<T>()),
-                                has_type<T &>(++val<T &>())) {
+struct Iterator
+    : DefineConcept(is_not(Integral<T>()),  // hacky NVCC 8 workaround
+                    *(val<T>()),
+                    has_type<T &>(++val<T &>())) {
 };
 
 template <typename T>

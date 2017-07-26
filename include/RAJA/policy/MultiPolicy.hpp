@@ -158,12 +158,6 @@ RAJA_INLINE concepts::
               type_traits::is_range<Container>>
     forall(ExecutionPolicy &&, Container &&, LoopBody &&);
 
-template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_indexset_policy<ExecutionPolicy>>
-    forall(ExecutionPolicy &&, IdxSet &&, LoopBody &&);
-
-
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
 /// \param p MultiPolicy to use for selection

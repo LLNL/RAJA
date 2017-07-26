@@ -203,7 +203,11 @@ namespace wrap
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE void forall(ExecutionPolicy&& p, Container&& c, LoopBody loop_body)
+RAJA_INLINE concepts::
+    enable_if<concepts::
+                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+              type_traits::is_range<Container>>
+    forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
@@ -233,8 +237,8 @@ template <typename ExecutionPolicy,
           typename LoopBody>
 RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                Container&& c,
-                               IndexType icount,
-                               LoopBody loop_body)
+                               IndexType&& icount,
+                               LoopBody&& loop_body)
 {
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -245,7 +249,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   typename std::remove_reference<LoopBody>::type body = loop_body;
   impl::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
-                      icount,
+                      std::forward<IndexType>(icount),
                       body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -263,9 +267,7 @@ namespace indexset
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE void forall(const ExecutionPolicy& p,
-                        const IdxSet& c,
-                        LoopBody loop_body)
+RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -274,7 +276,7 @@ RAJA_INLINE void forall(const ExecutionPolicy& p,
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
-  impl::forall(p, c, body);
+  impl::forall(std::forward<ExecutionPolicy>(p), std::forward<IdxSet>(c), body);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -289,8 +291,8 @@ RAJA_INLINE void forall(const ExecutionPolicy& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE void forall_Icount(const ExecutionPolicy& p,
-                               const IdxSet& c,
+RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
+                               IdxSet&& c,
                                LoopBody loop_body)
 {
 
@@ -300,7 +302,9 @@ RAJA_INLINE void forall_Icount(const ExecutionPolicy& p,
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
-  impl::forall_Icount(p, c, body);
+  impl::forall_Icount(std::forward<ExecutionPolicy>(p),
+                      std::forward<IdxSet>(c),
+                      body);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -319,9 +323,9 @@ RAJA_INLINE void forall_Icount(const ExecutionPolicy& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_indexset_policy<ExecutionPolicy>>
-    forall_Icount(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
+RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
+                               IdxSet&& c,
+                               LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
@@ -369,6 +373,8 @@ forall_Icount(ExecutionPolicy&& p,
               IndexType icount,
               LoopBody&& loop_body)
 {
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container does not model RandomAccessIterator");
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       icount,
@@ -390,6 +396,8 @@ RAJA_INLINE concepts::
               type_traits::is_range<Container>>
     forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
+  static_assert(type_traits::is_random_access_range<Container>::value,
+                "Container does not model RandomAccessIterator");
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
@@ -490,6 +498,9 @@ forall(ExecutionPolicy&& p,
        IndexType2 end,
        LoopBody&& loop_body)
 {
+  static_assert(
+      type_traits::is_range_constructible<IndexType1, IndexType2>::value,
+      "Cannot deduce a common type between begin and end for Range creation");
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_range(begin, end),
                std::forward<LoopBody>(loop_body));
@@ -518,6 +529,9 @@ forall_Icount(ExecutionPolicy&& p,
               OffsetType icount,
               LoopBody&& loop_body)
 {
+  static_assert(
+      type_traits::is_range_constructible<IndexType1, IndexType2>::value,
+      "Cannot deduce a common type between begin and end for Range creation");
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_range(begin, end),
                       icount,
@@ -553,10 +567,22 @@ forall(ExecutionPolicy&& p,
        IndexType3 stride,
        LoopBody&& loop_body)
 {
+  static_assert(type_traits::is_range_stride_constructible<IndexType1,
+                                                           IndexType2,
+                                                           IndexType3>::value,
+                "Cannot deduce a common type between begin and end for Range "
+                "creation");
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_strided_range(begin, end, stride),
                std::forward<LoopBody>(loop_body));
 }
+
+static_assert(
+    type_traits::is_range_stride_constructible<int, RAJA::seq_exec, int>::value,
+    "");
+static_assert(type_traits::is_range_stride_constructible<int, int, int>::value,
+              "");
+
 
 /*!
  ******************************************************************************
@@ -584,6 +610,11 @@ forall_Icount(ExecutionPolicy&& p,
               OffsetType icount,
               LoopBody&& loop_body)
 {
+  static_assert(type_traits::is_range_stride_constructible<IndexType1,
+                                                           IndexType2,
+                                                           IndexType3>::value,
+                "Cannot deduce a common type between begin and end for Range "
+                "creation");
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_strided_range(begin, end, stride),
                       icount,
