@@ -77,19 +77,25 @@
 namespace RAJA
 {
 
+namespace cuda
+{
+
 namespace impl
 {
-//
-//////////////////////////////////////////////////////////////////////
-//
-// CUDA kernel templates.
-//
-//////////////////////////////////////////////////////////////////////
-//
 
-// INTERNAL namespace to encapsulate helper functions
-namespace INTERNAL
+/*!
+ ******************************************************************************
+ *
+ * \brief calculate gridDim from length of iteration and blockDim
+ *
+ ******************************************************************************
+ */
+RAJA_INLINE
+dim3 getGridDim(size_t len, dim3 blockDim)
 {
+  size_t block_size = blockDim.x * blockDim.y * blockDim.z;
+  return (len + block_size-1) / block_size;
+}
 
 /*!
  ******************************************************************************
@@ -132,6 +138,14 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
       blockDim.x * blockDim.y * blockDim.z * gridDim.x * gridDim.y * gridDim.z;
   return numThreads;
 }
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// CUDA kernel templates.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
 /*!
  ******************************************************************************
@@ -177,7 +191,12 @@ __global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
   }
 }
 
-}  // end INTERNAL namespace for helper functions
+}  // closing brace for impl namespace
+
+}  // closing brace for cuda namespace
+
+namespace impl
+{
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -199,16 +218,15 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
 
   if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
+    auto gridSize = cuda::impl::getGridDim(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     cudaStream_t stream = 0;
 
-    INTERNAL::forall_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
-        RAJA::cuda::createLaunchBody(
-            gridSize, BlockSize, 0, stream,
-            std::forward<LoopBody>(loop_body)),
+    cuda::impl::forall_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
+        cuda::createLaunchBody(gridSize, BlockSize, 0, stream,
+                               std::forward<LoopBody>(loop_body)),
         std::move(begin), len);
     cudaErrchk(cudaPeekAtLastError());
 
@@ -238,16 +256,15 @@ forall_Icount(cuda_exec<BlockSize, Async>,
 
   if (len > 0 && BlockSize > 0) {
 
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
+    auto gridSize = cuda::impl::getGridDim(len, BlockSize);
 
     RAJA_FT_BEGIN;
 
     cudaStream_t stream = 0;
 
-    INTERNAL::forall_Icount_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
-        RAJA::cuda::createLaunchBody(
-            gridSize, BlockSize, 0, stream,
-            std::forward<LoopBody>(loop_body)),
+    cuda::impl::forall_Icount_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
+        cuda::createLaunchBody(gridSize, BlockSize, 0, stream,
+                               std::forward<LoopBody>(loop_body)),
         std::move(begin), len, icount);
     cudaErrchk(cudaPeekAtLastError());
 
@@ -280,15 +297,16 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>& iset,
-                        LoopBody&& loop_body)
+RAJA_INLINE void forall(
+    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+    const StaticIndexSet<SegmentTypes...>& iset,
+    LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     iset.segmentCall(isi,
                      CallForall(),
-                     cuda_exec<BlockSize, Async>(),
+                     cuda_exec<BlockSize, true>(),
                      loop_body);
   }  // iterate over segments of index set
 
@@ -321,7 +339,7 @@ RAJA_INLINE void forall_Icount(
   for (decltype(num_seg) isi = 0; isi < num_seg; ++isi) {
     iset.segmentCall(isi,
                      CallForallIcount(iset.getStartingIcount(isi)),
-                     cuda_exec<BlockSize>(),
+                     cuda_exec<BlockSize, true>(),
                      loop_body);
 
   }  // iterate over segments of index set

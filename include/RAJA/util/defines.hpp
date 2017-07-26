@@ -140,14 +140,6 @@ RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
 
-/*!
- * \def RAJA_DIVIDE_CEILING_INT(dividend, divisor)
- *
- * Macro to find ceiling (dividend / divisor) for integer types
- */
-#define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
-  (((dividend) + (divisor)-1) / (divisor))
-
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
   if (std::getenv("RAJA_NO_EXCEPT") != nullptr) {
