@@ -249,6 +249,13 @@ void launch(cudaStream_t stream)
   }
 }
 
+//! Indicate stream is asynchronous
+RAJA_INLINE
+void peekAtLastError()
+{
+  cudaErrchk(cudaPeekAtLastError());
+}
+
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
 bool setupReducers()

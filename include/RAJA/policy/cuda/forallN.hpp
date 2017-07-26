@@ -222,7 +222,7 @@ struct ForallN_Executor<device,
           cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
                                  std::move(loop_body)),
           cargs...);
-      cudaErrchk(cudaPeekAtLastError());
+      cuda::peekAtLastError();
 
       cuda::launch(stream);
       if (!Async) cuda::synchronize(stream);
@@ -254,7 +254,7 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
           cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
                                  std::move(loop_body)),
           c0);
-      cudaErrchk(cudaPeekAtLastError());
+      cuda::peekAtLastError();
 
       cuda::launch(stream);
       if (!Async) cuda::synchronize(stream);

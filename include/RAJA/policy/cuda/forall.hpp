@@ -228,7 +228,7 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
         cuda::make_launch_body(gridSize, BlockSize, 0, stream,
                                std::forward<LoopBody>(loop_body)),
         std::move(begin), len);
-    cudaErrchk(cudaPeekAtLastError());
+    cuda::peekAtLastError();
 
     cuda::launch(stream);
     if (!Async) cuda::synchronize(stream);
@@ -266,7 +266,7 @@ forall_Icount(cuda_exec<BlockSize, Async>,
         cuda::make_launch_body(gridSize, BlockSize, 0, stream,
                                std::forward<LoopBody>(loop_body)),
         std::move(begin), len, icount);
-    cudaErrchk(cudaPeekAtLastError());
+    cuda::peekAtLastError();
 
     cuda::launch(stream);
     if (!Async) cuda::synchronize(stream);
