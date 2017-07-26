@@ -74,8 +74,14 @@ namespace cuda
 /////////////////////////////////////////////////////////////////////////////
 //
 
-//! State of the host code
+//! State of the host code globally
 cudaInfo g_status;
+
+//! State of the host code in this thread
+cudaInfo tl_status;
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#pragma omp threadprivate(tl_status)
+#endif
 
 //! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };

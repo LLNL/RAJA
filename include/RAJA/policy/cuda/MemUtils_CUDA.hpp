@@ -184,6 +184,11 @@ private:
 
 extern cudaInfo g_status;
 
+extern cudaInfo tl_status;
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#pragma omp threadprivate(tl_status)
+#endif
+
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
 //! Ensure all streams in use are synchronized wrt raja kernel launches
@@ -243,50 +248,28 @@ void launch(cudaStream_t stream)
 RAJA_INLINE
 bool setupReducers()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  {
-    lock_guard<omp::mutex> lock(g_status.lock);
-    if (!g_status.thread_states) {
-      g_status.thread_states = new cudaInfo[omp_get_max_threads()];
-    }
-  }
-  return g_status.thread_states[omp_get_thread_num()].setup_reducers;
-#else
-  return g_status.setup_reducers;
-#endif
+  return tl_status.setup_reducers;
 }
 
 //! get gridDim of current launch
 RAJA_INLINE
 dim3 currentGridDim()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  return g_status.thread_states[omp_get_thread_num()].gridDim;
-#else
-  return g_status.gridDim;
-#endif
+  return tl_status.gridDim;
 }
 
 //! get blockDim of current launch
 RAJA_INLINE
 dim3 currentBlockDim()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  return g_status.thread_states[omp_get_thread_num()].blockDim;
-#else
-  return g_status.blockDim;
-#endif
+  return tl_status.blockDim;
 }
 
 //! get stream for current launch
 RAJA_INLINE
 cudaStream_t currentStream()
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  return g_status.thread_states[omp_get_thread_num()].stream;
-#else
-  return g_status.stream;
-#endif
+  return tl_status.stream;
 }
 
 //! create copy of loop_body that is setup for device execution
@@ -296,18 +279,6 @@ typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   dim3 gridDim, dim3 blockDim, size_t dynamic_smem, cudaStream_t stream,
   LOOP_BODY&& loop_body)
 {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  {
-    lock_guard<omp::mutex> lock(g_status.lock);
-    if (!g_status.thread_states) {
-      g_status.thread_states = new cudaInfo[omp_get_max_threads()];
-    }
-  }
-  int tid = omp_get_thread_num();
-  cudaInfo& tl_status = g_status.thread_states[tid];
-#else
-  cudaInfo& tl_status = g_status;
-#endif
   SetterResetter<bool> setup_reducers_srer(tl_status.setup_reducers, true);
 
   tl_status.stream   = stream;
