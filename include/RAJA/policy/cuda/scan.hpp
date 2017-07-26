@@ -59,6 +59,8 @@
 
 #include "RAJA/policy/cuda/policy.hpp"
 
+#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
+
 #include <iterator>
 #include <type_traits>
 
@@ -80,14 +82,6 @@ namespace impl
 namespace scan
 {
 
-#if defined(RAJA_ENABLE_CUB)
-RAJA_INLINE::cub::CachingDeviceAllocator& getAllocator()
-{
-  static ::cub::CachingDeviceAllocator allocator(true);
-  return allocator;
-}
-#endif
-
 /*!
         \brief explicit inclusive inplace scan given range, function, and
    initial value
@@ -107,13 +101,12 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len, stream));
   // Allocate temporary storage
-  cudaErrchk(
-      getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes, stream));
+  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len, stream));
   // Free temporary storage
-  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+  cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
   ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, begin, binary_op);
 #endif
@@ -145,13 +138,12 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len, stream));
   // Allocate temporary storage
-  cudaErrchk(
-      getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes, stream));
+  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len, stream));
   // Free temporary storage
-  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+  cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
   ::thrust::exclusive_scan(
       ::thrust::cuda::par.on(stream), begin, end, begin, init, binary_op);
@@ -184,13 +176,12 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
   // Allocate temporary storage
-  cudaErrchk(
-      getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes, stream));
+  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
   // Free temporary storage
-  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+  cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
   ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, binary_op);
 #endif
@@ -224,13 +215,12 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len, stream));
   // Allocate temporary storage
-  cudaErrchk(
-      getAllocator().DeviceAllocate(&d_temp_storage, temp_storage_bytes, stream));
+  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::ExclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len, stream));
   // Free temporary storage
-  cudaErrchk(getAllocator().DeviceFree(d_temp_storage));
+  cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
   ::thrust::exclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, init, binary_op);
 #endif
