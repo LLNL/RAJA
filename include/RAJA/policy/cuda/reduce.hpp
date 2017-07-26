@@ -70,6 +70,8 @@
 
 #include "RAJA/policy/cuda/policy.hpp"
 
+#include "RAJA/policy/cuda/atomic.hpp"
+
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
 #include <cuda.h>
@@ -302,7 +304,7 @@ public:
   PinnedTally(const PinnedTally&) = delete;
 
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
   omp::mutex& mutex()
   {
     return m_mutex;
@@ -336,7 +338,7 @@ public:
   //! get new value for use in stream
   T* new_value(cudaStream_t stream)
   {
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
     lock_guard<omp::mutex> lock(mutex());
 #endif
     StreamNode* sn = stream_list;
@@ -380,7 +382,7 @@ public:
 private:
   StreamNode* stream_list;
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
   omp::mutex m_mutex;
 #endif
 };
@@ -773,7 +775,7 @@ struct Reduce {
     if (parent == this) {
       val.destroy();
     } else if (parent) {
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
       lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value);
@@ -1002,7 +1004,7 @@ struct ReduceAtomic {
     if (parent == this) {
       val.destroy();
     } else if (parent) {
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
       lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value);
@@ -1193,7 +1195,7 @@ struct ReduceLoc {
     if (parent == this) {
       val.destroy();
     } else if (parent) {
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) defined(_OPENMP)
       lock_guard<omp::mutex> lock(val.tally.list->mutex());
 #endif
       parent->reduce(val.value, val.index);
