@@ -1314,7 +1314,7 @@ struct ReduceLoc {
       cuda::LocType<T, IndexType> temp{val.value, val.index};
 
       if (impl::grid_reduceLoc<Reducer>(temp, val.device, val.deviceLoc,
-                                  val.device_count)) {
+                                        val.device_count)) {
         val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
