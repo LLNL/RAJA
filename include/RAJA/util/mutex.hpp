@@ -55,14 +55,14 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
 #include <omp.h>
 #endif
 
 namespace RAJA
 {
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
 namespace omp
 {
 
@@ -111,7 +111,7 @@ private:
 };
 
 } // namespace omp
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
 
 //! class providing functionality of std::lock_guard
 template < typename mutex_type >
