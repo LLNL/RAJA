@@ -47,71 +47,29 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
+#include "memoryManager.hpp"
+
 #define CUDA_BLOCK_SIZE 16
-
-template <typename T>
-T* allocate(RAJA::Index_type size) {
-  T* ptr;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged((void**)&ptr, sizeof(T)*size,cudaMemAttachGlobal);
-#else
-  ptr = new T[size];
-#endif
-  return ptr;
-}
-
-template <typename T>
-void deallocate(T* &ptr) {
-  if (ptr) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaFree(ptr);
-#else
-    delete[] ptr;
-#endif
-    ptr = nullptr;
-  }
-}
-
 
 
 /*
   Example 3: Jacobi Method For Solving a Linear System
 
   ----[Details]--------------------
-  The following code uses the jacobi method to compute the currents in a
-  structured grid by solving a linear system correspoding to kirchoff's 
-  circuit law. 
-
-  The structured N x N circuit may be visualized as follows: 
-
-  - Dash lines correspond to lossless wires,
-  - The circles correspond to lossless juntions
-  - The [] correspond to 1 Ohm resistors
-  - The [x] corresponds to a 1 volt DC battery which powers the grid
+  This code assumes a second order finite difference 
+  spatial discretization on a lattice with unit grid spacing
   
-  o--[]--o--[]--o--[]--o--[]--o
-  |      |      |      |      |  
-  []    []     []     []     []     
-  |      |      |      |      |
-  o--[]--o--[]--o--[]--o--[]--o
-  |      |      |      |      |  
-  []    []     []     []     []     
-  |      |      |      |      |
-  o--[]--o--[]--o--[]--o--[]--o
-  |      |      |      |      |  
-  []    []     []     []     []     
-  |      |      |      |      |
-  o--[]--o--[]--o--[]--o--[]--o
-  |      |      |      |      |  
-  [x]    []     []     []     []     
-  |      |      |      |      |
-  o--[]--o--[]--o--[]--o--[]--o
+  -U_xx - U_yy = 1.0 inside the domain 
+  and U = 0 on the boundary of the domain
 
 
   ----[RAJA Concepts]---------------
-  1. RAJA Reduction
-  2. RAJA::omp_collapse_nowait_exec
+  1. RAJA ForallN
+  2. RAJA Reduction
+  3. RAJA::omp_collapse_nowait_exec
+  3. Reducing length of RAJA statements
 */
+
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -119,14 +77,20 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //----[Parameters for Solver]-------
   double tol = 1e-5;
-  int maxIter = 10000;
+  int maxIter = 100000;
   int N = 100;
   int NN=(N+2)*(N+2);
   int iteration;
-  double resI2, V, invD;
+  double resI2;
 
-  double *I    = allocate<double>(NN);
-  double *Iold = allocate<double>(NN);
+  /*
+    invD - accumulation of finite difference coefficients 
+    f - right hand side term          
+  */
+  double invD = 1./4.0;  double f = 1.0;    
+
+  double *I    = memoryManager::allocate<double>(NN);
+  double *Iold = memoryManager::allocate<double>(NN);
 
   /*
     Intialize data to zero
@@ -149,18 +113,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       for(int m=1;m<=N;++m) {
 
         int id = n*(N+2) + m;
-        
-        /*
-          Cell (1,1) is a special case due to battery
-        */
-        if(n==1 && m==1) {
-          invD = 1./3.0; V = 1.0; 
-          I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-        }else{
-          invD = 1./4.0; V = 0.0;    
-          I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-        }
-        
+                
+        I[id] = invD*(f-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);                
       }
     }
 
@@ -180,10 +134,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     iteration++;
   }
-  printf("Top right current: %lg \n", I[N+N*(N+2)]);
+  printf("Value at grid point ((N-1), (N-1)): %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
-
+  
+  /*
+    RAJA loop calls may be simplified by specifying policies apriori
+  */
+  RAJA::RangeSegment jacobiRange = RAJA::RangeSegment(1,(N+1)); 
+  RAJA::RangeSegment gridRange = RAJA::RangeSegment(0,NN); 
+  using jacobiSeqNestedPolicy = RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::seq_exec > >;
+  
   printf("RAJA: Sequential Policy - Nested forallN \n"); 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
@@ -191,21 +152,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   while(resI2 > tol*tol) {
 
-    RAJA::forallN< RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
-    RAJA::RangeSegment(1, (N+1)),
-    RAJA::RangeSegment(1, (N+1)),
-    [=](int m, int n) { 
-
-      int id = n*(N+2) + m;
-      if(n==1 && m==1) {
-        double invD = 1.0/3.0; double V = 1.0; 
-        I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }else{
-        double invD2 = 1.0/4.0; double V2 = 0.0;
-        I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }
-
+    RAJA::forallN< jacobiSeqNestedPolicy >(jacobiRange,jacobiRange, [=](int m, int n) { 
+      int id = n*(N+2) + m;      
+      I[id] = invD*(f-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
     });
 
     /*
@@ -216,9 +165,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
       Analogous to introducing an atomic operator in OpenMP
     */
-
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,NN), [=](int k) {
+    RAJA::forall<RAJA::seq_exec>(gridRange, [=](int k) {
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
@@ -230,45 +178,36 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
     iteration++;
   }
-  printf("Top right current: %lg \n", I[N+N*(N+2)]);
+  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
-  //======================================
+
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-
 
   printf("RAJA: OpenMP Policy - Nested forallN \n");
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
-  while(resI2 > tol*tol) {
-        
-    /*
-      RAJA::omp_collapse_nowait_exec -
-      parallizes nested loops without introducing nested parallism
-    */
-    
-    RAJA::forallN< RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>>>(
-    RAJA::RangeSegment(1, (N+1)),
-    RAJA::RangeSegment(1, (N+1)),
-    [=](int m, int n) { 
-      
-      int id = n*(N+2) + m;
-      if(n==1 && m==1) {
-        double invD = 1.0/3.0; double V = 1.0; 
-        I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }else{
-        double invD2 = 1.0/4.0; double V2 = 0.0;
-        I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }
 
+  /*
+    RAJA::omp_collapse_nowait_exec -
+    parallizes nested loops without introducing nested parallism
+  */
+
+  using jacobiompNestedPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>>;
+
+  while(resI2 > tol*tol) {
+            
+    RAJA::forallN<jacobiompNestedPolicy>(jacobiRange,jacobiRange,[=](int m, int n) { 
+                                                                    
+      int id = n*(N+2) + m;      
+      I[id] = invD*(f-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
   });
     
     //Reduction step    
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0,NN), [=](int k){
+    RAJA::forall<RAJA::omp_parallel_for_exec>(gridRange, [=](int k){
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
@@ -281,14 +220,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
     iteration++;
   }
-  printf("Top right current: %lg \n", I[N+N*(N+2)]);
+  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
-  //======================================
+
 #endif
 
 
 #if defined(RAJA_ENABLE_CUDA)
-
+  using jacobiCUDANestedPolicy = 
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>;       
 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
@@ -296,24 +236,15 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
   while(resI2 > tol*tol) {
         
-    RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<
-    RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,
-    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>>(
-    RAJA::RangeSegment(1, (N+1)), RAJA::RangeSegment(1, (N+1)), [=] __device__ (int m, int n) {
-     
-      int id = n*(N+2) + m;
-      if(n==1 && m==1) {
-        double invD = 1./3.; double V = 1.0; 
-        I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }else{
-        double invD2 = 1./4.0; double V2 = 0.0;
-        I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
-      }
+    RAJA::forallN<jacobiCUDANestedPolicy>(jacobiRange,jacobiRange, [=] __device__ (int m, int n) {
+      int id = n*(N+2) + m;      
+      I[id] = invD*(f-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);     
+
     });
 
     //Reduction step 
     RAJA::ReduceSum<RAJA::cuda_reduce<256>, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::cuda_exec<256> >(RAJA::RangeSegment(1,NN), [=] __device__ (int k) {
+    RAJA::forall<RAJA::cuda_exec<256> >(gridRange, [=] __device__ (int k) {
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
@@ -328,13 +259,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
   cudaDeviceSynchronize();
   printf("RAJA: CUDA Nested Loop Policy \n"); 
-  printf("Top right current: %lg \n", I[N+N*(N+2)]);
+  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
   //======================================
 #endif
 
-  deallocate(I);
-  deallocate(Iold);
+  memoryManager::deallocate(I);
+  memoryManager::deallocate(Iold);
 
 
   return 0;
