@@ -43,6 +43,8 @@
 #include <cstdlib>
 #include <iostream>
 
+#include "memoryManage.hpp"
+
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
@@ -51,30 +53,6 @@
 void checkSolution(int *C, int in_N);
 
 /*
-  Memory management is left to the developer
-*/
-int * allocate(RAJA::Index_type size) {
-  int * ptr;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged((void**)&ptr, sizeof(int)*size,cudaMemAttachGlobal);
-#else
-  ptr = new int[size];
-#endif
-  return ptr;
-}
-
-void deallocate(int* &ptr) {
-  if (ptr) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaFree(ptr);
-#else
-    delete[] ptr;
-#endif
-    ptr = nullptr;
-  }
-}
-
-/*  
   Example 1: Adding Two Vectors
 
   ----[Details]---------------------
@@ -83,110 +61,96 @@ void deallocate(int* &ptr) {
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
-  RAJA::forall<RAJA::exec_policy>(RAJA::range_policy,[=](index i)) {
+  RAJA::forall<RAJA::exec_policy>(RAJA::Range,[=](index i)) {
 
          //body
 
   });
-  
+
   [=] Pass by copy
   [&] Pass by reference
   RAJA::exec_policy  - specifies how the traversal occurs
-  RAJA::range_policy - provides a list in which the index may iterate on
+  RAJA::Range - provides a list on which the Raja loop my iterate on
  */
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
-
-  std::cout<<"Example 1: Adding Two Vectors"<<std::endl;
-
-  const int N = 1000;
-  int *A = allocate(N);
-  int *B = allocate(N);
-  int *C = allocate(N);
   
-  for(int i=0; i<N; ++i) {
+  printf("Example 1: Adding Two Vectors \n \n");
+  
+  const int N = 1000;
+  int *A = memoryManager::allocate<int>(N);
+  int *B = memoryManager::allocate<int>(N);
+  int *C = memoryManager::allocate<int>(N);
+
+  for (int i = 0; i < N; ++i) {
     A[i] = i;
     B[i] = i;
   }
 
-  std::cout<<"Standard C++ Loop"<<std::endl;
-  for(int i=0; i<N; ++i) {
+  printf("Standard C++ Loop \n");
+  for (int i = 0; i < N; ++i) {
     C[i] = A[i] + B[i];
   }
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //==========================================
-     
-  std::cout<<"RAJA: Sequential Policy"<<std::endl;
+  checkSolution(C, N);
+
+
+  printf("RAJA: Sequential Policy \n");
   /*
     RAJA::seq_exec -  Executes the loop sequentially
 
-    RAJA::RangeSegment(start,stop) - generates a sequence of numbers
-    on which a RAJA loop may iterate on
-    
-    start - starting number of the sequence
-    stop  - ending number the sequence is generated to but not included
+    RAJA::RangeSegment(start,stop) - generates a contiguous sequence of numbers
+    by the [start, stop) interval specified 
   */
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int i) {
-      C[i] = A[i] + B[i];     
-    });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
+                               [=](int i) { C[i] = A[i] + B[i]; });
+  checkSolution(C, N);
 
 
-#if defined(RAJA_ENABLE_OPENMP)  
-  std::cout<<"RAJA: OpenMP Policy"<<std::endl;
-  /*    
+
+#if defined(RAJA_ENABLE_OPENMP)
+  printf("RAJA: OpenMP Policy \n");
+  /*
     RAJA::omp_parallel_for_exec - executes the forall loop using the
-    #pragma omp parallel for directive    
-  */  
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0,N),[=](int i) {
-      C[i] = A[i] + B[i];     
-    });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
-#endif
-  
-  
-  
-#if defined(RAJA_ENABLE_CUDA)
-  
-  std::cout<<"RAJA: CUDA Policy"<<std::endl;  
-  /*    
-    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes the forall loop using the CUDA API
-    Each thread is assigned to an iteration of the loop
-    
-    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension    
-  */  
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0,N),[=] __device__(int i) {
-      C[i] = A[i] + B[i];
-    });
-  
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
+    #pragma omp parallel for directive
+  */
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N),
+                                            [=](int i) { C[i] = A[i] + B[i]; });
+  checkSolution(C, N);
 #endif
 
-  deallocate(A);
-  deallocate(B);
-  deallocate(C);
+
+#if defined(RAJA_ENABLE_CUDA)
+
+  printf("RAJA: CUDA Policy \n");
+  /*
+    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes the forall loop using the CUDA
+    API. Each thread is assigned to an iteration of the loop
+
+    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension
+  */
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
+                                                 [=] __device__(int i) {
+                                                   C[i] = A[i] + B[i];
+                                                 });
+  checkSolution(C, N);
+#endif
+
+  memoryManager::deallocate(A);
+  memoryManager::deallocate(B);
+  memoryManager::deallocate(C);
 
   return 0;
 }
 
-void checkSolution(int *C, int in_N){
-
-  bool eFlag = true; 
-  for(int i=0; i<in_N; ++i){
-    if( (C[i] - (i+i)) > 1e-9){
-      std::cout<<"Error in result!"<<std::endl;
-      eFlag = false; break;
+void checkSolution(int *C, int in_N)
+{
+ 
+  for (int i = 0; i < in_N; ++i) {
+    if ((C[i] - (i + i)) > 1e-9) {
+      printf("Error in Result \n \n");
+      return;
     }
   }
 
-  if(eFlag){
-    std::cout<<"Result is correct"<<std::endl;
-  }
+  printf("Correct Result \n \n");
 }
