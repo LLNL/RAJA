@@ -47,7 +47,6 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-
 #define CUDA_BLOCK_SIZE 16
 
 template <typename T>
@@ -75,7 +74,8 @@ void deallocate(T* &ptr) {
 
 
 
-/*Example 3: Jacobi Method For Solving a Linear System
+/*
+  Example 3: Jacobi Method For Solving a Linear System
 
   ----[Details]--------------------
   The following code uses the jacobi method to compute the currents in a
@@ -111,9 +111,7 @@ void deallocate(T* &ptr) {
   ----[RAJA Concepts]---------------
   1. RAJA Reduction
   2. RAJA::omp_collapse_nowait_exec
-
 */
-
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -130,25 +128,31 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double *I    = allocate<double>(NN);
   double *Iold = allocate<double>(NN);
 
-  //Set to zero
+  /*
+    Intialize data to zero
+  */
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
 
-
-  //----[Standard C++ Loop]------
   printf("Standard  C++ Loop \n");
   resI2 = 1;  iteration = 0; 
 
-  //Carry out iterations of the Jacobi scheme until a tolerance is met
+  /*
+    Carry out iterations of the Jacobi scheme until a tolerance is met
+  */
   while(resI2>tol*tol) {
     
-    //Iteration of the Jacobi Scheme
+    /*
+    Iteration of the Jacobi Scheme
+    */
     for(int n=1;n<=N;++n) {
       for(int m=1;m<=N;++m) {
 
         int id = n*(N+2) + m;
-
-        //Cell (1,1) is a special case due to battery
+        
+        /*
+          Cell (1,1) is a special case due to battery
+        */
         if(n==1 && m==1) {
           invD = 1./3.0; V = 1.0; 
           I[id] = invD*(V-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
@@ -160,7 +164,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       }
     }
 
-    //Compute ||I - I_{old}||_{l2} and update Iold
+    /*
+      Compute ||I - I_{old}||_{l2} and update Iold
+    */
     resI2 = 0.0; 
     for(int k=0; k<NN; k++) {
       resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
@@ -178,17 +184,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n",iteration);
   //======================================
 
-  //----[RAJA: Sequential Policy - Nested forallN]---------
   printf("RAJA: Sequential Policy - Nested forallN \n"); 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
+
   while(resI2 > tol*tol) {
-        
+
     RAJA::forallN< RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
-    RAJA::RangeSegment(1, N+1),
-    RAJA::RangeSegment(1, N+1),
+    RAJA::RangeSegment(1, (N+1)),
+    RAJA::RangeSegment(1, (N+1)),
     [=](int m, int n) { 
 
       int id = n*(N+2) + m;
@@ -200,22 +206,23 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         I[id] = invD2*(V2-Iold[id-N-2]-Iold[id+N+2]-Iold[id-1]-Iold[id+1]);
       }
 
-  });
-    
-    /*----[Reduction step]---------
+    });
+
+    /*
+      ----[Reduction step]---------
       The RAJA API introduces an accumulation variable
       "ReduceSum" which creates a thread-safe variable tailored to
       each execution policy. 
 
       Analogous to introducing an atomic operator in OpenMP
     */
+
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::seq_reduce>(0, NN, [=](int k) {
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,NN), [=](int k) {
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
-    
-    
+       
     resI2 = RAJA_resI2; 
     if(iteration > maxIter) {
       printf("RAJA: Sequential - Maxed out on iterations! \n");
@@ -230,7 +237,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-  //----[RAJA: OpenMP Policy - forallN]---------
+
   printf("RAJA: OpenMP Policy - Nested forallN \n");
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
@@ -261,7 +268,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     
     //Reduction step    
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::omp_reduce>(0, NN, [=](int k) {
+    RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0,NN), [=](int k){
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
@@ -282,7 +289,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
 
-  //----[RAJA: Nested CUDA Policy]---------
+
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
@@ -306,7 +313,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
     //Reduction step 
     RAJA::ReduceSum<RAJA::cuda_reduce<256>, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::cuda_exec<256> >(0, NN, [=] __device__ (int k) {
+    RAJA::forall<RAJA::cuda_exec<256> >(RAJA::RangeSegment(1,NN), [=] __device__ (int k) {
         RAJA_resI2 += (I[k]-Iold[k])*(I[k]-Iold[k]);
         Iold[k]=I[k];
       });
@@ -328,6 +335,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   deallocate(I);
   deallocate(Iold);
+
 
   return 0;
 }
