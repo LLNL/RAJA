@@ -42,228 +42,206 @@
 
 #include <cstdlib>
 #include <iostream>
+#include <algorithm>
+#include <initializer_list>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/util/defines.hpp"
 
+#include "memoryManager.hpp"
+
+const int DIM = 2;
 void checkSolution(double *C, int in_N);
+void checkSolution(RAJA::View<double,RAJA::Layout<DIM> > Cview, int in_N);
 
-template <typename T>
-T* allocate(RAJA::Index_type size) {
-  T* ptr;
-#if defined(RAJA_ENABLE_CUDA)
-  cudaMallocManaged((void**)&ptr, sizeof(T)*size,cudaMemAttachGlobal);
-#else
-  ptr = new T[size];
-#endif
-  return ptr;
-}
-
-template <typename T>
-void deallocate(T* &ptr) {
-  if (ptr) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaFree(ptr);
-#else
-    delete[] ptr;
-#endif
-    ptr = nullptr;
-  }
-}
-
-/*  
+/*
   Example 2: Multiplying Two Matrices
-  
+
   ----[Details]--------------------
   Multiplies two N x N matrices
-  
+
   -----[RAJA Concepts]-------------
-  1. Introduces nesting of forall loops (Not currently supported in CUDA)
-  2. Introduces forallN variant of the RAJA loop
+  1. Nesting of forall loops (Not currently supported in CUDA)
+  2. ForallN variant of the RAJA loop
+  3. RAJA View
 */
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout<<"Example 2: Multiplying Two Matrices"<<std::endl;
+  printf("Example 2: Multiplying Two N x N Matrices \n \n");
+  const int N = 1000;
+  const int NN = N * N;
 
-  const int N  = 1000; 
-  const int NN = N*N;
+  double *A = memoryManager::allocate<double>(NN);
+  double *B = memoryManager::allocate<double>(NN);
+  double *C = memoryManager::allocate<double>(NN);
 
-  double *A = allocate<double>(NN);
-  double *B = allocate<double>(NN);
-  double *C = allocate<double>(NN);
-
-  for(int i=0; i<NN; ++i) {
-    A[i] = 1.0;
-    B[i] = 1.0;
+  for(int i=0; i<NN; ++i){
+    A[i] = 1.0; 
+    B[i] = 1.0; 
   }
-
-
-  std::cout<<"Standard C++ Loop"<<std::endl;
-  for(int r=0; r<N; ++r) {
-    for(int c=0; c<N; ++c) {
-
-      int cId = c+r*N; double dot=0.0;
-
-      for(int k=0; k<N; ++k) {
-
-        int aId = k + r*N; 
-        int bId = c + k*N;
-        dot += A[aId]*B[bId];
-      }
-      
-      C[cId] = dot;
-    }        
-  }
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
-
-
-  std::cout<<"RAJA: Sequential Policy - Single forall"<<std::endl;
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,NN),[=](int i) {
-      /*
-        Generate column and row index
-      */
-      int c = i%N; int r=i/N;
-      
-      int cId = c+r*N; double dot=0.0;
-      
-      for(int k=0; k<N; ++k) {
-        
-        int aId = k + r*N;
-        int bId = c + k*N;
-        dot += A[aId]*B[bId];
-      }    
-      
-      C[cId] = dot;
-    });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
 
   
-  std::cout<<"RAJA: Sequential Policy - Nested forall"<<std::endl;
+  printf("Standard C++ Loop \n");
+  for (int r = 0; r < N; ++r) {
+    for (int c = 0; c < N; ++c) {
+
+      int cId = c + r * N;
+      double dot = 0.0;
+
+      for (int k = 0; k < N; ++k) {
+
+        int aId = k + r * N;
+        int bId = c + k * N;
+        dot += A[aId] * B[bId];
+      }
+
+      C[cId] = dot;
+    }
+  }
+  checkSolution(C, N);
+
+  /*
+    RAJA::View - Introduces Multidimensional arrays
+  */  
+
+  RAJA::View<double, RAJA::Layout<DIM> > Aview(A, N, N);
+  RAJA::View<double, RAJA::Layout<DIM> > Bview(B, N, N);
+  RAJA::View<double, RAJA::Layout<DIM> > Cview(C, N, N);
+
+
+  printf("RAJA: Sequential Policy - Single forall \n");  
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int row) {
+      for(int col = 0; col < N; ++col){
+        
+        double dot = 0.0;
+        for (int k = 0; k < N; ++k) {
+          dot += Aview(row,k)*Bview(k,col);
+        }
+        
+        Cview(row,col) = dot; 
+      }
+
+    });
+  checkSolution(Cview, N);
+
+
+  printf("RAJA: Sequential Policy - Nested forall \n");
   /*
     Forall loops may be nested under sequential and omp policies
   */
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int r) {
-      RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0,N),[=](int c) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int row) {
+    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int col) {
+
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row,k)*Bview(k,col);
+      }
       
-          int cId = c+r*N; double dot=0.0;
-
-          for(int k=0; k<N; ++k) {
-            
-            int aId = k + r*N;
-            int bId = c + k*N;
-            dot += A[aId]*B[bId];
-          }    
-          C[cId] = dot;
-
-        });
+      Cview(row,col) = dot;
     });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //======================================
+  });
+  checkSolution(Cview, N);
 
-  std::cout<<"RAJA: Sequential Policy - forallN"<<std::endl;
-  /*    
+  printf("RAJA: Sequential Policy RAJA - forallN \n");
+  /*
     Nested forall loops may be collapsed into a single forallN loop
   */
-  RAJA::forallN< RAJA::NestedPolicy<
-  RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec >>>(
-  RAJA::RangeSegment(0, N),
-  RAJA::RangeSegment(0, N),[=](int r, int c) {
+  RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
+                                                  RAJA::seq_exec>>>(
+  RAJA::RangeSegment(0,N), RAJA::RangeSegment(0,N), [=](int row, int col) {
 
-    int cId = c+r*N; double dot=0.0;
+        double dot = 0.0;
+        for (int k = 0; k < N; ++k) {
 
-    for(int k=0; k<N; ++k) {
+          dot += Aview(row,k) * Bview(k,col);
+        }
 
-      int aId = k + r*N;
-      int bId = c + k*N;
-      dot += A[aId]*B[bId];
-    }    
-
-    C[cId] = dot;
-  });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //===========================================
+        Cview(row,col) = dot;
+      });
+  checkSolution(Cview, N);
+  
 
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout<<"RAJA: OpenMP/Sequential Policy - forallN"<<std::endl;
+  printf("RAJA: OpenMP/Sequential Policy - forallN \n");
   /*
-    Here the outer loop is excuted in parallel while the inner loop 
+    Here the outer loop is excuted in parallel while the inner loop
     is executed sequentially
   */
-  RAJA::forallN< RAJA::NestedPolicy<
-  RAJA::ExecList<RAJA::omp_parallel_for_exec,RAJA::seq_exec >>>(
-  RAJA::RangeSegment(0, N),
-  RAJA::RangeSegment(0, N),[=](int r, int c) {
+  RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_parallel_for_exec,
+                                                  RAJA::seq_exec>>>(
+      RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, N), [=](int row, int col) {
 
-    int cId = c+r*N; double dot=0.0;
+        double dot = 0.0;
 
-    for(int k=0; k<N; ++k) {
-
-      int aId = k + r*N;
-      int bId = c + k*N;
-      dot += A[aId]*B[bId];
-    }    
-    C[cId] = dot;
-  });
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
-  //===========================================
+        for (int k = 0; k < N; ++k) {
+          
+          dot += Aview(row,col) * Bview(row,col);
+        }
+        Cview(row,col) = dot;
+      });
+  checkSolution(C, N);
 #endif
 
-#if defined(RAJA_ENABLE_CUDA)  
-  std::cout<<"RAJA: CUDA Policy - forallN"<<std::endl;
+
+#if defined(RAJA_ENABLE_CUDA)
+  printf("RAJA: CUDA Policy - forallN \n");
   /*
-    This example illustrates creating two-dimensional thread blocks as described 
-    under the CUDA nomenclature    
+    This example illustrates creating two-dimensional thread blocks as described
+    under the CUDA nomenclature
   */
   RAJA::forallN<RAJA::NestedPolicy<
-  RAJA::ExecList<
-  RAJA::cuda_threadblock_y_exec<16>,
-  RAJA::cuda_threadblock_x_exec<16> >>>(
-  RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, N), [=] __device__ (int c, int r) {
-                                           
-    int cId = c+r*N; double dot=0.0;
+    RAJA::ExecList<RAJA::cuda_threadblock_y_exec<16>,    
+    RAJA::cuda_threadblock_x_exec<16>>>>(
+          RAJA::RangeSegment(0, N),
+          RAJA::RangeSegment(0, N),
+          [=] __device__(int row, int col) {
+            
+            double dot = 0.0;
 
-    for(int k=0; k<N; ++k) {
+            for (int k = 0; k < N; ++k) {
 
-      int aId = k + r*N;
-      int bId = c + k*N;
-      dot += A[aId]*B[bId];
-    }    
-    C[cId] = dot;
-    
-  });
+              dot += Aview(row,k) * Bview(k,col);
+            }
+            Cview(row,col) = dot; 
+          });
   cudaDeviceSynchronize();
-  checkSolution(C,N);
-  std::cout<<"\n"<<std::endl;
+  checkSolution(Cview, N);
 #endif
 
-  deallocate(A);
-  deallocate(B);
-  deallocate(C);
-  
+
+  memoryManager::deallocate(A);
+  memoryManager::deallocate(B);
+  memoryManager::deallocate(C);
+
   return 0;
 }
 
-void checkSolution(double *C, int in_N) {
+void checkSolution(double *C, int in_N)
+{
 
-  bool eFlag = true;
-  for(int id=0; id<in_N*in_N; ++id) {
-    if( abs(C[id]-in_N) > 1e-9) {
-      std::cout<<"Error in Result!"<<std::endl;
-      eFlag = false;
-      break;
+  for (int id = 0; id < in_N * in_N; ++id) {
+    if (abs(C[id] - in_N) > 1e-9) {
+      printf("Error in Result \n \n");
+      return;
     }
   }
-  
-  if(eFlag) {
-    std::cout<<"Result is correct"<<std::endl;
+  printf("Correct Result \n \n");
+}
+
+void checkSolution(RAJA::View<double,RAJA::Layout<DIM> > Cview, int in_N){
+
+  for(int row = 0; row < in_N; ++row) {
+    for(int col = 0; col < in_N; ++col) {
+
+      if (abs(Cview(row,col) - in_N) > 1e-9) {
+        printf("Error in Result \n \n");
+        return;
+      }
+
+    }
   }
 
-}
+  printf("Correct Result \n \n");
+};
