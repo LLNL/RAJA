@@ -147,9 +147,12 @@ struct DeviceZeroedAllocator {
 
 };
 
-using device_mempool_type = basic_mempool::MemPool<cuda::DeviceAllocator>;
-using device_zeroed_mempool_type = basic_mempool::MemPool<cuda::DeviceZeroedAllocator>;
-using pinned_mempool_type = basic_mempool::MemPool<cuda::PinnedAllocator>;
+using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
+using device_zeroed_mempool_type = basic_mempool::MemPool<DeviceZeroedAllocator>;
+using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
+
+namespace detail
+{
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
@@ -191,15 +194,17 @@ extern cudaInfo tl_status;
 
 extern std::unordered_map<cudaStream_t, bool> g_stream_info_map;
 
+}  // closing brace for detial namespace
+
 //! Ensure all streams in use are synchronized wrt raja kernel launches
 RAJA_INLINE
 void synchronize()
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(detial::g_status.lock);
 #endif
   bool synchronize = false;
-  for (auto& val : g_stream_info_map) {
+  for (auto& val : detial::g_stream_info_map) {
     if (!val.second) {
       synchronize = true;
       val.second = true;
@@ -215,10 +220,10 @@ RAJA_INLINE
 void synchronize(cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(detial::g_status.lock);
 #endif
-  auto iter = g_stream_info_map.find(stream);
-  if (iter != g_stream_info_map.end() ) {
+  auto iter = detial::g_stream_info_map.find(stream);
+  if (iter != detial::g_stream_info_map.end() ) {
     if (!iter->second) {
       iter->second = true;
       cudaErrchk(cudaStreamSynchronize(stream));
@@ -234,13 +239,13 @@ RAJA_INLINE
 void launch(cudaStream_t stream)
 {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  lock_guard<omp::mutex> lock(g_status.lock);
+  lock_guard<omp::mutex> lock(detial::g_status.lock);
 #endif
-  auto iter = g_stream_info_map.find(stream);
-  if (iter != g_stream_info_map.end()) {
+  auto iter = detial::g_stream_info_map.find(stream);
+  if (iter != detial::g_stream_info_map.end()) {
     iter->second = false;
   } else {
-    g_stream_info_map.emplace(stream, false);
+    detial::g_stream_info_map.emplace(stream, false);
   }
 }
 
@@ -248,28 +253,28 @@ void launch(cudaStream_t stream)
 RAJA_INLINE
 bool setupReducers()
 {
-  return tl_status.setup_reducers;
+  return detial::tl_status.setup_reducers;
 }
 
 //! get gridDim of current launch
 RAJA_INLINE
 dim3 currentGridDim()
 {
-  return tl_status.gridDim;
+  return detial::tl_status.gridDim;
 }
 
 //! get blockDim of current launch
 RAJA_INLINE
 dim3 currentBlockDim()
 {
-  return tl_status.blockDim;
+  return detial::tl_status.blockDim;
 }
 
 //! get stream for current launch
 RAJA_INLINE
 cudaStream_t currentStream()
 {
-  return tl_status.stream;
+  return detial::tl_status.stream;
 }
 
 //! create copy of loop_body that is setup for device execution
@@ -279,16 +284,17 @@ typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   dim3 gridDim, dim3 blockDim, size_t dynamic_smem, cudaStream_t stream,
   LOOP_BODY&& loop_body)
 {
-  SetterResetter<bool> setup_reducers_srer(tl_status.setup_reducers, true);
+  detail::SetterResetter<bool> setup_reducers_srer(
+                                        detial::tl_status.setup_reducers, true);
 
-  tl_status.stream   = stream;
-  tl_status.gridDim  = gridDim;
-  tl_status.blockDim = blockDim;
+  detial::tl_status.stream   = stream;
+  detial::tl_status.gridDim  = gridDim;
+  detial::tl_status.blockDim = blockDim;
 
   return {loop_body};
 }
 
-} // end namespace cuda
+}  // closing brace for cuda namespace
 
 }  // closing brace for RAJA namespace
 
