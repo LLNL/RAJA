@@ -86,7 +86,7 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::POLICY POLICY_I;
 
   static constexpr bool build_device =
-    maybe_cuda | type_traits::is_cuda_policy<POLICY_I>::value;
+      maybe_cuda | type_traits::is_cuda_policy<POLICY_I>::value;
   typedef ForallN_Executor<build_device, POLICY_REST...> NextExec;
 
   POLICY_INIT const is_i;

@@ -56,8 +56,8 @@
 #include <tuple>
 
 #include "RAJA/config.hpp"
-#include "RAJA/policy/fwd.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/policy/fwd.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -151,11 +151,18 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
 namespace wrap
 {
 
-template <typename ExecPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::enable_if<type_traits::is_range<Container>> forall(
-    const ExecPolicy &p,
-    Container &&c,
-    LoopBody loop_body);
+template <typename ExecutionPolicy, typename Container, typename LoopBody>
+RAJA_INLINE concepts::
+    enable_if<concepts::
+                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+              type_traits::is_range<Container>>
+    forall(ExecutionPolicy &&, Container &&, LoopBody &&);
+
+template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
+RAJA_INLINE concepts::
+    enable_if<type_traits::is_indexset_policy<ExecutionPolicy>>
+    forall(ExecutionPolicy &&, IdxSet &&, LoopBody &&);
+
 
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
@@ -172,8 +179,8 @@ RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
 {
   p.invoke(iter, body);
 }
-  
-} // closing brace for namespace wrap
+
+}  // closing brace for namespace wrap
 
 namespace detail
 {
@@ -212,8 +219,8 @@ struct policy_invoker<0, size, Policy, rest...> {
   }
 };
 
-} // end namespace detail
+}  // end namespace detail
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif

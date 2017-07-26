@@ -144,7 +144,11 @@ struct omp_collapse_nowait_exec
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 template <size_t Teams>
 struct omp_target_parallel_for_exec
-    : make_policy_pattern_t<Policy::target_openmp, Pattern::forall, omp::Target, omp::Teams<Teams>, omp::Distribute> {
+    : make_policy_pattern_t<Policy::target_openmp,
+                            Pattern::forall,
+                            omp::Target,
+                            omp::Teams<Teams>,
+                            omp::Distribute> {
 };
 #endif
 

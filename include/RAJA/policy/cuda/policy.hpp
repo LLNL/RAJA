@@ -145,7 +145,6 @@ using cuda_forall_policy =
                                           Launch::undefined,
                                           Platform::cuda,
                                           Args...>;
-
 }
 
 namespace cuda
@@ -334,7 +333,7 @@ struct CudaBlock {
   void inline setDims(CudaDim &dims) { view(dims.num_blocks) = distance; }
 };
 
-template <typename ... T>
+template <typename... T>
 using CudaPolicy = detail::cuda_forall_policy<T...>;
 
 /*
@@ -343,13 +342,16 @@ using CudaPolicy = detail::cuda_forall_policy<T...>;
  */
 
 template <int THREADS>
-using cuda_threadblock_x_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3x, THREADS>>;
+using cuda_threadblock_x_exec =
+    detail::cuda_forall_policy<CudaThreadBlock<Dim3x, THREADS>>;
 
 template <int THREADS>
-using cuda_threadblock_y_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3y, THREADS>>;
+using cuda_threadblock_y_exec =
+    detail::cuda_forall_policy<CudaThreadBlock<Dim3y, THREADS>>;
 
 template <int THREADS>
-using cuda_threadblock_z_exec = detail::cuda_forall_policy<CudaThreadBlock<Dim3z, THREADS>>;
+using cuda_threadblock_z_exec =
+    detail::cuda_forall_policy<CudaThreadBlock<Dim3z, THREADS>>;
 
 /* These execution policies map the given loop nest to the threads in the
    specified dimensions (not blocks)

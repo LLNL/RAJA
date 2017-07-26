@@ -249,12 +249,11 @@ exclusive_scan(const ExecPolicy &p,
 template <typename ExecPolicy,
           typename Container,
           typename Function = operators::plus<detail::ContainerVal<Container>>>
-concepts::
-    enable_if<type_traits::is_execution_policy<ExecPolicy>,
-              type_traits::is_range<Container>>
-    inclusive_scan_inplace(const ExecPolicy &p,
-                           Container &c,
-                           Function binop = Function{})
+concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
+                    type_traits::is_range<Container>>
+inclusive_scan_inplace(const ExecPolicy &p,
+                       Container &c,
+                       Function binop = Function{})
 {
   using R = detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Function, R, R, R>::value,
@@ -280,13 +279,12 @@ template <typename ExecPolicy,
           typename Container,
           typename T = detail::ContainerVal<Container>,
           typename Function = operators::plus<T>>
-concepts::
-    enable_if<type_traits::is_execution_policy<ExecPolicy>,
-              type_traits::is_range<Container>>
-    exclusive_scan_inplace(const ExecPolicy &p,
-                           Container &c,
-                           Function binop = Function{},
-                           T value = Function::identity)
+concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
+                    type_traits::is_range<Container>>
+exclusive_scan_inplace(const ExecPolicy &p,
+                       Container &c,
+                       Function binop = Function{},
+                       T value = Function::identity)
 {
   using R = detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Function, R, T, R>::value,
@@ -314,11 +312,10 @@ concepts::
 *begin))}
 ******************************************************************************
 */
-template <
-    typename ExecPolicy,
-    typename Container,
-    typename IterOut,
-    typename Function = operators::plus<detail::ContainerVal<Container>>>
+template <typename ExecPolicy,
+          typename Container,
+          typename IterOut,
+          typename Function = operators::plus<detail::ContainerVal<Container>>>
 concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
                     type_traits::is_range<Container>,
                     type_traits::is_iterator<IterOut>>
@@ -361,15 +358,14 @@ template <typename ExecPolicy,
           typename IterOut,
           typename T = detail::ContainerVal<Container>,
           typename Function = operators::plus<T>>
-concepts::
-    enable_if<type_traits::is_execution_policy<ExecPolicy>,
-              type_traits::is_range<Container>,
-              type_traits::is_iterator<IterOut>>
-    exclusive_scan(const ExecPolicy &p,
-                   Container &c,
-                   IterOut out,
-                   Function binop = Function{},
-                   T value = Function::identity)
+concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
+                    type_traits::is_range<Container>,
+                    type_traits::is_iterator<IterOut>>
+exclusive_scan(const ExecPolicy &p,
+               Container &c,
+               IterOut out,
+               Function binop = Function{},
+               T value = Function::identity)
 {
   using R = detail::IterVal<IterOut>;
   using U = detail::ContainerVal<Container>;
