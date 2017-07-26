@@ -375,7 +375,7 @@ bool grid_reduce(T& val,
     
     temp = block_reduce<Reducer>(temp);
 
-    // one thread updates tally
+    // one thread returns value
     if (threadId == 0) {
       val = temp;
     }
@@ -481,7 +481,7 @@ bool grid_reduceLoc(cuda::LocType<T, IndexType>& val,
     
     temp = block_reduce<Reducer>(temp);
 
-    // one thread updates tally
+    // one thread returns value
     if (threadId == 0) {
       val = temp;
     }
@@ -728,7 +728,7 @@ struct Reduce_Data {
   };
 
   mutable T value;
-  tally_u tally;
+  tally_u tally_or_val_ptr;
   unsigned int *device_count;
   T *device;
   bool own_device_ptr;
@@ -742,7 +742,7 @@ struct Reduce_Data {
    */
   explicit Reduce_Data(T initValue)
       : value{initValue},
-        tally{new PinnedTally<T>},
+        tally_or_val_ptr{new PinnedTally<T>},
         device_count{nullptr},
         device{nullptr},
         own_device_ptr{false}
@@ -752,7 +752,7 @@ struct Reduce_Data {
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data &other)
       : value{Reducer::identity},
-        tally{other.tally},
+        tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -763,7 +763,7 @@ struct Reduce_Data {
   RAJA_INLINE
   void destroy()
   {
-    delete tally.list; tally.list = nullptr;
+    delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
   }
 
   //! check and setup for device
@@ -777,7 +777,7 @@ struct Reduce_Data {
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device = device_mempool_type::getInstance().malloc<T>(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value(currentStream());
+      tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return act;
@@ -791,7 +791,7 @@ struct Reduce_Data {
     if(own_device_ptr) {
       device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
-      tally.val_ptr = nullptr;
+      tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
     }
   }
@@ -806,8 +806,8 @@ struct Reduce_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    auto end = tally.list->streamEnd();
-    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+    auto end = tally_or_val_ptr.list->streamEnd();
+    for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
       synchronize(*s);
     }
   }
@@ -817,7 +817,7 @@ struct Reduce_Data {
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    tally.list->free_list();
+    tally_or_val_ptr.list->free_list();
   }
 };
 
@@ -835,7 +835,7 @@ struct ReduceAtomic_Data {
   };
   
   mutable T value;
-  tally_u tally;
+  tally_u tally_or_val_ptr;
   unsigned int* device_count;
   T* device;
   bool own_device_ptr;
@@ -849,7 +849,7 @@ struct ReduceAtomic_Data {
    */
   explicit ReduceAtomic_Data(T initValue)
       : value{initValue},
-        tally{new PinnedTally<T>},
+        tally_or_val_ptr{new PinnedTally<T>},
         device_count{nullptr},
         device{nullptr},
         own_device_ptr{false}
@@ -859,7 +859,7 @@ struct ReduceAtomic_Data {
   RAJA_HOST_DEVICE
   ReduceAtomic_Data(const ReduceAtomic_Data &other)
       : value{Reducer::identity},
-        tally{other.tally},
+        tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -870,7 +870,7 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   void destroy()
   {
-    delete tally.list; tally.list = nullptr;
+    delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
   }
 
   //! check and setup for device
@@ -882,7 +882,7 @@ struct ReduceAtomic_Data {
     if (act) {
       device = device_mempool_type::getInstance().malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value(currentStream());
+      tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return act;
@@ -896,7 +896,7 @@ struct ReduceAtomic_Data {
     if(own_device_ptr) {
       device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
-      tally.val_ptr = nullptr;
+      tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
     }
   }
@@ -911,8 +911,8 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    auto end = tally.list->streamEnd();
-    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+    auto end = tally_or_val_ptr.list->streamEnd();
+    for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
       synchronize(*s);
     }
   }
@@ -922,7 +922,7 @@ struct ReduceAtomic_Data {
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    tally.list->free_list();
+    tally_or_val_ptr.list->free_list();
   }
 };
 
@@ -940,7 +940,7 @@ struct ReduceLoc_Data {
   
   mutable T value;
   mutable IndexType index;
-  tally_u tally;
+  tally_u tally_or_val_ptr;
   unsigned int* device_count;
   T *device;
   IndexType *deviceLoc;
@@ -956,7 +956,7 @@ struct ReduceLoc_Data {
   explicit ReduceLoc_Data(T initValue, IndexType initIndex)
       : value{initValue},
         index{initIndex},
-        tally{new PinnedTally<LocType<T, IndexType>>},
+        tally_or_val_ptr{new PinnedTally<LocType<T, IndexType>>},
         device_count{nullptr},
         device{nullptr},
         deviceLoc{nullptr},
@@ -968,7 +968,7 @@ struct ReduceLoc_Data {
   ReduceLoc_Data(const ReduceLoc_Data &other)
       : value{Reducer::identity},
         index{-1},
-        tally{other.tally},
+        tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
         deviceLoc{other.deviceLoc},
@@ -980,7 +980,7 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   void destroy()
   {
-    delete tally.list; tally.list = nullptr;
+    delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
   }
 
   //! check and setup for device
@@ -995,7 +995,7 @@ struct ReduceLoc_Data {
       device = device_mempool_type::getInstance().malloc<T>(numBlocks);
       deviceLoc = device_mempool_type::getInstance().malloc<IndexType>(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
-      tally.val_ptr = tally.list->new_value(currentStream());
+      tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return act;
@@ -1010,7 +1010,7 @@ struct ReduceLoc_Data {
       device_mempool_type::getInstance().free(device);  device = nullptr;
       device_mempool_type::getInstance().free(deviceLoc);  deviceLoc = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
-      tally.val_ptr = nullptr;
+      tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
     }
   }
@@ -1025,8 +1025,8 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   void deviceToHost(Offload_Info &)
   {
-    auto end = tally.list->streamEnd();
-    for(auto s = tally.list->streamBegin(); s != end; ++s) {
+    auto end = tally_or_val_ptr.list->streamEnd();
+    for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
       synchronize(*s);
     }
   }
@@ -1036,7 +1036,7 @@ struct ReduceLoc_Data {
   RAJA_INLINE
   void cleanup(Offload_Info &)
   {
-    tally.list->free_list();
+    tally_or_val_ptr.list->free_list();
   }
 };
 
@@ -1084,7 +1084,7 @@ struct Reduce {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
 #endif
       parent->reduce(val.value);
     } else {
@@ -1097,7 +1097,7 @@ struct Reduce {
 
       if (impl::grid_reduce<Reducer>(temp, val.device,
                                      val.device_count)) {
-        val.tally.val_ptr[0] = temp;
+        val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value);
@@ -1108,8 +1108,8 @@ struct Reduce {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = val.tally.list->begin();
-    auto end = val.tally.list->end();
+    auto n = val.tally_or_val_ptr.list->begin();
+    auto end = val.tally_or_val_ptr.list->end();
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
@@ -1194,7 +1194,7 @@ struct ReduceAtomic {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
 #endif
       parent->reduce(val.value);
     } else {
@@ -1207,7 +1207,7 @@ struct ReduceAtomic {
 
       if (impl::grid_reduce_atomic<Reducer>(temp, val.device,
                                             val.device_count)) {
-        val.tally.val_ptr[0] = temp;
+        val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value);
@@ -1218,8 +1218,8 @@ struct ReduceAtomic {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = val.tally.list->begin();
-    auto end = val.tally.list->end();
+    auto n = val.tally_or_val_ptr.list->begin();
+    auto end = val.tally_or_val_ptr.list->end();
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
@@ -1302,7 +1302,7 @@ struct ReduceLoc {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
 #endif
       parent->reduce(val.value, val.index);
     } else {
@@ -1315,7 +1315,7 @@ struct ReduceLoc {
 
       if (impl::grid_reduceLoc<Reducer>(temp, val.device, val.deviceLoc,
                                   val.device_count)) {
-        val.tally.val_ptr[0] = temp;
+        val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
       parent->reduce(val.value, val.index);
@@ -1326,8 +1326,8 @@ struct ReduceLoc {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = val.tally.list->begin();
-    auto end = val.tally.list->end();
+    auto n = val.tally_or_val_ptr.list->begin();
+    auto end = val.tally_or_val_ptr.list->end();
     if (n != end) {
       val.deviceToHost(info);
       for ( ; n != end; ++n) {
