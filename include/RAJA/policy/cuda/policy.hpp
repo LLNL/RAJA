@@ -182,9 +182,9 @@ namespace cuda
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-constexpr int WARP_SIZE = 32;
-constexpr int MAX_BLOCK_SIZE = 1024;
-constexpr int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
+constexpr const int WARP_SIZE = 32;
+constexpr const int MAX_BLOCK_SIZE = 1024;
+constexpr const int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
       "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
