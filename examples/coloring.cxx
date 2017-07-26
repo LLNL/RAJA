@@ -95,8 +95,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::View<int,RAJA::Layout<2>> Aview(A, n, n);
   
   //Buffer used for intermediate indicy storage
-  RAJA::Index_type *idx = RAJA::allocate_aligned_type<RAJA::Index_type>(64, n * n / 4);
-
+  auto *idx = new RAJA::Index_type[(n+1) * (n+1) / 4];
 
   // Iterate over each dimension (D=2 for this example)
   for (int xdim : {0, 1}) {
@@ -108,31 +107,36 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
       // safely advance over neighbors
       for (int xiter = xdim; xiter < n; xiter += 2) {
         for (int yiter = ydim; yiter < n; yiter += 2) {
-          
           // Add the computed index to the buffer
-          idx[count] = std::distance(A, std::addressof(Aview(xiter, yiter)));
+          idx[count] = std::distance(
+                         std::addressof(Aview(0, 0)),
+                         std::addressof(Aview(xiter, yiter)));
           ++count;
         }
       }
       
       //RAJA::List segment - creates a list segment from a given array with a specific length.
-
       //Insert the indicies added from the buffer as a new ListSegment
       colorset.push_back(RAJA::ListSegment(idx, count));
     }
   }  
 
   // Clear temporary buffer
-  RAJA::free_aligned(idx);
+  delete[] idx;
+
 
 
   //----[RAJA Sequential/OMP execution]---------
   //RAJA: Seq_segit - Sequational Segment Iteraion  
-  using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
-  RAJA::forall<ColorPolicy>(colorset, [&](int idx) {
-      printf("A[%d] = %d\n", idx, A[idx]);
+  //using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
+#if 0
+  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+  RAJA::forall<ColorPolicy>(colorset, [=](int idx) {
+      int cat = 1;
+      //printf("A[%d] = %d\n", idx, A[idx]);
     });    
   //==========================
+#endif
   
   return 0;
 }
