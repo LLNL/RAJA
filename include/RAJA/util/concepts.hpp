@@ -498,6 +498,51 @@ using IterableValue = decltype(*std::begin(RAJA::concepts::val<T>()));
 template <typename T>
 using IteratorValue = decltype(*RAJA::concepts::val<T>());
 
+namespace detail
+{
+
+template <typename, template <typename...> class, typename...>
+struct IsSpecialized : RAJA::concepts::metalib::false_type {
+};
+
+template <template <typename...> class Template, typename... T>
+struct IsSpecialized<typename concepts::detail::voider<decltype(
+                         concepts::val<Template<T...>>())>::type,
+                     Template,
+                     T...> : RAJA::concepts::metalib::true_type {
+};
+
+template <template <class...> class, template <class...> class, bool, class...>
+struct SpecializationOf : RAJA::concepts::metalib::false_type {
+};
+
+template <template <class...> class Expected,
+          template <class...> class Actual,
+          class... Args>
+struct SpecializationOf<Expected, Actual, true, Args...>
+    : RAJA::concepts::metalib::is_same<Expected<Args...>, Actual<Args...>> {
+};
+
+}  // end namespace detail
+
+
+template <template <class...> class Outer, class... Args>
+using IsSpecialized = detail::IsSpecialized<void, Outer, Args...>;
+
+template <template <class...> class, typename T>
+struct SpecializationOf : RAJA::concepts::metalib::false_type {
+};
+
+template <template <class...> class Expected,
+          template <class...> class Actual,
+          class... Args>
+struct SpecializationOf<Expected, Actual<Args...>>
+    : detail::SpecializationOf<Expected,
+                               Actual,
+                               IsSpecialized<Expected, Args...>::value,
+                               Args...> {
+};
+
 }  // end namespace type_traits
 
 }  // end namespace RAJA

@@ -75,8 +75,7 @@ struct seq_exec : make_policy_pattern_t<Policy::sequential, Pattern::forall> {
 ///
 /// Index set segment iteration policies
 ///
-struct seq_segit : make_policy_pattern_t<Policy::sequential, Pattern::forall> {
-};
+using seq_segit = seq_exec;
 
 ///
 ///////////////////////////////////////////////////////////////////////

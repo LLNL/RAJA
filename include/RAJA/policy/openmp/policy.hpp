@@ -152,11 +152,9 @@ struct omp_target_parallel_for_exec
 /// Index set segment iteration policies
 ///
 
-struct omp_parallel_for_segit : omp_parallel_for_exec {
-};
+using omp_parallel_for_segit = omp_parallel_for_exec;
 
-struct omp_parallel_segit : omp_parallel_for_segit {
-};
+using omp_parallel_segit = omp_parallel_for_segit;
 
 struct omp_taskgraph_segit
     : make_policy_pattern_t<Policy::openmp, Pattern::taskgraph, omp::Parallel> {
