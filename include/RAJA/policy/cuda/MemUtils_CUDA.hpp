@@ -292,7 +292,7 @@ cudaStream_t currentStream()
 //! create copy of loop_body that is setup for device execution
 template < typename LOOP_BODY >
 RAJA_INLINE
-typename std::remove_reference<LOOP_BODY>::type createLaunchBody(
+typename std::remove_reference<LOOP_BODY>::type make_launch_body(
   dim3 gridDim, dim3 blockDim, size_t dynamic_smem, cudaStream_t stream,
   LOOP_BODY&& loop_body)
 {
