@@ -1,13 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Implementation file for range segment classes
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -50,40 +40,51 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/index/RangeSegment.hpp"
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
 
-#include <iostream>
+#ifndef RAJA_forward_sequential_HXX
+#define RAJA_forward_sequential_HXX
+
+#include <type_traits>
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/policy/sequential/policy.hpp"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
-
-void RangeSegment::print(std::ostream& os) const
+namespace impl
 {
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+template <typename Func>
+RAJA_INLINE void forall(const seq_exec &, const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body);
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const seq_exec &, const PolicyBase &, Iterable &&iter, Func &&loop_body);
+
+  template <typename Iterable, typename IndexType, typename Func>
+  RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type forall_Icount(const seq_exec &, const PolicyBase &,
+                               Iterable &&iter,
+                               IndexType icount,
+                               Func &&loop_body);
+
+}  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

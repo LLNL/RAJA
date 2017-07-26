@@ -9,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,33 +40,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Header file defining methods that build index sets in various ways
-/// for testing...
-///
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
 
-#include "RAJA/RAJA.hpp"
+#ifndef RAJA_forward_simd_HXX
+#define RAJA_forward_simd_HXX
 
-//
-// Enum for different hybrid initialization procedures.
-//
-enum IndexSetBuildMethod {
-  AddSegments = 0,
-  AddSegmentsReverse,
-  AddSegmentsNoCopy,
-  AddSegmentsNoCopyReverse,
-  MakeSliceRange,
-  MakeSliceArray,
-#if defined(RAJA_USE_STL)
-  MakeViewVector,
-#endif
+#include <type_traits>
 
-  NumBuildMethods
-};
+#include "RAJA/config.hpp"
 
-//
-//  Initialize index set by adding segments as indicated by enum value.
-//  Return last index in IndexSet.
-//
-RAJA::Index_type buildIndexSet(RAJA::IndexSet* hindex,
-                               IndexSetBuildMethod use_vector);
+#include "RAJA/policy/simd/policy.hpp"
+
+namespace RAJA
+{
+
+namespace impl
+{
+
+// SIMD forall(ListSegment)
+template <typename LSegment, typename Func>
+RAJA_INLINE
+typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
+forall(const simd_exec &, LSegment &&, Func &&);
+
+// SIMD forall(Iterable)
+template <typename Iterable, typename Func>
+RAJA_INLINE
+typename std::enable_if<!std::is_base_of<ListSegment, Iterable>::value>::type
+forall(const simd_exec &, Iterable &&, Func &&);
+
+// SIMD forall(ListSegment)
+template <typename LSegment, typename IndexType, typename Func>
+RAJA_INLINE
+typename std::enable_if<std::is_integral<IndexType>::value
+                        && std::is_base_of<ListSegment, LSegment>::value>::type
+forall_Icount(const simd_exec &, LSegment &&, IndexType, Func &&);
+
+// SIMD forall(Iterable)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
+                                    && !std::is_base_of<ListSegment,
+                                                       Iterable>::value>::type
+forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

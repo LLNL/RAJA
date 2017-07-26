@@ -54,6 +54,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <type_traits>
+
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
@@ -77,7 +79,7 @@ struct tile_fixed {
 // Struct used to create a list of tiling policies
 template <typename... PLIST>
 struct TileList {
-  constexpr const static size_t num_loops = sizeof...(PLIST);
+  static constexpr const size_t num_loops = sizeof...(PLIST);
 };
 
 // Tiling Policy
@@ -128,6 +130,11 @@ RAJA_INLINE void forallN_apply_tile(tile_none,
   forallN_peel_tile<BOUND, TIDX + 1>(TilePolicy{}, new_body, prest...);
 }
 
+  template <typename T, typename U>
+  constexpr auto const_min(T t, U u) -> typename std::remove_reference<decltype((t < u) ? t : u)>::type {
+    return (t < u) ? t : u;
+  }
+
 /*!
  * \brief Applys the tile_fixed<N> policy
  */
@@ -144,19 +151,15 @@ RAJA_INLINE void forallN_apply_tile(tile_fixed<TileSize>,
 {
   // printf("TIDX=%d: policy=tile_fixed<%d>\n", TIDX, TileSize);
 
-  typedef ForallN_BindFirstArg_HostDevice<BODY, POLICY_INIT> BOUND;
+  using BOUND = ForallN_BindFirstArg_HostDevice<BODY, POLICY_INIT>;
 
   // tile loop
-  Index_type i_begin = pi.getBegin();
-  Index_type i_end = pi.getEnd();
-  for (Index_type i0 = i_begin; i0 < i_end; i0 += TileSize) {
-    // Create a new tile
-    Index_type i1 = std::min(i0 + TileSize, i_end);
-    POLICY_INIT pi_tile(RangeSegment(i0, i1));
-
+  auto end = *pi.end();
+  for (auto i0 = *pi.begin(); i0 < end; i0 += TileSize) {
+    auto i1 = const_min(i0 + TileSize, end);
+    POLICY_INIT pi_tile(make_range(i0, i1));
     // Pass thru, so just bind the index set
     BOUND new_body(body, pi_tile);
-
     // Recurse to the next policy
     forallN_peel_tile<BOUND, TIDX + 1>(TilePolicy{}, new_body, prest...);
   }

@@ -1,19 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
- *
- *          These methods should work on any platform.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_sequential_HPP
-#define RAJA_forall_sequential_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -56,19 +40,29 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forward_cuda_HXX
+#define RAJA_forward_cuda_HXX
+
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
 
-#include "RAJA/policy/sequential/policy.hpp"
+#if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
-using RAJA::concepts::requires_;
+#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {
@@ -76,43 +70,49 @@ namespace RAJA
 namespace impl
 {
 
+template <typename Iterable,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
+RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
+                        Iterable&&,
+                        LoopBody&&);
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
-
-template <typename Iterable, typename Func, typename IndexType>
+template <typename Iterable,
+          typename IndexType,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  }
-}
+forall_Icount(cuda_exec<BlockSize, Async>,
+              Iterable&&,
+              IndexType,
+              LoopBody&&);
+
+
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                        const StaticIndexSet<SegmentTypes...>&,
+                        LoopBody&&);
+
+
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall_Icount(
+    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+    const StaticIndexSet<SegmentTypes...>&,
+    LoopBody&&);
 
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

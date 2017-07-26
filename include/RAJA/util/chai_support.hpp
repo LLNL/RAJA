@@ -57,10 +57,10 @@ struct get_space<T, typename std::enable_if<std::is_base_of<PolicyBase, T>::valu
     : public get_space_impl<T::platform> {};
 
 template <typename SEG, typename EXEC>
-struct get_space<RAJA::IndexSet::ExecPolicy<SEG, EXEC> > : public get_space<EXEC> {};
+struct get_space<RAJA::ExecPolicy<SEG, EXEC> > : public get_space<EXEC> {};
 
 template<typename SEG, typename EXEC>
-struct get_space_from_list<RAJA::IndexSet::ExecPolicy<SEG, EXEC>> {
+struct get_space_from_list<RAJA::ExecPolicy<SEG, EXEC>> {
   static constexpr chai::ExecutionSpace value = get_space<EXEC>::value;
 };
 
