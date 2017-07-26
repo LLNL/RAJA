@@ -69,7 +69,10 @@
 namespace RAJA
 {
 
-struct simd_exec : make_policy_pattern_t<Policy::simd, Pattern::forall> {
+struct simd_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
+                                                          Pattern::forall,
+                                                          Launch::undefined,
+                                                          Platform::host> {
 };
 
 }  // end of namespace RAJA

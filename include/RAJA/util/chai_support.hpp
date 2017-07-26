@@ -58,8 +58,10 @@ struct get_space {
 
 template <typename T>
 struct get_space<T,
-                 typename std::enable_if<std::is_base_of<PolicyBase,
-                                                         T>::value>::type>
+                 typename std::
+                     enable_if<std::is_base_of<RAJA::PolicyBase, T>::value
+                               && !RAJA::type_traits::is_indexset_policy<T>::
+                                      value>::type>
     : public get_space_impl<T::platform> {
 };
 

@@ -280,7 +280,8 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager *rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<POLICY>::value);
+  using EP = typename std::decay<POLICY>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   fun_unpacker<POLICY, Indices...>(

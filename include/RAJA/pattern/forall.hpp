@@ -211,7 +211,8 @@ RAJA_INLINE concepts::
 {
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<ExecutionPolicy>::value);
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
@@ -243,7 +244,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<ExecutionPolicy>::value);
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
@@ -272,7 +274,8 @@ RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<ExecutionPolicy>::value);
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
@@ -298,7 +301,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<ExecutionPolicy>::value);
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;

@@ -106,25 +106,33 @@ struct omp_for_exec
     : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::For> {
 };
 
-struct omp_for_nowait_exec : make_policy_pattern_t<Policy::openmp,
-                                                   Pattern::forall,
-                                                   omp::For,
-                                                   omp::NoWait> {
+struct omp_for_nowait_exec
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::For,
+                                            omp::NoWait> {
 };
 
 template <unsigned int N>
-struct omp_for_static : make_policy_pattern_t<Policy::openmp,
-                                              Pattern::forall,
-                                              omp::For,
-                                              omp::Static<N>> {
+struct omp_for_static : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host,
+                                                              omp::For,
+                                                              omp::Static<N>> {
 };
 
 
 template <typename InnerPolicy>
-struct omp_parallel_exec : make_policy_pattern_t<Policy::openmp,
-                                                 Pattern::forall,
-                                                 omp::Parallel,
-                                                 wrapper<InnerPolicy>> {
+struct omp_parallel_exec
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::Parallel,
+                                            wrapper<InnerPolicy>> {
 };
 
 struct omp_parallel_for_exec : omp_parallel_exec<omp_for_exec> {
@@ -138,7 +146,11 @@ struct omp_parallel_for_static : omp_parallel_exec<omp_for_static<N>> {
 /// Policies for applying OpenMP clauses in forallN loop nests.
 ///
 struct omp_collapse_nowait_exec
-    : make_policy_pattern_t<Policy::openmp, Pattern::forall, omp::Collapse> {
+    : make_policy_pattern_launch_platform_t<Policy::openmp,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host,
+                                            omp::Collapse> {
 };
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
