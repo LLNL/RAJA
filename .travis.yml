@@ -106,6 +106,7 @@ before_install:
 script:
 - source ~/.bashrc
 - cd $TRAVIS_BUILD_DIR
+- git submodule init && git submodule update
 - mkdir travis-build && cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
 - make -j
