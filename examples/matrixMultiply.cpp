@@ -51,6 +51,7 @@
 
 #include "memoryManager.hpp"
 
+//Matrix is assumed to be N x N
 const int N  = 1000;
 const int NN = N*N;
 
@@ -81,9 +82,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   printf("Example 2: Multiplying Two N x N Matrices \n \n");
-  const int N = 1000;
-  const int NN = N * N;
-
   double *A = memoryManager::allocate<double>(NN);
   double *B = memoryManager::allocate<double>(NN);
   double *C = memoryManager::allocate<double>(NN);
