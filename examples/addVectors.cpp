@@ -106,7 +106,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution(C, N);
 
 
-
 #if defined(RAJA_ENABLE_OPENMP)
   printf("RAJA: OpenMP Policy \n");
   /*
