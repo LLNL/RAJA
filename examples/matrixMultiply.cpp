@@ -51,9 +51,20 @@
 
 #include "memoryManager.hpp"
 
+const int N  = 1000;
+const int NN = N*N;
+
+//Macro for indexing matrices
+#define A(row, col) (A[col + row*N])
+#define B(row, col) (B[col + row*N])
+#define C(row, col) (C[col + row*N])
+
+
 const int DIM = 2;
-void checkSolution(double *C, int in_N);
-void checkSolution(RAJA::View<double,RAJA::Layout<DIM> > Cview, int in_N);
+int index(int N, int row, int col);
+
+template<typename T>
+void checkSolution(T *C, int in_N);
 
 /*
   Example 2: Multiplying Two Matrices
@@ -81,26 +92,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     A[i] = 1.0; 
     B[i] = 1.0; 
   }
-
   
   printf("Standard C++ Loop \n");
-  for (int r = 0; r < N; ++r) {
-    for (int c = 0; c < N; ++c) {
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
 
-      int cId = c + r * N;
       double dot = 0.0;
 
       for (int k = 0; k < N; ++k) {
-
-        int aId = k + r * N;
-        int bId = c + k * N;
-        dot += A[aId] * B[bId];
+        dot += A(row,k)*B(k,col);
       }
 
-      C[cId] = dot;
+      C(row,col) = dot; 
     }
   }
-  checkSolution(C, N);
+  
+  checkSolution<double>(C, N);
 
   /*
     RAJA::View - Introduces Multidimensional arrays
@@ -123,8 +130,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         Cview(row,col) = dot; 
       }
 
-    });
-  checkSolution(Cview, N);
+    });  
+
+  checkSolution<double>(C, N);
 
 
   printf("RAJA: Sequential Policy - Nested forall \n");
@@ -142,7 +150,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row,col) = dot;
     });
   });
-  checkSolution(Cview, N);
+  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
 
   printf("RAJA: Sequential Policy RAJA - forallN \n");
   /*
@@ -159,8 +167,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         }
 
         Cview(row,col) = dot;
-      });
-  checkSolution(Cview, N);
+  });
+  checkSolution<RAJA::View<double,RAJA::Layout<DIM> >(Cview, N);
   
 
 #if defined(RAJA_ENABLE_OPENMP)
@@ -181,7 +189,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         }
         Cview(row,col) = dot;
       });
-  checkSolution(C, N);
+  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
 #endif
 
 
@@ -207,7 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             Cview(row,col) = dot; 
           });
   cudaDeviceSynchronize();
-  checkSolution(Cview, N);
+  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
 #endif
 
 
@@ -218,24 +226,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-void checkSolution(double *C, int in_N)
-{
 
-  for (int id = 0; id < in_N * in_N; ++id) {
-    if (abs(C[id] - in_N) > 1e-9) {
-      printf("Error in Result \n \n");
-      return;
-    }
-  }
-  printf("Correct Result \n \n");
-}
-
-void checkSolution(RAJA::View<double,RAJA::Layout<DIM> > Cview, int in_N){
+template<typename T>
+void checkSolution(T *C, int in_N){
 
   for(int row = 0; row < in_N; ++row) {
     for(int col = 0; col < in_N; ++col) {
 
-      if (abs(Cview(row,col) - in_N) > 1e-9) {
+      if (abs(C(row,col) - in_N) > 1e-9) {
         printf("Error in Result \n \n");
         return;
       }
