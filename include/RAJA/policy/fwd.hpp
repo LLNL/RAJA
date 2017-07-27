@@ -1,16 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA sequential policy definitions.
- *
- ******************************************************************************
- */
-
-#ifndef policy_sequential_HPP
-#define policy_sequential_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -53,47 +40,59 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/PolicyBase.hpp"
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Forward declarations for impl::forall overloads
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_policy_fwd_HPP
+#define RAJA_policy_fwd_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+#include "RAJA/policy/cuda/fwd.hpp"
+#endif
+#if defined(RAJA_ENABLE_OPENMP)
+#include "RAJA/policy/openmp/fwd.hpp"
+#endif
+#include "RAJA/policy/sequential/fwd.hpp"
+#include "RAJA/policy/simd/fwd.hpp"
 
 namespace RAJA
 {
+template <typename Selector, typename... Policies>
+class MultiPolicy;
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Execution policies
-//
-//////////////////////////////////////////////////////////////////////
-//
+namespace impl
+{
 
-///
-/// Segment execution policies
-///
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
+                        Iterable &&,
+                        Body &&);
+}  // end namespace impl
 
-struct seq_exec : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                        Pattern::forall,
-                                                        Launch::undefined,
-                                                        Platform::host> {
-};
+namespace wrap
+{
 
-///
-/// Index set segment iteration policies
-///
-using seq_segit = seq_exec;
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
+                        Iterable &&,
+                        Body &&);
+}
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Reduction execution policies
-///
-///////////////////////////////////////////////////////////////////////
-///
-struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
-                                                          Pattern::forall,
-                                                          Launch::undefined,
-                                                          Platform::host> {
-};
+}  // end namespace RAJA
 
-}  // closing brace for RAJA namespace
-
-#endif
+#endif  // closing endif for header file include guard

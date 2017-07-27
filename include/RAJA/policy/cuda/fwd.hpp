@@ -1,13 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Implementation file for range segment classes
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -50,40 +40,71 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/index/RangeSegment.hpp"
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
 
-#include <iostream>
+#ifndef RAJA_forward_cuda_HXX
+#define RAJA_forward_cuda_HXX
+
+#include "RAJA/config.hpp"
+
+
+#if defined(RAJA_ENABLE_CUDA)
+
+#include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA
 {
 
-/*
-*************************************************************************
-*
-* RangeSegment class methods
-*
-*************************************************************************
-*/
-
-void RangeSegment::print(std::ostream& os) const
+namespace impl
 {
-  os << "RangeSegment : length = " << getLength()
-     << " : begin, end = " << m_begin << ", " << m_end << std::endl;
-}
 
-/*
-*************************************************************************
-*
-* RangeStrideSegment class methods
-*
-*************************************************************************
-*/
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
 
-void RangeStrideSegment::print(std::ostream& os) const
-{
-  os << "RangeStrideSegment : length = " << getLength()
-     << " : begin, end, stride = " << m_begin << ", " << m_end << ", "
-     << m_stride << std::endl;
-}
+
+template <typename Iterable,
+          typename IndexType,
+          typename LoopBody,
+          size_t BlockSize,
+          bool Async>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
+
+
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+                        const StaticIndexSet<SegmentTypes...>&,
+                        LoopBody&&);
+
+
+template <typename LoopBody,
+          size_t BlockSize,
+          bool Async,
+          typename... SegmentTypes>
+RAJA_INLINE void forall_Icount(
+    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+    const StaticIndexSet<SegmentTypes...>&,
+    LoopBody&&);
+
+}  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
+
+#endif  // closing endif for header file include guard

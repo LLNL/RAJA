@@ -91,6 +91,8 @@
 #include "RAJA/policy/openacc.hpp"
 #endif
 
+#include "RAJA/index/IndexSet.hpp"
+
 //
 // Strongly typed index class.
 //

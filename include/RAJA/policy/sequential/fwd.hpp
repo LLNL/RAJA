@@ -9,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,40 +40,57 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for RAJA type traits.
-///
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
 
-#include "RAJA/RAJA.hpp"
+#ifndef RAJA_forward_sequential_HXX
+#define RAJA_forward_sequential_HXX
 
-#include "RAJA/internal/type_traits.hpp"
+#include <type_traits>
 
-#include "gtest/gtest.h"
+#include "RAJA/config.hpp"
 
-#ifdef RAJA_ENABLE_OPENMP
+#include "RAJA/policy/sequential/policy.hpp"
 
-static_assert(!RAJA::is_sequential_policy<RAJA::omp_parallel_for_exec>::value,
-              "");
-static_assert(RAJA::is_openmp_policy<RAJA::omp_parallel_for_exec>::value, "");
-static_assert(!RAJA::is_cuda_policy<RAJA::omp_parallel_for_exec>::value, "");
-#endif
-static_assert(RAJA::is_sequential_policy<RAJA::seq_exec>::value, "");
-static_assert(!RAJA::is_openmp_policy<RAJA::seq_exec>::value, "");
-static_assert(!RAJA::is_cuda_policy<RAJA::seq_exec>::value, "");
+namespace RAJA
+{
 
-#ifdef RAJA_ENABLE_CUDA
+namespace impl
+{
 
-// check CUDA sync policies...
-static_assert(!RAJA::is_sequential_policy<RAJA::cuda_exec<128>>::value, "");
-static_assert(!RAJA::is_openmp_policy<RAJA::cuda_exec<128>>::value, "");
-static_assert(RAJA::is_cuda_policy<RAJA::cuda_exec<128>>::value, "");
+template <typename Func>
+RAJA_INLINE void forall(const seq_exec &,
+                        const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body);
 
-// check CUDA async policies...
-static_assert(!RAJA::is_sequential_policy<RAJA::cuda_exec<128, true>>::value,
-              "");
-static_assert(!RAJA::is_openmp_policy<RAJA::cuda_exec<128, true>>::value, "");
-static_assert(RAJA::is_cuda_policy<RAJA::cuda_exec<128, true>>::value, "");
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const seq_exec &,
+                        const PolicyBase &,
+                        Iterable &&iter,
+                        Func &&loop_body);
 
-#endif
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const seq_exec &,
+              const PolicyBase &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body);
 
-TEST(TypeTraits, Default) { ASSERT_EQ(true, true); }
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard
