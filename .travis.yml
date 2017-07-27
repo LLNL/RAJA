@@ -48,6 +48,7 @@ matrix:
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
     - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
     - WARN=""
   - compiler: clang-3.7
     addons:
@@ -59,6 +60,7 @@ matrix:
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
     - WARN=""
   - compiler: clang-3.8
     addons:
@@ -70,6 +72,7 @@ matrix:
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
+    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
     - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
     - WARN=""
   - compiler: intel-17
