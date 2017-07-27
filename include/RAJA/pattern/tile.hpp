@@ -130,10 +130,12 @@ RAJA_INLINE void forallN_apply_tile(tile_none,
   forallN_peel_tile<BOUND, TIDX + 1>(TilePolicy{}, new_body, prest...);
 }
 
-  template <typename T, typename U>
-  constexpr auto const_min(T t, U u) -> typename std::remove_reference<decltype((t < u) ? t : u)>::type {
-    return (t < u) ? t : u;
-  }
+template <typename T, typename U>
+constexpr auto const_min(T t, U u) ->
+    typename std::remove_reference<decltype((t < u) ? t : u)>::type
+{
+  return (t < u) ? t : u;
+}
 
 /*!
  * \brief Applys the tile_fixed<N> policy

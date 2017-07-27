@@ -137,10 +137,12 @@ struct get_launch<false> {
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec
-    : public RAJA::make_policy_launch_pattern_platform<RAJA::Policy::cuda,
-                                              detail::get_launch<Async>::value,
-                                              RAJA::Pattern::forall,
-                                              RAJA::Platform::cuda> {
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::forall,
+                                                detail::get_launch<Async>::
+                                                    value,
+                                                RAJA::Platform::cuda> {
 };
 
 //
@@ -157,9 +159,12 @@ struct cuda_exec
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_reduce
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              detail::get_launch<Async>::value,
-                                              RAJA::Pattern::reduce> {
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::reduce,
+                                                detail::get_launch<Async>::
+                                                    value,
+                                                RAJA::Platform::cuda> {
 };
 
 template <size_t BLOCK_SIZE>
@@ -167,9 +172,12 @@ using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_reduce_atomic
-    : public RAJA::make_policy_launch_pattern<RAJA::Policy::cuda,
-                                              detail::get_launch<Async>::value,
-                                              RAJA::Pattern::reduce> {
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::reduce,
+                                                detail::get_launch<Async>::
+                                                    value,
+                                                RAJA::Platform::cuda> {
 };
 
 template <size_t BLOCK_SIZE>
@@ -216,9 +224,12 @@ struct CudaDim {
 };
 
 template <typename POL>
-struct CudaPolicy :
-  public RAJA::make_policy_platform<RAJA::Policy::cuda, RAJA::Platform::cuda>
-{
+struct CudaPolicy
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::forall,
+                                                RAJA::Launch::undefined,
+                                                RAJA::Platform::cuda> {
 };
 
 template <typename POL, typename IDX>
@@ -233,7 +244,7 @@ struct CudaIndexPair : public POL {
 };
 
 /** Provides a range from 0 to N_iter - 1
- * 
+ *
  */
 template <typename VIEWDIM, int threads_per_block>
 struct CudaThreadBlock {
@@ -241,7 +252,7 @@ struct CudaThreadBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThreadBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -295,7 +306,7 @@ struct CudaThread {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaThread(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -311,10 +322,7 @@ struct CudaThread {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_threads) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_threads) = distance; }
 };
 
 /* These execution policies map the given loop nest to the threads in the
@@ -332,7 +340,7 @@ struct CudaBlock {
 
   VIEWDIM view;
 
-  template<typename Iterable>
+  template <typename Iterable>
   CudaBlock(CudaDim &dims, Iterable const &i)
       : distance(std::distance(std::begin(i), std::end(i)))
   {
@@ -348,10 +356,7 @@ struct CudaBlock {
     return idx;
   }
 
-  void inline setDims(CudaDim &dims)
-  {
-    view(dims.num_blocks) = distance;
-  }
+  void inline setDims(CudaDim &dims) { view(dims.num_blocks) = distance; }
 };
 
 /* These execution policies map the given loop nest to the blocks in the

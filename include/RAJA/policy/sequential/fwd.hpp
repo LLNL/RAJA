@@ -70,18 +70,24 @@ namespace impl
 {
 
 template <typename Func>
-RAJA_INLINE void forall(const seq_exec &, const PolicyBase &,
+RAJA_INLINE void forall(const seq_exec &,
+                        const PolicyBase &,
                         const RangeSegment &iter,
                         Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, const PolicyBase &, Iterable &&iter, Func &&loop_body);
+RAJA_INLINE void forall(const seq_exec &,
+                        const PolicyBase &,
+                        Iterable &&iter,
+                        Func &&loop_body);
 
-  template <typename Iterable, typename IndexType, typename Func>
-  RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type forall_Icount(const seq_exec &, const PolicyBase &,
-                               Iterable &&iter,
-                               IndexType icount,
-                               Func &&loop_body);
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const seq_exec &,
+              const PolicyBase &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body);
 
 }  // closing brace for impl namespace
 

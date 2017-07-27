@@ -69,7 +69,8 @@
 
 #include <omp.h>
 
-namespace RAJA {
+namespace RAJA
+{
 
 /*!
  **************************************************************************
@@ -78,7 +79,9 @@ namespace RAJA {
  *
  **************************************************************************
  */
-template <typename T> class ReduceMin<omp_reduce, T> {
+template <typename T>
+class ReduceMin<omp_reduce, T>
+{
   static constexpr const RAJA::reduce::min<T> Reduce{};
 
 public:
@@ -96,21 +99,27 @@ public:
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMin(T init_val)
-      : m_parent(nullptr), m_val(init_val) {}
+      : m_parent(nullptr), m_val(init_val)
+  {
+  }
 
   //! create a copy of the reducer
   /*!
    * keep parent the same if non-null or set to current
    */
   RAJA_HOST_DEVICE ReduceMin(const ReduceMin &other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val) {
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
+  {
   }
 
   //! Destructor folds value into parent object.
-  RAJA_HOST_DEVICE ~ReduceMin() {
+  RAJA_HOST_DEVICE ~ReduceMin()
+  {
     if (m_parent) {
 #pragma omp critical
-      { Reduce(m_parent->m_val, m_val); }
+      {
+        Reduce(m_parent->m_val, m_val);
+      }
     }
   }
 
@@ -130,7 +139,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE const ReduceMin &min(T rhs) const {
+  RAJA_HOST_DEVICE const ReduceMin &min(T rhs) const
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -139,7 +149,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE ReduceMin &min(T rhs) {
+  RAJA_HOST_DEVICE ReduceMin &min(T rhs)
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -157,7 +168,9 @@ private:
  *
  **************************************************************************
  */
-template <typename T> class ReduceMinLoc<omp_reduce, T> {
+template <typename T>
+class ReduceMinLoc<omp_reduce, T>
+{
   static constexpr const RAJA::reduce::minloc<T, Index_type> Reduce{};
 
 public:
@@ -175,21 +188,29 @@ public:
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_val, Index_type init_idx)
-      : m_parent(nullptr), m_val(init_val), m_idx(init_idx) {}
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx)
+  {
+  }
 
   //! create a copy of the reducer
   /*!
    * keep parent the same if non-null or set to current
    */
   RAJA_HOST_DEVICE ReduceMinLoc(const ReduceMinLoc &other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val),
-        m_idx(other.m_idx) {}
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        m_idx(other.m_idx)
+  {
+  }
 
   //! Destructor folds value into parent object.
-  RAJA_HOST_DEVICE ~ReduceMinLoc() {
+  RAJA_HOST_DEVICE ~ReduceMinLoc()
+  {
     if (m_parent) {
 #pragma omp critical
-      { Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx); }
+      {
+        Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+      }
     }
   }
 
@@ -215,7 +236,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE const ReduceMinLoc &minloc(T rhs, Index_type idx) const {
+  RAJA_HOST_DEVICE const ReduceMinLoc &minloc(T rhs, Index_type idx) const
+  {
     Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
@@ -224,7 +246,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE ReduceMinLoc &minloc(T rhs, Index_type idx) {
+  RAJA_HOST_DEVICE ReduceMinLoc &minloc(T rhs, Index_type idx)
+  {
     Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
@@ -243,7 +266,9 @@ private:
  *
  **************************************************************************
  */
-template <typename T> class ReduceMax<omp_reduce, T> {
+template <typename T>
+class ReduceMax<omp_reduce, T>
+{
   static constexpr const RAJA::reduce::max<T> Reduce{};
 
 public:
@@ -261,21 +286,27 @@ public:
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMax(T init_val)
-      : m_parent(nullptr), m_val(init_val) {}
+      : m_parent(nullptr), m_val(init_val)
+  {
+  }
 
   //! create a copy of the reducer
   /*!
    * keep parent the same if non-null or set to current
    */
   RAJA_HOST_DEVICE ReduceMax(const ReduceMax &other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val) {
+      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
+  {
   }
 
   //! Destructor folds value into parent object.
-  RAJA_HOST_DEVICE ~ReduceMax() {
+  RAJA_HOST_DEVICE ~ReduceMax()
+  {
     if (m_parent) {
 #pragma omp critical
-      { Reduce(m_parent->m_val, m_val); }
+      {
+        Reduce(m_parent->m_val, m_val);
+      }
     }
   }
 
@@ -295,7 +326,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE const ReduceMax &max(T rhs) const {
+  RAJA_HOST_DEVICE const ReduceMax &max(T rhs) const
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -304,7 +336,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE ReduceMax &max(T rhs) {
+  RAJA_HOST_DEVICE ReduceMax &max(T rhs)
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -322,7 +355,9 @@ private:
  *
  **************************************************************************
  */
-template <typename T> class ReduceSum<omp_reduce, T> {
+template <typename T>
+class ReduceSum<omp_reduce, T>
+{
   static constexpr const RAJA::reduce::sum<T> Reduce{};
 
 public:
@@ -340,7 +375,9 @@ public:
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceSum(T init_val, T initializer = T())
-      : m_parent(nullptr), m_val(init_val), m_custom_init(initializer) {}
+      : m_parent(nullptr), m_val(init_val), m_custom_init(initializer)
+  {
+  }
 
   //! create a copy of the reducer
   /*!
@@ -348,13 +385,19 @@ public:
    */
   RAJA_HOST_DEVICE ReduceSum(const ReduceSum &other)
       : m_parent(other.m_parent ? other.m_parent : &other),
-        m_val(other.m_custom_init), m_custom_init(other.m_custom_init) {}
+        m_val(other.m_custom_init),
+        m_custom_init(other.m_custom_init)
+  {
+  }
 
   //! Destructor folds value into parent object.
-  RAJA_HOST_DEVICE ~ReduceSum() {
+  RAJA_HOST_DEVICE ~ReduceSum()
+  {
     if (m_parent) {
 #pragma omp critical
-      { Reduce(m_parent->m_val, m_val); }
+      {
+        Reduce(m_parent->m_val, m_val);
+      }
     }
   }
 
@@ -374,7 +417,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE const ReduceSum &operator+=(T rhs) const {
+  RAJA_HOST_DEVICE const ReduceSum &operator+=(T rhs) const
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -383,7 +427,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE ReduceSum &operator+=(T rhs) {
+  RAJA_HOST_DEVICE ReduceSum &operator+=(T rhs)
+  {
     Reduce(m_val, rhs);
     return *this;
   }
@@ -402,7 +447,9 @@ private:
  *
  **************************************************************************
  */
-template <typename T> class ReduceMaxLoc<omp_reduce, T> {
+template <typename T>
+class ReduceMaxLoc<omp_reduce, T>
+{
   static constexpr const RAJA::reduce::maxloc<T, Index_type> Reduce{};
 
 public:
@@ -420,21 +467,29 @@ public:
 
   //! constructor requires a default value for the reducer
   RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_val, Index_type init_idx)
-      : m_parent(nullptr), m_val(init_val), m_idx(init_idx) {}
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx)
+  {
+  }
 
   //! create a copy of the reducer
   /*!
    * keep parent the same if non-null or set to current
    */
   RAJA_HOST_DEVICE ReduceMaxLoc(const ReduceMaxLoc &other)
-      : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val),
-        m_idx(other.m_idx) {}
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        m_idx(other.m_idx)
+  {
+  }
 
   //! Destructor folds value into parent object.
-  RAJA_HOST_DEVICE ~ReduceMaxLoc() {
+  RAJA_HOST_DEVICE ~ReduceMaxLoc()
+  {
     if (m_parent) {
 #pragma omp critical
-      { Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx); }
+      {
+        Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+      }
     }
   }
 
@@ -460,7 +515,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE const ReduceMaxLoc &maxloc(T rhs, Index_type idx) const {
+  RAJA_HOST_DEVICE const ReduceMaxLoc &maxloc(T rhs, Index_type idx) const
+  {
     Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
@@ -469,7 +525,8 @@ public:
   /*!
    * Assumes each thread has its own copy of the object.
    */
-  RAJA_HOST_DEVICE ReduceMaxLoc &maxloc(T rhs, Index_type idx) {
+  RAJA_HOST_DEVICE ReduceMaxLoc &maxloc(T rhs, Index_type idx)
+  {
     Reduce(m_val, m_idx, rhs, idx);
     return *this;
   }
@@ -523,7 +580,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<omp_reduce_ordered, T>& other)
+  ReduceMin(const ReduceMin<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -585,7 +642,7 @@ private:
 
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
 
 /*!
@@ -627,7 +684,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce_ordered, T>& other)
+  ReduceMinLoc(const ReduceMinLoc<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -711,8 +768,8 @@ private:
   T m_reduced_val;
   Index_type m_reduced_idx;
 
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  CPUReductionBlockDataType *m_blockdata;
+  Index_type *m_idxdata;
 };
 
 /*!
@@ -751,7 +808,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<omp_reduce_ordered, T>& other)
+  ReduceMax(const ReduceMax<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -813,7 +870,7 @@ private:
 
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
 
 /*!
@@ -855,7 +912,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce_ordered, T>& other)
+  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -939,8 +996,8 @@ private:
   T m_reduced_val;
   Index_type m_reduced_idx;
 
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  CPUReductionBlockDataType *m_blockdata;
+  Index_type *m_idxdata;
 };
 
 /*!
@@ -980,7 +1037,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce_ordered, T>& other)
+  ReduceSum(const ReduceSum<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -1042,11 +1099,11 @@ private:
   T m_init_val;
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
 
-} // closing brace for RAJA namespace
+}  // closing brace for RAJA namespace
 
-#endif // closing endif for RAJA_ENABLE_OPENMP guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
-#endif // closing endif for header file include guard
+#endif  // closing endif for header file include guard

@@ -67,6 +67,9 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+using RAJA::concepts::enable_if;
+using RAJA::concepts::requires_;
+
 namespace RAJA
 {
 
