@@ -78,7 +78,7 @@ include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
 # Sanity check for compiler compatibility
-include (cmake/CompilerCompatibility.cmake)
+#include (cmake/CompilerCompatibility.cmake)
 
 include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
 include_directories(${PROJECT_BINARY_DIR}/include)
