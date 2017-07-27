@@ -48,7 +48,7 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-#define CUDA_BLOCK_SIZE 256
+const int CUDA_BLOCK_SIZE = 256;
 
 void checkSolution(int *C, int in_N);
 
