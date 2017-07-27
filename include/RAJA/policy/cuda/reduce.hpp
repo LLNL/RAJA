@@ -272,7 +272,7 @@ cuda::LocType<T, IndexType> block_reduce(cuda::LocType<T, IndexType> val)
     // reduce each warp
     for (int i = 1; i < WARP_SIZE ; i *= 2) {
       T rhs_val = shfl_xor_sync<T>(temp.val, i);
-      IndexType rhs_idx = shfl_xor_sync<T>(temp.idx, i);
+      IndexType rhs_idx = shfl_xor_sync<IndexType>(temp.idx, i);
       Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
     }
 
@@ -282,7 +282,7 @@ cuda::LocType<T, IndexType> block_reduce(cuda::LocType<T, IndexType> val)
     for (int i = 1; i < WARP_SIZE ; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs_val = shfl_sync<T>(temp.val, srcLane);
-      IndexType rhs_idx = shfl_sync<T>(temp.idx, srcLane);
+      IndexType rhs_idx = shfl_sync<IndexType>(temp.idx, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads) {
         Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
@@ -318,7 +318,7 @@ cuda::LocType<T, IndexType> block_reduce(cuda::LocType<T, IndexType> val)
 
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
         T rhs_val = shfl_xor_sync<T>(temp.val, i);
-        IndexType rhs_idx = shfl_xor_sync<T>(temp.idx, i);
+        IndexType rhs_idx = shfl_xor_sync<IndexType>(temp.idx, i);
         Reducer{}(temp.val, temp.idx, rhs_val, rhs_idx);
       }
     }
