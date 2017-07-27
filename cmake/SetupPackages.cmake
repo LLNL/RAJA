@@ -40,15 +40,16 @@
 #
 ###############################################################################
 
-  list(APPEND NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
 
 if (ENABLE_CUDA)
   set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-  set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+
+  if (ENABLE_OPENMP)
+    list(APPEND CUDA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
+  endif()
 
   if (ENABLE_CUB)
     find_package(CUB)
-
     if (CUB_FOUND)
       include_directories(${CUB_INCLUDE_DIRS})
     else()

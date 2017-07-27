@@ -55,7 +55,7 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 # Build options
 set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
 set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
-set(ENABLE_COPY_HEADERS On CACHE Bool "")
+set(ENABLE_COPY_HEADERS Off CACHE Bool "")
 
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
@@ -99,77 +99,6 @@ set (raja_sources
   src/MemUtils_CUDA.cpp
   src/ThreadUtils_CPU.cpp)
 
-set (raja_headers
-  include/RAJA/RAJA.hpp
-  include/RAJA/config.hpp.in
-  include/RAJA/index
-  include/RAJA/index/IndexSet.hpp
-  include/RAJA/index/IndexSetBuilders.hpp
-  include/RAJA/index/IndexSetUtils.hpp
-  include/RAJA/index/IndexValue.hpp
-  include/RAJA/index/ListSegment.hpp
-  include/RAJA/index/RangeSegment.hpp
-  include/RAJA/internal/DepGraphNode.hpp
-  include/RAJA/internal/ForallNPolicy.hpp
-  include/RAJA/internal/IndexArray.hpp
-  include/RAJA/internal/Iterators.hpp
-  include/RAJA/internal/LegacyCompatibility.hpp
-  include/RAJA/internal/MemUtils_CPU.hpp
-  include/RAJA/internal/RAJAVec.hpp
-  include/RAJA/internal/ThreadUtils_CPU.hpp
-  include/RAJA/internal/fault_tolerance.hpp
-  include/RAJA/internal/Span.hpp
-  include/RAJA/internal/type_traits.hpp
-  include/RAJA/pattern/forall.hpp
-  include/RAJA/pattern/forallN.hpp
-  include/RAJA/pattern/permute.hpp
-  include/RAJA/pattern/reduce.hpp
-  include/RAJA/pattern/scan.hpp
-  include/RAJA/pattern/tile.hpp
-  include/RAJA/policy/MultiPolicy.hpp
-  include/RAJA/policy/PolicyBase.hpp
-  include/RAJA/policy/cuda.hpp
-  include/RAJA/policy/fwd.hpp
-  include/RAJA/policy/openmp.hpp
-  include/RAJA/policy/cuda/MemUtils_CUDA.hpp
-  include/RAJA/policy/cuda/forall.hpp
-  include/RAJA/policy/cuda/forallN.hpp
-  include/RAJA/policy/cuda/policy.hpp
-  include/RAJA/policy/cuda/raja_cudaerrchk.hpp
-  include/RAJA/policy/cuda/reduce.hpp
-  include/RAJA/policy/cuda/scan.hpp
-  include/RAJA/policy/cuda/fwd.hpp
-  include/RAJA/policy/sequential.hpp
-  include/RAJA/policy/openmp/forall.hpp
-  include/RAJA/policy/openmp/forallN.hpp
-  include/RAJA/policy/openmp/policy.hpp
-  include/RAJA/policy/openmp/reduce.hpp
-  include/RAJA/policy/openmp/scan.hpp
-  include/RAJA/policy/openmp/fwd.hpp
-  include/RAJA/policy/openmp/target_forall.hpp
-  include/RAJA/policy/openmp/target_reduce.hpp
-  include/RAJA/policy/simd.hpp
-  include/RAJA/policy/sequential/forall.hpp
-  include/RAJA/policy/sequential/policy.hpp
-  include/RAJA/policy/sequential/reduce.hpp
-  include/RAJA/policy/sequential/scan.hpp
-  include/RAJA/policy/sequential/fwd.hpp
-  include/RAJA/policy/simd/forall.hpp
-  include/RAJA/policy/simd/policy.hpp
-  include/RAJA/policy/simd/fwd.hpp
-  include/RAJA/util/Layout.hpp
-  include/RAJA/util/OffsetLayout.hpp
-  include/RAJA/util/Operators.hpp
-  include/RAJA/util/Permutations.hpp
-  include/RAJA/util/PermutedLayout.hpp
-  include/RAJA/util/Timer.hpp
-  include/RAJA/util/View.hpp
-  include/RAJA/util/defines.hpp
-  include/RAJA/util/types.hpp
-  include/RAJA/util/chai_support.hpp)
-
-set (raja_depends)
-
 if (ENABLE_OPENMP)
   set (raja_depends
     openmp)
@@ -177,14 +106,20 @@ endif()
 
 if (ENABLE_CUDA)
   set (raja_depends
+    ${raja_depends}
     cuda)
+endif ()
+
+if (ENABLE_CHAI)
+  set (raja_depends
+    ${raja_depends}
+    CHAI)
 endif ()
 
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
   HEADERS ${raja_headers}
-  HEADERS_OUTPUT_SUBDIR RAJA
   DEPENDS_ON ${raja_depends})
 
 install(TARGETS RAJA 
@@ -196,9 +131,11 @@ install(TARGETS RAJA
 
 install(EXPORT RAJA DESTINATION share/raja/cmake/)
 
-#include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
-
-target_include_directories(RAJA PRIVATE ${PROJECT_BINARY_DIR}/include)
+target_include_directories(RAJA
+  PUBLIC 
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp

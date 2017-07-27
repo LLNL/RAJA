@@ -42,7 +42,7 @@
 
 macro(raja_add_executable)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME TEST)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
@@ -64,10 +64,19 @@ macro(raja_add_executable)
 
   message(STATUS "${arg_NAME} building with depends: ${arg_DEPENDS_ON}")
 
+
+  if (${arg_TEST})
+    set (_output_dir test)
+  else ()
+    set (_output_dir bin)
+  endif()
+
   blt_add_executable(
     NAME ${arg_NAME}
     SOURCES ${arg_SOURCES}
-    DEPENDS_ON ${arg_DEPENDS_ON})
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    OUTPUT_DIR ${_output_dir}
+    )
 
     # if (ENABLE_CLANG_CUDA) 
     #   add_executable(${arg_NAME} ${arg_SOURCES})
@@ -90,10 +99,11 @@ macro(raja_add_test)
   raja_add_executable(
     NAME ${arg_NAME}.exe 
     SOURCES ${arg_SOURCES} 
-    DEPENDS_ON ${arg_DEPENDS_ON})
-    #OUTPUT_DIR test)
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    TEST On)
 
   blt_add_test(
     NAME ${arg_NAME} 
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
+    #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
+    COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_test)
