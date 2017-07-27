@@ -66,7 +66,7 @@
 
 #include "RAJA/util/concepts.hpp"
 
-#include <iosfwd>
+#include <iostream>
 
 namespace RAJA
 {
