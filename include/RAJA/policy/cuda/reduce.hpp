@@ -610,14 +610,6 @@ public:
   }
   
   PinnedTally(const PinnedTally&) = delete;
-
-
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  omp::mutex& mutex()
-  {
-    return m_mutex;
-  }
-#endif
   
   //! get begin iterator over streams
   StreamIterator streamBegin()
@@ -647,7 +639,7 @@ public:
   T* new_value(cudaStream_t stream)
   {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-    lock_guard<omp::mutex> lock(mutex());
+    lock_guard<omp::mutex> lock(m_mutex);
 #endif
     StreamNode* sn = stream_list;
     while(sn) {
@@ -687,12 +679,12 @@ public:
     free_list();
   }
 
-private:
-  StreamNode* stream_list;
-
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   omp::mutex m_mutex;
 #endif
+
+private:
+  StreamNode* stream_list;
 };
 
 //
@@ -1084,7 +1076,7 @@ struct Reduce {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
 #endif
       parent->reduce(val.value);
     } else {
@@ -1194,7 +1186,7 @@ struct ReduceAtomic {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
 #endif
       parent->reduce(val.value);
     } else {
@@ -1302,7 +1294,7 @@ struct ReduceLoc {
       val.destroy();
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->mutex());
+      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
 #endif
       parent->reduce(val.value, val.index);
     } else {
