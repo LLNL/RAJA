@@ -139,8 +139,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
   printf("Value at grid point ((N-1), (N-1)): %lg \n", I[N+N*(N+2)]);
   printf("No of iterations: %d \n \n",iteration);
-  //======================================
-  
+    
   /*
     RAJA loop calls may be shortened by defining policies before hand
   */
@@ -232,7 +231,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 #if defined(RAJA_ENABLE_CUDA)
   using jacobiCUDANestedPolicy = 
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>;       
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>;
 
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
@@ -264,8 +263,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   cudaDeviceSynchronize();
   printf("RAJA: CUDA Nested Loop Policy \n"); 
   printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N+N*(N+2)]);
-  printf("No of iterations: %d \n \n",iteration);
-  //======================================
+  printf("No of iterations: %d \n \n",iteration);  
 #endif
 
   memoryManager::deallocate(I);
