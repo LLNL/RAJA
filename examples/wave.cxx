@@ -60,11 +60,9 @@ struct grid_s{
   Wave Propagator 
 */
 template<typename T, typename fdNestedPolicy>
-void Wave(T* P1, T* P2, int nx, double ct){
+void Wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx){
 
-  RAJA::RangeSegment fdGridx = RAJA::RangeSegment(0,nx);
-
-  RAJA::forallN<fdNestedPolicy >(fdGridx,fdGridx, [=] __device__ __host__ (int ty, int tx) {
+  RAJA::forallN<fdNestedPolicy >(fdBounds, fdBounds , [=] __device__ __host__ (int ty, int tx) {
                                                                    
       /*
         Finite difference coefficients for fourth order spatial derivative
@@ -183,11 +181,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /*
     Wave Propagator - Single Implementaion - Many Devices
    */  
+
+  /*
+    Number of gridpoints in a spatial dimension
+   */
+  RAJA::RangeSegment fdBounds(0,grid.nx);
+
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k) {
 
-    Wave<double,fdPolicy>(P1,P2,grid.nx,ct);
+    Wave<double,fdPolicy>(P1,P2,fdBounds,ct,grid.nx);
     time += dt; 
     
     double *Temp = P2;
