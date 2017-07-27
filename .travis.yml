@@ -142,12 +142,13 @@ before_install:
   tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 &&
   export PATH=${PWD}/bin:${PATH}
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo apt-get update -qq &&
   travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
-  travis_retry sudo apt-get clean &&
+  travis_retry sudo apt-get clean; fi &&
   export CUDA_HOME=/usr/local/cuda-8.0 &&
+  export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
   export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
