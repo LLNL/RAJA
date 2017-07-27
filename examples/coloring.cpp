@@ -61,15 +61,15 @@
           1, 2, 1, 2,
           3, 4, 3, 4];
 
-  This codes illustrates how to create custom RAJA index set on which
-  a RAJA forall loop may iterate on. Here the loop will first iterate 
-  over indeces with a value of 1 then 2, etc... The numbers may be viewed as
-  corresponding to a color. 
+  This codes illustrates how to create a custom RAJA index set on which
+  a RAJA forall loop may iterate on. Here the codes constructs an IndexSet
+  on which a loop will iterate over the values of 1 then 2, etc.... The numbers 
+  may be viewed as corresponding to a color. 
   
-  //--------[RAJA Concepts]---------
+  --------[RAJA Concepts]---------
   1. Constructing custom IndexSets
   2. RAJA::View
-  3. RAJA::List_Segment
+  3. RAJA::ListSegment
 
 */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -86,28 +86,40 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
                3, 4, 3, 4};
   
   std::copy(init.begin(), init.end(), A);
- 
-
-  //Defining a custom IndexSet
+   
+  /*
+    Instance of an IndexSet
+  */
   RAJA::IndexSet colorset;
 
-  //RAJA::View introduces multidimensional arrays
+  /*
+    RAJA::View for multi-dimensional array
+   */
   RAJA::View<int,RAJA::Layout<2>> Aview(A, n, n);
   
-  //Buffer used for intermediate indicy storage
+  /*
+    Buffer used for intermediate indices storage
+   */
   auto *idx = new RAJA::Index_type[(n+1) * (n+1) / 4];
-
-  // Iterate over each dimension (D=2 for this example)
+  
+  /*
+    Iterate over each dimension (D=2 for this example)
+  */
   for (int xdim : {0, 1}) {
     for (int ydim : {0, 1}) {
       
       RAJA::Index_type count = 0;
       
-      // Iterate over each extent in each dimension, incrementing by two to
-      // safely advance over neighbors
+      /*
+        Iterate over each extent in each dimension, incrementing by two to
+        safely advance over neighbors
+       */
       for (int xiter = xdim; xiter < n; xiter += 2) {
         for (int yiter = ydim; yiter < n; yiter += 2) {
-          // Add the computed index to the buffer
+
+          /*
+            Add the computed index to the buffer
+          */
           idx[count] = std::distance(
                          std::addressof(Aview(0, 0)),
                          std::addressof(Aview(xiter, yiter)));
@@ -115,28 +127,32 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
         }
       }
       
-      //RAJA::List segment - creates a list segment from a given array with a specific length.
-      //Insert the indicies added from the buffer as a new ListSegment
+      /*
+        RAJA::List segment - creates a list segment from a given array with a specific length.
+        Insert the indicies added from the buffer as a new ListSegment
+      */
       colorset.push_back(RAJA::ListSegment(idx, count));
     }
   }  
 
-  // Clear temporary buffer
   delete[] idx;
 
 
+  /*
+    -----[RAJA Loop Traversal]-------
+    Under the custom color policy, a RAJA forall loop will transverse 
+    through each list segment stored in the colorset. 
+   */
 
-  //----[RAJA Sequential/OMP execution]---------
-  //RAJA: Seq_segit - Sequational Segment Iteraion  
-  //using ColorPolicy = RAJA::IndexSet::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
-#if 0
-  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+  /*
+    This particular traversal policy willl execute the iterates 
+    in each segment in parallel while travesing through each segment sequentially
+   */
+  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
+  
   RAJA::forall<ColorPolicy>(colorset, [=](int idx) {
-      int cat = 1;
-      //printf("A[%d] = %d\n", idx, A[idx]);
+      printf("A[%d] = %d\n", idx, A[idx]);
     });    
-  //==========================
-#endif
   
   return 0;
 }
