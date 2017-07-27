@@ -55,7 +55,7 @@ raja_add_test(
 raja_add_test(
   NAME test-segments
   SOURCES test-segments.cpp
-  DEPENDS_ON gtest gtest_main)
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
