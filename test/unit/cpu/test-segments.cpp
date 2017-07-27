@@ -150,7 +150,7 @@ TEST(RangeStrideSegmentTest, values_forward_stride1)
   
   ASSERT_EQ(segment.size(), 6);
  
-  for(size_t i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i){
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
@@ -168,7 +168,7 @@ TEST(RangeStrideSegmentTest, values_forward_stride3)
   
   ASSERT_EQ(segment.size(), 5);
  
-  for(size_t i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i){
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
@@ -186,7 +186,7 @@ TEST(RangeStrideSegmentTest, values_reverse_stride1)
   
   ASSERT_EQ(segment.size(), 6);
  
-  for(size_t i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i){
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
@@ -205,7 +205,7 @@ TEST(RangeStrideSegmentTest, values_reverse_stride1_negative)
   
   ASSERT_EQ(segment.size(), 4);
  
-  for(size_t i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i){
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
@@ -263,7 +263,7 @@ TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
   
   ASSERT_EQ(segment.size(), 4);
  
-  for(size_t i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i){
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
