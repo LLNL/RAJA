@@ -43,24 +43,24 @@
 
 raja_add_executable(
   NAME example-raja-pi
-  SOURCES pi.cxx)
+  SOURCES pi.cpp)
 
 raja_add_executable(
   NAME addVectors
-  SOURCES addVectors.cxx)
+  SOURCES addVectors.cpp)
 
 raja_add_executable(
   NAME matrixMultiply
-  SOURCES matrixMultiply.cxx)
+  SOURCES matrixMultiply.cpp)
 
 raja_add_executable(
   NAME jacobi
-  SOURCES jacobi.cxx)
+  SOURCES jacobi.cpp)
 
 raja_add_executable(
   NAME wave
-  SOURCES wave.cxx)
+  SOURCES wave.cpp)
 
 raja_add_executable(
   NAME coloring
-  SOURCES coloring.cxx)
+  SOURCES coloring.cpp)
