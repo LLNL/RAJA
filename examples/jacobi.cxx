@@ -59,9 +59,9 @@
   This code assumes a second order finite difference 
   spatial discretization on a lattice with unit grid spacing
   
+  More specifically it solves:
   -U_xx - U_yy = 1.0 inside the domain 
   and U = 0 on the boundary of the domain
-
 
   ----[RAJA Concepts]---------------
   1. RAJA ForallN
@@ -89,6 +89,9 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   */
   double invD = 1./4.0;  double f = 1.0;    
 
+  /*
+    Variables to hold approximation
+   */
   double *I    = memoryManager::allocate<double>(NN);
   double *Iold = memoryManager::allocate<double>(NN);
 
@@ -119,7 +122,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     }
 
     /*
-      Compute ||I - I_{old}||_{l2} and update Iold
+      Residual is computed via ||I - I_{old}||_{l2} + furthermore I_{old} is updated
     */
     resI2 = 0.0; 
     for(int k=0; k<NN; k++) {
@@ -139,7 +142,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   //======================================
   
   /*
-    RAJA loop calls may be simplified by specifying policies apriori
+    RAJA loop calls may be shortened by defining policies before hand
   */
   RAJA::RangeSegment jacobiRange = RAJA::RangeSegment(1,(N+1)); 
   RAJA::RangeSegment gridRange = RAJA::RangeSegment(0,NN); 
@@ -184,18 +187,19 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-
   printf("RAJA: OpenMP Policy - Nested forallN \n");
   resI2 = 1; iteration = 0; 
   memset(I,0,NN*sizeof(double));
   memset(Iold,0,NN*sizeof(double));
-
+  
   /*
     RAJA::omp_collapse_nowait_exec -
     parallizes nested loops without introducing nested parallism
+    
+    RAJA::OMP_Parallel<> - Creates a parallel region
   */
-
-  using jacobiompNestedPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>>;
+  using jacobiompNestedPolicy = 
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>,RAJA::OMP_Parallel<>>;
 
   while(resI2 > tol*tol) {
             
