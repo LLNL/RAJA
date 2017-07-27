@@ -111,10 +111,7 @@ struct ForallN_BindFirstArg_HostDevice {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr ForallN_BindFirstArg_HostDevice(Self &&o)
-      : body(o.body), i(o.i)
-  {
-  }
+  constexpr ForallN_BindFirstArg_HostDevice(Self &&o) : body(o.body), i(o.i) {}
 
   RAJA_SUPPRESS_HD_WARN
   template <typename... ARGS>

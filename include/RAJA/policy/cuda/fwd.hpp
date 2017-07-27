@@ -70,13 +70,8 @@ namespace RAJA
 namespace impl
 {
 
-template <typename Iterable,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
-                        Iterable&&,
-                        LoopBody&&);
+template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
+RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
 
 
 template <typename Iterable,
@@ -85,10 +80,7 @@ template <typename Iterable,
           size_t BlockSize,
           bool Async>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>,
-              Iterable&&,
-              IndexType,
-              LoopBody&&);
+forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
 
 
 template <typename LoopBody,

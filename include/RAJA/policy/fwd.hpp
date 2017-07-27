@@ -79,9 +79,10 @@ template <typename Iterable,
 RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
                         Iterable &&,
                         Body &&);
-} // end namespace impl
+}  // end namespace impl
 
-namespace wrap {
+namespace wrap
+{
 
 template <typename Iterable,
           typename Body,
@@ -90,9 +91,8 @@ template <typename Iterable,
 RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
                         Iterable &&,
                         Body &&);
-
 }
 
-} // end namespace RAJA
+}  // end namespace RAJA
 
 #endif  // closing endif for header file include guard

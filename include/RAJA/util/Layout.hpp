@@ -94,7 +94,7 @@ public:
    */
   RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl()
   {
-    for(size_t i = 0;i < n_dims;++ i){
+    for (size_t i = 0; i < n_dims; ++i) {
       sizes[i] = strides[i] = 0;
       inv_strides[i] = inv_mods[i] = 1;
     }
@@ -106,9 +106,7 @@ public:
    * @todo this should be constexpr in c++14 mode
    */
   template <typename... Types>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  LayoutBase_impl(Types... ns)
+  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(Types... ns)
       : sizes{convertIndex<IdxLin>(ns)...}
   {
     static_assert(n_dims == sizeof...(Types),
@@ -118,7 +116,7 @@ public:
       // If the size of dimension i is zero, then the stride is zero
       strides[i] = sizes[i] ? 1 : 0;
 
-      for (size_t j = i+1; j < n_dims; j++) {
+      for (size_t j = i + 1; j < n_dims; j++) {
         // only take product of non-zero sizes
         strides[i] *= sizes[j] ? sizes[j] : 1;
       }
@@ -130,9 +128,7 @@ public:
   /*!
    *  Copy ctor.
    */
-  constexpr
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
   LayoutBase_impl(const LayoutBase_impl<IndexRange, IdxLin> &rhs)
       : sizes{rhs.sizes[RangeInts]...},
         strides{rhs.strides[RangeInts]...},
@@ -142,21 +138,16 @@ public:
   }
 
 
-
   /*!
    *  Construct a Layout given the size and stride of each dimension
    */
   template <typename... Types>
-  RAJA_INLINE
-  LayoutBase_impl(
-      const std::array<IdxLin, n_dims> &sizes_in,
-      const std::array<IdxLin, n_dims> &strides_in)
-      : sizes{sizes_in[RangeInts]...},
-        strides{strides_in[RangeInts]...}
+  RAJA_INLINE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
+                              const std::array<IdxLin, n_dims> &strides_in)
+      : sizes{sizes_in[RangeInts]...}, strides{strides_in[RangeInts]...}
   {
     computeInverse();
   }
-
 
 
   /*!
@@ -167,15 +158,11 @@ public:
    * @return Linear space index.
    */
   template <typename... Indices>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IdxLin operator()(
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
     return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
   }
-
 
 
   /*!
@@ -189,16 +176,14 @@ public:
    *                 dimensionality of this layout.
    */
   template <typename... Indices>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void toIndices(IdxLin linear_index, Indices &... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices &... indices) const
   {
-    VarOps::ignore_args(
-        (indices = (linear_index / inv_strides[RangeInts]) % inv_mods[RangeInts])...);
+    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
+                                   % inv_mods[RangeInts])...);
   }
 
 private:
-
   /*!
    * @internal
    *
@@ -207,14 +192,15 @@ private:
    */
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  void computeInverse(){
+  void computeInverse()
+  {
     // Inverse strides and mods map directly from strides and sizes,
     // except when a size (or stride) is zero for a projective layout.
     // In this case, having a stride and size of 1 will ensure that
     // toIndices for that dimension is always 0
     for (size_t i = 0; i < n_dims; i++) {
       inv_strides[i] = strides[i] ? strides[i] : 1;
-      inv_mods[i] =    sizes[i]   ? sizes[i]   : 1;
+      inv_mods[i] = sizes[i] ? sizes[i] : 1;
     }
   }
 };
@@ -297,10 +283,8 @@ struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
    * @return Linear space index.
    */
   template <typename... Indices>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  constexpr
-  IdxLin operator()(Indices... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
   {
     return convertIndex<IdxLin>(
         Base::operator()(convertIndex<Index_type>(indices)...));
@@ -318,9 +302,8 @@ struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
    *                 dimensionality of this layout.
    */
   template <typename... Indices>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void toIndices(IdxLin linear_index, Indices &... indices) const
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices &... indices) const
   {
     toIndicesHelper(VarOps::make_index_sequence<sizeof...(DimTypes)>{},
                     std::forward<IdxLin>(linear_index),
@@ -336,9 +319,7 @@ private:
    *
    */
   template <typename... Indices, size_t... RangeInts>
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void toIndicesHelper(
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(
       VarOps::index_sequence<RangeInts...>,
       IdxLin linear_index,
       Indices &... indices) const

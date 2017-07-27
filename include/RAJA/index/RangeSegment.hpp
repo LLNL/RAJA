@@ -57,6 +57,8 @@
 
 #include "RAJA/internal/Iterators.hpp"
 
+#include "RAJA/util/concepts.hpp"
+
 namespace RAJA
 {
 
@@ -401,6 +403,32 @@ TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
 {
   return {begin, end, stride};
 }
+
+namespace concepts
+{
+
+template <typename T, typename U>
+struct RangeConstructible
+    : DefineConcept(val<RAJA::detail::common_type_t<T, U>>()) {
+};
+
+template <typename T, typename U, typename V>
+struct RangeStrideConstructible
+    : DefineConcept(val<RAJA::detail::common_type_t<T, U, V>>()) {
+};
+
+}  // closing brace for concepts namespace
+
+namespace type_traits
+{
+
+DefineTypeTraitFromConcept(is_range_constructible,
+                           RAJA::concepts::RangeConstructible);
+
+DefineTypeTraitFromConcept(is_range_stride_constructible,
+                           RAJA::concepts::RangeStrideConstructible);
+
+}  // closing brace for type_traits namespace
 
 }  // closing brace for RAJA namespace
 
