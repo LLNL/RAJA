@@ -63,7 +63,7 @@
 
   This codes illustrates how to create a custom RAJA index set on which
   a RAJA forall loop may iterate on. Here the codes constructs an IndexSet
-  on which a loop will iterate over the values of 1 then 2, etc.... The numbers 
+  on which a loop will iterate over the values of 1 then 2, etc.... The numbers
   may be viewed as corresponding to a color. 
   
   --------[RAJA Concepts]---------
@@ -88,7 +88,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy(init.begin(), init.end(), A);
    
   /*
-    Instance of an IndexSet
+    In this implementation the 
   */
   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type> > colorset;
 
