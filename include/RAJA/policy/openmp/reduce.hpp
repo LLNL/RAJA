@@ -82,7 +82,7 @@ namespace RAJA
 template <typename T>
 class ReduceMin<omp_reduce, T>
 {
-  static constexpr const RAJA::reduce::min<T> Reduce{};
+  using Reduce = RAJA::reduce::min<T>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -118,7 +118,7 @@ public:
     if (m_parent) {
 #pragma omp critical
       {
-        Reduce(m_parent->m_val, m_val);
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
@@ -141,7 +141,7 @@ public:
    */
   RAJA_HOST_DEVICE const ReduceMin &min(T rhs) const
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -151,7 +151,7 @@ public:
    */
   RAJA_HOST_DEVICE ReduceMin &min(T rhs)
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -171,7 +171,7 @@ private:
 template <typename T>
 class ReduceMinLoc<omp_reduce, T>
 {
-  static constexpr const RAJA::reduce::minloc<T, Index_type> Reduce{};
+  using Reduce = RAJA::reduce::minloc<T, Index_type>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -209,7 +209,7 @@ public:
     if (m_parent) {
 #pragma omp critical
       {
-        Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+        Reduce()(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
       }
     }
   }
@@ -238,7 +238,7 @@ public:
    */
   RAJA_HOST_DEVICE const ReduceMinLoc &minloc(T rhs, Index_type idx) const
   {
-    Reduce(m_val, m_idx, rhs, idx);
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
@@ -248,7 +248,7 @@ public:
    */
   RAJA_HOST_DEVICE ReduceMinLoc &minloc(T rhs, Index_type idx)
   {
-    Reduce(m_val, m_idx, rhs, idx);
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
@@ -269,7 +269,7 @@ private:
 template <typename T>
 class ReduceMax<omp_reduce, T>
 {
-  static constexpr const RAJA::reduce::max<T> Reduce{};
+  using Reduce = RAJA::reduce::max<T>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -305,7 +305,7 @@ public:
     if (m_parent) {
 #pragma omp critical
       {
-        Reduce(m_parent->m_val, m_val);
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
@@ -328,7 +328,7 @@ public:
    */
   RAJA_HOST_DEVICE const ReduceMax &max(T rhs) const
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -338,7 +338,7 @@ public:
    */
   RAJA_HOST_DEVICE ReduceMax &max(T rhs)
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -358,7 +358,7 @@ private:
 template <typename T>
 class ReduceSum<omp_reduce, T>
 {
-  static constexpr const RAJA::reduce::sum<T> Reduce{};
+  using Reduce = RAJA::reduce::sum<T>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -396,7 +396,7 @@ public:
     if (m_parent) {
 #pragma omp critical
       {
-        Reduce(m_parent->m_val, m_val);
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
@@ -419,7 +419,7 @@ public:
    */
   RAJA_HOST_DEVICE const ReduceSum &operator+=(T rhs) const
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -429,7 +429,7 @@ public:
    */
   RAJA_HOST_DEVICE ReduceSum &operator+=(T rhs)
   {
-    Reduce(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
@@ -450,7 +450,7 @@ private:
 template <typename T>
 class ReduceMaxLoc<omp_reduce, T>
 {
-  static constexpr const RAJA::reduce::maxloc<T, Index_type> Reduce{};
+  using Reduce = RAJA::reduce::maxloc<T, Index_type>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -488,7 +488,7 @@ public:
     if (m_parent) {
 #pragma omp critical
       {
-        Reduce(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+        Reduce()(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
       }
     }
   }
@@ -517,7 +517,7 @@ public:
    */
   RAJA_HOST_DEVICE const ReduceMaxLoc &maxloc(T rhs, Index_type idx) const
   {
-    Reduce(m_val, m_idx, rhs, idx);
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
@@ -527,7 +527,7 @@ public:
    */
   RAJA_HOST_DEVICE ReduceMaxLoc &maxloc(T rhs, Index_type idx)
   {
-    Reduce(m_val, m_idx, rhs, idx);
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
