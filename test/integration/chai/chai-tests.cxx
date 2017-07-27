@@ -7,7 +7,7 @@
 #include <iostream>
 
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 
 #define CUDA_TEST(X, Y) \
   static void cuda_test_ ## X ## Y();\
@@ -31,7 +31,7 @@ CUDA_TEST(ChaiTest, Simple) {
   std::cout << "end of loop 1" << std::endl;
 
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
   RAJA::forall<RAJA::cuda_exec<16> >(0, 10, [=] __device__ (int i) {
       v2[i] = v1[i]*2.0f;
   });
@@ -48,7 +48,7 @@ CUDA_TEST(ChaiTest, Simple) {
   });
 
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
   RAJA::forall<RAJA::cuda_exec<16> >(0, 10, [=] __device__ (int i) {
       v2[i] *= 2.0f;
   });
@@ -77,7 +77,7 @@ CUDA_TEST(ChaiTest, Views) {
       v1(i) = static_cast<float>(i * 1.0f);
   });
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
   RAJA::forall<RAJA::cuda_exec<16> >(0, 10, [=] __device__ (int i) {
       v2(i) = v1(i)*2.0f;
   });
@@ -92,7 +92,7 @@ CUDA_TEST(ChaiTest, Views) {
   });
 
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
   RAJA::forall<RAJA::cuda_exec<16> >(0, 10, [=] __device__ (int i) {
       v2(i) *= 2.0f;
   });

@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -417,6 +417,6 @@ struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_ENABLE_TARGET_OPENMP guard
+#endif  // closing endif for ENABLE_TARGET_OPENMP guard
 
 #endif  // closing endif for header file include guard

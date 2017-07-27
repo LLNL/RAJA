@@ -15,7 +15,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -71,11 +71,11 @@
 
 #include "RAJA/policy/openmp/forallN.hpp"
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp/target_forall.hpp"
 #include "RAJA/policy/openmp/target_reduce.hpp"
 #endif
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif  // closing endif for if defined(ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

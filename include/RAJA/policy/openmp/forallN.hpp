@@ -13,7 +13,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -221,6 +221,6 @@ RAJA_INLINE void forallN_policy(detail::ForallN_OMP_Parallel_Tag,
 
 }  // namespace RAJA
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+#endif  // closing endif for if defined(ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

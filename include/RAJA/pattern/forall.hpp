@@ -106,7 +106,7 @@
 
 #include "RAJA/policy/fwd.hpp"
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 
 #include "chai/ArrayManager.hpp"
@@ -204,7 +204,7 @@ namespace wrap
 template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
 RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
 {
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   auto space = detail::get_space<
       typename std::remove_reference<decltype(p)>::type>::value;
@@ -216,7 +216,7 @@ RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body)
                std::forward<Container>(c),
                body);
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -244,7 +244,7 @@ forall_Icount(EXEC_POLICY_T&& p,
       std::is_base_of<std::random_access_iterator_tag, category>::value,
       "Iterators passed to RAJA must be Random Access or Contiguous iterators");
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(detail::get_space<EXEC_POLICY_T>::value);
 #endif
@@ -255,7 +255,7 @@ forall_Icount(EXEC_POLICY_T&& p,
                       icount,
                       body);
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -273,7 +273,7 @@ RAJA_INLINE void forall(const ExecPolicy& p,
                         LoopBody loop_body)
 {
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(detail::get_space<ExecPolicy>::value);
 #endif
@@ -281,7 +281,7 @@ RAJA_INLINE void forall(const ExecPolicy& p,
   typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
   impl::forall(p, c, body);
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -292,7 +292,7 @@ RAJA_INLINE void forall_Icount(const ExecPolicy& p,
                                LoopBody loop_body)
 {
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(detail::get_space<ExecPolicy>::value);
 #endif
@@ -300,7 +300,7 @@ RAJA_INLINE void forall_Icount(const ExecPolicy& p,
   typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
   impl::forall_Icount(p, c, body);
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }

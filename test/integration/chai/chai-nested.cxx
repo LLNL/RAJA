@@ -18,7 +18,7 @@
 #include <string>
 #include <vector>
 
-#define RAJA_ENABLE_NESTED 1
+#define ENABLE_NESTED 1
 
 #include "RAJA/RAJA.hpp"
 

@@ -11,7 +11,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -613,4 +613,4 @@ int getCudaSharedmemAmount(dim3 launchGridDim, dim3 launchBlockDim)
 
 }  // closing brace for RAJA namespace
 
-#endif  // if defined(RAJA_ENABLE_CUDA)
+#endif  // if defined(ENABLE_CUDA)

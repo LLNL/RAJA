@@ -79,11 +79,11 @@
 //
 #include "RAJA/policy/simd.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(ENABLE_OPENMP)
 #include "RAJA/policy/openmp.hpp"
 #endif
 

@@ -33,7 +33,7 @@ struct get_space_impl<Platform::host> {
   static constexpr chai::ExecutionSpace value = chai::CPU;
 };
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 template<>
 struct get_space_impl<Platform::cuda> {
   static constexpr chai::ExecutionSpace value = chai::GPU;

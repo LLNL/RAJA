@@ -97,7 +97,7 @@ using SequentialTypes = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 
 
-#if defined(RAJA_ENABLE_OPENMP)
+#if defined(ENABLE_OPENMP)
 using OpenMPTypes = ::testing::Types<
     ExecPolicy<seq_segit, omp_parallel_for_exec>,
     ExecPolicy<omp_parallel_for_segit, seq_exec>,

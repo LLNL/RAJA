@@ -168,7 +168,7 @@ struct Pol2dD {
   typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
 };
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
 
 // OpenMP/Sequential, IJ ordering
 struct Pol2dA_OMP {
@@ -225,7 +225,7 @@ void run2dTests(Index_type size_i, Index_type size_j)
   run2dTest<Pol2dC>("Pol2dC", size_i, size_j);
   run2dTest<Pol2dD>("Pol2dD", size_i, size_j);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   run2dTest<Pol2dA_OMP>("Pol2dA_OMP", size_i, size_j);
   run2dTest<Pol2dB_OMP>("Pol2dB_OMP", size_i, size_j);
   run2dTest<Pol2dC_OMP>("Pol2dC_OMP", size_i, size_j);
@@ -405,7 +405,7 @@ struct PolLTimesC {
   typedef RAJA::PERM_IJ ELL_PERM;
 };
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP {
@@ -477,7 +477,7 @@ void runLTimesTests(Index_type num_moments,
   runLTimesTest<PolLTimesC>(
       "PolLTimesC", num_moments, num_directions, num_groups, num_zones);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runLTimesTest<PolLTimesD_OMP>(
       "PolLTimesD_OMP", num_moments, num_directions, num_groups, num_zones);
   runLTimesTest<PolLTimesE_OMP>(

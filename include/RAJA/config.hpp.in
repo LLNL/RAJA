@@ -67,7 +67,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_ENABLE_FT
+#cmakedefine ENABLE_FT
 
 #define @RAJA_FP@
 #define @RAJA_PTR@
@@ -76,12 +76,12 @@
  * Programming models
  */
 
-#cmakedefine RAJA_ENABLE_OPENMP
-#cmakedefine RAJA_ENABLE_TARGET_OPENMP
-#cmakedefine RAJA_ENABLE_CUDA
-#cmakedefine RAJA_ENABLE_CLANG_CUDA
-#cmakedefine RAJA_ENABLE_CHAI
-#cmakedefine RAJA_ENABLE_CUB
+#cmakedefine ENABLE_OPENMP
+#cmakedefine ENABLE_TARGET_OPENMP
+#cmakedefine ENABLE_CUDA
+#cmakedefine ENABLE_CLANG_CUDA
+#cmakedefine ENABLE_CHAI
+#cmakedefine ENABLE_CUB
 
 /*
  * Timer options
@@ -192,7 +192,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 
@@ -214,7 +214,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 
@@ -245,7 +245,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 

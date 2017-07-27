@@ -14,7 +14,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -249,6 +249,6 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
 
 }  // namespace RAJA
 
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#endif  // closing endif for ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

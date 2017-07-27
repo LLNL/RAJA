@@ -176,7 +176,7 @@ void runMinReduceTests(Real_ptr in_array,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runBasicMinReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(
@@ -309,7 +309,7 @@ void runMinLocReduceTests(Real_ptr in_array,
                               seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runBasicMinLocReductionTest<ExecPolicy<seq_segit,
                                                    omp_parallel_for_exec>,
                               omp_reduce>(
@@ -440,7 +440,7 @@ void runMaxReduceTests(Real_ptr in_array,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runBasicMaxReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(
@@ -574,7 +574,7 @@ void runMaxLocReduceTests(Real_ptr in_array,
                               seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runBasicMaxLocReductionTest<ExecPolicy<seq_segit,
                                                    omp_parallel_for_exec>,
                               omp_reduce>(
@@ -692,7 +692,7 @@ void runSumReduceTests(Real_ptr in_array,
                            seq_reduce>(
       "ExecPolicy<seq_segit, simd_exec>", in_array, alen, iset, is_indices);
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
   runBasicSumReductionTest<ExecPolicy<seq_segit,
                                                 omp_parallel_for_exec>,
                            omp_reduce>(

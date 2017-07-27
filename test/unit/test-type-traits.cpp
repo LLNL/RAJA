@@ -50,7 +50,7 @@
 
 #include "gtest/gtest.h"
 
-#ifdef RAJA_ENABLE_OPENMP
+#ifdef ENABLE_OPENMP
 
 static_assert(!RAJA::is_sequential_policy<RAJA::omp_parallel_for_exec>::value,
               "");
@@ -61,7 +61,7 @@ static_assert(RAJA::is_sequential_policy<RAJA::seq_exec>::value, "");
 static_assert(!RAJA::is_openmp_policy<RAJA::seq_exec>::value, "");
 static_assert(!RAJA::is_cuda_policy<RAJA::seq_exec>::value, "");
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
 
 // check CUDA sync policies...
 static_assert(!RAJA::is_sequential_policy<RAJA::cuda_exec<128>>::value, "");

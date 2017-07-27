@@ -41,7 +41,11 @@
 #
 ###############################################################################
 
-raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
+blt_add_library(
+  NAME bis 
+  SOURCES buildIndexSet.cpp
+  HEADERS buildIndexSet.hpp
+  DEPENDS_ON RAJA ${raja_depends})
 
 raja_add_test(
   NAME test-reduce
@@ -52,7 +56,7 @@ raja_add_test(
   NAME test-nested
   SOURCES main-nested.cpp)
 
-if(RAJA_ENABLE_OPENMP)
+if(ENABLE_OPENMP)
   raja_add_test(
     NAME test-nested_reduce
     SOURCES main-nested-reduce.cpp)

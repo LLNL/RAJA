@@ -9,6 +9,6 @@ if (DOXYGEN_FOUND)
 endif()
 
 if ( NOT SPHINX_FOUND AND NOT DOXGEN_FOUND)
-  message(WARNING "RAJA_ENABLE_DOCUMENTATION=On, but Sphinx or Doxygen not found. \
+  message(WARNING "ENABLE_DOCUMENTATION=On, but Sphinx or Doxygen not found. \
     Documentation won't be built.")
 endif ()

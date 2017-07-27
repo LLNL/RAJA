@@ -59,7 +59,7 @@ raja_add_test(
   NAME test-GPUforall
   SOURCES forall.cpp)
 
-if(RAJA_ENABLE_OPENMP)
+if(ENABLE_OPENMP)
   raja_add_test(
     NAME test-GPUforallN
     SOURCES forallN.cpp)
@@ -78,7 +78,7 @@ raja_add_test(
   SOURCES forallN-strided.cpp
   DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
-if (NOT RAJA_ENABLE_CLANG_CUDA)
+if (NOT ENABLE_CLANG_CUDA)
   raja_add_test(
     NAME test-GPUscan
     SOURCES test-scan.cpp

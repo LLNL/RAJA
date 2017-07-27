@@ -96,7 +96,7 @@ struct omp_for_nowait_exec
                                        RAJA::Pattern::forall> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 template <size_t Teams>
 struct omp_target_parallel_for_exec
     : public RAJA::make_policy_pattern<RAJA::Policy::target_openmp,
@@ -136,7 +136,7 @@ struct omp_reduce : public RAJA::make_policy_pattern<RAJA::Policy::openmp,
                                                      RAJA::Pattern::reduce> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 template <size_t Teams>
 struct omp_target_reduce
     : public RAJA::make_policy_pattern<RAJA::Policy::target_openmp,

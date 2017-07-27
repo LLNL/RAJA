@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.

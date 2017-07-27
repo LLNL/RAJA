@@ -53,13 +53,13 @@ if (NOT MSVC)
     SOURCES test-timer.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
-  if(RAJA_ENABLE_OPENMP)
+  if(ENABLE_OPENMP)
     raja_add_test(
             NAME test-multipolicy
             SOURCES test-multipolicy.cpp
             DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
     )
-  endif(RAJA_ENABLE_OPENMP)
+  endif(ENABLE_OPENMP)
   raja_add_test(
     NAME test-integral-limits
     SOURCES test-integral-limits.cpp
@@ -75,10 +75,10 @@ endif()
 
 add_subdirectory(cpu)
 
-if(RAJA_ENABLE_CUDA)
+if(ENABLE_CUDA)
   add_subdirectory(gpu)
 endif()
 
-if(RAJA_ENABLE_TARGET_OPENMP)
+if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
 endif()

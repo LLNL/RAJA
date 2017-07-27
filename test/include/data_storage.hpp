@@ -76,7 +76,7 @@ struct storage {
   static void ready() {}
 };
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
 
 template <typename Exec, typename T>
 struct storage<Exec, T, true> {
@@ -108,7 +108,7 @@ template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, true> : public storage_base {
   using type = T;
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
   static constexpr bool UseGPU = RAJA::is_cuda_policy<ExecPolicy>::value;
   using StorageType = typename internal::storage<ExecPolicy, T, UseGPU>;
 #else
@@ -137,7 +137,7 @@ template <typename ExecPolicy, typename T>
 struct storage<ExecPolicy, T, false> : public storage_base {
   using type = T;
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
   using StorageType =
       typename internal::storage<ExecPolicy,
                                  T,

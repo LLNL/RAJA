@@ -40,7 +40,7 @@
 #
 ###############################################################################
 
-if (NOT RAJA_ENABLE_CLANG_CUDA)
+if (NOT ENABLE_CLANG_CUDA)
   set(CMAKE_CXX_STANDARD 14)
 else()
   set(CMAKE_CXX_STANDARD 11)
@@ -51,7 +51,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
 
-if (RAJA_ENABLE_WARNINGS)
+if (ENABLE_WARNINGS)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
 endif ()
 
@@ -84,7 +84,7 @@ if ( MSVC )
   endif()
 endif()
 
-if (RAJA_ENABLE_CUDA)
+if (ENABLE_CUDA)
   if(CMAKE_BUILD_TYPE MATCHES Release)
     set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
   elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)

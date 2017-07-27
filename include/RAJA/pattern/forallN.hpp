@@ -59,11 +59,11 @@
 #include "RAJA/internal/type_traits.hpp"
 #include "RAJA/util/defines.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 #endif
 
@@ -271,13 +271,13 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
 template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
   // this call should be moved into a cuda file
   // but must be made before loop_body is copied
   beforeCudaKernelLaunch();
 #endif
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   chai::ArrayManager *rm = chai::ArrayManager::getInstance();
   rm->setExecutionSpace(detail::get_space<POLICY>::value);
 #endif
@@ -287,11 +287,11 @@ RAJA_INLINE void forallN(Ts &&... args)
       VarOps::make_index_sequence<sizeof...(args) - 1>{},
       VarOps::forward<Ts>(args)...);
 
-#if defined(RAJA_ENABLE_CHAI)
+#if defined(ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 
-#ifdef RAJA_ENABLE_CUDA
+#ifdef ENABLE_CUDA
   afterCudaKernelLaunch();
 #endif
 }

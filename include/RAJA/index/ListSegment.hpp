@@ -57,7 +57,7 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #endif
 
@@ -122,7 +122,7 @@ public:
     if (container.size() <= 0)
       return;
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
     cudaErrchk(cudaMallocManaged((void**)&m_data,
                                  m_size * sizeof(T),
                                  cudaMemAttachGlobal));
@@ -184,7 +184,7 @@ public:
   ~TypedListSegment()
   {
     if (m_data != nullptr && m_owned == Owned) {
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
       cudaErrchk(cudaFree(m_data));
 #else
       delete[] m_data;
@@ -271,7 +271,7 @@ private:
       m_owned = container_own;
 
       if (m_owned == Owned) {
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
         cudaErrchk(cudaMallocManaged((void**)&m_data,
                                      m_size * sizeof(value_type),
                                      cudaMemAttachGlobal));

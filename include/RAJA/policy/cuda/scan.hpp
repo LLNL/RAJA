@@ -13,7 +13,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -62,7 +62,7 @@
 #include <iterator>
 #include <type_traits>
 
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
 #include "cub/device/device_scan.cuh"
 #include "cub/util_allocator.cuh"
 #else
@@ -79,7 +79,7 @@ namespace impl
 namespace scan
 {
 
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
 RAJA_INLINE::cub::CachingDeviceAllocator& getAllocator()
 {
   static ::cub::CachingDeviceAllocator allocator(true);
@@ -97,7 +97,7 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        InputIter end,
                        Function binary_op)
 {
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -133,7 +133,7 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                        Function binary_op,
                        T init)
 {
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -170,7 +170,7 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                OutputIter out,
                Function binary_op)
 {
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -208,7 +208,7 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
                Function binary_op,
                T init)
 {
-#if defined(RAJA_ENABLE_CUB)
+#if defined(ENABLE_CUB)
   int len = std::distance(begin, end);
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
@@ -235,6 +235,6 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#endif  // closing endif for ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

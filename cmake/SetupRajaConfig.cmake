@@ -48,7 +48,7 @@ option(RAJA_USE_FLOAT Off)
 option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
-if (RAJA_ENABLE_CUDA)
+if (ENABLE_CUDA)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -59,7 +59,7 @@ endif()
 #set(RAJA_USE_PTR_CLASS OFF)
 
 ## Fault tolerance options
-option(RAJA_ENABLE_FT "Enable fault-tolerance features" OFF)
+option(ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
 
 ## Timer options
@@ -104,7 +104,7 @@ if(PKG_CONFIG_FOUND)
   foreach(INCDIR ${INCLUDE_DIRECTORIES} ${CUDA_INCLUDE_DIRS})
     set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
   endforeach()
-  if(RAJA_ENABLE_CUDA)
+  if(ENABLE_CUDA)
     foreach(FLAG ${RAJA_NVCC_FLAGS})
       set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")
     endforeach()
