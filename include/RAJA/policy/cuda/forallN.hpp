@@ -66,8 +66,8 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
+#include "RAJA/internal/LegacyCompatibility.hpp"
 
 
 namespace RAJA
@@ -196,7 +196,8 @@ struct ForallN_Executor<device,
   }
 
   template <typename BODY, size_t... N>
-  RAJA_INLINE void unpackIndexSets(BODY body, VarOps::index_sequence<N...>) const
+  RAJA_INLINE void unpackIndexSets(BODY body,
+                                   VarOps::index_sequence<N...>) const
   {
     CudaDim dims;
 

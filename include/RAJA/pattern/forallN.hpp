@@ -56,10 +56,11 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/internal/type_traits.hpp"
 #include "RAJA/util/defines.hpp"
 
-#ifdef ENABLE_CUDA
+#include "RAJA/policy/PolicyBase.hpp"
+
+#if defined(ENABLE_CUDA)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
@@ -85,7 +86,7 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   typedef typename POLICY_INIT::POLICY POLICY_I;
 
   static constexpr bool build_device =
-      maybe_cuda ? 1 : is_cuda_policy<POLICY_I>::value;
+      maybe_cuda | type_traits::is_cuda_policy<POLICY_I>::value;
   typedef ForallN_Executor<build_device, POLICY_REST...> NextExec;
 
   POLICY_INIT const is_i;
@@ -279,7 +280,8 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #if defined(ENABLE_CHAI)
   chai::ArrayManager *rm = chai::ArrayManager::getInstance();
-  rm->setExecutionSpace(detail::get_space<POLICY>::value);
+  using EP = typename std::decay<POLICY>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
   fun_unpacker<POLICY, Indices...>(

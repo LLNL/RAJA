@@ -65,12 +65,6 @@ if (NOT MSVC)
     SOURCES test-integral-limits.cpp
     DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
   )
-
-  raja_add_test(
-    NAME test-type-traits
-    SOURCES test-type-traits.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
 endif()
 
 add_subdirectory(cpu)

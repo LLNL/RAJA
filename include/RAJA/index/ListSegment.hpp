@@ -87,7 +87,8 @@ class TypedListSegment
 public:
   //! value type for storage
   using value_type = T;
-  //! iterator type for storage (will always be a pointer and conform to RandomAccessIterator
+  //! iterator type for storage (will always be a pointer and conform to
+  //! RandomAccessIterator
   using iterator = T*;
 
   //! prevent compiler from providing a default constructor
@@ -119,8 +120,7 @@ public:
   explicit TypedListSegment(const Container& container)
       : m_data(0), m_size(container.size()), m_owned(Unowned)
   {
-    if (container.size() <= 0)
-      return;
+    if (container.size() <= 0) return;
 
 #if defined(ENABLE_CUDA)
     cudaErrchk(cudaMallocManaged((void**)&m_data,
@@ -223,7 +223,8 @@ public:
   //! get ownership of the data (Owned/Unowned)
   RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
-  //! checks a pointer and size (Span) for equality to all elements in the TypedListSegment
+  //! checks a pointer and size (Span) for equality to all elements in the
+  //! TypedListSegment
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {

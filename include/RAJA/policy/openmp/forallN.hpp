@@ -57,12 +57,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/util/types.hpp"
 
-#include <type_traits>
 #include <omp.h>
+#include <type_traits>
 
 namespace RAJA
 {
@@ -83,7 +83,7 @@ using CollapsePolPair = ForallN_PolicyPair<omp_collapse_nowait_exec, Iter>;
 template <typename T>
 using no_const = typename std::remove_const<T>::type;
 
-} // closing brace for namespace detail
+}  // closing brace for namespace detail
 
 template <typename NEXT = Execute>
 struct OMP_Parallel {
@@ -160,12 +160,11 @@ struct ForallN_Executor<false,
   NextExec next_exec;
 
   RAJA_INLINE
-  constexpr ForallN_Executor(
-      detail::CollapsePolPair<Iterable1> const &i,
-      detail::CollapsePolPair<Iterable2> const &j,
-      detail::CollapsePolPair<Iterable3> const &k,
-      PREST... prest)
-    : iset_i(i), iset_j(j), iset_k(k), next_exec(prest...)
+  constexpr ForallN_Executor(detail::CollapsePolPair<Iterable1> const &i,
+                             detail::CollapsePolPair<Iterable2> const &j,
+                             detail::CollapsePolPair<Iterable3> const &k,
+                             PREST... prest)
+      : iset_i(i), iset_j(j), iset_k(k), next_exec(prest...)
   {
   }
 
@@ -213,7 +212,7 @@ RAJA_INLINE void forallN_policy(detail::ForallN_OMP_Parallel_Tag,
   using NextPolicy = typename POLICY::NextPolicy;
   using NextPolicyTag = typename POLICY::NextPolicy::PolicyTag;
 
-  #pragma omp parallel firstprivate(body)
+#pragma omp parallel firstprivate(body)
   {
     forallN_policy<NextPolicy>(NextPolicyTag(), body, pargs...);
   }

@@ -57,7 +57,6 @@
 
 #include <cstdlib>
 #include <stdexcept>
-#include <cstdlib>
 
 //
 // Macros for decorating host/device functions for CUDA kernels.
