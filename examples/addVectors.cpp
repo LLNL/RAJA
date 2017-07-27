@@ -70,7 +70,8 @@ void checkSolution(int *C, int in_N);
   [=] Pass by copy
   [&] Pass by reference
   RAJA::exec_policy  - specifies how the traversal occurs
-  RAJA::Range - provides a list on which the Raja loop my iterate on
+  RAJA::Range - Provides a list of iterables for an index of the loop
+
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {

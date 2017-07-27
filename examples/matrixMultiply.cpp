@@ -62,7 +62,6 @@ const int NN = N*N;
 
 
 const int DIM = 2;
-int index(int N, int row, int col);
 
 template<typename T>
 void checkSolution(T *C, int in_N);
@@ -75,8 +74,25 @@ void checkSolution(T *C, int in_N);
 
   -----[RAJA Concepts]-------------
   1. Nesting of forall loops (Not currently supported in CUDA)
-  2. ForallN variant of the RAJA loop
-  3. RAJA View
+
+  2. ForallN loop  
+
+  RAJA::forallN<
+  RAJA::NestedPolicy<RAJA::exec_policy, .... ,RAJA::exec_policy> > 
+  (RAJA::Range1,...,RAJA::RangeN,[=](index i1,..., index iN) {
+
+         //body
+
+  });
+
+  [=] Pass by copy
+  [&] Pass by reference
+  RAJA::NestedPolicy - List of execution policies for the loops
+  RAJA::exec_policy  - Specifies how the traversal occurs
+  RAJA::Range - Provides a list of iterables for an index of the loop
+    
+  3. RAJA View - RAJA's Multidimensional Array
+
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -149,6 +165,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     });
   });
   checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
+
 
   printf("RAJA: Sequential Policy RAJA - forallN \n");
   /*
