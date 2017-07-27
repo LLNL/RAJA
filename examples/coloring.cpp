@@ -90,7 +90,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   /*
     Instance of an IndexSet
   */
-  RAJA::IndexSet colorset;
+  RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type> > colorset;
 
   /*
     RAJA::View for multi-dimensional array
