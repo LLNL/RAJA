@@ -45,13 +45,14 @@ raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
 
 raja_add_test(
   NAME test-reduce
-  SOURCES main-reduce.cpp
-  DEPENDS_ON bis)
+  SOURCES test-reduce.cpp
+  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 raja_add_test(
   NAME test-nested
-  SOURCES main-nested.cpp)
-  
+  SOURCES test-nested.cpp)
+#  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
 raja_add_test(
   NAME test-segments
   SOURCES test-segments.cpp
@@ -60,7 +61,8 @@ raja_add_test(
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
     NAME test-nested_reduce
-    SOURCES main-nested-reduce.cpp)
+    SOURCES test-nested-reduce.cpp)
+#    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 endif()
 
 raja_add_test(
