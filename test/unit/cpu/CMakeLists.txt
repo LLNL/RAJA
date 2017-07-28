@@ -55,6 +55,11 @@ raja_add_test(
 raja_add_test(
   NAME test-nested
   SOURCES main-nested.cpp)
+  
+raja_add_test(
+  NAME test-segments
+  SOURCES test-segments.cpp
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 if(ENABLE_OPENMP)
   raja_add_test(
