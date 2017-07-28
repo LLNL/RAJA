@@ -142,15 +142,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+
 void checkSolution(int *C, int in_N)
 {
  
   for (int i = 0; i < in_N; ++i) {
-    if ((C[i] - (i + i)) > 1e-9) {
+    if ( abs(C[i]-(i+i) ) != 0) {
       printf("Error in Result \n \n");
       return;
     }
   }
-
-  printf("Correct Result \n \n");
+    printf("Correct Result \n \n");
 }
