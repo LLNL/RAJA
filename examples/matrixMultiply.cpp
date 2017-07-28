@@ -51,7 +51,7 @@
 
 #include "memoryManager.hpp"
 
-//Matrix is assumed to be N x N
+//Matrix dimensions are assumed to be N x N
 const int N  = 1000;
 const int NN = N*N;
 
@@ -64,7 +64,9 @@ void checkSolution( RAJA::View< T, RAJA::Layout<DIM> > Cview, int in_N);
   Example 2: Multiplying Two Matrices
 
   ----[Details]--------------------
-  Multiplies two N x N matrices
+  This example illustrates how RAJA may be 
+  gradually introduced into codes 
+ 
 
   -----[RAJA Concepts]-------------
   1. Nesting of forall loops (Not currently supported in CUDA)
@@ -83,9 +85,9 @@ void checkSolution( RAJA::View< T, RAJA::Layout<DIM> > Cview, int in_N);
   [&] Pass by reference
   RAJA::NestedPolicy - List of execution policies for the loops
   RAJA::exec_policy  - Specifies how the traversal occurs
-  RAJA::Range - Provides a list of iterables for an index of the loop
+  RAJA::Range - List of iterables for an index of the loop
     
-  3. RAJA View - RAJA's Multidimensional Array
+  3. RAJA::View - RAJA's Multidimensional Array
 
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -102,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
   /*
-    RAJA::View - Introduces Multidimensional arrays
+    RAJA::View - RAJA's multidimensional arrays
   */  
 
   RAJA::View<double, RAJA::Layout<DIM> > Aview(A, N, N);
@@ -114,7 +116,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int col = 0; col < N; ++col) {
 
       double dot = 0.0;
-
       for (int k = 0; k < N; ++k) {
         dot += Aview(row,k)*Bview(k,col);
       }
@@ -124,9 +125,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   checkSolution<double>(Cview, N);
 
+  /*
+    RAJA bounds may be specified prior to forall statements
+  */
+  RAJA::RangeSegment matBounds(0,N);  
 
   printf("RAJA: Sequential Policy - Single forall \n");  
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int row) {
+  RAJA::forall<RAJA::seq_exec>(matBounds, [=](RAJA::Index_type row) {
       for(int col = 0; col < N; ++col){
         
         double dot = 0.0;
@@ -144,17 +149,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /*
     Forall loops may be nested under sequential and omp policies
   */
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int row) {
-    RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=](int col) {
+  RAJA::forall<RAJA::seq_exec>(matBounds, [=](RAJA::Index_type row) {
+      RAJA::forall<RAJA::seq_exec>(matBounds, [=](RAJA::Index_type col) {
 
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {
-        dot += Aview(row,k)*Bview(k,col);
-      }
-      
-      Cview(row,col) = dot;
+          double dot = 0.0;
+          for (int k = 0; k < N; ++k) {
+            dot += Aview(row,k)*Bview(k,col);
+          }
+          
+          Cview(row,col) = dot;
+        });
     });
-  });
   checkSolution<double>(Cview, N);
 
 
@@ -163,8 +168,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Nested forall loops may be collapsed into a single forallN loop
   */
   RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
-                                                  RAJA::seq_exec>>>(
-  RAJA::RangeSegment(0,N), RAJA::RangeSegment(0,N), [=](int row, int col) {
+    RAJA::seq_exec>>>(matBounds,matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
 
         double dot = 0.0;
         for (int k = 0; k < N; ++k) {
@@ -184,15 +188,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     is executed sequentially
   */
   RAJA::forallN<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_parallel_for_exec,
-                                                  RAJA::seq_exec>>>(
-      RAJA::RangeSegment(0, N), RAJA::RangeSegment(0, N), [=](int row, int col) {
-
+    RAJA::seq_exec>>>(matBounds,matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
+                      
         double dot = 0.0;
-
         for (int k = 0; k < N; ++k) {
           
           dot += Aview(row,col) * Bview(row,col);
         }
+
         Cview(row,col) = dot;
       });
   checkSolution<double>(Cview, N);
@@ -207,19 +210,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   RAJA::forallN<RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::cuda_threadblock_y_exec<16>,    
-    RAJA::cuda_threadblock_x_exec<16>>>>(
-          RAJA::RangeSegment(0, N),
-          RAJA::RangeSegment(0, N),
-          [=] __device__(int row, int col) {
-            
-            double dot = 0.0;
+    RAJA::cuda_threadblock_x_exec<16>>>>(matBounds, matBounds, [=] __device__(RAJA::Index_type row, RAJA::Index_type col) {
 
-            for (int k = 0; k < N; ++k) {
+        double dot = 0.0;
+        for (int k = 0; k < N; ++k) {
+          
+          dot += Aview(row,k) * Bview(k,col);
+        }
 
-              dot += Aview(row,k) * Bview(k,col);
-            }
-            Cview(row,col) = dot; 
-          });
+        Cview(row,col) = dot; 
+      });
   cudaDeviceSynchronize();
   checkSolution<double>(Cview, N);
 #endif

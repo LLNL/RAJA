@@ -49,6 +49,7 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/index/RangeSegment.hpp"
 
+const int DIM = 2;
 
 /*
   Example 5: Custom Index Set
@@ -93,9 +94,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type> > colorset;
 
   /*
-    RAJA::View - enables multidimensional indexing on arrays
+    RAJA::View - RAJA's multidimensional array
    */
-  int DIM = 2; //Specify the dimension of the array
   RAJA::View<int,RAJA::Layout<DIM>> Aview(A, n, n);
   
   /*
