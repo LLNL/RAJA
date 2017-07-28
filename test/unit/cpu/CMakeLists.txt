@@ -50,8 +50,8 @@ raja_add_test(
 
 raja_add_test(
   NAME test-nested
-  SOURCES test-nested.cpp)
-#  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  SOURCES test-nested.cpp
+  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 raja_add_test(
   NAME test-segments

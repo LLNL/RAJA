@@ -70,7 +70,7 @@ endif()
 add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)
-  add_subdirectory(gpu)
+  add_subdirectory(cuda)
 endif()
 
 if(RAJA_ENABLE_TARGET_OPENMP)

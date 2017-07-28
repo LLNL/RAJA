@@ -46,192 +46,121 @@
 
 #include <time.h>
 #include <cmath>
-#include <cmath>
 #include <cstdlib>
 
 #include <iostream>
 #include <random>
-#include <string>
+#include <utility>
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
 
 using namespace RAJA;
-using namespace std;
 
-#include "Compare.hpp"
+#include "../../include/type_helper.hpp"
 
-//
-// Global variables for counting tests executed/passed.
-//
-unsigned s_ntests_run_total = 0;
-unsigned s_ntests_passed_total = 0;
+template <typename Perm>
+struct PermuteOnly {
+  using VIEW = View<Index_type, Layout<2>>;
+  using PERM = Perm;
+  using TILE = Permute<PERM>;
+};
 
-unsigned s_ntests_run = 0;
-unsigned s_ntests_passed = 0;
+template <typename Perm>
+struct SingleTile {
+  using VIEW = View<Index_type, Layout<2>>;
+  using PERM = Perm;
+  using TILE = Tile<TileList<tile_fixed<8>, tile_fixed<16>>,
+                    typename PermuteOnly<PERM>::TILE>;
+};
 
-///////////////////////////////////////////////////////////////////////////
-//
-// Method that defines and runs a basic RAJA 2d kernel test
-//
-///////////////////////////////////////////////////////////////////////////
+template <typename Perm>
+struct NestedTile {
+  using VIEW = View<Index_type, Layout<2>>;
+  using PERM = Perm;
+  using TILE = Tile<TileList<tile_fixed<32>, tile_fixed<32>>,
+                    typename SingleTile<PERM>::TILE>;
+};
+
+template <typename Transform, typename... Exec>
+struct ExecInfo : public Transform {
+  using EXEC = NestedPolicy<ExecList<Exec...>, typename Transform::TILE>;
+};
+
+#if defined(RAJA_ENABLE_OPENMP)
+template <typename Transform, typename... Exec>
+struct OMPExecInfo : public Transform {
+  using EXEC =
+      NestedPolicy<ExecList<Exec...>, OMP_Parallel<typename Transform::TILE>>;
+};
+#endif
+
+using PERMS = std::tuple<PERM_IJ, PERM_JI>;
+
+template <typename PERM>
+using TRANSFORMS =
+    std::tuple<PermuteOnly<PERM>, SingleTile<PERM>, NestedTile<PERM>>;
+
+template <typename TRANSFORMS>
+using POLICIES =
+#if defined(RAJA_ENABLE_OPENMP)
+    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
+               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
+               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>>;
+#else
+    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, simd_exec>>;
+#endif
+
+using InstPolicies =
+    ForTesting<tt::apply_t<POLICIES, tt::apply_t<TRANSFORMS, PERMS>>>;
+
 template <typename POL>
-void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
+class NestedTest : public ::testing::Test
 {
-  cout << "\n Test2d " << size_i << "x" << size_j
-       << " array reduction for policy " << policy << "\n";
+public:
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+};
 
-  std::vector<Index_type> values(size_i * size_j, 1);
+TYPED_TEST_CASE_P(NestedTest);
 
-  s_ntests_run++;
-  s_ntests_run_total++;
+TYPED_TEST_P(NestedTest, Nested2DTest)
+{
+  using POL = TypeParam;
+  using Policy = typename POL::EXEC;
+  using View = typename POL::VIEW;
 
-  ////
-  //// DO WORK
-  ////
+  using Pair = std::pair<Index_type, Index_type>;
 
-  typename POL::VIEW val_view(&values[0],
-                              make_permuted_layout({size_i, size_j},
-                                                   POL::PERM::value));
+  for (auto size : {Pair(128, 1024), Pair(37, 1)}) {
 
-  forallN<typename POL::EXEC>(RangeSegment(1, size_i),
-                              RangeSegment(0, size_j),
-                              [=](Index_type i, Index_type j) {
-                                val_view(0, j) += val_view(i, j);
-                              });
+    Index_type size_i = std::get<0>(size);
+    Index_type size_j = std::get<1>(size);
 
-  ////
-  //// CHECK ANSWER
-  ////
-  size_t nfailed = 0;
-  forallN<NestedPolicy<ExecList<seq_exec, seq_exec>>>(
-      RangeSegment(0, size_i),
-      RangeSegment(0, size_j),
-      [&](Index_type i, Index_type j) {
-        if (i == 0) {
-          if (val_view(i, j) != size_i) {
-            ++nfailed;
-          }
-        } else {
-          if (val_view(i, j) != 1) {
-            ++nfailed;
-          }
-        }
-      });
+    std::vector<Index_type> v(size_i * size_j, 1);
+    View view(v.data(),
+              make_permuted_layout({{size_i, size_j}}, POL::PERM::value));
 
-  if (nfailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
+    forallN<Policy>(RangeSegment(1, size_i),
+                    RangeSegment(0, size_j),
+                    [=](Index_type i, Index_type j) {
+                      view(0, j) += view(i, j);
+                    });
 
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
+    for (Index_type i = 0; i < size_i; ++i)
+      for (Index_type j = 0; j < size_j; ++j)
+        ASSERT_EQ((i == 0) ? size_i : 1, view(i, j));
   }
 }
 
-// Sequential, IJ ordering
-struct Pol2dA {
-  typedef NestedPolicy<ExecList<seq_exec, seq_exec>, Permute<PERM_IJ>> EXEC;
+REGISTER_TYPED_TEST_CASE_P(NestedTest, Nested2DTest);
 
-  typedef RAJA::PERM_IJ PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// SIMD, JI ordering
-struct Pol2dB {
-  typedef NestedPolicy<ExecList<simd_exec, seq_exec>, Permute<PERM_JI>> EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// SIMD, Tiled JI ordering
-struct Pol2dC {
-  typedef NestedPolicy<ExecList<simd_exec, seq_exec>,
-                       Tile<TileList<tile_fixed<8>, tile_fixed<16>>,
-                            Permute<PERM_JI>>>
-      EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// SIMD, Two-level tiled JI ordering
-struct Pol2dD {
-  typedef NestedPolicy<ExecList<simd_exec, seq_exec>,
-                       Tile<TileList<tile_fixed<32>, tile_fixed<32>>,
-                            Tile<TileList<tile_fixed<8>, tile_fixed<16>>,
-                                 Permute<PERM_JI>>>>
-      EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-#ifdef RAJA_ENABLE_OPENMP
-
-// OpenMP/Sequential, IJ ordering
-struct Pol2dA_OMP {
-  typedef NestedPolicy<ExecList<seq_exec, omp_parallel_for_exec>,
-                       Permute<PERM_IJ>>
-      EXEC;
-
-  typedef RAJA::PERM_IJ PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// OpenMP/SIMD, JI ordering, nowait
-struct Pol2dB_OMP {
-  typedef NestedPolicy<ExecList<simd_exec, omp_for_nowait_exec>,
-                       OMP_Parallel<Permute<PERM_JI>>>
-      EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// OpenMP/SIMD, Tiled JI ordering, nowait
-struct Pol2dC_OMP {
-  typedef NestedPolicy<ExecList<simd_exec, omp_for_nowait_exec>,
-                       OMP_Parallel<Tile<TileList<tile_fixed<8>,
-                                                  tile_fixed<16>>,
-                                         Permute<PERM_JI>>>>
-      EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-// OpenMP/SIMD, Two-level tiled JI ordering, nowait
-struct Pol2dD_OMP {
-  typedef NestedPolicy<ExecList<simd_exec, omp_for_nowait_exec>,
-                       OMP_Parallel<Tile<TileList<tile_fixed<32>,
-                                                  tile_fixed<32>>,
-                                         Tile<TileList<tile_fixed<8>,
-                                                       tile_fixed<16>>,
-                                              Permute<PERM_JI>>>>>
-      EXEC;
-
-  typedef RAJA::PERM_JI PERM;
-  typedef RAJA::View<RAJA::Index_type, Layout<2>> VIEW;
-};
-
-#endif
-
-void run2dTests(Index_type size_i, Index_type size_j)
-{
-  run2dTest<Pol2dA>("Pol2dA", size_i, size_j);
-  run2dTest<Pol2dB>("Pol2dB", size_i, size_j);
-  run2dTest<Pol2dC>("Pol2dC", size_i, size_j);
-  run2dTest<Pol2dD>("Pol2dD", size_i, size_j);
-
-#ifdef RAJA_ENABLE_OPENMP
-  run2dTest<Pol2dA_OMP>("Pol2dA_OMP", size_i, size_j);
-  run2dTest<Pol2dB_OMP>("Pol2dB_OMP", size_i, size_j);
-  run2dTest<Pol2dC_OMP>("Pol2dC_OMP", size_i, size_j);
-  run2dTest<Pol2dD_OMP>("Pol2dD_OMP", size_i, size_j);
-#endif
-}
+INSTANTIATE_TYPED_TEST_CASE_P(Nested2D, NestedTest, InstPolicies);
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -249,280 +178,174 @@ RAJA_INDEX_VALUE(IDirection, "IDirection");
 RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
-template <typename POL>
-void runLTimesTest(std::string const &policy,
-                   Index_type num_moments,
-                   Index_type num_directions,
-                   Index_type num_groups,
-                   Index_type num_zones)
-{
-  cout << "\n TestLTimes " << num_moments << " moments, " << num_directions
-       << " directions, " << num_groups << " groups, and " << num_zones
-       << " zones"
-       << " with policy " << policy << "\n";
-
-  s_ntests_run++;
-  s_ntests_run_total++;
-
-  // allocate data
-  // phi is initialized to all zeros, the others are randomized
-  std::vector<double> ell_data(num_moments * num_directions);
-  std::vector<double> psi_data(num_directions * num_groups * num_zones);
-  std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
-
-  std::random_device rand;
-  std::mt19937 gen(rand());
-  std::uniform_real_distribution<double> rand_gen(0.0, 1.0);
-
-  // randomize data
-  for (size_t i = 0; i < ell_data.size(); ++i) {
-    ell_data[i] = rand_gen(gen);
-  }
-  for (size_t i = 0; i < psi_data.size(); ++i) {
-    psi_data[i] = rand_gen(gen);
-  }
-
-  // create views on data
-  typename POL::ELL_VIEW ell(&ell_data[0],
-                             make_permuted_layout({num_moments, num_directions},
-                                                  POL::ELL_PERM::value));
-  typename POL::PSI_VIEW psi(
-      &psi_data[0],
-      make_permuted_layout({num_directions, num_groups, num_zones},
-                           POL::PSI_PERM::value));
-  typename POL::PHI_VIEW phi(
-      &phi_data[0],
-      make_permuted_layout({num_moments, num_groups, num_zones},
-                           POL::PHI_PERM::value));
-
-  // get execution policy
-  using EXEC = typename POL::EXEC;
-
-  // do calculation using RAJA
-  forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
-      RangeSegment(0, num_moments),
-      RangeSegment(0, num_directions),
-      RangeSegment(0, num_groups),
-      RangeSegment(0, num_zones),
-      [=](IMoment m, IDirection d, IGroup g, IZone z) {
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
-      });
-
-  ////
-  //// CHECK ANSWER against the hand-written sequential kernel
-  ////
-  size_t nfailed = 0;
-  for (IZone z(0); z < num_zones; ++z) {
-    for (IGroup g(0); g < num_groups; ++g) {
-      for (IMoment m(0); m < num_moments; ++m) {
-        double total = 0.0;
-        for (IDirection d(0); d < num_directions; ++d) {
-          total += ell(m, d) * psi(d, g, z);
-        }
-
-        // check answer with some reasonable tolerance
-        if (fabs(total - phi(m, g, z)) > 1e-12) {
-          nfailed++;
-        }
-      }
-    }
-  }
-
-  if (nfailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
-  }
-}
+struct PolLTimesCommon {
+  // psi[direction, group, zone]
+  using PSI_VIEW = TypedView<double, Layout<3>, IDirection, IGroup, IZone>;
+  // phi[moment, group, zone]
+  using PHI_VIEW = TypedView<double, Layout<3>, IMoment, IGroup, IZone>;
+  // ell[moment, direction]
+  using ELL_VIEW = TypedView<double, Layout<2>, IMoment, IDirection>;
+};
 
 // Sequential
-struct PolLTimesA {
+struct PolLTimesA : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>> EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
-
-  typedef RAJA::PERM_IJK PSI_PERM;
-  typedef RAJA::PERM_IJK PHI_PERM;
-  typedef RAJA::PERM_IJ ELL_PERM;
+  using EXEC = NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>>;
+  using PSI_PERM = PERM_IJK;
+  using PHI_PERM = PERM_IJK;
+  using ELL_PERM = PERM_IJ;
 };
 
 // Sequential, reversed permutation
-struct PolLTimesB {
+struct PolLTimesB : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-                       Permute<PERM_LKJI>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
-
-  typedef RAJA::PERM_KJI PSI_PERM;
-  typedef RAJA::PERM_IJK PHI_PERM;
-  typedef RAJA::PERM_JI ELL_PERM;
+  using EXEC = NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+                            Permute<PERM_LKJI>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_IJK;
+  using ELL_PERM = PERM_JI;
 };
 
 // Sequential, Tiled, another permutation
-struct PolLTimesC {
+struct PolLTimesC : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-                       Tile<TileList<tile_none,
-                                     tile_none,
-                                     tile_fixed<64>,
-                                     tile_fixed<64>>,
-                            Permute<PERM_JKIL>>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
-
-  typedef RAJA::PERM_IJK PSI_PERM;
-  typedef RAJA::PERM_KJI PHI_PERM;
-  typedef RAJA::PERM_IJ ELL_PERM;
+  using EXEC = NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+                            Tile<TileList<tile_none,
+                                          tile_none,
+                                          tile_fixed<64>,
+                                          tile_fixed<64>>,
+                                 Permute<PERM_JKIL>>>;
+  using PSI_PERM = PERM_IJK;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
 };
 
 #ifdef RAJA_ENABLE_OPENMP
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
-struct PolLTimesD_OMP {
+struct PolLTimesD_OMP : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                seq_exec,
-                                omp_for_nowait_exec>,
-                       OMP_Parallel<Permute<PERM_LKIJ>>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
-
-  typedef RAJA::PERM_KJI PSI_PERM;
-  typedef RAJA::PERM_KJI PHI_PERM;
-  typedef RAJA::PERM_IJ ELL_PERM;
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, omp_for_nowait_exec>,
+                   OMP_Parallel<Permute<PERM_LKIJ>>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
 };
 
 // Same as D, but with tiling on zones and omp collapse on groups and zones
-struct PolLTimesE_OMP {
+struct PolLTimesE_OMP : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                omp_collapse_nowait_exec,
-                                omp_collapse_nowait_exec>,
-                       OMP_Parallel<Tile<TileList<tile_none,
-                                                  tile_none,
-                                                  tile_none,
-                                                  tile_fixed<16>>,
-                                         Permute<PERM_LKIJ,
-                                                 Execute  // implicit
-                                                 >>>>
-      EXEC;
-
-  // psi[direction, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
-      PSI_VIEW;
-
-  // phi[moment, group, zone]
-  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
-
-  // ell[moment, direction]
-  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
-
-  typedef RAJA::PERM_KJI PSI_PERM;
-  typedef RAJA::PERM_KJI PHI_PERM;
-  typedef RAJA::PERM_IJ ELL_PERM;
+  using EXEC = NestedPolicy<ExecList<seq_exec,
+                                     seq_exec,
+                                     omp_collapse_nowait_exec,
+                                     omp_collapse_nowait_exec>,
+                            OMP_Parallel<Tile<TileList<tile_none,
+                                                       tile_none,
+                                                       tile_none,
+                                                       tile_fixed<16>>,
+                                              Permute<PERM_LKIJ,
+                                                      Execute  // implicit
+                                                      >>>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
 };
 
 #endif
 
-void runLTimesTests(Index_type num_moments,
-                    Index_type num_directions,
-                    Index_type num_groups,
-                    Index_type num_zones)
-{
-  runLTimesTest<PolLTimesA>(
-      "PolLTimesA", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesB>(
-      "PolLTimesB", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesC>(
-      "PolLTimesC", num_moments, num_directions, num_groups, num_zones);
-
-#ifdef RAJA_ENABLE_OPENMP
-  runLTimesTest<PolLTimesD_OMP>(
-      "PolLTimesD_OMP", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesE_OMP>(
-      "PolLTimesE_OMP", num_moments, num_directions, num_groups, num_zones);
+using LTimesPolicies = ::testing::Types<PolLTimesA,
+                                        PolLTimesB,
+                                        PolLTimesC
+#if defined(RAJA_ENABLE_OPENMP)
+                                        ,
+                                        PolLTimesD_OMP,
+                                        PolLTimesE_OMP
 #endif
-}
+                                        >;
 
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Main Program.
-//
-///////////////////////////////////////////////////////////////////////////
-
-int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv))
+template <typename POL>
+class LTimesTest : public ::testing::Test
 {
-  ///////////////////////////////////////////////////////////////////////////
-  //
-  // Run RAJA::forall nested loop tests...
-  //
-  ///////////////////////////////////////////////////////////////////////////
+public:
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+};
 
-  // Run some 2d -> 1d reduction tests
-  run2dTests(128, 1024);
-  run2dTests(37, 1);
+TYPED_TEST_CASE_P(LTimesTest);
 
-  // Run some LTimes example tests (directions, groups, zones)
-  runLTimesTests(25, 96, 8, 32);
-  runLTimesTests(100, 15, 7, 13);
+TYPED_TEST_P(LTimesTest, LTimesNestedTest)
+{
+  using Args = std::array<Index_type, 4>;
+  using POL = TypeParam;
 
-  ///
-  /// Print total number of tests passed/run.
-  ///
-  cout << "\n All Tests : # passed / # run = " << s_ntests_passed_total << " / "
-       << s_ntests_run_total << endl;
+  for (auto versions : {Args{{25, 96, 8, 32}}, Args{{100, 15, 7, 13}}}) {
 
-  //
-  // Clean up....
-  //
+    Index_type num_moments = versions[0];
+    Index_type num_directions = versions[1];
+    Index_type num_groups = versions[2];
+    Index_type num_zones = versions[3];
 
-  cout << "\n DONE!!! " << endl;
+    // allocate data
+    // phi is initialized to all zeros, the others are randomized
+    std::vector<double> ell_data(num_moments * num_directions);
+    std::vector<double> psi_data(num_directions * num_groups * num_zones);
+    std::vector<double> phi_data(num_moments * num_groups * num_zones, 0.0);
 
-  if (s_ntests_passed_total == s_ntests_run_total) {
-    return 0;
-  } else {
-    return 1;
+    std::random_device rand;
+    std::mt19937 gen(rand());
+    std::uniform_real_distribution<double> rand_gen(0.0, 1.0);
+
+    // randomize data
+    for (size_t i = 0; i < ell_data.size(); ++i) {
+      ell_data[i] = rand_gen(gen);
+    }
+    for (size_t i = 0; i < psi_data.size(); ++i) {
+      psi_data[i] = rand_gen(gen);
+    }
+
+    // create views on data
+    typename POL::ELL_VIEW ell(&ell_data[0],
+                               make_permuted_layout({num_moments,
+                                                     num_directions},
+                                                    POL::ELL_PERM::value));
+    typename POL::PSI_VIEW psi(
+        &psi_data[0],
+        make_permuted_layout({num_directions, num_groups, num_zones},
+                             POL::PSI_PERM::value));
+    typename POL::PHI_VIEW phi(
+        &phi_data[0],
+        make_permuted_layout({num_moments, num_groups, num_zones},
+                             POL::PHI_PERM::value));
+
+    // get execution policy
+    using EXEC = typename POL::EXEC;
+
+    // do calculation using RAJA
+    forallN<EXEC, IMoment, IDirection, IGroup, IZone>(
+        RangeSegment(0, num_moments),
+        RangeSegment(0, num_directions),
+        RangeSegment(0, num_groups),
+        RangeSegment(0, num_zones),
+        [=](IMoment m, IDirection d, IGroup g, IZone z) {
+          phi(m, g, z) += ell(m, d) * psi(d, g, z);
+        });
+
+    // CHECK ANSWER against the hand-written sequential kernel
+    for (IZone z(0); z < num_zones; ++z) {
+      for (IGroup g(0); g < num_groups; ++g) {
+        for (IMoment m(0); m < num_moments; ++m) {
+          double total = 0.0;
+          for (IDirection d(0); d < num_directions; ++d) {
+            total += ell(m, d) * psi(d, g, z);
+          }
+          ASSERT_FLOAT_EQ(total, phi(m, g, z));
+        }
+      }
+    }
   }
 }
+
+REGISTER_TYPED_TEST_CASE_P(LTimesTest, LTimesNestedTest);
+
+INSTANTIATE_TYPED_TEST_CASE_P(LTimes, LTimesTest, LTimesPolicies);
