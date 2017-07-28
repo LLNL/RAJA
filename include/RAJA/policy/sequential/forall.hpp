@@ -87,8 +87,11 @@ namespace impl
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
+template <typename Exec, typename Iterable, typename Func>
+RAJA_INLINE concepts::enable_if<type_traits::is_sequential_policy<Exec>> forall(
+    Exec &&,
+    Iterable &&iter,
+    Func &&loop_body)
 {
   auto end = std::end(iter);
   for (auto ii = std::begin(iter); ii < end; ++ii) {
@@ -96,12 +99,10 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
   }
 }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+template <typename Exec, typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE concepts::enable_if<type_traits::is_sequential_policy<Exec>,
+                                type_traits::is_integral<IndexType>>
+forall_Icount(Exec &&, Iterable &&iter, IndexType icount, Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);

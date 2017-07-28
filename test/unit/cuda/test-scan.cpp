@@ -80,20 +80,11 @@ using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
 using InPlaceTypes = std::tuple<std::false_type, std::true_type>;
 
 template <typename T1, typename T2>
-using Cross = typename types::product<T1, T2>;
+using Cross = typename types::product<T1, T2>::type;
 
-using Types = Cross<Cross<ExecTypes, ReduceTypes>::type, InPlaceTypes>::type;
+using Types = Cross<Cross<ExecTypes, ReduceTypes>, InPlaceTypes>;
 
-template <typename T>
-struct ForTesting {
-};
-
-template <typename... Ts>
-struct ForTesting<std::tuple<Ts...>> {
-  using type = testing::Types<Ts...>;
-};
-
-using CrossTypes = ForTesting<Types>::type;
+using CrossTypes = ForTesting<Types>;
 
 
 // dispatchers

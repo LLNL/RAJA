@@ -722,7 +722,7 @@ RAJA_INLINE void CallForall::operator()(T const& segment,
                                         ExecutionPolicy,
                                         LoopBody body) const
 {
-  forall(ExecutionPolicy(), segment, body);
+  impl::forall(ExecutionPolicy(), segment, body);
 }
 
 constexpr CallForallIcount::CallForallIcount(int s) : start(s) {}
@@ -732,7 +732,7 @@ RAJA_INLINE void CallForallIcount::operator()(T const& segment,
                                               ExecutionPolicy,
                                               LoopBody body) const
 {
-  forall_Icount(ExecutionPolicy(), segment, start, body);
+  impl::forall_Icount(ExecutionPolicy(), segment, start, body);
 }
 
 }  // closing brace for impl namespace

@@ -44,89 +44,48 @@
 /// Source file containing test for nested reductions...
 ///
 
-#include <stdio.h>
 #include "RAJA/RAJA.hpp"
+#include "gtest/gtest.h"
 
-#include "RAJA/util/defines.hpp"
-
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
+template <typename Outer, typename Inner, typename Reduce>
+void test(int inner, int outer)
 {
-  int run = 0;
-  int passed = 0;
+  using limits = RAJA::operators::limits<double>;
+  RAJA::ReduceSum<Reduce, double> sum(0.0);
+  RAJA::ReduceMin<Reduce, double> min(limits::max());
+  RAJA::ReduceMax<Reduce, double> max(limits::min());
 
-  RAJA::Index_type const begin = 0;
-
-  RAJA::Index_type const xExtent = 10;
-  RAJA::Index_type const yExtent = 10;
-  RAJA::Index_type const area = xExtent * yExtent;
-
-  RAJA::ReduceSum<RAJA::omp_reduce, double> sumA(0.0);
-  RAJA::ReduceMin<RAJA::omp_reduce, double> minA(10000.0);
-  RAJA::ReduceMax<RAJA::omp_reduce, double> maxA(0.0);
-
-  RAJA::forall<RAJA::omp_parallel_for_exec>(begin, yExtent, [=](int y) {
-    RAJA::forall<RAJA::seq_exec>(begin, xExtent, [=](int x) {
-      sumA += double(y * xExtent + x + 1);
-      minA.min(double(y * xExtent + x + 1));
-      maxA.max(double(y * xExtent + x + 1));
+  RAJA::forall<Outer>(RAJA::make_range(0, outer), [=](int y) {
+    RAJA::forall<Inner>(RAJA::make_range(0, inner), [=](int x) {
+      double val = y * inner + x + 1;
+      sum += val;
+      min.min(val);
+      max.max(val);
     });
   });
 
-  printf("sum(%6.1f) = %6.1f, min(1.0) = %3.1f, max(%5.1f) = %5.1f\n",
-         (area * (area + 1) / 2.0),
-         double(sumA),
-         double(minA),
-         double(area),
-         double(maxA));
-
-  run += 3;
-  if (double(sumA) == (area * (area + 1) / 2.0)) {
-    ++passed;
-  }
-  if (double(minA) == 1.0) {
-    ++passed;
-  }
-  if (double(maxA) == double(area)) {
-    ++passed;
-  }
-
-  RAJA::ReduceSum<RAJA::omp_reduce, double> sumB(0.0);
-  RAJA::ReduceMin<RAJA::omp_reduce, double> minB(10000.0);
-  RAJA::ReduceMax<RAJA::omp_reduce, double> maxB(0.0);
-
-  RAJA::forall<RAJA::seq_exec>(begin, yExtent, [=](int y) {
-    RAJA::forall<RAJA::omp_parallel_for_exec>(begin, xExtent, [=](int x) {
-      sumB += double(y * xExtent + x + 1);
-      minB.min(double(y * xExtent + x + 1));
-      maxB.max(double(y * xExtent + x + 1));
-    });
-  });
-
-  printf("sum(%6.1f) = %6.1f, min(1.0) = %3.1f, max(%5.1f) = %5.1f\n",
-         (area * (area + 1) / 2.0),
-         double(sumB),
-         double(minB),
-         double(area),
-         double(maxB));
-
-  run += 3;
-  if (double(sumB) == (area * (area + 1) / 2.0)) {
-    ++passed;
-  }
-  if (double(minB) == 1.0) {
-    ++passed;
-  }
-  if (double(maxB) == double(area)) {
-    ++passed;
-  }
-
-  printf("\n All Tests : # passed / # run = %d / %d\n\n DONE!!!\n",
-         passed,
-         run);
-
-  if (passed == run) {
-    return 0;
-  } else {
-    return 1;
-  }
+  double area = inner * outer;
+  ASSERT_EQ((area * (area + 1)) / 2, sum.get());
+  ASSERT_EQ(1.0, min.get());
+  ASSERT_EQ(area, max.get());
 }
+
+TEST(NestedReduce, seq_seq)
+{
+  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(10, 20);
+  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(37, 73);
+}
+
+#if defined(RAJA_ENABLE_OPENMP)
+TEST(NestedReduce, omp_seq)
+{
+  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(10, 20);
+  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(37, 73);
+}
+
+TEST(NestedReduce, seq_omp)
+{
+  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(10, 20);
+  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(37, 73);
+}
+#endif
