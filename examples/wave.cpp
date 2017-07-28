@@ -166,9 +166,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   /*
     OpenMP Nested Policy
+
+    RAJA::omp_collapse_nowait_exec - 
+    specifies that loops should be collapsed into one large loop and divided among omp threads
+
+    RAJA::OMP_Parallel<> - Specifies an omp parallel region, must follow the ExecList<>
    */
   using fdPolicy = 
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>,RAJA::OMP_Parallel<>>;
+    RAJA::NestedPolicy<
+    RAJA::ExecList<
+    RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>,
+    RAJA::OMP_Parallel<>>;
 
   /*
     CUDA Policy
@@ -222,8 +230,8 @@ double wave_sol(double t, double x, double y) {
 */
 void compute_err(double *P, double tf, grid_s grid) {
 
-
-  RAJA::MaxReduction<reduce_policy, double> tmax(-1.0);
+  
+  RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
   RAJA::RangeSegment fdBounds(0,grid.nx);
