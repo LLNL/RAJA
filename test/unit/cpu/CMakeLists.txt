@@ -69,16 +69,18 @@ raja_add_test(
   DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
 
 raja_add_test(
-  NAME test-reduction
-  SOURCES test-reductions.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-raja_add_test(
-  NAME test-scan
-  SOURCES test-scan.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-raja_add_test(
   NAME test-forall
   SOURCES test-forall.cpp
   DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
+if(NOT MSVC)
+  raja_add_test(
+    NAME test-scan
+    SOURCES test-scan.cpp
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
+  raja_add_test(
+    NAME test-reduction
+    SOURCES test-reductions.cpp
+    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+endif()
