@@ -220,7 +220,7 @@ void compute_err(double *P, double tf, grid_s grid) {
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
   using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
 
-  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (int ty, int tx){
+  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (RAJA::Index_type ty, RAJA::Index_type tx){
 
       int id   = tx + grid.nx*ty;
       double x = grid.ox + tx*grid.dx;
@@ -245,7 +245,7 @@ void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid) {
   using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
   RAJA::RangeSegment fdBounds(0,grid.nx);
 
-  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (int ty, int tx){
+  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (RAJA::Index_type ty,RAJA::Index_type tx){
 
       int id   = tx + ty*grid.nx;
       double x = grid.ox + tx*grid.dx;
