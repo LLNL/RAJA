@@ -64,7 +64,8 @@ void Wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx){
   RAJA::forallN<fdNestedPolicy >(fdBounds, fdBounds , [=] RAJA_HOST_DEVICE (RAJA::Index_type ty, RAJA::Index_type tx) {
                                                                    
       /*
-        Fourth order finite difference coefficients for central second derivative
+        Central difference coefficients for fourth order 
+        approximation to second derivative
        */
       double coeff[5] = {-1.0/12.0,4.0/3.0,-5.0/2.0,4.0/3.0,-1.0/12.0}; 
       
