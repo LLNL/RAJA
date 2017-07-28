@@ -55,16 +55,10 @@
 const int N  = 1000;
 const int NN = N*N;
 
-//Macro for indexing matrices
-#define A(row, col) (A[col + row*N])
-#define B(row, col) (B[col + row*N])
-#define C(row, col) (C[col + row*N])
-
-
 const int DIM = 2;
 
 template<typename T>
-void checkSolution(T *C, int in_N);
+void checkSolution( RAJA::View< T, RAJA::Layout<DIM> > Cview, int in_N);
 
 /*
   Example 2: Multiplying Two Matrices
@@ -106,22 +100,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     A[i] = 1.0; 
     B[i] = 1.0; 
   }
-  
-  printf("Standard C++ Loop \n");
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
-
-      double dot = 0.0;
-
-      for (int k = 0; k < N; ++k) {
-        dot += A(row,k)*B(k,col);
-      }
-
-      C(row,col) = dot; 
-    }
-  }
-  
-  checkSolution<double>(C, N);
 
   /*
     RAJA::View - Introduces Multidimensional arrays
@@ -130,6 +108,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::View<double, RAJA::Layout<DIM> > Aview(A, N, N);
   RAJA::View<double, RAJA::Layout<DIM> > Bview(B, N, N);
   RAJA::View<double, RAJA::Layout<DIM> > Cview(C, N, N);
+  
+  printf("Standard C++ Loop \n");
+  for (int row = 0; row < N; ++row) {
+    for (int col = 0; col < N; ++col) {
+
+      double dot = 0.0;
+
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row,k)*Bview(k,col);
+      }
+
+      Cview(row,col) = dot; 
+    }
+  }
+  checkSolution<double>(Cview, N);
 
 
   printf("RAJA: Sequential Policy - Single forall \n");  
@@ -145,10 +138,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
 
     });  
-
-  checkSolution<double>(C, N);
-
-
+  checkSolution<double>(Cview, N);
+  
   printf("RAJA: Sequential Policy - Nested forall \n");
   /*
     Forall loops may be nested under sequential and omp policies
@@ -164,7 +155,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row,col) = dot;
     });
   });
-  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
+  checkSolution<double>(Cview, N);
 
 
   printf("RAJA: Sequential Policy RAJA - forallN \n");
@@ -183,8 +174,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
         Cview(row,col) = dot;
   });
-  checkSolution<RAJA::View<double,RAJA::Layout<DIM> >(Cview, N);
-  
+  checkSolution<double>(Cview, N);
+    
 
 #if defined(RAJA_ENABLE_OPENMP)
   printf("RAJA: OpenMP/Sequential Policy - forallN \n");
@@ -204,7 +195,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         }
         Cview(row,col) = dot;
       });
-  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
+  checkSolution<double>(Cview, N);
 #endif
 
 
@@ -230,7 +221,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
             Cview(row,col) = dot; 
           });
   cudaDeviceSynchronize();
-  checkSolution<RAJA::View<double,RAJA::Layout<DIM>>>(Cview, N);
+  checkSolution<double>(Cview, N);
 #endif
 
 
@@ -241,20 +232,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-
 template<typename T>
-void checkSolution(T *C, int in_N){
-
+void checkSolution( RAJA::View< T, RAJA::Layout<DIM> > Cview, int in_N){
+  
   for(int row = 0; row < in_N; ++row) {
     for(int col = 0; col < in_N; ++col) {
-
-      if (abs(C(row,col) - in_N) > 1e-9) {
-        printf("Error in Result \n \n");
+      
+      if( abs(Cview(row,col) - in_N) > 1e-9) {
         return;
       }
 
     }
   }
-
   printf("Correct Result \n \n");
 };
