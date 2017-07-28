@@ -51,7 +51,7 @@
 
 
 /*
-  Example 5: Coloring
+  Example 5: Custom Index Set
 
   ----[Details]-------------------
   Assuming a grid with the following contents
@@ -62,21 +62,19 @@
           3, 4, 3, 4];
 
   This codes illustrates how to create a custom RAJA index set on which
-  a RAJA forall loop may iterate on. Here the codes constructs an IndexSet
-  on which a loop will iterate over the values of 1 then 2, etc.... The numbers
-  may be viewed as corresponding to a color. 
+  a RAJA forall loop may iterate on. In this code a RAJA::Forall loop will
+  transverse through values of 1 then 2, etc...   
   
   --------[RAJA Concepts]---------
   1. Constructing custom IndexSets
-  2. RAJA::View
-  3. RAJA::ListSegment
-
+  2. RAJA::View           - RAJA's multidimensional array
+  3. RAJA::ListSegment    - Container for an arbitrary collection of indices
+  4. RAJA::StaticIndexSet - Container for an index set which is a collection of ListSegments
 */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout<<"Example 5. Coloring "<<std::endl;
-
+  printf("Example 5. Custom Index Set");
   int n         = 4;
   int *A        = new int[n*n];
   
@@ -88,14 +86,17 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   std::copy(init.begin(), init.end(), A);
    
   /*
-    In this implementation the 
+    The template arguments for StaticIndexSet allow the user to indicate
+    the required storage types of various segments. In this example, 
+    we only need to store TypedListSegment<Index_type> (aka ListSegment)     
   */
   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type> > colorset;
 
   /*
-    RAJA::View for multi-dimensional array
+    RAJA::View - enables multidimensional indexing on arrays
    */
-  RAJA::View<int,RAJA::Layout<2>> Aview(A, n, n);
+  int DIM = 2; //Specify the dimension of the array
+  RAJA::View<int,RAJA::Layout<DIM>> Aview(A, n, n);
   
   /*
     Buffer used for intermediate indices storage
@@ -103,7 +104,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   auto *idx = new RAJA::Index_type[(n+1) * (n+1) / 4];
   
   /*
-    Iterate over each dimension (D=2 for this example)
+    Iterate over each dimension (DIM=2 for this example)
   */
   for (int xdim : {0, 1}) {
     for (int ydim : {0, 1}) {
@@ -142,9 +143,6 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     -----[RAJA Loop Traversal]-------
     Under the custom color policy, a RAJA forall loop will transverse 
     through each list segment stored in the colorset. 
-   */
-
-  /*
     This particular traversal policy willl execute the iterates 
     in each segment in parallel while travesing through each segment sequentially
    */
