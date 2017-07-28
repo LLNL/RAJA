@@ -61,7 +61,6 @@ struct grid_s{
 */
 template<typename T, typename fdNestedPolicy>
 void Wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx){
-
   RAJA::forallN<fdNestedPolicy >(fdBounds, fdBounds , [=] __device__ __host__ (int ty, int tx) {
                                                                    
       /*
@@ -109,6 +108,7 @@ void compute_err(double *P, double tf, grid_s grid);
 
   ----[RAJA Concepts]-------------------
   1. RAJA kernels are portable and a single implemenation can run on numerous devices
+  2. RAJA MaxReduction 
 
 */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -218,46 +218,49 @@ double wave_sol(double t, double x, double y) {
 }
 
 /*
-  Error is computed via ||P_{analytic}(:) - P_{approx}(:)||_{inf} 
+  Error is computed via ||P_{analytic}(:) - P_{approx}(:)||_{inf} - Via RAJA
 */
 void compute_err(double *P, double tf, grid_s grid) {
 
-  double err=-1; 
-  for(int ty=0; ty<grid.nx; ++ty) {
-    for(int tx=0; tx<grid.nx; ++tx) {
-      
+
+  RAJA::MaxReduction<reduce_policy, double> tmax(-1.0);
+
+  using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
+  RAJA::RangeSegment fdBounds(0,grid.nx);
+
+  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (int ty, int tx){
+
       int id   = tx + grid.nx*ty;
       double x = grid.ox + tx*grid.dx;
       double y = grid.ox + ty*grid.dx;
-            
       double myErr = abs(P[id] - wave_sol(tf,x,y));
-      if(myErr > err) err = myErr; 
-    }
-  }
-  std::cout<<"Max err: "<<err<<" hx: "<<grid.dx<<std::endl;
+      
+      tMax.max(myErr);
+    });
+  
+  std::cout<<"Max err: "<<tMax<<" hx: "<<grid.dx<<std::endl;
 }
 
 
 /*
-  Setup intial condition
+  Setup intial condition - RAJAfied
 */
 void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid) {
-
   
   /*
     Populate Field
   */
-  int iter=0; 
-  for(int ty=0; ty<grid.nx; ++ty) {
-    for(int tx=0; tx<grid.nx; ++tx) {
-      
+  using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
+  RAJA::RangeSegment fdBounds(0,grid.nx);
+
+  RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (int ty, int tx){
+
+      int id   = tx + ty*grid.nx;
       double x = grid.ox + tx*grid.dx;
       double y = grid.ox + ty*grid.dx;
       
-      P1[iter] = wave_sol(t0,x,y);
-      P2[iter] = wave_sol(t1,x,y);
-      iter++;
-    }
-  }
+      P1[id] = wave_sol(t0,x,y);
+      P2[id] = wave_sol(t1,x,y);
+    });
 
 }
