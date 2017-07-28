@@ -61,7 +61,7 @@ void checkSolution(int *C, int in_N);
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
-  RAJA::forall<RAJA::exec_policy>(RAJA::Range,[=](index i)) {
+  RAJA::forall<RAJA::exec_policy>(RAJA::Range,[=](RAJA::Index_type i)) {
 
          //body
 
@@ -99,7 +99,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /*
     RAJA::seq_exec -  Executes the loop sequentially
 
-    RAJA::RangeSegment(start,stop) - generates a contiguous sequence of numbers
+    RAJA::RangeSegment(start,stop) - Generates a contiguous sequence of numbers
     by the [start, stop) interval specified 
   */
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
@@ -124,7 +124,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("RAJA: CUDA Policy \n");
   /*
     RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes the forall loop using the CUDA
-    API. Each thread is assigned to an iteration of the loop
+    API
 
     CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
   */
