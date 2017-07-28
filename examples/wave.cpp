@@ -61,10 +61,10 @@ struct grid_s{
 */
 template<typename T, typename fdNestedPolicy>
 void Wave(T* P1, T* P2, RAJA::RangeSegment fdBounds, double ct, int nx){
-  RAJA::forallN<fdNestedPolicy >(fdBounds, fdBounds , [=] __device__ __host__ (int ty, int tx) {
+  RAJA::forallN<fdNestedPolicy >(fdBounds, fdBounds , [=] RAJA_HOST_DEVICE (RAJA::Index_type ty, RAJA::Index_type tx) {
                                                                    
       /*
-        Finite difference coefficients for fourth order spatial derivative
+        Fourth order finite difference coefficients for central second derivative
        */
       double coeff[5] = {-1.0/12.0,4.0/3.0,-5.0/2.0,4.0/3.0,-1.0/12.0}; 
       
@@ -99,7 +99,9 @@ void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid);
 void compute_err(double *P, double tf, grid_s grid);
 
 /*
-  Example 4: Two dimensional solver for the acoustic wave eqation P_tt = cc(P_xx + P_yy)  
+  Example 4: Solver for the acoustic wave eqation
+         
+             P_tt = cc(P_xx + P_yy)  
 
   ------[Details]----------------------
   Scheme uses a second order central diffrence discretization for time and a
@@ -108,7 +110,7 @@ void compute_err(double *P, double tf, grid_s grid);
 
   ----[RAJA Concepts]-------------------
   1. RAJA kernels are portable and a single implemenation can run on numerous devices
-  2. RAJA MaxReduction 
+  2. RAJA MaxReduction - RAJA's implementation for computing a maximum value (MinReduction computes the min)
 
 */
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
@@ -134,6 +136,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   grid.ox   = -1; 
   grid.dx   = 0.1250/factor;
   grid.nx   = 16*factor;
+  RAJA::RangeSegment fdBounds(0,grid.nx);
 
   /*
     Propagate the solution until time T
@@ -156,45 +159,28 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
   /*
-    Selecting a policy
+    Predefined Nested Policies: 
   */
 
-  /*
-    Sequential Policy    
-  */  
+  //Sequential
   //using fdPolicy = RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::seq_exec > >;  
 
-  /*
-    OpenMP Nested Policy
-
-    RAJA::omp_collapse_nowait_exec - 
-    specifies that loops should be collapsed into one large loop and divided among omp threads
-
-    RAJA::OMP_Parallel<> - Specifies an omp parallel region, must follow the ExecList<>
-   */
+  //OpenMP
   using fdPolicy = 
     RAJA::NestedPolicy<
     RAJA::ExecList<
     RAJA::omp_collapse_nowait_exec,RAJA::omp_collapse_nowait_exec>,
     RAJA::OMP_Parallel<>>;
-
-  /*
-    CUDA Policy
-  */  
-    //using fdPolicy = RAJA::NestedPolicy<
-    //RAJA::ExecList<
-    //RAJA::cuda_threadblock_y_exec<16>,
-    //RAJA::cuda_threadblock_x_exec<16>>>;
+  
+  //CUDA
+  //using fdPolicy = RAJA::NestedPolicy<
+  //RAJA::ExecList<
+  //RAJA::cuda_threadblock_y_exec<16>,
+  //RAJA::cuda_threadblock_x_exec<16>>>;
 
   /*
     Wave Propagator - Single Implementaion - Many Devices
    */  
-
-  /*
-    Number of gridpoints in a spatial dimension
-   */
-  RAJA::RangeSegment fdBounds(0,grid.nx);
-
   time = 0; 
   set_ic(P1,P2,(time-dt),time,grid);
   for(int k=0; k<nt; ++k) {
@@ -230,11 +216,9 @@ double wave_sol(double t, double x, double y) {
 */
 void compute_err(double *P, double tf, grid_s grid) {
 
-  
+  RAJA::RangeSegment fdBounds(0,grid.nx);  
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
-
   using myPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>; 
-  RAJA::RangeSegment fdBounds(0,grid.nx);
 
   RAJA::forallN<myPolicy>(fdBounds,fdBounds, [=] (int ty, int tx){
 
@@ -243,7 +227,7 @@ void compute_err(double *P, double tf, grid_s grid) {
       double y = grid.ox + ty*grid.dx;
       double myErr = abs(P[id] - wave_sol(tf,x,y));
       
-      tMax.max(myErr);
+      tMax.max(myErr); //Keeps track of the maximum value
     });
   
   std::cout<<"Max err: "<<tMax<<" hx: "<<grid.dx<<std::endl;
@@ -251,7 +235,7 @@ void compute_err(double *P, double tf, grid_s grid) {
 
 
 /*
-  Setup intial condition - RAJAfied
+  Setup intial condition
 */
 void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid) {
   
