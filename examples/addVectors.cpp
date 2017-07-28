@@ -69,9 +69,9 @@ void checkSolution(int *C, int in_N);
 
   [=] Pass by copy
   [&] Pass by reference
-  RAJA::exec_policy  - specifies how the traversal occurs
-  RAJA::Range - Provides a list of iterables for an index of the loop
-
+  RAJA::exec_policy - specifies how the traversal occurs
+  RAJA::Range       - Provides a list of iterables for an index of the loop
+  RAJA::Index_type  - Index for RAJA loops
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -103,7 +103,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     by the [start, stop) interval specified 
   */
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N),
-                               [=](int i) { C[i] = A[i] + B[i]; });
+                               [=](RAJA::Index_type i) { C[i] = A[i] + B[i]; });
   checkSolution(C, N);
 
 
@@ -114,7 +114,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     #pragma omp parallel for directive
   */
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N),
-                                            [=](int i) { C[i] = A[i] + B[i]; });
+                                            [=](RAJA::Index_type i) { C[i] = A[i] + B[i]; });
   checkSolution(C, N);
 #endif
 
@@ -129,7 +129,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
   */
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
-                                                 [=] __device__(int i) {
+                                                 [=] __device__(RAJA::Index_type i) {
                                                    C[i] = A[i] + B[i];
                                                  });
   checkSolution(C, N);
@@ -143,14 +143,22 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 
+/*
+  RAJA can also be used outside of computational kernels
+*/
 void checkSolution(int *C, int in_N)
 {
- 
-  for (int i = 0; i < in_N; ++i) {
+
+
+  RAJA::forall<RAJA::seq_exec>(
+  RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
+                                 
     if ( abs(C[i]-(i+i) ) != 0) {
       printf("Error in Result \n \n");
-      return;
+      return;      
     }
-  }
-    printf("Correct Result \n \n");
+
+  });
+ 
+  printf("Correct Result \n \n");
 }
