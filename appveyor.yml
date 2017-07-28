@@ -4,7 +4,9 @@ image: Visual Studio 2017
 build_script:
 - cmd: >-
     git submodule init
+
     git submodule update
+
     mkdir build
 
     cd build
