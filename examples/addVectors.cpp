@@ -126,7 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes the forall loop using the CUDA
     API. Each thread is assigned to an iteration of the loop
 
-    CUDA_BLOCK_SIZE - specifies the number of threads per cartesian dimension
+    CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
   */
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N),
                                                  [=] __device__(int i) {
