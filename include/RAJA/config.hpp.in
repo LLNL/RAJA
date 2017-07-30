@@ -195,16 +195,14 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-
-#if __ICC < 1300  // use alignment intrinsic
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
+#endif
+
+#if defined(_OPENMP) && (_OPENMP >= 201307)
+#define RAJA_SIMD  _Pragma("omp simd")
 #else
-#define RAJA_ALIGN_DATA(d)  // TODO: Define this...
+#define RAJA_SIMD  _Pragma("simd")
 #endif
-
-#endif
-
-#define RAJA_SIMD  // TODO: Define this...
 
 
 #elif defined(RAJA_COMPILER_GNU)
@@ -217,12 +215,17 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
-
 #endif
 
-#define RAJA_SIMD  // TODO: Define this...
+#if defined(_OPENMP) && (_OPENMP >= 201307)
+#define RAJA_SIMD  _Pragma("omp simd")
+#elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
+      ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
+#define RAJA_SIMD  _Pragma("GCC ivdep")
+#else
+#define RAJA_SIMD
+#endif
 
 
 #elif defined(RAJA_COMPILER_XLC)
@@ -235,7 +238,12 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_ALIGN_DATA(d) __alignx(DATA_ALIGN, d)
 
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
-#define RAJA_SIMD   // TODO: Define this...
+#if defined(_OPENMP) && (_OPENMP >= 201307)
+#define RAJA_SIMD  _Pragma("omp simd")
+#else
+// This pragma is unreliable.  It may not work on Blue Gene/Q or POWER7.
+#define RAJA_SIMD  _Pragma("ibm independent_loop")
+#endif
 
 
 #elif defined(RAJA_COMPILER_CLANG)
@@ -248,12 +256,14 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-
 #define RAJA_ALIGN_DATA(d) // TODO: Define this...
-
 #endif
 
-#define RAJA_SIMD  // TODO: Define this...
+#if defined(_OPENMP) && (_OPENMP >= 201307)
+#define RAJA_SIMD  _Pragma("omp simd")
+#else
+#define RAJA_SIMD  _Pragma("clang loop vectorize(enable)")
+#endif
 
 #else
 
