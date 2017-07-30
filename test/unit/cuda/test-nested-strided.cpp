@@ -60,9 +60,10 @@
 const int x = 500, y = 500, z = 50;
 
 using namespace RAJA;
+
 void stride_test(int stride)
 {
-  double *arr = NULL;
+  int *arr = nullptr;
   cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
   cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
 
@@ -80,14 +81,14 @@ void stride_test(int stride)
                                            });
   cudaDeviceSynchronize();
 
-  int prev_val = 0;
+  int prev_val = -1;
   for (int i = 0; i < z; i += stride) {
     for (int j = 0; j < y; j += stride) {
       for (int k = 0; k < x; k += stride) {
         int val = z * y * i + y * j + k;
-        ASSERT_EQ(arr[val], val);
+        ASSERT_EQ(val, arr[val]);
         for (int inner = prev_val + 1; inner < val; ++inner) {
-          ASSERT_EQ(arr[inner], 0);
+          ASSERT_EQ(0, arr[inner]);
         }
         prev_val = val;
       }
@@ -96,11 +97,22 @@ void stride_test(int stride)
   cudaFree(arr);
 }
 
-TEST(forallN, rangeStrides)
+TEST(forallN, rangeStrides1)
 {
-
   stride_test(1);
+}
+
+TEST(forallN, rangeStrides2)
+{
   stride_test(2);
+}
+
+TEST(forallN, rangeStrides3)
+{
   stride_test(3);
+}
+
+TEST(forallN, rangeStrides4)
+{
   stride_test(4);
 }

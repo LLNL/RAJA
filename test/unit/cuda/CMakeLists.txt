@@ -44,43 +44,25 @@
 SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
 
 raja_add_test(
-  NAME test-GPUreducemin
-  SOURCES ReduceMin.cpp)
+  NAME test-cuda-reduce-sum
+  SOURCES test-reduce-sum.cpp)
 
 raja_add_test(
-  NAME test-GPUreducemax
-  SOURCES ReduceMax.cpp)
-
-raja_add_test(
-  NAME test-GPUreducesum
-  SOURCES ReduceSum.cpp)
-
-raja_add_test(
-  NAME test-GPUforall
-  SOURCES forall.cpp)
+  NAME test-cuda-forall
+  SOURCES test-forall.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-    NAME test-GPUforallN
-    SOURCES forallN.cpp)
+    NAME test-cuda-nested
+    SOURCES test-nested.cpp)
 endif()
 
 raja_add_test(
-  NAME test-GPUreduceminloc
-  SOURCES ReduceMinLoc.cpp)
-
-raja_add_test(
-  NAME test-GPUreducemaxloc
-  SOURCES ReduceMaxLoc.cpp)
-
-raja_add_test(
-  NAME test-GPUforallN-strided
-  SOURCES forallN-strided.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  NAME test-cuda-nested-strided
+  SOURCES test-nested-strided.cpp)
 
 if (NOT RAJA_ENABLE_CLANG_CUDA)
   raja_add_test(
-    NAME test-GPUscan
-    SOURCES test-scan.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+    NAME test-cuda-scan
+    SOURCES test-scan.cpp)
 endif ()

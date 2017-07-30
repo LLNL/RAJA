@@ -44,28 +44,21 @@
 
 raja_add_test(
   NAME test-layout
-  SOURCES test-layout.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-)
+  SOURCES test-layout.cpp)
+
 raja_add_test(
   NAME test-timer
-  SOURCES test-timer.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-)
+  SOURCES test-timer.cpp)
 
 if(RAJA_ENABLE_OPENMP)
   raja_add_test(
-          NAME test-multipolicy
-          SOURCES test-multipolicy.cpp
-          DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
+    NAME test-multipolicy
+    SOURCES test-multipolicy.cpp)
 endif(RAJA_ENABLE_OPENMP)
 
 raja_add_test(
   NAME test-integral-limits
-  SOURCES test-integral-limits.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-)
+  SOURCES test-integral-limits.cpp)
 
 add_subdirectory(cpu)
 
