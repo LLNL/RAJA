@@ -62,5 +62,5 @@ raja_add_executable(
   SOURCES wave.cpp)
 
 raja_add_executable(
-  NAME coloring
-  SOURCES coloring.cpp)
+  NAME customIndex
+  SOURCES customIndex.cpp)
