@@ -60,13 +60,16 @@
   TEST(X, Y) { cuda_test_##X##_##Y(); } \
   static void cuda_test_##X##_##Y()
 
-#define CUDA_TEST_F(X, Y)                                   \
-  static void cuda_test_f_##X##_##Y();                      \
-  GTEST_TEST_(X, Y, X, ::testing::internal::GetTypeId<X>()) \
-  {                                                         \
-    cuda_test_f_##X##_##Y();                                \
-  }                                                         \
-  static void cuda_test_f_##X##_##Y()
+#define CUDA_TEST_F(test_fixture, test_name)                  \
+  static void cuda_test_f_##test_fixture##_##test_name();     \
+  GTEST_TEST_(test_fixture,                                   \
+              test_name,                                      \
+              test_fixture,                                   \
+              ::testing::internal::GetTypeId<test_fixture>()) \
+  {                                                           \
+    cuda_test_f_##test_fixture##_##test_name();               \
+  }                                                           \
+  static void cuda_test_f_##test_fixture##_##test_name()
 
 #define CUDA_TYPED_TEST_P(CaseName, TestName)                                  \
   template <typename TypeParam>                                                \

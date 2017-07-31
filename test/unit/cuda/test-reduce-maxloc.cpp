@@ -41,7 +41,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA GPU max-loc reductions.
+/// Source file containing tests for RAJA GPU min-loc reductions.
 ///
 
 #include <cfloat>
@@ -50,56 +50,66 @@
 #include <random>
 #include <string>
 
-#include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 
-#define TEST_VEC_LEN 1024 * 1024 * 8
+using namespace RAJA;
+
+constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
+
+const int test_repeat = 10;
+const size_t block_size = 256;
+const double DEFAULT_VAL = -DBL_MAX;
+const double BIG_VAL = 500.0;
+
+// for setting random values in arrays
+std::random_device rd;
+std::mt19937 mt(rd());
+std::uniform_real_distribution<double> dist(-10, 10);
+std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
 
 struct maxloc_t {
   double val;
   int idx;
 };
 
-using namespace RAJA;
-using namespace std;
-
-const int test_repeat = 10;
-const size_t block_size = 256;
-
-// for setting random values in arrays
-random_device rd;
-mt19937 mt(rd());
-uniform_real_distribution<double> dist(-10, 10);
-uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
-
-
-double* initData()
+void reset(double* ptr, long length)
 {
-  double* dvalue;
-
-  cudaMallocManaged((void**)&dvalue,
-                    sizeof(double) * TEST_VEC_LEN,
-                    cudaMemAttachGlobal);
-  for (int i = 0; i < TEST_VEC_LEN; ++i) {
-    dvalue[i] = -DBL_MAX;
+  for (long i = 0; i < length; ++i) {
+    ptr[i] = DEFAULT_VAL;
   }
-  return dvalue;
 }
 
-void test1()
+class ReduceMaxLocTest : public ::testing::Test {
+public:
+  static double* dvalue;
+  static void SetUpTestCase()
+  {
+    cudaMallocManaged((void**)&dvalue,
+                      sizeof(double) * TEST_VEC_LEN,
+                      cudaMemAttachGlobal);
+    reset(dvalue, TEST_VEC_LEN);
+  }
+  static void TearDownTestCase() { cudaFree(dvalue); }
+};
+
+double* ReduceMaxLocTest::dvalue = nullptr;
+
+CUDA_TEST_F(ReduceMaxLocTest, generic)
 {
-  double* dvalue = initData();
+
+  double* dvalue = ReduceMaxLocTest::dvalue;
+  reset(dvalue, TEST_VEC_LEN);
 
   maxloc_t dcurrentMax;
-  dcurrentMax.val = -DBL_MAX;
+  dcurrentMax.val = DEFAULT_VAL;
   dcurrentMax.idx = -1;
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-    double BIG_MAX = 500.0;
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax2(BIG_MAX, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax2(BIG_VAL, -1);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
@@ -118,12 +128,11 @@ void test1()
 
       ASSERT_FLOAT_EQ(dcurrentMax.val, dmax0.get());
       ASSERT_FLOAT_EQ(dcurrentMax.val * 2, dmax1.get());
-      ASSERT_FLOAT_EQ(BIG_MAX, dmax2.get());
+      ASSERT_FLOAT_EQ(BIG_VAL, dmax2.get());
       ASSERT_EQ(dcurrentMax.idx, dmax0.getLoc());
       ASSERT_EQ(dcurrentMax.idx, dmax1.getLoc());
     }
   }
-  cudaFree(dvalue);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -133,12 +142,15 @@ void test1()
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-void test2()
+CUDA_TEST_F(ReduceMaxLocTest, indexset_align)
 {
-  double* dvalue = initData();
+
+  double* dvalue = ReduceMaxLocTest::dvalue;
+
+  reset(dvalue, TEST_VEC_LEN);
 
   maxloc_t dcurrentMax;
-  dcurrentMax.val = -DBL_MAX;
+  dcurrentMax.val = DEFAULT_VAL;
   dcurrentMax.idx = -1;
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
@@ -150,8 +162,8 @@ void test2()
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL, -1);
 
     int index = int(dist2(mt));
 
@@ -172,7 +184,6 @@ void test2()
     ASSERT_EQ(dcurrentMax.idx, dmax0.getLoc());
     ASSERT_EQ(dcurrentMax.idx, dmax1.getLoc());
   }
-  cudaFree(dvalue);
 }
 
 ////////////////////////////////////////////////////////////////////////////
@@ -183,8 +194,10 @@ void test2()
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-void test3()
+CUDA_TEST_F(ReduceMaxLocTest, indexset_noalign)
 {
+
+  double* dvalue = ReduceMaxLocTest::dvalue;
 
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
@@ -197,17 +210,16 @@ void test3()
   iset.push_back(seg2);
   iset.push_back(seg3);
 
-
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-    double* dvalue = initData();
+    reset(dvalue, TEST_VEC_LEN);
 
     maxloc_t dcurrentMax;
-    dcurrentMax.val = -DBL_MAX;
+    dcurrentMax.val = DEFAULT_VAL;
     dcurrentMax.idx = -1;
 
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(-DBL_MAX, -1);
-    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(-DBL_MAX, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL, -1);
+    ReduceMaxLoc<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL, -1);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0
@@ -232,13 +244,5 @@ void test3()
     ASSERT_FLOAT_EQ(2 * dcurrentMax.val, double(dmax1));
     ASSERT_EQ(dcurrentMax.idx, dmax0.getLoc());
     ASSERT_EQ(dcurrentMax.idx, dmax1.getLoc());
-
-    cudaFree(dvalue);
   }
 }
-
-TEST(ReduceMaxLoc, generic) { test1(); }
-
-TEST(ReduceMaxLoc, indexset_align) { test2(); }
-
-TEST(ReduceMaxLoc, indexset_noalign) { test3(); }

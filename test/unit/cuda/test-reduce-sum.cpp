@@ -52,7 +52,7 @@
 #include <random>
 
 #include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_gtest.hpp"
 
 constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;
 
@@ -90,7 +90,6 @@ public:
 
   static void TearDownTestCase()
   {
-
     cudaFree(dvalue);
     cudaFree(rand_dvalue);
     cudaFree(ivalue);
@@ -107,7 +106,9 @@ int* ReduceSumTest::ivalue = nullptr;
 
 const size_t block_size = 256;
 
-void test1(double* dvalue) {
+CUDA_TEST_F(ReduceSumTest, staggered_sum)
+{
+  double* dvalue = ReduceSumTest::dvalue;
 
   double dtinit = 5.0;
 
@@ -147,9 +148,12 @@ void test1(double* dvalue) {
   }
 }
 
-void test2(double* dvalue, int* ivalue) {
+CUDA_TEST_F(ReduceSumTest, indexset_aligned)
+{
+  double* dvalue = ReduceSumTest::dvalue;
+  int* ivalue = ReduceSumTest::ivalue;
 
-  RangeSegment seg0(0, TEST_VEC_LEN / 2);
+    RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
   IndexSet iset;
@@ -180,10 +184,8 @@ void test2(double* dvalue, int* ivalue) {
   ASSERT_EQ(2 * ibase_chk_val + (itinit * 2), isum1.get());
   ASSERT_FLOAT_EQ(3 * dbase_chk_val + (dtinit * 3.0), dsum2.get());
   ASSERT_EQ(4 * ibase_chk_val + (itinit * 4), isum3.get());
+
 }
-
-
-////////////////////////////////////////////////////////////////////////////
 
 //
 // test 3 runs 4 reductions (2 int, 2 double) over disjoint chunks
@@ -191,7 +193,11 @@ void test2(double* dvalue, int* ivalue) {
 //        not aligned with warp boundaries to check that reduction
 //        mechanics don't depend on any sort of special indexing.
 //
-void test3(double* dvalue, int* ivalue) {
+CUDA_TEST_F(ReduceSumTest, indexset_noalign)
+{
+  double* dvalue = ReduceSumTest::dvalue;
+  int* ivalue = ReduceSumTest::ivalue;
+
 
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
@@ -227,10 +233,11 @@ void test3(double* dvalue, int* ivalue) {
   ASSERT_EQ(int(isum1), 2 * ibase_chk_val + (itinit * 2));
   ASSERT_FLOAT_EQ(double(dsum2), 3 * dbase_chk_val + (dtinit * 3.0));
   ASSERT_EQ(int(isum3), 4 * ibase_chk_val + (itinit * 4));
-
 }
 
-void test4(double* rand_dvalue) {
+CUDA_TEST_F(ReduceSumTest, atomic_reduce)
+{
+  double* rand_dvalue = ReduceSumTest::rand_dvalue;
 
   ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
   ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);
@@ -261,25 +268,4 @@ void test4(double* rand_dvalue) {
     ASSERT_FLOAT_EQ(dsumN.get(), neg_chk_val);
     ASSERT_FLOAT_EQ(dsumP.get(), pos_chk_val);
   }
-
-}
-
-TEST_F(ReduceSumTest, staggered_sum)
-{
-  test1(ReduceSumTest::dvalue);
-}
-
-TEST_F(ReduceSumTest, indexset_aligned)
-{
-  test2(ReduceSumTest::dvalue, ReduceSumTest::ivalue);
-}
-
-TEST_F(ReduceSumTest, indexset_noalign)
-{
-  test3(ReduceSumTest::dvalue, ReduceSumTest::ivalue);
-}
-
-TEST_F(ReduceSumTest, atomic_reduce)
-{
-  test4(ReduceSumTest::rand_dvalue);
 }
