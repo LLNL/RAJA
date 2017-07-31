@@ -71,32 +71,29 @@
   }                                                           \
   static void cuda_test_f_##test_fixture##_##test_name()
 
-#define CUDA_TYPED_TEST_P(CaseName, TestName)                                  \
-  template <typename TypeParam>                                                \
-  static void cuda_typed_test_p_##CaseName##_##TestName();                     \
-  namespace GTEST_CASE_NAMESPACE_(CaseName)                                    \
-  {                                                                            \
-    template <typename gtest_TypeParam_>                                       \
-    class TestName : public CaseName<gtest_TypeParam_>                         \
-    {                                                                          \
-    private:                                                                   \
-      typedef CaseName<gtest_TypeParam_> TestFixture;                          \
-      typedef gtest_TypeParam_ TypeParam;                                      \
-      virtual void TestBody();                                                 \
-    };                                                                         \
-    static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =          \
-        GTEST_TYPED_TEST_CASE_P_STATE_(CaseName).AddTestName(__FILE__,         \
-                                                             __LINE__,         \
-                                                             #CaseName,        \
-                                                             #TestName);       \
-  }                                                                            \
-  template <typename gtest_TypeParam_>                                         \
-  void GTEST_CASE_NAMESPACE_(CaseName)::TestName<gtest_TypeParam_>::TestBody() \
-  {                                                                            \
-    template <typename TypeParam>                                              \
-    cuda_typed_test_p_##CaseName##_##TestName<gtest_TypeParam_>();             \
-  }                                                                            \
-  template <typename TypeParam>                                                \
+#define CUDA_TYPED_TEST_P(CaseName, TestName)                            \
+  template <typename TypeParam>                                          \
+  static void cuda_typed_test_p_##CaseName##_##TestName();               \
+  namespace GTEST_CASE_NAMESPACE_(CaseName)                              \
+  {                                                                      \
+    template <typename gtest_TypeParam_>                                 \
+    class TestName : public CaseName<gtest_TypeParam_>                   \
+    {                                                                    \
+    private:                                                             \
+      typedef CaseName<gtest_TypeParam_> TestFixture;                    \
+      typedef gtest_TypeParam_ TypeParam;                                \
+      virtual void TestBody()                                            \
+      {                                                                  \
+        cuda_typed_test_p_##CaseName##_##TestName<gtest_TypeParam_>();   \
+      }                                                                  \
+    };                                                                   \
+    static bool gtest_##TestName##_defined_ GTEST_ATTRIBUTE_UNUSED_ =    \
+        GTEST_TYPED_TEST_CASE_P_STATE_(CaseName).AddTestName(__FILE__,   \
+                                                             __LINE__,   \
+                                                             #CaseName,  \
+                                                             #TestName); \
+  }                                                                      \
+  template <typename TypeParam>                                          \
   static void cuda_typed_test_p_##CaseName##_##TestName()
 
 #endif  // closing endif for header file include guard
