@@ -57,7 +57,7 @@
 
 using namespace RAJA;
 
-#include "../../include/type_helper.hpp"
+#include "type_helper.hpp"
 
 template <typename Perm>
 struct PermuteOnly {
