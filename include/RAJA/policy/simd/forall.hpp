@@ -93,10 +93,12 @@ RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
                                                      Iterable>::value>::type
 forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
-  auto end = std::end(iter);
+  // TODO: if KNL, make sure long is used
+  auto len = iter.size();
+  auto ii = std::begin(iter);
   RAJA_SIMD
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
+  for (decltype(len) i = 0; i < len; ++i) {
+    loop_body(*(ii + i));
   }
 }
 
