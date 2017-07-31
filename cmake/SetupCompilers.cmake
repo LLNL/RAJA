@@ -41,19 +41,15 @@
 ###############################################################################
 
 if (NOT ENABLE_CLANG_CUDA)
-  set(CMAKE_CXX_STANDARD 14)
+  set(BLT_CXX_STANDARD 14)
 else()
-  set(CMAKE_CXX_STANDARD 11)
+  set(BLT_CXX_STANDARD 11)
 endif ()
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
-
-if (ENABLE_WARNINGS)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
-endif ()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
@@ -72,25 +68,13 @@ endif()
 
 set(RAJA_COMPILER "RAJA_COMPILER_${CMAKE_CXX_COMPILER_ID}")
 
-if ( MSVC )
-  if (NOT BUILD_SHARED_LIBS)
-    foreach(flag_var
-        CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
-        CMAKE_CXX_FLAGS_MINSIZEREL CMAKE_CXX_FLAGS_RELWITHDEBINFO)
-      if(${flag_var} MATCHES "/MD")
-        string(REGEX REPLACE "/MD" "/MT" ${flag_var} "${${flag_var}}")
-      endif(${flag_var} MATCHES "/MD")
-    endforeach(flag_var)
-  endif()
-endif()
-
 if (ENABLE_CUDA)
   if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    set(BLT_CUDA_FLAGS -O2; -restrict; -arch ${CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
   elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    set(BLT_CUDA_FLAGS -g; -G; -O2; -restrict; -arch ${CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    set(BLT_CUDA_FLAGS -g; -G; -O0; -restrict; -arch ${CUDA_ARCH}; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
   endif()
 endif()
 

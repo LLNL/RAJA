@@ -15,7 +15,7 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
   - compiler: gcc-5
     addons:
       apt:
@@ -25,7 +25,7 @@ matrix:
         - g++-5
     env:
     - COMPILER=g++-5
-    - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
   - compiler: gcc-6
     addons:
       apt:
@@ -89,7 +89,7 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=ON"
     - TRAVIS_BUILD_NVCC="YES"
   - compiler: gcc-5-debug
     addons:
@@ -100,7 +100,7 @@ matrix:
         - g++-5
     env:
     - COMPILER=g++-5
-    - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
   - compiler: clang-3.8-debug
     addons:
@@ -125,7 +125,7 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
     - TRAVIS_BUILD_NVCC="YES"
 cache:
   directories:

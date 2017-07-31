@@ -77,15 +77,6 @@ macro(raja_add_executable)
     DEPENDS_ON ${arg_DEPENDS_ON}
     OUTPUT_DIR ${_output_dir}
     )
-
-    # if (ENABLE_CLANG_CUDA) 
-    #   add_executable(${arg_NAME} ${arg_SOURCES})
-    #   target_compile_options(${arg_NAME} PRIVATE 
-    #     -x cuda --cuda-gpu-arch=${RAJA_CUDA_ARCH} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
-    #   target_include_directories(${arg_NAME} 
-    #     PUBLIC ${EXPT_CUDA_INCLUDE_LOCATION})
-    #   target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES} RAJA ${arg_DEPENDS_ON})
-    # endif()
 endmacro(raja_add_executable)
 
 macro(raja_add_test)

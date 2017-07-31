@@ -56,10 +56,11 @@ set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PA
 set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
 set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
 set(ENABLE_COPY_HEADERS Off CACHE Bool "")
+set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
 option(ENABLE_CUB "Use cub for scans using CUDA" On)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_EXAMPLES "Build simple examples" On)
@@ -87,9 +88,6 @@ include(cmake/SetupPackages.cmake)
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
-# Sanity check for compiler compatibility
-include (cmake/CompilerCompatibility.cmake)
-
 
 set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp
@@ -119,7 +117,6 @@ endif ()
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}
-  HEADERS ${raja_headers}
   DEPENDS_ON ${raja_depends})
 
 install(TARGETS RAJA 

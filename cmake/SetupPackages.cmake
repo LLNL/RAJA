@@ -42,8 +42,6 @@
 
 
 if (ENABLE_CUDA)
-  set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-
   if (ENABLE_OPENMP)
     list(APPEND CUDA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
   endif()
