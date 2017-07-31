@@ -74,8 +74,6 @@ raja_add_test(
   NAME test-scan
   SOURCES test-scan.cpp)
 
-if(NOT MSVC)
-  raja_add_test(
-    NAME test-reduction
-    SOURCES test-reductions.cpp)
-endif()
+raja_add_test(
+  NAME test-reduction
+  SOURCES test-reductions.cpp)
