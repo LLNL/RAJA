@@ -56,6 +56,14 @@ raja_add_test(
   SOURCES test-reduce-maxloc.cpp)
 
 raja_add_test(
+  NAME test-cuda-reduce-min
+  SOURCES test-reduce-min.cpp)
+
+raja_add_test(
+  NAME test-cuda-reduce-minloc
+  SOURCES test-reduce-minloc.cpp)
+
+raja_add_test(
   NAME test-cuda-forall
   SOURCES test-forall.cpp)
 

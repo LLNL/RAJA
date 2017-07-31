@@ -44,22 +44,16 @@
 /// Source file containing test for nested reductions...
 ///
 
-#include <stdio.h>
+#include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
 
-#include "RAJA/util/defines.hpp"
+RAJA::Index_type const begin = 0;
+RAJA::Index_type const xExtent = 64;
+RAJA::Index_type const yExtent = 64;
+RAJA::Index_type const area = xExtent * yExtent;
 
-int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
+TEST(NestedReduce,outer)
 {
-  int run = 0;
-  int passed = 0;
-
-  RAJA::Index_type const begin = 0;
-
-  RAJA::Index_type const xExtent = 64;
-  RAJA::Index_type const yExtent = 64;
-  RAJA::Index_type const area = xExtent * yExtent;
-
   RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumA(0.0);
   RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minA(10000.0);
   RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxA(0.0);
@@ -72,24 +66,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
     });
   });
 
-  printf("sum(%6.1f) = %6.1f, min(1.0) = %3.1f, max(%5.1f) = %5.1f\n",
-         (area * (area + 1) / 2.0),
-         double(sumA),
-         double(minA),
-         double(area),
-         double(maxA));
+  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumA.get());
+  ASSERT_FLOAT_EQ(1.0, minA.get());
+  ASSERT_FLOAT_EQ(area, maxA.get());
+}
 
-  run += 3;
-  if (double(sumA) == (area * (area + 1) / 2.0)) {
-    ++passed;
-  }
-  if (double(minA) == 1.0) {
-    ++passed;
-  }
-  if (double(maxA) == double(area)) {
-    ++passed;
-  }
-
+TEST(NestedReduce,inner)
+{
   RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumB(0.0);
   RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minB(10000.0);
   RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxB(0.0);
@@ -102,31 +85,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv))
     });
   });
 
-  printf("sum(%6.1f) = %6.1f, min(1.0) = %3.1f, max(%5.1f) = %5.1f\n",
-         (area * (area + 1) / 2.0),
-         double(sumB),
-         double(minB),
-         double(area),
-         double(maxB));
-
-  run += 3;
-  if (double(sumB) == (area * (area + 1) / 2.0)) {
-    ++passed;
-  }
-  if (double(minB) == 1.0) {
-    ++passed;
-  }
-  if (double(maxB) == double(area)) {
-    ++passed;
-  }
-
-  printf("\n All Tests : # passed / # run = %d / %d\n\n DONE!!!\n",
-         passed,
-         run);
-
-  if (passed == run) {
-    return 0;
-  } else {
-    return 1;
-  }
+  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumA.get());
+  ASSERT_FLOAT_EQ(1.0, minA.get());
+  ASSERT_FLOAT_EQ(area, maxA.get());
 }
