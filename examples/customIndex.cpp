@@ -68,10 +68,10 @@ const int DIM = 2;
 
   --------[RAJA Concepts]---------
   1. Constructing custom IndexSets
-  2. RAJA::View           - RAJA's multidimensional array
+  2. RAJA::View           - RAJA's wrapper for multidimensional indexing
   3. RAJA::ListSegment    - Container for an arbitrary collection of indices
   4. RAJA::StaticIndexSet - Container for an index set which is a collection of
-  ListSegments
+                             ListSegments
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -92,7 +92,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
 
   /*
-    RAJA::View - RAJA's multidimensional array
+    RAJA::View - RAJA's wrapper for multidimensional indexing
    */
   RAJA::View<int, RAJA::Layout<DIM>> Aview(A, n, n);
 
@@ -128,7 +128,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       /*
         RAJA::List segment - creates a list segment from a given array with a
         specific length.
-        Insert the indicies added from the buffer as a new ListSegment
+
+        Here the indicies are inserted from the buffer as a new ListSegment.
       */
       colorset.push_back(RAJA::ListSegment(idx, count));
     }
