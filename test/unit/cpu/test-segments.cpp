@@ -242,17 +242,31 @@ TEST(RangeStrideSegmentTest, forall_values_forward_stride3)
   
   ASSERT_EQ(segment.size(), 5);
  
-  for(RAJA::Index_type i = 0;i < segment.size();++ i){
+  for(RAJA::Index_type i = 0;i < segment.size();++ i)
+  {
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
   size_t j = 0;
-  size_t *jptr = &j;
   
-  RAJA::forall<RAJA::seq_exec>(segment, [=](RAJA::Index_type i)
+  
+  for(auto i = segment.begin();i < segment.end();++i)
   {
-    ASSERT_EQ(i, expected[(*jptr)++]);
+    ASSERT_EQ(*i, expected[j++]);
+  } 
+  
+  ASSERT_EQ((RAJA::Index_type)j, segment.size());
+  
+  
+  j = 0;
+  
+  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i)
+  {
+    ASSERT_EQ(i, expected[j++]);
   }); 
+  
+  
+  ASSERT_EQ((RAJA::Index_type)j, segment.size());
 }
 
 
@@ -267,11 +281,21 @@ TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
     ASSERT_EQ(segment.begin()[i], expected[i]);
   } 
   
-  size_t j = 0;
-  size_t *jptr = &j;
+  size_t j = 0; 
   
-  RAJA::forall<RAJA::seq_exec>(segment, [=](RAJA::Index_type i)
+  for(auto i = segment.begin();i < segment.end();++i)
   {
-    ASSERT_EQ(i, expected[(*jptr)++]);
+    ASSERT_EQ(*i, expected[j++]);
+  } 
+  
+  ASSERT_EQ((RAJA::Index_type)j, segment.size());
+  
+  j = 0;
+  
+  RAJA::forall<RAJA::seq_exec>(segment, [&](RAJA::Index_type i)
+  {
+    ASSERT_EQ(i, expected[j++]);
   }); 
+  
+  ASSERT_EQ((RAJA::Index_type)j, segment.size());
 }
