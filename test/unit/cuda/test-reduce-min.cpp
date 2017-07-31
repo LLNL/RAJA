@@ -51,57 +51,69 @@
 #include <string>
 
 #include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
-
-#define TEST_VEC_LEN 1024 * 1024 * 6
+#include "RAJA_gtest.hpp"
 
 using namespace RAJA;
 
-const size_t block_size = 256;
+constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
 const int test_repeat = 10;
+const size_t block_size = 256;
+const double DEFAULT_VAL = DBL_MAX;
+const double BIG_VAL = -500.0;
 
+// for setting random values in arrays
 std::random_device rd;
 std::mt19937 mt(rd());
 std::uniform_real_distribution<double> dist(-10, 10);
 std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
 
-double *getData()
+void reset(double* ptr, long length)
 {
-  double *dvalue;
-  cudaMallocManaged((void **)&dvalue,
-                    sizeof(double) * TEST_VEC_LEN,
-                    cudaMemAttachGlobal);
-  for (int i = 0; i < TEST_VEC_LEN; ++i) {
-    dvalue[i] = DBL_MAX;
+  for (long i = 0; i < length; ++i) {
+    ptr[i] = DEFAULT_VAL;
   }
-  return dvalue;
 }
 
-//
-// test 1 runs 3 reductions over a range multiple times to check
-//        that reduction value can be retrieved and then subsequent
-//        reductions can be run with the same reduction objects.
-//        Also exercises the get function call
-void test1()
+class ReduceMinTest : public ::testing::Test
 {
-  double *dvalue = getData();
-  double dcurrentMin = DBL_MAX;
+public:
+  static double* dvalue;
+  static void SetUpTestCase()
+  {
+    cudaMallocManaged((void**)&dvalue,
+                      sizeof(double) * TEST_VEC_LEN,
+                      cudaMemAttachGlobal);
+    reset(dvalue, TEST_VEC_LEN);
+  }
+  static void TearDownTestCase() { cudaFree(dvalue); }
+};
+
+double* ReduceMinTest::dvalue = nullptr;
+
+CUDA_TEST_F(ReduceMinTest, generic)
+{
+
+  double* dvalue = ReduceMinTest::dvalue;
+  reset(dvalue, TEST_VEC_LEN);
+
+  double dcurrentMin = DEFAULT_VAL;
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-    double BIG_MIN = -500.0;
-    ReduceMin<cuda_reduce<block_size>, double> dmin0(DBL_MAX);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DBL_MAX);
-    ReduceMin<cuda_reduce<block_size>, double> dmin2(BIG_MIN);
+
+    ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
+    ReduceMin<cuda_reduce<block_size>, double> dmin2(BIG_VAL);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
 
       double droll = dist(mt);
       int index = int(dist2(mt));
+      double lmin = droll;
       dvalue[index] = droll;
-      dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
+      dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
 
       forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
         dmin0.min(dvalue[i]);
@@ -110,14 +122,11 @@ void test1()
       });
 
       ASSERT_FLOAT_EQ(dcurrentMin, dmin0.get());
-      ASSERT_FLOAT_EQ(2 * dcurrentMin, dmin1.get());
-      ASSERT_FLOAT_EQ(BIG_MIN, dmin2.get());
+      ASSERT_FLOAT_EQ(dcurrentMin * 2, dmin1.get());
+      ASSERT_FLOAT_EQ(BIG_VAL, dmin2.get());
     }
   }
-
-  cudaFree(dvalue);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////
 
@@ -126,26 +135,34 @@ void test1()
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-void test2()
+CUDA_TEST_F(ReduceMinTest, indexset_align)
 {
+
+  double* dvalue = ReduceMinTest::dvalue;
+
+  reset(dvalue, TEST_VEC_LEN);
+
+  double dcurrentMin = DEFAULT_VAL;
+
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
-    double *dvalue = getData();
+
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
-    RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
+    RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
 
     IndexSet iset;
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMin<cuda_reduce<block_size>, double> dmin0(DBL_MAX);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DBL_MAX);
+    ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
 
     int index = int(dist2(mt));
 
-    double droll = 1000000;
+    double droll = dist(mt);
     dvalue[index] = droll;
-
-    double dcurrentMin = droll;
+    double lmin = droll;
+    dvalue[index] = droll;
+    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -155,7 +172,6 @@ void test2()
 
     ASSERT_FLOAT_EQ(dcurrentMin, double(dmin0));
     ASSERT_FLOAT_EQ(2 * dcurrentMin, double(dmin1));
-    cudaFree(dvalue);
   }
 }
 
@@ -167,29 +183,30 @@ void test2()
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-void test3()
+CUDA_TEST_F(ReduceMinTest, indexset_noalign)
 {
-  double *dvalue = getData();
-  double dcurrentMin;
+
+  double* dvalue = ReduceMinTest::dvalue;
+
+  RangeSegment seg0(1, 1230);
+  RangeSegment seg1(1237, 3385);
+  RangeSegment seg2(4860, 10110);
+  RangeSegment seg3(20490, 32003);
+
+  IndexSet iset;
+  iset.push_back(seg0);
+  iset.push_back(seg1);
+  iset.push_back(seg2);
+  iset.push_back(seg3);
+
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
-    for (int i = 0; i < TEST_VEC_LEN; ++i) {
-      dvalue[i] = DBL_MAX;
-    }
-    dcurrentMin = DBL_MAX;
 
-    RangeSegment seg0(1, 1230);
-    RangeSegment seg1(1237, 3385);
-    RangeSegment seg2(4860, 10110);
-    RangeSegment seg3(20490, 32003);
+    reset(dvalue, TEST_VEC_LEN);
 
-    IndexSet iset;
-    iset.push_back(seg0);
-    iset.push_back(seg1);
-    iset.push_back(seg2);
-    iset.push_back(seg3);
+    double dcurrentMin = DEFAULT_VAL;
 
-    ReduceMin<cuda_reduce<block_size>, double> dmin0(DBL_MAX);
-    ReduceMin<cuda_reduce<block_size>, double> dmin1(DBL_MAX);
+    ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
+    ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
 
     // pick an index in one of the segments
     int index = 897;                     // seg 0
@@ -200,7 +217,9 @@ void test3()
     double droll = dist(mt);
     dvalue[index] = droll;
 
-    dcurrentMin = RAJA_MIN(dcurrentMin, dvalue[index]);
+    double lmin = droll;
+    dvalue[index] = droll;
+    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -208,14 +227,7 @@ void test3()
           dmin1.min(2 * dvalue[i]);
         });
 
-    ASSERT_FLOAT_EQ(dcurrentMin, dmin0.get());
-    ASSERT_FLOAT_EQ(2 * dcurrentMin, dmin1.get());
+    ASSERT_FLOAT_EQ(dcurrentMin, double(dmin0));
+    ASSERT_FLOAT_EQ(2 * dcurrentMin, double(dmin1));
   }
-  cudaFree(dvalue);
 }
-
-TEST(ReduceMin, generic) { test1(); }
-
-TEST(ReduceMin, indexset_align) { test2(); }
-
-TEST(ReduceMin, indexset_noalign) { test3(); }

@@ -170,9 +170,9 @@ CUDA_TEST_F(ReduceMinLocTest, indexset_align)
 
     double droll = dist(mt);
     dvalue[index] = droll;
-    minloc_t lmax = {droll, index};
+    minloc_t lmin = {droll, index};
     dvalue[index] = droll;
-    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmax);
+    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -231,9 +231,9 @@ CUDA_TEST_F(ReduceMinLocTest, indexset_noalign)
     double droll = dist(mt);
     dvalue[index] = droll;
 
-    minloc_t lmax = {droll, index};
+    minloc_t lmin = {droll, index};
     dvalue[index] = droll;
-    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmax);
+    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {

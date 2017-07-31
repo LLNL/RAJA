@@ -53,7 +53,7 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#include "RAJA_gtest.hpp"
 
 using namespace RAJA;
 
@@ -300,31 +300,6 @@ struct PolLTimesC_GPU {
   typedef RAJA::PERM_IJ ELL_PERM;
 };
 
-void runNegativeRange()
-{
-  double *data;
-  double host_data[100];
-
-  cudaMallocManaged((void **)&data, sizeof(double) * 100, cudaMemAttachGlobal);
-
-  for (int i = 0; i < 100; ++i) {
-    host_data[i] = i * 1.0;
-  }
-
-  forallN<NestedPolicy<ExecList<cuda_threadblock_y_exec<16>,
-                                cuda_threadblock_x_exec<16>>>>(
-      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
-        const int idx = ((k - -2) * 10) + (j - -2);
-        data[idx] = idx * 1.0;
-      });
-
-  cudaDeviceSynchronize();
-
-  for (int i = 0; i < 100; ++i) {
-    ASSERT_EQ(host_data[i], data[i]);
-  }
-}
-
 TEST(ForallN, LTimes_PolA)
 {
   runLTimesTest<PolLTimesA_GPU>(2, 0, 7, 3);
@@ -352,7 +327,27 @@ TEST(ForallN, LTimes_PolC)
   runLTimesTest<PolLTimesC_GPU>(100, 15, 7, 13);
 }
 
-TEST(ForallN, NegativeRange)
+CUDA_TEST(ForallN, NegativeRange)
 {
-  runNegativeRange();
+    double *data;
+  double host_data[100];
+
+  cudaMallocManaged((void **)&data, sizeof(double) * 100, cudaMemAttachGlobal);
+
+  for (int i = 0; i < 100; ++i) {
+    host_data[i] = i * 1.0;
+  }
+
+  forallN<NestedPolicy<ExecList<cuda_threadblock_y_exec<16>,
+                                cuda_threadblock_x_exec<16>>>>(
+      RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
+        const int idx = ((k - -2) * 10) + (j - -2);
+        data[idx] = idx * 1.0;
+      });
+
+  cudaDeviceSynchronize();
+
+  for (int i = 0; i < 100; ++i) {
+    ASSERT_EQ(host_data[i], data[i]);
+  }
 }
