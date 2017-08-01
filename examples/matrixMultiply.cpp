@@ -198,7 +198,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       
       double dot = 0.0;
       for (int k = 0; k < N; ++k) {
-        dot += Aview(row, col) * Bview(row, col);
+        dot += Aview(row, k) * Bview(k, col);
       }
       
       Cview(row, col) = dot;
