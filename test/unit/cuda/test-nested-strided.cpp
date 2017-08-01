@@ -57,11 +57,11 @@
 #include <gtest/gtest.h>
 #include <RAJA/RAJA.hpp>
 
-const int x = 500, y = 500, z = 50;
+static const int x = 500, y = 500, z = 50;
 
 using namespace RAJA;
 
-void stride_test(int stride)
+static void stride_test(int stride)
 {
   int *arr = nullptr;
   cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
@@ -97,7 +97,7 @@ void stride_test(int stride)
   cudaFree(arr);
 }
 
-TEST(forallN, rangeStrides1)
+TEST(NestedStridedCUDA, rangeStrides1)
 {
   stride_test(1);
 }

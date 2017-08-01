@@ -57,12 +57,12 @@
 
 const size_t block_size = 256;
 
-RAJA::IndexSet iset;
-RAJA::Index_type array_length;
-RAJA::RAJAVec<RAJA::Index_type> is_indices;
-RAJA::Real_ptr parent, ref_array, test_array;
+static RAJA::IndexSet iset;
+static RAJA::Index_type array_length;
+static RAJA::RAJAVec<RAJA::Index_type> is_indices;
+static RAJA::Real_ptr parent, ref_array, test_array;
 
-struct Forall : ::testing::Test {
+struct ForallCUDA : ::testing::Test {
   virtual void SetUp()
   {
     using namespace RAJA;
@@ -203,7 +203,7 @@ struct Forall : ::testing::Test {
 ///
 /// Run traversal with simple range-based iteration
 ///
-CUDA_TEST_F(Forall, forall_range)
+CUDA_TEST_F(ForallCUDA, forall_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -229,7 +229,7 @@ CUDA_TEST_F(Forall, forall_range)
 ///
 /// Run range Icount test in its simplest form for sanity check
 ///
-CUDA_TEST_F(Forall, forall_icount_range)
+CUDA_TEST_F(ForallCUDA, forall_icount_range)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -261,7 +261,7 @@ CUDA_TEST_F(Forall, forall_icount_range)
 ///
 /// Run traversal test with IndexSet containing multiple segments.
 ///
-CUDA_TEST_F(Forall, forall_indexset)
+CUDA_TEST_F(ForallCUDA, forall_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;
@@ -291,7 +291,7 @@ CUDA_TEST_F(Forall, forall_indexset)
 ///
 /// Run Icount test with IndexSet containing multiple segments.
 ///
-CUDA_TEST_F(Forall, forall_icount_indexset)
+CUDA_TEST_F(ForallCUDA, forall_icount_indexset)
 {
   RAJA::Real_ptr parent = ::parent;
   RAJA::Real_ptr test_array = ::test_array;

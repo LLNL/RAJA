@@ -58,10 +58,10 @@ constexpr const int TEST_VEC_LEN = 1024 * 1024 * 5;
 
 using namespace RAJA;
 
-const double dinit_val = 0.1;
-const int iinit_val = 1;
+static const double dinit_val = 0.1;
+static const int iinit_val = 1;
 
-class ReduceSumTest : public ::testing::Test
+class ReduceSumCUDA : public ::testing::Test
 {
 public:
   static void SetUpTestCase()
@@ -100,15 +100,15 @@ public:
   static int *ivalue;
 };
 
-double* ReduceSumTest::dvalue = nullptr;
-double* ReduceSumTest::rand_dvalue = nullptr;
-int* ReduceSumTest::ivalue = nullptr;
+double* ReduceSumCUDA::dvalue = nullptr;
+double* ReduceSumCUDA::rand_dvalue = nullptr;
+int* ReduceSumCUDA::ivalue = nullptr;
 
 const size_t block_size = 256;
 
-CUDA_TEST_F(ReduceSumTest, staggered_sum)
+CUDA_TEST_F(ReduceSumCUDA, staggered_sum)
 {
-  double* dvalue = ReduceSumTest::dvalue;
+  double* dvalue = ReduceSumCUDA::dvalue;
 
   double dtinit = 5.0;
 
@@ -148,10 +148,10 @@ CUDA_TEST_F(ReduceSumTest, staggered_sum)
   }
 }
 
-CUDA_TEST_F(ReduceSumTest, indexset_aligned)
+CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
 {
-  double* dvalue = ReduceSumTest::dvalue;
-  int* ivalue = ReduceSumTest::ivalue;
+  double* dvalue = ReduceSumCUDA::dvalue;
+  int* ivalue = ReduceSumCUDA::ivalue;
 
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
@@ -193,10 +193,10 @@ CUDA_TEST_F(ReduceSumTest, indexset_aligned)
 //        not aligned with warp boundaries to check that reduction
 //        mechanics don't depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceSumTest, indexset_noalign)
+CUDA_TEST_F(ReduceSumCUDA, indexset_noalign)
 {
-  double* dvalue = ReduceSumTest::dvalue;
-  int* ivalue = ReduceSumTest::ivalue;
+  double* dvalue = ReduceSumCUDA::dvalue;
+  int* ivalue = ReduceSumCUDA::ivalue;
 
 
   RangeSegment seg0(1, 1230);
@@ -235,9 +235,9 @@ CUDA_TEST_F(ReduceSumTest, indexset_noalign)
   ASSERT_EQ(int(isum3), 4 * ibase_chk_val + (itinit * 4));
 }
 
-CUDA_TEST_F(ReduceSumTest, atomic_reduce)
+CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
 {
-  double* rand_dvalue = ReduceSumTest::rand_dvalue;
+  double* rand_dvalue = ReduceSumCUDA::rand_dvalue;
 
   ReduceSum<cuda_reduce_atomic<block_size>, double> dsumN(0.0);
   ReduceSum<cuda_reduce_atomic<block_size>, double> dsumP(0.0);

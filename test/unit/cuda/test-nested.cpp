@@ -65,7 +65,7 @@ struct minmaxloc_t {
 // block_size is needed by the reduction variables to setup shared memory
 // Care should be used here to cover the maximum block dimensions used by this
 // test
-const size_t block_size = 256;
+static const size_t block_size = 256;
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -84,10 +84,10 @@ RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
 template <typename POL>
-void runLTimesTest(Index_type num_moments,
-                   Index_type num_directions,
-                   Index_type num_groups,
-                   Index_type num_zones)
+static void runLTimesTest(Index_type num_moments,
+                          Index_type num_directions,
+                          Index_type num_groups,
+                          Index_type num_zones)
 {
 
   // allocate data
@@ -300,7 +300,7 @@ struct PolLTimesC_GPU {
   typedef RAJA::PERM_IJ ELL_PERM;
 };
 
-TEST(ForallN, LTimes_PolA)
+TEST(NestedCUDA, LTimes_PolA)
 {
   runLTimesTest<PolLTimesA_GPU>(2, 0, 7, 3);
   runLTimesTest<PolLTimesA_GPU>(2, 3, 7, 3);
@@ -309,7 +309,7 @@ TEST(ForallN, LTimes_PolA)
   runLTimesTest<PolLTimesA_GPU>(100, 15, 7, 13);
 }
 
-TEST(ForallN, LTimes_PolB)
+TEST(NestedCUDA, LTimes_PolB)
 {
   runLTimesTest<PolLTimesB_GPU>(2, 0, 7, 3);
   runLTimesTest<PolLTimesB_GPU>(2, 3, 7, 3);
@@ -318,7 +318,7 @@ TEST(ForallN, LTimes_PolB)
   runLTimesTest<PolLTimesB_GPU>(100, 15, 7, 13);
 }
 
-TEST(ForallN, LTimes_PolC)
+TEST(NestedCUDA, LTimes_PolC)
 {
   runLTimesTest<PolLTimesC_GPU>(2, 0, 7, 3);
   runLTimesTest<PolLTimesC_GPU>(2, 3, 7, 3);
@@ -327,9 +327,9 @@ TEST(ForallN, LTimes_PolC)
   runLTimesTest<PolLTimesC_GPU>(100, 15, 7, 13);
 }
 
-CUDA_TEST(ForallN, NegativeRange)
+CUDA_TEST(NestedCUDA, NegativeRange)
 {
-    double *data;
+  double *data;
   double host_data[100];
 
   cudaMallocManaged((void **)&data, sizeof(double) * 100, cudaMemAttachGlobal);

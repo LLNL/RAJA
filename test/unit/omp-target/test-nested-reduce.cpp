@@ -47,12 +47,12 @@
 #include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
 
-RAJA::Index_type const begin = 0;
-RAJA::Index_type const xExtent = 64;
-RAJA::Index_type const yExtent = 64;
-RAJA::Index_type const area = xExtent * yExtent;
+static RAJA::Index_type const begin = 0;
+static RAJA::Index_type const xExtent = 64;
+static RAJA::Index_type const yExtent = 64;
+static RAJA::Index_type const area = xExtent * yExtent;
 
-TEST(NestedReduce,outer)
+TEST(NestedReduceTargetOMP,outer)
 {
   RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumA(0.0);
   RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minA(10000.0);
@@ -71,7 +71,7 @@ TEST(NestedReduce,outer)
   ASSERT_FLOAT_EQ(area, maxA.get());
 }
 
-TEST(NestedReduce,inner)
+TEST(NestedReduceTargetOMP,inner)
 {
   RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumB(0.0);
   RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minB(10000.0);

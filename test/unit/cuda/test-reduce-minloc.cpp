@@ -57,30 +57,30 @@ using namespace RAJA;
 
 constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
 
-const int test_repeat = 10;
-const size_t block_size = 256;
-const double DEFAULT_VAL = DBL_MAX;
-const double BIG_VAL = -500.0;
+static const int test_repeat = 10;
+static const size_t block_size = 256;
+static const double DEFAULT_VAL = DBL_MAX;
+static const double BIG_VAL = -500.0;
 
 // for setting random values in arrays
-std::random_device rd;
-std::mt19937 mt(rd());
-std::uniform_real_distribution<double> dist(-10, 10);
-std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
+static std::random_device rd;
+static std::mt19937 mt(rd());
+static std::uniform_real_distribution<double> dist(-10, 10);
+static std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
 
 struct minloc_t {
   double val;
   int idx;
 };
 
-void reset(double* ptr, long length)
+static void reset(double* ptr, long length)
 {
   for (long i = 0; i < length; ++i) {
     ptr[i] = DEFAULT_VAL;
   }
 }
 
-class ReduceMinLocTest : public ::testing::Test {
+class ReduceMinLocCUDA : public ::testing::Test {
 public:
   static double* dvalue;
   static void SetUpTestCase()
@@ -93,12 +93,12 @@ public:
   static void TearDownTestCase() { cudaFree(dvalue); }
 };
 
-double* ReduceMinLocTest::dvalue = nullptr;
+double* ReduceMinLocCUDA::dvalue = nullptr;
 
-CUDA_TEST_F(ReduceMinLocTest, generic)
+CUDA_TEST_F(ReduceMinLocCUDA, generic)
 {
 
-  double* dvalue = ReduceMinLocTest::dvalue;
+  double* dvalue = ReduceMinLocCUDA::dvalue;
   reset(dvalue, TEST_VEC_LEN);
 
   minloc_t dcurrentMin;
@@ -143,10 +143,10 @@ CUDA_TEST_F(ReduceMinLocTest, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TEST_F(ReduceMinLocTest, indexset_align)
+CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
 {
 
-  double* dvalue = ReduceMinLocTest::dvalue;
+  double* dvalue = ReduceMinLocCUDA::dvalue;
 
   reset(dvalue, TEST_VEC_LEN);
 
@@ -195,10 +195,10 @@ CUDA_TEST_F(ReduceMinLocTest, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceMinLocTest, indexset_noalign)
+CUDA_TEST_F(ReduceMinLocCUDA, indexset_noalign)
 {
 
-  double* dvalue = ReduceMinLocTest::dvalue;
+  double* dvalue = ReduceMinLocCUDA::dvalue;
 
   RangeSegment seg0(1, 1230);
   RangeSegment seg1(1237, 3385);
