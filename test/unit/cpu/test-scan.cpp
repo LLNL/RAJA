@@ -57,7 +57,7 @@
 #include "RAJA_gtest.hpp"
 #include "type_helper.hpp"
 
-const int N = 32768;
+const int N = 32000;
 
 // Unit Test Space Exploration
 
@@ -67,15 +67,12 @@ using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
 using ExecTypes = std::tuple<RAJA::seq_exec>;
 #endif
 
-using ReduceTypes = std::tuple<RAJA::operators::safe_plus<int>,
-                               RAJA::operators::safe_plus<float>,
-                               RAJA::operators::safe_plus<double>,
-                               RAJA::operators::minimum<int>,
+using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
+                               RAJA::operators::plus<double>,
                                RAJA::operators::minimum<float>,
                                RAJA::operators::minimum<double>,
                                RAJA::operators::maximum<int>,
-                               RAJA::operators::maximum<float>,
-                               RAJA::operators::maximum<double>>;
+                               RAJA::operators::maximum<float>>;
 
 using CrossTypes =
     ForTesting<typename types::product<ExecTypes, ReduceTypes>::type>;
@@ -152,7 +149,7 @@ TYPED_TEST_P(Scan, inclusive)
                        out,
                        Function{});
 
-  check_inclusive<Function>(out, Scan<TypeParam>::data);
+  ASSERT_TRUE(check_inclusive<Function>(out, Scan<TypeParam>::data));
   delete[] out;
 }
 
@@ -169,7 +166,7 @@ TYPED_TEST_P(Scan, inclusive_inplace)
                                data + N,
                                Function{});
 
-  check_inclusive<Function>(data, Scan<TypeParam>::data);
+  ASSERT_TRUE(check_inclusive<Function>(data, Scan<TypeParam>::data));
   delete[] data;
 }
 
@@ -186,7 +183,7 @@ TYPED_TEST_P(Scan, exclusive)
                        out,
                        Function{});
 
-  check_exclusive<Function>(out, Scan<TypeParam>::data);
+  ASSERT_TRUE(check_exclusive<Function>(out, Scan<TypeParam>::data));
   delete[] out;
 }
 
@@ -203,7 +200,7 @@ TYPED_TEST_P(Scan, exclusive_inplace)
                                data + N,
                                Function{});
 
-  check_exclusive<Function>(data, Scan<TypeParam>::data);
+  ASSERT_TRUE(check_exclusive<Function>(data, Scan<TypeParam>::data));
   delete[] data;
 }
 
@@ -221,7 +218,7 @@ TYPED_TEST_P(Scan, exclusive_offset)
                        Function{},
                        T(2));
 
-  check_exclusive<Function>(out, Scan<TypeParam>::data, T(2));
+  ASSERT_TRUE(check_exclusive<Function>(out, Scan<TypeParam>::data, T(2)));
   delete[] out;
 }
 
@@ -236,7 +233,7 @@ TYPED_TEST_P(Scan, exclusive_inplace_offset)
   RAJA::exclusive_scan_inplace(
       typename Info<TypeParam>::exec(), data, data + N, Function{}, T(2));
 
-  check_exclusive<Function>(data, Scan<TypeParam>::data, T(2));
+  ASSERT_TRUE(check_exclusive<Function>(data, Scan<TypeParam>::data, T(2)));
   delete[] data;
 }
 
