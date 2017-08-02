@@ -243,7 +243,7 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N)
   for (int row = 0; row < in_N; ++row) {
     for (int col = 0; col < in_N; ++col) {
 
-      if (abs(Cview(row, col) - in_N) > 1e-9) {
+      if (std::abs(Cview(row, col) - in_N) > 1e-9) {
         return;
       }
     }

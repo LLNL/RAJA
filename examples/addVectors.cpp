@@ -155,7 +155,7 @@ void checkSolution(int *C, int in_N)
 
   RAJA::forall<RAJA::seq_exec>
     (RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
-      if (abs(C[i] - (i + i)) != 0) {
+      if (std::abs(C[i] - (i + i)) != 0) {
         printf("Error in Result \n \n");
         return;
       }    

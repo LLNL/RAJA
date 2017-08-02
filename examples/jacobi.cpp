@@ -51,8 +51,8 @@
 
 #include "memoryManager.hpp"
 
-#define CUDA_BLOCK_SIZE 16
-#define CUDA_REDUCE_SIZE 256
+const int CUDA_BLOCK_SIZE  = 16;
+const int CUDA_REDUCE_SIZE = 256;
 
 
 /*

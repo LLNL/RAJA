@@ -147,7 +147,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     sequentially
    */
   using ColorPolicy =
-      RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
+      RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
 
   RAJA::forall<ColorPolicy>(colorset,
                             [=](int idx) {

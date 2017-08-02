@@ -170,16 +170,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
 
   // Sequential
-  //using fdPolicy = 
-  //RAJA::NestedPolicy<RAJA::ExecList
-  //<RAJA::seq_exec, RAJA::seq_exec > >;
+  using fdPolicy = 
+    RAJA::NestedPolicy<RAJA::ExecList
+    <RAJA::seq_exec, RAJA::seq_exec > >;
     
   // OpenMP
-  using fdPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList
-    <RAJA::omp_collapse_nowait_exec,
-    RAJA::omp_collapse_nowait_exec>,
-    RAJA::OMP_Parallel<>>;
+  //using fdPolicy =
+  //RAJA::NestedPolicy<RAJA::ExecList
+  //<RAJA::omp_collapse_nowait_exec,
+  //RAJA::omp_collapse_nowait_exec>,
+  //RAJA::OMP_Parallel<>>;
 
   // CUDA
   //using fdPolicy
@@ -238,7 +238,7 @@ void compute_err(double *P, double tf, grid_s grid)
       int id = tx + grid.nx * ty;
       double x = grid.ox + tx * grid.dx;
       double y = grid.ox + ty * grid.dx;
-      double myErr = abs(P[id] - wave_sol(tf, x, y));
+      double myErr = std::abs(P[id] - wave_sol(tf, x, y));
       
       tMax.max(myErr);  // Keeps track of the maximum value
     });
