@@ -41,6 +41,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cstdlib>
+#include <cmath>
 #include <iostream>
 #include <algorithm>
 #include <initializer_list>
@@ -244,7 +245,8 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N)
     for (int col = 0; col < in_N; ++col) {
       
       double diff = Cview(row,col) - in_N;
-      if (std::abs(diff) > 1e-9) {
+      
+      if (abs(diff) > 1e-9) {
         return;
       }
     }
