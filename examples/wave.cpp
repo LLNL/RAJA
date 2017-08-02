@@ -243,7 +243,7 @@ void compute_err(double *P, double tf, grid_s grid)
     });
   
   double l2err = tMax;  
-  printf("Max err=%f, dx=%f",l2err,grid.dx);
+  printf("Max err=%lg, dx=%f \n",l2err,grid.dx);
 }
 
 
