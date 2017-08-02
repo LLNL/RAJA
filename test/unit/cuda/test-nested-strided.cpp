@@ -41,48 +41,78 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for basic multipolicy operation
+/// Source file containing tests for RAJA forallN strided tests.
 ///
 
-#include "gtest/gtest.h"
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <random>
+#include <tuple>
+#include <type_traits>
 
-#include "RAJA/RAJA.hpp"
+#include <cstdlib>
 
-TEST(MultiPolicy, basic)
+#include <gtest/gtest.h>
+#include <RAJA/RAJA.hpp>
+
+static const int x = 500, y = 500, z = 50;
+
+using namespace RAJA;
+
+static void stride_test(int stride)
 {
-  auto mp =
-      RAJA::make_multi_policy<RAJA::seq_exec, RAJA::omp_parallel_for_exec>(
-          [](const RAJA::RangeSegment& r) {
-            if (r.size() < 100) {
-              return 0;
-            } else {
-              return 1;
-            }
-          });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 5), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 101), [](RAJA::Index_type) {
-    ASSERT_TRUE(omp_get_num_threads() > 1);
-  });
-  // Nest a multipolicy to ensure value-based policies are preserved
-  auto mp2 =
-      RAJA::make_multi_policy(std::make_tuple(RAJA::omp_parallel_for_exec{},
-                                              mp),
-                              [](const RAJA::RangeSegment& r) {
-                                if (r.size() > 10 && r.size() < 90) {
-                                  return 0;
-                                } else {
-                                  return 1;
-                                }
-                              });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), [](RAJA::Index_type) {
-    ASSERT_TRUE(omp_get_num_threads() > 1);
-  });
+  int *arr = nullptr;
+  cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
+  cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
+
+  forallN<NestedPolicy<ExecList<seq_exec,
+                                cuda_block_x_exec,
+                                cuda_thread_y_exec>,
+                       Permute<PERM_IJK>>>(RangeStrideSegment(0, z, stride),
+                                           RangeStrideSegment(0, y, stride),
+                                           RangeStrideSegment(0, x, stride),
+                                           [=] RAJA_DEVICE(int i,
+                                                           int j,
+                                                           int k) {
+                                             int val = z * y * i + y * j + k;
+                                             arr[val] = val;
+                                           });
+  cudaDeviceSynchronize();
+
+  int prev_val = -1;
+  for (int i = 0; i < z; i += stride) {
+    for (int j = 0; j < y; j += stride) {
+      for (int k = 0; k < x; k += stride) {
+        int val = z * y * i + y * j + k;
+        ASSERT_EQ(val, arr[val]);
+        for (int inner = prev_val + 1; inner < val; ++inner) {
+          ASSERT_EQ(0, arr[inner]);
+        }
+        prev_val = val;
+      }
+    }
+  }
+  cudaFree(arr);
+}
+
+TEST(NestedStridedCUDA, rangeStrides1)
+{
+  stride_test(1);
+}
+
+TEST(forallN, rangeStrides2)
+{
+  stride_test(2);
+}
+
+TEST(forallN, rangeStrides3)
+{
+  stride_test(3);
+}
+
+TEST(forallN, rangeStrides4)
+{
+  stride_test(4);
 }
