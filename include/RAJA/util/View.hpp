@@ -63,9 +63,9 @@
 namespace RAJA
 {
 
-template <typename DataType, 
-          typename LayoutT, 
-          typename DataPointer = DataType*>
+template <typename DataType,
+          typename LayoutT,
+          typename DataPointer = DataType *>
 struct View {
   LayoutT const layout;
   DataPointer data;
@@ -92,9 +92,9 @@ struct View {
   }
 };
 
-template <typename DataType, 
-          typename DataPointer, 
-          typename LayoutT, 
+template <typename DataType,
+          typename DataPointer,
+          typename LayoutT,
           typename... IndexTypes>
 struct TypedViewBase {
   using Base = View<DataType, LayoutT, DataPointer>;
@@ -121,14 +121,12 @@ struct TypedViewBase {
 };
 
 template <typename DataType, typename LayoutT, typename... IndexTypes>
-using TypedView = TypedViewBase<DataType, DataType*, LayoutT, IndexTypes...>;
+using TypedView = TypedViewBase<DataType, DataType *, LayoutT, IndexTypes...>;
 
 #if defined(RAJA_ENABLE_CHAI)
 
 template <typename DataType, typename LayoutT>
-using ManagedArrayView = View<DataType, 
-                              LayoutT, 
-                              chai::ManagedArray<DataType>>;
+using ManagedArrayView = View<DataType, LayoutT, chai::ManagedArray<DataType>>;
 
 
 template <typename DataType, typename LayoutT, typename... IndexTypes>

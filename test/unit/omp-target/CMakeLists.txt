@@ -42,14 +42,7 @@
 ###############################################################################
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-
-  raja_add_test(
-    NAME test-omptarget-nested_reduce
-    SOURCES main-nested-reduce.cpp)
-
-  raja_add_test(
-    NAME test-omptarget-reduction
-    SOURCES test-reductions.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-endif ()
+  add_gtest_sources(
+    test-nested-reduce.cpp
+    test-reductions.cpp)
+endif(RAJA_ENABLE_TARGET_OPENMP)

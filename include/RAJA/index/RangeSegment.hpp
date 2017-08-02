@@ -57,6 +57,8 @@
 
 #include "RAJA/internal/Iterators.hpp"
 
+#include "RAJA/util/concepts.hpp"
+
 namespace RAJA
 {
 
@@ -198,7 +200,7 @@ private:
 /*!
  ******************************************************************************
  *
- * \brief  Segment class representing a contiguous typed range of indices
+ * \brief  Segment class representing a strided and typed range of indices
  *
  * \tparam StorageT the underlying data type for the Segment
  *
@@ -206,9 +208,22 @@ private:
  *
  *  begin() -- returns an iterator (TypedRangeStrideSegment::iterator)
  *  end() -- returns an iterator (TypedRangeStrideSegment::iterator)
- *  size() -- returns the total size of the Segment
+ *  size() -- returns the total iteration size of the Segment, not
+ *            necessarily the distance between begin() and end()
  *
  * NOTE: TypedRangeStrideSegment::iterator is a RandomAccessIterator
+ *
+ * NOTE: TypedRangeStrideSegment allows for positive or negative strides, but
+ *       a stride of zero is undefined and will cause DBZ
+ *
+ *
+ * As with other segment, the iteration space is inclusive of begin() and
+ * exclusive of end()
+ *
+ * For positive strides, begin() > end() implies size()==0
+ * For negative strides, begin() < end() implies size()==0
+ *
+ * NOTE: Proper handling of negative strides requires StorageT is a signed type
  *
  * Usage:
  *
@@ -217,6 +232,13 @@ private:
  * for (T i = begin; i < end; i += incr) {
  *   // loop body -- use i as index value
  * }
+ *
+ * Or, equivalently for a negative stride (incr < 0):
+ *
+ * for (T i = begin; i > end; i += incr) {
+ *   // loop body -- use i as index value
+ * }
+ *
  *
  * Using a TypedRangeStrideSegment, this becomes:
  *
@@ -230,6 +252,7 @@ private:
  * for (auto i : TypedRangeStrideSegment<T>(begin, end, incr)) {
  *   // loop body -- use i as index value
  * }
+ *
  *
  ******************************************************************************
  */
@@ -256,10 +279,13 @@ struct TypedRangeStrideSegment {
                                            StorageT stride)
       : m_begin(iterator(begin, stride)),
         m_end(iterator(end, stride)),
-        m_size((end - begin) >= stride
-                   ? (end - begin) / stride + ((end - begin) % stride)
-                   : 0)
+        // essentially a ceil((end-begin)/stride) but using integer math,
+        // and allowing for negative strides
+        m_size((end - begin + stride - ( stride > 0 ? 1 : -1  ) ) / stride)
   {
+    // if m_size was initialized as negative, that indicates a zero iteration
+    // space
+    m_size = m_size < 0 ? 0 : m_size;
   }
 
   //! disable compiler generated constructor
@@ -376,6 +402,7 @@ using common_type_t = typename common_type<Ts...>::type;
 template <typename BeginT,
           typename EndT,
           typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE
 TypedRangeSegment<Common> make_range(BeginT&& begin, EndT&& end)
 {
   return {begin, end};
@@ -395,12 +422,39 @@ template <typename BeginT,
           typename EndT,
           typename StrideT,
           typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
+RAJA_HOST_DEVICE
 TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
                                                    EndT&& end,
                                                    StrideT&& stride)
 {
   return {begin, end, stride};
 }
+
+namespace concepts
+{
+
+template <typename T, typename U>
+struct RangeConstructible
+    : DefineConcept(val<RAJA::detail::common_type_t<T, U>>()) {
+};
+
+template <typename T, typename U, typename V>
+struct RangeStrideConstructible
+    : DefineConcept(val<RAJA::detail::common_type_t<T, U, V>>()) {
+};
+
+}  // closing brace for concepts namespace
+
+namespace type_traits
+{
+
+DefineTypeTraitFromConcept(is_range_constructible,
+                           RAJA::concepts::RangeConstructible);
+
+DefineTypeTraitFromConcept(is_range_stride_constructible,
+                           RAJA::concepts::RangeStrideConstructible);
+
+}  // closing brace for type_traits namespace
 
 }  // closing brace for RAJA namespace
 

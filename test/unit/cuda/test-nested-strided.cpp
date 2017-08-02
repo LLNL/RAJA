@@ -41,39 +41,78 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA type traits.
+/// Source file containing tests for RAJA forallN strided tests.
 ///
 
-#include "RAJA/RAJA.hpp"
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <random>
+#include <tuple>
+#include <type_traits>
 
-#include "RAJA/internal/type_traits.hpp"
+#include <cstdlib>
 
-#include "gtest/gtest.h"
+#include <gtest/gtest.h>
+#include <RAJA/RAJA.hpp>
 
-#ifdef RAJA_ENABLE_OPENMP
+static const int x = 500, y = 500, z = 50;
 
-static_assert(!RAJA::is_sequential_policy<RAJA::omp_parallel_for_exec>::value,
-              "");
-static_assert(RAJA::is_openmp_policy<RAJA::omp_parallel_for_exec>::value, "");
-static_assert(!RAJA::is_cuda_policy<RAJA::omp_parallel_for_exec>::value, "");
-#endif
-static_assert(RAJA::is_sequential_policy<RAJA::seq_exec>::value, "");
-static_assert(!RAJA::is_openmp_policy<RAJA::seq_exec>::value, "");
-static_assert(!RAJA::is_cuda_policy<RAJA::seq_exec>::value, "");
+using namespace RAJA;
 
-#ifdef RAJA_ENABLE_CUDA
+static void stride_test(int stride)
+{
+  int *arr = nullptr;
+  cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
+  cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
 
-// check CUDA sync policies...
-static_assert(!RAJA::is_sequential_policy<RAJA::cuda_exec<128>>::value, "");
-static_assert(!RAJA::is_openmp_policy<RAJA::cuda_exec<128>>::value, "");
-static_assert(RAJA::is_cuda_policy<RAJA::cuda_exec<128>>::value, "");
+  forallN<NestedPolicy<ExecList<seq_exec,
+                                cuda_block_x_exec,
+                                cuda_thread_y_exec>,
+                       Permute<PERM_IJK>>>(RangeStrideSegment(0, z, stride),
+                                           RangeStrideSegment(0, y, stride),
+                                           RangeStrideSegment(0, x, stride),
+                                           [=] RAJA_DEVICE(int i,
+                                                           int j,
+                                                           int k) {
+                                             int val = z * y * i + y * j + k;
+                                             arr[val] = val;
+                                           });
+  cudaDeviceSynchronize();
 
-// check CUDA async policies...
-static_assert(!RAJA::is_sequential_policy<RAJA::cuda_exec<128, true>>::value,
-              "");
-static_assert(!RAJA::is_openmp_policy<RAJA::cuda_exec<128, true>>::value, "");
-static_assert(RAJA::is_cuda_policy<RAJA::cuda_exec<128, true>>::value, "");
+  int prev_val = -1;
+  for (int i = 0; i < z; i += stride) {
+    for (int j = 0; j < y; j += stride) {
+      for (int k = 0; k < x; k += stride) {
+        int val = z * y * i + y * j + k;
+        ASSERT_EQ(val, arr[val]);
+        for (int inner = prev_val + 1; inner < val; ++inner) {
+          ASSERT_EQ(0, arr[inner]);
+        }
+        prev_val = val;
+      }
+    }
+  }
+  cudaFree(arr);
+}
 
-#endif
+TEST(NestedStridedCUDA, rangeStrides1)
+{
+  stride_test(1);
+}
 
-TEST(TypeTraits, Default) { ASSERT_EQ(true, true); }
+TEST(forallN, rangeStrides2)
+{
+  stride_test(2);
+}
+
+TEST(forallN, rangeStrides3)
+{
+  stride_test(3);
+}
+
+TEST(forallN, rangeStrides4)
+{
+  stride_test(4);
+}

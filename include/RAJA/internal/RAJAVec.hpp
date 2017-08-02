@@ -87,7 +87,8 @@ public:
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator()) : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
+  explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator())
+      : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
   {
     grow_cap(init_cap);
   }
@@ -159,17 +160,19 @@ public:
   size_t size() const { return m_size; }
 
   RAJA_INLINE
-  void resize(size_t new_size){
+  void resize(size_t new_size)
+  {
     grow_cap(new_size);
     m_size = new_size;
   }
 
   RAJA_INLINE
-  void resize(size_t new_size, T const &new_value){
+  void resize(size_t new_size, T const& new_value)
+  {
     grow_cap(new_size);
 
-    if(new_size > m_size){
-      for(size_t i = m_size;i < new_size;++ i){
+    if (new_size > m_size) {
+      for (size_t i = m_size; i < new_size; ++i) {
         m_data[i] = new_value;
       }
     }
