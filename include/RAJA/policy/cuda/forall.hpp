@@ -74,6 +74,8 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
+#include <algorithm>
+
 namespace RAJA
 {
 
@@ -94,7 +96,17 @@ RAJA_INLINE
 dim3 getGridDim(size_t len, dim3 blockDim)
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
-  return (len + block_size-1) / block_size;
+
+  int device = 0;
+  static int num_sm[8] {0, 0, 0, 0, 0, 0, 0, 0};
+  if (num_sm[device] == 0) {
+    cudaDeviceGetAttribute(&num_sm[device], cudaDevAttrMultiProcessorCount, device);
+  }
+  size_t max_concurrent_blocks = num_sm[device] * (MAX_THREADS_PER_SM/block_size) ;
+
+  size_t gridSizeMax = (len + block_size-1) / block_size;
+
+  return std::min(gridSizeMax, max_concurrent_blocks);
 }
 
 /*!
@@ -154,14 +166,16 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY, typename IndexType>
+template <size_t BlockSize, typename Iterator, typename LOOP_BODY, typename IndexType>
+__launch_bounds__ (BlockSize, 1)
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
                                    IndexType length)
 {
   auto body = loop_body;
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  if (ii < length) {
+  auto gridThreads = static_cast<IndexType>(getGlobalNumThreads_1D_1D());
+  for (;ii < length;ii+=gridThreads) {
     body(idx[ii]);
   }
 }
@@ -175,10 +189,12 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
  *
  ******************************************************************************
  */
-template <typename Iterator,
+template <size_t BlockSize,
+          typename Iterator,
           typename LoopBody,
           typename IndexType,
           typename IndexType2>
+__launch_bounds__ (BlockSize, 1)
 __global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
                                           const Iterator idx,
                                           IndexType length,
@@ -186,7 +202,8 @@ __global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
 {
   auto body = loop_body;
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  if (ii < length) {
+  auto gridThreads = static_cast<IndexType>(getGlobalNumThreads_1D_1D());
+  for (;ii < length;ii+=gridThreads) {
     body(static_cast<IndexType>(ii + icount), idx[ii]);
   }
 }
@@ -224,7 +241,7 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
 
     cudaStream_t stream = 0;
 
-    cuda::impl::forall_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
+    cuda::impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
         cuda::make_launch_body(gridSize, BlockSize, 0, stream,
                                std::forward<LoopBody>(loop_body)),
         std::move(begin), len);
@@ -262,7 +279,7 @@ forall_Icount(cuda_exec<BlockSize, Async>,
 
     cudaStream_t stream = 0;
 
-    cuda::impl::forall_Icount_cuda_kernel<<<gridSize, BlockSize, 0, stream>>>(
+    cuda::impl::forall_Icount_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
         cuda::make_launch_body(gridSize, BlockSize, 0, stream,
                                std::forward<LoopBody>(loop_body)),
         std::move(begin), len, icount);

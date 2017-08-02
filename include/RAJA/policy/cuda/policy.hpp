@@ -191,6 +191,7 @@ namespace cuda
 // values for CUDA warp size and max block size.
 //
 constexpr const int WARP_SIZE = 32;
+constexpr const int MAX_THREADS_PER_SM = 2048;
 constexpr const int MAX_BLOCK_SIZE = 1024;
 constexpr const int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
