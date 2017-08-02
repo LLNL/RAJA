@@ -8,6 +8,8 @@
  * further review from Lawrence Livermore National Laboratory.
  */
 
+#include "gtest/gtest.h"
+
 #include <time.h>
 #include <cfloat>
 #include <cstdlib>
@@ -16,14 +18,22 @@
 #include <string>
 #include <vector>
 
+#define RAJA_ENABLE_NESTED 1
+
 #include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
 
 using namespace RAJA;
 using namespace std;
 
+#include "Compare.hpp"
+
 #include "chai/ArrayManager.hpp"
 #include "chai/ManagedArray.hpp"
+
+#define CUDA_TEST(X, Y) \
+  static void cuda_test_ ## X ## Y();\
+  TEST(X,Y) { cuda_test_ ## X ## Y();} \
+  static void cuda_test_ ## X ## Y()
 
 /*
  * Simple tests using forallN and View
@@ -197,7 +207,7 @@ void runLTimesTest(std::string const &policy,
         int index = *d + (*m * num_directions)
                     + (*g * num_directions * num_moments)
                     + (*z * num_directions * num_moments * num_groups);
-
+                    
         pdminloc.minloc(val, index);
         pdmaxloc.maxloc(val, index);
       });
@@ -220,7 +230,7 @@ void runLTimesTest(std::string const &policy,
   minmaxloc_t* lminloc = &the_lminloc;
   minmaxloc_t* lmaxloc = &the_lmaxloc;
 
-  forall<RAJA::seq_exec>(RangeSegment(0, num_zones), [=] (int z) {
+  forall<RAJA::seq_exec>(RangeSegment(0, num_zones), [=] (int z) { 
     for (IGroup g(0); g < num_groups; ++g) {
       for (IMoment m(0); m < num_moments; ++m) {
         double total = 0.0;
@@ -237,18 +247,23 @@ void runLTimesTest(std::string const &policy,
           // *lmaxloc = RAJA_MAXLOC(*lmaxloc, testMinMaxLoc);
         }
         *lsum += total;
-
+        
         // check answer with some reasonable tolerance
-        ASSERT_FLOAT_EQ(total, phi(m, g, IZone(z)));
+        ASSERT_TRUE(equal(total, phi(m, g, IZone(z))));
       }
     }
   });
 
   rm->setExecutionSpace(chai::NONE);
 
-  ASSERT_FLOAT_EQ(*lsum, pdsum.get());
-  ASSERT_FLOAT_EQ(*lmin, pdmin.get());
-  ASSERT_FLOAT_EQ(*lmax, pdmax.get());
+
+  ASSERT_TRUE(equal(*lsum, double(pdsum)));
+  ASSERT_TRUE(equal(*lmin , double(pdmin)));
+  ASSERT_TRUE(equal(*lmax , double(pdmax))); 
+//  ASSERT_DOUBLE_EQ(lminloc.val , double(pdminloc)); 
+      //&& (lminloc.idx != pdminloc.getLoc())) 
+  //ASSERT_DOUBLE_EQ(lmaxloc.val , double(pdmaxloc)); 
+      //&& (lmaxloc.idx != pdmaxloc.getLoc())) 
 }
 
 // Use thread-block mappings

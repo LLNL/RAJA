@@ -41,7 +41,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA CPU scan operations.
+/// Source file containing tests for RAJA GPU scans.
 ///
 
 #include <algorithm>
@@ -56,8 +56,7 @@
 
 #include <gtest/gtest.h>
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA/util/defines.hpp"
+#include <RAJA/RAJA.hpp>
 
 #include "data_storage.hpp"
 #include "type_helper.hpp"
@@ -66,15 +65,11 @@ const int N = 1024;
 
 // Unit Test Space Exploration
 
-#ifdef RAJA_ENABLE_OPENMP
-using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
-#else
-using ExecTypes = std::tuple<RAJA::seq_exec>;
-#endif
+using ExecTypes = std::tuple<RAJA::cuda_exec<128>, RAJA::seq_exec>;
 
-using ReduceTypes = std::tuple<RAJA::operators::safe_plus<int>,
-                               RAJA::operators::safe_plus<float>,
-                               RAJA::operators::safe_plus<double>,
+using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
+                               RAJA::operators::plus<float>,
+                               RAJA::operators::plus<double>,
                                RAJA::operators::minimum<int>,
                                RAJA::operators::minimum<float>,
                                RAJA::operators::minimum<double>,

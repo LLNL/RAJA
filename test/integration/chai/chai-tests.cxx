@@ -1,9 +1,24 @@
+#include "gtest/gtest.h"
+
 #include "chai/ManagedArray.hpp"
 
 #include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
 
 #include <iostream>
+
+
+#if defined(RAJA_ENABLE_CUDA)
+
+#define CUDA_TEST(X, Y) \
+  static void cuda_test_ ## X ## Y();\
+  TEST(X,Y) { cuda_test_ ## X ## Y();} \
+  static void cuda_test_ ## X ## Y()
+
+#else
+
+#define CUDA_TEST(X, Y) TEST(X,Y)
+
+#endif
 
 CUDA_TEST(ChaiTest, Simple) {
   chai::ManagedArray<float> v1(10);

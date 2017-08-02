@@ -1,3 +1,16 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file for simple comparison operations used in tests.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_Compare_HXX
+#define RAJA_Compare_HXX
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -9,7 +22,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,52 +53,37 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing test for nested reductions...
-///
+#define rcabs(val) (((val) < 0) ? (-(val)) : (val))
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
-
-template <typename Outer, typename Inner, typename Reduce>
-void test(int inner, int outer)
+namespace RAJA
 {
-  using limits = RAJA::operators::limits<double>;
-  RAJA::ReduceSum<Reduce, double> sum(0.0);
-  RAJA::ReduceMin<Reduce, double> min(limits::max());
-  RAJA::ReduceMax<Reduce, double> max(limits::min());
 
-  RAJA::forall<Outer>(RAJA::make_range(0, outer), [=](int y) {
-    RAJA::forall<Inner>(RAJA::make_range(0, inner), [=](int x) {
-      double val = y * inner + x + 1;
-      sum += val;
-      min.min(val);
-      max.max(val);
-    });
-  });
-
-  double area = inner * outer;
-  ASSERT_EQ((area * (area + 1)) / 2, sum.get());
-  ASSERT_EQ(1.0, min.get());
-  ASSERT_EQ(area, max.get());
+//
+// Test approximate equality of floating point numbers. Borrowed from Knuth.
+//
+template <typename T>
+bool equal(T a, T b)
+{
+  return (rcabs(a - b)
+          <= ((rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b)) * T(1.0e-12)));
 }
 
-TEST(NestedReduce, seq_seq)
+//
+// Equality for integers.  Mainly here for consistent usage with above.
+//
+bool equal(int a, int b) { return a == b; }
+
+template <typename T>
+bool array_equal(T ref_result, T to_check, Index_type alen)
 {
-  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(37, 73);
+  bool is_correct = true;
+  for (Index_type i = 0; i < alen && is_correct; ++i) {
+    is_correct &= equal(ref_result[i], to_check[i]);
+  }
+
+  return is_correct;
 }
 
-#if defined(RAJA_ENABLE_OPENMP)
-TEST(NestedReduce, omp_seq)
-{
-  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(10, 20);
-  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(37, 73);
-}
+}  // closing brace for RAJA namespace
 
-TEST(NestedReduce, seq_omp)
-{
-  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(37, 73);
-}
-#endif
+#endif  // closing endif for header file include guard

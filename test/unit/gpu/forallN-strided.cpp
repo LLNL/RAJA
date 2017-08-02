@@ -41,51 +41,66 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing test for nested reductions...
+/// Source file containing tests for RAJA forallN strided tests.
 ///
 
-#include "gtest/gtest.h"
-#include "RAJA/RAJA.hpp"
+#include <algorithm>
+#include <iostream>
+#include <iterator>
+#include <numeric>
+#include <random>
+#include <tuple>
+#include <type_traits>
 
-static RAJA::Index_type const begin = 0;
-static RAJA::Index_type const xExtent = 64;
-static RAJA::Index_type const yExtent = 64;
-static RAJA::Index_type const area = xExtent * yExtent;
+#include <cstdlib>
 
-TEST(NestedReduceTargetOMP,outer)
+#include <gtest/gtest.h>
+#include <RAJA/RAJA.hpp>
+
+const int x = 500, y = 500, z = 50;
+
+using namespace RAJA;
+void stride_test(int stride)
 {
-  RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumA(0.0);
-  RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minA(10000.0);
-  RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxA(0.0);
+  double *arr = NULL;
+  cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
+  cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
 
-  RAJA::forall<RAJA::omp_target_parallel_for_exec<64>>(begin, yExtent, [=](int y) {
-    RAJA::forall<RAJA::seq_exec>(begin, xExtent, [=](int x) {
-      sumA += double(y * xExtent + x + 1);
-      minA.min(double(y * xExtent + x + 1));
-      maxA.max(double(y * xExtent + x + 1));
-    });
-  });
+  forallN<NestedPolicy<ExecList<seq_exec,
+                                cuda_block_x_exec,
+                                cuda_thread_y_exec>,
+                       Permute<PERM_IJK>>>(RangeStrideSegment(0, z, stride),
+                                           RangeStrideSegment(0, y, stride),
+                                           RangeStrideSegment(0, x, stride),
+                                           [=] RAJA_DEVICE(int i,
+                                                           int j,
+                                                           int k) {
+                                             int val = z * y * i + y * j + k;
+                                             arr[val] = val;
+                                           });
+  cudaDeviceSynchronize();
 
-  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumA.get());
-  ASSERT_FLOAT_EQ(1.0, minA.get());
-  ASSERT_FLOAT_EQ(area, maxA.get());
+  int prev_val = 0;
+  for (int i = 0; i < z; i += stride) {
+    for (int j = 0; j < y; j += stride) {
+      for (int k = 0; k < x; k += stride) {
+        int val = z * y * i + y * j + k;
+        ASSERT_EQ(arr[val], val);
+        for (int inner = prev_val + 1; inner < val; ++inner) {
+          ASSERT_EQ(arr[inner], 0);
+        }
+        prev_val = val;
+      }
+    }
+  }
+  cudaFree(arr);
 }
 
-TEST(NestedReduceTargetOMP,inner)
+TEST(forallN, rangeStrides)
 {
-  RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumB(0.0);
-  RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minB(10000.0);
-  RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxB(0.0);
 
-  RAJA::forall<RAJA::seq_exec>(begin, yExtent, [=](int y) {
-    RAJA::forall<RAJA::omp_target_parallel_for_exec<64>>(begin, xExtent, [=](int x) {
-      sumB += double(y * xExtent + x + 1);
-      minB.min(double(y * xExtent + x + 1));
-      maxB.max(double(y * xExtent + x + 1));
-    });
-  });
-
-  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumA.get());
-  ASSERT_FLOAT_EQ(1.0, minA.get());
-  ASSERT_FLOAT_EQ(area, maxA.get());
+  stride_test(1);
+  stride_test(2);
+  stride_test(3);
+  stride_test(4);
 }
