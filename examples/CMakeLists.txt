@@ -49,18 +49,18 @@ raja_add_executable(
   NAME addVectors
   SOURCES addVectors.cpp)
 
-raja_add_executable(
-  NAME matrixMultiply
-  SOURCES matrixMultiply.cpp)
+#raja_add_executable(
+#  NAME matrixMultiply
+#  SOURCES matrixMultiply.cpp)
 
-raja_add_executable(
-  NAME jacobi
-  SOURCES jacobi.cpp)
+#raja_add_executable(
+#  NAME jacobi
+#  SOURCES jacobi.cpp)
 
-raja_add_executable(
-  NAME wave
-  SOURCES wave.cpp)
+#raja_add_executable(
+#  NAME wave
+#  SOURCES wave.cpp)
 
-raja_add_executable(
-  NAME customIndex
-  SOURCES customIndex.cpp)
+#raja_add_executable(
+#  NAME customIndex
+#  SOURCES customIndex.cpp)
