@@ -94,10 +94,10 @@ RAJA_INLINE void forall(const tbb_exec &, Iterable &&iter, Func &&loop_body)
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
-          [=](const brange& r) {
-            for (const auto &i : r)
-                loop_body(i);
-          });
+                    [=](const brange &r) {
+                      for (const auto &i : r)
+                        loop_body(i);
+                    });
 }
 
 template <typename Iterable, typename Func, typename IndexType>
@@ -110,12 +110,11 @@ forall_Icount(const tbb_exec &,
   auto end = std::end(iter);
   auto begin = std::begin(iter);
   auto distance = std::distance(begin, end);
-  using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
-          [=](const brange& r) {
-            for (decltype(distance) i = *r.begin(); i < *r.end(); ++i)
-                loop_body(static_cast<IndexType>(i + icount), begin[i]);
-          });
+  using brange = tbb::blocked_range<decltype(distance)>;
+  tbb::parallel_for(brange(0, distance), [=](const brange &r) {
+    for (decltype(distance) i = r.begin(); i != r.end(); ++i)
+      loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  });
 }
 
 }  // closing brace for impl namespace
