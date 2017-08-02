@@ -53,30 +53,19 @@
 #include <vector>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 
 using namespace RAJA;
-using namespace std;
 
-#include "Compare.hpp"
-
-typedef struct {
+struct minmaxloc_t {
   double val;
   int idx;
-} minmaxloc_t;
-
-//
-// Global variables for counting tests executed/passed.
-//
-unsigned s_ntests_run_total = 0;
-unsigned s_ntests_passed_total = 0;
-
-unsigned s_ntests_run = 0;
-unsigned s_ntests_passed = 0;
+};
 
 // block_size is needed by the reduction variables to setup shared memory
 // Care should be used here to cover the maximum block dimensions used by this
 // test
-const size_t block_size = 256;
+static const size_t block_size = 256;
 
 ///////////////////////////////////////////////////////////////////////////
 //
@@ -95,19 +84,11 @@ RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
 template <typename POL>
-void runLTimesTest(std::string const &policy,
-                   Index_type num_moments,
-                   Index_type num_directions,
-                   Index_type num_groups,
-                   Index_type num_zones)
+static void runLTimesTest(Index_type num_moments,
+                          Index_type num_directions,
+                          Index_type num_groups,
+                          Index_type num_zones)
 {
-  cout << "\n TestLTimes " << num_moments << " moments, " << num_directions
-       << " directions, " << num_groups << " groups, and " << num_zones
-       << " zones"
-       << " with policy " << policy << endl;
-
-  s_ntests_run++;
-  s_ntests_run_total++;
 
   // allocate data
   // phi is initialized to all zeros, the others are randomized
@@ -210,11 +191,6 @@ void runLTimesTest(std::string const &policy,
   cudaFree(d_phi);
   cudaFree(d_psi);
 
-  ////
-  //// CHECK ANSWER against the hand-written sequential kernel
-  ////
-  size_t nfailed = 0;
-
   // swap to host pointers
   ell.set_data(&ell_data[0]);
   phi.set_data(&phi_data[0]);
@@ -236,51 +212,18 @@ void runLTimesTest(std::string const &policy,
           lmaxloc = RAJA_MAXLOC(lmaxloc, testMinMaxLoc);
         }
         lsum += total;
-        // check answer with some reasonable tolerance
-        if (std::abs(total - phi(m, g, z)) > 1e-12) {
-          nfailed++;
-        }
+        ASSERT_FLOAT_EQ(total, phi(m, g, z));
       }
     }
   }
-  size_t reductionsFailed = 0;
-  std::string whichFailed;
 
-  if (std::abs(lsum - double(pdsum)) > 5e-9) {
-    reductionsFailed++;
-    whichFailed += "[ReduceSum]";
-    // printf("ReduceSum failed : EPS =  %g\n",std::abs(lsum - double(pdsum)));
-  }
-
-  if (lmin != double(pdmin)) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMin]";
-  }
-
-  if (lmax != double(pdmax)) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMax]";
-  }
-
-  if ((lminloc.val != double(pdminloc)) && (lminloc.idx != pdminloc.getLoc())) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMinLoc]";
-  }
-
-  if ((lmaxloc.val != double(pdmaxloc)) && (lmaxloc.idx != pdmaxloc.getLoc())) {
-    reductionsFailed++;
-    whichFailed += "[ReduceMaxLoc]";
-  }
-
-  if (nfailed || reductionsFailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-    if (reductionsFailed) {
-      cout << "  REDUCTIONS FAILURE: " << whichFailed << endl;
-    }
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
-  }
+  ASSERT_FLOAT_EQ(lsum, pdsum.get());
+  ASSERT_FLOAT_EQ(lmin, pdmin.get());
+  ASSERT_FLOAT_EQ(lmax, pdmax.get());
+  ASSERT_FLOAT_EQ(lminloc.val, pdminloc.get());
+  ASSERT_FLOAT_EQ(lmaxloc.val, pdmaxloc.get());
+  ASSERT_EQ(lminloc.idx, pdminloc.getLoc());
+  ASSERT_EQ(lmaxloc.idx, pdmaxloc.getLoc());
 }
 
 // Use thread-block mappings
@@ -357,26 +300,35 @@ struct PolLTimesC_GPU {
   typedef RAJA::PERM_IJ ELL_PERM;
 };
 
-void runLTimesTests(Index_type num_moments,
-                    Index_type num_directions,
-                    Index_type num_groups,
-                    Index_type num_zones)
+TEST(NestedCUDA, LTimes_PolA)
 {
-  runLTimesTest<PolLTimesA_GPU>(
-      "PolLTimesA_GPU", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesB_GPU>(
-      "PolLTimesB_GPU", num_moments, num_directions, num_groups, num_zones);
-  runLTimesTest<PolLTimesC_GPU>(
-      "PolLTimesC_GPU", num_moments, num_directions, num_groups, num_zones);
+  runLTimesTest<PolLTimesA_GPU>(2, 0, 7, 3);
+  runLTimesTest<PolLTimesA_GPU>(2, 3, 7, 3);
+  runLTimesTest<PolLTimesA_GPU>(2, 3, 32, 4);
+  runLTimesTest<PolLTimesA_GPU>(25, 96, 8, 32);
+  runLTimesTest<PolLTimesA_GPU>(100, 15, 7, 13);
 }
 
-void runNegativeRange()
+TEST(NestedCUDA, LTimes_PolB)
 {
-  s_ntests_run++;
-  s_ntests_run_total++;
+  runLTimesTest<PolLTimesB_GPU>(2, 0, 7, 3);
+  runLTimesTest<PolLTimesB_GPU>(2, 3, 7, 3);
+  runLTimesTest<PolLTimesB_GPU>(2, 3, 32, 4);
+  runLTimesTest<PolLTimesB_GPU>(25, 96, 8, 32);
+  runLTimesTest<PolLTimesB_GPU>(100, 15, 7, 13);
+}
 
-  cout << "\n TestNegativeRange " << endl;
+TEST(NestedCUDA, LTimes_PolC)
+{
+  runLTimesTest<PolLTimesC_GPU>(2, 0, 7, 3);
+  runLTimesTest<PolLTimesC_GPU>(2, 3, 7, 3);
+  runLTimesTest<PolLTimesC_GPU>(2, 3, 32, 4);
+  runLTimesTest<PolLTimesC_GPU>(25, 96, 8, 32);
+  runLTimesTest<PolLTimesC_GPU>(100, 15, 7, 13);
+}
 
+CUDA_TEST(NestedCUDA, NegativeRange)
+{
   double *data;
   double host_data[100];
 
@@ -395,56 +347,7 @@ void runNegativeRange()
 
   cudaDeviceSynchronize();
 
-  size_t nfailed = 0;
-
   for (int i = 0; i < 100; ++i) {
-    if (host_data[i] != data[i]) {
-      nfailed++;
-    }
+    ASSERT_EQ(host_data[i], data[i]);
   }
-
-  if (nfailed) {
-    cout << "\n TEST FAILURE: " << nfailed << " elements failed" << endl;
-  } else {
-    s_ntests_passed++;
-    s_ntests_passed_total++;
-  }
-}
-
-///////////////////////////////////////////////////////////////////////////
-//
-// Main Program.
-//
-///////////////////////////////////////////////////////////////////////////
-
-int main(int argc, char *argv[])
-{
-  ///////////////////////////////////////////////////////////////////////////
-  //
-  // Run RAJA::forall nested loop tests...
-  //
-  ///////////////////////////////////////////////////////////////////////////
-  cout << "Starting GPU nested tests" << endl << endl;
-  // Run some LTimes example tests (directions, groups, zones)
-  runLTimesTests(2, 0, 7, 3);
-  runLTimesTests(2, 3, 7, 3);
-  runLTimesTests(2, 3, 32, 4);
-  runLTimesTests(25, 96, 8, 32);
-  runLTimesTests(100, 15, 7, 13);
-  runNegativeRange();
-
-  ///
-  /// Print total number of tests passed/run.
-  ///
-
-  cout << "\n All Tests : # passed / # run = " << s_ntests_passed_total << " / "
-       << s_ntests_run_total << endl;
-
-  //
-  // Clean up....
-  //
-
-  cout << "\n DONE!!! " << endl;
-
-  return !(s_ntests_passed_total == s_ntests_run_total);
 }

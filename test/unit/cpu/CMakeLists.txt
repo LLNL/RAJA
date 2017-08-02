@@ -41,41 +41,13 @@
 #
 ###############################################################################
 
-raja_add_library(NAME bis SOURCES buildIndexSet.cpp)
-
-raja_add_test(
-  NAME test-reduce
-  SOURCES main-reduce.cpp
-  DEPENDS_ON bis)
-
-raja_add_test(
-  NAME test-nested
-  SOURCES main-nested.cpp)
-
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-nested_reduce
-    SOURCES main-nested-reduce.cpp)
-endif()
-
-raja_add_test(
-  NAME test-indexset
-  SOURCES test-indexsets.cpp
-  DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-if (NOT MSVC)
-  raja_add_test(
-    NAME test-reduction
-    SOURCES test-reductions.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-  raja_add_test(
-    NAME test-scan
-    SOURCES test-scan.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-
-  raja_add_test(
-    NAME test-forall
-    SOURCES test-forall.cpp
-    DEPENDS_ON bis gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-endif ()
+add_gtest_sources(
+  test-reduce.cpp
+  test-nested.cpp
+  test-nested-reduce.cpp
+  test-segments.cpp
+  test-indexsets.cpp
+  test-forall.cpp
+  test-scan.cpp
+  test-reductions.cpp
+  buildIndexSet.cpp)

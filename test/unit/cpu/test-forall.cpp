@@ -8,7 +8,6 @@
 using namespace RAJA;
 using namespace std;
 
-#include "Compare.hpp"
 #include "buildIndexSet.hpp"
 
 template <typename ISET_POLICY_T>

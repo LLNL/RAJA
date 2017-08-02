@@ -41,46 +41,19 @@
 #
 ###############################################################################
 
-SET(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS)
-
-raja_add_test(
-  NAME test-GPUreducemin
-  SOURCES ReduceMin.cpp)
-
-raja_add_test(
-  NAME test-GPUreducemax
-  SOURCES ReduceMax.cpp)
-
-raja_add_test(
-  NAME test-GPUreducesum
-  SOURCES ReduceSum.cpp)
-
-raja_add_test(
-  NAME test-GPUforall
-  SOURCES forall.cpp)
-
 if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-GPUforallN
-    SOURCES forallN.cpp)
-endif()
-
-raja_add_test(
-  NAME test-GPUreduceminloc
-  SOURCES ReduceMinLoc.cpp)
-
-raja_add_test(
-  NAME test-GPUreducemaxloc
-  SOURCES ReduceMaxLoc.cpp)
-
-raja_add_test(
-  NAME test-GPUforallN-strided
-  SOURCES forallN-strided.cpp
-  DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  add_gtest_sources(test-nested.cpp)
+endif(RAJA_ENABLE_OPENMP)
 
 if (NOT RAJA_ENABLE_CLANG_CUDA)
-  raja_add_test(
-    NAME test-GPUscan
-    SOURCES test-scan.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
-endif ()
+  add_gtest_sources(test-scan.cpp)
+endif()
+
+add_gtest_sources(
+  test-reduce-sum.cpp
+  test-reduce-max.cpp
+  test-reduce-min.cpp
+  test-reduce-maxloc.cpp
+  test-reduce-minloc.cpp
+  test-forall.cpp
+  test-nested-strided.cpp)

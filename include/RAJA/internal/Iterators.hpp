@@ -295,12 +295,8 @@ public:
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
-    auto diff = static_cast<difference_type>(base::val)
-                - (static_cast<difference_type>(rhs.val));
-    if (diff < stride) return 0;
-    if (diff % stride)  // check for off-stride endpoint
-      return diff / stride + 1;
-    return diff / stride;
+    return static_cast<difference_type>(base::val)
+           - (static_cast<difference_type>(rhs.val * stride));
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
@@ -318,10 +314,35 @@ public:
   RAJA_HOST_DEVICE inline bool operator!=(
       const strided_numeric_iterator& rhs) const
   {
-    if (base::val == rhs.val) return false;
-    auto rem = rhs.val % stride;
-    return base::val != rhs.val + rem;
+    return (base::val - rhs.val) / stride;
+  }  
+  RAJA_HOST_DEVICE inline bool operator==(
+      const strided_numeric_iterator& rhs) const
+  {
+    return !((base::val - rhs.val) / stride);
   }
+  
+  RAJA_HOST_DEVICE inline bool operator>(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride > rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator<(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride < rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator>=(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride >= rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator<=(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride <= rhs.val*stride;
+  }
+  
 
   RAJA_HOST_DEVICE inline Type operator*() const { return base::val; }
   RAJA_HOST_DEVICE inline Type operator->() const { return base::val; }
