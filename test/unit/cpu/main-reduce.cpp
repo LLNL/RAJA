@@ -171,6 +171,9 @@ void runMinReduceTests(Real_ptr in_array,
   runBasicMinReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
+  runBasicMinReductionTest<ExecPolicy<seq_segit, tbb_exec>,
+                           seq_reduce>(
+      "ExecPolicy<seq_segit, tbb_exec>", in_array, alen, iset, is_indices);
 
   runBasicMinReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(
@@ -304,6 +307,9 @@ void runMinLocReduceTests(Real_ptr in_array,
   runBasicMinLocReductionTest<ExecPolicy<seq_segit, seq_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
+  runBasicMinLocReductionTest<ExecPolicy<seq_segit, tbb_exec>,
+                              seq_reduce>(
+      "ExecPolicy<seq_segit, tbb_exec>", in_array, alen, iset, is_indices);
 
   runBasicMinLocReductionTest<ExecPolicy<seq_segit, simd_exec>,
                               seq_reduce>(
@@ -435,6 +441,9 @@ void runMaxReduceTests(Real_ptr in_array,
   runBasicMaxReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
+  runBasicMaxReductionTest<ExecPolicy<seq_segit, tbb_exec>,
+                           seq_reduce>(
+      "ExecPolicy<seq_segit, tbb_exec>", in_array, alen, iset, is_indices);
 
   runBasicMaxReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(
@@ -569,6 +578,9 @@ void runMaxLocReduceTests(Real_ptr in_array,
   runBasicMaxLocReductionTest<ExecPolicy<seq_segit, seq_exec>,
                               seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
+  runBasicMaxLocReductionTest<ExecPolicy<seq_segit, tbb_exec>,
+                              seq_reduce>(
+      "ExecPolicy<seq_segit, tbb_exec>", in_array, alen, iset, is_indices);
 
   runBasicMaxLocReductionTest<ExecPolicy<seq_segit, simd_exec>,
                               seq_reduce>(
@@ -687,6 +699,10 @@ void runSumReduceTests(Real_ptr in_array,
   runBasicSumReductionTest<ExecPolicy<seq_segit, seq_exec>,
                            seq_reduce>(
       "ExecPolicy<seq_segit, seq_exec>", in_array, alen, iset, is_indices);
+
+  runBasicSumReductionTest<ExecPolicy<seq_segit, tbb_exec>,
+                           tbb_reduce>(
+      "ExecPolicy<seq_segit, tbb_exec>", in_array, alen, iset, is_indices);
 
   runBasicSumReductionTest<ExecPolicy<seq_segit, simd_exec>,
                            seq_reduce>(

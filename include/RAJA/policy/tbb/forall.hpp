@@ -3,21 +3,16 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for sequential execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HPP
-#define RAJA_HPP
+#ifndef RAJA_forall_tbb_HPP
+#define RAJA_forall_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -63,85 +58,68 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/util/Operators.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/policy/sequential.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/simd.hpp"
+#include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/policy/tbb.hpp"
+#include <tbb/tbb.h>
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
-#endif
+using RAJA::concepts::enable_if;
+using RAJA::concepts::requires_;
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp.hpp"
-#endif
+namespace RAJA
+{
 
-#include "RAJA/index/IndexSet.hpp"
+namespace impl
+{
 
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/policy/MultiPolicy.hpp"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
-
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/OffsetLayout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
-#include "RAJA/util/View.hpp"
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-#include "RAJA/pattern/reduce.hpp"
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hpp"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const tbb_exec &, Iterable &&iter, Func &&loop_body)
+{
+  using brange = tbb::blocked_range<decltype(iter.begin())>;
+  tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
+          [=](const brange& r) {
+            for (const auto &i : r)
+                loop_body(i);
+          });
+}
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
+template <typename Iterable, typename Func, typename IndexType>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_exec &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body)
+{
+  auto end = std::end(iter);
+  auto begin = std::begin(iter);
+  auto distance = std::distance(begin, end);
+  using brange = tbb::blocked_range<decltype(iter.begin())>;
+  tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
+          [=](const brange& r) {
+            for (decltype(distance) i = *r.begin(); i < *r.end(); ++i)
+                loop_body(static_cast<IndexType>(i + icount), begin[i]);
+          });
+}
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
+}  // closing brace for impl namespace
 
-#include "RAJA/pattern/scan.hpp"
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
