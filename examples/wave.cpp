@@ -42,13 +42,13 @@
 
 #include <cstdlib>
 #include <iostream>
-#include <cmath>
 #include "memoryManager.hpp"
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
 const int sr = 2;  // Stencil Radius
+const double PI = 3.14159265359;
 
 struct grid_s {
   double ox, dx;
@@ -197,7 +197,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     P2 = P1;
     P1 = Temp;
   }
+#if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
+#endif
   compute_err(P2, time, grid);
   printf("Evolved solution to time = %f \n",time); 
 
@@ -210,11 +212,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 /*
   Analytic Solution
-  P(t,x,y) = Cos(2*M_PI*t)*Sin(2*M_PI*x)*Sin(2*M_PI*y)
+  P(t,x,y) = Cos(2*PI*t)*Sin(2*PI*x)*Sin(2*PI*y)
 */
 double wave_sol(double t, double x, double y)
 {
-  return cos(2. * M_PI * t) * sin(2. * M_PI * x) * sin(2. * M_PI * y);
+  return cos(2. * PI * t) * sin(2. * PI * x) * sin(2. * PI * y);
 }
 
 /*
