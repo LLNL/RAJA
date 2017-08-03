@@ -42,8 +42,8 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME example-raja-pi
-  SOURCES example-raja-pi.cpp)
+  NAME example-pi
+  SOURCES example-pi.cpp)
 
 raja_add_executable(
   NAME example-add-vectors
