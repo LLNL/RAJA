@@ -164,7 +164,7 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
  */
 
 #if ( __cplusplus >= 201402L ) || \
-  defined(__cpp_attributes) && __has_cpp_attribute(deprecated)
+  defined(__has_cpp_attribute) && __has_cpp_attribute(deprecated)
 
 // When using a C++14 compiler, use the standard-specified deprecated attribute
 # define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
