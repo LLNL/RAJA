@@ -61,7 +61,7 @@ void checkSolution(int *C, int in_N);
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
-  RAJA::forall<RAJA::exec_policy>(RAJA::Range,[=] (RAJA::Index_type i)) {
+  RAJA::forall<RAJA::exec_policy>(RAJA::Range, [=] (RAJA::Index_type i)) {
 
          //body
 
@@ -70,7 +70,7 @@ void checkSolution(int *C, int in_N);
   [=] Pass by copy
   [&] Pass by reference
   RAJA::exec_policy - specifies how the traversal occurs
-  RAJA::Range       - Provides a list of iterables for an index of the loop
+  RAJA::Range       - Provides a list of iterables
   RAJA::Index_type  - Index for RAJA loops
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -84,8 +84,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int *C = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
-    A[i] = i;
-    B[i] = i;
+    A[i] = -i;
+    B[i] =  i;
   }
 
   printf("Standard C++ Loop \n");
@@ -126,8 +126,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   printf("RAJA: CUDA Policy \n");
   /*
-    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes the forall loop using the CUDA
-    API
+    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API
     
     CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
   */
@@ -155,7 +154,7 @@ void checkSolution(int *C, int in_N)
 
   RAJA::forall<RAJA::seq_exec>
     (RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
-      if (std::abs(C[i] - (i + i)) != 0) {
+      if (std::abs(C[i]) != 0) {
         printf("Error in Result \n \n");
         return;
       }    

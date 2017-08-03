@@ -48,7 +48,7 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-const int sr = 2;  // Stencil Radius
+const int sr = 2;  // Stencil radius
 const double PI = 3.14159265359;
 
 struct grid_s {
@@ -58,7 +58,7 @@ struct grid_s {
 
 
 /*
-  Wave Propagator
+  Wave propagator
 */
 template <typename T, typename fdNestedPolicy>
 void Wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
@@ -212,7 +212,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 /*
-  Analytic Solution
+  Analytic colution
   P(t,x,y) = Cos(2*PI*t)*Sin(2*PI*x)*Sin(2*PI*y)
 */
 double wave_sol(double t, double x, double y)

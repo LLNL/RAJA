@@ -88,7 +88,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // iterations are under a tolerance
   double tol = 1e-5;
 
-  int N       = 100;                // Number of unknown gridpoints in a cartesian dimension
+  int N       = 100;                // Number of unknown gridpoints per cartesian dimension
   int NN      = (N + 2) * (N + 2);  // Total number of gridpoints on the lattice
   int maxIter = 100000;             // Maximum number of iterations to be taken
 
@@ -171,7 +171,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     /*
       ----[Reduction step]---------
       The RAJA API introduces a thread-safe accumulation variable
-      "ReduceSum" in order to carryout reductions.
+      "ReduceSum" in order to carryout reductions
     */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::seq_exec>

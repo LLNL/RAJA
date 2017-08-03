@@ -80,7 +80,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int n = 4;
   int *A = new int[n * n];
 
-  auto init = {1, 2, 1, 2, 3, 4, 3, 4, 1, 2, 1, 2, 3, 4, 3, 4};
+  auto init = {1, 2, 1, 2,
+               3, 4, 3, 4,
+               1, 2, 1, 2,
+               3, 4, 3, 4};
 
   std::copy(init.begin(), init.end(), A);
 
@@ -126,7 +129,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       }
 
       /*
-        RAJA::List segment - creates a list segment from a given array with a
+        RAJA::ListSegment - creates a list segment from a given array with a
         specific length.
 
         Here the indicies are inserted from the buffer as a new ListSegment.
@@ -146,13 +149,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     in each segment in parallel while travesing through each segment
     sequentially
    */
-  using ColorPolicy =
-      RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
-
-  RAJA::forall<ColorPolicy>(colorset,
-                            [=](int idx) {
-                              printf("A[%d] = %d\n", idx, A[idx]);
-                            });
+  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+    
+  RAJA::forall<ColorPolicy>
+    (colorset, [=](int idx) {
+      printf("A[%d] = %d\n", idx, A[idx]);
+    });
 
   return 0;
 }

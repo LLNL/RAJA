@@ -70,7 +70,7 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N);
 
 
   -----[RAJA Concepts]-------------
-  1. Nesting of forall loops (Not currently supported in CUDA)
+  1. Nesting forall loops (Not currently supported in CUDA)
 
   2. ForallN loop
 
