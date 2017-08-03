@@ -155,45 +155,32 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   }
 }
 
-///
-/// Macros for marking deprecated features in RAA
-///
+//! Macros for marking deprecated features in RAJA
+/*!
+ * To deprecate a function, place immediately before the return type
+ * To deprecate a member of a class or struct, place immediately before the declaration
+ * To deprecate a typedef, place immediately before the declaration.
+ * To deprecate a struct or class, place immediately after the 'struct'/'class' keyword
+ */
 
-//! deprecate a function. Place immediately before the return type
-#define RAJA_DEPRECATE_FUNCTION(Msg) __attribute__((deprecated(Msg)))
+#if ( __cplusplus >= 201402L ) || \
+  defined(__cpp_attributes) && __has_cpp_attribute(deprecated)
 
-//! deprecate a member of a class or struct. Place immediately before the declaration
-#define RAJA_DEPRECATE_MEMBER(Msg) __attribute__((deprecated(Msg)))
-
-//! deprecate a type. For a struct, place after 'struct'. For a typedef, place before 'typedef'
-#define RAJA_DEPRECATE_TYPE(Msg) __attribute__((deprecated(Msg)))
-
-//! [C++14 only] deprecate a using alias. Place between the alias name and equals sign (=)
-#define RAJA_DEPRECATE_ALIAS(Msg)
-
-#if __cplusplus >= 201402L
-
-/// When using a C++14 compiler, use the standard-specified deprecated attribute
-
-#  undef RAJA_DEPRECATE_FUNCTION
-#  define RAJA_DEPRECATE_FUNCTION(Msg) [[deprecated(Msg)]]
-#  undef RAJA_DEPRECATE_MEMBER
-#  define RAJA_DEPRECATE_MEMBER(Msg) [[deprecated(Msg)]]
-#  undef RAJA_DEPRECATE_TYPE
-#  define RAJA_DEPRECATE_TYPE(Msg) [[deprecated(Msg)]]
-#  undef RAJA_DEPRECATE_ALIAS
-#  define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
+// When using a C++14 compiler, use the standard-specified deprecated attribute
+# define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
+# define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
 
 #elif defined(_MSC_VER)
 
-/// for MSVC, use __declspec
+// for MSVC, use __declspec
+# define RAJA_DEPRECATE(Msg) __declspec(deprecated(Msg))
+# define RAJA_DEPRECATE_ALIAS(Msg)
 
-#  undef RAJA_DEPRECATE_FUNCTION
-#  define RAJA_DEPRECATE_FUNCTION(Msg) __declspec(deprecated(Msg))
-#  undef RAJA_DEPRECATE_MEMBER
-#  define RAJA_DEPRECATE_MEMBER(Msg) __declspec(deprecated(Msg))
-#  undef RAJA_DEPRECATE_TYPE
-#  define RAJA_DEPRECATE_TYPE(Msg) __declspec(deprecated(Msg))
+#else
+
+// else use __attribute__(deprecated("Message"))
+#define RAJA_DEPRECATE(Msg) __attribute__((deprecated(Msg)))
+#define RAJA_DEPRECATE_ALIAS(Msg)
 
 #endif
 
