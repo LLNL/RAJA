@@ -43,24 +43,24 @@
 
 raja_add_executable(
   NAME example-raja-pi
-  SOURCES pi.cpp)
+  SOURCES example-raja-pi.cpp)
 
 raja_add_executable(
-  NAME addVectors
-  SOURCES addVectors.cpp)
+  NAME example-add-vectors
+  SOURCES example-add-vectors.cpp)
 
 raja_add_executable(
-  NAME matrixMultiply
-  SOURCES matrixMultiply.cpp)
+  NAME example-matrix-multiply
+  SOURCES example-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME jacobi
-  SOURCES jacobi.cpp)
+  NAME example-jacobi
+  SOURCES example-jacobi.cpp)
 
 raja_add_executable(
-  NAME wave
-  SOURCES wave.cpp)
+  NAME example-wave
+  SOURCES example-wave.cpp)
 
 raja_add_executable(
-  NAME customIndex
-  SOURCES customIndex.cpp)
+  NAME example-custom-index
+  SOURCES example-custom-index.cpp)
