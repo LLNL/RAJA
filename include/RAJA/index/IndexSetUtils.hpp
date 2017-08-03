@@ -70,11 +70,12 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename CONTAINER_T>
-RAJA_INLINE void getIndices(CONTAINER_T& con, const IndexSet& iset)
+template <typename CONTAINER_T, typename... SEG_TYPES>
+RAJA_INLINE void getIndices(CONTAINER_T& con,
+                            const StaticIndexSet<SEG_TYPES...>& iset)
 {
   CONTAINER_T tcon;
-  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+  forall<ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
     tcon.push_back(idx);
   });
   con = tcon;
@@ -107,13 +108,13 @@ RAJA_INLINE void getIndices(CONTAINER_T& con, const SEGMENT_T& iset)
  *
  ******************************************************************************
  */
-template <typename CONTAINER_T, typename CONDITIONAL>
+template <typename CONTAINER_T, typename... SEG_TYPES, typename CONDITIONAL>
 RAJA_INLINE void getIndicesConditional(CONTAINER_T& con,
-                                       const IndexSet& iset,
+                                       const StaticIndexSet<SEG_TYPES...>& iset,
                                        CONDITIONAL conditional)
 {
   CONTAINER_T tcon;
-  forall<IndexSet::ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
+  forall<ExecPolicy<seq_segit, seq_exec> >(iset, [&](Index_type idx) {
     if (conditional(idx)) tcon.push_back(idx);
   });
   con = tcon;

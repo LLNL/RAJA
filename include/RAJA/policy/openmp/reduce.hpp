@@ -62,11 +62,10 @@
 
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/reduce.hpp"
-
-#include "RAJA/policy/openmp/policy.hpp"
-
 #include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/pattern/reduce.hpp"
+#include "RAJA/policy/openmp/policy.hpp"
+#include "RAJA/policy/openmp/target_reduce.hpp"
 
 #include <omp.h>
 
@@ -74,437 +73,476 @@ namespace RAJA
 {
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
  * \brief  Min reducer class template for use in OpenMP execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
 template <typename T>
 class ReduceMin<omp_reduce, T>
 {
-  using my_type = ReduceMin<omp_reduce, T>;
+  using Reduce = RAJA::reduce::min<T>;
 
 public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMin(T init_val) : m_parent(NULL), m_val(init_val) {}
+  //! prohibit compiler-generated default ctor
+  ReduceMin() = delete;
 
-  //
-  // Copy ctor.
-  //
-  ReduceMin(const ReduceMin<omp_reduce, T>& other)
+  //! prohibit compiler-generated copy assignment
+  ReduceMin &operator=(const ReduceMin &) = delete;
+
+  //! compiler-generated move constructor
+  ReduceMin(ReduceMin &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceMin &operator=(ReduceMin &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMin(T init_val)
+      : m_parent(nullptr), m_val(init_val)
+  {
+  }
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMin(const ReduceMin &other)
       : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
-  //
-  // Destruction folds value into m_parent object.
-  //
-  ~ReduceMin<omp_reduce, T>()
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMin()
   {
     if (m_parent) {
 #pragma omp critical
       {
-        m_parent->m_val = RAJA_MIN(m_parent->m_val, m_val);
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
-  operator T() { return m_val; }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced min value.
-  //
-  T get() { return operator T(); }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that updates min value for current object, assumes each thread
-  // has its own copy of the object.
-  //
-  const ReduceMin<omp_reduce, T>& min(T rhs) const
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMin &min(T rhs) const
   {
-    m_val = RAJA_MIN(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
-  ReduceMin<omp_reduce, T>& min(T rhs)
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMin &min(T rhs)
   {
-    m_val = RAJA_MIN(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMin<omp_reduce, T>();
-
-  const my_type* m_parent;
+  //! pointer to the parent ReduceMin object
+  const ReduceMin *m_parent;
   mutable T m_val;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
- * \brief  Min-loc reducer class template for use in OpenMP execution.
+ * \brief  MinLoc reducer class template for use in OpenMP execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
 template <typename T>
 class ReduceMinLoc<omp_reduce, T>
 {
-  using my_type = ReduceMinLoc<omp_reduce, T>;
+  using Reduce = RAJA::reduce::minloc<T, Index_type>;
 
 public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMinLoc(T init_val, Index_type init_loc)
-      : m_parent(NULL), m_val(init_val), m_idx(init_loc)
+  //! prohibit compiler-generated default ctor
+  ReduceMinLoc() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  ReduceMinLoc &operator=(const ReduceMinLoc &) = delete;
+
+  //! compiler-generated move constructor
+  ReduceMinLoc(ReduceMinLoc &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceMinLoc &operator=(ReduceMinLoc &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMinLoc(T init_val, Index_type init_idx)
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx)
   {
   }
 
-  //
-  // Copy ctor.
-  //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce, T>& other)
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMinLoc(const ReduceMinLoc &other)
       : m_parent(other.m_parent ? other.m_parent : &other),
         m_val(other.m_val),
         m_idx(other.m_idx)
   {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMinLoc<omp_reduce, T>()
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMinLoc()
   {
     if (m_parent) {
 #pragma omp critical
       {
-        m_parent->minloc(m_val, m_idx);
+        Reduce()(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
       }
     }
   }
 
-  //
-  // Operator that returns reduced min value.
-  //
-  operator T() { return m_val; }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced min value.
-  //
-  T get() { return operator T(); }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that returns index corresponding to reduced min value.
-  //
-  Index_type getLoc() { return m_idx; }
+  //! return the index location of the minimum value
+  /*!
+   *  \return the index location
+   */
+  RAJA_HOST_DEVICE Index_type getLoc() { return m_idx; }
 
-  //
-  // Method that updates min and index value for current thread.
-  //
-  const ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx) const
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMinLoc &minloc(T rhs, Index_type idx) const
   {
-    if (rhs < m_val) {
-      m_val = rhs;
-      m_idx = rhs_idx;
-    }
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
-  ReduceMinLoc<omp_reduce, T>& minloc(T rhs, Index_type rhs_idx)
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMinLoc &minloc(T rhs, Index_type idx)
   {
-    if (rhs < m_val) {
-      m_val = rhs;
-      m_idx = rhs_idx;
-    }
+    Reduce()(m_val, m_idx, rhs, idx);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMinLoc<omp_reduce, T>();
-
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceMinLoc object
+  const ReduceMinLoc *m_parent;
   mutable T m_val;
   mutable Index_type m_idx;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
  * \brief  Max reducer class template for use in OpenMP execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
 template <typename T>
 class ReduceMax<omp_reduce, T>
 {
-  using my_type = ReduceMax<omp_reduce, T>;
+  using Reduce = RAJA::reduce::max<T>;
 
 public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMax(T init_val) : m_parent(NULL), m_val(init_val) {}
+  //! prohibit compiler-generated default ctor
+  ReduceMax() = delete;
 
-  //
-  // Copy ctor.
-  //
-  ReduceMax(const ReduceMax<omp_reduce, T>& other)
+  //! prohibit compiler-generated copy assignment
+  ReduceMax &operator=(const ReduceMax &) = delete;
+
+  //! compiler-generated move constructor
+  ReduceMax(ReduceMax &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceMax &operator=(ReduceMax &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMax(T init_val)
+      : m_parent(nullptr), m_val(init_val)
+  {
+  }
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMax(const ReduceMax &other)
       : m_parent(other.m_parent ? other.m_parent : &other), m_val(other.m_val)
   {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMax<omp_reduce, T>()
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMax()
   {
     if (m_parent) {
 #pragma omp critical
       {
-        m_parent->m_val = RAJA_MAX(m_parent->m_val, m_val);
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
 
-  //
-  // Operator that returns reduced max value.
-  //
-  operator T() { return m_val; }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns reduced max value.
-  //
-  T get() { return operator T(); }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // Method that updates max value for current thread.
-  //
-  const ReduceMax<omp_reduce, T>& max(T rhs) const
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMax &max(T rhs) const
   {
-    m_val = RAJA_MAX(m_val, rhs);
+    Reduce()(m_val, rhs);
     return *this;
   }
 
-  ReduceMax<omp_reduce, T>& max(T rhs)
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMax &max(T rhs)
   {
-    m_val = RAJA_MAX(m_val, rhs);
-    return *this;
-  }
-
-private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMax<omp_reduce, T>();
-
-  const my_type* m_parent;
-
-  mutable T m_val;
-};
-
-/*!
- ******************************************************************************
- *
- * \brief  Max-loc reducer class template for use in OpenMP execution.
- *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
- */
-template <typename T>
-class ReduceMaxLoc<omp_reduce, T>
-{
-  using my_type = ReduceMaxLoc<omp_reduce, T>;
-
-public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceMaxLoc(T init_val, Index_type init_loc)
-      : m_parent(NULL), m_val(init_val), m_idx(init_loc)
-  {
-  }
-
-  //
-  // Copy ctor.
-  //
-  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce, T>& other)
-      : m_parent(other.m_parent ? other.m_parent : &other),
-        m_val(other.m_val),
-        m_idx(other.m_idx)
-  {
-  }
-
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceMaxLoc<omp_reduce, T>()
-  {
-    if (m_parent) {
-#pragma omp critical
-      {
-        m_parent->maxloc(m_val, m_idx);
-      }
-    }
-  }
-
-  //
-  // Operator that returns reduced max value.
-  //
-  operator T() { return m_val; }
-
-  //
-  // Method that returns reduced max value.
-  //
-  T get() { return operator T(); }
-
-  //
-  // Method that returns index corresponding to reduced max value.
-  //
-  Index_type getLoc() { return m_idx; }
-
-  //
-  // Method that updates max and index value for current thread.
-  //
-  const ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx) const
-  {
-    if (rhs > m_val) {
-      m_val = rhs;
-      m_idx = rhs_idx;
-    }
-    return *this;
-  }
-
-  ReduceMaxLoc<omp_reduce, T>& maxloc(T rhs, Index_type rhs_idx)
-  {
-    if (rhs > m_val) {
-      m_val = rhs;
-      m_idx = rhs_idx;
-    }
+    Reduce()(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceMaxLoc<omp_reduce, T>();
-
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceMax object
+  const ReduceMax *m_parent;
   mutable T m_val;
-  mutable Index_type m_idx;
 };
 
 /*!
- ******************************************************************************
+ **************************************************************************
  *
  * \brief  Sum reducer class template for use in OpenMP execution.
  *
- *         For usage example, see reducers.hxx.
- *
- ******************************************************************************
+ **************************************************************************
  */
 template <typename T>
 class ReduceSum<omp_reduce, T>
 {
-  using my_type = ReduceSum<omp_reduce, T>;
+  using Reduce = RAJA::reduce::sum<T>;
 
 public:
-  //
-  // Constructor takes default value (default ctor is disabled).
-  //
-  explicit ReduceSum(T init_val, T initializer = 0)
-      : m_parent(NULL), m_val(init_val), m_custom_init(initializer)
+  //! prohibit compiler-generated default ctor
+  ReduceSum() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  ReduceSum &operator=(const ReduceSum &) = delete;
+
+  //! compiler-generated move constructor
+  ReduceSum(ReduceSum &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceSum &operator=(ReduceSum &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceSum(T init_val, T initializer = T())
+      : m_parent(nullptr), m_val(init_val), m_custom_init(initializer)
   {
   }
 
-  //
-  // Copy ctor.
-  //
-  ReduceSum(const ReduceSum<omp_reduce, T>& other)
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceSum(const ReduceSum &other)
       : m_parent(other.m_parent ? other.m_parent : &other),
         m_val(other.m_custom_init),
         m_custom_init(other.m_custom_init)
   {
   }
 
-  //
-  // Destruction releases the shared memory block chunk for reduction id
-  // and id itself for others to use.
-  //
-  ~ReduceSum<omp_reduce, T>()
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceSum()
   {
     if (m_parent) {
 #pragma omp critical
       {
-        *m_parent += m_val;
+        Reduce()(m_parent->m_val, m_val);
       }
     }
   }
 
-  //
-  // Operator that returns reduced sum value.
-  //
-  operator T() { return m_val; }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
 
-  //
-  // Method that returns sum value.
-  //
-  T get() { return operator T(); }
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
 
-  //
-  // += operator that adds value to sum for current thread.
-  //
-  const ReduceSum<omp_reduce, T>& operator+=(T rhs) const
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceSum &operator+=(T rhs) const
   {
-    this->m_val += rhs;
+    Reduce()(m_val, rhs);
     return *this;
   }
 
-  ReduceSum<omp_reduce, T>& operator+=(T rhs)
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceSum &operator+=(T rhs)
   {
-    this->m_val += rhs;
+    Reduce()(m_val, rhs);
     return *this;
   }
 
 private:
-  //
-  // Default ctor is declared private and not implemented.
-  //
-  ReduceSum<omp_reduce, T>();
-
-  const my_type* m_parent;
-
+  //! pointer to the parent ReduceSum object
+  const ReduceSum *m_parent;
   mutable T m_val;
-  T m_custom_init;
+  const T m_custom_init;
 };
 
-/*
- * Old ordered reductions are included below.
+/*!
+ **************************************************************************
+ *
+ * \brief  MaxLoc reducer class template for use in OpenMP execution.
+ *
+ **************************************************************************
  */
+template <typename T>
+class ReduceMaxLoc<omp_reduce, T>
+{
+  using Reduce = RAJA::reduce::maxloc<T, Index_type>;
+
+public:
+  //! prohibit compiler-generated default ctor
+  ReduceMaxLoc() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  ReduceMaxLoc &operator=(const ReduceMaxLoc &) = delete;
+
+  //! compiler-generated move constructor
+  ReduceMaxLoc(ReduceMaxLoc &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceMaxLoc &operator=(ReduceMaxLoc &&) = default;
+
+  //! constructor requires a default value for the reducer
+  RAJA_HOST_DEVICE explicit ReduceMaxLoc(T init_val, Index_type init_idx)
+      : m_parent(nullptr), m_val(init_val), m_idx(init_idx)
+  {
+  }
+
+  //! create a copy of the reducer
+  /*!
+   * keep parent the same if non-null or set to current
+   */
+  RAJA_HOST_DEVICE ReduceMaxLoc(const ReduceMaxLoc &other)
+      : m_parent(other.m_parent ? other.m_parent : &other),
+        m_val(other.m_val),
+        m_idx(other.m_idx)
+  {
+  }
+
+  //! Destructor folds value into parent object.
+  RAJA_HOST_DEVICE ~ReduceMaxLoc()
+  {
+    if (m_parent) {
+#pragma omp critical
+      {
+        Reduce()(m_parent->m_val, m_parent->m_idx, m_val, m_idx);
+      }
+    }
+  }
+
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE operator T() { return m_val; }
+
+  //! return the reduced min value.
+  /*!
+   *  \return the calculated reduced value
+   */
+  RAJA_HOST_DEVICE T get() { return operator T(); }
+
+  //! return the index location of the maximum value
+  /*!
+   *  \return the index location
+   */
+  RAJA_HOST_DEVICE Index_type getLoc() { return m_idx; }
+
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE const ReduceMaxLoc &maxloc(T rhs, Index_type idx) const
+  {
+    Reduce()(m_val, m_idx, rhs, idx);
+    return *this;
+  }
+
+  //! reducer function; updates the current instance's state
+  /*!
+   * Assumes each thread has its own copy of the object.
+   */
+  RAJA_HOST_DEVICE ReduceMaxLoc &maxloc(T rhs, Index_type idx)
+  {
+    Reduce()(m_val, m_idx, rhs, idx);
+    return *this;
+  }
+
+private:
+  //! pointer to the parent ReduceMaxLoc object
+  const ReduceMaxLoc *m_parent;
+  mutable T m_val;
+  mutable Index_type m_idx;
+};
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Old ordered reductions are included below.
+//
+///////////////////////////////////////////////////////////////////////////////
 
 /*!
  ******************************************************************************
@@ -542,7 +580,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMin(const ReduceMin<omp_reduce_ordered, T>& other)
+  ReduceMin(const ReduceMin<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -604,7 +642,7 @@ private:
 
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
 
 /*!
@@ -646,7 +684,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMinLoc(const ReduceMinLoc<omp_reduce_ordered, T>& other)
+  ReduceMinLoc(const ReduceMinLoc<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -730,8 +768,8 @@ private:
   T m_reduced_val;
   Index_type m_reduced_idx;
 
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  CPUReductionBlockDataType *m_blockdata;
+  Index_type *m_idxdata;
 };
 
 /*!
@@ -770,7 +808,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMax(const ReduceMax<omp_reduce_ordered, T>& other)
+  ReduceMax(const ReduceMax<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -832,7 +870,7 @@ private:
 
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
 
 /*!
@@ -874,7 +912,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce_ordered, T>& other)
+  ReduceMaxLoc(const ReduceMaxLoc<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -958,8 +996,8 @@ private:
   T m_reduced_val;
   Index_type m_reduced_idx;
 
-  CPUReductionBlockDataType* m_blockdata;
-  Index_type* m_idxdata;
+  CPUReductionBlockDataType *m_blockdata;
+  Index_type *m_idxdata;
 };
 
 /*!
@@ -999,7 +1037,7 @@ public:
   //
   // Copy ctor.
   //
-  ReduceSum(const ReduceSum<omp_reduce_ordered, T>& other)
+  ReduceSum(const ReduceSum<omp_reduce_ordered, T> &other)
   {
     *this = other;
     m_is_copy = true;
@@ -1061,8 +1099,9 @@ private:
   T m_init_val;
   T m_reduced_val;
 
-  CPUReductionBlockDataType* m_blockdata;
+  CPUReductionBlockDataType *m_blockdata;
 };
+
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard

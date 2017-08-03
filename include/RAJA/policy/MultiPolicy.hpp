@@ -57,14 +57,14 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/policy/fwd.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/util/concepts.hpp"
+
 namespace RAJA
 {
-
-template <typename Selector, typename... Policies>
-class MultiPolicy;
 
 namespace detail
 {
@@ -100,10 +100,9 @@ public:
     return s(i);
   }
 
-  detail::policy_invoker<sizeof...(Policies)-1,
-                         sizeof...(Policies),
-                         Policies...>
-      _policies;
+  detail::
+      policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
+          _policies;
 };
 
 namespace detail
@@ -149,26 +148,33 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
-namespace wrap {
-template <typename EXEC_POLICY_T, typename Container, typename LOOP_BODY>
-RAJA_INLINE void forall(EXEC_POLICY_T&& p, Container&& c, LOOP_BODY loop_body);
+namespace wrap
+{
+
+template <typename ExecutionPolicy, typename Container, typename LoopBody>
+RAJA_INLINE concepts::
+    enable_if<concepts::
+                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+              type_traits::is_range<Container>>
+    forall(ExecutionPolicy &&, Container &&, LoopBody &&);
 
 /// forall - MultiPolicy specialization, select at runtime from a
 /// compile-time list of policies, build with make_multi_policy()
 /// \param p MultiPolicy to use for selection
 /// \param iter iterable of items to supply to body
 /// \param body functor, will receive each value produced by iterable iter
-template <typename... Policies,
+template <typename Iterable,
+          typename Body,
           typename Selector,
-          typename Iterable,
-          typename Body>
+          typename... Policies>
 RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
                         Iterable &&iter,
                         Body &&body)
 {
   p.invoke(iter, body);
 }
-}
+
+}  // closing brace for namespace wrap
 
 namespace detail
 {
@@ -195,7 +201,7 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
 template <size_t size, typename Policy, typename... rest>
 struct policy_invoker<0, size, Policy, rest...> {
   Policy _p;
-  policy_invoker(Policy p, rest... args) : _p(p) {}
+  policy_invoker(Policy p, rest...) : _p(p) {}
   template <typename Iterable, typename Body>
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
@@ -206,7 +212,9 @@ struct policy_invoker<0, size, Policy, rest...> {
     }
   }
 };
-}
-}
+
+}  // end namespace detail
+
+}  // end namespace RAJA
 
 #endif

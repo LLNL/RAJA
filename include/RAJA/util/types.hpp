@@ -57,22 +57,14 @@
 
 #include "RAJA/config.hpp"
 
+#include <cstddef>
+
 #if defined(RAJA_USE_COMPLEX)
 #include <complex>
 #endif
 
 namespace RAJA
 {
-
-///
-/// Enum describing index set types.
-///
-enum SegmentType {
-  _RangeSeg_,
-  _RangeStrideSeg_,
-  _ListSeg_,
-  _UnknownSeg_  // Keep last; used for default in case stmts
-};
 
 ///
 /// Enumeration used to indicate whether IndexSet objects own data
@@ -83,7 +75,7 @@ enum IndexOwnership { Unowned, Owned };
 ///
 /// Type use for all loop indexing in RAJA constructs.
 ///
-typedef int Index_type;
+using Index_type = std::ptrdiff_t;
 
 ///
 /// Integer value for undefined indices and other integer values.
@@ -276,7 +268,7 @@ public:
   ///
   Real_type& operator[](Index_type i)
   {
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
   }
 
   ///
@@ -457,7 +449,7 @@ public:
   {
 #if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
 #else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
@@ -468,7 +460,7 @@ public:
   {
 #if __ICC < 1300  // use alignment intrinsic
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
 #else  // use alignment attribute
     return ((TDRAReal_ptr)dptr)[i];
 #endif
@@ -479,9 +471,9 @@ public:
   Real_type& operator[](Index_type i)
   {
 #if 1  // NOTE: alignment instrinsic not available for older GNU compilers
-    return ((Real_type * RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
+    return ((Real_type * RAJA_RESTRICT) RAJA_ALIGN_DATA(dptr))[i];
 #else
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
 #endif
   }
 
@@ -489,9 +481,9 @@ public:
   const Real_type& operator[](Index_type i) const
   {
 #if 1  // NOTE: alignment instrinsic not available for older GNU compilers
-    return ((Real_type * RAJA_RESTRICT)RAJA_ALIGN_DATA(dptr))[i];
+    return ((Real_type * RAJA_RESTRICT) RAJA_ALIGN_DATA(dptr))[i];
 #else
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
 #endif
   }
 
@@ -500,14 +492,14 @@ public:
   Real_type& operator[](Index_type i)
   {
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
   }
 
   ///
   const Real_type& operator[](Index_type i) const
   {
     RAJA_ALIGN_DATA(dptr);
-    return ((Real_type * RAJA_RESTRICT)dptr)[i];
+    return ((Real_type * RAJA_RESTRICT) dptr)[i];
   }
 
 #elif defined(RAJA_COMPILER_CLANG)
@@ -659,7 +651,7 @@ public:
   ///
   Complex_type& operator[](Index_type i)
   {
-    return ((Complex_type * RAJA_RESTRICT)dptr)[i];
+    return ((Complex_type * RAJA_RESTRICT) dptr)[i];
   }
 
   ///
@@ -667,7 +659,7 @@ public:
   ///
   const Complex_type& operator[](Index_type i) const
   {
-    return ((Complex_type * RAJA_RESTRICT)dptr)[i];
+    return ((Complex_type * RAJA_RESTRICT) dptr)[i];
   }
 
   ///
