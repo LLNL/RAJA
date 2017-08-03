@@ -108,7 +108,7 @@ script:
 - cd $TRAVIS_BUILD_DIR
 - mkdir travis-build && cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
-- make -j
+- make -j 3
 - if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then make test; fi
 after_success:
 - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
