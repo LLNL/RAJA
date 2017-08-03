@@ -113,7 +113,7 @@ endif ()
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
-    CHAI)
+    chai)
 endif ()
 
 blt_add_library(
@@ -122,7 +122,7 @@ blt_add_library(
   HEADERS ${raja_headers}
   DEPENDS_ON ${raja_depends})
 
-install(TARGETS RAJA 
+install(TARGETS RAJA
   EXPORT RAJA
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
@@ -132,7 +132,7 @@ install(TARGETS RAJA
 install(EXPORT RAJA DESTINATION share/raja/cmake/)
 
 target_include_directories(RAJA
-  PUBLIC 
+  PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
