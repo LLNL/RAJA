@@ -43,4 +43,4 @@
 
 raja_add_executable(
   NAME example-raja-pi
-  SOURCES pi.cxx)
+  SOURCES pi.cpp)

@@ -315,7 +315,34 @@ public:
       const strided_numeric_iterator& rhs) const
   {
     return (base::val - rhs.val) / stride;
+  }  
+  RAJA_HOST_DEVICE inline bool operator==(
+      const strided_numeric_iterator& rhs) const
+  {
+    return !((base::val - rhs.val) / stride);
   }
+  
+  RAJA_HOST_DEVICE inline bool operator>(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride > rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator<(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride < rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator>=(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride >= rhs.val*stride;
+  }
+  RAJA_HOST_DEVICE inline bool operator<=(
+      const strided_numeric_iterator& rhs) const
+  {
+    return base::val*stride <= rhs.val*stride;
+  }
+  
 
   RAJA_HOST_DEVICE inline Type operator*() const { return base::val; }
   RAJA_HOST_DEVICE inline Type operator->() const { return base::val; }
