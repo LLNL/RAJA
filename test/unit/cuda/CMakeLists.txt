@@ -42,14 +42,10 @@
 ###############################################################################
 
 if(RAJA_ENABLE_OPENMP)
-  add_gtest_sources(test-nested.cpp)
+  raja_gtest_add_sources(test-nested.cpp)
 endif(RAJA_ENABLE_OPENMP)
 
-if (NOT RAJA_ENABLE_CLANG_CUDA)
-  add_gtest_sources(test-scan.cpp)
-endif()
-
-add_gtest_sources(
+raja_gtest_add_sources(
   test-reduce-sum.cpp
   test-reduce-max.cpp
   test-reduce-min.cpp
@@ -57,3 +53,7 @@ add_gtest_sources(
   test-reduce-minloc.cpp
   test-forall.cpp
   test-nested-strided.cpp)
+
+if (NOT RAJA_ENABLE_CLANG_CUDA)
+  raja_gtest_add_sources(test-scan.cpp)
+endif()

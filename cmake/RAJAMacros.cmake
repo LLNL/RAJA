@@ -134,3 +134,46 @@ macro(raja_add_test)
   add_test(NAME ${arg_NAME}
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
 endmacro(raja_add_test)
+
+
+set(__internal_test_dir ${CMAKE_SOURCE_DIR}/test CACHE INTERNAL "")
+
+# use this macro to add a directory for tests. This will internall update @raja_gtest_SOURCES
+macro (raja_gtest_add_subdirectory)
+  add_subdirectory(${ARGN})
+  set (raja_gtest_SOURCES ${raja_gtest_SOURCES} PARENT_SCOPE)
+endmacro(raja_gtest_add_subdirectory)
+
+# use this macro to add sources for testing. It will automatically add the
+# relative path (if required). NOTE: this internally updates @raja_gtest_SOURCES
+macro (raja_gtest_add_sources)
+  file (RELATIVE_PATH _relPath "${__internal_test_dir}" "${CMAKE_CURRENT_SOURCE_DIR}")
+  foreach (_src ${ARGN})
+    if (_relPath)
+      list (APPEND raja_gtest_SOURCES "${_relPath}/${_src}")
+    else()
+      list (APPEND raja_gtest_SOURCES "${_src}")
+    endif()
+  endforeach()
+  if (_relPath)
+    set(raja_gtest_SOURCES ${raja_gtest_SOURCES} PARENT_SCOPE)
+  endif()
+endmacro(raja_gtest_add_sources)
+
+# use this macro to add a test -- requires an argument indicating the binary name
+# optionally accepts INCLUDES to indicate one or more include paths
+macro(raja_gtest_add_binary)
+  set(options )
+  set(singleValueArgs NAME)
+  set(multiValueArgs INCLUDES)
+  cmake_parse_arguments(arg
+    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
+
+  raja_add_test(
+    NAME ${arg_NAME}
+    SOURCES ${raja_gtest_SOURCES})
+
+  target_include_directories(
+    ${arg_NAME}
+    PUBLIC ${arg_INCLUDES})
+endmacro(raja_gtest_add_binary)
