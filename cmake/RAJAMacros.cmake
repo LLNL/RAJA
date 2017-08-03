@@ -176,4 +176,6 @@ macro(raja_gtest_add_binary)
   target_include_directories(
     ${arg_NAME}
     PUBLIC ${arg_INCLUDES})
+
+  set(raja_gtest_SOURCES "")
 endmacro(raja_gtest_add_binary)
