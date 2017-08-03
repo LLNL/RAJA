@@ -155,4 +155,46 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   }
 }
 
+///
+/// Macros for marking deprecated features in RAA
+///
+
+//! deprecate a function. Place immediately before the return type
+#define RAJA_DEPRECATE_FUNCTION(Msg) __attribute__((deprecated(Msg)))
+
+//! deprecate a member of a class or struct. Place immediately before the declaration
+#define RAJA_DEPRECATE_MEMBER(Msg) __attribute__((deprecated(Msg)))
+
+//! deprecate a type. For a struct, place after 'struct'. For a typedef, place before 'typedef'
+#define RAJA_DEPRECATE_TYPE(Msg) __attribute__((deprecated(Msg)))
+
+//! [C++14 only] deprecate a using alias. Place between the alias name and equals sign (=)
+#define RAJA_DEPRECATE_ALIAS(Msg)
+
+#if __cplusplus >= 201402L
+
+/// When using a C++14 compiler, use the standard-specified deprecated attribute
+
+#  undef RAJA_DEPRECATE_FUNCTION
+#  define RAJA_DEPRECATE_FUNCTION(Msg) [[deprecated(Msg)]]
+#  undef RAJA_DEPRECATE_MEMBER
+#  define RAJA_DEPRECATE_MEMBER(Msg) [[deprecated(Msg)]]
+#  undef RAJA_DEPRECATE_TYPE
+#  define RAJA_DEPRECATE_TYPE(Msg) [[deprecated(Msg)]]
+#  undef RAJA_DEPRECATE_ALIAS
+#  define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
+
+#elif defined(_MSC_VER)
+
+/// for MSVC, use __declspec
+
+#  undef RAJA_DEPRECATE_FUNCTION
+#  define RAJA_DEPRECATE_FUNCTION(Msg) __declspec(deprecated(Msg))
+#  undef RAJA_DEPRECATE_MEMBER
+#  define RAJA_DEPRECATE_MEMBER(Msg) __declspec(deprecated(Msg))
+#  undef RAJA_DEPRECATE_TYPE
+#  define RAJA_DEPRECATE_TYPE(Msg) __declspec(deprecated(Msg))
+
+#endif
+
 #endif /* RAJA_INTERNAL_DEFINES_HPP */
