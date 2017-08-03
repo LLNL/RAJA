@@ -75,22 +75,16 @@
 
 #include <omp.h>
 
-
 namespace RAJA
 {
 
 namespace impl
 {
-
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                                         LOOP_BODY&& loop_body);
-
 ///
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename InnerPolicy, typename Func>
+template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
@@ -102,11 +96,15 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
   }
 }
 
-template <typename Iterable, typename InnerPolicy, typename Func>
-RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body)
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          typename InnerPolicy>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_parallel_exec<InnerPolicy>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
 #pragma omp parallel
   {
@@ -130,23 +128,24 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for nowait
-  for (Index_type i = 0; i < distance; ++i) {
+  for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(begin[i]);
   }
 }
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const omp_for_nowait_exec&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_nowait_exec&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for nowait
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 
@@ -161,23 +160,24 @@ RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for
-  for (Index_type i = 0; i < distance; ++i) {
+  for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(begin[i]);
   }
 }
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall_Icount(const omp_for_exec&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_exec&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 
@@ -194,23 +194,27 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for schedule(static, ChunkSize)
-  for (Index_type i = 0; i < distance; ++i) {
+  for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(begin[i]);
   }
 }
 
-template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
-                               Iterable&& iter,
-                               Index_type icount,
-                               Func&& loop_body)
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp for schedule(static, ChunkSize)
-  for (Index_type i = 0; i < distance; ++i) {
-    loop_body(i + icount, begin[i]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 
@@ -237,10 +241,17 @@ RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+
+/*
+* TODO: Fix this!!!
+ */
+
+/*
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY, typename ...
+SEG_TYPES>
 RAJA_INLINE void forall(
-    IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
-    const IndexSet& iset,
+    ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
+    const IndexSet<SEG_TYPES ...>& iset,
     LOOP_BODY loop_body)
 {
   if (!iset.dependencyGraphSet()) {
@@ -260,9 +271,6 @@ RAJA_INLINE void forall(
 
     task->wait();
 
-    /*
-     * TODO: Fix this!!!
-     */
     executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
     task->reset();
@@ -281,6 +289,7 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 }
+*/
 
 }  // closing brace for impl namespace
 
@@ -289,3 +298,5 @@ RAJA_INLINE void forall(
 #endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard
+
+#include "RAJA/policy/openmp/target_forall.hpp"
