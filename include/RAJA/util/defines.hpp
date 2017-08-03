@@ -163,8 +163,16 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
  * To deprecate a struct or class, place immediately after the 'struct'/'class' keyword
  */
 
-#if ( __cplusplus >= 201402L ) || \
-  defined(__has_cpp_attribute) && __has_cpp_attribute(deprecated)
+#if ( __cplusplus >= 201402L )
+# define RAJA_HAS_CXX14 1
+# define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+#elif defined(__has_cpp_attribute)
+# if __has_cpp_attribute(deprecated)
+#  define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+# endif
+#endif
+
+#ifdef RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED
 
 // When using a C++14 compiler, use the standard-specified deprecated attribute
 # define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
