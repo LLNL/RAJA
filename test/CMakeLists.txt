@@ -43,5 +43,37 @@
 
 include_directories(include)
 
+
+set(test_macro__internal_dir ${CMAKE_CURRENT_LIST_DIR} CACHE INTERNAL "")
+
+# use this macro to update the parent scope with the current list of sources used
+# for testing. NOTE: this is only required when the last command in a CMakeLists.txt
+# is add_directory(). add_gtest_sources() propagates the sources as expected
+macro(propagate_sources)
+  set (raja_test_SOURCES ${raja_test_SOURCES} PARENT_SCOPE)
+endmacro()
+
+# use this macro to add sources for testing. It will automatically add the
+# relative path (if required). NOTE: this internally updates @raja_test_SOURCES
+macro (add_gtest_sources)
+  file (RELATIVE_PATH _relPath "${test_macro__internal_dir}" "${CMAKE_CURRENT_SOURCE_DIR}")
+  foreach (_src ${ARGN})
+    if (_relPath)
+      list (APPEND raja_test_SOURCES "${_relPath}/${_src}")
+    else()
+      list (APPEND raja_test_SOURCES "${_src}")
+    endif()
+  endforeach()
+  if (_relPath)
+    propagate_sources()
+  endif()
+endmacro()
+
 add_subdirectory(unit)
+
 add_subdirectory(integration)
+
+# create the test once the sources have been visited
+raja_add_test(
+  NAME raja_test_suite
+  SOURCES ${raja_test_SOURCES})

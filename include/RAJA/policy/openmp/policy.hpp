@@ -79,7 +79,7 @@ template <unsigned int ChunkSize>
 struct Static : std::integral_constant<unsigned int, ChunkSize> {
 };
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
+#if defined(ENABLE_TARGET_OPENMP)
 
 template <unsigned int TeamSize>
 struct Teams : std::integral_constant<unsigned int, TeamSize> {

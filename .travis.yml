@@ -89,7 +89,7 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On"
     - TRAVIS_BUILD_NVCC="Yes"
   - compiler: gcc-5-debug
     addons:
@@ -124,7 +124,7 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On -DCMAKE_BUILD_TYPE=Debug"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DCMAKE_BUILD_TYPE=Debug"
     - TRAVIS_BUILD_NVCC="Yes"
 cache:
   directories:
