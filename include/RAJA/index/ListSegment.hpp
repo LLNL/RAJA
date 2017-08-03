@@ -192,15 +192,6 @@ public:
     }
   }
 
-  ///
-  /// Copy-assignment for list segment.
-  ///
-  TypedListSegment& operator=(const TypedListSegment&) = default;
-
-  ///
-  /// Move-assignment for list segment.
-  ///
-  TypedListSegment& operator=(TypedListSegment&&) = default;
 
   ///
   /// Swap function for copy-and-swap idiom.
@@ -228,6 +219,9 @@ public:
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {
+    if (container == m_data)
+      return len == m_size;
+
     if (len != m_size || container == nullptr || m_data == nullptr)
       return false;
 

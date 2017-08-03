@@ -47,6 +47,26 @@
 #include "gtest/gtest.h"
 #include "RAJA/RAJA.hpp"
 
+#include <iostream>
+
+namespace RAJA
+{
+  template <typename T>
+  void PrintTo(const TypedRangeSegment<T>& s, ::std::ostream* os) {
+    *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')';
+  }
+
+  template <typename T>
+  void PrintTo(const TypedRangeStrideSegment<T>& s, ::std::ostream* os) {
+    *os << '[' << (*s.begin()) << ',' << (*(s.end() - 1)) << ')' << " by " << (*(s.begin() + 1) - *s.begin());
+  }
+
+  template <typename T>
+  void PrintTo(const TypedListSegment<T>& s, ::std::ostream* os) {
+    *os << "Address: " << &(*s.begin()) << "; Size: " << s.size() << "; Ownership: " << (s.getIndexOwnership() == RAJA::Owned ? "Owned" : "Unowned");
+  }
+
+}
 
 TEST(RangeStrideSegmentTest, sizes_no_roundoff)
 {
@@ -374,32 +394,43 @@ TEST(SegmentTest, constructors)
   }
 
   {
-    RAJA::ListSegment first(nullptr, 100);
+    RAJA::ListSegment first(RAJA::make_range(0,10));
+    ASSERT_EQ(RAJA::Owned, first.getIndexOwnership());
+
     RAJA::ListSegment copied(first);
+    ASSERT_EQ(RAJA::Owned, copied.getIndexOwnership());
+
     ASSERT_EQ(first, copied);
     RAJA::ListSegment moved(std::move(first));
     ASSERT_EQ(moved, copied);
+
+    RAJA::ListSegment empty(nullptr, 100);
+    RAJA::ListSegment empty2(first.begin(), -5);
+    ASSERT_EQ(empty, empty2);
   }
 }
 
 TEST(SegmentTest, assignments)
 {
   {
-    RAJA::RangeSegment r(0, 5);
+    auto r =  RAJA::make_range(RAJA::Index_type(), 5);
     RAJA::RangeSegment seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::RangeSegment seg2 = std::move(r);
     ASSERT_EQ(seg2, seg1);
   }
   {
-    RAJA::RangeStrideSegment r(0, 5, 3);
+    auto r = RAJA::make_strided_range(RAJA::Index_type(), 5, 3);
     RAJA::RangeStrideSegment seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::RangeStrideSegment seg2 = std::move(r);
     ASSERT_EQ(seg2, seg1);
   }
   {
-    RAJA::ListSegment r(nullptr, 5);
+    RAJA::Index_type vals[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+    RAJA::ListSegment r(vals, 5, RAJA::Unowned);
+    ASSERT_EQ(RAJA::Unowned, r.getIndexOwnership());
+
     RAJA::ListSegment seg1 = r;
     ASSERT_EQ(r, seg1);
     RAJA::ListSegment seg2 = std::move(r);
@@ -413,7 +444,7 @@ TEST(SegmentTest, swaps)
     RAJA::RangeSegment r1(0, 5);
     RAJA::RangeSegment r2(1, 6);
     RAJA::RangeSegment r3(r1);
-    RAJA::RangeSegment r4(r3);
+    RAJA::RangeSegment r4(r2);
     std::swap(r1, r2);
     ASSERT_EQ(r1, r4);
     ASSERT_EQ(r2, r3);
@@ -422,17 +453,18 @@ TEST(SegmentTest, swaps)
     RAJA::RangeStrideSegment r1(0, 5, 2);
     RAJA::RangeStrideSegment r2(1, 6, 1);
     RAJA::RangeStrideSegment r3(r1);
-    RAJA::RangeStrideSegment r4(r3);
+    RAJA::RangeStrideSegment r4(r2);
     std::swap(r1, r2);
     ASSERT_EQ(r1, r4);
     ASSERT_EQ(r2, r3);
   }
   {
     RAJA::Index_type vals[10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
-    RAJA::ListSegment r1(vals, 5);
-    RAJA::ListSegment r2(vals + 5, 5);
+    RAJA::ListSegment r1(vals, 5, RAJA::Unowned);
+    RAJA::ListSegment r2(vals + 5, 5, RAJA::Unowned);
+    ASSERT_NE(r1, r2);
     RAJA::ListSegment r3(r1);
-    RAJA::ListSegment r4(r3);
+    RAJA::ListSegment r4(r2);
     std::swap(r1, r2);
     ASSERT_EQ(r1, r4);
     ASSERT_EQ(r2, r3);
@@ -466,5 +498,7 @@ TEST(SegmentTest, iterators)
     ASSERT_EQ(5, r1.end() - r1.begin());
     ASSERT_EQ(5, std::distance(r1.begin(), r1.end()));
     ASSERT_EQ(5, r1.size());
+    ASSERT_FALSE(r1.indicesEqual(nullptr, 10));
+    ASSERT_FALSE(r1.indicesEqual(&(*r1.begin()) + 1, r1.size()));
   }
 }
