@@ -67,15 +67,16 @@ matrix:
 cache:
   directories:
   - $HOME/llvm
+  - $HOME/download
 before_install:
 - sudo apt-get update -qq
+- mkdir -p $HOME/download
 - if [[ -n "${LLVM_VERSION}" ]]; then export LLVM_PATH=$HOME/llvm/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04; fi
 - if [[ -n "${LLVM_VERSION}" ]]; then export PATH=$LLVM_PATH/bin:$PATH; fi
 - if [[ -n "${LLVM_VERSION}" ]]; then export LD_LIBRARY_PATH=$LLVM_PATH/lib:$LD_LIBRARY_PATH; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then if [[ ! -e "${COMPILER" ]]; then cd $HOME &&
-  curl -o tarball.tar.xz http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${VERSION}-x64_64-linux-gnu-ubuntu-14.04.tar.xz &&
-  cd $HOME/llvm &&
-  tar xf $HOME/tarball.tar.xz; fi ; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then export DOWNLOAD_URL=http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x64_64-linux-gnu-ubuntu-14.04.tar.xz; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then export TARFILE=$HOME/download/llvm-${LLVM_VERSION}.tar.xz; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then if [[ "$(which ${COMPILER})" != "${LLVM_PATH}"* ]]; then if [[ ! -e ${TARFILE} ]]; then curl -o ${TARFILE} ${DOWNLOAD_URL}; fi; cd $HOME/llvm ; tar xf ${TARFILE}; fi; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
 - cd $HOME &&
   curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
@@ -84,7 +85,9 @@ before_install:
   tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 &&
   export PATH=${PWD}/bin:${PATH}
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then export DEBFILE=$HOME/download/cuda-repo.deb; fi
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
   travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo apt-get update -qq &&
   travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
