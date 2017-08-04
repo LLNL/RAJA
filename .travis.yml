@@ -35,9 +35,7 @@ matrix:
         - g++-6
     env:
     - COMPILER=g++-6
-    - WARN=""
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage' -DCMAKE_BUILD_TYPE=Debug"
-    - COVERAGE=t
+    - WARN="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: clang-3.6
     addons:
       apt:
@@ -121,8 +119,9 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage' -DRAJA_ENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
     - TRAVIS_BUILD_NVCC="YES"
+    - COVERAGE=t
 cache:
   directories:
   - $HOME/llvm
