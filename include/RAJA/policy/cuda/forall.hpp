@@ -97,16 +97,9 @@ dim3 getGridDim(size_t len, dim3 blockDim)
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
-  int device = 0;
-  static int num_sm[8] {0, 0, 0, 0, 0, 0, 0, 0};
-  if (num_sm[device] == 0) {
-    cudaDeviceGetAttribute(&num_sm[device], cudaDevAttrMultiProcessorCount, device);
-  }
-  size_t max_concurrent_blocks = num_sm[device] * (MAX_THREADS_PER_SM/block_size) ;
+  size_t gridSize = (len + block_size-1) / block_size;
 
-  size_t gridSizeMax = (len + block_size-1) / block_size;
-
-  return std::min(gridSizeMax, max_concurrent_blocks);
+  return gridSize;
 }
 
 /*!
@@ -174,8 +167,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 {
   auto body = loop_body;
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  auto gridThreads = static_cast<IndexType>(getGlobalNumThreads_1D_1D());
-  for (;ii < length;ii+=gridThreads) {
+  if (ii < length;) {
     body(idx[ii]);
   }
 }
@@ -202,8 +194,7 @@ __global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
 {
   auto body = loop_body;
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  auto gridThreads = static_cast<IndexType>(getGlobalNumThreads_1D_1D());
-  for (;ii < length;ii+=gridThreads) {
+  if (ii < length) {
     body(static_cast<IndexType>(ii + icount), idx[ii]);
   }
 }
