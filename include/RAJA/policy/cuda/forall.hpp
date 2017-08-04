@@ -167,7 +167,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 {
   auto body = loop_body;
   auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  if (ii < length;) {
+  if (ii < length) {
     body(idx[ii]);
   }
 }
