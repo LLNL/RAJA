@@ -57,6 +57,7 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 #include "RAJA/util/concepts.hpp"
+#include "RAJA/internal/Span.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
@@ -102,6 +103,9 @@ class TypedListSegment
   using GPU_memory = std::integral_constant<bool, true>;
   using CPU_memory = std::integral_constant<bool, false>;
 
+  void deallocate(CPU_memory) { delete[] m_data; }
+  void deallocate(GPU_memory) { cudaErrchk(cudaFree(m_data)); }
+
   void allocate(CPU_memory) { m_data = new T[m_size]; }
 
   void allocate(GPU_memory)
@@ -139,8 +143,8 @@ class TypedListSegment
 public:
   //! value type for storage
   using value_type = T;
-  //! iterator type for storage (will always be a pointer and conform to
-  //! RandomAccessIterator
+
+  //! iterator type for storage (will be a pointer)
   using iterator = T*;
 
   //! prevent compiler from providing a default constructor
@@ -201,13 +205,8 @@ public:
   ///
   ~TypedListSegment()
   {
-    if (m_data != nullptr && m_owned == Owned) {
-#if defined(RAJA_ENABLE_CUDA)
-      cudaErrchk(cudaFree(m_data));
-#else
-      delete[] m_data;
-#endif
-    }
+    if (m_data != nullptr && m_owned == Owned)
+      deallocate(std::integral_constant<bool, Has_CUDA>());
   }
 
 
@@ -237,14 +236,13 @@ public:
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {
-    if (container == m_data) return len == m_size;
-
+    if (container == m_data)
+      return len == m_size;
     if (len != m_size || container == nullptr || m_data == nullptr)
       return false;
-
     for (Index_type i = 0; i < m_size; ++i)
-      if (m_data[i] != container[i]) return false;
-
+      if (m_data[i] != container[i])
+        return false;
     return true;
   }
 
@@ -283,18 +281,7 @@ private:
       m_owned = container_own;
 
       if (m_owned == Owned) {
-#if defined(RAJA_ENABLE_CUDA)
-        cudaErrchk(cudaMallocManaged((void**)&m_data,
-                                     m_size * sizeof(value_type),
-                                     cudaMemAttachGlobal));
-        cudaErrchk(cudaMemcpy(
-            m_data, container, m_size * sizeof(value_type), cudaMemcpyDefault));
-#else
-        m_data = new value_type[len];
-        for (Index_type i = 0; i < m_size; ++i) {
-          m_data[i] = container[i];
-        }
-#endif
+        allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
       } else {
         // Uh-oh. Using evil const_cast....
         m_data = const_cast<value_type*>(container);
