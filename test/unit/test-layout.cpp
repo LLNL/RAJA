@@ -101,9 +101,9 @@ TEST(TypedLayoutTest, 1D)
 TEST(LayoutTest, OffsetVsRegular)
 {
   const auto layout =
-      RAJA::make_permuted_layout({6, 6}, RAJA::Perm<1, 0>::value);
+      RAJA::make_permuted_layout({6, 6}, RAJA::Perm<1, 0>::array());
   const auto offset =
-      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::array());
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
@@ -155,7 +155,7 @@ TEST(OffsetLayoutTest, 2D_JI)
    * (-1, -2), (0, -2), (1, -2)
    */
   const my_layout layout =
-      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::array());
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -257,7 +257,7 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI::array());
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -354,7 +354,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI::value);
+      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI::array());
 
   ASSERT_EQ(0, layout(0, 0, 0));
 

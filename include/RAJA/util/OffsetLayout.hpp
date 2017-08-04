@@ -63,6 +63,8 @@
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
 
+#include "camp/camp.hpp"
+
 namespace RAJA
 {
 
@@ -72,9 +74,9 @@ namespace internal
 template <typename Range, typename IdxLin>
 struct OffsetLayout_impl;
 
-template <size_t... RangeInts, typename IdxLin>
-struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
-  using IndexRange = VarOps::index_sequence<RangeInts...>;
+template <camp::idx_t... RangeInts, typename IdxLin>
+struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
+  using IndexRange = camp::idx_seq<RangeInts...>;
   using Base = LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
@@ -116,16 +118,16 @@ private:
 
 template <size_t n_dims = 1, typename IdxLin = Index_type>
 struct OffsetLayout
-    : public internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+    : public internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
                                          IdxLin> {
   using parent =
-      internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+      internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>, IdxLin>;
 
-  using internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+  using internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
                                     IdxLin>::OffsetLayout_impl;
 
   constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout(
-      const internal::OffsetLayout_impl<VarOps::make_index_sequence<n_dims>,
+      const internal::OffsetLayout_impl<camp::make_idx_seq_t<n_dims>,
                                         IdxLin>& rhs)
       : parent{rhs}
   {
@@ -143,14 +145,14 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
 template <size_t Rank, typename IdxLin = Index_type>
 auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
                                  const std::array<IdxLin, Rank>& upper,
-                                 const std::array<size_t, Rank>& permutation)
+                                 const std::array<camp::idx_t, Rank>& permutation)
     -> decltype(make_offset_layout<Rank, IdxLin>(lower, upper))
 {
   std::array<IdxLin, Rank> sizes;
   for (size_t i = 0; i < Rank; ++i) {
     sizes[i] = upper[i] - lower[i] + 1;
   }
-  return internal::OffsetLayout_impl<VarOps::make_index_sequence<Rank>,
+  return internal::OffsetLayout_impl<camp::make_idx_seq_t<Rank>,
                                      IdxLin>::
       from_layout_and_offsets(lower, make_permuted_layout(sizes, permutation));
 }

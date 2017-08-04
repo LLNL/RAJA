@@ -57,6 +57,8 @@
 
 #include "RAJA/util/defines.hpp"
 
+#include "camp/camp.hpp"
+
 #if (!defined(__INTEL_COMPILER)) && (!defined(RAJA_COMPILER_MSVC))
 static_assert(__cplusplus >= 201103L,
               "C++ standards below 2011 are not "
@@ -149,12 +151,11 @@ template <typename Op,
           typename Arg3,
           typename... Rest>
 struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret =
-      typename foldl_impl<Op,
-                          typename std::result_of<Op(
-                              typename std::result_of<Op(Arg1, Arg2)>::type,
-                              Arg3)>::type,
-                          Rest...>::Ret;
+  using Ret = typename foldl_impl<
+      Op,
+      typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
+                                 Arg3)>::type,
+      Rest...>::Ret;
 };
 
 template <typename Op, typename Arg1>
@@ -214,8 +215,9 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
 
 struct maxer {
   template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(const Result& l,
-                                                           const Result& r) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
+      const Result& l,
+      const Result& r) const
   {
     return l > r ? l : r;
   }
@@ -246,15 +248,6 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
 //     : value() { }
 // };
 
-// Index sequence
-
-template <size_t... Ints>
-struct integer_sequence {
-  using type = integer_sequence;
-  static constexpr size_t size = sizeof...(Ints);
-  static constexpr std::array<size_t, sizeof...(Ints)> value{{Ints...}};
-};
-
 template <template <class...> class Seq, class First, class... Ints>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
     const Seq<First, Ints...>) -> Seq<Ints..., First>
@@ -262,51 +255,26 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
   return Seq<Ints..., First>{};
 }
 
-template <size_t... Ints>
-constexpr size_t integer_sequence<Ints...>::size;
-template <size_t... Ints>
-constexpr std::array<size_t, sizeof...(Ints)> integer_sequence<Ints...>::value;
 
-namespace integer_sequence_detail
-{
-// using aliases for cleaner syntax
-template <class T>
-using Invoke = typename T::type;
-
-template <class S1, class S2>
-struct concat;
-
-template <size_t... I1, size_t... I2>
-struct concat<integer_sequence<I1...>, integer_sequence<I2...>>
-    : integer_sequence<I1..., (sizeof...(I1) + I2)...> {
+// Index sequence
+template <typename T, T... Ints>
+struct integer_sequence : camp::list<camp::integral<T,Ints>...>{
+  using type = integer_sequence;
+  static constexpr size_t size = sizeof...(Ints);
+  static constexpr std::array<T, sizeof...(Ints)> value{{Ints...}};
 };
 
-template <class S1, class S2>
-using Concat = Invoke<concat<S1, S2>>;
-
-template <size_t N>
-struct gen_seq;
-template <size_t N>
-using GenSeq = Invoke<gen_seq<N>>;
-
-template <size_t N>
-struct gen_seq : Concat<GenSeq<N / 2>, GenSeq<N - N / 2>> {
-};
-
-template <>
-struct gen_seq<0> : integer_sequence<> {
-};
-template <>
-struct gen_seq<1> : integer_sequence<0> {
-};
-}
+template <typename T, T... Ints>
+constexpr size_t integer_sequence<T, Ints...>::size;
+template <typename T, T... Ints>
+constexpr std::array<T, sizeof...(Ints)> integer_sequence<T, Ints...>::value;
 
 template <size_t Upper>
-using make_index_sequence =
-    typename integer_sequence_detail::gen_seq<Upper>::type;
+using make_index_sequence = typename camp::integer_sequence_detail::
+    gen_seq<size_t, camp::integral<size_t, Upper>>::type;
 
 template <size_t... Ints>
-using index_sequence = integer_sequence<Ints...>;
+using index_sequence = integer_sequence<size_t, Ints...>;
 
 // Invoke
 

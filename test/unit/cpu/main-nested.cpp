@@ -93,7 +93,7 @@ void run2dTest(std::string const &policy, Index_type size_i, Index_type size_j)
 
   typename POL::VIEW val_view(&values[0],
                               make_permuted_layout({size_i, size_j},
-                                                   POL::PERM::value));
+                                                   POL::PERM::array()));
 
   forallN<typename POL::EXEC>(RangeSegment(1, size_i),
                               RangeSegment(0, size_j),
@@ -285,15 +285,15 @@ void runLTimesTest(std::string const &policy,
   // create views on data
   typename POL::ELL_VIEW ell(&ell_data[0],
                              make_permuted_layout({num_moments, num_directions},
-                                                  POL::ELL_PERM::value));
+                                                  POL::ELL_PERM::array()));
   typename POL::PSI_VIEW psi(
       &psi_data[0],
       make_permuted_layout({num_directions, num_groups, num_zones},
-                           POL::PSI_PERM::value));
+                           POL::PSI_PERM::array()));
   typename POL::PHI_VIEW phi(
       &phi_data[0],
       make_permuted_layout({num_moments, num_groups, num_zones},
-                           POL::PHI_PERM::value));
+                           POL::PHI_PERM::array()));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
