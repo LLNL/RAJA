@@ -69,30 +69,12 @@ namespace RAJA
 namespace impl
 {
 
-// SIMD forall(ListSegment)
-template <typename LSegment, typename Func>
-RAJA_INLINE
-    typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
-    forall(const simd_exec &, LSegment &&, Func &&);
-
-// SIMD forall(Iterable)
 template <typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
-                                                     Iterable>::value>::type
+RAJA_INLINE void
 forall(const simd_exec &, Iterable &&, Func &&);
 
-// SIMD forall(ListSegment)
-template <typename LSegment, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && std::is_base_of<ListSegment,
-                                                       LSegment>::value>::type
-forall_Icount(const simd_exec &, LSegment &&, IndexType, Func &&);
-
-// SIMD forall(Iterable)
 template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && !std::is_base_of<ListSegment,
-                                                        Iterable>::value>::type
+RAJA_INLINE void
 forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
 
 }  // closing brace for impl namespace

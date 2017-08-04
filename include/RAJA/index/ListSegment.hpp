@@ -56,9 +56,12 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
+#include "RAJA/util/concepts.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#else
+#define cudaErrchk(...)
 #endif
 
 #include <memory>
@@ -84,6 +87,55 @@ namespace RAJA
 template <typename T>
 class TypedListSegment
 {
+
+#if defined(RAJA_ENABLE_CUDA)
+  static constexpr bool Has_CUDA = true;
+#else
+  static constexpr bool Has_CUDA = false;
+#endif
+
+  struct TrivialCopy {
+  };
+  struct BlockCopy {
+  };
+
+  using GPU_memory = std::integral_constant<bool, true>;
+  using CPU_memory = std::integral_constant<bool, false>;
+
+  void allocate(CPU_memory) { m_data = new T[m_size]; }
+
+  void allocate(GPU_memory)
+  {
+    cudaErrchk(cudaMallocManaged((void**)&m_data, m_size * sizeof(value_type), cudaMemAttachGlobal));
+  }
+
+  template <typename Container>
+  void copy(Container&& src, BlockCopy)
+  {
+    cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
+  }
+
+  template <typename Container>
+  void copy(Container&& src, TrivialCopy)
+  {
+    auto dest = m_data;
+    auto end = src.end();
+    for (auto other = src.begin(); other != end; ++other) {
+      *dest = *other;
+      ++dest;
+    }
+  }
+
+  template <bool GPU, typename Container>
+  void allocate_and_copy(Container&& src)
+  {
+    allocate(std::integral_constant<bool, GPU>());
+    static constexpr bool use_cuda = GPU && std::is_pointer<decltype(src.begin())>::value
+      && std::is_same<type_traits::IterableValue<Container>,value_type>::value;
+    using TagType = typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
+    copy(src, TagType());
+  }
+
 public:
   //! value type for storage
   using value_type = T;
@@ -118,44 +170,10 @@ public:
   ///
   template <typename Container>
   explicit TypedListSegment(const Container& container)
-      : m_data(0), m_size(container.size()), m_owned(Unowned)
+      : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
   {
-    if (container.size() <= 0) return;
-
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void**)&m_data,
-                                 m_size * sizeof(T),
-                                 cudaMemAttachGlobal));
-    using ContainerType = decltype(*container.begin());
-
-    // this will bitwise copy signed or unsigned integral types
-    if (!std::is_pointer<ContainerType>::value
-        && sizeof(ContainerType) == sizeof(value_type)) {
-      cudaErrchk(cudaMemcpy(m_data,
-                            std::addressof(container[0]),
-                            m_size * sizeof(value_type),
-                            cudaMemcpyDefault));
-      cudaErrchk(cudaDeviceSynchronize());
-    } else {
-      // use a traditional for-loop
-      cudaErrchk(cudaDeviceSynchronize());
-      auto self = m_data;
-      auto end = container.end();
-      for (auto other = container.begin(); other != end; ++other) {
-        *self = *other;
-        ++self;
-      }
-    }
-#else
-    // CPU -- allocate buffer
-    m_data = new value_type[container.size()];
-    auto self = m_data;
-    auto end = container.end();
-    for (auto other = container.begin(); other != end; ++other) {
-      *self = *other;
-      ++self;
-    }
-#endif
+    if (m_size <= 0) return;
+    allocate_and_copy<Has_CUDA>(container);
     m_owned = Owned;
   }
 
@@ -219,8 +237,7 @@ public:
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {
-    if (container == m_data)
-      return len == m_size;
+    if (container == m_data) return len == m_size;
 
     if (len != m_size || container == nullptr || m_data == nullptr)
       return false;
