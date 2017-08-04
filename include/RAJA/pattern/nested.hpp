@@ -3,11 +3,12 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
-#include "RAJA/internal/tuple.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "RAJA/external/metal.hpp"
+#include "camp/camp.hpp"
+#include "camp/tuple.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -107,7 +108,7 @@ using value_type_list_from_segments =
 
 template <typename Policies, typename Segments>
 using index_tuple_from_policies_and_segments = metal::apply<
-    metal::lambda<RAJA::util::tuple>,
+    metal::lambda<camp::tuple>,
     get_for_index_types<Policies, value_type_list_from_segments<Segments>>>;
 }
 
@@ -135,18 +136,18 @@ struct TypedFor : public internal::TypedForBase, public For<ArgumentId, Pol, Res
 };
 
 template <typename... Policies>
-using Policy = RAJA::util::tuple<Policies...>;
+using Policy = camp::tuple<Policies...>;
 
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
   constexpr static size_t n_policies =
-      RAJA::util::tuple_size<PolicyTuple>::value;
+      camp::tuple_size<PolicyTuple>::value;
   const PolicyTuple &pt;
   const SegmentTuple &st;
   const typename std::remove_reference<Fn>::type f;
   using index_tuple_t = internal::index_tuple_from_policies_and_segments<
-      typename PolicyTuple::TList,
-      typename SegmentTuple::TList>;
+      metal::as_list<typename PolicyTuple::TList>,
+      metal::as_list<typename SegmentTuple::TList>>;
   index_tuple_t index_tuple;
   LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
       : pt{p}, st{s}, f{fn}
@@ -155,8 +156,8 @@ struct LoopData {
   template <metal::int_ Idx, typename IndexT>
   void assign_index(IndexT const &i)
   {
-    RAJA::util::get<Idx>(index_tuple) =
-        RAJA::util::tuple_element_t<Idx, decltype(index_tuple)>{i};
+    camp::get<Idx>(index_tuple) =
+        camp::tuple_element_t<Idx, decltype(index_tuple)>{i};
   }
 };
 
@@ -184,7 +185,7 @@ struct Executor {
   {
 
     impl::forall(fp.pol,
-                 RAJA::util::get<ForType::index_val>(wrap.data.st),
+                 camp::get<ForType::index_val>(wrap.data.st),
                  ForWrapper<WrappedBody>{wrap});
   }
 };
@@ -207,11 +208,11 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
   void operator()(Collapse<seq_exec, FT0, FT1> const &p,
                   WrappedBody const &wrap)
   {
-    auto b0 = std::begin(RAJA::util::get<FT0::index_val>(wrap.data.st));
-    auto b1 = std::begin(RAJA::util::get<FT1::index_val>(wrap.data.st));
+    auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
+    auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
 
-    auto e0 = std::end(RAJA::util::get<FT0::index_val>(wrap.data.st));
-    auto e1 = std::end(RAJA::util::get<FT1::index_val>(wrap.data.st));
+    auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
+    auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
 
     // Skip a level
     for (auto i0 = b0; i0 < e0; ++i0) {
@@ -231,7 +232,7 @@ struct Wrapper {
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const
   {
-    auto const &pol = RAJA::util::get<idx>(data.pt);
+    auto const &pol = camp::get<idx>(data.pt);
     Executor<internal::remove_all_t<decltype(pol)>> e{};
     e(pol, Next{data});
   }
@@ -242,7 +243,7 @@ template <int n_policies, typename Data>
 struct Wrapper<n_policies, n_policies, Data> {
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  void operator()() const { RAJA::util::invoke(data.index_tuple, data.f); }
+  void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
 
 template <typename Data>
@@ -259,13 +260,13 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   // but must be made before loop_body is copied
   beforeCudaKernelLaunch();
 #endif
-  using fors = internal::get_for_policies<typename Pol::TList>;
+  using fors = internal::get_for_policies<metal::as_list<typename Pol::TList>>;
   // TODO: ensure no duplicate indices in For<>s
   // TODO: ensure no gaps in For<>s
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
   //       index_tuple
-  static_assert(RAJA::util::tuple_size<SegmentTuple>::value
+  static_assert(camp::tuple_size<SegmentTuple>::value
                     == metal::size<fors>::value,
                 "policy and segment index counts do not match");
   auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
