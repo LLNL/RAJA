@@ -57,6 +57,7 @@ endif(RAJA_ENABLE_TARGET_OPENMP)
 
 add_gtest_sources(
   test-rajavec.cpp
+  test-iterators.cpp
   test-layout.cpp
   test-timer.cpp
   test-integral-limits.cpp)
