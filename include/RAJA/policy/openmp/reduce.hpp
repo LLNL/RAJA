@@ -634,7 +634,7 @@ private:
   //
   ReduceMin<omp_reduce_ordered, T>();
 
-  static const int s_block_offset =
+  static constexpr const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
   bool m_is_copy;
@@ -758,9 +758,9 @@ private:
   //
   ReduceMinLoc<omp_reduce_ordered, T>();
 
-  static const int s_block_offset =
+  static constexpr const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
-  static const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
+  static constexpr const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
 
   bool m_is_copy;
   int m_myID;
@@ -862,7 +862,7 @@ private:
   //
   ReduceMax<omp_reduce_ordered, T>();
 
-  static const int s_block_offset =
+  static constexpr const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
   bool m_is_copy;
@@ -986,9 +986,9 @@ private:
   //
   ReduceMaxLoc<omp_reduce_ordered, T>();
 
-  static const int s_block_offset =
+  static constexpr const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
-  static const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
+  static constexpr const int s_idx_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
 
   bool m_is_copy;
   int m_myID;
@@ -1090,7 +1090,7 @@ private:
   //
   ReduceSum<omp_reduce_ordered, T>();
 
-  static const int s_block_offset =
+  static constexpr const int s_block_offset =
       COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
   bool m_is_copy;

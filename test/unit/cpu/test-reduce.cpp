@@ -125,6 +125,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMinTest)
 
   RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20);
   RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin1(-200.0);
+  tmin1.min(-100.0);
 
   int loops = 2;
 
@@ -161,6 +162,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMinLocTest)
 
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20, -1);
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
+  tmin1.minloc(-100.0, -1);
 
   int loops = 2;
 
@@ -174,8 +176,8 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMinLocTest)
 
     ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
     ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-    ASSERT_EQ(tmin1.get(), Real_type(-200.0));
     ASSERT_EQ(tmin1.getLoc(), -1);
+    ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   }
 
   free_aligned(test_array);
@@ -201,6 +203,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMaxTest)
 
   ReduceMax<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20);
   ReduceMax<REDUCE_POLICY_T, Real_type> tmax1(200.0);
+  tmax1.max(100);
 
   int loops = 2;
 
@@ -238,6 +241,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMaxLocTest)
 
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
+  tmax1.maxloc(100.0, -1);
 
   int loops = 2;
 
@@ -250,8 +254,8 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMaxLocTest)
 
     ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
     ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-    ASSERT_EQ(tmax1.get(), Real_type(200.0));
     ASSERT_EQ(tmax1.getLoc(), -1);
+    ASSERT_EQ(tmax1.get(), Real_type(200.0));
   }
 
   free_aligned(test_array);
@@ -270,6 +274,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceSumTest)
 
   ReduceSum<REDUCE_POLICY_T, Real_type> tsum0(0.0);
   ReduceSum<REDUCE_POLICY_T, Real_type> tsum1(5.0);
+  tsum1 += 0.0;
 
   int loops = 2;
 
