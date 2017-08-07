@@ -71,15 +71,15 @@ matrix:
         - g++-5
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
     - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
-    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
     - WARN=""
   - compiler: intel-17
     env:
     - COMPILER=icpc
     - WARN=""
-    - TRAVIS_BUILD_INTEL="YES"
+    - TRAVIS_BUILD_INTEL="Yes"
   - compiler: nvcc
     addons:
       apt:
@@ -89,8 +89,8 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=ON"
-    - TRAVIS_BUILD_NVCC="YES"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On"
+    - TRAVIS_BUILD_NVCC="Yes"
   - compiler: gcc-5-debug
     addons:
       apt:
@@ -113,9 +113,8 @@ matrix:
     - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
     - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off -DCMAKE_BUILD_TYPE=Debug"
     - WARN=""
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
   - compiler: nvcc-debug
     addons:
       apt:
@@ -125,16 +124,16 @@ matrix:
         - g++-4.9
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
-    - TRAVIS_BUILD_NVCC="YES"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DCMAKE_BUILD_TYPE=Debug"
+    - TRAVIS_BUILD_NVCC="Yes"
 cache:
   directories:
   - $HOME/llvm
   - /usr/local/cuda-8.0
 before_install:
 - sudo apt-get update -qq
-- if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o
-  tarball.tar.xz $DOWNLOAD &&
+- if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME &&
+  curl -o tarball.tar.xz $DOWNLOAD &&
   cd $HOME/llvm &&
   tar xf $HOME/tarball.tar.xz ; fi ;
   fi
@@ -160,9 +159,9 @@ script:
 - cd $TRAVIS_BUILD_DIR
 - git submodule init && git submodule update
 - mkdir travis-build && cd travis-build
-- cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
-- make -j
-- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then make test; fi
+- cmake -DCMAKE_CXX_COMPILER="${COMPILER}" $WARN $CMAKE_EXTRA_FLAGS ../
+- make -j 3
+- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then ctest -V; fi
 after_success:
 - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi

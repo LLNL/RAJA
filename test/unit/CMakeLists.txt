@@ -1,4 +1,3 @@
-
 ###############################################################################
 #
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -42,37 +41,21 @@
 #
 ###############################################################################
 
-if (NOT MSVC)
-  raja_add_test(
-    NAME test-layout
-    SOURCES test-layout.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-  raja_add_test(
-    NAME test-timer
-    SOURCES test-timer.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-  if(ENABLE_OPENMP)
-    raja_add_test(
-            NAME test-multipolicy
-            SOURCES test-multipolicy.cpp
-            DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-    )
-  endif(ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-integral-limits
-    SOURCES test-integral-limits.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-endif()
-
 add_subdirectory(cpu)
 
+if(ENABLE_OPENMP)
+  add_gtest_sources(test-multipolicy.cpp)
+endif(ENABLE_OPENMP)
+
 if(ENABLE_CUDA)
-  add_subdirectory(gpu)
-endif()
+  add_subdirectory(cuda)
+endif(ENABLE_CUDA)
 
 if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
-endif()
+endif(ENABLE_TARGET_OPENMP)
+
+add_gtest_sources(
+  test-layout.cpp
+  test-timer.cpp
+  test-integral-limits.cpp)
