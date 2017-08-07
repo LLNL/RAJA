@@ -56,7 +56,6 @@
 
 #include "RAJA/config.hpp"
 
-#include <algorithm>
 #include <utility>
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
@@ -88,7 +87,7 @@ public:
   /// Construct empty vector with given capacity.
   ///
   explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator())
-      : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
+      : m_allocator(a), m_capacity(0), m_size(0), m_data(nullptr)
   {
     grow_cap(init_cap);
   }
@@ -96,7 +95,7 @@ public:
   ///
   /// Copy ctor for vector.
   ///
-  RAJAVec(const RAJAVec<T>& other) : m_capacity(0), m_size(0), m_data(0)
+  RAJAVec(const RAJAVec<T>& other) : m_capacity(0), m_size(0), m_data(nullptr)
   {
     copy(other);
   }
@@ -220,8 +219,8 @@ private:
   // memory allocation scheme to mimick std::vector behavior without
   // relying on STL directly.  These are initialized at the end of this file.
   //
-  static const size_t s_init_cap;
-  static const double s_grow_fac;
+  static constexpr const size_t s_init_cap = 8;
+  static constexpr const double s_grow_fac = 1.5;
 
   size_t nextCap(size_t current_cap)
   {
@@ -278,18 +277,6 @@ private:
   size_t m_size;
   T* m_data;
 };
-
-/*
-*************************************************************************
-*
-* Initialize static members
-*
-*************************************************************************
-*/
-template <typename T, typename _Allocator>
-const size_t RAJAVec<T, _Allocator>::s_init_cap = 8;
-template <typename T, typename _Allocator>
-const double RAJAVec<T, _Allocator>::s_grow_fac = 1.5;
 
 }  // closing brace for RAJA namespace
 
