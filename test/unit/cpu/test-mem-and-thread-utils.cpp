@@ -67,3 +67,11 @@ TEST(MemUtils, max_reducers_exceeded)
   for (int i = 0; i < reducerCount; ++i)
     RAJA::releaseCPUReductionId(i);
 }
+
+#include "RAJA/internal/ThreadUtils_CPU.hpp"
+
+TEST(ThreadUtils, basic)
+{
+  ASSERT_LE(1, RAJA::getMaxReduceThreadsCPU());
+  ASSERT_LE(1, RAJA::getMaxOMPThreadsCPU());
+}

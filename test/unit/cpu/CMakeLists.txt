@@ -50,5 +50,5 @@ add_gtest_sources(
   test-forall.cpp
   test-scan.cpp
   test-reductions.cpp
-  test-memutils.cpp
+  test-mem-and-thread-utils.cpp
   buildIndexSet.cpp)
