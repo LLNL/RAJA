@@ -82,4 +82,6 @@ TEST(RAJAVec, basic_test)
     c.push_front(i);
   for (int i = 0; i < 100; ++i)
     ASSERT_EQ(c[i], b[99 - i]);
+  ASSERT_EQ(c.data() + c.size(), c.end());
+  ASSERT_EQ(c.data(), c.begin());
 }
