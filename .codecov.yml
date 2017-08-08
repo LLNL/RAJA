@@ -1,0 +1,25 @@
+coverage:
+  precision: 3
+  round: down
+  range: "80...100"
+
+  status:
+    # Learn more at http://docs.codecov.io/docs/codecov-yaml
+    project: true
+    patch: true
+    changes: true
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: no
+      loop: no
+      method: no
+      macro: no
+
+ignore:
+  - "**/test-*.cpp"
+
+comment:
+  layout: "header, diff, files, tree"
+  behavior: default  # update if exists else create new

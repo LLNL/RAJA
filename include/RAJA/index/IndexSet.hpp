@@ -202,20 +202,19 @@ public:
       const StaticIndexSet<P0, PREST...> &other) const
   {
     // drill down our types until we have the right type
-    if (getSegmentTypes()[segid] == T0_TypeId) {
-
-      // Check that other's segid is of type T0
-      if (!other.template checkSegmentType<T0>(segid)) {
-        return false;
-      }
-
-      // Compare to others segid
-      Index_type offset = getSegmentOffsets()[segid];
-      return *data[offset] == other.template getSegment<T0>(segid);
-    } else {
+    if (getSegmentTypes()[segid] != T0_TypeId) {
       // peel off T0
       return PARENT::compareSegmentById(segid, other);
     }
+
+    // Check that other's segid is of type T0
+    if (!other.template checkSegmentType<T0>(segid)) {
+      return false;
+    }
+
+    // Compare to others segid
+    Index_type offset = getSegmentOffsets()[segid];
+    return *data[offset] == other.template getSegment<T0>(segid);
   }
 
 
@@ -828,19 +827,14 @@ protected:
   template <typename P0>
   RAJA_INLINE P0 &getSegment(size_t)
   {
-    // cause a segfault
-    P0 *x = nullptr;
-    return *x;
+    return *((P0*)(this - this));
   }
 
   template <typename P0>
   RAJA_INLINE P0 const &getSegment(size_t) const
   {
-    // cause a segfault
-    P0 const *x = nullptr;
-    return *x;
+    return *((P0*)(this - this));
   }
-
 
   template <typename... CALL>
   RAJA_INLINE void push_into(StaticIndexSet<CALL...> &, PushEnd, PushCopy) const
@@ -854,7 +848,6 @@ protected:
                                      PushCopy) const
   {
   }
-
 
   template <typename Tnew>
   RAJA_INLINE void push(Tnew const &, PushEnd, PushCopy)

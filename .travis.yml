@@ -39,18 +39,18 @@ matrix:
   - compiler: intel-17
     env:
     - COMPILER=icpc
-    - TRAVIS_BUILD_INTEL="YES"
+    - TRAVIS_INSTALL_COMPILER="intel"
   - compiler: nvcc
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On"
-    - TRAVIS_BUILD_NVCC="YES"
+    - TRAVIS_INSTALL_COMPILER="nvcc"
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_COVERAGE=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DRAJA_ENABLE_COVERAGE=On"
   - compiler: clang-3.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
     env:
@@ -62,31 +62,30 @@ matrix:
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_CUDA=On"
-    - TRAVIS_BUILD_NVCC="YES"
+    - TRAVIS_INSTALL_COMPILER="nvcc"
 cache:
   directories:
   - $HOME/llvm
-  - $HOME/download
 before_install:
 - sudo apt-get update -qq
-- mkdir -p $HOME/download
-- if [[ -n "${LLVM_VERSION}" ]]; then export LLVM_PATH=$HOME/llvm/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export PATH=$LLVM_PATH/bin:$PATH; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export LD_LIBRARY_PATH=$LLVM_PATH/lib:$LD_LIBRARY_PATH; fi
+- mkdir -p ${HOME}/download
+- if [[ -n "${LLVM_VERSION}" ]]; then export LLVM_PATH=${HOME}/llvm/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then export PATH=${LLVM_PATH}/bin:${PATH}; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then export LD_LIBRARY_PATH=${LLVM_PATH}/lib:${LD_LIBRARY_PATH}; fi
 - if [[ -n "${LLVM_VERSION}" ]]; then export DOWNLOAD_URL=http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export TARFILE=$HOME/download/llvm-${LLVM_VERSION}.tar.xz; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then if [[ ! -d "${LLVM_PATH}" ]]; then if [[ ! -e ${TARFILE} ]]; then echo "curl -o ${TARFILE} ${DOWNLOAD_URL}"; curl -o ${TARFILE} ${DOWNLOAD_URL}; fi; cd $HOME/llvm ; tar xf ${TARFILE}; fi; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then export TARFILE=${HOME}/download/llvm-${LLVM_VERSION}.tar.xz; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then if ! [[ -d "${LLVM_PATH}" ]]; then if ! [[ -f ${TARFILE} ]]; then echo "curl -o ${TARFILE} ${DOWNLOAD_URL}"; curl -o ${TARFILE} ${DOWNLOAD_URL}; fi; cd ${HOME}/llvm ; tar xf ${TARFILE}; fi; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- cd $HOME &&
+- cd ${HOME} &&
   curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
-  mkdir -p $HOME/cmake &&
-  cd $HOME/cmake &&
-  tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 &&
+  mkdir -p ${HOME}/cmake &&
+  cd ${HOME}/cmake &&
+  tar xf ${HOME}/cmake-tarball.tar.gz --strip-components=1 &&
   export PATH=${PWD}/bin:${PATH}
-- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then export DEBFILE=$HOME/download/cuda-repo.deb; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DEBFILE=${HOME}/download/cuda-repo.deb; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
   travis_retry sudo dpkg -i ${DEBFILE} &&
   travis_retry sudo apt-get update -qq &&
   travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
@@ -97,12 +96,12 @@ before_install:
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
 - source ~/.bashrc
-- cd $TRAVIS_BUILD_DIR
+- cd ${TRAVIS_BUILD_DIR}
 - mkdir travis-build &&
   cd travis-build
-- cmake -DCMAKE_CXX_COMPILER="$COMPILER" $CMAKE_EXTRA_FLAGS ../
+- cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
 - make -j 3
-- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then ctest -V; fi
+- if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
-- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
