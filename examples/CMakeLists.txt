@@ -41,6 +41,18 @@
 #
 ###############################################################################
 
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -qopt-report5")
+
+#----[GNU Flags]------
+#-ftree-vectorize -fopt-info-optall 
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-vectorize")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fopt-info-optall")
+
 raja_add_executable(
   NAME example-raja-pi
-  SOURCES pi.cxx)
+  SOURCES pi.cpp)
+
+raja_add_executable(
+  NAME simd
+  SOURCES simd.cpp)
