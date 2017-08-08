@@ -42,6 +42,5 @@
 ###############################################################################
 
 if (RAJA_ENABLE_CHAI)
-  add_subdirectory(chai)
-  propagate_sources()
+  raja_gtest_add_subdirectory(chai)
 endif(RAJA_ENABLE_CHAI)

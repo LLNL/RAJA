@@ -41,7 +41,7 @@
 #
 ###############################################################################
 
-add_gtest_sources(
+raja_gtest_add_sources(
   test-reduce.cpp
   test-nested.cpp
   test-nested-reduce.cpp

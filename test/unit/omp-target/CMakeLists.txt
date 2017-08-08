@@ -42,7 +42,7 @@
 ###############################################################################
 
 if(RAJA_ENABLE_TARGET_OPENMP)
-  add_gtest_sources(
+  raja_gtest_add_sources(
     test-nested-reduce.cpp
     test-reductions.cpp)
 endif(RAJA_ENABLE_TARGET_OPENMP)
