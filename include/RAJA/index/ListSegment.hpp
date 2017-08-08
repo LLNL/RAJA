@@ -95,41 +95,63 @@ class TypedListSegment
   static constexpr bool Has_CUDA = false;
 #endif
 
+  //! tag for trivial per-element copy
   struct TrivialCopy {
   };
+  //! tag for memcpy-style copy
   struct BlockCopy {
   };
 
+  //! alias for GPU memory tag
   using GPU_memory = std::integral_constant<bool, true>;
+  //! alias for CPU memory tag
   using CPU_memory = std::integral_constant<bool, false>;
 
-  void deallocate(CPU_memory) { delete[] m_data; }
-  void deallocate(GPU_memory) { cudaErrchk(cudaFree(m_data)); }
+  //! specialization for deallocation of GPU_memory
+  void deallocate(GPU_memory) {
+    cudaErrchk(cudaFree(m_data));
+  }
 
-  void allocate(CPU_memory) { m_data = new T[m_size]; }
-
+  //! specialization for allocation of GPU_memory
   void allocate(GPU_memory)
   {
+    static_assert(Has_CUDA, "This is a CUDA only function and should never be invoked unless CUDA is enabled");
     cudaErrchk(cudaMallocManaged((void**)&m_data, m_size * sizeof(value_type), cudaMemAttachGlobal));
   }
 
+  //! specialization for deallocation of CPU_memory
+  void deallocate(CPU_memory) {
+    delete[] m_data;
+  }
+
+  //! specialization for allocation of CPU_memory
+  void allocate(CPU_memory) {
+    m_data = new T[m_size];
+  }
+
+  //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)
   {
+    static_assert(Has_CUDA, "This is a CUDA only function and should never be invoked unless CUDA is enabled");
     cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
   }
 
+  //! copy data from container using TrivialCopy
   template <typename Container>
-  void copy(Container&& src, TrivialCopy)
+  void copy(Container&& source, TrivialCopy)
   {
     auto dest = m_data;
-    auto end = src.end();
-    for (auto other = src.begin(); other != end; ++other) {
-      *dest = *other;
+    auto src = source.begin();
+    auto const end = source.end();
+    while (src != end) {
+      *dest = *src;
       ++dest;
+      ++src;
     }
   }
 
+  // internal helper to allocate data and populate with data from a container
   template <bool GPU, typename Container>
   void allocate_and_copy(Container&& src)
   {
@@ -176,7 +198,8 @@ public:
   explicit TypedListSegment(const Container& container)
       : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
   {
-    if (m_size <= 0) return;
+    if (m_size <= 0)
+      return;
     allocate_and_copy<Has_CUDA>(container);
     m_owned = Owned;
   }
@@ -205,8 +228,9 @@ public:
   ///
   ~TypedListSegment()
   {
-    if (m_data != nullptr && m_owned == Owned)
-      deallocate(std::integral_constant<bool, Has_CUDA>());
+    if (m_data == nullptr || m_owned != Owned)
+      return;
+    deallocate(std::integral_constant<bool, Has_CUDA>());
   }
 
 
@@ -222,14 +246,23 @@ public:
   }
 
   //! accessor to get the end iterator for a TypedListSegment
-  RAJA_HOST_DEVICE iterator end() const { return m_data + m_size; }
+  RAJA_HOST_DEVICE iterator end() const {
+    return m_data + m_size;
+  }
+
   //! accessor to get the begin iterator for a TypedListSegment
-  RAJA_HOST_DEVICE iterator begin() const { return m_data; }
+  RAJA_HOST_DEVICE iterator begin() const {
+    return m_data;
+  }
   //! accessor to retrieve the total number of elements in a TypedListSegment
-  RAJA_HOST_DEVICE Index_type size() const { return m_size; }
+  RAJA_HOST_DEVICE Index_type size() const {
+    return m_size;
+  }
 
   //! get ownership of the data (Owned/Unowned)
-  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
+  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const {
+    return m_owned;
+  }
 
   //! checks a pointer and size (Span) for equality to all elements in the
   //! TypedListSegment
@@ -271,22 +304,22 @@ private:
                      Index_type len,
                      IndexOwnership container_own)
   {
+    // empty
     if (len <= 0 || container == nullptr) {
       m_data = nullptr;
       m_size = 0;
       m_owned = Unowned;
-
-    } else {
-      m_size = len;
-      m_owned = container_own;
-
-      if (m_owned == Owned) {
-        allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
-      } else {
-        // Uh-oh. Using evil const_cast....
-        m_data = const_cast<value_type*>(container);
-      }
+      return;
     }
+    // some size -- initialize accordingly
+    m_size = len;
+    m_owned = container_own;
+    if (m_owned == Owned) {
+      allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
+      return;
+    }
+    // Uh-oh. Using evil const_cast....
+    m_data = const_cast<value_type*>(container);
   }
 
   //! buffer storage for list data
