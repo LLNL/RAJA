@@ -174,10 +174,10 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMinLocTest)
           tmin1.minloc(test_array[idx], idx);
         });
 
-    ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
     ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-    ASSERT_EQ(tmin1.getLoc(), -1);
+    ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
     ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+    ASSERT_EQ(tmin1.getLoc(), -1);
   }
 
   free_aligned(test_array);
@@ -252,10 +252,10 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMaxLocTest)
       tmax1.maxloc(test_array[idx], idx);
     });
 
-    ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
     ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-    ASSERT_EQ(tmax1.getLoc(), -1);
+    ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
     ASSERT_EQ(tmax1.get(), Real_type(200.0));
+    ASSERT_EQ(tmax1.getLoc(), -1);
   }
 
   free_aligned(test_array);
