@@ -70,16 +70,16 @@ namespace RAJA
 /// Segment execution policies
 ///
 
-struct tbb_exec : make_policy_pattern_launch_platform_t<Policy::tbb,
-                                                        Pattern::forall,
-                                                        Launch::undefined,
-                                                        Platform::host> {
+struct tbb_for_exec : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                            Pattern::forall,
+                                                            Launch::undefined,
+                                                            Platform::host> {
 };
 
 ///
 /// Index set segment iteration policies
 ///
-using tbb_segit = tbb_exec;
+using tbb_segit = tbb_for_exec;
 
 ///
 ///////////////////////////////////////////////////////////////////////
