@@ -115,7 +115,6 @@ class TypedListSegment
   //! specialization for allocation of GPU_memory
   void allocate(GPU_memory)
   {
-    static_assert(Has_CUDA, "This is a CUDA only function and should never be invoked unless CUDA is enabled");
     cudaErrchk(cudaMallocManaged((void**)&m_data, m_size * sizeof(value_type), cudaMemAttachGlobal));
   }
 
@@ -133,7 +132,6 @@ class TypedListSegment
   template <typename Container>
   void copy(Container&& src, BlockCopy)
   {
-    static_assert(Has_CUDA, "This is a CUDA only function and should never be invoked unless CUDA is enabled");
     cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
   }
 
