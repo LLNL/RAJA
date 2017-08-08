@@ -8,9 +8,8 @@
 .. ## For release details and restrictions, please see raja/README-license.txt
 .. ##
 
-
 ===================================
-Configuring and Building RAJA 
+Advanced Configuration
 ===================================
 
 This section describes RAJA configuration options and how to build RAJA. 
