@@ -43,7 +43,7 @@
 
 if (ENABLE_CUDA)
   if (ENABLE_OPENMP)
-    list(APPEND CUDA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
+    set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-Xcompiler ${OpenMP_CXX_FLAGS}" CACHE LIST "" FORCE)
   endif()
 
   if (ENABLE_CUB)
