@@ -41,11 +41,33 @@
 #
 ###############################################################################
 
-add_subdirectory(cpu)
+raja_add_test(
+  NAME test-layout
+  SOURCES test-layout.cpp)
+
+raja_add_test(
+  NAME test-timer
+  SOURCES test-timer.cpp)
+
+raja_add_test(
+  NAME test-integral-limits
+  SOURCES test-integral-limits.cpp)
+  
+raja_add_test(
+  NAME test-rajavec
+  SOURCES test-rajavec.cpp)
+    
+raja_add_test(
+  NAME test-iterators
+  SOURCES test-iterators.cpp)
 
 if(RAJA_ENABLE_OPENMP)
-  add_gtest_sources(test-multipolicy.cpp)
+  raja_add_test(
+    NAME test-multipolicy
+    SOURCES test-multipolicy.cpp)
 endif(RAJA_ENABLE_OPENMP)
+
+add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)
   add_subdirectory(cuda)
@@ -54,10 +76,3 @@ endif(RAJA_ENABLE_CUDA)
 if(RAJA_ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
 endif(RAJA_ENABLE_TARGET_OPENMP)
-
-add_gtest_sources(
-  test-rajavec.cpp
-  test-iterators.cpp
-  test-layout.cpp
-  test-timer.cpp
-  test-integral-limits.cpp)
