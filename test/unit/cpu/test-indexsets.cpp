@@ -141,3 +141,26 @@ TEST(IndexSet, compare)
   ASSERT_NE(is1.size(), is2.size());
   ASSERT_EQ(is1.getLength(), is2.getLength());
 }
+
+TEST(IndexSet, swap)
+{
+  RAJA::IndexSet iset1;
+  RAJA::RangeSegment range(0, 10);
+  iset1.push_back(range);
+  iset1.push_back_nocopy(&range);
+  iset1.push_front(range);
+  iset1.push_front_nocopy(&range);
+  RAJA::IndexSet iset2;
+
+  ASSERT_EQ(4l, iset1.size());
+  ASSERT_EQ(40lu, iset1.getLength());
+  ASSERT_EQ(0l, iset2.size());
+  ASSERT_EQ(0lu, iset2.getLength());
+
+  iset1.swap(iset2);
+
+  ASSERT_EQ(4l, iset2.size());
+  ASSERT_EQ(40lu, iset2.getLength());
+  ASSERT_EQ(0l, iset1.size());
+  ASSERT_EQ(0lu, iset1.getLength());
+}

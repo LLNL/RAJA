@@ -164,21 +164,28 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMinLocTest)
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
   tmin1.minloc(-100.0, -1);
 
-  int loops = 2;
-
-  for (int k = 1; k <= loops; ++k) {
-
-    forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
         this->iset, [=](Index_type idx) {
-          tmin0.minloc(k * test_array[idx], idx);
+          tmin0.minloc(1 * test_array[idx], idx);
           tmin1.minloc(test_array[idx], idx);
         });
 
-    ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-    ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
-    ASSERT_EQ(tmin1.get(), Real_type(-200.0));
-    ASSERT_EQ(tmin1.getLoc(), -1);
-  }
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+        this->iset, [=](Index_type idx) {
+          tmin0.minloc(2 * test_array[idx], idx);
+          tmin1.minloc(test_array[idx], idx);
+        });
+
+  ASSERT_EQ(Real_type(tmin0), Real_type(2 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
+
 
   free_aligned(test_array);
 }
@@ -243,20 +250,25 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceMaxLocTest)
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
   tmax1.maxloc(100.0, -1);
 
-  int loops = 2;
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(1 * test_array[idx], idx);
+    tmax1.maxloc(test_array[idx], idx);
+  });
 
-  for (int k = 1; k <= loops; ++k) {
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmax0), Real_type(1 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
 
-    forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
-      tmax0.maxloc(k * test_array[idx], idx);
-      tmax1.maxloc(test_array[idx], idx);
-    });
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(2 * test_array[idx], idx);
+    tmax1.maxloc(test_array[idx], idx);
+  });
 
-    ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-    ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
-    ASSERT_EQ(tmax1.get(), Real_type(200.0));
-    ASSERT_EQ(tmax1.getLoc(), -1);
-  }
+  ASSERT_EQ(Real_type(tmax0), Real_type(2 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
 
   free_aligned(test_array);
 }
