@@ -13,8 +13,11 @@ parsers:
     branch_detection:
       conditional: no
       loop: no
-      method: no
+      method: yes
       macro: no
+
+ignore:
+  - "**/test-*.cpp"
 
 comment:
   layout: "header, diff, files, tree"
