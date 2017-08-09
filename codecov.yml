@@ -14,7 +14,7 @@ parsers:
       conditional: no
       loop: no
       method: yes
-      macro: no
+      macro: yes
 
 ignore:
   - "**/test-*.cpp"
