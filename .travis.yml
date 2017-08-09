@@ -103,5 +103,5 @@ script:
 - make -j 3
 - if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
 after_success:
-- if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-afi"; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
