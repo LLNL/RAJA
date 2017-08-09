@@ -42,18 +42,41 @@
 ###############################################################################
 
 if(RAJA_ENABLE_OPENMP)
-  add_gtest_sources(test-nested.cpp)
+  raja_add_test(
+    NAME test-cuda-nested
+    SOURCES test-nested.cpp)
 endif(RAJA_ENABLE_OPENMP)
 
 if (NOT RAJA_ENABLE_CLANG_CUDA)
-  add_gtest_sources(test-scan.cpp)
+  raja_add_test(
+    NAME test-cuda-scan
+    SOURCES test-scan.cpp)
 endif()
 
-add_gtest_sources(
-  test-reduce-sum.cpp
-  test-reduce-max.cpp
-  test-reduce-min.cpp
-  test-reduce-maxloc.cpp
-  test-reduce-minloc.cpp
-  test-forall.cpp
-  test-nested-strided.cpp)
+raja_add_test(
+  NAME test-cuda-reduce-sum
+  SOURCES test-reduce-sum.cpp)
+
+raja_add_test(
+  NAME test-cuda-reduce-min
+  SOURCES test-reduce-min.cpp)
+
+raja_add_test(
+  NAME test-cuda-reduce-minloc
+  SOURCES test-reduce-minloc.cpp)
+
+raja_add_test(
+  NAME test-cuda-reduce-max
+  SOURCES test-reduce-max.cpp)
+
+raja_add_test(
+  NAME test-cuda-reduce-maxloc
+  SOURCES test-reduce-maxloc.cpp)
+
+raja_add_test(
+  NAME test-cuda-forall
+  SOURCES test-forall.cpp)
+
+raja_add_test(
+  NAME test-cuda-nested-strided
+  SOURCES test-nested-strided.cpp)
