@@ -2,8 +2,8 @@ ignore:
   - "test/"
 
 coverage:
-  precision: 2
-  range: "95...100"
+  precision: 3
+  range: "97...100"
 
 parsers:
   gcov:
