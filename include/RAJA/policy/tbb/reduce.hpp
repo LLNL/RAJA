@@ -4,15 +4,19 @@
  * \file
  *
  * \brief   Header file containing RAJA reduction templates for
- *          tbb execution.
+ *          TBB execution.
  *
- *          These methods should work on any platform.
+ *          These methods should work on any platform that supports TBB.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_reduce_tbb_HPP
-#define RAJA_reduce_tbb_HPP
+#ifndef RAJA_forall_omp_HPP
+#define RAJA_forall_omp_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -46,7 +50,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONtbb
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -55,8 +59,6 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-
-#include "RAJA/config.hpp"
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 #include "RAJA/pattern/reduce.hpp"
@@ -384,5 +386,7 @@ public:
 };
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_TBB guard
 
 #endif  // closing endif for header file include guard
