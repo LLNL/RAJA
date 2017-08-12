@@ -58,4 +58,8 @@ install(TARGETS RAJA EXPORT RAJA
   RUNTIME DESTINATION lib
 )
 
+if (RAJA_ENABLE_TBB)
+  target_link_libraries( RAJA ${TBB_LIBRARIES} )
+endif ()
+
 install(EXPORT RAJA DESTINATION share/raja/cmake/)

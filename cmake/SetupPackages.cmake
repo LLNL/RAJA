@@ -81,6 +81,17 @@ if (RAJA_ENABLE_CUDA)
 endif()
 
 
+if (RAJA_ENABLE_TBB)
+  find_package(TBB)
+  if(TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    message(STATUS "TBB Enabled")
+  else()
+    message(WARNING "TBB NOT FOUND")
+    set(RAJA_ENABLE_TBB Off)
+  endif()
+endif ()
+
 if (RAJA_ENABLE_TESTS)
 
 #
