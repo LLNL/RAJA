@@ -48,7 +48,7 @@
 
 #include "RAJA/RAJA.hpp"
 
-TEST(multipolicy, basic)
+TEST(MultiPolicy, basic)
 {
   auto mp =
       RAJA::make_multi_policy<RAJA::seq_exec, RAJA::omp_parallel_for_exec>(

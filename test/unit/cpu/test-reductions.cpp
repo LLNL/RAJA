@@ -144,7 +144,7 @@ protected:
     }
   }
 
-  virtual void TearDown() { free(array); }
+  virtual void TearDown() { RAJA::free_aligned(array); }
 
   RAJA::Real_ptr array;
 
@@ -254,12 +254,11 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
                            ReduceMaxLoc);
 
 #if defined(RAJA_ENABLE_OPENMP)
-using types =
-    ::testing::Types<std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
-                     std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
-                     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
-                     std::tuple<RAJA::omp_parallel_for_exec,
-                                RAJA::omp_reduce_ordered> >;
+using types = ::testing::
+    Types<std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
+          std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
+          std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
+          std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered> >;
 #else
 using types = ::testing::Types<std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
                                std::tuple<RAJA::simd_exec, RAJA::seq_reduce> >;
@@ -290,7 +289,7 @@ protected:
     sum = 4.0;
   }
 
-  virtual void TearDown() { free(array); }
+  virtual void TearDown() { RAJA::free_aligned(array); }
 
   RAJA::Real_ptr array;
 

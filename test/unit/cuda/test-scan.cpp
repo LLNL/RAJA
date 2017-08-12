@@ -41,7 +41,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 ///
-/// Source file containing tests for RAJA CPU scan operations.
+/// Source file containing tests for RAJA GPU scan operations.
 ///
 
 #include <algorithm>
@@ -57,15 +57,12 @@
 #include "RAJA_gtest.hpp"
 #include "type_helper.hpp"
 
-const int N = 32000;
+static const int N = 32000;
 
 // Unit Test Space Exploration
 
-#ifdef RAJA_ENABLE_OPENMP
-using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
-#else
-using ExecTypes = std::tuple<RAJA::seq_exec>;
-#endif
+using ExecTypes = std::tuple<RAJA::cuda_exec<128>, RAJA::cuda_exec<256>>;
+
 
 using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
                                RAJA::operators::plus<double>,
@@ -85,25 +82,25 @@ struct Info {
 };
 
 template <typename Tuple>
-struct Scan : public ::testing::Test {
+struct ScanCUDA : public ::testing::Test {
 
   using data_type = typename Info<Tuple>::data_type;
   static data_type* data;
 
   static void SetUpTestCase()
   {
-    data = new data_type[N];
+    cudaMallocManaged((void**)&data, sizeof(data_type) * N, cudaMemAttachGlobal);
     std::iota(data, data + N, 1);
     std::shuffle(data, data + N, std::mt19937{std::random_device{}()});
   }
 
-  static void TearDownTestCase() { delete[] data; }
+  static void TearDownTestCase() { cudaFree(data); }
 };
 
 template <typename Tuple>
-typename Info<Tuple>::data_type* Scan<Tuple>::data = nullptr;
+typename Info<Tuple>::data_type* ScanCUDA<Tuple>::data = nullptr;
 
-TYPED_TEST_CASE_P(Scan);
+TYPED_TEST_CASE_P(ScanCUDA);
 
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
@@ -136,108 +133,114 @@ template <typename Function, typename T>
   return ::testing::AssertionSuccess();
 }
 
-TYPED_TEST_P(Scan, inclusive)
+TYPED_TEST_P(ScanCUDA, inclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* out = new T[N];
+  T* out;
+  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
 
   RAJA::inclusive_scan(typename Info<TypeParam>::exec(),
-                       Scan<TypeParam>::data,
-                       Scan<TypeParam>::data + N,
+                       ScanCUDA<TypeParam>::data,
+                       ScanCUDA<TypeParam>::data + N,
                        out,
                        Function{});
 
-  ASSERT_TRUE(check_inclusive<Function>(out, Scan<TypeParam>::data));
-  delete[] out;
+  ASSERT_TRUE(check_inclusive<Function>(out, ScanCUDA<TypeParam>::data));
+  cudaFree(out);
 }
 
-TYPED_TEST_P(Scan, inclusive_inplace)
+TYPED_TEST_P(ScanCUDA, inclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* data = new T[N];
-  std::copy_n(Scan<TypeParam>::data, N, data);
+  T* data;
+  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::inclusive_scan_inplace(typename Info<TypeParam>::exec(),
                                data,
                                data + N,
                                Function{});
 
-  ASSERT_TRUE(check_inclusive<Function>(data, Scan<TypeParam>::data));
-  delete[] data;
+  ASSERT_TRUE(check_inclusive<Function>(data, ScanCUDA<TypeParam>::data));
+  cudaFree(data);
 }
 
-TYPED_TEST_P(Scan, exclusive)
+TYPED_TEST_P(ScanCUDA, exclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* out = new T[N];
+  T* out;
+  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
-                       Scan<TypeParam>::data,
-                       Scan<TypeParam>::data + N,
+                       ScanCUDA<TypeParam>::data,
+                       ScanCUDA<TypeParam>::data + N,
                        out,
                        Function{});
 
-  ASSERT_TRUE(check_exclusive<Function>(out, Scan<TypeParam>::data));
-  delete[] out;
+  ASSERT_TRUE(check_exclusive<Function>(out, ScanCUDA<TypeParam>::data));
+  cudaFree(out);
 }
 
-TYPED_TEST_P(Scan, exclusive_inplace)
+TYPED_TEST_P(ScanCUDA, exclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* data = new T[N];
-  std::copy_n(Scan<TypeParam>::data, N, data);
+  T* data;
+  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::exclusive_scan_inplace(typename Info<TypeParam>::exec(),
                                data,
                                data + N,
                                Function{});
 
-  ASSERT_TRUE(check_exclusive<Function>(data, Scan<TypeParam>::data));
-  delete[] data;
+  ASSERT_TRUE(check_exclusive<Function>(data, ScanCUDA<TypeParam>::data));
+  cudaFree(data);
 }
 
-TYPED_TEST_P(Scan, exclusive_offset)
+TYPED_TEST_P(ScanCUDA, exclusive_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* out = new T[N];
+  T* out;
+  cudaMallocManaged((void**)&out, sizeof(T) * N, cudaMemAttachGlobal);
 
   RAJA::exclusive_scan(typename Info<TypeParam>::exec(),
-                       Scan<TypeParam>::data,
-                       Scan<TypeParam>::data + N,
+                       ScanCUDA<TypeParam>::data,
+                       ScanCUDA<TypeParam>::data + N,
                        out,
                        Function{},
                        T(2));
 
-  ASSERT_TRUE(check_exclusive<Function>(out, Scan<TypeParam>::data, T(2)));
-  delete[] out;
+  ASSERT_TRUE(check_exclusive<Function>(out, ScanCUDA<TypeParam>::data, T(2)));
+  cudaFree(out);
 }
 
-TYPED_TEST_P(Scan, exclusive_inplace_offset)
+TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
 
-  T* data = new T[N];
-  std::copy_n(Scan<TypeParam>::data, N, data);
+  T* data;
+  cudaMallocManaged((void**)&data, sizeof(T) * N, cudaMemAttachGlobal);
+  std::copy_n(ScanCUDA<TypeParam>::data, N, data);
 
   RAJA::exclusive_scan_inplace(
       typename Info<TypeParam>::exec(), data, data + N, Function{}, T(2));
 
-  ASSERT_TRUE(check_exclusive<Function>(data, Scan<TypeParam>::data, T(2)));
-  delete[] data;
+  ASSERT_TRUE(check_exclusive<Function>(data, ScanCUDA<TypeParam>::data, T(2)));
+  cudaFree(data);
 }
 
-REGISTER_TYPED_TEST_CASE_P(Scan,
+REGISTER_TYPED_TEST_CASE_P(ScanCUDA,
                            inclusive,
                            inclusive_inplace,
                            exclusive,
@@ -245,4 +248,4 @@ REGISTER_TYPED_TEST_CASE_P(Scan,
                            exclusive_offset,
                            exclusive_inplace_offset);
 
-INSTANTIATE_TYPED_TEST_CASE_P(ScanTests, Scan, CrossTypes);
+INSTANTIATE_TYPED_TEST_CASE_P(ScanCUDATests, ScanCUDA, CrossTypes);

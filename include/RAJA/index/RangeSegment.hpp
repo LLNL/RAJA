@@ -216,8 +216,8 @@ private:
  * NOTE: TypedRangeStrideSegment allows for positive or negative strides, but
  *       a stride of zero is undefined and will cause DBZ
  *
- * 
- * As with other segment, the iteration space is inclusive of begin() and 
+ *
+ * As with other segment, the iteration space is inclusive of begin() and
  * exclusive of end()
  *
  * For positive strides, begin() > end() implies size()==0
@@ -402,6 +402,7 @@ using common_type_t = typename common_type<Ts...>::type;
 template <typename BeginT,
           typename EndT,
           typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE
 TypedRangeSegment<Common> make_range(BeginT&& begin, EndT&& end)
 {
   return {begin, end};
@@ -421,6 +422,7 @@ template <typename BeginT,
           typename EndT,
           typename StrideT,
           typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
+RAJA_HOST_DEVICE
 TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
                                                    EndT&& end,
                                                    StrideT&& stride)

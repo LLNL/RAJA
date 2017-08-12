@@ -299,3 +299,60 @@ TEST(RangeStrideSegmentTest, forall_values_reverse_stride5)
   
   ASSERT_EQ((RAJA::Index_type)j, segment.size());
 }
+
+
+TEST(RangeStrideSegmentTest, iterator_begin_end)
+{    
+  RAJA::RangeStrideSegment segment(7,-11,-5);
+
+  auto begin1 = segment.begin();  
+  auto begin2 = std::begin(segment);  
+  ASSERT_EQ(begin1, begin2);
+  
+  auto end1 = segment.end();  
+  auto end2 = std::end(segment);  
+  ASSERT_EQ(end1, end2);
+  
+}
+
+
+TEST(RangeStrideSegmentTest, iterator_distance)
+{ 
+  {   
+    RAJA::RangeStrideSegment segment1(0,10,1);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 10);
+  } 
+  
+  { 
+    RAJA::RangeStrideSegment segment1(10,20,1);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 10);
+  }
+  
+  { 
+    RAJA::RangeStrideSegment segment1(0,5,2);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 3); 
+  }
+  
+  {
+    RAJA::RangeStrideSegment segment1(10,20,2);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 5); 
+  }
+  
+  {
+    RAJA::RangeStrideSegment segment1(20,10,-2);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 5); 
+  }
+  
+  {
+    RAJA::RangeStrideSegment segment1(-10,10,3);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 7); 
+  }
+  
+  
+  {
+    RAJA::RangeStrideSegment segment1(10,-10,-7);  
+    ASSERT_EQ(std::distance(std::begin(segment1), std::end(segment1)), 3); 
+  }
+}
+
+
