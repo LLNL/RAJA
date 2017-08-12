@@ -70,20 +70,20 @@ namespace impl
 {
 
 template <typename Func>
-RAJA_INLINE void forall(const tbb_exec &,
+RAJA_INLINE void forall(const tbb_for_exec &,
                         const PolicyBase &,
                         const RangeSegment &iter,
                         Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const tbb_exec &,
+RAJA_INLINE void forall(const tbb_for_exec &,
                         const PolicyBase &,
                         Iterable &&iter,
                         Func &&loop_body);
 
 template <typename Iterable, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_exec &,
+forall_Icount(const tbb_for_exec &,
               const PolicyBase &,
               Iterable &&iter,
               IndexType icount,

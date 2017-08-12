@@ -4,15 +4,19 @@
  * \file
  *
  * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
+ *          template methods for TBB.
  *
- *          These methods should work on any platform.
+ *          These methods should work on any platform that supports TBB.
  *
  ******************************************************************************
  */
 
 #ifndef RAJA_forall_tbb_HPP
 #define RAJA_forall_tbb_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -62,6 +66,7 @@
 
 #include "RAJA/policy/tbb/policy.hpp"
 
+#include "RAJA/index/IndexSet.hpp"
 #include "RAJA/index/ListSegment.hpp"
 #include "RAJA/index/RangeSegment.hpp"
 
@@ -79,18 +84,14 @@ namespace impl
 {
 
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
+///
+/// TBB parallel for policy implementation
+///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const tbb_exec &, Iterable &&iter, Func &&loop_body)
+RAJA_INLINE void forall(const tbb_for_exec&,
+                        Iterable&& iter,
+                        Func&& loop_body)
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
@@ -100,15 +101,15 @@ RAJA_INLINE void forall(const tbb_exec &, Iterable &&iter, Func &&loop_body)
                     });
 }
 
-template <typename Iterable, typename Func, typename IndexType>
+template <typename Iterable, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_exec &,
-              Iterable &&iter,
+forall_Icount(const tbb_for_exec &,
+              Iterable&& iter,
               IndexType icount,
-              Func &&loop_body)
+              Func&& loop_body)
 {
-  auto end = std::end(iter);
   auto begin = std::begin(iter);
+  auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   using brange = tbb::blocked_range<decltype(distance)>;
   tbb::parallel_for(brange(0, distance), [=](const brange &r) {
@@ -117,8 +118,48 @@ forall_Icount(const tbb_exec &,
   });
 }
 
+///
+/// TBB parallel for static policy implementation
+///
+
+template <typename Iterable, typename Func, size_t ChunkSize>
+RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
+                        Iterable&& iter,
+                        Func&& loop_body)
+{
+  using brange = tbb::blocked_range<decltype(iter.begin())>;
+  tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
+                    [=](const brange &r) {
+                      for (const auto &i : r)
+                        loop_body(i);
+                    }, tbb::static_partitioner);
+}
+
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  using brange = tbb::blocked_range<decltype(distance)>;
+  tbb::parallel_for(brange(0, distance, ChunkSize), [=](const brange &r) {
+    for (decltype(distance) i = r.begin(); i != r.end(); ++i)
+      loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  }, tbb::static_partitioner);
+}
+
+
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for if defined(RAJA_ENABLE_TBB)
 
 #endif  // closing endif for header file include guard
