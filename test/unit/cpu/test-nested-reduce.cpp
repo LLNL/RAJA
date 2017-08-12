@@ -92,13 +92,13 @@ TEST(NestedReduce, seq_omp)
 #if defined(RAJA_ENABLE_TBB)
 TEST(NestedReduce, tbb_seq)
 {
-  test<RAJA::tbb_exec, RAJA::seq_exec, RAJA::tbb_reduce>(10, 20);
-  test<RAJA::tbb_exec, RAJA::seq_exec, RAJA::tbb_reduce>(37, 73);
+  test<RAJA::tbb_for_exec, RAJA::seq_exec, RAJA::tbb_reduce>(10, 20);
+  test<RAJA::tbb_for_exec, RAJA::seq_exec, RAJA::tbb_reduce>(37, 73);
 }
 
 TEST(NestedReduce, seq_tbb)
 {
-  test<RAJA::seq_exec, RAJA::tbb_exec, RAJA::tbb_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::tbb_exec, RAJA::tbb_reduce>(37, 73);
+  test<RAJA::seq_exec, RAJA::tbb_for_exec, RAJA::tbb_reduce>(10, 20);
+  test<RAJA::seq_exec, RAJA::tbb_for_exec, RAJA::tbb_reduce>(37, 73);
 }
 #endif

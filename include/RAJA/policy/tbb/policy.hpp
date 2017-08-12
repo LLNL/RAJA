@@ -55,6 +55,8 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include <cstddef>
+
 namespace RAJA
 {
 
@@ -70,16 +72,24 @@ namespace RAJA
 /// Segment execution policies
 ///
 
-struct tbb_for_exec : make_policy_pattern_launch_platform_t<Policy::tbb,
-                                                            Pattern::forall,
-                                                            Launch::undefined,
-                                                            Platform::host> {
+struct tbb_for_dynamic
+    : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host> {
+  std::size_t grain_size;
+  tbb_for_dynamic(std::size_t grain_size_ = 1) : grain_size(grain_size_) {}
 };
 
-///
-/// Index set segment iteration policies
-///
-using tbb_segit = tbb_for_exec;
+
+template <std::size_t GrainSize = 1>
+struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host> {
+};
+
+using tbb_for_exec = tbb_for_static<>;
 
 ///
 ///////////////////////////////////////////////////////////////////////

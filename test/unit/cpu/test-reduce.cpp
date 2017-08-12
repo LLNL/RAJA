@@ -81,9 +81,9 @@ using TestingTypes = ::testing::
 #endif
 #ifdef RAJA_ENABLE_TBB
           ,
-          std::tuple<ExecPolicy<seq_segit, tbb_exec>, tbb_reduce>,
-          std::tuple<ExecPolicy<tbb_exec, seq_exec>, tbb_reduce>,
-          std::tuple<ExecPolicy<tbb_exec, simd_exec>, tbb_reduce>
+          std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>,
+          std::tuple<ExecPolicy<tbb_for_exec, seq_exec>, tbb_reduce>,
+          std::tuple<ExecPolicy<tbb_for_exec, simd_exec>, tbb_reduce>
 #endif
           >;
 

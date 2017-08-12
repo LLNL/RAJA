@@ -114,8 +114,8 @@ using POLICIES =
 #endif
 #if defined(RAJA_ENABLE_TBB)
                ,
-               ExecInfo<TRANSFORMS, seq_exec, tbb_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, tbb_exec>
+               ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>
 #endif
                >;
 

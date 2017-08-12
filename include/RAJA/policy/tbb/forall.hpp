@@ -89,21 +89,21 @@ namespace impl
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const tbb_for_exec&,
+RAJA_INLINE void forall(const tbb_for_dynamic& p,
                         Iterable&& iter,
                         Func&& loop_body)
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter)),
-                    [=](const brange &r) {
-                      for (const auto &i : r)
+  tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
+                    [=](const brange& r) {
+                      for (const auto& i : r)
                         loop_body(i);
                     });
 }
 
 template <typename Iterable, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_for_exec &,
+forall_Icount(const tbb_for_dynamic& p,
               Iterable&& iter,
               IndexType icount,
               Func&& loop_body)
@@ -112,7 +112,7 @@ forall_Icount(const tbb_for_exec &,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance), [=](const brange &r) {
+  tbb::parallel_for(brange(0, distance, p.grain_size), [=](const brange& r) {
     for (decltype(distance) i = r.begin(); i != r.end(); ++i)
       loop_body(static_cast<IndexType>(i + icount), begin[i]);
   });
@@ -129,10 +129,11 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
-                    [=](const brange &r) {
-                      for (const auto &i : r)
+                    [=](const brange& r) {
+                      for (const auto& i : r)
                         loop_body(i);
-                    }, tbb::static_partitioner);
+                    },
+                    tbb::static_partitioner{});
 }
 
 template <typename Iterable,
@@ -149,10 +150,12 @@ forall_Icount(const tbb_for_static<ChunkSize>&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance, ChunkSize), [=](const brange &r) {
-    for (decltype(distance) i = r.begin(); i != r.end(); ++i)
-      loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  }, tbb::static_partitioner);
+  tbb::parallel_for(brange(0, distance, ChunkSize),
+                    [=](const brange& r) {
+                      for (decltype(distance) i = r.begin(); i != r.end(); ++i)
+                        loop_body(static_cast<IndexType>(i + icount), begin[i]);
+                    },
+                    tbb::static_partitioner{});
 }
 
 

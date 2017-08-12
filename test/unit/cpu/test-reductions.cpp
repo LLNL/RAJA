@@ -266,7 +266,7 @@ using types = ::testing::Types<
 #endif
 #if defined(RAJA_ENABLE_TBB)
     ,
-    std::tuple<RAJA::tbb_exec, RAJA::tbb_reduce>
+    std::tuple<RAJA::tbb_for_exec, RAJA::tbb_reduce>
 #endif
     >;
 

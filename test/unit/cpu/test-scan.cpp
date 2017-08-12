@@ -67,7 +67,7 @@ using ExecTypes = std::tuple<
     ,RAJA::omp_parallel_for_exec
 #endif
 #ifdef RAJA_ENABLE_TBB
-    ,RAJA::tbb_exec
+    ,RAJA::tbb_for_exec
 #endif
 >;
 
