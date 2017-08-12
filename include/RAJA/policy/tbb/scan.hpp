@@ -84,22 +84,15 @@ struct scan_adapter {
   OutIter out;
   Fn fn;
 
-  constexpr scan_adapter(InIter const& in_, OutIter out_, T const& identity, Fn fn_)
-      : agg(identity), in(in_), out(out_), fn(fn_)
+  constexpr scan_adapter(InIter const& in_,
+                         OutIter out_,
+                         T const& identity_,
+                         Fn fn_)
+      : agg(identity_), in(in_), out(out_), fn(fn_)
   {
   }
   T get_agg() const { return agg; }
 
-  template <typename Tag>
-  void operator()(const tbb::blocked_range<Index_type>& r, Tag)
-  {
-    T temp = agg;
-    for (int i = r.begin(); i < r.end(); ++i) {
-      temp = fn(temp, in[i]);
-      if (Tag::is_final_scan()) out[i] = temp;
-    }
-    agg = temp;
-  }
   scan_adapter(scan_adapter& b, tbb::split)
       : agg(Fn::identity()), in(b.in), out(b.out), fn(b.fn)
   {
