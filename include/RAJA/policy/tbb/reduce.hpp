@@ -182,7 +182,22 @@ class ReduceMin<tbb_reduce, T> : public detail::MinReduce<T>
 
 public:
   using Base = detail::MinReduce<T>;
-  using Base::Base;
+
+  //! prohibit compiler-generated default ctor
+  ReduceMin() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  ReduceMin &operator=(const ReduceMin &) = delete;
+
+  //! compiler-generated copy constructor
+  ReduceMin(const ReduceMin &) = default;
+
+  //! compiler-generated move constructor
+  ReduceMin(ReduceMin &&) = default;
+
+  //! compiler-generated move assignment
+  ReduceMin &operator=(ReduceMin &&) = default;
+
   RAJA_HOST_DEVICE explicit ReduceMin(
       T init_val,
       T initializer = operators::limits<T>::max())
