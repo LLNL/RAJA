@@ -80,6 +80,7 @@ namespace RAJA
 #if TBB_VERSION_MAJOR >= 2017
 using tbb_static_partitioner = tbb::static_partitioner;
 #else
+// This is not really static, but it's as close as it gets pre 2017
 using tbb_static_partitioner = tbb::simple_partitioner;
 #endif
 
@@ -136,7 +137,7 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
                       for (const auto& i : r)
                         loop_body(i);
                     },
-                    tbb::static_partitioner{});
+                    tbb_static_partitioner{});
 }
 
 template <typename Iterable,
@@ -158,7 +159,7 @@ forall_Icount(const tbb_for_static<ChunkSize>&,
                       for (decltype(distance) i = r.begin(); i != r.end(); ++i)
                         loop_body(static_cast<IndexType>(i + icount), begin[i]);
                     },
-                    tbb::static_partitioner{});
+                    tbb_static_partitioner{});
 }
 
 
