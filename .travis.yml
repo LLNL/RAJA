@@ -13,7 +13,9 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-4.9
-    env: COMPILER=g++-4.9 - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    env:
+    - COMPILER=g++-4.9
+    - WARN="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: gcc-5
     addons:
       apt:
@@ -21,7 +23,9 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
-    env: COMPILER=g++-5 - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    env:
+    - COMPILER=g++-5
+    - WARN="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: gcc-6
     addons:
       apt:
@@ -29,8 +33,11 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-6
-    env: COMPILER=g++-6 - WARN="" - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage'
-      -DCMAKE_CXX_FLAGS='-coverage'" - COVERAGE=t
+    env:
+    - COMPILER=g++-6
+    - WARN=""
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
+    - COVERAGE=t
   - compiler: clang-3.6
     addons:
       apt:
@@ -67,9 +74,9 @@ matrix:
     - WARN=""
   - compiler: intel-17
     env:
-      - COMPILER=icpc
-      - WARN=""
-      - TRAVIS_BUILD_INTEL="YES"
+    - COMPILER=icpc
+    - WARN=""
+    - TRAVIS_BUILD_INTEL="YES"
   - compiler: nvcc
     addons:
       apt:
@@ -78,9 +85,44 @@ matrix:
         packages:
         - g++-4.9
     env:
-      - COMPILER=g++-4.9
-      - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON"
-      - TRAVIS_BUILD_NVCC="YES"
+    - COMPILER=g++-4.9
+    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON"
+    - TRAVIS_BUILD_NVCC="YES"
+  - compiler: gcc-5-debug
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env:
+    - COMPILER=g++-5
+    - WARN="-DRAJA_ENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
+  - compiler: clang-3.8-debug
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-5
+    env:
+    - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
+    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
+    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
+    - WARN=""
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
+  - compiler: nvcc-debug
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - g++-4.9
+    env:
+    - COMPILER=g++-4.9
+    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
+    - TRAVIS_BUILD_NVCC="YES"
 cache:
   directories:
   - $HOME/llvm
@@ -88,28 +130,35 @@ cache:
 before_install:
 - sudo apt-get update -qq
 - if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME; curl -o
-  tarball.tar.xz $DOWNLOAD && cd $HOME/llvm && tar xf $HOME/tarball.tar.xz ; fi ;
+  tarball.tar.xz $DOWNLOAD &&
+  cd $HOME/llvm &&
+  tar xf $HOME/tarball.tar.xz ; fi ;
   fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- cd $HOME && curl -o cmake-tarball.tar.gz ${CMAKE_URL} && mkdir -p $HOME/cmake &&
-  cd $HOME/cmake && tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 && export
-  PATH=${PWD}/bin:${PATH}
+- cd $HOME &&
+  curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
+  mkdir -p $HOME/cmake &&
+  cd $HOME/cmake &&
+  tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 &&
+  export PATH=${PWD}/bin:${PATH}
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo apt-get update -qq &&
   travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
-  travis_retry sudo apt-get clean &&
+  travis_retry sudo apt-get clean; fi &&
   export CUDA_HOME=/usr/local/cuda-8.0 &&
+  export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
   export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
 - source ~/.bashrc
 - cd $TRAVIS_BUILD_DIR
-- mkdir travis-build && cd travis-build
+- mkdir travis-build &&
+  cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="$COMPILER" $WARN $CMAKE_EXTRA_FLAGS ../
-- make -j
-- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then make test; fi
+- make -j 3
+- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then ctest -V; fi
 after_success:
 - if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
 - if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi

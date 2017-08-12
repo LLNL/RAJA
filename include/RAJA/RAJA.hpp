@@ -87,6 +87,8 @@
 #include "RAJA/policy/openmp.hpp"
 #endif
 
+#include "RAJA/index/IndexSet.hpp"
+
 //
 // Strongly typed index class.
 //

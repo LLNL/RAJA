@@ -52,13 +52,13 @@
 #include <tuple>
 
 template <typename T>
-class ReductionConstructorTest : public ::testing::Test
+class ReductionConstructorTestTargetOMP : public ::testing::Test
 {
 };
 
-TYPED_TEST_CASE_P(ReductionConstructorTest);
+TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP);
 
-TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
+TYPED_TEST_P(ReductionConstructorTestTargetOMP, ReductionConstructor)
 {
   using ReducePolicy = typename std::tuple_element<0, TypeParam>::type;
   using NumericType = typename std::tuple_element<1, TypeParam>::type;
@@ -78,7 +78,7 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTest, ReductionConstructor);
+REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTestTargetOMP, ReductionConstructor);
 
 using constructor_types =
     ::testing::Types<std::tuple<RAJA::omp_target_reduce<16>, int>,
@@ -91,13 +91,13 @@ using constructor_types =
                      std::tuple<RAJA::omp_target_reduce<256>, float>,
                      std::tuple<RAJA::omp_target_reduce<256>, double>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests,
-                              ReductionConstructorTest,
+INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
+                              ReductionConstructorTestTargetOMP,
                               constructor_types);
 
 
 template <typename TUPLE>
-class ReductionCorrectnessTest : public ::testing::Test
+class ReductionCorrectnessTestTargetOMP : public ::testing::Test
 {
 protected:
   virtual void SetUp()
@@ -137,10 +137,10 @@ protected:
     }
   }
 
-  virtual void TearDown() 
+  virtual void TearDown()
   {
 #pragma omp target exit data map(release:array[:array_length])
-      free(array); 
+      free(array);
   }
 
   RAJA::Real_ptr array;
@@ -153,9 +153,9 @@ protected:
 
   RAJA::Index_type array_length;
 };
-TYPED_TEST_CASE_P(ReductionCorrectnessTest);
+TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP);
 
-TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -174,7 +174,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceSum)
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
 }
 
-TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMin)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -193,7 +193,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMin)
   ASSERT_FLOAT_EQ(this->min, raja_min);
 }
 
-TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMax)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -212,7 +212,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMax)
   ASSERT_FLOAT_EQ(this->max, raja_max);
 }
 
-TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMinLoc)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -235,7 +235,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
   ASSERT_EQ(this->minloc, raja_loc);
 }
 
-TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
+TYPED_TEST_P(ReductionCorrectnessTestTargetOMP, ReduceMaxLoc)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -258,7 +258,7 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
   ASSERT_EQ(this->maxloc, raja_loc);
 }
 
-REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
+REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceSum,
                            ReduceMin,
                            ReduceMax,
@@ -273,10 +273,10 @@ using types =
                      std::tuple<RAJA::omp_target_parallel_for_exec<256>,
                                 RAJA::omp_target_reduce<256>>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);
+INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTestTargetOMP, types);
 
 template <typename TUPLE>
-class NestedReductionCorrectnessTest : public ::testing::Test
+class NestedReductionCorrectnessTestTargetOMP : public ::testing::Test
 {
 protected:
   virtual void SetUp()
@@ -300,9 +300,9 @@ protected:
     sum = 4.0;
   }
 
-  virtual void TearDown() { 
+  virtual void TearDown() {
 #pragma omp target exit data map(release: array[:x_size*y_size*z_size])
-      free(array); 
+      free(array);
   }
 
   RAJA::Real_ptr array;
@@ -313,9 +313,9 @@ protected:
   RAJA::Index_type y_size;
   RAJA::Index_type z_size;
 };
-TYPED_TEST_CASE_P(NestedReductionCorrectnessTest);
+TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP);
 
-TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
+TYPED_TEST_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum)
 {
   using ExecPolicy = typename std::tuple_element<0, TypeParam>::type;
   using ReducePolicy = typename std::tuple_element<1, TypeParam>::type;
@@ -344,7 +344,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
   ASSERT_FLOAT_EQ(this->sum, raja_sum);
 }
 
-REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, NestedReduceSum);
+REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTestTargetOMP, NestedReduceSum);
 
 using nested_types = ::testing::Types<
   std::tuple<
@@ -369,6 +369,6 @@ using nested_types = ::testing::Types<
     RAJA::omp_target_reduce<64>>
   >;
 
-INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce,
-                              NestedReductionCorrectnessTest,
+INSTANTIATE_TYPED_TEST_CASE_P(NestedReduceTargetOMP,
+                              NestedReductionCorrectnessTestTargetOMP,
                               nested_types);

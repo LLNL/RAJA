@@ -78,7 +78,8 @@ namespace RAJA
  *     Layout<3> layout(5,7,11);
  *
  *     // The above is equivalent to:
- *     Layout<3> default_layout = make_permuted_layout({5,7,11}, PERM_IJK::value);
+ *     Layout<3> default_layout = make_permuted_layout({5,7,11},
+ * PERM_IJK::value);
  *
  *     // Create a layout object with permuted order
  *     // In this case, J is stride-1, and K has the longest stride
@@ -103,7 +104,7 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
   for (size_t i = 0; i < Rank; ++i) {
     // If the size of dimension i is zero, then the stride is zero
     folded_strides[i] = sizes[permutation[i]] ? 1 : 0;
-    for (size_t j = i+1; j < Rank; ++j) {
+    for (size_t j = i + 1; j < Rank; ++j) {
       folded_strides[i] *= sizes[permutation[j]] ? sizes[permutation[j]] : 1;
     }
   }
