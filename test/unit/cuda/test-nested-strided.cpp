@@ -57,50 +57,104 @@
 #include <gtest/gtest.h>
 #include <RAJA/RAJA.hpp>
 
-const int x = 500, y = 500, z = 50;
+static const int x = 500, y = 300, z = 70;
 
 using namespace RAJA;
-void stride_test(int stride)
+
+static void stride_test(int stride, bool reverse = false)
 {
-  double *arr = NULL;
+  int *arr = nullptr;
   cudaErrchk(cudaMallocManaged(&arr, sizeof(*arr) * x * y * z));
   cudaMemset(arr, 0, sizeof(*arr) * x * y * z);
+
+  RangeStrideSegment seg_x( reverse ? x-1     : 0,
+                            reverse ? -1      : x,
+                            reverse ? -stride : stride);
+                            
+  RangeStrideSegment seg_y( reverse ? y-1     : 0,
+                            reverse ? -1      : y,
+                            reverse ? -stride : stride);
+                            
+  RangeStrideSegment seg_z( reverse ? z-1     : 0,
+                            reverse ? -1      : z,
+                            reverse ? -stride : stride);                            
 
   forallN<NestedPolicy<ExecList<seq_exec,
                                 cuda_block_x_exec,
                                 cuda_thread_y_exec>,
-                       Permute<PERM_IJK>>>(RangeStrideSegment(0, z, stride),
-                                           RangeStrideSegment(0, y, stride),
-                                           RangeStrideSegment(0, x, stride),
-                                           [=] RAJA_DEVICE(int i,
-                                                           int j,
-                                                           int k) {
-                                             int val = z * y * i + y * j + k;
+                       Permute<PERM_IJK>>>(seg_x, seg_y, seg_z,
+                                           [=] RAJA_DEVICE(Index_type i,
+                                                           Index_type j,
+                                                           Index_type k) {
+                                             Index_type val = (i*y*z) + (j*z) + k;
                                              arr[val] = val;
                                            });
   cudaDeviceSynchronize();
-
-  int prev_val = 0;
-  for (int i = 0; i < z; i += stride) {
-    for (int j = 0; j < y; j += stride) {
-      for (int k = 0; k < x; k += stride) {
-        int val = z * y * i + y * j + k;
-        ASSERT_EQ(arr[val], val);
-        for (int inner = prev_val + 1; inner < val; ++inner) {
-          ASSERT_EQ(arr[inner], 0);
+  
+  
+  for (Index_type i : RangeSegment(0,x)) {
+    for (Index_type j : RangeSegment(0,y)) {
+      for (Index_type k : RangeSegment(0,z)) {
+      
+        Index_type val = (i*y*z) + (j*z) + k;
+        
+        // Determine if this i,j,k was in the iteration space
+        bool inclusive;
+        if(reverse){
+          inclusive = ((x-i-1)%stride==0) && ((y-j-1)%stride==0) && ((z-k-1)%stride==0);
         }
-        prev_val = val;
+        else{
+          inclusive = (i%stride==0) && (j%stride==0) && (k%stride==0);
+        }
+        
+        // Determine expected value
+        int expected_value = inclusive ? val : 0;        
+        
+        ASSERT_EQ(expected_value, arr[val]);
       }
     }
   }
   cudaFree(arr);
 }
 
-TEST(forallN, rangeStrides)
-{
 
-  stride_test(1);
-  stride_test(2);
-  stride_test(3);
-  stride_test(4);
+TEST(forallN, rangeStrides1)
+{
+  stride_test(1, false);
+}
+
+TEST(forallN, rangeStrides2)
+{
+  stride_test(2, false);
+}
+
+TEST(forallN, rangeStrides3)
+{
+  stride_test(3, false);
+}
+
+TEST(forallN, rangeStrides4)
+{
+  stride_test(4, false);
+}
+
+
+TEST(forallN, rangeStrides1_reverse)
+{
+  stride_test(1, true);
+}
+
+TEST(forallN, rangeStrides2_reverse)
+{
+  stride_test(2, true);
+}
+
+TEST(forallN, rangeStrides3_reverse)
+{
+  stride_test(3, true);
+}
+
+TEST(forallN, rangeStrides4_reverse)
+{
+  stride_test(4, true);
 }
