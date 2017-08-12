@@ -8,7 +8,7 @@ addons:
   apt:
     sources:
     - ubuntu-toolchain-r-test
-    packages:
+    packages: &common-packages
     - libtbb-dev
 matrix:
   include:
@@ -19,6 +19,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-4.9
+        - *common-packages
     env:
     - COMPILER=g++-4.9
     - WARN="-DRAJA_ENABLE_WARNINGS=On"
@@ -29,6 +30,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=g++-5
     - WARN="-DRAJA_ENABLE_WARNINGS=On"
@@ -39,6 +41,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-6
+        - *common-packages
     env:
     - COMPILER=g++-6
     - WARN=""
@@ -51,6 +54,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
     - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -62,6 +66,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -73,6 +78,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
@@ -90,6 +96,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-4.9
+        - *common-packages
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON"
@@ -101,6 +108,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=g++-5
     - WARN="-DRAJA_ENABLE_WARNINGS=On"
@@ -112,6 +120,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-5
+        - *common-packages
     env:
     - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
     - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
@@ -125,6 +134,7 @@ matrix:
         - ubuntu-toolchain-r-test
         packages:
         - g++-4.9
+        - *common-packages
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=ON -DCMAKE_BUILD_TYPE=Debug"
