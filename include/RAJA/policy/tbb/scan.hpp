@@ -83,18 +83,19 @@ struct scan_adapter {
   InIter const& in;
   OutIter out;
   Fn fn;
+  T const init;
 
   constexpr scan_adapter(InIter const& in_,
                          OutIter out_,
-                         T const& identity_,
-                         Fn fn_)
-      : agg(identity_), in(in_), out(out_), fn(fn_)
+                         Fn fn_,
+                         T const& identity_)
+      : agg(identity_), in(in_), out(out_), fn(fn_), init(identity_)
   {
   }
   T get_agg() const { return agg; }
 
   scan_adapter(scan_adapter& b, tbb::split)
-      : agg(Fn::identity()), in(b.in), out(b.out), fn(b.fn)
+      : agg(Fn::identity()), in(b.in), out(b.out), fn(b.fn), init(b.init)
   {
   }
   void reverse_join(const scan_adapter& a) { agg = fn(a.agg, agg); }
@@ -110,7 +111,7 @@ struct scan_adapter_inclusive : scan_adapter<T, InIter, OutIter, Fn> {
   void operator()(const tbb::blocked_range<Index_type>& r, Tag)
   {
     T temp = this->agg;
-    for (int i = r.begin(); i < r.end(); ++i) {
+    for (Index_type i = r.begin(); i < r.end(); ++i) {
       temp = this->fn(temp, this->in[i]);
       if (Tag::is_final_scan()) this->out[i] = temp;
     }
@@ -126,13 +127,11 @@ struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
   template <typename Tag>
   void operator()(const tbb::blocked_range<Index_type>& r, Tag)
   {
-    T temp = this->agg;
-    for (int i = r.begin(); i < r.end(); ++i) {
+    for (Index_type i = r.begin(); i < r.end(); ++i) {
       auto t = this->in[i];
-      if (Tag::is_final_scan()) this->out[i] = temp;
-      temp = this->fn(temp, t);
+      if (Tag::is_final_scan()) this->out[i] = this->agg;
+      this->agg = this->fn(this->agg, t);
     }
-    this->agg = temp;
   }
 };
 }
@@ -152,7 +151,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       Iter,
-      BinFn>{begin, begin, BinFn::identity(), f};
+      BinFn>{begin, begin, f, BinFn::identity()};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
@@ -174,7 +173,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive_inplace(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       Iter,
-      BinFn>{begin, begin, v, f};
+      BinFn>{begin, begin, f, v};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
@@ -196,7 +195,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       OutIter,
-      BinFn>{begin, out, BinFn::identity(), f};
+      BinFn>{begin, out, f, BinFn::identity()};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
@@ -223,7 +222,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       OutIter,
-      BinFn>{begin, out, v, f};
+      BinFn>{begin, out, f, v};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
