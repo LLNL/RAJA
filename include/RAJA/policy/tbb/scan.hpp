@@ -84,7 +84,7 @@ struct scan_adapter {
   OutIter out;
   Fn fn;
 
-  scan_adapter(InIter const& in_, OutIter out_, T const& identity, Fn fn_)
+  constexpr scan_adapter(InIter const& in_, OutIter out_, T const& identity, Fn fn_)
       : agg(identity), in(in_), out(out_), fn(fn_)
   {
   }
@@ -101,7 +101,7 @@ struct scan_adapter {
     agg = temp;
   }
   scan_adapter(scan_adapter& b, tbb::split)
-      : agg(Fn::identity), in(b.in), out(b.out), fn(b.fn)
+      : agg(Fn::identity()), in(b.in), out(b.out), fn(b.fn)
   {
   }
   void reverse_join(const scan_adapter& a) { agg = fn(a.agg, agg); }
@@ -159,7 +159,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       Iter,
-      BinFn>{begin, begin, BinFn::identity, f};
+      BinFn>{begin, begin, BinFn::identity(), f};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);
@@ -203,7 +203,7 @@ concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive(
       typename std::remove_reference<decltype(*begin)>::type,
       Iter,
       OutIter,
-      BinFn>{begin, out, BinFn::identity, f};
+      BinFn>{begin, out, BinFn::identity(), f};
   tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
                                                     std::distance(begin, end)},
                      adapter);

@@ -112,7 +112,7 @@ TYPED_TEST_CASE_P(Scan);
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
 {
-  T init = Function::identity;
+  T init = Function::identity();
   for (int i = 0; i < N; ++i) {
     init = Function()(init, *original);
     if (*actual != init)
@@ -127,7 +127,7 @@ template <typename Function, typename T>
 template <typename Function, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
                                            const T* original,
-                                           T init = Function::identity)
+                                           T init = Function::identity())
 {
   for (int i = 0; i < N; ++i) {
     if (*actual != init)
