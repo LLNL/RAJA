@@ -254,6 +254,35 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
+#ifdef RAJA_ENABLE_TBB
+
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
+struct PolLTimesF_TBB : PolLTimesCommon {
+  // Loops: Moments, Directions, Groups, Zones
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_exec>,
+                   Permute<PERM_LKIJ>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
+};
+
+// Same as D, but with tiling on zones and TBB 2D blocked range on groups and zones
+struct PolLTimesG_TBB : PolLTimesCommon {
+  // Loops: Moments, Directions, Groups, Zones
+  using EXEC = NestedPolicy<
+      ExecList<seq_exec, seq_exec, tbb_for_exec, tbb_for_exec>,
+      Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
+           Permute<PERM_LKIJ,
+                   Execute  // implicit
+                   >>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
+};
+
+#endif
+
 using LTimesPolicies = ::testing::Types<PolLTimesA,
                                         PolLTimesB,
                                         PolLTimesC
@@ -261,6 +290,11 @@ using LTimesPolicies = ::testing::Types<PolLTimesA,
                                         ,
                                         PolLTimesD_OMP,
                                         PolLTimesE_OMP
+#endif
+#if defined(RAJA_ENABLE_TBB)
+                                        ,
+                                        PolLTimesF_TBB,
+                                        PolLTimesG_TBB
 #endif
                                         >;
 

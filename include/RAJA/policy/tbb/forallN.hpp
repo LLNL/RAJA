@@ -61,7 +61,8 @@
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/util/types.hpp"
 
-#include <tbb.h>
+#include <tbb/tbb.h>
+#include <cstddef>
 #include <type_traits>
 
 namespace RAJA
@@ -77,11 +78,8 @@ namespace detail
 struct ForallN_TBB_Parallel_Tag {
 };
 
-template <typename Iter>
-using CollapsePolPair = ForallN_PolicyPair<tbb_forall_exec, Iter>;
-
-template <typename T>
-using no_const = typename std::remove_const<T>::type;
+template <typename Iter, std::size_t GrainSize>
+using CollapsePolPair = ForallN_PolicyPair<tbb_for_static<GrainSize>, Iter>;
 
 }  // closing brace for namespace detail
 
@@ -98,22 +96,27 @@ struct TBB_Parallel {
  *  ForallN collapse nowait execution templates
  ******************************************************************/
 
-template <typename Iterable1, typename Iterable2, typename... PREST>
+template <typename Iterable1,
+          typename Iterable2,
+          std::size_t Grain1,
+          std::size_t Grain2,
+          typename... PREST>
 struct ForallN_Executor<false,
-                        detail::CollapsePolPair<Iterable1>,
-                        detail::CollapsePolPair<Iterable2>,
+                        detail::CollapsePolPair<Iterable1, Grain1>,
+                        detail::CollapsePolPair<Iterable2, Grain2>,
                         PREST...> {
 
-  detail::CollapsePolPair<Iterable1> iset_i;
-  detail::CollapsePolPair<Iterable2> iset_j;
+  detail::CollapsePolPair<Iterable1, Grain1> iset_i;
+  detail::CollapsePolPair<Iterable2, Grain2> iset_j;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
-  constexpr ForallN_Executor(detail::CollapsePolPair<Iterable1> const &i,
-                             detail::CollapsePolPair<Iterable2> const &j,
-                             PREST const &... prest)
+  constexpr ForallN_Executor(
+      detail::CollapsePolPair<Iterable1, Grain1> const &i,
+      detail::CollapsePolPair<Iterable2, Grain2> const &j,
+      PREST const &... prest)
       : iset_i(i), iset_j(j), next_exec(prest...)
   {
   }
@@ -121,45 +124,52 @@ struct ForallN_Executor<false,
   template <typename BODY>
   RAJA_INLINE void operator()(BODY body) const
   {
-    const auto begin_i = iset_i.begin();
-    const auto size_i = iset_i.size();
-    const auto begin_j = iset_j.begin();
-    const auto size_j = iset_j.size();
-
     ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
-    using brange = tbb::blocked_range2d<decltype(size_i)>;
-    tbb::parallel_for(brange(0,size_i,0,size_j), [=](const brange &r) {
-      for (auto i=r.rows().begin(); i!=r.rows().end(); ++i ) {
-          for (auto j=r.cols().begin(); j!=r.cols().end(); ++j ) {
-              outer(*(begin_i + i), *(begin_j + j));
-          }
-      }
-    });
+    std::cerr << "yup" << std::endl;
+    using brange = tbb::blocked_range2d<typename Iterable1::iterator,
+                                        typename Iterable2::iterator>;
+    tbb::parallel_for(brange(iset_i.begin(),
+                             iset_i.end(),
+                             Grain1,
+                             iset_j.begin(),
+                             iset_j.end(),
+                             Grain2),
+                      [=](const brange &r) {
+                        for (auto i : r.rows()) {
+                          for (auto j : r.cols()) {
+                            outer(i, j);
+                          }
+                        }
+                      });
   }
 };
 
 template <typename Iterable1,
           typename Iterable2,
           typename Iterable3,
+          std::size_t Grain1,
+          std::size_t Grain2,
+          std::size_t Grain3,
           typename... PREST>
 struct ForallN_Executor<false,
-                        detail::CollapsePolPair<Iterable1>,
-                        detail::CollapsePolPair<Iterable2>,
-                        detail::CollapsePolPair<Iterable3>,
+                        detail::CollapsePolPair<Iterable1, Grain1>,
+                        detail::CollapsePolPair<Iterable2, Grain2>,
+                        detail::CollapsePolPair<Iterable3, Grain3>,
                         PREST...> {
-  detail::CollapsePolPair<Iterable1> iset_i;
-  detail::CollapsePolPair<Iterable2> iset_j;
-  detail::CollapsePolPair<Iterable3> iset_k;
+  detail::CollapsePolPair<Iterable1, Grain1> iset_i;
+  detail::CollapsePolPair<Iterable2, Grain2> iset_j;
+  detail::CollapsePolPair<Iterable3, Grain3> iset_k;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
-  constexpr ForallN_Executor(detail::CollapsePolPair<Iterable1> const &i,
-                             detail::CollapsePolPair<Iterable2> const &j,
-                             detail::CollapsePolPair<Iterable3> const &k,
-                             PREST... prest)
+  constexpr ForallN_Executor(
+      detail::CollapsePolPair<Iterable1, Grain1> const &i,
+      detail::CollapsePolPair<Iterable2, Grain2> const &j,
+      detail::CollapsePolPair<Iterable3, Grain3> const &k,
+      PREST... prest)
       : iset_i(i), iset_j(j), iset_k(k), next_exec(prest...)
   {
   }
@@ -167,27 +177,29 @@ struct ForallN_Executor<false,
   template <typename BODY>
   RAJA_INLINE void operator()(BODY body) const
   {
-    const auto begin_i = iset_i.begin();
-    const auto size_i = iset_i.size();
-    const auto begin_j = iset_j.begin();
-    const auto size_j = iset_j.size();
-    const auto begin_k = iset_k.begin();
-    const auto size_k = iset_k.size();
-
-    using detail::no_const;
-
     ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
-    using brange = tbb::blocked_range3d<decltype(size_i)>;
-    tbb::parallel_for(brange(0,size_i,0,size_j,0,size_k), [=](const brange &r) {
-      for (auto i=r.pages().begin(); i!=r.pages().end(); ++i ) {
-          for (auto j=r.rows().begin(); j!=r.rows().end(); ++j ) {
-              for (auto k=r.cols().begin(); k!=r.cols().end(); ++k ) {
-                  outer(*(begin_i + i), *(begin_j + j), *(begin_k + k));
-              }
-          }
-      }
-    });
+    using brange = tbb::blocked_range3d<typename Iterable1::iterator,
+                                        typename Iterable2::iterator,
+                                        typename Iterable3::iterator>;
+    tbb::parallel_for(brange(iset_i.begin(),
+                             iset_i.end(),
+                             Grain1,
+                             iset_j.begin(),
+                             iset_j.end(),
+                             Grain2,
+                             iset_k.begin(),
+                             iset_k.end(),
+                             Grain3),
+                      [=](const brange &r) {
+                        for (auto i : r.pages()) {
+                          for (auto j : r.rows()) {
+                            for (auto k : r.cols()) {
+                              outer(i, j, k);
+                            }
+                          }
+                        }
+                      });
   }
 };
 
