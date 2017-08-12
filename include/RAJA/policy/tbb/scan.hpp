@@ -88,8 +88,8 @@ struct scan_adapter {
   constexpr scan_adapter(InIter const& in_,
                          OutIter out_,
                          Fn fn_,
-                         T const& identity_)
-      : agg(identity_), in(in_), out(out_), fn(fn_), init(identity_)
+                         T const& init_)
+      : agg(init_), in(in_), out(out_), fn(fn_), init(init_)
   {
   }
   T get_agg() const { return agg; }
@@ -98,7 +98,7 @@ struct scan_adapter {
       : agg(Fn::identity()), in(b.in), out(b.out), fn(b.fn), init(b.init)
   {
   }
-  void reverse_join(const scan_adapter& a) { agg = fn(a.agg, agg); }
+  void reverse_join(const scan_adapter& a) { agg = fn(agg, a.agg); }
   void assign(const scan_adapter& b) { agg = b.agg; }
 };
 
