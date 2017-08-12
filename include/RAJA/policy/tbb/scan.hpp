@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_sequential_HPP
-#define RAJA_scan_sequential_HPP
+#ifndef RAJA_scan_tbb_HPP
+#define RAJA_scan_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,8 +61,11 @@
 
 #include "RAJA/policy/sequential/policy.hpp"
 
+#include <tbb/tbb.h>
+
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <iterator>
 
 namespace RAJA
@@ -71,19 +74,95 @@ namespace impl
 {
 namespace scan
 {
+
+namespace detail
+{
+template <typename T, typename InIter, typename OutIter, typename Fn>
+struct scan_adapter {
+  T agg;
+  InIter const& in;
+  OutIter out;
+  Fn fn;
+
+  scan_adapter(InIter const& in_, OutIter out_, T const& identity, Fn fn_)
+      : agg(identity), out(out_), in(in_), fn(fn_)
+  {
+  }
+  T get_agg() const { return agg; }
+
+  template <typename Tag>
+  void operator()(const tbb::blocked_range<Index_type>& r, Tag)
+  {
+    T temp = agg;
+    for (int i = r.begin(); i < r.end(); ++i) {
+      temp = fn(temp, in[i]);
+      if (Tag::is_final_scan()) out[i] = temp;
+    }
+    agg = temp;
+  }
+  scan_adapter(scan_adapter& b, tbb::split)
+      : in(b.in), out(b.out), agg(Fn::identity), fn(b.fn)
+  {
+  }
+  void reverse_join(const scan_adapter& a) { agg = fn(a.agg, agg); }
+  void assign(const scan_adapter& b) { agg = b.agg; }
+};
+
+template <typename T, typename InIter, typename OutIter, typename Fn>
+struct scan_adapter_inclusive : scan_adapter<T, InIter, OutIter, Fn> {
+
+  using Base = scan_adapter<T, InIter, OutIter, Fn>;
+  using Base::Base;
+  template <typename Tag>
+  void operator()(const tbb::blocked_range<Index_type>& r, Tag)
+  {
+    T temp = this->agg;
+    for (int i = r.begin(); i < r.end(); ++i) {
+      temp = this->fn(temp, this->in[i]);
+      if (Tag::is_final_scan()) this->out[i] = temp;
+    }
+    this->agg = temp;
+  }
+};
+
+template <typename T, typename InIter, typename OutIter, typename Fn>
+struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
+
+  using Base = scan_adapter<T, InIter, OutIter, Fn>;
+  using Base::Base;
+  template <typename Tag>
+  void operator()(const tbb::blocked_range<Index_type>& r, Tag)
+  {
+    T temp = this->agg;
+    for (int i = r.begin(); i < r.end(); ++i) {
+      auto t = this->in[i];
+      if (Tag::is_final_scan()) this->out[i] = temp;
+      temp = this->fn(temp, t);
+    }
+    this->agg = temp;
+  }
+};
+}
+
 /*!
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
+concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive_inplace(
+    const ExecPolicy&,
+    Iter begin,
+    Iter end,
+    BinFn f)
 {
-  auto agg = *begin;
-  for (Iter i = ++begin; i != end; ++i) {
-    agg = f(*i, agg);
-    *i = agg;
-  }
+  auto adapter = detail::scan_adapter_inclusive<
+      typename std::remove_reference<decltype(*begin)>::type,
+      Iter,
+      Iter,
+      BinFn>{begin, begin, BinFn::identity, f};
+  tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
+                                                    std::distance(begin, end)},
+                     adapter);
 }
 
 /*!
@@ -91,16 +170,21 @@ inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
-exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
+concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive_inplace(
+    const ExecPolicy&,
+    Iter begin,
+    Iter end,
+    BinFn f,
+    T v)
 {
-  const int n = end - begin;
-  decltype(*begin) agg = v;
-  for (int i = 0; i < n; ++i) {
-    auto t = *(begin + i);
-    *(begin + i) = agg;
-    agg = f(agg, t);
-  }
+  auto adapter = detail::scan_adapter_exclusive<
+      typename std::remove_reference<decltype(*begin)>::type,
+      Iter,
+      Iter,
+      BinFn>{begin, begin, v, f};
+  tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
+                                                    std::distance(begin, end)},
+                     adapter);
 }
 
 /*!
@@ -108,19 +192,21 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
-    const ExecPolicy &,
+concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> inclusive(
+    const ExecPolicy&,
     const Iter begin,
     const Iter end,
     OutIter out,
     BinFn f)
 {
-  auto agg = *begin;
-  *out++ = agg;
-  for (Iter i = begin + 1; i != end; ++i) {
-    agg = f(agg, *i);
-    *out++ = agg;
-  }
+  auto adapter = detail::scan_adapter_inclusive<
+      typename std::remove_reference<decltype(*begin)>::type,
+      Iter,
+      OutIter,
+      BinFn>{begin, out, BinFn::identity, f};
+  tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
+                                                    std::distance(begin, end)},
+                     adapter);
 }
 
 /*!
@@ -132,21 +218,22 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
-    const ExecPolicy &,
+concepts::enable_if<type_traits::is_tbb_policy<ExecPolicy>> exclusive(
+    const ExecPolicy&,
     const Iter begin,
     const Iter end,
     OutIter out,
     BinFn f,
     T v)
 {
-  decltype(*begin) agg = v;
-  OutIter o = out;
-  *o++ = v;
-  for (Iter i = begin; i != end - 1; ++i, ++o) {
-    agg = f(*i, agg);
-    *o = agg;
-  }
+  auto adapter = detail::scan_adapter_exclusive<
+      typename std::remove_reference<decltype(*begin)>::type,
+      Iter,
+      OutIter,
+      BinFn>{begin, out, v, f};
+  tbb::parallel_scan(tbb::blocked_range<Index_type>{0,
+                                                    std::distance(begin, end)},
+                     adapter);
 }
 
 }  // namespace scan

@@ -61,11 +61,15 @@ const int N = 32000;
 
 // Unit Test Space Exploration
 
+using ExecTypes = std::tuple<
+    RAJA::seq_exec
 #ifdef RAJA_ENABLE_OPENMP
-using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
-#else
-using ExecTypes = std::tuple<RAJA::seq_exec>;
+    ,RAJA::omp_parallel_for_exec
 #endif
+#ifdef RAJA_ENABLE_TBB
+    ,RAJA::tbb_exec
+#endif
+>;
 
 using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
                                RAJA::operators::plus<double>,
