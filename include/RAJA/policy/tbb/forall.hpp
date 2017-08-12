@@ -80,8 +80,9 @@ namespace RAJA
 #if TBB_VERSION_MAJOR >= 2017
 using tbb_static_partitioner = tbb::static_partitioner;
 #else
-// This is not really static, but it's as close as it gets pre 2017
-using tbb_static_partitioner = tbb::simple_partitioner;
+// @trws: This is not static, but it seems to be the least damaging option
+// available pre-2017
+using tbb_static_partitioner = tbb::auto_partitioner;
 #endif
 
 namespace impl
