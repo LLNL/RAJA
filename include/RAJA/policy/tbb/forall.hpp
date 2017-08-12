@@ -74,11 +74,14 @@
 
 #include <tbb/tbb.h>
 
-using RAJA::concepts::enable_if;
-using RAJA::concepts::requires_;
 
 namespace RAJA
 {
+#if TBB_VERSION_MAJOR >= 2017
+using tbb_static_partitioner = tbb::static_partitioner;
+#else
+using tbb_static_partitioner = tbb::simple_partitioner;
+#endif
 
 namespace impl
 {

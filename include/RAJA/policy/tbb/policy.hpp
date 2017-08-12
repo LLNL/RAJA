@@ -99,7 +99,7 @@ using tbb_for_exec = tbb_for_static<>;
 ///////////////////////////////////////////////////////////////////////
 ///
 struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
-                                                          Pattern::forall,
+                                                          Pattern::reduce,
                                                           Launch::undefined,
                                                           Platform::host> {
 };

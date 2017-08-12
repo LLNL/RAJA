@@ -79,7 +79,7 @@ struct ForallN_TBB_Parallel_Tag {
 };
 
 template <typename Iter, std::size_t GrainSize>
-using CollapsePolPair = ForallN_PolicyPair<tbb_for_static<GrainSize>, Iter>;
+using TBBCollapsePolPair = ForallN_PolicyPair<tbb_for_static<GrainSize>, Iter>;
 
 }  // closing brace for namespace detail
 
@@ -102,20 +102,20 @@ template <typename Iterable1,
           std::size_t Grain2,
           typename... PREST>
 struct ForallN_Executor<false,
-                        detail::CollapsePolPair<Iterable1, Grain1>,
-                        detail::CollapsePolPair<Iterable2, Grain2>,
+                        detail::TBBCollapsePolPair<Iterable1, Grain1>,
+                        detail::TBBCollapsePolPair<Iterable2, Grain2>,
                         PREST...> {
 
-  detail::CollapsePolPair<Iterable1, Grain1> iset_i;
-  detail::CollapsePolPair<Iterable2, Grain2> iset_j;
+  detail::TBBCollapsePolPair<Iterable1, Grain1> iset_i;
+  detail::TBBCollapsePolPair<Iterable2, Grain2> iset_j;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
   constexpr ForallN_Executor(
-      detail::CollapsePolPair<Iterable1, Grain1> const &i,
-      detail::CollapsePolPair<Iterable2, Grain2> const &j,
+      detail::TBBCollapsePolPair<Iterable1, Grain1> const &i,
+      detail::TBBCollapsePolPair<Iterable2, Grain2> const &j,
       PREST const &... prest)
       : iset_i(i), iset_j(j), next_exec(prest...)
   {
@@ -153,22 +153,22 @@ template <typename Iterable1,
           std::size_t Grain3,
           typename... PREST>
 struct ForallN_Executor<false,
-                        detail::CollapsePolPair<Iterable1, Grain1>,
-                        detail::CollapsePolPair<Iterable2, Grain2>,
-                        detail::CollapsePolPair<Iterable3, Grain3>,
+                        detail::TBBCollapsePolPair<Iterable1, Grain1>,
+                        detail::TBBCollapsePolPair<Iterable2, Grain2>,
+                        detail::TBBCollapsePolPair<Iterable3, Grain3>,
                         PREST...> {
-  detail::CollapsePolPair<Iterable1, Grain1> iset_i;
-  detail::CollapsePolPair<Iterable2, Grain2> iset_j;
-  detail::CollapsePolPair<Iterable3, Grain3> iset_k;
+  detail::TBBCollapsePolPair<Iterable1, Grain1> iset_i;
+  detail::TBBCollapsePolPair<Iterable2, Grain2> iset_j;
+  detail::TBBCollapsePolPair<Iterable3, Grain3> iset_k;
 
   using NextExec = ForallN_Executor<false, PREST...>;
   NextExec next_exec;
 
   RAJA_INLINE
   constexpr ForallN_Executor(
-      detail::CollapsePolPair<Iterable1, Grain1> const &i,
-      detail::CollapsePolPair<Iterable2, Grain2> const &j,
-      detail::CollapsePolPair<Iterable3, Grain3> const &k,
+      detail::TBBCollapsePolPair<Iterable1, Grain1> const &i,
+      detail::TBBCollapsePolPair<Iterable2, Grain2> const &j,
+      detail::TBBCollapsePolPair<Iterable3, Grain3> const &k,
       PREST... prest)
       : iset_i(i), iset_j(j), iset_k(k), next_exec(prest...)
   {
