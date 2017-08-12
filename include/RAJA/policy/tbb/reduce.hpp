@@ -78,6 +78,8 @@ class ReduceTBB
 public:
   using Reduce = Op;
   using value_type = T;
+
+  //! TBB native per-thread container
   std::shared_ptr<tbb::combinable<T>> data;
 
   //! prohibit compiler-generated default ctor
@@ -135,14 +137,15 @@ struct ValueLoc {
   Index_type loc = -1;
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
-  ValueLoc& operator=(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &) = default;
   constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
   constexpr ValueLoc(T const &val, Index_type const &loc) : val{val}, loc{loc}
   {
   }
   RAJA_HOST_DEVICE operator T() const { return val; }
-  RAJA_HOST_DEVICE bool operator <(ValueLoc const &rhs) const {
-      return val < rhs.val;
+  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const
+  {
+    return val < rhs.val;
   }
 };
 
@@ -180,6 +183,12 @@ class ReduceMin<tbb_reduce, T> : public detail::MinReduce<T>
 public:
   using Base = detail::MinReduce<T>;
   using Base::Base;
+  RAJA_HOST_DEVICE explicit ReduceMin(
+      T init_val,
+      T initializer = operators::limits<T>::max())
+      : Base(init_val, initializer)
+  {
+  }
   //! reducer function; updates the current instance's state
   /*!
    * Assumes each thread has its own copy of the object.
@@ -333,8 +342,7 @@ public:
  **************************************************************************
  */
 template <typename T>
-class ReduceMaxLoc<tbb_reduce, T>
-    : public detail::MaxLocReduce<T>
+class ReduceMaxLoc<tbb_reduce, T> : public detail::MaxLocReduce<T>
 {
 public:
   using Base = detail::MaxLocReduce<T>;

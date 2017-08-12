@@ -79,6 +79,12 @@ using TestingTypes = ::testing::
           std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>,
                      omp_reduce_ordered>
 #endif
+#ifdef RAJA_ENABLE_TBB
+          ,
+          std::tuple<ExecPolicy<seq_segit, tbb_exec>, tbb_reduce>,
+          std::tuple<ExecPolicy<tbb_exec, seq_exec>, tbb_reduce>,
+          std::tuple<ExecPolicy<tbb_exec, simd_exec>, tbb_reduce>
+#endif
           >;
 
 template <typename Tuple>

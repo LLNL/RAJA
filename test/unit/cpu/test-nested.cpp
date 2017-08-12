@@ -103,18 +103,21 @@ using TRANSFORMS =
 
 template <typename TRANSFORMS>
 using POLICIES =
-#if defined(RAJA_ENABLE_OPENMP)
     std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
                ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, simd_exec>
+#if defined(RAJA_ENABLE_OPENMP)
+               ,
                ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
-               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>>;
-#else
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>>;
+               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>
 #endif
+#if defined(RAJA_ENABLE_TBB)
+               ,
+               ExecInfo<TRANSFORMS, seq_exec, tbb_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, tbb_exec>
+#endif
+               >;
 
 using InstPolicies =
     ForTesting<tt::apply_t<POLICIES, tt::apply_t<TRANSFORMS, PERMS>>>;
@@ -209,12 +212,10 @@ struct PolLTimesB : PolLTimesCommon {
 // Sequential, Tiled, another permutation
 struct PolLTimesC : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-                            Tile<TileList<tile_none,
-                                          tile_none,
-                                          tile_fixed<64>,
-                                          tile_fixed<64>>,
-                                 Permute<PERM_JKIL>>>;
+  using EXEC = NestedPolicy<
+      ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+      Tile<TileList<tile_none, tile_none, tile_fixed<64>, tile_fixed<64>>,
+           Permute<PERM_JKIL>>>;
   using PSI_PERM = PERM_IJK;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -236,17 +237,16 @@ struct PolLTimesD_OMP : PolLTimesCommon {
 // Same as D, but with tiling on zones and omp collapse on groups and zones
 struct PolLTimesE_OMP : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<ExecList<seq_exec,
-                                     seq_exec,
-                                     omp_collapse_nowait_exec,
-                                     omp_collapse_nowait_exec>,
-                            OMP_Parallel<Tile<TileList<tile_none,
-                                                       tile_none,
-                                                       tile_none,
-                                                       tile_fixed<16>>,
-                                              Permute<PERM_LKIJ,
-                                                      Execute  // implicit
-                                                      >>>>;
+  using EXEC = NestedPolicy<
+      ExecList<seq_exec,
+               seq_exec,
+               omp_collapse_nowait_exec,
+               omp_collapse_nowait_exec>,
+      OMP_Parallel<
+          Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
+               Permute<PERM_LKIJ,
+                       Execute  // implicit
+                       >>>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
