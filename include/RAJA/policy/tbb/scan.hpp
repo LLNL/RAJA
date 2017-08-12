@@ -127,6 +127,8 @@ struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
   template <typename Tag>
   void operator()(const tbb::blocked_range<Index_type>& r, Tag)
   {
+    std::cerr << r.begin() << ' ' << this->agg << ' ' << this->init << ' '
+              << this->in[r.begin()] << std::endl;
     for (Index_type i = r.begin(); i < r.end(); ++i) {
       auto t = this->in[i];
       if (Tag::is_final_scan()) this->out[i] = this->agg;
