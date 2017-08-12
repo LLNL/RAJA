@@ -161,7 +161,7 @@ before_install:
 - if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
   travis_retry sudo apt-get update -qq &&
-  travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
+  travis_retry sudo apt-get install --no-install-suggests --no-install-recommends -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
   travis_retry sudo apt-get clean; fi &&
   export CUDA_HOME=/usr/local/cuda-8.0 &&
   export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
