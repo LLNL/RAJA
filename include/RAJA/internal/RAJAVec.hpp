@@ -56,7 +56,7 @@
 
 #include "RAJA/config.hpp"
 
-#include <algorithm>
+#include <memory>
 #include <utility>
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
@@ -80,15 +80,18 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename T, typename _Allocator = std::allocator<T> >
+template <typename T, typename allocator_type = std::allocator<T> >
 class RAJAVec
 {
 public:
+  using iterator = T*;
+
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_t init_cap = 0, const _Allocator& a = _Allocator())
-      : m_allocator(a), m_capacity(0), m_size(0), m_data(0)
+  explicit RAJAVec(size_t init_cap = 0,
+                   const allocator_type& a = allocator_type())
+      : m_data(nullptr), m_allocator(a), m_capacity(0), m_size(0)
   {
     grow_cap(init_cap);
   }
@@ -96,7 +99,11 @@ public:
   ///
   /// Copy ctor for vector.
   ///
-  RAJAVec(const RAJAVec<T>& other) : m_capacity(0), m_size(0), m_data(0)
+  RAJAVec(const RAJAVec<T>& other)
+      : m_data(nullptr),
+        m_allocator(other.m_allocator),
+        m_capacity(0),
+        m_size(0)
   {
     copy(other);
   }
@@ -132,8 +139,6 @@ public:
     if (m_capacity > 0) m_allocator.deallocate(m_data, m_capacity);
   }
 
-  using iterator = T*;
-
   ///
   /// Get a pointer to the beginning of the contiguous vector
   ///
@@ -152,7 +157,7 @@ public:
   ///
   /// Return true if vector has size zero; false otherwise.
   ///
-  size_t empty() const { return (m_size == 0); }
+  bool empty() const { return (m_size == 0); }
 
   ///
   /// Return current size of vector.
@@ -220,8 +225,8 @@ private:
   // memory allocation scheme to mimick std::vector behavior without
   // relying on STL directly.  These are initialized at the end of this file.
   //
-  static const size_t s_init_cap;
-  static const double s_grow_fac;
+  static constexpr const size_t s_init_cap = 8;
+  static constexpr const double s_grow_fac = 1.5;
 
   size_t nextCap(size_t current_cap)
   {
@@ -272,24 +277,11 @@ private:
     m_size++;
   }
 
-  typedef _Allocator allocator_type;
+  T* m_data;
   allocator_type m_allocator;
   size_t m_capacity;
   size_t m_size;
-  T* m_data;
 };
-
-/*
-*************************************************************************
-*
-* Initialize static members
-*
-*************************************************************************
-*/
-template <typename T, typename _Allocator>
-const size_t RAJAVec<T, _Allocator>::s_init_cap = 8;
-template <typename T, typename _Allocator>
-const double RAJAVec<T, _Allocator>::s_grow_fac = 1.5;
 
 }  // closing brace for RAJA namespace
 
