@@ -1,20 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -26,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -57,56 +40,82 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+///
+/// Source file containing tests for internal RAJA Iterators
+///
 
-#include "RAJA/config.hpp"
+#include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
-namespace RAJA
+TEST(BaseIterator, simple)
 {
-
-namespace impl
-{
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
+  RAJA::Iterators::base_iterator<int> a;
+  RAJA::Iterators::base_iterator<int> two(2);
+  ASSERT_LT(a, two);
+  ASSERT_LE(a, two);
+  ASSERT_LE(a, a);
+  ASSERT_EQ(a, a);
+  ASSERT_GE(two, a);
+  ASSERT_GT(two, a);
+  ASSERT_NE(two, a);
+  RAJA::Iterators::base_iterator<int> b(a);
+  ASSERT_EQ(a, b);
 }
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+TEST(NumericIterator, simple)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
+  RAJA::Iterators::numeric_iterator<> i;
+  ASSERT_EQ(0, *i);
+  ++i;
+  ASSERT_EQ(1, *i);
+  --i;
+  ASSERT_EQ(0, *i);
+  ASSERT_EQ(0, *i++);
+  ASSERT_EQ(1, *i);
+  ASSERT_EQ(1, *i--);
+  ASSERT_EQ(0, *i);
+  i += 2;
+  ASSERT_EQ(2, *i);
+  i -= 1;
+  ASSERT_EQ(1, *i);
+  RAJA::Iterators::numeric_iterator<> five(5);
+  i += five;
+  ASSERT_EQ(6, *i);
+  i -= five;
+  ASSERT_EQ(1, *i);
+  RAJA::Iterators::numeric_iterator<> three(3);
+  ASSERT_LE(three, three);
+  ASSERT_LE(three, five);
+  ASSERT_LT(three, five);
+  ASSERT_GE(five, three);
+  ASSERT_GT(five, three);
+  ASSERT_NE(five, three);
+  ASSERT_EQ(three + 2, five);
+  ASSERT_EQ(2 + three, five);
+  ASSERT_EQ(five - 2, three);
+  ASSERT_EQ(8 - five, three);
 }
 
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+TEST(StridedNumericIterator, simple)
+{
+  RAJA::Iterators::strided_numeric_iterator<> i(0, 2);
+  ASSERT_EQ(0, *i);
+  ++i;
+  ASSERT_EQ(2, *i);
+  --i;
+  ASSERT_EQ(0, *i);
+  i += 2;
+  ASSERT_EQ(4, *i);
+  i -= 1;
+  ASSERT_EQ(2, *i);
+  RAJA::Iterators::strided_numeric_iterator<> three(3, 2);
+  RAJA::Iterators::strided_numeric_iterator<> five(5, 2);
+  ASSERT_LE(three, three);
+  ASSERT_LE(three, five);
+  ASSERT_LT(three, five);
+  ASSERT_GE(five, three);
+  ASSERT_GT(five, three);
+  ASSERT_NE(five, three);
+  ASSERT_EQ(three + 1, five);
+  ASSERT_EQ(five - 1, three);
+}

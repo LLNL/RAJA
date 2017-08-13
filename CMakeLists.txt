@@ -66,6 +66,8 @@ option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 
+option(RAJA_ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 # Setup basic CMake options

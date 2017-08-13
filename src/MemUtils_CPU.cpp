@@ -59,14 +59,12 @@
 
 #include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-#include <algorithm>
-#include <iostream>
-#include <string>
-
-#include <stdlib.h>
+#include <cstdlib>
+#include <cstdio>
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
     || defined(__MINGW32__) || defined(__BORLANDC__)
+#define RAJA_PLATFORM_WINDOWS
 #include <malloc.h>
 #endif
 
@@ -77,32 +75,30 @@ namespace RAJA
 // Static array used to keep track of which unique ids
 // for CUDA reduction objects are used and which are not.
 //
-static bool cpu_reduction_id_used[RAJA_MAX_REDUCE_VARS];
+static bool reducer_id_used[RAJA_MAX_REDUCE_VARS];
 
 //
 // Pointer to hold shared memory block for RAJA-CPU reductions.
 //
-CPUReductionBlockDataType* s_cpu_reduction_mem_block = 0;
+static CPUReductionBlockDataType* reducer_mem_block = nullptr;
 
 //
 // Pointer to hold shared memory block for index locations in RAJA-CPU
 // "loc" reductions.
 //
-Index_type* s_cpu_reduction_loc_block = 0;
+static Index_type* reducer_loc_mem_block = nullptr;
 
 void* allocate_aligned(size_t alignment, size_t size)
 {
 #if defined(HAVE_POSIX_MEMALIGN)
   // posix_memalign available
-  void* ret = NULL;
+  void* ret = nullptr;
   int err = posix_memalign(&ret, alignment, size);
-  return err ? NULL : ret;
-#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
-    || defined(__MINGW32__) || defined(__BORLANDC__)
-  // on windows
+  return err ? nullptr : ret;
+#elif defined(RAJA_PLATFORM_WINDOWS)
   return _aligned_malloc(size, alignment);
 #else
-#error No known aligned allocator available
+#error "No known aligned allocator available"
 #endif
 }
 
@@ -111,12 +107,10 @@ void free_aligned(void* ptr)
 {
 #if defined(HAVE_POSIX_MEMALIGN)
   free(ptr);
-#elif defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
-    || defined(__MINGW32__) || defined(__BORLANDC__)
-  // on windows
+#elif defined(RAJA_PLATFORM_WINDOWS)
   _aligned_free(ptr);
 #else
-#error No known aligned allocator available
+#error "No known aligned allocator available"
 #endif
 }
 
@@ -130,28 +124,29 @@ void free_aligned(void* ptr)
 */
 int getCPUReductionId()
 {
-  static int first_time_called = true;
+  static bool first_time_called = true;
 
   if (first_time_called) {
     for (int id = 0; id < RAJA_MAX_REDUCE_VARS; ++id) {
-      cpu_reduction_id_used[id] = false;
+      reducer_id_used[id] = false;
     }
-
     first_time_called = false;
   }
 
   int id = 0;
-  while (id < RAJA_MAX_REDUCE_VARS && cpu_reduction_id_used[id]) {
+  while (id < RAJA_MAX_REDUCE_VARS && reducer_id_used[id]) {
     id++;
   }
 
   if (id >= RAJA_MAX_REDUCE_VARS) {
-    std::cerr << "\n Exceeded allowable RAJA CPU reduction count, "
-              << "FILE: " << __FILE__ << " line: " << __LINE__ << std::endl;
+    fprintf(stderr,
+            "Exceeded allowable RAJA CPU reduction count at %s:%d\n",
+            __FILE__,
+            __LINE__);
     exit(1);
   }
 
-  cpu_reduction_id_used[id] = true;
+  reducer_id_used[id] = true;
 
   return id;
 }
@@ -166,7 +161,7 @@ int getCPUReductionId()
 void releaseCPUReductionId(int id)
 {
   if (id < RAJA_MAX_REDUCE_VARS) {
-    cpu_reduction_id_used[id] = false;
+    reducer_id_used[id] = false;
   }
 }
 
@@ -184,15 +179,14 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 
   int block_offset = COHERENCE_BLOCK_SIZE / sizeof(CPUReductionBlockDataType);
 
-  if (s_cpu_reduction_mem_block == 0) {
+  if (reducer_mem_block == nullptr) {
     int len = nthreads * RAJA_MAX_REDUCE_VARS;
-    s_cpu_reduction_mem_block =
-        new CPUReductionBlockDataType[len * block_offset];
+    reducer_mem_block = new CPUReductionBlockDataType[len * block_offset];
 
     atexit(freeCPUReductionMemBlock);
   }
 
-  return &(s_cpu_reduction_mem_block[nthreads * id * block_offset]);
+  return &(reducer_mem_block[nthreads * id * block_offset]);
 }
 
 /*
@@ -204,9 +198,9 @@ CPUReductionBlockDataType* getCPUReductionMemBlock(int id)
 */
 void freeCPUReductionMemBlock()
 {
-  if (s_cpu_reduction_mem_block != 0) {
-    delete[] s_cpu_reduction_mem_block;
-    s_cpu_reduction_mem_block = 0;
+  if (reducer_mem_block != nullptr) {
+    delete[] reducer_mem_block;
+    reducer_mem_block = nullptr;
   }
 }
 
@@ -221,17 +215,15 @@ void freeCPUReductionMemBlock()
 Index_type* getCPUReductionLocBlock(int id)
 {
   int nthreads = getMaxReduceThreadsCPU();
-
   int block_offset = COHERENCE_BLOCK_SIZE / sizeof(Index_type);
 
-  if (s_cpu_reduction_loc_block == 0) {
+  if (reducer_loc_mem_block == nullptr) {
     int len = nthreads * RAJA_MAX_REDUCE_VARS;
-    s_cpu_reduction_loc_block = new Index_type[len * block_offset];
-
+    reducer_loc_mem_block = new Index_type[len * block_offset];
     atexit(freeCPUReductionLocBlock);
   }
 
-  return &(s_cpu_reduction_loc_block[nthreads * id * block_offset]);
+  return &(reducer_loc_mem_block[nthreads * id * block_offset]);
 }
 
 /*
@@ -243,9 +235,9 @@ Index_type* getCPUReductionLocBlock(int id)
 */
 void freeCPUReductionLocBlock()
 {
-  if (s_cpu_reduction_loc_block != 0) {
-    delete[] s_cpu_reduction_loc_block;
-    s_cpu_reduction_loc_block = 0;
+  if (reducer_loc_mem_block != nullptr) {
+    delete[] reducer_loc_mem_block;
+    reducer_loc_mem_block = nullptr;
   }
 }
 

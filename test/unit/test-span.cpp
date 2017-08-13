@@ -1,20 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -26,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -57,56 +40,36 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+///
+/// Source file containing tests for Span
+///
 
-#include "RAJA/config.hpp"
+#include "RAJA/internal/Span.hpp"
+#include "RAJA_gtest.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
-namespace RAJA
+TEST(Span, basic)
 {
+  int data[4] = { 0, 1, 2, 3 };
+  auto span = RAJA::impl::make_span(data, 4);
+  ASSERT_EQ(0, *span.begin());
+  ASSERT_EQ(0, *span.data());
+  ASSERT_EQ(3, *(span.data() + 3));
+  ASSERT_EQ(3, *(span.end() - 1));
 
-namespace impl
-{
+  ASSERT_EQ(0, *span.cbegin());
+  ASSERT_EQ(0, *span.data());
+  ASSERT_EQ(3, *(span.data() + 3));
+  ASSERT_EQ(3, *(span.cend() - 1));
 
+  auto const cspan = span;
+  ASSERT_EQ(0, *cspan.begin());
+  ASSERT_EQ(3, *(cspan.end() - 1));
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
+  ASSERT_FALSE(cspan.empty());
+  ASSERT_EQ(4, cspan.size());
+  ASSERT_EQ(4, cspan.max_size());
+
+  auto const empty = RAJA::impl::make_span((int*)nullptr, 0);
+  ASSERT_TRUE(empty.empty());
+  ASSERT_EQ(0, empty.size());
 }
-
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
