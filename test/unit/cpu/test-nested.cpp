@@ -108,7 +108,7 @@ using POLICIES =
                ExecInfo<TRANSFORMS, simd_exec, simd_exec>
 #if defined(RAJA_ENABLE_OPENMP)
                ,
-               ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
+               // ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>
 #endif
@@ -140,7 +140,7 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 
   using Pair = std::pair<Index_type, Index_type>;
 
-  for (auto size : {Pair(128, 1024), Pair(37, 1)}) {
+  for (auto size : {Pair(63, 255), Pair(37, 1)}) {
 
     Index_type size_i = std::get<0>(size);
     Index_type size_j = std::get<1>(size);
