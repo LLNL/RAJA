@@ -126,7 +126,6 @@ struct ForallN_Executor<false,
   {
     ForallN_PeelOuter<0, NextExec, BODY> outer(next_exec, body);
 
-    std::cerr << "yup" << std::endl;
     using brange = tbb::blocked_range2d<typename Iterable1::iterator,
                                         typename Iterable2::iterator>;
     tbb::parallel_for(brange(iset_i.begin(),
