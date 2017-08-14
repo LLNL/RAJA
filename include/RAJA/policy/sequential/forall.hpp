@@ -91,6 +91,8 @@ template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
 {
   auto end = std::end(iter);
+
+  RAJA_NoSIMD
   for (auto ii = std::begin(iter); ii < end; ++ii) {
     loop_body(*ii);
   }
@@ -106,6 +108,7 @@ forall_Icount(const seq_exec &,
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+  RAJA_NoSIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
