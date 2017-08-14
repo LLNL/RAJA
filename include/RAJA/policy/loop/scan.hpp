@@ -8,8 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_sequential_HPP
-#define RAJA_scan_sequential_HPP
+#ifndef RAJA_scan_loop_HPP
+#define RAJA_scan_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,7 +59,7 @@
 
 #include "RAJA/util/concepts.hpp"
 
-#include "RAJA/policy/sequential/policy.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
 #include <algorithm>
 #include <functional>
@@ -76,11 +76,10 @@ namespace scan
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
 inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
 {
   auto agg = *begin;
-  RAJA_NoSIMD
   for (Iter i = ++begin; i != end; ++i) {
     agg = f(*i, agg);
     *i = agg;
@@ -92,12 +91,11 @@ inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename BinFn, typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>>
 exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
 {
   const int n = end - begin;
   decltype(*begin) agg = v;
-  RAJA_NoSIMD
   for (int i = 0; i < n; ++i) {
     auto t = *(begin + i);
     *(begin + i) = agg;
@@ -110,7 +108,7 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
    initial value
 */
 template <typename ExecPolicy, typename Iter, typename OutIter, typename BinFn>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>> inclusive(
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -119,7 +117,6 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
 {
   auto agg = *begin;
   *out++ = agg;
-  RAJA_NoSIMD
   for (Iter i = begin + 1; i != end; ++i) {
     agg = f(agg, *i);
     *out++ = agg;
@@ -135,7 +132,7 @@ template <typename ExecPolicy,
           typename OutIter,
           typename BinFn,
           typename T>
-concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
+concepts::enable_if<type_traits::is_loop_policy<ExecPolicy>> exclusive(
     const ExecPolicy &,
     const Iter begin,
     const Iter end,
@@ -146,7 +143,6 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
   decltype(*begin) agg = v;
   OutIter o = out;
   *o++ = v;
-  RAJA_NoSIMD
   for (Iter i = begin; i != end - 1; ++i, ++o) {
     agg = f(*i, agg);
     *o = agg;

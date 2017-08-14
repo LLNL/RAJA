@@ -3,21 +3,16 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for sequential execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HPP
-#define RAJA_HPP
+#ifndef RAJA_forall_loop_HPP
+#define RAJA_forall_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -63,88 +58,66 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/util/Operators.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
-//
-// All platforms must support strictly sequential execution.
-//
-#include "RAJA/policy/sequential.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
-//
-// All platforms must support generic for execution
-//
-#include "RAJA/policy/loop.hpp"
+#include "RAJA/internal/fault_tolerance.hpp"
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/simd.hpp"
+using RAJA::concepts::enable_if;
+using RAJA::concepts::requires_;
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
-#endif
+namespace RAJA
+{
 
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp.hpp"
-#endif
+namespace impl
+{
 
-#include "RAJA/index/IndexSet.hpp"
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/policy/MultiPolicy.hpp"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
-
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/OffsetLayout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
-#include "RAJA/util/View.hpp"
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-#include "RAJA/pattern/reduce.hpp"
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hpp"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&loop_body)
+{
+  auto end = std::end(iter);
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
+  for (auto ii = std::begin(iter); ii < end; ++ii) {
+    loop_body(*ii);
+  }
+}
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
+#if 0
+template <typename Iterable, typename Func, typename IndexType>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const loop_exec &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
 
-#include "RAJA/pattern/scan.hpp"
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  }
+}
+#endif
+
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
