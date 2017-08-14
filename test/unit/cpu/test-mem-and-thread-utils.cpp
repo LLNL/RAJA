@@ -1,20 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -26,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -57,56 +40,38 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+///
+/// Source file containing tests for RAJAVec
+///
 
-#include "RAJA/config.hpp"
+#include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
-namespace RAJA
+TEST(MemUtils, get_reduction_id)
 {
-
-namespace impl
-{
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
+  int id1 = RAJA::getCPUReductionId();
+  int id2 = RAJA::getCPUReductionId();
+  ASSERT_NE(id1, id2);
+  ASSERT_NE(RAJA::getCPUReductionMemBlock(id1),
+            RAJA::getCPUReductionMemBlock(id2));
+  RAJA::releaseCPUReductionId(id1);
+  RAJA::releaseCPUReductionId(id2);
 }
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+TEST(MemUtils, max_reducers_exceeded)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
+  const int reducerCount = RAJA_MAX_REDUCE_VARS;
+  for (int i = 0; i < reducerCount; ++i)
+    RAJA::getCPUReductionId();
+  ASSERT_DEATH_IF_SUPPORTED(RAJA::getCPUReductionId(), "Exceeded allowable RAJA CPU reduction count at .*");
+  for (int i = 0; i < reducerCount; ++i)
+    RAJA::releaseCPUReductionId(i);
 }
 
-}  // closing brace for impl namespace
+#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+TEST(ThreadUtils, basic)
+{
+  ASSERT_LE(1, RAJA::getMaxReduceThreadsCPU());
+  ASSERT_LE(1, RAJA::getMaxOMPThreadsCPU());
+}

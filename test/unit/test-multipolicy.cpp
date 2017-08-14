@@ -86,3 +86,22 @@ TEST(MultiPolicy, basic)
     ASSERT_TRUE(omp_get_num_threads() > 1);
   });
 }
+
+template <typename Multipolicy, typename Iterable>
+void make_invalid_index_throw(Multipolicy&& mp, Iterable&& iter)
+{
+  RAJA::forall(mp, iter, [](RAJA::Index_type) {});
+}
+
+TEST(MultiPolicy, invalid_index)
+{
+  static constexpr const int limit = 100;
+  RAJA::RangeSegment seg(0, limit);
+  auto mp =
+    RAJA::make_multi_policy<RAJA::seq_exec,RAJA::omp_parallel_for_exec>([](const RAJA::RangeSegment& r) {
+        if (r.size() < limit / 2) return 0;
+        if (r.size() < limit) return 1;
+        return 2;
+      });
+  ASSERT_THROW(make_invalid_index_throw(mp, seg), std::runtime_error);
+}

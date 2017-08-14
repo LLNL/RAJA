@@ -87,7 +87,7 @@ void free_aligned(void* ptr);
 /// Typedef defining common data type for RAJA-CPU reduction data blocks
 /// (use this in all cases to avoid type confusion).
 ///
-typedef double CPUReductionBlockDataType;
+using CPUReductionBlockDataType = double;
 
 /*!
 *************************************************************************
