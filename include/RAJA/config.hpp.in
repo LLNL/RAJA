@@ -202,6 +202,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_SIMD  _Pragma("omp simd")
 #else
 #define RAJA_SIMD  _Pragma("simd")
+#define RAJA_NoSIMD  _Pragma("novector")
 #endif
 
 
@@ -220,7 +221,6 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
-#define RAJA_NoSIMD
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    _Pragma("GCC ivdep")
@@ -246,6 +246,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #else
 // This pragma is unreliable.  It may not work on Blue Gene/Q or POWER7.
 #define RAJA_SIMD  _Pragma("ibm independent_loop")
+#define RAJA_NoSIMD  _Pragma("nosimd")
 #endif
 
 
@@ -265,7 +266,8 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
 #else
-#define RAJA_SIMD  _Pragma("clang loop vectorize(enable)")
+#define RAJA_SIMD    _Pragma("clang loop vectorize(enable)")
+#define RAJA_NoSIMD  _Pragma("clang loop vectorize(disable)")
 #endif
 
 #else
@@ -275,6 +277,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_INLINE inline
 #define RAJA_ALIGN_DATA(d)
 #define RAJA_SIMD
+#define RAJA_NoSIMD
 
 #endif
 
