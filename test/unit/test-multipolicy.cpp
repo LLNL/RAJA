@@ -44,51 +44,87 @@
 /// Source file containing tests for basic multipolicy operation
 ///
 
+#include <cstddef>
 #include "gtest/gtest.h"
 
+struct mp_tag1 {
+};
+struct mp_tag2 {
+};
+struct mp_tag3 {
+};
+
+struct mp_test_body;
+namespace RAJA
+{
+namespace impl
+{
+template <typename Iterable>
+void forall(const mp_tag1 &p, Iterable &&iter, mp_test_body const &body)
+{
+  body(p, iter.size());
+}
+template <typename Iterable>
+void forall(const mp_tag2 &p, Iterable &&iter, mp_test_body const &body)
+{
+  body(p, iter.size());
+}
+template <typename Iterable>
+void forall(const mp_tag3 &p, Iterable &&iter, mp_test_body const &body)
+{
+  body(p, iter.size());
+}
+}
+}
+
+// NOTE: this *must* be after the above to work
 #include "RAJA/RAJA.hpp"
+
+struct mp_test_body {
+  void operator()(mp_tag1 const &, std::size_t size) const
+  {
+    ASSERT_LT(size, 100);
+  }
+  void operator()(mp_tag2 const &, std::size_t size) const
+  {
+    ASSERT_GT(size, 99);
+  }
+  void operator()(mp_tag3 const &, std::size_t size) const
+  {
+    ASSERT_GT(size, 10);
+    ASSERT_LT(size, 99);
+  }
+};
+
 
 TEST(MultiPolicy, basic)
 {
-  auto mp =
-      RAJA::make_multi_policy<RAJA::seq_exec, RAJA::omp_parallel_for_exec>(
-          [](const RAJA::RangeSegment& r) {
-            if (r.size() < 100) {
-              return 0;
-            } else {
-              return 1;
-            }
-          });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 5), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp, RAJA::RangeSegment(0, 101), [](RAJA::Index_type) {
-    ASSERT_TRUE(omp_get_num_threads() > 1);
-  });
+  auto mp = RAJA::make_multi_policy<mp_tag1, mp_tag2>(
+      [](const RAJA::RangeSegment &r) {
+        if (r.size() < 100) {
+          return 0;
+        } else {
+          return 1;
+        }
+      });
+  RAJA::forall(mp, RAJA::RangeSegment(0, 5), mp_test_body{});
+  RAJA::forall(mp, RAJA::RangeSegment(0, 101), mp_test_body{});
   // Nest a multipolicy to ensure value-based policies are preserved
-  auto mp2 =
-      RAJA::make_multi_policy(std::make_tuple(RAJA::omp_parallel_for_exec{},
-                                              mp),
-                              [](const RAJA::RangeSegment& r) {
-                                if (r.size() > 10 && r.size() < 90) {
-                                  return 0;
-                                } else {
-                                  return 1;
-                                }
-                              });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), [](RAJA::Index_type) {
-    ASSERT_EQ(omp_get_num_threads(), 1);
-  });
-  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), [](RAJA::Index_type) {
-    ASSERT_TRUE(omp_get_num_threads() > 1);
-  });
+  auto mp2 = RAJA::make_multi_policy(std::make_tuple(mp_tag3{}, mp),
+                                     [](const RAJA::RangeSegment &r) {
+                                       if (r.size() > 10 && r.size() < 90) {
+                                         return 0;
+                                       } else {
+                                         return 1;
+                                       }
+                                     });
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 5), mp_test_body{});
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 91), mp_test_body{});
+  RAJA::forall(mp2, RAJA::RangeSegment(0, 50), mp_test_body{});
 }
 
 template <typename Multipolicy, typename Iterable>
-void make_invalid_index_throw(Multipolicy&& mp, Iterable&& iter)
+void make_invalid_index_throw(Multipolicy &&mp, Iterable &&iter)
 {
   RAJA::forall(mp, iter, [](RAJA::Index_type) {});
 }
@@ -97,8 +133,8 @@ TEST(MultiPolicy, invalid_index)
 {
   static constexpr const int limit = 100;
   RAJA::RangeSegment seg(0, limit);
-  auto mp =
-    RAJA::make_multi_policy<RAJA::seq_exec,RAJA::omp_parallel_for_exec>([](const RAJA::RangeSegment& r) {
+  auto mp = RAJA::make_multi_policy<RAJA::seq_exec, RAJA::seq_exec>(
+      [](const RAJA::RangeSegment &r) {
         if (r.size() < limit / 2) return 0;
         if (r.size() < limit) return 1;
         return 2;

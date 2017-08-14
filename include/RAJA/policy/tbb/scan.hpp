@@ -65,7 +65,6 @@
 
 #include <algorithm>
 #include <functional>
-#include <iostream>
 #include <iterator>
 
 namespace RAJA

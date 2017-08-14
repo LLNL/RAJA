@@ -130,6 +130,8 @@ protected:
     data->local() = Op{}(data->local(), other);
   }
 };
+
+
 template <typename T, bool doing_min = true>
 struct ValueLoc {
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
@@ -145,24 +147,33 @@ struct ValueLoc {
   bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
 };
 
+
 template <typename T>
 using MinReduce = ReduceTBB<T, RAJA::operators::minimum<T>>;
+
 template <typename T>
 using MaxReduce = ReduceTBB<T, RAJA::operators::maximum<T>>;
+
 template <typename T>
 using SumReduce = ReduceTBB<T, RAJA::operators::plus<T>>;
+
 template <typename T>
 using MinLocReduce =
     ReduceTBB<ValueLoc<T>, RAJA::operators::minimum<ValueLoc<T>>>;
+
 template <typename T>
 using MaxLocReduce =
     ReduceTBB<ValueLoc<T, false>, RAJA::operators::maximum<ValueLoc<T, false>>>;
+
 }
+
 namespace operators
 {
+
 template <typename T, bool B>
 struct limits<::RAJA::detail::ValueLoc<T, B>> : limits<T> {
 };
+
 }
 
 /*!

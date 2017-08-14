@@ -92,6 +92,12 @@ struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
 using tbb_for_exec = tbb_for_static<>;
 
 ///
+/// Index set segment iteration policies
+///
+using tbb_segit = tbb_for_exec;
+
+
+///
 ///////////////////////////////////////////////////////////////////////
 ///
 /// Reduction execution policies
