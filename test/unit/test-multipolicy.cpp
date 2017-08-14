@@ -83,16 +83,16 @@ void forall(const mp_tag3 &p, Iterable &&iter, mp_test_body const &body)
 struct mp_test_body {
   void operator()(mp_tag1 const &, std::size_t size) const
   {
-    ASSERT_LT(size, 100);
+    ASSERT_LT(size, std::size_t{100});
   }
   void operator()(mp_tag2 const &, std::size_t size) const
   {
-    ASSERT_GT(size, 99);
+    ASSERT_GT(size, std::size_t{99});
   }
   void operator()(mp_tag3 const &, std::size_t size) const
   {
-    ASSERT_GT(size, 10);
-    ASSERT_LT(size, 99);
+    ASSERT_GT(size, std::size_t{10});
+    ASSERT_LT(size, std::size_t{99});
   }
 };
 
