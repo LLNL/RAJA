@@ -50,26 +50,10 @@
 int a[N], b[N], c[N];
 
 
-void ompEx(){
 
-  #pragma omp simd
-  for(int i=0; i<N; i++){
-    a[i] = b[i] + c[i];
-  }
+void RAJAtest(){
 
-}
-
-void RAJAsimd(){
-
-  RAJA::forall<RAJA::simd_exec>
-    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) {      
-      a[i] = b[i] + c[i];
-    });
-}  
-
-void RAJAompsimd(){
-
-  RAJA::forall<RAJA::omp_simd_exec>
+  RAJA::forall<RAJA::for_exec>
     (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
       a[i] = b[i] + c[i];
     });
@@ -80,16 +64,7 @@ void RAJAompsimd(){
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-
-  
-  std::cout<<"Compiler in use: "<<std::endl;
-#if defined(RAJA_COMPILER_GNU)
-  std::cout<<"RAJA_COMPILER_GNU"<<std::endl;
-#endif
-
-
-  RAJAsimd();
-  RAJAompsimd();
+  RAJAtest();
 
   return 0;
 }
