@@ -88,7 +88,12 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
+#if defined(RAJA_COMPILER_GNU)
+RAJA_GNU_NoSIMD
+#else
+RAJA_INLINE
+#endif
+void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
 {
   auto end = std::end(iter);
 
@@ -98,8 +103,14 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
   }
 }
 
+
 template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+#if defined(RAJA_COMPILER_GNU)
+RAJA_GNU_NoSIMD
+#else
+RAJA_INLINE
+#endif
+typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall_Icount(const seq_exec &,
               Iterable &&iter,
               IndexType icount,
@@ -113,6 +124,7 @@ forall_Icount(const seq_exec &,
     loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
+
 
 }  // closing brace for impl namespace
 
