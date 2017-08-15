@@ -97,6 +97,7 @@ macro(raja_add_library)
       target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES})
 
     else ()
+      list(FILTER arg_SOURCES EXCLUDE REGEX ".*hpp")
       set_source_files_properties(
         ${arg_SOURCES}
         PROPERTIES
