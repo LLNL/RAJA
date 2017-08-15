@@ -43,5 +43,4 @@
 
 if (RAJA_ENABLE_CHAI)
   add_subdirectory(chai)
-  propagate_sources()
 endif(RAJA_ENABLE_CHAI)

@@ -103,7 +103,7 @@ namespace integer_sequence_detail
   struct concat;
 
   template <typename T, T... I1, T... I2>
-  struct concat<T, list<integral<T, I1>...>, list<integral<T, I2>...>>
+  struct concat<T, int_seq<T, I1...>, int_seq<T, I2...>>
       : int_seq<T, I1..., (sizeof...(I1) + I2)...> {
   };
 

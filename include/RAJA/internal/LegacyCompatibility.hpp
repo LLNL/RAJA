@@ -257,24 +257,11 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto rotate_left_one(
 
 
 // Index sequence
-template <typename T, T... Ints>
-struct integer_sequence : camp::list<camp::integral<T,Ints>...>{
-  using type = integer_sequence;
-  static constexpr size_t size = sizeof...(Ints);
-  static constexpr std::array<T, sizeof...(Ints)> value{{Ints...}};
-};
-
-template <typename T, T... Ints>
-constexpr size_t integer_sequence<T, Ints...>::size;
-template <typename T, T... Ints>
-constexpr std::array<T, sizeof...(Ints)> integer_sequence<T, Ints...>::value;
-
 template <size_t Upper>
-using make_index_sequence = typename camp::integer_sequence_detail::
-    gen_seq<size_t, camp::integral<size_t, Upper>>::type;
+using make_index_sequence = typename camp::make_int_seq<size_t, Upper>::type;
 
 template <size_t... Ints>
-using index_sequence = integer_sequence<size_t, Ints...>;
+using index_sequence = camp::int_seq<size_t, Ints...>;
 
 // Invoke
 

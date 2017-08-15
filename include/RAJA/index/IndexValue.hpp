@@ -76,211 +76,226 @@ namespace RAJA
  * Yes, this uses the curiously-recurring template pattern.
  */
 template <typename TYPE>
-class IndexValue
-{
-public:
-  /*!
-   * \brief Default constructor initializes value to 0.
-   */
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  constexpr IndexValue() : value(0) {}
+struct IndexValue {
+  //! Default constructor initializes value to 0.
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr IndexValue() : value(0) {}
 
   /*!
    * \brief Explicit constructor.
    * \param v   Initial value
    */
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  constexpr explicit IndexValue(Index_type v) : value(v) {}
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr explicit IndexValue(Index_type v)
+      : value(v)
+  {
+  }
 
-  /*!
-   * \brief Dereference provides cast-to-integer.
-   */
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  Index_type &operator*(void) { return value; }
+  //! Dereference provides cast-to-integer.
+  RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() {
+    return value;
+  }
 
-  /*!
-   * \brief Dereference provides cast-to-integer.
-   */
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  const Index_type &operator*(void)const { return value; }
+  //! Dereference provides cast-to-integer.
+  RAJA_HOST_DEVICE RAJA_INLINE const Index_type &operator*() const
+  {
+    return value;
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE &operator++(int)
+  //! postincrement -- returns a copy
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator++(int)
+  {
+    TYPE self(value);
+    value++;
+    return self;
+  }
+
+  //! preincrement stored index
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator++()
   {
     value++;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE &operator++()
+  //! postdecrement -- returns a copy
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator--(int)
   {
-    value++;
-    return *static_cast<TYPE *>(this);
+    TYPE self(value);
+    value--;
+    return self;
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE &operator--(int)
+  //! preincrement stored index
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator--()
   {
     value--;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE &operator--()
+  //! addition to underlying index from an Index_type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(Index_type a) const
   {
-    value--;
-    return *static_cast<TYPE *>(this);
+    return TYPE(value + a);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator+(Index_type a) const { return TYPE(value + a); }
+  //! addition to underlying index from another strong type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator+(TYPE a) const
+  {
+    return TYPE(value + a.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator+(TYPE a) const { return TYPE(value + a.value); }
+  //! subtraction to underlying index from an Index_type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(Index_type a) const
+  {
+    return TYPE(value - a);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator-(Index_type a) const { return TYPE(value - a); }
+  //! subtraction to underlying index from another strong type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator-(TYPE a) const
+  {
+    return TYPE(value - a.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator-(TYPE a) const { return TYPE(value - a.value); }
+  //! multiplication to underlying index from an Index_type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(Index_type a) const
+  {
+    return TYPE(value * a);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator*(Index_type a) const { return TYPE(value * a); }
+  //! multiplication to underlying index from another strong type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator*(TYPE a) const
+  {
+    return TYPE(value * a.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator*(TYPE a) const { return TYPE(value * a.value); }
+  //! division to underlying index from an Index_type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(Index_type a) const
+  {
+    return TYPE(value / a);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator/(Index_type a) const { return TYPE(value / a); }
+  //! division to underlying index from another strong type
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE operator/(TYPE a) const
+  {
+    return TYPE(value / a.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  TYPE operator/(TYPE a) const { return TYPE(value / a.value); }
-
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator+=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(Index_type x)
   {
     value += x;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator+=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(TYPE x)
   {
     value += x.value;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator-=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(Index_type x)
   {
     value -= x;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator-=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(TYPE x)
   {
     value -= x.value;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator*=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(Index_type x)
   {
     value *= x;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator*=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(TYPE x)
   {
     value *= x.value;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator/=(Index_type x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(Index_type x)
   {
     value /= x;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE TYPE &operator/=(TYPE x)
+  RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(TYPE x)
   {
     value /= x.value;
-    return *static_cast<TYPE *>(this);
+    return static_cast<TYPE&>(*this);
   }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator<(Index_type x) const { return (value < x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<(Index_type x) const
+  {
+    return (value < x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator<(TYPE x) const { return (value < x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<(TYPE x) const
+  {
+    return (value < x.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator<=(Index_type x) const { return (value <= x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<=(Index_type x) const
+  {
+    return (value <= x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator<=(TYPE x) const { return (value <= x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator<=(TYPE x) const
+  {
+    return (value <= x.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator>(Index_type x) const { return (value > x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>(Index_type x) const
+  {
+    return (value > x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator>(TYPE x) const { return (value > x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>(TYPE x) const
+  {
+    return (value > x.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator>=(Index_type x) const { return (value >= x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>=(Index_type x) const
+  {
+    return (value >= x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator>=(TYPE x) const { return (value >= x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator>=(TYPE x) const
+  {
+    return (value >= x.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator==(Index_type x) const { return (value == x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(Index_type x) const
+  {
+    return (value == x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator==(TYPE x) const { return (value == x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator==(TYPE x) const
+  {
+    return (value == x.value);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator!=(Index_type x) const { return (value != x); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(Index_type x) const
+  {
+    return (value != x);
+  }
 
-  RAJA_HOST_DEVICE
-  RAJA_INLINE bool operator!=(TYPE x) const { return (value != x.value); }
+  RAJA_HOST_DEVICE RAJA_INLINE bool operator!=(TYPE x) const
+  {
+    return (value != x.value);
+  }
 
   // This is not implemented... but should be by the derived type
   // this is done by the macro
-  static std::string getName(void);
+  static std::string getName();
 
 protected:
   Index_type value;
 };
 
-
-/*!
- * \brief Function provides a way to take either an int or any Index<> type, and
- * convert it to another type, possibly another Index or an int.
- *
- * This has been refactored to use SFINAE to differentiate between IndexValue
- * derived types an non-IndexValue types, and return the correct type
- * automatically
- */
+namespace impl
+{
 
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex_helper(FROM val)
@@ -294,31 +309,39 @@ convertIndex_helper(typename FROM::IndexValueType val)
   return static_cast<TO>(*val);
 }
 
+} // closing brace for namespace impl
+
+/*!
+ * \brief Function provides a way to take either an int or any Index<> type, and
+ * convert it to another type, possibly another Index or an int.
+ *
+ */
 template <typename TO, typename FROM>
 RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
 {
-  return convertIndex_helper<TO, FROM>(val);
+  return impl::convertIndex_helper<TO, FROM>(val);
 }
-
 
 }  // namespace RAJA
 
 /*!
  * \brief Helper Macro to create new Index types.
+ * \param TYPE the name of the type
+ * \param NAME a string literal to identify this index type
  */
-#define RAJA_INDEX_VALUE(TYPE, NAME)                                           \
-  class TYPE : public RAJA::IndexValue<TYPE>                                   \
-  {                                                                            \
-  public:                                                                      \
-    typedef TYPE IndexValueType;                                               \
-    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : RAJA::IndexValue<TYPE>::IndexValue() \
-    {                                                                          \
-    }                                                                          \
-    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(RAJA::Index_type v)             \
-        : RAJA::IndexValue<TYPE>::IndexValue(v)                                \
-    {                                                                          \
-    }                                                                          \
-    static inline std::string getName(void) { return NAME; }                   \
+#define RAJA_INDEX_VALUE(TYPE, NAME)                                 \
+  class TYPE : public ::RAJA::IndexValue<TYPE>                       \
+  {                                                                  \
+    using parent = ::RAJA::IndexValue<TYPE>;                         \
+                                                                     \
+  public:                                                            \
+    using IndexValueType = TYPE;                                     \
+    RAJA_HOST_DEVICE RAJA_INLINE TYPE() : parent::IndexValue() {}    \
+    RAJA_HOST_DEVICE RAJA_INLINE explicit TYPE(::RAJA::Index_type v) \
+        : parent::IndexValue(v)                                      \
+    {                                                                \
+    }                                                                \
+    static inline std::string getName() { return NAME; }             \
   };
 
 #endif

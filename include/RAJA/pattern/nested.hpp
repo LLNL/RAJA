@@ -205,7 +205,7 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
   static_assert(std::is_base_of<internal::ForBase, FT1>::value,
                 "Only For-based policies should get here");
   template <typename WrappedBody>
-  void operator()(Collapse<seq_exec, FT0, FT1> const &p,
+  void operator()(Collapse<seq_exec, FT0, FT1> const &,
                   WrappedBody const &wrap)
   {
     auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
