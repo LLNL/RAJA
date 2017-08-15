@@ -50,7 +50,6 @@
 int a[N], b[N], c[N];
 
 
-#if 1
 void RAJAloop(){
 
   RAJA::forall<RAJA::loop_exec>
@@ -58,7 +57,6 @@ void RAJAloop(){
       a[i] = b[i] + c[i];
     });
 }
-#endif
 
 
 void RAJAseq(){
@@ -70,11 +68,22 @@ void RAJAseq(){
     });
 }
 
+
+void RAJAsimd(){
+
+  RAJA::forall<RAJA::simd_exec>
+    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
+      a[i] = b[i] + c[i];
+
+    });
+}
+
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
   RAJAloop();
   RAJAseq();
+  RAJAsimd();
 
   return 0;
 }
