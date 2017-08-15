@@ -50,21 +50,31 @@
 int a[N], b[N], c[N];
 
 
+#if 1
+void RAJAloop(){
 
-void RAJAtest(){
-
-  RAJA::forall<RAJA::for_exec>
-    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
+  RAJA::forall<RAJA::loop_exec>
+    (RAJA::RangeSegment(0,N), [&] (RAJA::Index_type i) { 
       a[i] = b[i] + c[i];
     });
+}
+#endif
 
 
+void RAJAseq(){
+
+  RAJA::forall<RAJA::seq_exec>
+    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
+      a[i] = b[i] + c[i];
+
+    });
 }
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  RAJAtest();
+  RAJAloop();
+  RAJAseq();
 
   return 0;
 }
