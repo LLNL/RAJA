@@ -322,6 +322,41 @@ namespace test
 }
 #endif
 
+namespace detail
+{
+  template <template <typename...> class Op, typename Current, typename... Rest>
+  struct accumulate_impl;
+  template <template <typename...> class Op,
+            typename Current,
+            typename First,
+            typename... Rest>
+  struct accumulate_impl<Op, Current, First, Rest...> {
+    using current = typename Op<Current, First>::type;
+    using type = typename accumulate_impl<Op, current, Rest...>::type;
+  };
+  template <template <typename...> class Op, typename Current>
+  struct accumulate_impl<Op, Current> {
+    using type = Current;
+  };
+}
+
+template <template <typename...> class Op, typename Initial, typename Seq>
+struct accumulate;
+template <template <typename...> class Op,
+          typename Initial,
+          typename... Elements>
+struct accumulate<Op, Initial, list<Elements...>> {
+  using type = typename detail::accumulate_impl<Op, Initial, Elements...>::type;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((accumulate<append, list<>, list<int, float, double>>),
+              (list<int, float, double>));
+}
+#endif
+
 template <template <typename...> class T, typename... Args>
 struct as_list<T<Args...>> {
   using type = list<Args...>;
