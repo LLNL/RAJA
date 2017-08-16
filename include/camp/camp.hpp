@@ -2,53 +2,16 @@
 #define __CAMP_HPP
 
 #include <array>
-#include <cstddef>
 #include <type_traits>
+
+#include "camp/defines.hpp"
+#include "camp/list/at.hpp"
+#include "camp/value.hpp"
+#include "camp/number.hpp"
+#include "camp/helpers.hpp"
 
 namespace camp
 {
-// Defines
-#if defined(__cpp_constexpr) && __cpp_constexpr >= 201304
-#define CAMP_HAS_CONSTEXPR14
-#define CAMP_CONSTEXPR14 constexpr
-#else
-#define CAMP_CONSTEXPR14
-#endif
-
-#if defined(__CUDACC__)
-#define CAMP_DEVICE __device__
-#define CAMP_HOST_DEVICE __host__ __device__
-#else
-#define CAMP_DEVICE
-#define CAMP_HOST_DEVICE
-#endif
-
-// Types
-using idx_t = std::ptrdiff_t;
-
-#if defined(CAMP_TEST)
-template <typename T1, typename T2>
-struct AssertSame {
-  static_assert(std::is_same<T1, T2>::value,
-                "is_same assertion failed <see below for more information>");
-  static bool constexpr value = std::is_same<T1, T2>::value;
-};
-#define UNQUOTE(...) __VA_ARGS__
-#define CHECK_SAME(X, Y) \
-  static_assert(AssertSame<UNQUOTE X, UNQUOTE Y>::value, #X " same as " #Y)
-#define CHECK_TSAME(X, Y)                                               \
-  static_assert(AssertSame<typename UNQUOTE X::type, UNQUOTE Y>::value, \
-                #X " same as " #Y)
-template <typename Assertion, idx_t i>
-struct AssertValue {
-  static_assert(Assertion::value == i,
-                "value assertion failed <see below for more information>");
-  static bool const value = Assertion::value == i;
-};
-#define CHECK_IEQ(X, Y) \
-  static_assert(AssertValue<UNQUOTE X, UNQUOTE Y>::value, #X "::value == " #Y)
-#endif
-
 // Fwd
 template <typename... Ts>
 struct list;
@@ -60,43 +23,83 @@ template <typename T>
 struct size;
 template <typename Seq>
 struct flatten;
+template <idx_t N>
+struct num;
 
 // helpers
 
-template <typename T>
-T* declptr();
+// Lambda
 
-template <typename... Ts>
-void sink(Ts...)
-{
-}
+template <template <typename...> class Expr>
+struct lambda {
+  template <typename... Ts>
+  using expr = typename Expr<Ts...>::type;
+};
 
-// Value
+template <typename Lambda, typename Seq>
+struct apply;
+template <typename Lambda, typename... Args>
+struct apply<Lambda, list<Args...>> {
+  using type = typename Lambda::template expr<Args...>::type;
+};
+
+template <typename Lambda, typename... Args>
+struct invoke {
+  using type = typename Lambda::template expr<Args...>::type;
+};
+
+template <idx_t n>
+struct arg {
+  template <typename... Ts>
+  using expr = typename at<list<Ts...>, num<n - 1>>::type;
+};
+
+using _1 = arg<1>;
+using _2 = arg<2>;
+using _3 = arg<3>;
+using _4 = arg<4>;
+using _5 = arg<5>;
+using _6 = arg<6>;
+using _7 = arg<7>;
+using _8 = arg<8>;
+using _9 = arg<9>;
 
 namespace detail
 {
-  struct nil;
+  template <typename T, typename... Args>
+  struct get_bound_arg {
+    using type = T;
+  };
+  template <idx_t i, typename... Args>
+  struct get_bound_arg<arg<i>, Args...> {
+    using type = typename arg<i>::template expr<Args...>;
+  };
 }
-template <typename val = detail::nil>
-struct value {
-  using type = val;
+
+template <template <typename...> class Expr, typename... ArgBindings>
+struct bind {
+  using bindings = list<ArgBindings...>;
+  template <typename... Ts>
+  using expr = typename Expr<
+      typename detail::get_bound_arg<ArgBindings, Ts...>::type...>::type;
 };
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((invoke<bind<list, _1, int, _2>, float, double>),
+              (list<float, int, double>));
+}
+#endif
+
+template <template <typename...> class Expr, typename... BoundArgs>
+struct bind_front {
+  template <typename... Ts>
+  using expr = typename Expr<BoundArgs..., Ts...>::type;
+};
+
 
 // Numbers
-
-template <typename T, T v>
-struct integral : std::integral_constant<T, v> {
-};
-
-
-template <idx_t N>
-struct num : integral<idx_t, N> {
-};
-
-struct false_t : num<false> {
-};
-struct true_t : num<true> {
-};
 
 template <typename Cond, typename Then, typename Else>
 struct if_;
@@ -119,146 +122,7 @@ struct if_v<0, Then, Else> {
 };
 
 // Sequences
-//// int_seq and idx_seq
-template <typename T, T... vs>
-struct int_seq {
-  static constexpr std::array<T, sizeof...(vs)> array() noexcept
-  {
-    return std::array<T, sizeof...(vs)>{vs...};
-  }
-  static constexpr idx_t size() noexcept { return sizeof...(vs); }
-  using value_type = T;
-  using type = int_seq;
-};
-
-template <idx_t... vs>
-using idx_seq = int_seq<idx_t, vs...>;
-
-namespace integer_sequence_detail
-{
-  template <typename T, typename N>
-  struct gen_seq;
-#if defined(__has_builtin) && __has_builtin(__make_integer_seq)
-  template <typename T, T N>
-  struct gen_seq<T, integral<T, N>> : __make_integer_seq<int_seq, T, N>::type {
-  };
-#else
-  template <typename T, typename S1, typename S2>
-  struct concat;
-
-  template <typename T, T... I1, T... I2>
-  struct concat<T, int_seq<T, I1...>, int_seq<T, I2...>>
-      : int_seq<T, I1..., (sizeof...(I1) + I2)...> {
-  };
-
-  template <typename T, typename N_t>
-  struct gen_seq
-      : concat<T,
-               typename gen_seq<T, integral<T, N_t::value / 2>>::type,
-               typename gen_seq<T, integral<T, N_t::value - N_t::value / 2>>::
-                   type>::type {
-  };
-
-  template <typename T>
-  struct gen_seq<T, integral<T, 0>> : int_seq<T> {
-  };
-  template <typename T>
-  struct gen_seq<T, integral<T, 1>> : int_seq<T, 0> {
-  };
-#endif
-}
-
-template <idx_t Upper>
-struct make_idx_seq
-    : integer_sequence_detail::gen_seq<idx_t, integral<idx_t, Upper>>::type {
-};
-
-template <idx_t Upper>
-using make_idx_seq_t = typename make_idx_seq<Upper>::type;
-
-template <class... Ts>
-using idx_seq_for_t = typename make_idx_seq<sizeof...(Ts)>::type;
-
-template <typename T>
-struct idx_seq_from;
-
-template <template <typename...> class T, typename... Args>
-struct idx_seq_from<T<Args...>> : make_idx_seq<sizeof...(Args)> {
-};
-
-template <typename T, T... Args>
-struct idx_seq_from<int_seq<T, Args...>> : make_idx_seq<sizeof...(Args)> {
-};
-
-template <typename T>
-using idx_seq_from_t = typename idx_seq_from<T>::type;
-
-template <typename T, T Upper>
-struct make_int_seq
-    : integer_sequence_detail::gen_seq<T, integral<T, Upper>>::type {
-};
-
-template <typename T, idx_t Upper>
-using make_int_seq_t = typename make_int_seq<T, Upper>::type;
-
 //// list
-
-template <typename... Ts>
-struct list {
-  using type = list;
-};
-
-namespace detail
-{
-  // Lookup from metal::at machinery
-  template <idx_t, typename>
-  struct entry {
-  };
-
-  template <typename, typename>
-  struct entries;
-
-  template <idx_t... keys, typename... vals>
-  struct entries<idx_seq<keys...>, list<vals...>> : entry<keys, vals>... {
-  };
-
-  template <idx_t key, typename val>
-  value<val> _lookup_impl(entry<key, val>*);
-
-  template <typename>
-  value<> _lookup_impl(...);
-
-  template <typename vals, typename indices, idx_t Idx>
-  struct _lookup
-      : decltype(_lookup_impl<Idx>(declptr<entries<indices, vals>>())) {
-  };
-
-  template <typename T, idx_t Idx>
-  struct get_at;
-  template <typename T, idx_t Idx>
-  struct get_at : _lookup<T, typename idx_seq_from<T>::type, Idx>::type {
-  };
-  template <template <class...> class T, typename X, typename... Rest>
-  struct get_at<T<X, Rest...>, 0> {
-    using type = X;
-  };
-  template <template <class...> class T,
-            typename X,
-            typename Y,
-            typename... Rest>
-  struct get_at<T<X, Y, Rest...>, 1> {
-    using type = Y;
-  };
-}
-
-template <typename T, typename U>
-struct at;
-template <typename T, idx_t Val>
-struct at<T, num<Val>> : detail::get_at<T, Val> {
-};
-
-template <typename T, idx_t Idx>
-using at_t = typename at<T, num<Idx>>::type;
 
 template <typename Seq, typename T>
 struct append;
