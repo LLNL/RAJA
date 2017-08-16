@@ -95,7 +95,27 @@ struct num : integral<idx_t, N> {
 
 struct false_t : num<false> {
 };
-struct true_t : num<false> {
+struct true_t : num<true> {
+};
+
+template <typename Cond, typename Then, typename Else>
+struct if_;
+template <typename Then, typename Else>
+struct if_<std::true_type, Then, Else> {
+  using type = Then;
+};
+template <typename Then, typename Else>
+struct if_<std::false_type, Then, Else> {
+  using type = Else;
+};
+
+template <idx_t Cond, typename Then, typename Else>
+struct if_v {
+  using type = Then;
+};
+template <typename Then, typename Else>
+struct if_v<0, Then, Else> {
+  using type = Else;
 };
 
 // Sequences
@@ -354,6 +374,25 @@ namespace test
 {
   CHECK_TSAME((accumulate<append, list<>, list<int, float, double>>),
               (list<int, float, double>));
+}
+#endif
+
+template <template <typename...> class Op, typename Seq>
+struct filter;
+
+template <template <typename...> class Op, typename... Elements>
+struct filter<Op, list<Elements...>> {
+  template <typename Seq, typename T>
+  using append_if =
+      if_<typename Op<T>::type, typename append<Seq, T>::type, Seq>;
+  using type = typename accumulate<append_if, list<>, list<Elements...>>::type;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((filter<std::is_pointer, list<int, float*, double, short*>>),
+              (list<float*, short*>));
 }
 #endif
 
