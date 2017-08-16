@@ -75,7 +75,7 @@ namespace internal
     }
 
     template <typename... RTypes>
-    CAMP_HOST_DEVICE constexpr tuple_helper& operator=(
+    CAMP_HOST_DEVICE tuple_helper& operator=(
         const tuple_helper<camp::idx_seq<Indices...>, RTypes...>& rhs)
     {
       return (camp::sink(

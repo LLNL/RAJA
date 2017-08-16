@@ -23,9 +23,31 @@ namespace camp
 #define CAMP_HOST_DEVICE
 #endif
 
-
 // Types
 using idx_t = std::ptrdiff_t;
+
+#if defined(CAMP_TEST)
+template <typename T1, typename T2>
+struct AssertSame {
+  static_assert(std::is_same<T1, T2>::value,
+                "is_same assertion failed <see below for more information>");
+  static bool constexpr value = std::is_same<T1, T2>::value;
+};
+#define UNQUOTE(...) __VA_ARGS__
+#define CHECK_SAME(X, Y) \
+  static_assert(AssertSame<UNQUOTE X, UNQUOTE Y>::value, #X " same as " #Y)
+#define CHECK_TSAME(X, Y)                                               \
+  static_assert(AssertSame<typename UNQUOTE X::type, UNQUOTE Y>::value, \
+                #X " same as " #Y)
+template <typename Assertion, idx_t i>
+struct AssertValue {
+  static_assert(Assertion::value == i,
+                "value assertion failed <see below for more information>");
+  static bool const value = Assertion::value == i;
+};
+#define CHECK_IEQ(X, Y) \
+  static_assert(AssertValue<UNQUOTE X, UNQUOTE Y>::value, #X "::value == " #Y)
+#endif
 
 // Fwd
 template <typename... Ts>
@@ -36,6 +58,8 @@ template <typename T>
 struct as_array;
 template <typename T>
 struct size;
+template <typename Seq>
+struct flatten;
 
 // helpers
 
@@ -43,7 +67,7 @@ template <typename T>
 T* declptr();
 
 template <typename... Ts>
-void sink(Ts... args)
+void sink(Ts...)
 {
 }
 
@@ -216,6 +240,88 @@ struct at<T, num<Val>> : detail::get_at<T, Val> {
 template <typename T, idx_t Idx>
 using at_t = typename at<T, num<Idx>>::type;
 
+template <typename Seq, typename T>
+struct append;
+template <typename... Elements, typename T>
+struct append<list<Elements...>, T> {
+  using type = list<Elements..., T>;
+};
+
+template <typename Seq, typename T>
+struct extend;
+template <typename... Elements, typename... NewElements>
+struct extend<list<Elements...>, list<NewElements...>> {
+  using type = list<Elements..., NewElements...>;
+};
+
+namespace detail
+{
+  template <typename CurSeq, size_t N, typename... Rest>
+  struct flatten_impl;
+  template <typename CurSeq>
+  struct flatten_impl<CurSeq, 0> {
+    using type = CurSeq;
+  };
+  template <typename... CurSeqElements,
+            size_t N,
+            typename First,
+            typename... Rest>
+  struct flatten_impl<list<CurSeqElements...>, N, First, Rest...> {
+    using type = typename flatten_impl<list<CurSeqElements..., First>,
+                                       N - 1,
+                                       Rest...>::type;
+  };
+  template <typename... CurSeqElements,
+            size_t N,
+            typename... FirstInnerElements,
+            typename... Rest>
+  struct flatten_impl<list<CurSeqElements...>,
+                      N,
+                      list<FirstInnerElements...>,
+                      Rest...> {
+    using first_inner_flat =
+        typename flatten_impl<list<>,
+                              sizeof...(FirstInnerElements),
+                              FirstInnerElements...>::type;
+    using cur_and_first =
+        typename extend<list<CurSeqElements...>, first_inner_flat>::type;
+    using type = typename flatten_impl<cur_and_first, N - 1, Rest...>::type;
+  };
+}
+
+template <typename... Elements>
+struct flatten<list<Elements...>>
+    : detail::flatten_impl<list<>, sizeof...(Elements), Elements...> {
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((flatten<list<>>), (list<>));
+  CHECK_TSAME((flatten<list<int>>), (list<int>));
+  CHECK_TSAME((flatten<list<list<int>>>), (list<int>));
+  CHECK_TSAME((flatten<list<list<list<int>>>>), (list<int>));
+  CHECK_TSAME((flatten<list<float, list<int, double>, list<list<int>>>>),
+              (list<float, int, double, int>));
+}
+#endif
+
+template <template <typename...> class Op, typename T>
+struct transform;
+template <template <typename...> class Op, typename... Elements>
+struct transform<Op, list<Elements...>> {
+  using type = list<typename Op<Elements>::type...>;
+};
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((transform<std::add_cv, list<int>>), (list<const volatile int>));
+  CHECK_TSAME((transform<std::remove_reference, list<int&, int&>>),
+              (list<int, int>));
+}
+#endif
+
 template <template <typename...> class T, typename... Args>
 struct as_list<T<Args...>> {
   using type = list<Args...>;
@@ -236,13 +342,37 @@ struct as_array<int_seq<T, Vals...>> {
 template <typename... Args>
 struct size<list<Args...>> {
   constexpr static idx_t value{sizeof...(Args)};
+  using type = num<sizeof...(Args)>;
 };
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_IEQ((size<list<int>>), (1));
+  CHECK_IEQ((size<list<int, int>>), (2));
+  CHECK_IEQ((size<list<int, int, int>>), (3));
+}
+#endif
 
 template <typename T, T... Args>
 struct size<int_seq<T, Args...>> {
   constexpr static idx_t value{sizeof...(Args)};
+  using type = num<sizeof...(Args)>;
 };
 
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_IEQ((size<idx_seq<0>>), (1));
+  CHECK_IEQ((size<idx_seq<0, 0>>), (2));
+  CHECK_IEQ((size<idx_seq<0, 0, 0>>), (3));
+}
+#endif
+
 }  // end namespace camp
+
+#if defined(CAMP_TEST)
+int main(int argc, char* argv[]) { return 0; }
+#endif
 
 #endif /* __CAMP_HPP */
