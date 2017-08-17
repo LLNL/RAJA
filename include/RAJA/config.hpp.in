@@ -199,10 +199,12 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
-#define RAJA_SIMD  _Pragma("omp simd")
+#define RAJA_SIMD  _Pragma("omp simd") \
+                   _Pragma("vector aligned")
 #define RAJA_NoSIMD _Pragma("novector")
 #else
-#define RAJA_SIMD  _Pragma("simd")
+#define RAJA_SIMD  _Pragma("simd") \
+                   _Pragma("vector aligned")
 #define RAJA_NoSIMD  _Pragma("novector")
 #endif
 
