@@ -3,16 +3,15 @@
 
 namespace camp
 {
-namespace detail
-{
-  struct nil;
-}
+
+struct nil {
+};
+
 // TODO: document
-template <typename val = detail::nil>
+template <typename val = nil>
 struct value {
   using type = val;
 };
 }
 
 #endif /* __CAMP_value_hpp */
-

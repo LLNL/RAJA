@@ -5,18 +5,18 @@
 #include <type_traits>
 
 #include "camp/defines.hpp"
-#include "camp/list/at.hpp"
-#include "camp/value.hpp"
-#include "camp/number.hpp"
 #include "camp/helpers.hpp"
+#include "camp/lambda.hpp"
+#include "camp/list/at.hpp"
+#include "camp/list/find_if.hpp"
+#include "camp/number.hpp"
+#include "camp/value.hpp"
 
 namespace camp
 {
 // Fwd
 template <typename... Ts>
 struct list;
-template <typename T>
-struct as_list;
 template <typename T>
 struct as_array;
 template <typename T>
@@ -30,96 +30,7 @@ struct num;
 
 // Lambda
 
-template <template <typename...> class Expr>
-struct lambda {
-  template <typename... Ts>
-  using expr = typename Expr<Ts...>::type;
-};
-
-template <typename Lambda, typename Seq>
-struct apply;
-template <typename Lambda, typename... Args>
-struct apply<Lambda, list<Args...>> {
-  using type = typename Lambda::template expr<Args...>::type;
-};
-
-template <typename Lambda, typename... Args>
-struct invoke {
-  using type = typename Lambda::template expr<Args...>::type;
-};
-
-template <idx_t n>
-struct arg {
-  template <typename... Ts>
-  using expr = typename at<list<Ts...>, num<n - 1>>::type;
-};
-
-using _1 = arg<1>;
-using _2 = arg<2>;
-using _3 = arg<3>;
-using _4 = arg<4>;
-using _5 = arg<5>;
-using _6 = arg<6>;
-using _7 = arg<7>;
-using _8 = arg<8>;
-using _9 = arg<9>;
-
-namespace detail
-{
-  template <typename T, typename... Args>
-  struct get_bound_arg {
-    using type = T;
-  };
-  template <idx_t i, typename... Args>
-  struct get_bound_arg<arg<i>, Args...> {
-    using type = typename arg<i>::template expr<Args...>;
-  };
-}
-
-template <template <typename...> class Expr, typename... ArgBindings>
-struct bind {
-  using bindings = list<ArgBindings...>;
-  template <typename... Ts>
-  using expr = typename Expr<
-      typename detail::get_bound_arg<ArgBindings, Ts...>::type...>::type;
-};
-
-#if defined(CAMP_TEST)
-namespace test
-{
-  CHECK_TSAME((invoke<bind<list, _1, int, _2>, float, double>),
-              (list<float, int, double>));
-}
-#endif
-
-template <template <typename...> class Expr, typename... BoundArgs>
-struct bind_front {
-  template <typename... Ts>
-  using expr = typename Expr<BoundArgs..., Ts...>::type;
-};
-
-
 // Numbers
-
-template <typename Cond, typename Then, typename Else>
-struct if_;
-template <typename Then, typename Else>
-struct if_<std::true_type, Then, Else> {
-  using type = Then;
-};
-template <typename Then, typename Else>
-struct if_<std::false_type, Then, Else> {
-  using type = Else;
-};
-
-template <idx_t Cond, typename Then, typename Else>
-struct if_v {
-  using type = Then;
-};
-template <typename Then, typename Else>
-struct if_v<0, Then, Else> {
-  using type = Else;
-};
 
 // Sequences
 //// list
@@ -128,6 +39,13 @@ template <typename Seq, typename T>
 struct append;
 template <typename... Elements, typename T>
 struct append<list<Elements...>, T> {
+  using type = list<Elements..., T>;
+};
+
+template <typename Seq, typename T>
+struct prepend;
+template <typename... Elements, typename T>
+struct prepend<list<Elements...>, T> {
   using type = list<Elements..., T>;
 };
 
@@ -233,6 +151,8 @@ struct accumulate<Op, Initial, list<Elements...>> {
   using type = typename detail::accumulate_impl<Op, Initial, Elements...>::type;
 };
 
+CAMP_MAKE_L(accumulate);
+
 #if defined(CAMP_TEST)
 namespace test
 {
@@ -252,6 +172,8 @@ struct filter<Op, list<Elements...>> {
   using type = typename accumulate<append_if, list<>, list<Elements...>>::type;
 };
 
+CAMP_MAKE_L(filter);
+
 #if defined(CAMP_TEST)
 namespace test
 {
@@ -260,6 +182,8 @@ namespace test
 }
 #endif
 
+template <typename T>
+struct as_list;
 template <template <typename...> class T, typename... Args>
 struct as_list<T<Args...>> {
   using type = list<Args...>;

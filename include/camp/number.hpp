@@ -116,6 +116,45 @@ struct make_int_seq : detail::gen_seq<T, integral<T, Upper>>::type {
 // TODO: document
 template <typename T, idx_t Upper>
 using make_int_seq_t = typename make_int_seq<T, Upper>::type;
-}
+
+// TODO: document
+template <typename Cond, typename Then, typename Else>
+struct if_ {
+    static_assert(Cond::value, "got true with a false val somehow");
+    using type = Then;
+};
+template <typename Then, typename Else>
+struct if_<std::false_type, Then, Else> {
+  using type = Else;
+};
+template <typename Then, typename Else>
+struct if_<num<0>, Then, Else> {
+  using type = Else;
+};
+template <typename IT, typename Then, typename Else>
+struct if_<integral<IT, 0>, Then, Else> {
+  using type = Else;
+};
+template <typename IT, typename Then, typename Else>
+struct if_<std::integral_constant<IT, 0>, Then, Else> {
+  using type = Else;
+};
+
+template <idx_t Cond, typename Then, typename Else>
+struct if_v {
+  using type = Then;
+};
+template <typename Then, typename Else>
+struct if_v<0, Then, Else> {
+  using type = Else;
+};
+
+// TODO: document
+template <typename T>
+struct not_ {
+  using type = typename if_<T, false_t, true_t>::type;
+};
+
+} // end namespace camp
 
 #endif /* CAMP_NUMBER_HPP */

@@ -64,6 +64,12 @@ struct at<T, num<Val>> {
 template <typename T, idx_t Idx>
 using at_t = typename at<T, num<Idx>>::type;
 
+template <typename T>
+using first = typename at<T, num<0>>::type;
+
+template <typename T>
+using second = typename at<T, num<1>>::type;
+
 }
 
 

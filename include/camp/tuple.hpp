@@ -96,6 +96,7 @@ struct tuple
     : public internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
                                     camp::list<Elements...>> {
   using TList = camp::list<Elements...>;
+  using type = tuple;
 
 private:
   using Self = tuple<Elements...>;

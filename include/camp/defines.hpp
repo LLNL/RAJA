@@ -25,6 +25,14 @@ namespace camp
 // Types
 using idx_t = std::ptrdiff_t;
 
+// Helper macros
+#define CAMP_MAKE_L(X)                                             \
+  template <typename Lambda, typename... Rest>                     \
+  struct X##_l {                                                   \
+    using type = typename X<Lambda::template expr, Rest...>::type; \
+  };
+
+
 #if defined(CAMP_TEST)
 template <typename T1, typename T2>
 struct AssertSame {

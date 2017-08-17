@@ -6,7 +6,7 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/external/metal.hpp"
+// #include "RAJA/external/metal.hpp"
 #include "camp/camp.hpp"
 #include "camp/tuple.hpp"
 
@@ -34,59 +34,82 @@ struct TypedForBase : public ForBase {
 };
 struct CollapseBase {
 };
-template <metal::int_ ArgumentId, typename Pol>
+template <camp::idx_t ArgumentId, typename Pol>
 struct ForTraitBase : public ForBase {
-  constexpr static metal::int_ index_val = ArgumentId;
-  using index = metal::number<ArgumentId>;
-  using index_type = metal::nil;  // default to invalid type
+  constexpr static camp::idx_t index_val = ArgumentId;
+  using index = camp::num<ArgumentId>;
+  using index_type = camp::nil;  // default to invalid type
   using policy_type = Pol;
 };
 
-using is_for_policy = metal::
-    bind<metal::trait<std::is_base_of>, metal::always<ForBase>, metal::_1>;
-using is_typed_for_policy = metal::
-    bind<metal::trait<std::is_base_of>, metal::always<TypedForBase>, metal::_1>;
+using is_for_policy = typename camp::bind_front<std::is_base_of, ForBase>::type;
+using is_typed_for_policy =
+    typename camp::bind_front<std::is_base_of, TypedForBase>::type;
 
-using has_for_list = metal::
-    bind<metal::trait<std::is_base_of>, metal::always<ForList>, metal::_1>;
+using has_for_list = typename camp::bind_front<std::is_base_of, ForList>::type;
 
 template <typename T>
 using get_for_list = typename T::as_for_list;
 
 template <typename Seq>
-using get_for_policies = metal::flatten<metal::transform<
-    metal::lambda<get_for_list>,
-    metal::remove_if<Seq,
-                     metal::bind<metal::lambda<metal::not_>, has_for_list>>>>;
+using get_for_policies = typename camp::flatten<typename camp::transform<
+    get_for_list,
+    typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
 
 template <typename T>
-using is_nil_type = metal::
-    bind<metal::lambda<metal::same>, metal::always<metal::nil>, metal::_1>;
+using is_nil_type = camp::bind_front<std::is_same, camp::nil>;
 
-template <typename ForPolicy, typename Segments>
-using get_for_index_pair =  // If For is TypedFor, use specified type, otherwise
-                            // segment value type
-    metal::pair<typename ForPolicy::index,
-                metal::if_<metal::invoke<is_typed_for_policy, ForPolicy>,
-                           typename ForPolicy::index_type,
-                           metal::at<Segments, typename ForPolicy::index>>>;
+// template <typename ForPolicy, typename Segments>
+// using get_for_index_pair =  // If For is TypedFor, use specified type,
+// otherwise
+//                             // segment value type
+//     camp::list<typename ForPolicy::index, >::type > ;
 
-template <typename Policies, typename Segments>
-using get_for_pairs_from_policies_and_segments =
-    metal::transform<metal::bind<metal::lambda<get_for_index_pair>,
-                                 metal::_1,
-                                 metal::always<Segments>>,
-                     get_for_policies<Policies>>;
+// template <typename Policies, typename Segments>
+// using get_for_pairs_from_policies_and_segments =
+//     metal::transform<metal::bind<metal::lambda<get_for_index_pair>,
+//                                  metal::_1,
+//                                  metal::always<Segments>>,
+//                      get_for_policies<Policies>>;
 
-template <typename PairL, typename PairR>
-using order_by_index =
-    metal::number<(metal::first<PairL>::value < metal::first<PairR>::value)>;
+// template <typename PairL, typename PairR>
+// using order_by_index =
+//     metal::number<(metal::first<PairL>::value < metal::first<PairR>::value)>;
 
-template <typename Policies, typename Segments>
-using get_for_index_types = metal::transform<
-    metal::lambda<metal::second>,
-    metal::sort<get_for_pairs_from_policies_and_segments<Policies, Segments>,
-                metal::lambda<order_by_index>>>;
+template <typename Index, typename ForPol>
+struct index_matches {
+  using type = camp::num<Index::value == ForPol::index::value>;
+};
+
+template <typename IndexTypes,
+          typename ForPolicies,
+          typename Current,
+          typename Index>
+struct evaluate_policy {
+  using ForPolicy = typename camp::find_if_l<
+      typename camp::bind_front<index_matches, Index>::type,
+      ForPolicies>::type;
+  using type = typename camp::append<
+      Current,
+      typename camp::if_<
+          typename std::is_base_of<TypedForBase, ForPolicy>::type,
+          typename ForPolicy::index_type,
+          typename camp::at<IndexTypes,
+                            typename ForPolicy::index>::type>::type>::type;
+};
+
+template <typename Policies, typename IndexTypes>
+using get_for_index_types = typename camp::accumulate_l<
+    typename camp::bind_front<evaluate_policy,
+                              IndexTypes,
+                              get_for_policies<Policies>>::type,
+    camp::list<>,
+    typename camp::as_list<camp::idx_seq_from_t<IndexTypes>>::type>::type;
+
+// camp::transform<
+//     camp::second,
+//     metal::sort<get_for_pairs_from_policies_and_segments<Policies, Segments>,
+//                 metal::lambda<order_by_index>>>;
 
 template <typename Iterator>
 struct iterable_value_type_getter {
@@ -98,39 +121,37 @@ struct iterable_value_type_getter<IndexSet> {
   using type = Index_type;
 };
 
-template <typename Iterator>
-using iterable_value_type_t =
-    typename iterable_value_type_getter<Iterator>::type;
-
 template <typename Segments>
 using value_type_list_from_segments =
-    metal::transform<metal::lambda<iterable_value_type_t>, Segments>;
+    typename camp::transform<iterable_value_type_getter, Segments>::type;
 
 template <typename Policies, typename Segments>
-using index_tuple_from_policies_and_segments = metal::apply<
-    metal::lambda<camp::tuple>,
-    get_for_index_types<Policies, value_type_list_from_segments<Segments>>>;
+using index_tuple_from_policies_and_segments = typename camp::apply_l<
+    camp::lambda<camp::tuple>,
+    get_for_index_types<Policies,
+                        value_type_list_from_segments<Segments>>>::type;
 }
 
-template <metal::int_ ArgumentId, typename Pol = metal::nil, typename... Rest>
+template <camp::idx_t ArgumentId, typename Pol = camp::nil, typename... Rest>
 struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, Pol> {
-  using as_for_list = metal::list<For<ArgumentId, Pol, Rest...>>;
+  using as_for_list = camp::list<For>;
   // TODO: add static_assert for valid policy in Pol
   const Pol pol;
   For() : pol{} {}
   For(const Pol &p) : pol{p} {}
 };
 
-template <metal::int_ ArgumentId,
+template <camp::idx_t ArgumentId,
           typename Pol,
           typename IndexType,
           typename... Rest>
-struct TypedFor : public internal::TypedForBase, public For<ArgumentId, Pol, Rest...> {
+struct TypedFor : public internal::TypedForBase,
+                  public For<ArgumentId, Pol, Rest...> {
   using Base = For<ArgumentId, Pol, Rest...>;
   using Self = TypedFor<ArgumentId, Pol, IndexType, Rest...>;
   using index_type = IndexType;
-  using as_for_list = metal::list<Self>;
+  using as_for_list = camp::list<Self>;
   // TODO: add static_assert for valid policy in Pol
   using Base::Base;
 };
@@ -140,20 +161,19 @@ using Policy = camp::tuple<Policies...>;
 
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
-  constexpr static size_t n_policies =
-      camp::tuple_size<PolicyTuple>::value;
+  constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
   const PolicyTuple &pt;
   const SegmentTuple &st;
   const typename std::remove_reference<Fn>::type f;
   using index_tuple_t = internal::index_tuple_from_policies_and_segments<
-      metal::as_list<typename PolicyTuple::TList>,
-      metal::as_list<typename SegmentTuple::TList>>;
+      typename PolicyTuple::TList,
+      typename SegmentTuple::TList>;
   index_tuple_t index_tuple;
   LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
       : pt{p}, st{s}, f{fn}
   {
   }
-  template <metal::int_ Idx, typename IndexT>
+  template <camp::idx_t Idx, typename IndexT>
   void assign_index(IndexT const &i)
   {
     camp::get<Idx>(index_tuple) =
@@ -192,7 +212,7 @@ struct Executor {
 
 template <typename ExecPolicy, typename... Fors>
 struct Collapse : public internal::ForList, public internal::CollapseBase {
-  using as_for_list = metal::list<Fors...>;
+  using as_for_list = camp::list<Fors...>;
   const ExecPolicy pol;
   Collapse() : pol{} {}
   Collapse(ExecPolicy const &ep) : pol{ep} {}
@@ -205,8 +225,7 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
   static_assert(std::is_base_of<internal::ForBase, FT1>::value,
                 "Only For-based policies should get here");
   template <typename WrappedBody>
-  void operator()(Collapse<seq_exec, FT0, FT1> const &,
-                  WrappedBody const &wrap)
+  void operator()(Collapse<seq_exec, FT0, FT1> const &, WrappedBody const &wrap)
   {
     auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
     auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
@@ -260,14 +279,14 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   // but must be made before loop_body is copied
   beforeCudaKernelLaunch();
 #endif
-  using fors = internal::get_for_policies<metal::as_list<typename Pol::TList>>;
+  using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
   // TODO: ensure no gaps in For<>s
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
   //       index_tuple
   static_assert(camp::tuple_size<SegmentTuple>::value
-                    == metal::size<fors>::value,
+                    == camp::size<fors>::value,
                 "policy and segment index counts do not match");
   auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
   auto ld = make_base_wrapper(data);
