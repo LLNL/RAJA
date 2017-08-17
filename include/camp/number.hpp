@@ -48,15 +48,16 @@ namespace detail
   struct gen_seq;
 #if defined(__has_builtin) && __has_builtin(__make_integer_seq)
   template <typename T, T N>
-  struct gen_seq<T, integral<T, N>> : __make_integer_seq<int_seq, T, N>::type {
+  struct gen_seq<T, integral<T, N>> {
+    using type = __make_integer_seq<int_seq, T, N>;
   };
 #else
   template <typename T, typename S1, typename S2>
   struct concat;
 
   template <typename T, T... I1, T... I2>
-  struct concat<T, int_seq<T, I1...>, int_seq<T, I2...>>
-      : int_seq<T, I1..., (sizeof...(I1) + I2)...> {
+  struct concat<T, int_seq<T, I1...>, int_seq<T, I2...>> {
+    using type = typename int_seq<T, I1..., (sizeof...(I1) + I2)...>::type;
   };
 
   template <typename T, typename N_t>
@@ -78,13 +79,25 @@ namespace detail
 
 // TODO: document
 template <idx_t Upper>
-struct make_idx_seq : detail::gen_seq<idx_t, integral<idx_t, Upper>>::type {
+struct make_idx_seq {
+  using type = typename detail::gen_seq<idx_t, integral<idx_t, Upper>>::type;
 };
 
 
 // TODO: document
 template <idx_t Upper>
 using make_idx_seq_t = typename make_idx_seq<Upper>::type;
+
+#if defined(CAMP_TEST)
+namespace test
+{
+  CHECK_TSAME((make_idx_seq_t<3>), (idx_seq<0, 1, 2>));
+  CHECK_TSAME((make_idx_seq_t<2>), (idx_seq<0, 1>));
+  CHECK_TSAME((make_idx_seq_t<1>), (idx_seq<0>));
+  CHECK_TSAME((make_idx_seq_t<0>), (idx_seq<>));
+}
+#endif
+
 
 // TODO: document
 template <class... Ts>
@@ -120,8 +133,8 @@ using make_int_seq_t = typename make_int_seq<T, Upper>::type;
 // TODO: document
 template <typename Cond, typename Then, typename Else>
 struct if_ {
-    static_assert(Cond::value, "got true with a false val somehow");
-    using type = Then;
+  static_assert(Cond::value, "got true with a false val somehow");
+  using type = Then;
 };
 template <typename Then, typename Else>
 struct if_<std::false_type, Then, Else> {
@@ -155,6 +168,6 @@ struct not_ {
   using type = typename if_<T, false_t, true_t>::type;
 };
 
-} // end namespace camp
+}  // end namespace camp
 
 #endif /* CAMP_NUMBER_HPP */

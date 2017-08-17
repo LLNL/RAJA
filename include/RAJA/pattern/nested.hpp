@@ -290,8 +290,8 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
                 "policy and segment index counts do not match");
   auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
   auto ld = make_base_wrapper(data);
-  std::cout << typeid(ld).name() << std::endl
-            << typeid(data.index_tuple).name() << std::endl;
+  // std::cout << typeid(ld).name() << std::endl
+  //           << typeid(data.index_tuple).name() << std::endl;
   ld();
 
 #ifdef RAJA_ENABLE_CUDA

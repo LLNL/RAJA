@@ -64,7 +64,7 @@ namespace internal
   };
 
   template <typename... Types, camp::idx_t... Indices>
-  struct tuple_helper<camp::idx_seq<Indices...>, camp::list<Types...>>
+  struct tuple_helper<camp::int_seq<camp::idx_t, Indices...>, camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
 
     tuple_helper() = default;
@@ -93,13 +93,13 @@ using tpl_get_store = internal::tuple_storage<I, tpl_get_ret<T, I>>;
 
 template <typename... Elements>
 struct tuple
-    : public internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
+    : public internal::tuple_helper<typename camp::make_idx_seq<sizeof...(Elements)>::type,
                                     camp::list<Elements...>> {
   using TList = camp::list<Elements...>;
   using type = tuple;
 
 private:
-  using Self = tuple<Elements...>;
+  using Self = tuple;
   using Base = internal::tuple_helper<camp::make_idx_seq_t<sizeof...(Elements)>,
                                       camp::list<Elements...>>;
 
@@ -210,7 +210,7 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
 }
 
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
-CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
+constexpr auto invoke_with_order(TupleLike&& t,
                                                   Fn&& f,
                                                   camp::idx_seq<Sequence...>)
     -> decltype(f(get<Sequence>(t)...))
@@ -219,7 +219,7 @@ CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
 }
 
 template <typename Fn, typename TupleLike>
-CAMP_HOST_DEVICE constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
+constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
     invoke_with_order(t,
                       f,
                       camp::make_idx_seq_t<tuple_size<TupleLike>::value>{}))

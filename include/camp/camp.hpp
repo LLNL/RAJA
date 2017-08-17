@@ -11,6 +11,7 @@
 #include "camp/list/find_if.hpp"
 #include "camp/number.hpp"
 #include "camp/value.hpp"
+#include "camp/tuple.hpp"
 
 namespace camp
 {
@@ -234,7 +235,9 @@ namespace test
 }  // end namespace camp
 
 #if defined(CAMP_TEST)
-int main(int argc, char* argv[]) { return 0; }
+int main(int argc, char* argv[]) { 
+  camp::tuple<int, float> b;
+  return 0; }
 #endif
 
 #endif /* __CAMP_HPP */
