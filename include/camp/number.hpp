@@ -46,7 +46,7 @@ namespace detail
 {
   template <typename T, typename N>
   struct gen_seq;
-#if defined(__has_builtin) && __has_builtin(__make_integer_seq)
+#if defined(CAMP_USE_MAKE_INTEGER_SEQ)
   template <typename T, T N>
   struct gen_seq<T, integral<T, N>> {
     using type = __make_integer_seq<int_seq, T, N>;

@@ -22,6 +22,12 @@ namespace camp
 #define CAMP_HOST_DEVICE
 #endif
 
+#if defined(__has_builtin)
+#if __has_builtin(__make_integer_seq)
+#define CAMP_USE_MAKE_INTEGER_SEQ 1
+#endif
+#endif
+
 // Types
 using idx_t = std::ptrdiff_t;
 
