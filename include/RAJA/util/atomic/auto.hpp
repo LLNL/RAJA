@@ -3,19 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for OpenMP execution.
- *
- *          These methods work only on platforms that support OpenMP.
+ * \brief   RAJA header file defining automatic atomic operations.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
+#ifndef RAJA_util_atomic_auto_HPP
+#define RAJA_util_atomic_auto_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,24 +53,61 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include <omp.h>
-#include <iostream>
-#include <thread>
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
-
-#include "RAJA/policy/openmp/forallN.hpp"
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
+/*!
+ * Provides priority between atomic policies that should do the "right thing"
+ *
+ * If we are in a CUDA __device__ function, then it always uses the cuda_atomic
+ * policy.
+ *
+ * Next, if OpenMP is enabled we always use the omp_atomic, which should
+ * generally work everywhere.
+ *
+ * Finally, we fallback on the builtin_sync_atomic, which is non-standard but
+ * has broad compiler support.
+ */
+#ifdef CUDA_ARCH
+  #define RAJA_AUTO_ATOMIC RAJA::cuda_atomic{}
+#else
+#  ifdef RAJA_ENABLE_OPENMP
+  #define RAJA_AUTO_ATOMIC RAJA::omp_atomic{}
+#  else
+  #define RAJA_AUTO_ATOMIC RAJA::builtin_sync_atomic{}
+#  endif
 #endif
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
 
-#endif  // closing endif for header file include guard
+namespace RAJA
+{
+
+//! Atomic policy that automatically does "the right thing"
+struct auto_atomic{};
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+T atomicAdd(RAJA::auto_atomic, T *acc, T value){
+  return RAJA::atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+T atomicSub(RAJA::auto_atomic, T *acc, T value){
+  return RAJA::atomicSub(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+
+
+}  // namespace RAJA
+
+#endif

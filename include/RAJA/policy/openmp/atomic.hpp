@@ -3,15 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for OpenMP execution.
- *
- *          These methods work only on platforms that support OpenMP.
+ * \brief   RAJA header file defining OpenMP atomic operations.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
+#ifndef RAJA_policy_openmp_atomic_HPP
+#define RAJA_policy_openmp_atomic_HPP
 
 #include "RAJA/config.hpp"
 
@@ -59,24 +57,40 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/util/defines.hpp"
 
-#include <omp.h>
-#include <iostream>
-#include <thread>
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
+namespace RAJA
+{
 
-#include "RAJA/policy/openmp/forallN.hpp"
+struct omp_atomic{};
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
-#endif
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicAdd(omp_atomic, T *acc, T value){
+#pragma omp atomic
+  *acc += value;
 
-#endif  // closing endif for header file include guard
+  return *acc;
+}
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicSub(omp_atomic, T *acc, T value){
+#pragma omp atomic
+  *acc -= value;
+
+  return *acc;
+}
+
+
+
+
+}  // namespace RAJA
+
+#endif // RAJA_ENABLE_OPENMP
+#endif // guard

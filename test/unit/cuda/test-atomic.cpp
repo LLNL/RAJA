@@ -1,22 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for OpenMP execution.
- *
- *          These methods work only on platforms that support OpenMP.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -28,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -59,24 +40,69 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for atomic operations
+///
 
-#include <omp.h>
-#include <iostream>
-#include <thread>
+#include <RAJA/RAJA.hpp>
+#include "RAJA_gtest.hpp"
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
+template<typename T, RAJA::Index_type N>
+void testAtomicBasicAdd(){
+  RAJA::RangeSegment seg(0, N);
 
-#include "RAJA/policy/openmp/forallN.hpp"
+  // initialize an array
+  T *vec_double = nullptr;
+  cudaMallocManaged((void **)&vec_double, sizeof(T) * N);
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
-#endif
+  T *sum_ptr = nullptr;
+  cudaMallocManaged((void **)&sum_ptr, sizeof(T));
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+  cudaDeviceSynchronize();
 
-#endif  // closing endif for header file include guard
+  T expected = 0.0;
+  T *expected_ptr = &expected;
+  RAJA::forall<RAJA::seq_exec>(seg, [=](RAJA::Index_type i){
+    vec_double[i] = (T)1;
+    *expected_ptr += (T)1;
+  });
+
+  // use atomic add to reduce the array
+  sum_ptr[0] = 0.0;
+
+  RAJA::forall<RAJA::cuda_exec<256>>(seg,
+    [=] RAJA_DEVICE (RAJA::Index_type i){
+      RAJA::atomicAdd<RAJA::cuda_atomic>(sum_ptr, (T)1);
+    }
+  );
+
+  cudaDeviceSynchronize();
+
+  EXPECT_EQ(expected, sum_ptr[0]);
+
+  cudaFree(vec_double);
+  cudaFree(sum_ptr);
+}
+
+
+
+CUDA_TEST(Atomic, basic_add_cuda_int)
+{
+  testAtomicBasicAdd<int, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_add_cuda_unsigned)
+{
+  testAtomicBasicAdd<unsigned, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_add_cuda_float)
+{
+  testAtomicBasicAdd<float, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_add_cuda_double)
+{
+  testAtomicBasicAdd<double, 100000>();
+}
+

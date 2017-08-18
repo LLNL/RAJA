@@ -3,19 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for OpenMP execution.
- *
- *          These methods work only on platforms that support OpenMP.
+ * \brief   RAJA header file defining atomic operations for CUDA
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
+#ifndef RAJA_policy_cuda_atomic_HPP
+#define RAJA_policy_cuda_atomic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,24 +53,101 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include <omp.h>
-#include <iostream>
-#include <thread>
+#include <stdexcept>
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
+#if defined(RAJA_ENABLE_CUDA)
 
-#include "RAJA/policy/openmp/forallN.hpp"
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
+#if __CUDA_ARCH__ < 600
+#define RAJA_CUDA_DOUBLE_ATOMIC_CAS
 #endif
 
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
+//
+// Note: I would much rather all of these functions be device-only, but ran
+//       into issues with their call sites... so instead we have this dumb
+//       #ifdef __CUDA_ARCH__ stuff for essentially device-only code. (AJK)
+//
 
-#endif  // closing endif for header file include guard
+
+
+namespace RAJA
+{
+struct cuda_atomic{};
+
+
+
+/*!
+ * Catch-all policy passes off to CUDA's builtin atomics.
+ *
+ * This catch-all will only work for types supported by the compiler.
+ * Specialization below can adapt for some unsupported types.
+ */
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+__host__ __device__
+T atomicAdd(cuda_atomic, T *acc, T value){
+#ifdef __CUDA_ARCH__
+
+  return ::atomicAdd(acc, value);
+#else
+  throw std::logic_error("Cannot call cuda_atomic operations on host");
+#endif
+}
+
+
+
+// Before Pascal's, no native support for double-precision atomic add
+// So we use the CAS approach
+#ifdef RAJA_CUDA_DOUBLE_ATOMIC_CAS
+
+template<>
+RAJA_SUPPRESS_HD_WARN
+RAJA_INLINE
+__host__ __device__
+double atomicAdd<double>(cuda_atomic, double *acc, double value){
+#ifdef __CUDA_ARCH__
+  unsigned long long oldval, newval, readback;
+  oldval = __double_as_longlong(*acc);
+  newval = __double_as_longlong(__longlong_as_double(oldval) + value);
+  while ((readback = ::atomicCAS((unsigned long long *)acc, oldval, newval))
+         != oldval) {
+    oldval = readback;
+    newval = __double_as_longlong(__longlong_as_double(oldval) + value);
+  }
+  return __longlong_as_double(oldval);
+#else
+  throw std::logic_error("Cannot call cuda_atomic operations on host");
+#endif
+}
+
+#endif
+
+
+
+
+
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+__host__ __device__
+constexpr
+T atomicSub(cuda_atomic, T *acc, T value){
+  return RAJA::atomicAdd(cuda_atomic{}, acc, -value);
+}
+
+
+
+
+
+
+
+}  // namespace RAJA
+
+#endif // RAJA_ENABLE_CUDA
+#endif // guard

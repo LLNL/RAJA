@@ -220,19 +220,19 @@ const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
 template <typename T>
 __device__ inline T _atomicMin(T *address, T value)
 {
-  return atomicMin(address, value);
+  return ::atomicMin(address, value);
 }
 ///
 template <typename T>
 __device__ inline T _atomicMax(T *address, T value)
 {
-  return atomicMax(address, value);
+  return ::atomicMax(address, value);
 }
 ///
 template <typename T>
 __device__ inline T _atomicAdd(T *address, T value)
 {
-  return atomicAdd(address, value);
+  return ::atomicAdd(address, value);
 }
 
 //

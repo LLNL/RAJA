@@ -3,19 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for OpenMP execution.
- *
- *          These methods work only on platforms that support OpenMP.
+ * \brief   RAJA header file defining host compiler builtin atomic operations
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_openmp_HPP
-#define RAJA_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
+#ifndef RAJA_util_atomic_builtin_HPP
+#define RAJA_util_atomic_builtin_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,24 +53,31 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include <omp.h>
-#include <iostream>
-#include <thread>
+namespace RAJA
+{
+struct builtin_sync_atomic{};
 
-#include "RAJA/policy/openmp/atomic.hpp"
-#include "RAJA/policy/openmp/forall.hpp"
-#include "RAJA/policy/openmp/policy.hpp"
-#include "RAJA/policy/openmp/reduce.hpp"
-#include "RAJA/policy/openmp/scan.hpp"
 
-#include "RAJA/policy/openmp/forallN.hpp"
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicAdd(builtin_sync_atomic, T *acc, T value){
+  return __sync_fetch_and_add(&acc, value);
+}
 
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-#include "RAJA/policy/openmp/target_forall.hpp"
-#include "RAJA/policy/openmp/target_reduce.hpp"
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicSub(builtin_sync_atomic, T *acc, T value){
+  return __sync_fetch_and_sub(&acc, value);
+}
+
+
+
+
+}  // namespace RAJA
+
 #endif
-
-#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP)
-
-#endif  // closing endif for header file include guard
