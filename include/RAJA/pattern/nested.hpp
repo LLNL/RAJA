@@ -170,7 +170,7 @@ struct LoopData {
       typename SegmentTuple::TList>;
   index_tuple_t index_tuple;
   LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
-      : pt{p}, st{s}, f{fn}
+      : pt(p), st(s), f(fn)
   {
   }
   template <camp::idx_t Idx, typename IndexT>
