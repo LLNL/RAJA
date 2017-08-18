@@ -262,7 +262,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
 #else
-#define RAJA_SIMD  _Pragma("clang loop vectorize(enable)")
+#define RAJA_SIMD  _Pragma("clang loop vectorize(assume_safety)")
 #endif
 
 #else
