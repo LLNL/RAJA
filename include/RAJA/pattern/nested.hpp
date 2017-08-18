@@ -174,7 +174,7 @@ struct LoopData {
   {
   }
   template <camp::idx_t Idx, typename IndexT>
-  void assign_index(IndexT const &i)
+  RAJA_HOST_DEVICE void assign_index(IndexT const &i)
   {
     camp::get<Idx>(index_tuple) =
         camp::tuple_element_t<Idx, decltype(index_tuple)>{i};
@@ -194,14 +194,14 @@ struct Executor {
     ForWrapper(BaseWrapper const &w) : bw{w} {}
     BaseWrapper bw;
     template <typename InIndexType>
-    RAJA_HOST_DEVICE void operator()(InIndexType i)
+    void operator()(InIndexType i)
     {
       bw.data.template assign_index<ForType::index_val>(i);
       bw();
     }
   };
   template <typename WrappedBody>
-  RAJA_HOST_DEVICE void operator()(ForType const &fp, WrappedBody const &wrap)
+  void operator()(ForType const &fp, WrappedBody const &wrap)
   {
 
     impl::forall(fp.pol,
@@ -209,6 +209,35 @@ struct Executor {
                  ForWrapper<WrappedBody>{wrap});
   }
 };
+
+#if defined(RAJA_ENABLE_CUDA)
+template <template<camp::idx_t, typename...> class ForTypeIn, std::size_t block_size, camp::idx_t Index, typename ...Rest>
+struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
+  using ForType = ForTypeIn<Index, cuda_exec<block_size>, Rest...>;
+  static_assert(std::is_base_of<internal::ForBase, ForType>::value,
+                "Only For-based policies should get here");
+  template <typename BaseWrapper>
+  struct ForWrapper {
+    // Explicitly unwrap the data from the wrapper
+    ForWrapper(BaseWrapper const &w) : data(w.data) {}
+    typename BaseWrapper::data_type data;
+    template <typename InIndexType>
+    RAJA_DEVICE void operator()(InIndexType i)
+    {
+      data.template assign_index<ForType::index_val>(i);
+      camp::invoke(data.index_tuple, data.f);
+    }
+  };
+  template <typename WrappedBody>
+  void operator()(ForType const &fp, WrappedBody const &wrap)
+  {
+
+    impl::forall(fp.pol,
+                 camp::get<ForType::index_val>(wrap.data.st),
+                 ForWrapper<WrappedBody>{wrap});
+  }
+};
+#endif
 
 template <typename ExecPolicy, typename... Fors>
 struct Collapse : public internal::ForList, public internal::CollapseBase {
@@ -247,6 +276,7 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 template <int idx, int n_policies, typename Data>
 struct Wrapper {
   using Next = Wrapper<idx + 1, n_policies, Data>;
+  using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const
@@ -260,6 +290,7 @@ struct Wrapper {
 // Innermost, execute body
 template <int n_policies, typename Data>
 struct Wrapper<n_policies, n_policies, Data> {
+  using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const { camp::invoke(data.index_tuple, data.f); }

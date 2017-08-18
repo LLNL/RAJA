@@ -1,6 +1,6 @@
+#include "RAJA/pattern/nested.hpp"
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
-#include "RAJA/pattern/nested.hpp"
 
 #include <cstdio>
 
@@ -31,6 +31,21 @@ TEST(Nested, collapse)
                          printf("%ld, %ld\n", i, j);
                        });
 }
+#if defined(RAJA_ENABLE_OPENMP)
+TEST(Nested, BasicOMP)
+{
+  using namespace RAJA::nested;
+  using Index_type = RAJA::Index_type;
+  using pol = Policy<For<1, RAJA::seq_exec>,
+                     TypedFor<0, RAJA::omp_parallel_for_exec, TypedIndex>>;
+  RAJA::nested::forall(pol{},
+                       camp::make_tuple(RAJA::RangeSegment(0, 5),
+                                        RAJA::RangeSegment(0, 5)),
+                       [=](TypedIndex i, Index_type j) {
+                         printf("%ld, %ld\n", *i, j);
+                       });
+}
+#endif  // RAJA_ENABLE_CUDA
 
 #if defined(RAJA_ENABLE_CUDA)
 #include <cuda_runtime.h>
@@ -38,13 +53,13 @@ CUDA_TEST(Nested, BasicCuda)
 {
   using namespace RAJA::nested;
   using Index_type = RAJA::Index_type;
-  using pol =
-      Policy<For<1, RAJA::seq_exec>, TypedFor<0, RAJA::cuda_exec<128>, TypedIndex>>;
+  using pol = Policy<For<1, RAJA::seq_exec>,
+                     TypedFor<0, RAJA::cuda_exec<128>, TypedIndex>>;
   RAJA::nested::forall(pol{},
                        camp::make_tuple(RAJA::RangeSegment(0, 5),
                                         RAJA::RangeSegment(0, 5)),
-                       [=] __device__ (TypedIndex i, Index_type j) {
+                       [=] __device__(TypedIndex i, Index_type j) {
                          printf("%ld, %ld\n", *i, j);
                        });
 }
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA
