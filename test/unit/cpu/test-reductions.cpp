@@ -73,8 +73,8 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
   ASSERT_EQ((NumericType)reduce_sum.get(), (NumericType)(0.0));
   ASSERT_EQ((NumericType)reduce_min.get(), (NumericType)(0.0));
   ASSERT_EQ((NumericType)reduce_max.get(), (NumericType)(0.0));
-  ASSERT_EQ((NumericType)reduce_minloc.get(), (NumericType)(0.0));
   ASSERT_EQ((RAJA::Index_type)reduce_minloc.getLoc(), (RAJA::Index_type)1);
+  ASSERT_EQ((NumericType)reduce_minloc.get(), (NumericType)(0.0));
   ASSERT_EQ((NumericType)reduce_maxloc.get(), (NumericType)(0.0));
   ASSERT_EQ((RAJA::Index_type)reduce_maxloc.getLoc(), (RAJA::Index_type)1);
 }
@@ -219,8 +219,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMinLoc)
                              minloc_reducer.minloc(this->array[i], i);
                            });
 
-  double raja_min = (double)minloc_reducer.get();
   RAJA::Index_type raja_loc = minloc_reducer.getLoc();
+  double raja_min = (double)minloc_reducer.get();
 
   ASSERT_FLOAT_EQ(this->min, raja_min);
   ASSERT_EQ(this->minloc, raja_loc);
@@ -239,8 +239,8 @@ TYPED_TEST_P(ReductionCorrectnessTest, ReduceMaxLoc)
                              maxloc_reducer.maxloc(this->array[i], i);
                            });
 
-  double raja_max = (double)maxloc_reducer.get();
   RAJA::Index_type raja_loc = maxloc_reducer.getLoc();
+  double raja_max = (double)maxloc_reducer.get();
 
   ASSERT_FLOAT_EQ(this->max, raja_max);
   ASSERT_EQ(this->maxloc, raja_loc);
