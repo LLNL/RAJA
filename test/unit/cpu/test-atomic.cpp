@@ -228,3 +228,67 @@ TEST(Atomic, AtomicRef_inc_seq)
   EXPECT_EQ(expected, sum3);
 
 }
+
+
+
+
+template<typename T, RAJA::Index_type N>
+void testAtomicViewBasicOpenMP(){
+  RAJA::RangeSegment seg(0, N);
+  RAJA::RangeSegment seg_half(0, N/2);
+
+  // initialize an array
+  T *vec_double = new T[N];
+  T *sum_ptr = new T[N/2];
+
+
+  RAJA::forall<RAJA::seq_exec>(seg, [=](RAJA::Index_type i){
+    vec_double[i] = (T)1;
+  });
+
+  RAJA::forall<RAJA::seq_exec>(seg_half, [=](RAJA::Index_type i){
+    sum_ptr[i] = (T)0;
+  });
+
+  // use atomic add to reduce the array
+  RAJA::View<T, RAJA::Layout<1>> vec_view(vec_double, N);
+
+  RAJA::View<T, RAJA::Layout<1>> sum_view(sum_ptr, N);
+  auto sum_atomic_view = RAJA::make_atomic_view(sum_view);
+
+  RAJA::forall<RAJA::omp_for_exec>(seg,
+    [=] (RAJA::Index_type i){
+      sum_atomic_view(i/2) += vec_view(i);
+    }
+  );
+
+  for(RAJA::Index_type i = 0;i < N/2;++ i){
+    EXPECT_EQ((T)2, sum_ptr[i]);
+  }
+
+
+  delete[] vec_double;
+  delete[] sum_ptr;
+}
+
+
+
+CUDA_TEST(Atomic, basic_OpenMP_AtomicView_int)
+{
+  testAtomicViewBasicOpenMP<int, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_OpenMP_AtomicView_unsigned)
+{
+  testAtomicViewBasicOpenMP<unsigned, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_OpenMP_AtomicView_float)
+{
+  testAtomicViewBasicOpenMP<float, 100000>();
+}
+
+CUDA_TEST(Atomic, basic_OpenMP_AtomicView_double)
+{
+  testAtomicViewBasicOpenMP<int, 100000>();
+}

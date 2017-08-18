@@ -133,7 +133,28 @@ class AtomicRef {
     RAJA_INLINE
     RAJA_HOST_DEVICE
     constexpr
+    explicit
     AtomicRef(T *value_ptr) : m_value_ptr(value_ptr){};
+
+
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    AtomicRef(AtomicRef<T, Policy> const &c) : m_value_ptr(c.m_value_ptr){};
+
+
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    AtomicRef(AtomicRef<T, Policy> &c) : m_value_ptr(c.m_value_ptr){};
+
+
+    RAJA_INLINE
+    RAJA_HOST_DEVICE
+    constexpr
+    T *getPointer() const {
+      return m_value_ptr;
+    }
 
     RAJA_INLINE
     RAJA_HOST_DEVICE

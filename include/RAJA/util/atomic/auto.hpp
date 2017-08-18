@@ -69,7 +69,7 @@
  * Finally, we fallback on the builtin_sync_atomic, which is non-standard but
  * has broad compiler support.
  */
-#ifdef CUDA_ARCH
+#ifdef __CUDA_ARCH__
   #define RAJA_AUTO_ATOMIC RAJA::cuda_atomic{}
 #else
 #  ifdef RAJA_ENABLE_OPENMP

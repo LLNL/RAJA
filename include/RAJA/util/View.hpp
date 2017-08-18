@@ -55,6 +55,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/Layout.hpp"
+#include "RAJA/util/atomic.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "chai/ManagedArray.hpp"
@@ -63,12 +64,16 @@
 namespace RAJA
 {
 
-template <typename DataType,
-          typename LayoutT,
-          typename DataPointer = DataType *>
+template <typename DATA_TYPE,
+          typename LAYOUT_TYPE,
+          typename DATA_POINTER = DATA_TYPE *>
 struct View {
-  LayoutT const layout;
+  using DataType = DATA_TYPE;
+  using DataPointer = DATA_POINTER;
+  using LayoutType = LAYOUT_TYPE;
+  LayoutType const layout;
   DataPointer data;
+
 
   template <typename... Args>
   RAJA_INLINE constexpr View(DataPointer data_ptr, Args... dim_sizes)
@@ -76,7 +81,7 @@ struct View {
   {
   }
 
-  RAJA_INLINE constexpr View(DataPointer data_ptr, LayoutT &&layout)
+  RAJA_INLINE constexpr View(DataPointer data_ptr, LayoutType &&layout)
       : layout(layout), data(data_ptr)
   {
   }
@@ -136,6 +141,45 @@ using TypedManagedArrayView = TypedViewBase<DataType,
                                             IndexTypes...>;
 
 #endif
+
+
+template <typename ViewType,
+          typename AtomicPolicy = RAJA::auto_atomic>
+struct AtomicViewWrapper {
+  using Base = ViewType;
+  using DataPointer = typename Base::DataPointer;
+  using DataType = typename Base::DataType;
+  using AtomicType = RAJA::AtomicRef<DataType, AtomicPolicy>;
+
+  Base base_;
+
+  RAJA_INLINE
+  constexpr
+  explicit
+  AtomicViewWrapper(ViewType view)
+      : base_(view)
+  {
+  }
+
+  RAJA_INLINE void set_data(DataPointer data_ptr) { base_.set_data(data_ptr); }
+
+  template<typename ... ARGS>
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  AtomicType operator()(ARGS &&... args) const
+  {
+    return AtomicType(&base_.operator()(args...));
+  }
+
+};
+
+
+template<typename ViewType>
+RAJA_INLINE
+AtomicViewWrapper<ViewType>
+make_atomic_view(ViewType view){
+  return RAJA::AtomicViewWrapper<ViewType, RAJA::auto_atomic>(view);
+}
 
 
 }  // namespace RAJA

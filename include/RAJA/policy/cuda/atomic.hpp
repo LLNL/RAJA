@@ -91,7 +91,6 @@ RAJA_INLINE
 __host__ __device__
 T atomicAdd(cuda_atomic, T *acc, T value){
 #ifdef __CUDA_ARCH__
-
   return ::atomicAdd(acc, value);
 #else
   throw std::logic_error("Cannot call cuda_atomic operations on host");
@@ -104,8 +103,8 @@ T atomicAdd(cuda_atomic, T *acc, T value){
 // So we use the CAS approach
 #ifdef RAJA_CUDA_DOUBLE_ATOMIC_CAS
 
+//RAJA_SUPPRESS_HD_WARN
 template<>
-RAJA_SUPPRESS_HD_WARN
 RAJA_INLINE
 __host__ __device__
 double atomicAdd<double>(cuda_atomic, double *acc, double value){
