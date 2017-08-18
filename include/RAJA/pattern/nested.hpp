@@ -194,14 +194,14 @@ struct Executor {
     ForWrapper(BaseWrapper const &w) : bw{w} {}
     BaseWrapper bw;
     template <typename InIndexType>
-    void operator()(InIndexType i)
+    RAJA_HOST_DEVICE void operator()(InIndexType i)
     {
       bw.data.template assign_index<ForType::index_val>(i);
       bw();
     }
   };
   template <typename WrappedBody>
-  void operator()(ForType const &fp, WrappedBody const &wrap)
+  RAJA_HOST_DEVICE void operator()(ForType const &fp, WrappedBody const &wrap)
   {
 
     impl::forall(fp.pol,

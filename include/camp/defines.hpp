@@ -32,6 +32,7 @@ namespace camp
 using idx_t = std::ptrdiff_t;
 
 // Helper macros
+// TODO: -> CAMP_MAKE_LAMBDA_CONSUMER
 #define CAMP_MAKE_L(X)                                             \
   template <typename Lambda, typename... Rest>                     \
   struct X##_l {                                                   \

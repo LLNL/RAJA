@@ -44,7 +44,7 @@ namespace internal
   template <camp::idx_t index, typename Type>
   struct tuple_storage {
     tuple_storage() = default;
-    constexpr tuple_storage(Type val) : val{val} {}
+    CAMP_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
 
     constexpr const Type& get_inner() const noexcept { return val; }
 
@@ -210,7 +210,7 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
 }
 
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
-constexpr auto invoke_with_order(TupleLike&& t,
+CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
                                                   Fn&& f,
                                                   camp::idx_seq<Sequence...>)
     -> decltype(f(get<Sequence>(t)...))
@@ -219,7 +219,7 @@ constexpr auto invoke_with_order(TupleLike&& t,
 }
 
 template <typename Fn, typename TupleLike>
-constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
+CAMP_HOST_DEVICE constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
     invoke_with_order(t,
                       f,
                       camp::make_idx_seq_t<tuple_size<TupleLike>::value>{}))
