@@ -89,10 +89,21 @@ namespace impl
 {
 
 
-///
-/// TBB parallel for policy implementation
-///
-
+/**
+ * @brief TBB dynamic for implementation
+ *
+ * @param p tbb tag
+ * @param iter any iterable
+ * @param loop_body loop body
+ *
+ * @return None
+ *
+ *
+ * This forall implements a TBB parallel_for loop over the specified iterable
+ * using the dynamic loop scheduler and the grain size specified in the policy
+ * argument.  This should be used for composable parallelism and increased work
+ * stealing at the cost of initial start-up overhead for a top-level loop.
+ */
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const tbb_for_dynamic& p,
                         Iterable&& iter,
@@ -127,6 +138,22 @@ forall_Icount(const tbb_for_dynamic& p,
 /// TBB parallel for static policy implementation
 ///
 
+/** 
+ * @brief TBB static for implementation
+ * 
+ * @param tbb_for_static tbb tag
+ * @param iter any iterable
+ * @param loop_body loop body
+ * 
+ * @return None
+ *
+ * This forall implements a TBB parallel_for loop over the specified iterable
+ * using the static loop scheduler and the grain size specified as a
+ * compile-time constant in the policy argument.  This should be used for
+ * OpenMP-like fast-launch well-balanced loops, or loops where the split between
+ * threads must be maintained across multiple loops for correctness. NOTE: if
+ * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
+ */
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
                         Iterable&& iter,
