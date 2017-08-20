@@ -2,10 +2,10 @@
 #define __CAMP_list_at_hpp
 
 #include "camp/defines.hpp"
-#include "camp/value.hpp"
-#include "camp/number.hpp"
 #include "camp/helpers.hpp"
 #include "camp/list/list.hpp"
+#include "camp/number.hpp"
+#include "camp/value.hpp"
 
 namespace camp
 {
@@ -37,9 +37,6 @@ namespace detail
 
   template <typename T, idx_t Idx>
   struct _at;
-  template <typename T, idx_t Idx>
-  struct _at : _lookup<T, typename idx_seq_from<T>::type, Idx>::type {
-  };
   template <template <class...> class T, typename X, typename... Rest>
   struct _at<T<X, Rest...>, 0> {
     using type = X;
@@ -51,6 +48,12 @@ namespace detail
   struct _at<T<X, Y, Rest...>, 1> {
     using type = Y;
   };
+  template <template <class...> class T, idx_t Idx, typename... Rest>
+  struct _at<T<Rest...>, Idx> {
+    using type = typename _lookup<T<Rest...>,
+                                  make_idx_seq_t<sizeof...(Rest)>,
+                                  Idx>::type;
+  };
 }
 
 // TODO: document
@@ -61,8 +64,6 @@ struct at<T, num<Val>> {
   using type = typename detail::_at<T, Val>::type;
 };
 
-template <typename T, idx_t Idx>
-using at_t = typename at<T, num<Idx>>::type;
 
 template <typename T>
 using first = typename at<T, num<0>>::type;
@@ -70,6 +71,13 @@ using first = typename at<T, num<0>>::type;
 template <typename T>
 using second = typename at<T, num<1>>::type;
 
+// TODO: document
+template <typename T, idx_t Idx>
+using at_v = typename at<T, num<Idx>>::type;
+
+// TODO: document
+template <typename T, typename U>
+using at_t = typename at<T, U>::type;
 }
 
 

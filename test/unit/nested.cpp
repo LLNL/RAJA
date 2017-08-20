@@ -4,6 +4,10 @@
 
 #include <cstdio>
 
+#if defined(RAJA_ENABLE_CUDA)
+#include <cuda_runtime.h>
+#endif
+
 using RAJA::Index_type;
 using RAJA::View;
 using RAJA::Layout;
@@ -13,96 +17,84 @@ static constexpr Index_type x_len = 5;
 static constexpr Index_type y_len = 5;
 
 RAJA_INDEX_VALUE(TypedIndex, "TypedIndex");
-TEST(Nested, Basic)
-{
-  using namespace RAJA::nested;
-  using pol =
-      Policy<For<1, RAJA::seq_exec>, TypedFor<0, RAJA::seq_exec, TypedIndex>>;
-  Index_type* data = new Index_type[x_len * y_len];
-  view_2d v(data, x_len, y_len);
-  RAJA::nested::forall(pol{},
-                       camp::make_tuple(RAJA::RangeSegment(0, 5),
-                                        RAJA::RangeSegment(0, 5)),
-                       [=](TypedIndex i, Index_type j) {
-                         v(*i, j) = (*i) * x_len + j;
-                       });
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(v(i, j), i * x_len + j);
-    }
-  }
-  delete[] data;
-}
 
-TEST(Nested, collapse)
+template <typename NestedPolicy>
+class Nested : public ::testing::Test
 {
-  using namespace RAJA::nested;
-  using Index_type = RAJA::Index_type;
-  using pol = Policy<Collapse<RAJA::seq_exec, For<0>, For<1>>>;
-  Index_type* data = new Index_type[x_len * y_len];
-  view_2d v(data, x_len, y_len);
-  RAJA::nested::forall(pol{},
-                       camp::make_tuple(RAJA::RangeSegment(0, 5),
-                                        RAJA::RangeSegment(0, 5)),
-                       [=](Index_type i, Index_type j) {
-                         v(i, j) = i * x_len + j;
-                       });
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(v(i, j), i * x_len + j);
-    }
-  }
-  delete[] data;
-}
-#if defined(RAJA_ENABLE_OPENMP)
-TEST(Nested, BasicOMP)
-{
-  using namespace RAJA::nested;
-  using Index_type = RAJA::Index_type;
-  using pol = Policy<For<1, RAJA::seq_exec>,
-                     TypedFor<0, RAJA::omp_parallel_for_exec, TypedIndex>>;
-  Index_type* data = new Index_type[x_len * y_len];
-  view_2d v(data, x_len, y_len);
-  RAJA::nested::forall(pol{},
-                       camp::make_tuple(RAJA::RangeSegment(0, 5),
-                                        RAJA::RangeSegment(0, 5)),
-                       [=](TypedIndex i, Index_type j) {
-                         v(*i, j) = (*i) * x_len + j;
-                       });
-  for (Index_type i = 0; i < x_len; ++i) {
-    for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(v(i, j), i * x_len + j);
-    }
-  }
-  delete[] data;
-}
-#endif  // RAJA_ENABLE_CUDA
-
-#if defined(RAJA_ENABLE_CUDA)
-#include <cuda_runtime.h>
-CUDA_TEST(Nested, BasicCuda)
-{
-  using namespace RAJA::nested;
-  using Index_type = RAJA::Index_type;
-  using pol = Policy<For<1, RAJA::seq_exec>,
-                     TypedFor<0, RAJA::cuda_exec<128>, TypedIndex>>;
-
+protected:
   Index_type* data;
-  cudaMallocManaged(&data,
-                    sizeof(Index_type) * x_len * y_len,
-                    cudaMemAttachGlobal);
-  view_2d v(data, x_len, y_len);
-  RAJA::nested::forall(pol{},
-                       camp::make_tuple(RAJA::RangeSegment(0, 5),
-                                        RAJA::RangeSegment(0, 5)),
-                       [=] __device__(TypedIndex i, Index_type j) {
-                         v(*i, j) = (*i) * x_len + j;
-                       });
+  view_2d view{nullptr, x_len, y_len};
+
+  virtual void SetUp()
+  {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaMallocManaged(&data,
+                      sizeof(Index_type) * x_len * y_len,
+                      cudaMemAttachGlobal);
+#else
+    data = new Index_type[x_len * y_len];
+#endif
+    view.set_data(data);
+  }
+
+  virtual void TearDown()
+  {
+#if defined(RAJA_ENABLE_CUDA)
+    cudaFree(data);
+#else
+    delete[] data;
+#endif
+  }
+};
+TYPED_TEST_CASE_P(Nested);
+
+constexpr Index_type get_val(Index_type v) { return v; }
+template <typename T>
+constexpr Index_type get_val(T v)
+{
+  return *v;
+}
+TYPED_TEST_P(Nested, Basic)
+{
+  using camp::at_v;
+  using Pol = at_v<TypeParam, 0>;
+  using IndexTypes = at_v<TypeParam, 1>;
+  using Idx0 = at_v<IndexTypes, 0>;
+  using Idx1 = at_v<IndexTypes, 1>;
+  auto ranges = camp::make_tuple(RAJA::RangeSegment(0, x_len),
+                                 RAJA::RangeSegment(0, y_len));
+  using namespace RAJA::nested;
+  RAJA::nested::forall(Pol{}, ranges, [=](Idx0 i, Idx1 j) {
+    this->view(get_val(i), j) = get_val(i) * x_len + j;
+  });
   for (Index_type i = 0; i < x_len; ++i) {
     for (Index_type j = 0; j < y_len; ++j) {
-      ASSERT_EQ(v(i, j), i * x_len + j);
+      ASSERT_EQ(this->view(i, j), i * x_len + j);
     }
   }
-  cudaFree(data);
 }
-#endif  // RAJA_ENABLE_CUDA
+
+REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
+
+using namespace RAJA::nested;
+using camp::list;
+using s = RAJA::seq_exec;
+using TestTypes = ::testing::Types<
+    list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
+         list<TypedIndex, Index_type>>,
+    list<Policy<Collapse<s, For<0>, For<1>>>, list<Index_type, Index_type>>>;
+
+INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Nested, TestTypes);
+
+#if defined(RAJA_ENABLE_OPENMP)
+using OMPTypes =
+    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
+                          list<TypedIndex, Index_type>>>;
+INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
+#endif
+#if defined(RAJA_ENABLE_CUDA)
+using CUDATypes =
+    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
+                          list<TypedIndex, Index_type>>>;
+INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
+#endif

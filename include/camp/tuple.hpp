@@ -87,7 +87,7 @@ namespace internal
 }
 
 template <typename T, camp::idx_t I>
-using tpl_get_ret = camp::at_t<typename T::TList, I>;
+using tpl_get_ret = camp::at_v<typename T::TList, I>;
 template <typename T, camp::idx_t I>
 using tpl_get_store = internal::tuple_storage<I, tpl_get_ret<T, I>>;
 
@@ -142,7 +142,7 @@ template <camp::idx_t i, typename T>
 struct tuple_element;
 template <camp::idx_t i, typename... Types>
 struct tuple_element<i, tuple<Types...>> {
-  using type = camp::at_t<typename tuple<Types...>::TList, i>;
+  using type = camp::at_v<typename tuple<Types...>::TList, i>;
 };
 template <camp::idx_t i, typename T>
 using tuple_element_t = typename tuple_element<i, T>::type;

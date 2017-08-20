@@ -46,7 +46,7 @@ namespace detail
 {
   template <typename T, typename N>
   struct gen_seq;
-#if defined(CAMP_USE_MAKE_INTEGER_SEQ)
+#if defined(CAMP_USE_MAKE_INTEGER_SEQ) && !__NVCC__
   template <typename T, T N>
   struct gen_seq<T, integral<T, N>> {
     using type = __make_integer_seq<int_seq, T, N>;
@@ -114,7 +114,7 @@ struct idx_seq_from<T<Args...>> : make_idx_seq<sizeof...(Args)> {
 
 // TODO: document
 template <typename T, T... Args>
-struct idx_seq_from<int_seq<T, Args...>> : make_idx_seq<sizeof...(Args)> {
+struct idx_seq_from<int_seq<T, Args...>> : make_idx_seq<sizeof...(Args)>::type {
 };
 
 // TODO: document
