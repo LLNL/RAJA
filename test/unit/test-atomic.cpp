@@ -70,7 +70,7 @@ void testAtomicFunctionBasic(){
   dest[1] = (T)N;
 
   RAJA::forall<ExecPolicy>(seg,
-    [=] RAJA_HOST_DEVICE (RAJA::Index_type i){
+    [=] RAJA_HOST_DEVICE (RAJA::Index_type){
       RAJA::atomicAdd<AtomicPolicy>(dest+0, (T)1);
       RAJA::atomicSub<AtomicPolicy>(dest+1, (T)1);
     }
@@ -130,7 +130,7 @@ void testAtomicRefBasic(){
   dest[3] = N;
   RAJA::AtomicRef<T, AtomicPolicy> sum3(dest+3);
   RAJA::forall<ExecPolicy>(seg,
-    [=] RAJA_HOST_DEVICE (RAJA::Index_type i){
+    [=] RAJA_HOST_DEVICE (RAJA::Index_type){
       sum0 ++;
 
       ++ sum1;
