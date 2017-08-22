@@ -45,6 +45,3 @@ raja_add_executable(
   NAME example-raja-pi
   SOURCES pi.cpp)
 
-raja_add_executable(
-  NAME example-nested-ctor
-  SOURCES nested_ctor.cpp)
