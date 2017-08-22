@@ -23,8 +23,13 @@ namespace concepts
     struct is_same_s<T, T> : true_type {
     };
 
+#if defined(CAMP_COMPILER_MSVC)
+    template <typename...Ts>
+    using is_same = typename is_same_s<Ts...>::type;
+#else
     template <typename T, typename U>
     using is_same = typename is_same_s<T, U>::type;
+#endif
 
 
     /// negation metafunction of a value type
