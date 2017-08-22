@@ -10,8 +10,8 @@
 #include "camp/list/at.hpp"
 #include "camp/list/find_if.hpp"
 #include "camp/number.hpp"
-#include "camp/value.hpp"
 #include "camp/tuple.hpp"
+#include "camp/value.hpp"
 
 namespace camp
 {
@@ -175,12 +175,26 @@ namespace test
 }
 #endif
 
+namespace detail
+{
+  template <typename T>
+  struct _as_list;
+  template <template <typename...> class T, typename... Args>
+  struct _as_list<T<Args...>> {
+    using type = list<Args...>;
+  };
+  template <typename T, T... Args>
+  struct _as_list<int_seq<T, Args...>> {
+    using type = list<integral_constant<T, Args>...>;
+  };
+} /* detail */
+
 template <typename T>
-struct as_list;
-template <template <typename...> class T, typename... Args>
-struct as_list<T<Args...>> {
-  using type = list<Args...>;
+struct as_list_s : detail::_as_list<T>::type {
 };
+
+template <typename T>
+using as_list = typename as_list_s<T>::type;
 
 //// size
 template <typename... Args>
@@ -216,9 +230,11 @@ namespace test
 }  // end namespace camp
 
 #if defined(CAMP_TEST)
-int main(int argc, char* argv[]) { 
+int main(int argc, char* argv[])
+{
   camp::tuple<int, float> b;
-  return 0; }
+  return 0;
+}
 #endif
 
 #endif /* __CAMP_HPP */

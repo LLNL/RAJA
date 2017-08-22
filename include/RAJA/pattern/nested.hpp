@@ -58,7 +58,8 @@ using get_for_policies = typename camp::flatten<typename camp::transform<
     typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
 
 template <typename T>
-using is_nil_type = camp::bind_front<camp::concepts::metalib::is_same, camp::nil>;
+using is_nil_type =
+    camp::bind_front<camp::concepts::metalib::is_same, camp::nil>;
 
 template <typename Index, typename ForPol>
 struct index_matches {
@@ -87,7 +88,7 @@ using get_for_index_types = typename camp::accumulate_l<
                               IndexTypes,
                               get_for_policies<Policies>>::type,
     camp::list<>,
-    typename camp::as_list<camp::idx_seq_from_t<IndexTypes>>::type>::type;
+    camp::as_list<camp::idx_seq_from_t<IndexTypes>>>::type;
 
 template <typename Iterator>
 struct iterable_value_type_getter {
