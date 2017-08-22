@@ -17,12 +17,9 @@ namespace camp
 template <typename T, T... vs>
 using int_seq = list<integral_constant<T,vs>...>;
 
-template <idx_t... vs>
-struct idx_seq_s : list<num<vs>...>{};
-
 /// Index list, use for indexing into parameter packs and lists
 template <idx_t... vs>
-using idx_seq = list<num<vs>...>;
+using idx_seq = int_seq<idx_t, vs...>;
 
 namespace detail
 {
