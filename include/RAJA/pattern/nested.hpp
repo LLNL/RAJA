@@ -60,23 +60,6 @@ using get_for_policies = typename camp::flatten<typename camp::transform<
 template <typename T>
 using is_nil_type = camp::bind_front<camp::concepts::metalib::is_same, camp::nil>;
 
-// template <typename ForPolicy, typename Segments>
-// using get_for_index_pair =  // If For is TypedFor, use specified type,
-// otherwise
-//                             // segment value type
-//     camp::list<typename ForPolicy::index, >::type > ;
-
-// template <typename Policies, typename Segments>
-// using get_for_pairs_from_policies_and_segments =
-//     metal::transform<metal::bind<metal::lambda<get_for_index_pair>,
-//                                  metal::_1,
-//                                  metal::always<Segments>>,
-//                      get_for_policies<Policies>>;
-
-// template <typename PairL, typename PairR>
-// using order_by_index =
-//     metal::number<(metal::first<PairL>::value < metal::first<PairR>::value)>;
-
 template <typename Index, typename ForPol>
 struct index_matches {
   using type = camp::num<Index::value == ForPol::index::value>;
@@ -105,11 +88,6 @@ using get_for_index_types = typename camp::accumulate_l<
                               get_for_policies<Policies>>::type,
     camp::list<>,
     typename camp::as_list<camp::idx_seq_from_t<IndexTypes>>::type>::type;
-
-// camp::transform<
-//     camp::second,
-//     metal::sort<get_for_pairs_from_policies_and_segments<Policies, Segments>,
-//                 metal::lambda<order_by_index>>>;
 
 template <typename Iterator>
 struct iterable_value_type_getter {
