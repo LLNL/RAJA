@@ -65,12 +65,6 @@
 #define RAJA_CUDA_DOUBLE_ATOMIC_CAS
 #endif
 
-//
-// Note: I would much rather all of these functions be device-only, but ran
-//       into issues with their call sites... so instead we have this dumb
-//       #ifdef __CUDA_ARCH__ stuff for essentially device-only code. (AJK)
-//
-
 
 
 namespace RAJA
@@ -85,16 +79,11 @@ struct cuda_atomic{};
  * This catch-all will only work for types supported by the compiler.
  * Specialization below can adapt for some unsupported types.
  */
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
-__host__ __device__
+__device__
 T atomicAdd(cuda_atomic, T *acc, T value){
-#ifdef __CUDA_ARCH__
   return ::atomicAdd(acc, value);
-#else
-  throw std::logic_error("Cannot call cuda_atomic operations on host");
-#endif
 }
 
 
@@ -103,12 +92,10 @@ T atomicAdd(cuda_atomic, T *acc, T value){
 // So we use the CAS approach
 #ifdef RAJA_CUDA_DOUBLE_ATOMIC_CAS
 
-//RAJA_SUPPRESS_HD_WARN
 template<>
 RAJA_INLINE
-__host__ __device__
+__device__
 double atomicAdd<double>(cuda_atomic, double *acc, double value){
-#ifdef __CUDA_ARCH__
   unsigned long long oldval, newval, readback;
   oldval = __double_as_longlong(*acc);
   newval = __double_as_longlong(__longlong_as_double(oldval) + value);
@@ -118,9 +105,6 @@ double atomicAdd<double>(cuda_atomic, double *acc, double value){
     newval = __double_as_longlong(__longlong_as_double(oldval) + value);
   }
   return __longlong_as_double(oldval);
-#else
-  throw std::logic_error("Cannot call cuda_atomic operations on host");
-#endif
 }
 
 #endif
@@ -131,10 +115,9 @@ double atomicAdd<double>(cuda_atomic, double *acc, double value){
 
 
 
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
-__host__ __device__
+__device__
 constexpr
 T atomicSub(cuda_atomic, T *acc, T value){
   return RAJA::atomicAdd(cuda_atomic{}, acc, -value);

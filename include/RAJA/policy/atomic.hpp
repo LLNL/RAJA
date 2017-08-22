@@ -88,7 +88,6 @@ namespace RAJA
 struct auto_atomic{};
 
 
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -98,7 +97,6 @@ T atomicAdd(RAJA::auto_atomic, T *acc, T value){
 }
 
 
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -111,14 +109,12 @@ T atomicSub(RAJA::auto_atomic, T *acc, T value){
 struct builtin_sync_atomic{};
 
 
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicAdd(builtin_sync_atomic, T *acc, T value){
   return __sync_fetch_and_add(&acc, &value);
 }
 
-RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicSub(builtin_sync_atomic, T *acc, T value){

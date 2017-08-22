@@ -276,6 +276,7 @@ CUDA_TEST(Atomic, basic_CUDA_AtomicView)
   testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
   testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
+
 #endif
 
 TEST(Atomic, basic_seq_AtomicFunction)
