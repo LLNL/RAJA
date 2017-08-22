@@ -34,10 +34,17 @@ namespace detail
   template <typename T, typename S1, typename S2>
   struct concat;
 
+#if defined(CAMP_COMPILER_MSVC)
+  template <typename T, T... I1, T... I2>
+  struct concat<T, list<integral_constant<T, I1>...>, list<integral_constant<T, I2>...>> {
+    using type = typename int_seq<T, I1..., (sizeof...(I1) + I2)...>::type;
+  };
+#else
   template <typename T, T... I1, T... I2>
   struct concat<T, int_seq<T, I1...>, int_seq<T, I2...>> {
     using type = typename int_seq<T, I1..., (sizeof...(I1) + I2)...>::type;
   };
+#endif
 
   template <typename T, typename N_t>
   struct gen_seq
