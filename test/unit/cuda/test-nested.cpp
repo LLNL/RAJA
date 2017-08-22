@@ -147,15 +147,15 @@ static void runLTimesTest(Index_type num_moments,
   typename POL::ELL_VIEW ell(
       d_ell,
       make_permuted_layout({num_moments, num_directions},
-                           perm_as_array(typename POL::ELL_PERM())));
+                           as_array<typename POL::ELL_PERM>::get()));
   typename POL::PSI_VIEW psi(
       d_psi,
       make_permuted_layout({num_directions, num_groups, num_zones},
-                           perm_as_array(typename POL::PSI_PERM())));
+                           as_array<typename POL::PSI_PERM>::get()));
   typename POL::PHI_VIEW phi(
       d_phi,
       make_permuted_layout({num_moments, num_groups, num_zones},
-                           perm_as_array(typename POL::PHI_PERM())));
+                           as_array<typename POL::PHI_PERM>::get()));
 
   // get execution policy
   using EXEC = typename POL::EXEC;

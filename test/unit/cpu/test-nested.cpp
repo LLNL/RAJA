@@ -145,7 +145,7 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
     std::vector<Index_type> v(size_i * size_j, 1);
     View view(v.data(),
               make_permuted_layout({{size_i, size_j}},
-                                   RAJA::perm_as_array(typename POL::PERM())));
+                                   RAJA::as_array<typename POL::PERM>::get()));
 
     forallN<Policy>(RangeSegment(1, size_i),
                     RangeSegment(0, size_j),
@@ -306,15 +306,15 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
     typename POL::ELL_VIEW ell(
         &ell_data[0],
         make_permuted_layout({num_moments, num_directions},
-                             RAJA::perm_as_array(typename POL::ELL_PERM())));
+                             RAJA::as_array<typename POL::ELL_PERM>::get()));
     typename POL::PSI_VIEW psi(
         &psi_data[0],
         make_permuted_layout({num_directions, num_groups, num_zones},
-                             RAJA::perm_as_array(typename POL::PSI_PERM())));
+                             RAJA::as_array<typename POL::PSI_PERM>::get()));
     typename POL::PHI_VIEW phi(
         &phi_data[0],
         make_permuted_layout({num_moments, num_groups, num_zones},
-                             RAJA::perm_as_array(typename POL::PHI_PERM())));
+                             RAJA::as_array<typename POL::PHI_PERM>::get()));
 
     // get execution policy
     using EXEC = typename POL::EXEC;

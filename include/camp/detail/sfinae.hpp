@@ -57,15 +57,13 @@ namespace detail
 {
 
   // caller pattern from metal library
-  template <typename>
-  using is_type = t;
   template <template <typename...> class expr, typename... vals>
   struct caller;
 
   template <
       template <typename...> class expr,
       typename... vals,
-      typename std::enable_if<is_type<expr<vals...>>::value>::type* = nullptr>
+      typename std::enable_if<is_value<expr<vals...>>::value>::type* = nullptr>
   value<expr<vals...>> sfinae(caller<expr, vals...>*);
 
   value<> sfinae(...);
