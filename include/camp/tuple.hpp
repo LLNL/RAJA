@@ -105,7 +105,9 @@ private:
 
 public:
   // Constructors
+#if !defined(CAMP_COMPILER_MSVC)
   tuple() = default;
+#endif
   tuple(tuple const&) = default;
   tuple(tuple&&) = default;
   tuple& operator=(tuple const& rhs) = default;
