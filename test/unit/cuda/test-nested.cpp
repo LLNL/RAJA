@@ -144,17 +144,18 @@ static void runLTimesTest(Index_type num_moments,
              cudaMemcpyHostToDevice);
 
   // create views on data
-  typename POL::ELL_VIEW ell(d_ell,
-                             make_permuted_layout({num_moments, num_directions},
-                                                  POL::ELL_PERM::array()));
+  typename POL::ELL_VIEW ell(
+      d_ell,
+      make_permuted_layout({num_moments, num_directions},
+                           perm_as_array(typename POL::ELL_PERM())));
   typename POL::PSI_VIEW psi(
       d_psi,
       make_permuted_layout({num_directions, num_groups, num_zones},
-                           POL::PSI_PERM::array()));
+                           perm_as_array(typename POL::PSI_PERM())));
   typename POL::PHI_VIEW phi(
       d_phi,
       make_permuted_layout({num_moments, num_groups, num_zones},
-                           POL::PHI_PERM::array()));
+                           perm_as_array(typename POL::PHI_PERM())));
 
   // get execution policy
   using EXEC = typename POL::EXEC;
@@ -253,11 +254,9 @@ struct PolLTimesA_GPU {
 // Use thread and block mappings
 struct PolLTimesB_GPU {
   // Loops: Moments, Directions, Groups, Zones
-  typedef NestedPolicy<ExecList<seq_exec,
-                                seq_exec,
-                                cuda_thread_z_exec,
-                                cuda_block_y_exec>,
-                       Permute<PERM_IJKL>>
+  typedef NestedPolicy<
+      ExecList<seq_exec, seq_exec, cuda_thread_z_exec, cuda_block_y_exec>,
+      Permute<PERM_IJKL>>
       EXEC;
 
   // psi[direction, group, zone]
@@ -338,8 +337,8 @@ CUDA_TEST(NestedCUDA, NegativeRange)
     host_data[i] = i * 1.0;
   }
 
-  forallN<NestedPolicy<ExecList<cuda_threadblock_y_exec<16>,
-                                cuda_threadblock_x_exec<16>>>>(
+  forallN<NestedPolicy<
+      ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16>>>>(
       RangeSegment(-2, 8), RangeSegment(-2, 8), [=] RAJA_DEVICE(int k, int j) {
         const int idx = ((k - -2) * 10) + (j - -2);
         data[idx] = idx * 1.0;

@@ -104,25 +104,25 @@ struct platform_of {
 
 template <typename PolicyType, RAJA::Policy P_>
 struct policy_is
-    : concepts::bool_<policy_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<policy_of<concepts::types::decay_t<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
-    : concepts::bool_<pattern_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<pattern_of<concepts::types::decay_t<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Launch L_>
 struct launch_is
-    : concepts::bool_<launch_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<launch_of<concepts::types::decay_t<PolicyType>>::value
                       == L_> {
 };
 
 template <typename PolicyType, RAJA::Platform P_>
 struct platform_is
-    : concepts::bool_<platform_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<platform_of<concepts::types::decay_t<PolicyType>>::value
                       == P_> {
 };
 

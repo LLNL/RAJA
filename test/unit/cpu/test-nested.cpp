@@ -144,7 +144,8 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 
     std::vector<Index_type> v(size_i * size_j, 1);
     View view(v.data(),
-              make_permuted_layout({{size_i, size_j}}, POL::PERM::array()));
+              make_permuted_layout({{size_i, size_j}},
+                                   RAJA::perm_as_array(typename POL::PERM())));
 
     forallN<Policy>(RangeSegment(1, size_i),
                     RangeSegment(0, size_j),
@@ -209,12 +210,10 @@ struct PolLTimesB : PolLTimesCommon {
 // Sequential, Tiled, another permutation
 struct PolLTimesC : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
-                            Tile<TileList<tile_none,
-                                          tile_none,
-                                          tile_fixed<64>,
-                                          tile_fixed<64>>,
-                                 Permute<PERM_JKIL>>>;
+  using EXEC = NestedPolicy<
+      ExecList<seq_exec, seq_exec, seq_exec, seq_exec>,
+      Tile<TileList<tile_none, tile_none, tile_fixed<64>, tile_fixed<64>>,
+           Permute<PERM_JKIL>>>;
   using PSI_PERM = PERM_IJK;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -236,17 +235,16 @@ struct PolLTimesD_OMP : PolLTimesCommon {
 // Same as D, but with tiling on zones and omp collapse on groups and zones
 struct PolLTimesE_OMP : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<ExecList<seq_exec,
-                                     seq_exec,
-                                     omp_collapse_nowait_exec,
-                                     omp_collapse_nowait_exec>,
-                            OMP_Parallel<Tile<TileList<tile_none,
-                                                       tile_none,
-                                                       tile_none,
-                                                       tile_fixed<16>>,
-                                              Permute<PERM_LKIJ,
-                                                      Execute  // implicit
-                                                      >>>>;
+  using EXEC = NestedPolicy<
+      ExecList<seq_exec,
+               seq_exec,
+               omp_collapse_nowait_exec,
+               omp_collapse_nowait_exec>,
+      OMP_Parallel<
+          Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
+               Permute<PERM_LKIJ,
+                       Execute  // implicit
+                       >>>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -305,18 +303,18 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
     }
 
     // create views on data
-    typename POL::ELL_VIEW ell(&ell_data[0],
-                               make_permuted_layout({num_moments,
-                                                     num_directions},
-                                                    POL::ELL_PERM::array()));
+    typename POL::ELL_VIEW ell(
+        &ell_data[0],
+        make_permuted_layout({num_moments, num_directions},
+                             RAJA::perm_as_array(typename POL::ELL_PERM())));
     typename POL::PSI_VIEW psi(
         &psi_data[0],
         make_permuted_layout({num_directions, num_groups, num_zones},
-                             POL::PSI_PERM::array()));
+                             RAJA::perm_as_array(typename POL::PSI_PERM())));
     typename POL::PHI_VIEW phi(
         &phi_data[0],
         make_permuted_layout({num_moments, num_groups, num_zones},
-                             POL::PHI_PERM::array()));
+                             RAJA::perm_as_array(typename POL::PHI_PERM())));
 
     // get execution policy
     using EXEC = typename POL::EXEC;

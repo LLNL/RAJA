@@ -145,7 +145,7 @@ auto make_offset_layout(const std::array<IdxLin, n_dims>& lower,
 template <size_t Rank, typename IdxLin = Index_type>
 auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
                                  const std::array<IdxLin, Rank>& upper,
-                                 const std::array<camp::idx_t, Rank>& permutation)
+                                 const std::array<IdxLin, Rank>& permutation)
     -> decltype(make_offset_layout<Rank, IdxLin>(lower, upper))
 {
   std::array<IdxLin, Rank> sizes;

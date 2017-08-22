@@ -7,6 +7,22 @@
 namespace camp
 {
 
+#if defined(__clang__)
+#define CAMP_COMPILER_CLANG
+#elif defined(__INTEL_COMPILER)
+#define CAMP_COMPILER_INTEL
+#elif defined(__xlc__)
+#define CAMP_COMPILER_XLC
+#elif defined(__PGI)
+#define CAMP_COMPILER_PGI
+#elif defined(_WIN32)
+#define CAMP_COMPILER_MSVC
+#elif defined(__GNUC__)
+#define RAJA_COMPILER_GNU
+#else
+#pragma warn("Unknown compiler!")
+#endif
+
 #if defined(__cpp_constexpr) && __cpp_constexpr >= 201304
 #define CAMP_HAS_CONSTEXPR14
 #define CAMP_CONSTEXPR14 constexpr

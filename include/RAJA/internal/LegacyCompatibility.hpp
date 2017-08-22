@@ -106,30 +106,6 @@ namespace VarOps
 // Basics, using c++14 semantics in a c++11 compatible way, credit to libc++
 
 // Forward
-template <class T>
-struct remove_reference {
-  typedef T type;
-};
-template <class T>
-struct remove_reference<T&> {
-  typedef T type;
-};
-template <class T>
-struct remove_reference<T&&> {
-  typedef T type;
-};
-template <class T>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr T&& forward(
-    typename remove_reference<T>::type& t) noexcept
-{
-  return static_cast<T&&>(t);
-}
-template <class T>
-RAJA_HOST_DEVICE RAJA_INLINE constexpr T&& forward(
-    typename remove_reference<T>::type&& t) noexcept
-{
-  return static_cast<T&&>(t);
-}
 
 // FoldL
 template <typename Op, typename... Rest>
@@ -163,7 +139,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
     Op&& RAJA_UNUSED_ARG(operation),
     Arg1&& arg) -> typename foldl_impl<Op, Arg1>::Ret
 {
-  return forward<Arg1&&>(arg);
+  return camp::forward<Arg1&&>(arg);
 }
 
 template <typename Op, typename Arg1, typename Arg2>
@@ -172,7 +148,8 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Arg2&& arg2) ->
     typename foldl_impl<Op, Arg1, Arg2>::Ret
 {
-  return forward<Op&&>(operation)(forward<Arg1&&>(arg1), forward<Arg2&&>(arg2));
+  return camp::forward<Op&&>(operation)(camp::forward<Arg1&&>(arg1),
+                                        camp::forward<Arg2&&>(arg2));
 }
 
 template <typename Op,
@@ -187,12 +164,12 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Rest&&... rest) ->
     typename foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>::Ret
 {
-  return foldl(forward<Op&&>(operation),
-               forward<Op&&>(
-                   operation)(forward<Op&&>(operation)(forward<Arg1&&>(arg1),
-                                                       forward<Arg2&&>(arg2)),
-                              forward<Arg3&&>(arg3)),
-               forward<Rest&&>(rest)...);
+  return foldl(camp::forward<Op&&>(operation),
+               camp::forward<Op&&>(operation)(
+                   camp::forward<Op&&>(operation)(camp::forward<Arg1&&>(arg1),
+                                                  camp::forward<Arg2&&>(arg2)),
+                   camp::forward<Arg3&&>(arg3)),
+               camp::forward<Rest&&>(rest)...);
 }
 
 struct adder {
@@ -362,14 +339,14 @@ struct get_arg_at {
   RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
       First&& RAJA_UNUSED_ARG(first),
       Rest&&... rest)
-      -> decltype(VarOps::forward<
-                  typename VarOps::get_type_at<index - 1, Rest...>::type>(
-          get_arg_at<index - 1>::value(VarOps::forward<Rest>(rest)...)))
+      -> decltype(
+          camp::forward<typename VarOps::get_type_at<index - 1, Rest...>::type>(
+              get_arg_at<index - 1>::value(camp::forward<Rest>(rest)...)))
   {
     static_assert(index < sizeof...(Rest) + 1, "index is past the end");
-    return VarOps::forward<
+    return camp::forward<
         typename VarOps::get_type_at<index - 1, Rest...>::type>(
-        get_arg_at<index - 1>::value(VarOps::forward<Rest>(rest)...));
+        get_arg_at<index - 1>::value(camp::forward<Rest>(rest)...));
   }
 };
 
@@ -378,10 +355,9 @@ struct get_arg_at<0> {
   template <typename First, typename... Rest>
   RAJA_HOST_DEVICE RAJA_INLINE static constexpr auto value(
       First&& first,
-      Rest&&... RAJA_UNUSED_ARG(rest))
-      -> decltype(VarOps::forward<First>(first))
+      Rest&&... RAJA_UNUSED_ARG(rest)) -> decltype(camp::forward<First>(first))
   {
-    return VarOps::forward<First>(first);
+    return camp::forward<First>(first);
   }
 };
 }

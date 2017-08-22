@@ -24,14 +24,6 @@ template <typename T>
 struct size;
 template <typename Seq>
 struct flatten;
-template <idx_t N>
-struct num;
-
-// helpers
-
-// Lambda
-
-// Numbers
 
 // Sequences
 //// list
@@ -188,17 +180,6 @@ struct as_list;
 template <template <typename...> class T, typename... Args>
 struct as_list<T<Args...>> {
   using type = list<Args...>;
-};
-
-template <typename T, T... Args>
-struct as_list<int_seq<T, Args...>> {
-  using type = list<integral<T, Args>...>;
-};
-
-//// array: TODO, using std::array for now
-template <typename T, T... Vals>
-struct as_array<int_seq<T, Vals...>> {
-  constexpr static std::array<T, sizeof...(Vals)> value{Vals...};
 };
 
 //// size

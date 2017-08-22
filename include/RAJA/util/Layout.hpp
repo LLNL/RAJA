@@ -64,8 +64,7 @@ namespace RAJA
 {
 
 template <typename Range, typename IdxLin = Index_type>
-struct LayoutBase_impl {
-};
+struct LayoutBase_impl;
 
 template <camp::idx_t... RangeInts, typename IdxLin>
 struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin> {

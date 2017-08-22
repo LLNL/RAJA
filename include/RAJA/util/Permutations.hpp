@@ -56,8 +56,18 @@
 
 #include "camp/camp.hpp"
 
+#include <array>
+
 namespace RAJA
 {
+
+
+template <camp::idx_t... Indices>
+constexpr auto perm_as_array(camp::idx_seq<Indices...>)
+    -> std::array<Index_type, sizeof...(Indices)>
+{
+  return std::array<Index_type, sizeof...(Indices)>{Indices...};
+}
 
 using PERM_I = camp::idx_seq<0>;
 using PERM_IJ = camp::idx_seq<0, 1>;
@@ -212,6 +222,160 @@ using PERM_MLJIK = camp::idx_seq<4, 3, 1, 0, 2>;
 using PERM_MLJKI = camp::idx_seq<4, 3, 1, 2, 0>;
 using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
 using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
+
+static constexpr auto PERM_I_v = perm_as_array(camp::idx_seq<0>{});
+static constexpr auto PERM_IJ_v = perm_as_array(camp::idx_seq<0, 1>{});
+static constexpr auto PERM_JI_v = perm_as_array(camp::idx_seq<1, 0>{});
+static constexpr auto PERM_IJK_v = perm_as_array(camp::idx_seq<0, 1, 2>{});
+static constexpr auto PERM_IKJ_v = perm_as_array(camp::idx_seq<0, 2, 1>{});
+static constexpr auto PERM_JIK_v = perm_as_array(camp::idx_seq<1, 0, 2>{});
+static constexpr auto PERM_JKI_v = perm_as_array(camp::idx_seq<1, 2, 0>{});
+static constexpr auto PERM_KIJ_v = perm_as_array(camp::idx_seq<2, 0, 1>{});
+static constexpr auto PERM_KJI_v = perm_as_array(camp::idx_seq<2, 1, 0>{});
+static constexpr auto PERM_IJKL_v = perm_as_array(camp::idx_seq<0, 1, 2, 3>{});
+static constexpr auto PERM_IJLK_v = perm_as_array(camp::idx_seq<0, 1, 3, 2>{});
+static constexpr auto PERM_IKJL_v = perm_as_array(camp::idx_seq<0, 2, 1, 3>{});
+static constexpr auto PERM_IKLJ_v = perm_as_array(camp::idx_seq<0, 2, 3, 1>{});
+static constexpr auto PERM_ILJK_v = perm_as_array(camp::idx_seq<0, 3, 1, 2>{});
+static constexpr auto PERM_ILKJ_v = perm_as_array(camp::idx_seq<0, 3, 2, 1>{});
+static constexpr auto PERM_JIKL_v = perm_as_array(camp::idx_seq<1, 0, 2, 3>{});
+static constexpr auto PERM_JILK_v = perm_as_array(camp::idx_seq<1, 0, 3, 2>{});
+static constexpr auto PERM_JKIL_v = perm_as_array(camp::idx_seq<1, 2, 0, 3>{});
+static constexpr auto PERM_JKLI_v = perm_as_array(camp::idx_seq<1, 2, 3, 0>{});
+static constexpr auto PERM_JLIK_v = perm_as_array(camp::idx_seq<1, 3, 0, 2>{});
+static constexpr auto PERM_JLKI_v = perm_as_array(camp::idx_seq<1, 3, 2, 0>{});
+static constexpr auto PERM_KIJL_v = perm_as_array(camp::idx_seq<2, 0, 1, 3>{});
+static constexpr auto PERM_KILJ_v = perm_as_array(camp::idx_seq<2, 0, 3, 1>{});
+static constexpr auto PERM_KJIL_v = perm_as_array(camp::idx_seq<2, 1, 0, 3>{});
+static constexpr auto PERM_KJLI_v = perm_as_array(camp::idx_seq<2, 1, 3, 0>{});
+static constexpr auto PERM_KLIJ_v = perm_as_array(camp::idx_seq<2, 3, 0, 1>{});
+static constexpr auto PERM_KLJI_v = perm_as_array(camp::idx_seq<2, 3, 1, 0>{});
+static constexpr auto PERM_LIJK_v = perm_as_array(camp::idx_seq<3, 0, 1, 2>{});
+static constexpr auto PERM_LIKJ_v = perm_as_array(camp::idx_seq<3, 0, 2, 1>{});
+static constexpr auto PERM_LJIK_v = perm_as_array(camp::idx_seq<3, 1, 0, 2>{});
+static constexpr auto PERM_LJKI_v = perm_as_array(camp::idx_seq<3, 1, 2, 0>{});
+static constexpr auto PERM_LKIJ_v = perm_as_array(camp::idx_seq<3, 2, 0, 1>{});
+static constexpr auto PERM_LKJI_v = perm_as_array(camp::idx_seq<3, 2, 1, 0>{});
+static constexpr auto PERM_IJKLM_v = perm_as_array(camp::idx_seq<0, 1, 2, 3, 4>{});
+static constexpr auto PERM_IJKML_v = perm_as_array(camp::idx_seq<0, 1, 2, 4, 3>{});
+static constexpr auto PERM_IJLKM_v = perm_as_array(camp::idx_seq<0, 1, 3, 2, 4>{});
+static constexpr auto PERM_IJLMK_v = perm_as_array(camp::idx_seq<0, 1, 3, 4, 2>{});
+static constexpr auto PERM_IJMKL_v = perm_as_array(camp::idx_seq<0, 1, 4, 2, 3>{});
+static constexpr auto PERM_IJMLK_v = perm_as_array(camp::idx_seq<0, 1, 4, 3, 2>{});
+static constexpr auto PERM_IKJLM_v = perm_as_array(camp::idx_seq<0, 2, 1, 3, 4>{});
+static constexpr auto PERM_IKJML_v = perm_as_array(camp::idx_seq<0, 2, 1, 4, 3>{});
+static constexpr auto PERM_IKLJM_v = perm_as_array(camp::idx_seq<0, 2, 3, 1, 4>{});
+static constexpr auto PERM_IKLMJ_v = perm_as_array(camp::idx_seq<0, 2, 3, 4, 1>{});
+static constexpr auto PERM_IKMJL_v = perm_as_array(camp::idx_seq<0, 2, 4, 1, 3>{});
+static constexpr auto PERM_IKMLJ_v = perm_as_array(camp::idx_seq<0, 2, 4, 3, 1>{});
+static constexpr auto PERM_ILJKM_v = perm_as_array(camp::idx_seq<0, 3, 1, 2, 4>{});
+static constexpr auto PERM_ILJMK_v = perm_as_array(camp::idx_seq<0, 3, 1, 4, 2>{});
+static constexpr auto PERM_ILKJM_v = perm_as_array(camp::idx_seq<0, 3, 2, 1, 4>{});
+static constexpr auto PERM_ILKMJ_v = perm_as_array(camp::idx_seq<0, 3, 2, 4, 1>{});
+static constexpr auto PERM_ILMJK_v = perm_as_array(camp::idx_seq<0, 3, 4, 1, 2>{});
+static constexpr auto PERM_ILMKJ_v = perm_as_array(camp::idx_seq<0, 3, 4, 2, 1>{});
+static constexpr auto PERM_IMJKL_v = perm_as_array(camp::idx_seq<0, 4, 1, 2, 3>{});
+static constexpr auto PERM_IMJLK_v = perm_as_array(camp::idx_seq<0, 4, 1, 3, 2>{});
+static constexpr auto PERM_IMKJL_v = perm_as_array(camp::idx_seq<0, 4, 2, 1, 3>{});
+static constexpr auto PERM_IMKLJ_v = perm_as_array(camp::idx_seq<0, 4, 2, 3, 1>{});
+static constexpr auto PERM_IMLJK_v = perm_as_array(camp::idx_seq<0, 4, 3, 1, 2>{});
+static constexpr auto PERM_IMLKJ_v = perm_as_array(camp::idx_seq<0, 4, 3, 2, 1>{});
+static constexpr auto PERM_JIKLM_v = perm_as_array(camp::idx_seq<1, 0, 2, 3, 4>{});
+static constexpr auto PERM_JIKML_v = perm_as_array(camp::idx_seq<1, 0, 2, 4, 3>{});
+static constexpr auto PERM_JILKM_v = perm_as_array(camp::idx_seq<1, 0, 3, 2, 4>{});
+static constexpr auto PERM_JILMK_v = perm_as_array(camp::idx_seq<1, 0, 3, 4, 2>{});
+static constexpr auto PERM_JIMKL_v = perm_as_array(camp::idx_seq<1, 0, 4, 2, 3>{});
+static constexpr auto PERM_JIMLK_v = perm_as_array(camp::idx_seq<1, 0, 4, 3, 2>{});
+static constexpr auto PERM_JKILM_v = perm_as_array(camp::idx_seq<1, 2, 0, 3, 4>{});
+static constexpr auto PERM_JKIML_v = perm_as_array(camp::idx_seq<1, 2, 0, 4, 3>{});
+static constexpr auto PERM_JKLIM_v = perm_as_array(camp::idx_seq<1, 2, 3, 0, 4>{});
+static constexpr auto PERM_JKLMI_v = perm_as_array(camp::idx_seq<1, 2, 3, 4, 0>{});
+static constexpr auto PERM_JKMIL_v = perm_as_array(camp::idx_seq<1, 2, 4, 0, 3>{});
+static constexpr auto PERM_JKMLI_v = perm_as_array(camp::idx_seq<1, 2, 4, 3, 0>{});
+static constexpr auto PERM_JLIKM_v = perm_as_array(camp::idx_seq<1, 3, 0, 2, 4>{});
+static constexpr auto PERM_JLIMK_v = perm_as_array(camp::idx_seq<1, 3, 0, 4, 2>{});
+static constexpr auto PERM_JLKIM_v = perm_as_array(camp::idx_seq<1, 3, 2, 0, 4>{});
+static constexpr auto PERM_JLKMI_v = perm_as_array(camp::idx_seq<1, 3, 2, 4, 0>{});
+static constexpr auto PERM_JLMIK_v = perm_as_array(camp::idx_seq<1, 3, 4, 0, 2>{});
+static constexpr auto PERM_JLMKI_v = perm_as_array(camp::idx_seq<1, 3, 4, 2, 0>{});
+static constexpr auto PERM_JMIKL_v = perm_as_array(camp::idx_seq<1, 4, 0, 2, 3>{});
+static constexpr auto PERM_JMILK_v = perm_as_array(camp::idx_seq<1, 4, 0, 3, 2>{});
+static constexpr auto PERM_JMKIL_v = perm_as_array(camp::idx_seq<1, 4, 2, 0, 3>{});
+static constexpr auto PERM_JMKLI_v = perm_as_array(camp::idx_seq<1, 4, 2, 3, 0>{});
+static constexpr auto PERM_JMLIK_v = perm_as_array(camp::idx_seq<1, 4, 3, 0, 2>{});
+static constexpr auto PERM_JMLKI_v = perm_as_array(camp::idx_seq<1, 4, 3, 2, 0>{});
+static constexpr auto PERM_KIJLM_v = perm_as_array(camp::idx_seq<2, 0, 1, 3, 4>{});
+static constexpr auto PERM_KIJML_v = perm_as_array(camp::idx_seq<2, 0, 1, 4, 3>{});
+static constexpr auto PERM_KILJM_v = perm_as_array(camp::idx_seq<2, 0, 3, 1, 4>{});
+static constexpr auto PERM_KILMJ_v = perm_as_array(camp::idx_seq<2, 0, 3, 4, 1>{});
+static constexpr auto PERM_KIMJL_v = perm_as_array(camp::idx_seq<2, 0, 4, 1, 3>{});
+static constexpr auto PERM_KIMLJ_v = perm_as_array(camp::idx_seq<2, 0, 4, 3, 1>{});
+static constexpr auto PERM_KJILM_v = perm_as_array(camp::idx_seq<2, 1, 0, 3, 4>{});
+static constexpr auto PERM_KJIML_v = perm_as_array(camp::idx_seq<2, 1, 0, 4, 3>{});
+static constexpr auto PERM_KJLIM_v = perm_as_array(camp::idx_seq<2, 1, 3, 0, 4>{});
+static constexpr auto PERM_KJLMI_v = perm_as_array(camp::idx_seq<2, 1, 3, 4, 0>{});
+static constexpr auto PERM_KJMIL_v = perm_as_array(camp::idx_seq<2, 1, 4, 0, 3>{});
+static constexpr auto PERM_KJMLI_v = perm_as_array(camp::idx_seq<2, 1, 4, 3, 0>{});
+static constexpr auto PERM_KLIJM_v = perm_as_array(camp::idx_seq<2, 3, 0, 1, 4>{});
+static constexpr auto PERM_KLIMJ_v = perm_as_array(camp::idx_seq<2, 3, 0, 4, 1>{});
+static constexpr auto PERM_KLJIM_v = perm_as_array(camp::idx_seq<2, 3, 1, 0, 4>{});
+static constexpr auto PERM_KLJMI_v = perm_as_array(camp::idx_seq<2, 3, 1, 4, 0>{});
+static constexpr auto PERM_KLMIJ_v = perm_as_array(camp::idx_seq<2, 3, 4, 0, 1>{});
+static constexpr auto PERM_KLMJI_v = perm_as_array(camp::idx_seq<2, 3, 4, 1, 0>{});
+static constexpr auto PERM_KMIJL_v = perm_as_array(camp::idx_seq<2, 4, 0, 1, 3>{});
+static constexpr auto PERM_KMILJ_v = perm_as_array(camp::idx_seq<2, 4, 0, 3, 1>{});
+static constexpr auto PERM_KMJIL_v = perm_as_array(camp::idx_seq<2, 4, 1, 0, 3>{});
+static constexpr auto PERM_KMJLI_v = perm_as_array(camp::idx_seq<2, 4, 1, 3, 0>{});
+static constexpr auto PERM_KMLIJ_v = perm_as_array(camp::idx_seq<2, 4, 3, 0, 1>{});
+static constexpr auto PERM_KMLJI_v = perm_as_array(camp::idx_seq<2, 4, 3, 1, 0>{});
+static constexpr auto PERM_LIJKM_v = perm_as_array(camp::idx_seq<3, 0, 1, 2, 4>{});
+static constexpr auto PERM_LIJMK_v = perm_as_array(camp::idx_seq<3, 0, 1, 4, 2>{});
+static constexpr auto PERM_LIKJM_v = perm_as_array(camp::idx_seq<3, 0, 2, 1, 4>{});
+static constexpr auto PERM_LIKMJ_v = perm_as_array(camp::idx_seq<3, 0, 2, 4, 1>{});
+static constexpr auto PERM_LIMJK_v = perm_as_array(camp::idx_seq<3, 0, 4, 1, 2>{});
+static constexpr auto PERM_LIMKJ_v = perm_as_array(camp::idx_seq<3, 0, 4, 2, 1>{});
+static constexpr auto PERM_LJIKM_v = perm_as_array(camp::idx_seq<3, 1, 0, 2, 4>{});
+static constexpr auto PERM_LJIMK_v = perm_as_array(camp::idx_seq<3, 1, 0, 4, 2>{});
+static constexpr auto PERM_LJKIM_v = perm_as_array(camp::idx_seq<3, 1, 2, 0, 4>{});
+static constexpr auto PERM_LJKMI_v = perm_as_array(camp::idx_seq<3, 1, 2, 4, 0>{});
+static constexpr auto PERM_LJMIK_v = perm_as_array(camp::idx_seq<3, 1, 4, 0, 2>{});
+static constexpr auto PERM_LJMKI_v = perm_as_array(camp::idx_seq<3, 1, 4, 2, 0>{});
+static constexpr auto PERM_LKIJM_v = perm_as_array(camp::idx_seq<3, 2, 0, 1, 4>{});
+static constexpr auto PERM_LKIMJ_v = perm_as_array(camp::idx_seq<3, 2, 0, 4, 1>{});
+static constexpr auto PERM_LKJIM_v = perm_as_array(camp::idx_seq<3, 2, 1, 0, 4>{});
+static constexpr auto PERM_LKJMI_v = perm_as_array(camp::idx_seq<3, 2, 1, 4, 0>{});
+static constexpr auto PERM_LKMIJ_v = perm_as_array(camp::idx_seq<3, 2, 4, 0, 1>{});
+static constexpr auto PERM_LKMJI_v = perm_as_array(camp::idx_seq<3, 2, 4, 1, 0>{});
+static constexpr auto PERM_LMIJK_v = perm_as_array(camp::idx_seq<3, 4, 0, 1, 2>{});
+static constexpr auto PERM_LMIKJ_v = perm_as_array(camp::idx_seq<3, 4, 0, 2, 1>{});
+static constexpr auto PERM_LMJIK_v = perm_as_array(camp::idx_seq<3, 4, 1, 0, 2>{});
+static constexpr auto PERM_LMJKI_v = perm_as_array(camp::idx_seq<3, 4, 1, 2, 0>{});
+static constexpr auto PERM_LMKIJ_v = perm_as_array(camp::idx_seq<3, 4, 2, 0, 1>{});
+static constexpr auto PERM_LMKJI_v = perm_as_array(camp::idx_seq<3, 4, 2, 1, 0>{});
+static constexpr auto PERM_MIJKL_v = perm_as_array(camp::idx_seq<4, 0, 1, 2, 3>{});
+static constexpr auto PERM_MIJLK_v = perm_as_array(camp::idx_seq<4, 0, 1, 3, 2>{});
+static constexpr auto PERM_MIKJL_v = perm_as_array(camp::idx_seq<4, 0, 2, 1, 3>{});
+static constexpr auto PERM_MIKLJ_v = perm_as_array(camp::idx_seq<4, 0, 2, 3, 1>{});
+static constexpr auto PERM_MILJK_v = perm_as_array(camp::idx_seq<4, 0, 3, 1, 2>{});
+static constexpr auto PERM_MILKJ_v = perm_as_array(camp::idx_seq<4, 0, 3, 2, 1>{});
+static constexpr auto PERM_MJIKL_v = perm_as_array(camp::idx_seq<4, 1, 0, 2, 3>{});
+static constexpr auto PERM_MJILK_v = perm_as_array(camp::idx_seq<4, 1, 0, 3, 2>{});
+static constexpr auto PERM_MJKIL_v = perm_as_array(camp::idx_seq<4, 1, 2, 0, 3>{});
+static constexpr auto PERM_MJKLI_v = perm_as_array(camp::idx_seq<4, 1, 2, 3, 0>{});
+static constexpr auto PERM_MJLIK_v = perm_as_array(camp::idx_seq<4, 1, 3, 0, 2>{});
+static constexpr auto PERM_MJLKI_v = perm_as_array(camp::idx_seq<4, 1, 3, 2, 0>{});
+static constexpr auto PERM_MKIJL_v = perm_as_array(camp::idx_seq<4, 2, 0, 1, 3>{});
+static constexpr auto PERM_MKILJ_v = perm_as_array(camp::idx_seq<4, 2, 0, 3, 1>{});
+static constexpr auto PERM_MKJIL_v = perm_as_array(camp::idx_seq<4, 2, 1, 0, 3>{});
+static constexpr auto PERM_MKJLI_v = perm_as_array(camp::idx_seq<4, 2, 1, 3, 0>{});
+static constexpr auto PERM_MKLIJ_v = perm_as_array(camp::idx_seq<4, 2, 3, 0, 1>{});
+static constexpr auto PERM_MKLJI_v = perm_as_array(camp::idx_seq<4, 2, 3, 1, 0>{});
+static constexpr auto PERM_MLIJK_v = perm_as_array(camp::idx_seq<4, 3, 0, 1, 2>{});
+static constexpr auto PERM_MLIKJ_v = perm_as_array(camp::idx_seq<4, 3, 0, 2, 1>{});
+static constexpr auto PERM_MLJIK_v = perm_as_array(camp::idx_seq<4, 3, 1, 0, 2>{});
+static constexpr auto PERM_MLJKI_v = perm_as_array(camp::idx_seq<4, 3, 1, 2, 0>{});
+static constexpr auto PERM_MLKIJ_v = perm_as_array(camp::idx_seq<4, 3, 2, 0, 1>{});
+static constexpr auto PERM_MLKJI_v = perm_as_array(camp::idx_seq<4, 3, 2, 1, 0>{});
 }
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

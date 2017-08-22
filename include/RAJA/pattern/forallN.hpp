@@ -265,8 +265,8 @@ RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
   forallN_impl<POLICY, Indices...>(
       camp::make_idx_seq_t<sizeof...(args) - 1>(),
       camp::make_idx_seq_t<sizeof...(args) - 1 - sizeof...(Indices)>(),
-      VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
-      VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
+      VarOps::get_arg_at<I0s>::value(camp::forward<Ts>(args)...)...,
+      VarOps::get_arg_at<I1s>::value(camp::forward<Ts>(args)...)...);
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
@@ -287,7 +287,7 @@ RAJA_INLINE void forallN(Ts &&... args)
   fun_unpacker<POLICY, Indices...>(
       camp::idx_seq<sizeof...(args) - 1>{},
       camp::make_idx_seq_t<sizeof...(args) - 1>{},
-      VarOps::forward<Ts>(args)...);
+      camp::forward<Ts>(args)...);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);

@@ -101,17 +101,18 @@ TEST(TypedLayoutTest, 1D)
 TEST(LayoutTest, OffsetVsRegular)
 {
   const auto layout =
-      RAJA::make_permuted_layout({6, 6}, RAJA::Perm<1, 0>::array());
+      RAJA::make_permuted_layout({{6, 6}},
+                                 RAJA::perm_as_array(RAJA::Perm<1, 0>{}));
   const auto offset =
-      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::array());
+      RAJA::make_permuted_offset_layout({{0, 0}}, {{5, 5}}, RAJA::PERM_JI_v);
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
    */
   for (int j = 0; j < 6; ++j) {
     for (int i = 0; i < 6; ++i) {
-      ASSERT_EQ(offset(i, j), layout(i, j)) << layout.strides[0]
-                                            << layout.strides[1];
+      ASSERT_EQ(offset(i, j), layout(i, j))
+          << layout.strides[0] << layout.strides[1];
     }
   }
 }
@@ -155,7 +156,9 @@ TEST(OffsetLayoutTest, 2D_JI)
    * (-1, -2), (0, -2), (1, -2)
    */
   const my_layout layout =
-      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::array());
+      RAJA::make_permuted_offset_layout({{-1, -2}},
+                                        {{1, 0}},
+                                        RAJA::PERM_JI_v);
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -225,21 +228,21 @@ TEST(LayoutTest, 2D_IJ)
   ASSERT_EQ(5, layout(0, 5));
 
   // Check that we get the identity (mod 15)
-  for(int k = 0;k < 20;++ k){
+  for (int k = 0; k < 20; ++k) {
 
     // inverse map
     int i, j;
     layout.toIndices(k, i, j);
 
     // forward map
-    int k2 = layout(i,j);
+    int k2 = layout(i, j);
 
     // check ident
-    ASSERT_EQ(k%15, k2);
+    ASSERT_EQ(k % 15, k2);
 
     // check with a and b
-    ASSERT_EQ(k2, layout_a(i,j));
-    ASSERT_EQ(k2, layout_b(i,j));
+    ASSERT_EQ(k2, layout_a(i, j));
+    ASSERT_EQ(k2, layout_b(i, j));
   }
 }
 
@@ -257,7 +260,7 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI::array());
+      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI_v);
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -268,16 +271,16 @@ TEST(LayoutTest, 2D_JI)
   ASSERT_EQ(15, layout(0, 5));
 
   // Check that we get the identity (mod 15)
-  for(int k = 0;k < 20;++ k){
+  for (int k = 0; k < 20; ++k) {
 
     // inverse map
     int i, j;
     layout.toIndices(k, i, j);
 
     // forward map
-    int k2 = layout(i,j);
+    int k2 = layout(i, j);
 
-    ASSERT_EQ(k%15, k2);
+    ASSERT_EQ(k % 15, k2);
   }
 }
 
@@ -314,17 +317,17 @@ TEST(LayoutTest, 2D_IJ_ProjJ)
   ASSERT_EQ(0, layout(0, 5));
 
   // Check that we get the identity (mod 7)
-  for(int k = 0;k < 20;++ k){
+  for (int k = 0; k < 20; ++k) {
 
     // inverse map
     int i, j;
     layout.toIndices(k, i, j);
 
     // forward map
-    int k2 = layout(i,j);
+    int k2 = layout(i, j);
 
     // check ident
-    ASSERT_EQ(k%7, k2);
+    ASSERT_EQ(k % 7, k2);
 
     // check projection of j
     ASSERT_EQ(j, 0);
@@ -354,7 +357,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI::array());
+      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI_v);
 
   ASSERT_EQ(0, layout(0, 0, 0));
 
@@ -369,17 +372,17 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   ASSERT_EQ(12, layout(0, 0, 4));
 
   // Check that we get the identity (mod 21)
-  for(int x = 0;x < 40;++ x){
+  for (int x = 0; x < 40; ++x) {
 
     // inverse map
     int i, j, k;
     layout.toIndices(x, i, j, k);
 
     // forward map
-    int x2 = layout(i,j,k);
+    int x2 = layout(i, j, k);
 
     // check ident
-    ASSERT_EQ(x%21, x2);
+    ASSERT_EQ(x % 21, x2);
 
     // check projection of j
     ASSERT_EQ(j, 0);

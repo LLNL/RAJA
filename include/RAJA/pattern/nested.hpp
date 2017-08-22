@@ -40,6 +40,7 @@ struct ForTraitBase : public ForBase {
   using index = camp::num<ArgumentId>;
   using index_type = camp::nil;  // default to invalid type
   using policy_type = Pol;
+  using type = ForTraitBase;  // make camp::value compatible
 };
 
 using is_for_policy = typename camp::bind_front<std::is_base_of, ForBase>::type;
@@ -57,7 +58,7 @@ using get_for_policies = typename camp::flatten<typename camp::transform<
     typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
 
 template <typename T>
-using is_nil_type = camp::bind_front<std::is_same, camp::nil>;
+using is_nil_type = camp::bind_front<camp::concepts::metalib::is_same, camp::nil>;
 
 // template <typename ForPolicy, typename Segments>
 // using get_for_index_pair =  // If For is TypedFor, use specified type,
@@ -91,11 +92,10 @@ struct evaluate_policy {
       ForPolicies>::type;
   using type = typename camp::append<
       Current,
-      typename camp::if_<
-          typename std::is_base_of<TypedForBase, ForPolicy>::type,
-          typename ForPolicy::index_type,
-          typename camp::at<IndexTypes,
-                            typename ForPolicy::index>::type>::type>::type;
+      camp::if_<typename std::is_base_of<TypedForBase, ForPolicy>::type,
+                typename ForPolicy::index_type,
+                typename camp::at<IndexTypes,
+                                  typename ForPolicy::index>::type>>::type;
 };
 
 template <typename Policies, typename IndexTypes>
@@ -211,7 +211,10 @@ struct Executor {
 };
 
 #if defined(RAJA_ENABLE_CUDA)
-template <template<camp::idx_t, typename...> class ForTypeIn, std::size_t block_size, camp::idx_t Index, typename ...Rest>
+template <template <camp::idx_t, typename...> class ForTypeIn,
+          std::size_t block_size,
+          camp::idx_t Index,
+          typename... Rest>
 struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
   using ForType = ForTypeIn<Index, cuda_exec<block_size>, Rest...>;
   static_assert(std::is_base_of<internal::ForBase, ForType>::value,

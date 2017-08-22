@@ -4,6 +4,8 @@
 #include <iterator>
 #include <type_traits>
 
+#include "camp/number.hpp"
+
 namespace camp
 {
 
@@ -13,115 +15,32 @@ namespace concepts
   namespace metalib
   {
 
-    template <class T, T v>
-    struct integral_constant {
-      static constexpr T value = v;
-      using value_type = T;
-      using type = integral_constant;
-      constexpr operator value_type() const noexcept { return value; }
-      constexpr value_type operator()() const noexcept { return value; }
-    };
-
-    template <bool B>
-    using bool_ = integral_constant<bool, B>;
-    template <int I>
-    using int_ = integral_constant<int, I>;
-
-    using true_type = bool_<true>;
-    using false_type = bool_<false>;
-
-    template <typename...>
-    struct list;
-
-    namespace impl
-    {
-
-#ifdef __clang__
-
-      // Clang is faster with this implementation
-      template <typename, typename = bool>
-      struct _if_ {
-      };
-
-      template <typename If>
-      struct _if_<list<If>, decltype(bool(If::type::value))>
-          : std::enable_if<If::type::value> {
-      };
-
-      template <typename If, typename Then>
-      struct _if_<list<If, Then>, decltype(bool(If::type::value))>
-          : std::enable_if<If::type::value, Then> {
-      };
-
-      template <typename If, typename Then, typename Else>
-      struct _if_<list<If, Then, Else>, decltype(bool(If::type::value))>
-          : std::conditional<If::type::value, Then, Else> {
-      };
-
-#else
-
-      // GCC seems to prefer this implementation
-      template <typename, typename = true_type>
-      struct _if_ {
-      };
-
-      template <typename If>
-      struct _if_<list<If>, bool_<If::type::value>> {
-        using type = void;
-      };
-
-      template <typename If, typename Then>
-      struct _if_<list<If, Then>, bool_<If::type::value>> {
-        using type = Then;
-      };
-
-      template <typename If, typename Then, typename Else>
-      struct _if_<list<If, Then, Else>, bool_<If::type::value>> {
-        using type = Then;
-      };
-
-      template <typename If, typename Then, typename Else>
-      struct _if_<list<If, Then, Else>, bool_<!If::type::value>> {
-        using type = Else;
-      };
-
-#endif
-
-    }  // namespace detail
-
-    template <typename... Ts>
-    using if_ = typename impl::_if_<list<Ts...>>::type;
-
-    template <bool If, typename... Args>
-    using if_c = typename impl::_if_<list<bool_<If>, Args...>>::type;
-
-
     template <typename T, typename U>
-    struct is_same : false_type {
+    struct is_same_s : false_type {
     };
 
     template <typename T>
-    struct is_same<T, T> : true_type {
+    struct is_same_s<T, T> : true_type {
     };
 
-    /// bool list -- use for {all,none,any}_of metafunctions
-    template <bool...>
-    struct blist;
+    template <typename T, typename U>
+    using is_same = typename is_same_s<T, U>::type;
+
 
     /// negation metafunction of a value type
     template <typename T>
-    struct negate_t : bool_<!T::value> {
+    struct negate_t : num<!T::value> {
     };
 
     /// all_of metafunction of a value type list -- all must be "true"
     template <bool... Bs>
-    struct all_of : metalib::is_same<blist<true, Bs...>, blist<Bs..., true>> {
+    struct all_of : metalib::is_same<list<t, num<Bs>...>, list<num<Bs>..., t>> {
     };
 
     /// none_of metafunction of a value type list -- all must be "false"
     template <bool... Bs>
     struct none_of
-        : metalib::is_same<blist<false, Bs...>, blist<Bs..., false>> {
+        : metalib::is_same<idx_seq<false, Bs...>, idx_seq<Bs..., false>> {
     };
 
     /// any_of metafunction of a value type list -- at least one must be "true""
@@ -150,7 +69,7 @@ namespace concepts
 }  // end namespace camp
 
 template <typename... T>
-camp::concepts::metalib::true_type ___valid_expr___(T &&...) noexcept;
+camp::true_type ___valid_expr___(T &&...) noexcept;
 #define DefineConcept(...) decltype(___valid_expr___(__VA_ARGS__))
 
 #define DefineTypeTraitFromConcept(TTName, ConceptName)             \
@@ -179,7 +98,7 @@ namespace concepts
               template <class...> class Concept,
               class TArgs>
     struct detector {
-      using value_t = metalib::false_type;
+      using value_t = false_type;
       using type = Default;
     };
 
@@ -188,7 +107,7 @@ namespace concepts
                     typename voider<Concept<Args...>>::type,
                     Concept,
                     TL<Args...>> {
-      using value_t = metalib::true_type;
+      using value_t = true_type;
       using type = Concept<Args...>;
     };
 
@@ -207,8 +126,6 @@ namespace concepts
   template <typename T>
   using negate = metalib::negate_t<T>;
 
-  using concepts::metalib::bool_;
-
   /// metafunction to get instance of value type for concepts
   template <typename T>
   auto val() noexcept -> decltype(std::declval<T>());
@@ -221,22 +138,20 @@ namespace concepts
   /// convertible to given type
   template <typename T, typename U>
   constexpr auto convertible_to(U &&u) noexcept
-      -> decltype(detail::returns<metalib::true_type>(static_cast<T>((U &&)
-                                                                         u)));
+      -> decltype(detail::returns<camp::true_type>(static_cast<T>((U &&) u)));
 
   /// metafunction for use within decltype expression to validate type of
   /// expression
   template <typename T, typename U>
-  constexpr auto has_type(U &&) noexcept
-      -> metalib::if_<metalib::is_same<T, U>, metalib::true_type>;
+  constexpr auto has_type(U &&) noexcept -> metalib::is_same<T, U>;
 
   template <typename BoolLike>
   constexpr auto is(BoolLike) noexcept
-      -> metalib::if_<BoolLike, metalib::true_type>;
+      -> camp::if_<BoolLike, camp::true_type, camp::false_type>;
 
   template <typename BoolLike>
   constexpr auto is_not(BoolLike) noexcept
-      -> metalib::if_c<!BoolLike::value, metalib::true_type>;
+      -> camp::if_c<!BoolLike::value, camp::true_type, camp::false_type>;
 
   /// metaprogramming concept for SFINAE checking of aggregating concepts
   template <typename... Args>
@@ -441,21 +356,21 @@ namespace type_traits
   {
 
     template <typename, template <typename...> class, typename...>
-    struct IsSpecialized : camp::concepts::metalib::false_type {
+    struct IsSpecialized : camp::false_type {
     };
 
     template <template <typename...> class Template, typename... T>
     struct IsSpecialized<typename concepts::detail::voider<decltype(
                              concepts::val<Template<T...>>())>::type,
                          Template,
-                         T...> : camp::concepts::metalib::true_type {
+                         T...> : camp::true_type {
     };
 
     template <template <class...> class,
               template <class...> class,
               bool,
               class...>
-    struct SpecializationOf : camp::concepts::metalib::false_type {
+    struct SpecializationOf : camp::false_type {
     };
 
     template <template <class...> class Expected,
@@ -472,7 +387,7 @@ namespace type_traits
   using IsSpecialized = detail::IsSpecialized<void, Outer, Args...>;
 
   template <template <class...> class, typename T>
-  struct SpecializationOf : camp::concepts::metalib::false_type {
+  struct SpecializationOf : camp::false_type {
   };
 
   template <template <class...> class Expected,
