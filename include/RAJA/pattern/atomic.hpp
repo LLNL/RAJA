@@ -101,6 +101,7 @@ namespace RAJA
 
 
 
+RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
@@ -110,6 +111,7 @@ T atomicAdd(T *acc, T value){
 }
 
 
+RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE

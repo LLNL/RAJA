@@ -261,20 +261,20 @@ TEST(Atomic, basic_OpenMP_AtomicView)
 
 CUDA_TEST(Atomic, basic_CUDA_AtomicFunction)
 {
-  testAtomicFunctionPol<RAJA::cuda_exec, RAJA::auto_atomic>();
-  testAtomicFunctionPol<RAJA::cuda_exec, RAJA::cuda_atomic>();
+  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicFunctionPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 CUDA_TEST(Atomic, basic_CUDA_AtomicRef)
 {
-  testAtomicRefPol<RAJA::cuda_exec, RAJA::auto_atomic>();
-  testAtomicRefPol<RAJA::cuda_exec, RAJA::cuda_atomic>();
+  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicRefPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 
 CUDA_TEST(Atomic, basic_CUDA_AtomicView)
 {
-  testAtomicViewPol<RAJA::cuda_exec, RAJA::auto_atomic>();
-  testAtomicViewPol<RAJA::cuda_exec, RAJA::cuda_atomic>();
+  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::auto_atomic>();
+  testAtomicViewPol<RAJA::cuda_exec<256>, RAJA::cuda_atomic>();
 }
 #endif
 
