@@ -46,10 +46,6 @@ raja_add_library(
   SOURCES buildIndexSet.cpp)
 
 raja_add_test(
-  NAME test-atomic
-  SOURCES test-atomic.cpp)
-
-raja_add_test(
   NAME test-reduce
   SOURCES test-reduce.cpp
   DEPENDS_ON bis)

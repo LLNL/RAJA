@@ -115,7 +115,7 @@
 //
 // Atomic operations support
 //
-#include "RAJA/util/atomic.hpp"
+#include "RAJA/pattern/atomic.hpp"
 
 
 //

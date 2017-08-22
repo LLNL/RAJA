@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file defining host compiler builtin atomic operations
+ * \brief   RAJA header file defining automatic and builtin atomic operations.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_util_atomic_builtin_HPP
-#define RAJA_util_atomic_builtin_HPP
+#ifndef RAJA_policy_atomic_HPP
+#define RAJA_policy_atomic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,8 +56,58 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 
+#include "RAJA/policy/sequential/atomic.hpp"
+
+/*!
+ * Provides priority between atomic policies that should do the "right thing"
+ *
+ * If we are in a CUDA __device__ function, then it always uses the cuda_atomic
+ * policy.
+ *
+ * Next, if OpenMP is enabled we always use the omp_atomic, which should
+ * generally work everywhere.
+ *
+ * Finally, we fallback on the seq_atomic, which performs non-atomic operations
+ * because we assume there is no thread safety issues (no parallel model)
+ */
+#ifdef __CUDA_ARCH__
+  #define RAJA_AUTO_ATOMIC RAJA::cuda_atomic{}
+#else
+#  ifdef RAJA_ENABLE_OPENMP
+  #define RAJA_AUTO_ATOMIC RAJA::omp_atomic{}
+#  else
+  #define RAJA_AUTO_ATOMIC RAJA::seq_atomic{}
+#  endif
+#endif
+
+
 namespace RAJA
 {
+
+//! Atomic policy that automatically does "the right thing"
+struct auto_atomic{};
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+T atomicAdd(RAJA::auto_atomic, T *acc, T value){
+  return RAJA::atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+T atomicSub(RAJA::auto_atomic, T *acc, T value){
+  return RAJA::atomicSub(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+
 struct builtin_sync_atomic{};
 
 
@@ -65,19 +115,20 @@ RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicAdd(builtin_sync_atomic, T *acc, T value){
-  return __sync_fetch_and_add(&acc, value);
+  return __sync_fetch_and_add(&acc, &value);
 }
 
 RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicSub(builtin_sync_atomic, T *acc, T value){
-  return __sync_fetch_and_sub(&acc, value);
+  return __sync_fetch_and_sub(&acc, &value);
 }
 
 
-
-
 }  // namespace RAJA
+
+// make sure this define doesn't bleed out of this header
+#undef RAJA_AUTO_ATOMIC
 
 #endif

@@ -55,7 +55,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/Layout.hpp"
-#include "RAJA/util/atomic.hpp"
+#include "RAJA/pattern/atomic.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "chai/ManagedArray.hpp"
@@ -168,17 +168,17 @@ struct AtomicViewWrapper {
   RAJA_INLINE
   AtomicType operator()(ARGS &&... args) const
   {
-    return AtomicType(&base_.operator()(args...));
+    return AtomicType(&base_.operator()(std::forward<ARGS>(args)...));
   }
 
 };
 
 
-template<typename ViewType>
+template<typename AtomicPolicy, typename ViewType>
 RAJA_INLINE
-AtomicViewWrapper<ViewType>
+AtomicViewWrapper<ViewType, AtomicPolicy>
 make_atomic_view(ViewType view){
-  return RAJA::AtomicViewWrapper<ViewType, RAJA::auto_atomic>(view);
+  return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);
 }
 
 

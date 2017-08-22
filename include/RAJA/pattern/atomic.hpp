@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_util_atomic_HPP
-#define RAJA_util_atomic_HPP
+#ifndef RAJA_pattern_atomic_HPP
+#define RAJA_pattern_atomic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,9 +55,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
-#include "RAJA/util/atomic/builtin.hpp"
-#include "RAJA/util/atomic/auto.hpp"
-
+#include "RAJA/policy/atomic.hpp"
 
 namespace RAJA
 {
@@ -81,6 +79,9 @@ namespace RAJA
  *
  *
  * Current supported policies include:
+ *
+ *   auto_atomic       -- Attempts to do "the right thing"
+ *
  *   cuda_atomic       -- Only atomic supported in CUDA device functions
  *
  *   omp_atomic        -- Available (and default) when OpenMP is enabled
@@ -93,8 +94,7 @@ namespace RAJA
  *
  *
  * The implementation code lives in:
- * RAJA/util/atomic/auto.hpp    -- for auto_atomic
- * RAJA/util/atomic/builtin.hpp -- for builtin_atomic
+ * RAJA/policy/atomic/auto.hpp    -- for auto_atomic and builtin_atomic
  * RAJA/policy/XXX/atomic.hpp   -- for omp_atomic, cuda_atomic, etc.
  *
  */

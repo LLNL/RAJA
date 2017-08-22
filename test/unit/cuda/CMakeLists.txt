@@ -54,10 +54,6 @@ if (NOT RAJA_ENABLE_CLANG_CUDA)
 endif()
 
 raja_add_test(
-  NAME test-cuda-atomic
-  SOURCES test-atomic.cpp)
-
-raja_add_test(
   NAME test-cuda-reduce-sum
   SOURCES test-reduce-sum.cpp)
 

@@ -42,6 +42,10 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-atomic
+  SOURCES test-atomic.cpp)
+
+raja_add_test(
   NAME test-layout
   SOURCES test-layout.cpp)
 
