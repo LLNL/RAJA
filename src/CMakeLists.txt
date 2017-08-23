@@ -108,7 +108,18 @@ set (RAJA_HEADERS
         ../include/RAJA/util/defines.hpp
         ../include/RAJA/util/types.hpp
         ../include/camp/camp.hpp
-        ../include/camp/tuple.hpp )
+        ../include/camp/concepts.hpp
+        ../include/camp/defines.hpp
+        ../include/camp/helpers.hpp
+        ../include/camp/lambda.hpp
+        ../include/camp/list.hpp
+        ../include/camp/list/at.hpp
+        ../include/camp/list/find_if.hpp
+        ../include/camp/list/list.hpp
+        ../include/camp/number.hpp
+        ../include/camp/tuple.hpp
+        ../include/camp/value.hpp
+        )
 
 set (raja_sources
   AlignedRangeIndexSetBuilders.cpp

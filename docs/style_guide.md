@@ -1,3 +1,27 @@
+# CAMP
+
+## Type classes
+
+### Expressions
+
+An expression is a template of the form:
+
+```c++
+template <typename...Ts>
+struct expr_s {
+};
+// OR
+template <typename...Ts>
+using expr = typename expr_s::type;
+```
+
+Generically it is an un-expanded template type that accepts one or more template
+typename parameters.
+
+### Values
+
+Any complete type is a value
+
 # Concepts
 
 ### New namespaces:
