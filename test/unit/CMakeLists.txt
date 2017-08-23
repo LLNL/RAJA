@@ -69,11 +69,9 @@ raja_add_test(
   NAME test-span
   SOURCES test-span.cpp)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-multipolicy
-    SOURCES test-multipolicy.cpp)
-endif(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-multipolicy
+  SOURCES test-multipolicy.cpp)
 
 add_subdirectory(cpu)
 

@@ -9,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,65 +40,64 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing test for nested reductions...
-///
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
 
-#include "RAJA/RAJA.hpp"
-#include "gtest/gtest.h"
+#ifndef RAJA_forward_tbb_HXX
+#define RAJA_forward_tbb_HXX
 
-template <typename Outer, typename Inner, typename Reduce>
-void test(int inner, int outer)
+#include <type_traits>
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/policy/tbb/policy.hpp"
+
+namespace RAJA
 {
-  using limits = RAJA::operators::limits<double>;
-  RAJA::ReduceSum<Reduce, double> sum(0.0);
-  RAJA::ReduceMin<Reduce, double> min(limits::max());
-  RAJA::ReduceMax<Reduce, double> max(limits::min());
 
-  RAJA::forall<Outer>(RAJA::make_range(0, outer), [=](int y) {
-    RAJA::forall<Inner>(RAJA::make_range(0, inner), [=](int x) {
-      double val = y * inner + x + 1;
-      sum += val;
-      min.min(val);
-      max.max(val);
-    });
-  });
-
-  double area = inner * outer;
-  ASSERT_EQ((area * (area + 1)) / 2, sum.get());
-  ASSERT_EQ(1.0, min.get());
-  ASSERT_EQ(area, max.get());
-}
-
-TEST(NestedReduce, seq_seq)
+namespace impl
 {
-  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(37, 73);
-}
 
-#if defined(RAJA_ENABLE_OPENMP)
-TEST(NestedReduce, omp_seq)
-{
-  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(10, 20);
-  test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(37, 73);
-}
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const tbb_for_dynamic& p,
+                        Iterable&& iter,
+                        Func&& loop_body);
 
-TEST(NestedReduce, seq_omp)
-{
-  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(37, 73);
-}
-#endif
-#if defined(RAJA_ENABLE_TBB)
-TEST(NestedReduce, tbb_seq)
-{
-  test<RAJA::tbb_for_exec, RAJA::seq_exec, RAJA::tbb_reduce>(10, 20);
-  test<RAJA::tbb_for_exec, RAJA::seq_exec, RAJA::tbb_reduce>(37, 73);
-}
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_dynamic& p,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body);
 
-TEST(NestedReduce, seq_tbb)
-{
-  test<RAJA::seq_exec, RAJA::tbb_for_exec, RAJA::tbb_reduce>(10, 20);
-  test<RAJA::seq_exec, RAJA::tbb_for_exec, RAJA::tbb_reduce>(37, 73);
-}
-#endif
+template <typename Iterable, typename Func, size_t ChunkSize>
+RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
+                        Iterable&& iter,
+                        Func&& loop_body);
+
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body);
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard
