@@ -65,24 +65,17 @@ using namespace RAJA;
 
 
 using TestingTypes = ::testing::
-    Types<  // std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>,
+    Types<
         std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce>
 #ifdef RAJA_ENABLE_OPENMP
         ,
-        // std::tuple<ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce>,
-        // std::tuple<ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce>,
         std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce>,
-        // std::tuple<ExecPolicy<seq_segit, omp_parallel_for_exec>,
-        //            omp_reduce_ordered>, // not terribly useful, but slow
-        // std::tuple<ExecPolicy<omp_parallel_for_segit, seq_exec>,
-        //            omp_reduce_ordered>,
         std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>,
                    omp_reduce_ordered>
 #endif
 #ifdef RAJA_ENABLE_TBB
         ,
         std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>,
-        // std::tuple<ExecPolicy<tbb_for_exec, seq_exec>, tbb_reduce>,
         std::tuple<ExecPolicy<tbb_for_exec, simd_exec>, tbb_reduce>
 #endif
         >;
