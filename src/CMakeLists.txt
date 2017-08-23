@@ -58,4 +58,16 @@ install(TARGETS RAJA EXPORT RAJA
   RUNTIME DESTINATION lib
 )
 
+if (RAJA_ENABLE_TBB)
+  if (RAJA_ENABLE_CUDA)
+    if (RAJA_ENABLE_CLANG_CUDA)
+      target_link_libraries( RAJA ${TBB_LIBRARIES} )
+    else ()
+      target_link_libraries( RAJA PUBLIC ${TBB_LIBRARIES} )
+    endif ()
+  else ()
+    target_link_libraries( RAJA ${TBB_LIBRARIES} )
+  endif ()
+endif ()
+
 install(EXPORT RAJA DESTINATION share/raja/cmake/)
