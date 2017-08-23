@@ -47,11 +47,9 @@
 #include <cstddef>
 #include "gtest/gtest.h"
 
-struct mp_tag1 {
-};
-struct mp_tag2 {
-};
-struct mp_tag3 {
+// Tag type to dispatch to test bodies based on policy selected by multipolicy
+template <int i>
+struct mp_tag {
 };
 
 struct mp_test_body;
@@ -59,18 +57,9 @@ namespace RAJA
 {
 namespace impl
 {
-template <typename Iterable>
-void forall(const mp_tag1 &p, Iterable &&iter, mp_test_body const &body)
-{
-  body(p, iter.size());
-}
-template <typename Iterable>
-void forall(const mp_tag2 &p, Iterable &&iter, mp_test_body const &body)
-{
-  body(p, iter.size());
-}
-template <typename Iterable>
-void forall(const mp_tag3 &p, Iterable &&iter, mp_test_body const &body)
+// fake RAJA::impl::forall overload to test multipolicy dispatch
+template <int i, typename Iterable>
+void forall(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
 {
   body(p, iter.size());
 }
@@ -80,16 +69,19 @@ void forall(const mp_tag3 &p, Iterable &&iter, mp_test_body const &body)
 // NOTE: this *must* be after the above to work
 #include "RAJA/RAJA.hpp"
 
+// This functor implements different test bodies depending on the mock "policy"
+// selected by multipolicy, asserting the ranges of values that are selected in
+// the MultiPolicy basic test below
 struct mp_test_body {
-  void operator()(mp_tag1 const &, std::size_t size) const
+  void operator()(mp_tag<1> const &, std::size_t size) const
   {
     ASSERT_LT(size, std::size_t{100});
   }
-  void operator()(mp_tag2 const &, std::size_t size) const
+  void operator()(mp_tag<2> const &, std::size_t size) const
   {
     ASSERT_GT(size, std::size_t{99});
   }
-  void operator()(mp_tag3 const &, std::size_t size) const
+  void operator()(mp_tag<3> const &, std::size_t size) const
   {
     ASSERT_GT(size, std::size_t{10});
     ASSERT_LT(size, std::size_t{99});
@@ -99,7 +91,7 @@ struct mp_test_body {
 
 TEST(MultiPolicy, basic)
 {
-  auto mp = RAJA::make_multi_policy<mp_tag1, mp_tag2>(
+  auto mp = RAJA::make_multi_policy<mp_tag<1>, mp_tag<2>>(
       [](const RAJA::RangeSegment &r) {
         if (r.size() < 100) {
           return 0;
@@ -110,7 +102,7 @@ TEST(MultiPolicy, basic)
   RAJA::forall(mp, RAJA::RangeSegment(0, 5), mp_test_body{});
   RAJA::forall(mp, RAJA::RangeSegment(0, 101), mp_test_body{});
   // Nest a multipolicy to ensure value-based policies are preserved
-  auto mp2 = RAJA::make_multi_policy(std::make_tuple(mp_tag3{}, mp),
+  auto mp2 = RAJA::make_multi_policy(std::make_tuple(mp_tag<3>{}, mp),
                                      [](const RAJA::RangeSegment &r) {
                                        if (r.size() > 10 && r.size() < 90) {
                                          return 0;
