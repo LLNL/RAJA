@@ -108,7 +108,7 @@ void testAtomicRefBasic(){
   // initialize an array
   #ifdef RAJA_ENABLE_CUDA
       T *dest = nullptr;
-      cudaMallocManaged((void **)&dest, sizeof(T) * 4);
+      cudaMallocManaged((void **)&dest, sizeof(T) * 6);
 
       cudaDeviceSynchronize();
 
@@ -118,26 +118,38 @@ void testAtomicRefBasic(){
 
 
   // use atomic add to reduce the array
-  dest[0] = 0.0;
+  dest[0] = (T)1;
   RAJA::AtomicRef<T, AtomicPolicy> sum0(dest);
 
-  dest[1] = 0.0;
+  dest[1] = (T)1;
   RAJA::AtomicRef<T, AtomicPolicy> sum1(dest+1);
-
-  dest[2] = N;
+  
+	dest[2] = (T)1;
   RAJA::AtomicRef<T, AtomicPolicy> sum2(dest+2);
 
-  dest[3] = N;
+  dest[3] = (T)(N+1);
   RAJA::AtomicRef<T, AtomicPolicy> sum3(dest+3);
-  RAJA::forall<ExecPolicy>(seg,
+
+  dest[4] = (T)(N+1);
+  RAJA::AtomicRef<T, AtomicPolicy> sum4(dest+4);
+  
+	dest[5] = (T)(N+1);
+  RAJA::AtomicRef<T, AtomicPolicy> sum5(dest+5);
+  
+	
+	RAJA::forall<ExecPolicy>(seg,
     [=] RAJA_HOST_DEVICE (RAJA::Index_type){
       sum0 ++;
 
       ++ sum1;
 
-      sum2 --;
+			sum2 += 1;
 
-      -- sum3;
+      sum3 --;
+
+      -- sum4;
+
+			sum5 -= 1;
     }
   );
 
@@ -145,10 +157,12 @@ void testAtomicRefBasic(){
   cudaDeviceSynchronize();
 #endif
 
-  EXPECT_EQ((T)N, dest[0]);
-  EXPECT_EQ((T)N, dest[1]);
-  EXPECT_EQ((T)0, dest[2]);
-  EXPECT_EQ((T)0, dest[3]);
+  EXPECT_EQ((T)N+1, dest[0]);
+  EXPECT_EQ((T)N+1, dest[1]);
+  EXPECT_EQ((T)N+1, dest[2]);
+  EXPECT_EQ((T)1, dest[3]);
+  EXPECT_EQ((T)1, dest[4]);
+  EXPECT_EQ((T)1, dest[5]);
 
 #ifdef RAJA_ENABLE_CUDA
   cudaFree(dest);

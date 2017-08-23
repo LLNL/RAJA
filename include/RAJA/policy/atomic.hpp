@@ -92,7 +92,7 @@ template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 constexpr
-T atomicAdd(RAJA::auto_atomic, T *acc, T value){
+T atomicAdd(RAJA::auto_atomic, T volatile *acc, T value){
   return RAJA::atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
 }
 
@@ -100,9 +100,71 @@ T atomicAdd(RAJA::auto_atomic, T *acc, T value){
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-constexpr
-T atomicSub(RAJA::auto_atomic, T *acc, T value){
+T atomicSub(RAJA::auto_atomic, T volatile *acc, T value){
   return RAJA::atomicSub(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicMin(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicMin(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicMax(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicMax(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicInc(RAJA::auto_atomic, T volatile *acc){
+  return RAJA::atomicInc(RAJA_AUTO_ATOMIC, acc);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicDec(RAJA::auto_atomic, T volatile *acc){
+  return RAJA::atomicDec(RAJA_AUTO_ATOMIC, acc);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicAnd(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicAnd(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicOr(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicOr(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicXor(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicXor(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicExchange(RAJA::auto_atomic, T volatile *acc, T value){
+  return RAJA::atomicExchange(RAJA_AUTO_ATOMIC, acc, value);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicCAS(RAJA::auto_atomic, T volatile *acc, T compare, T value){
+  return RAJA::atomicCAS(RAJA_AUTO_ATOMIC, acc, compare, value);
 }
 
 
@@ -111,13 +173,13 @@ struct builtin_sync_atomic{};
 
 template<typename T>
 RAJA_INLINE
-T atomicAdd(builtin_sync_atomic, T *acc, T value){
+T atomicAdd(builtin_sync_atomic, T volatile *acc, T value){
   return __sync_fetch_and_add(&acc, &value);
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicSub(builtin_sync_atomic, T *acc, T value){
+T atomicSub(builtin_sync_atomic, T volatile *acc, T value){
   return __sync_fetch_and_sub(&acc, &value);
 }
 
