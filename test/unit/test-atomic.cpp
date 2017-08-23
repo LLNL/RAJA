@@ -113,7 +113,7 @@ void testAtomicRefBasic(){
       cudaDeviceSynchronize();
 
   #else
-    T *dest = new T[4];
+    T *dest = new T[6];
   #endif
 
 
