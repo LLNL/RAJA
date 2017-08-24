@@ -42,9 +42,15 @@
 ###############################################################################
 
 if (ENABLE_CUDA)
-  add_gtest_sources(chai-nested.cpp)
+  raja_add_test(
+    NAME test-chai-nested
+    SOURCES chai-nested.cpp)
 endif(ENABLE_CUDA)
 
-add_gtest_sources(
-  chai-policy-tests.cpp
-  chai-tests.cpp)
+raja_add_test(
+  NAME test-chai-policy
+  SOURCES chai-policy-tests.cpp)
+
+raja_add_test(
+  NAME test-chai
+  SOURCES chai-tests.cpp)

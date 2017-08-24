@@ -3,17 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
+ * \brief   Header file containing RAJA headers for tbb execution.
  *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
+ *          These methods work on all platforms.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef RAJA_tbb_HPP
+#define RAJA_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -47,7 +45,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONtbb
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -57,56 +55,16 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
-
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
+#if defined(ENABLE_TBB)
 
-#include "RAJA/internal/fault_tolerance.hpp"
+#include "RAJA/policy/tbb/forall.hpp"
+#include "RAJA/policy/tbb/forallN.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
+#include "RAJA/policy/tbb/reduce.hpp"
+#include "RAJA/policy/tbb/scan.hpp"
 
-#include "RAJA/policy/simd/policy.hpp"
-
-namespace RAJA
-{
-
-namespace impl
-{
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
-}
-
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
+#endif
 
 #endif  // closing endif for header file include guard

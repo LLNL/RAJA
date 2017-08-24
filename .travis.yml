@@ -3,152 +3,88 @@ dist: trusty
 language: cpp
 env:
   global:
-    secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
+    - secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
+    - OMP_NUM_THREADS=3
 matrix:
   include:
   - compiler: gcc-4
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-4.9
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
-  - compiler: gcc-5
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - COMPILER=g++-5
-    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
   - compiler: gcc-6
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-6
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=g++-6
-    - WARN=""
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_EXE_LINKER_FLAGS='-coverage' -DCMAKE_CXX_FLAGS='-coverage'"
-    - COVERAGE=t
-  - compiler: clang-3.6
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
+  - compiler: gcc-7
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
     env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.6.0-x86_64-linux-gnu/bin/clang++
-    - DOWNLOAD=http://releases.llvm.org/3.6.0/clang+llvm-3.6.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
-    - WARN=""
-  - compiler: clang-3.7
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
+    - COMPILER=g++-7
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
+  - compiler: clang-3.5
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-    - DOWNLOAD=http://releases.llvm.org/3.7.0/clang+llvm-3.7.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
-    - WARN=""
-  - compiler: clang-3.8
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
+    - COMPILER=clang++
+    - LLVM_VERSION=3.5.2
+  - compiler: clang-3.9
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
-    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off"
-    - WARN=""
+    - COMPILER=clang++
+    - LLVM_VERSION=3.9.1
+  - compiler: clang-4.0
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
+    env:
+    - COMPILER=clang++
+    - LLVM_VERSION=4.0.0
   - compiler: intel-17
     env:
     - COMPILER=icpc
-    - WARN=""
-    - TRAVIS_BUILD_INTEL="Yes"
+    - TRAVIS_INSTALL_COMPILER="intel"
   - compiler: nvcc
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-4.9
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On"
-    - TRAVIS_BUILD_NVCC="Yes"
-  - compiler: gcc-5-debug
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - COMPILER=g++-5
-    - WARN="-DENABLE_WARNINGS_AS_ERRORS=On"
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
-  - compiler: clang-3.8-debug
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-5
-    env:
-    - COMPILER=$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/bin/clang++
-    - LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$HOME/llvm/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04/lib
-    - DOWNLOAD=http://releases.llvm.org/3.8.0/clang+llvm-3.8.0-x86_64-linux-gnu-ubuntu-14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DENABLE_OPENMP=Off -DCMAKE_BUILD_TYPE=Debug"
-    - WARN=""
-  - compiler: nvcc-debug
-    addons:
-      apt:
-        sources:
-        - ubuntu-toolchain-r-test
-        packages:
-        - g++-4.9
+    - TRAVIS_INSTALL_COMPILER="nvcc"
+  - compiler: gcc-4.9-debug
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DCMAKE_BUILD_TYPE=Debug"
-    - TRAVIS_BUILD_NVCC="Yes"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On"
+  - compiler: clang-3.9-debug
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
+    env:
+    - COMPILER=clang++
+    - LLVM_VERSION=3.9.1
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
+  - compiler: nvcc-debug
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
+    env:
+    - COMPILER=g++-4.9
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On"
+    - TRAVIS_INSTALL_COMPILER="nvcc"
 cache:
   directories:
   - $HOME/llvm
-  - /usr/local/cuda-8.0
 before_install:
 - sudo apt-get update -qq
-- if [[ -n "$DOWNLOAD" ]] ; then if [[ ! -e "$COMPILER" ]] ; then cd $HOME &&
-  curl -o tarball.tar.xz $DOWNLOAD &&
-  cd $HOME/llvm &&
-  tar xf $HOME/tarball.tar.xz ; fi ;
-  fi
+- mkdir -p ${HOME}/download
+- if [[ -n "${LLVM_VERSION}" ]]; then ./scripts/install_llvm.sh ; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- cd $HOME &&
+- cd ${HOME} &&
   curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
-  mkdir -p $HOME/cmake &&
-  cd $HOME/cmake &&
-  tar xf $HOME/cmake-tarball.tar.gz --strip-components=1 &&
+  mkdir -p ${HOME}/cmake &&
+  cd ${HOME}/cmake &&
+  tar xf ${HOME}/cmake-tarball.tar.gz --strip-components=1 &&
   export PATH=${PWD}/bin:${PATH}
-- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
-- if [[ -n "${TRAVIS_BUILD_NVCC}" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then travis_retry wget http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
-  travis_retry sudo dpkg -i cuda-repo-ubuntu1404_8.0.61-1_amd64.deb &&
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DEBFILE=${HOME}/download/cuda-repo.deb; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
+  travis_retry sudo dpkg -i ${DEBFILE} &&
   travis_retry sudo apt-get update -qq &&
-  travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
+  travis_retry sudo apt-get install --no-install-suggests --no-install-recommends -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
   travis_retry sudo apt-get clean; fi &&
   export CUDA_HOME=/usr/local/cuda-8.0 &&
   export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
@@ -156,12 +92,12 @@ before_install:
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
 - source ~/.bashrc
-- cd $TRAVIS_BUILD_DIR
-- git submodule init && git submodule update
-- mkdir travis-build && cd travis-build
-- cmake -DCMAKE_CXX_COMPILER="${COMPILER}" $WARN $CMAKE_EXTRA_FLAGS ../
+- cd ${TRAVIS_BUILD_DIR}
+- mkdir travis-build &&
+  cd travis-build
+- cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
 - make -j 3
-- if ! [[ -n "${TRAVIS_BUILD_NVCC}" ]] ; then ctest -V; fi
+- if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
 after_success:
-- if [[ -n "${COVERAGE}" ]] ; then bash <(curl -s https://codecov.io/bash) ; fi
-- if [[ -n "${TRAVIS_BUILD_INTEL}" ]] ; then uninstall_intel_software ; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi

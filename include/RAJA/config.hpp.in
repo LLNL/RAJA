@@ -78,6 +78,7 @@
 
 #cmakedefine ENABLE_OPENMP
 #cmakedefine ENABLE_TARGET_OPENMP
+#cmakedefine ENABLE_TBB
 #cmakedefine ENABLE_CUDA
 #cmakedefine ENABLE_CLANG_CUDA
 #cmakedefine ENABLE_CHAI

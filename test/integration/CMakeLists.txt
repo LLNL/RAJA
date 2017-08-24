@@ -43,5 +43,4 @@
 
 if (ENABLE_CHAI)
   add_subdirectory(chai)
-  propagate_sources()
 endif(ENABLE_CHAI)

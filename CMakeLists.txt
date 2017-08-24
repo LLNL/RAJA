@@ -58,6 +58,7 @@ set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
 set(ENABLE_COPY_HEADERS Off CACHE Bool "")
 set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
+option(ENABLE_TBB "Build TBB support" On)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
 set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
@@ -66,6 +67,8 @@ option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_EXAMPLES "Build simple examples" On)
 option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
+option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 

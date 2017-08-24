@@ -3,6 +3,7 @@
 #include <string>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
 #include "gtest/gtest.h"
 
 using namespace RAJA;
@@ -103,4 +104,17 @@ using OpenMPTypes = ::testing::Types<
     ExecPolicy<omp_parallel_for_segit, simd_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
+#endif
+
+#if defined(ENABLE_TBB)
+using TBBTypes = ::testing::Types<
+    ExecPolicy<seq_segit, tbb_for_exec>,
+    ExecPolicy<tbb_for_exec, seq_exec>,
+    ExecPolicy<tbb_for_exec, simd_exec>,
+    ExecPolicy<seq_segit, tbb_for_dynamic>,
+    ExecPolicy<tbb_for_dynamic, seq_exec>,
+    ExecPolicy<tbb_for_dynamic, simd_exec>
+    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P(TBB, ForallTest, TBBTypes);
 #endif

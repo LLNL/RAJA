@@ -79,6 +79,10 @@
 //
 #include "RAJA/policy/simd.hpp"
 
+#if defined(ENABLE_TBB)
+#include "RAJA/policy/tbb.hpp"
+#endif
+
 #if defined(ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
 #endif

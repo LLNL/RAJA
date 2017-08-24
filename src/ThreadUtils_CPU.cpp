@@ -57,8 +57,6 @@
 #include <omp.h>
 #endif
 
-#include <algorithm>
-
 namespace RAJA
 {
 

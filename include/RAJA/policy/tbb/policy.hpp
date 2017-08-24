@@ -3,17 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef policy_tbb_HPP
+#define policy_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -57,56 +53,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+#include "RAJA/policy/PolicyBase.hpp"
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
+#include <cstddef>
 
 namespace RAJA
 {
 
-namespace impl
-{
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+///
+/// Segment execution policies
+///
+
+struct tbb_for_dynamic
+    : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host> {
+  std::size_t grain_size;
+  tbb_for_dynamic(std::size_t grain_size_ = 1) : grain_size(grain_size_) {}
+};
 
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
-}
+template <std::size_t GrainSize = 1>
+struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host> {
+};
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+using tbb_for_exec = tbb_for_static<>;
 
-}  // closing brace for impl namespace
+///
+/// Index set segment iteration policies
+///
+using tbb_segit = tbb_for_exec;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host> {
+};
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif

@@ -1,20 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -57,16 +40,28 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forward_tbb_HXX
+#define RAJA_forward_tbb_HXX
+
 #include <type_traits>
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
 
 namespace RAJA
 {
@@ -74,36 +69,32 @@ namespace RAJA
 namespace impl
 {
 
-
 template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
-}
+RAJA_INLINE void forall(const tbb_for_dynamic& p,
+                        Iterable&& iter,
+                        Func&& loop_body);
 
-// SIMD forall(Iterable)
 template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_dynamic& p,
+              Iterable&& iter,
               IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+              Func&& loop_body);
+
+template <typename Iterable, typename Func, size_t ChunkSize>
+RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
+                        Iterable&& iter,
+                        Func&& loop_body);
+
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body);
 
 }  // closing brace for impl namespace
 
