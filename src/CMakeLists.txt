@@ -44,7 +44,6 @@ set (raja_sources
   AlignedRangeIndexSetBuilders.cpp
   DepGraphNode.cpp
   LockFreeIndexSetBuilders.cpp
-  MemUtils_CPU.cpp
   MemUtils_CUDA.cpp
   ThreadUtils_CPU.cpp)
 
