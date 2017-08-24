@@ -295,7 +295,6 @@ class ReduceMaxLoc;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceSum;
-
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

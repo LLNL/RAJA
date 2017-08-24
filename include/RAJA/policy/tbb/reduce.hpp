@@ -61,6 +61,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/util/types.hpp"
@@ -74,11 +75,18 @@ namespace RAJA
 
 namespace detail
 {
-template <typename T, typename Op>
+template <typename T, typename Reduce>
 class ReduceTBB
 {
 public:
-  using Reduce = Op;
+  struct reduce_adapter {
+    T operator()(T const &l, T const &r)
+    {
+      T tmp = l;
+      Reduce{}(tmp, r);
+      return tmp;
+    }
+  };
   using value_type = T;
 
   //! TBB native per-thread container
@@ -110,7 +118,7 @@ public:
   /*!
    *  \return the calculated reduced value
    */
-  operator T() const { return data->combine(Op{}); }
+  operator T() const { return data->combine(reduce_adapter{}); }
 
   /*!
    *  \return the calculated reduced value
@@ -121,57 +129,11 @@ protected:
   /*!
    *  \return update the local value
    */
-  void combine(const T &other) { data->local() = Op{}(data->local(), other); }
+  void combine(const T &other) { Reduce{}(data->local(), other); }
   /*!
    *  \return update the local value
    */
-  void combine(const T &other) const
-  {
-    data->local() = Op{}(data->local(), other);
-  }
-};
-
-
-template <typename T, bool doing_min = true>
-struct ValueLoc {
-  T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
-  Index_type loc = -1;
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &) = default;
-  ValueLoc &operator=(ValueLoc const &) = default;
-  constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
-  constexpr ValueLoc(T const &val, Index_type const &loc) : val{val}, loc{loc}
-  {
-  }
-  operator T() const { return val; }
-  bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
-};
-
-
-template <typename T>
-using MinReduce = ReduceTBB<T, RAJA::operators::minimum<T>>;
-
-template <typename T>
-using MaxReduce = ReduceTBB<T, RAJA::operators::maximum<T>>;
-
-template <typename T>
-using SumReduce = ReduceTBB<T, RAJA::operators::plus<T>>;
-
-template <typename T>
-using MinLocReduce =
-    ReduceTBB<ValueLoc<T>, RAJA::operators::minimum<ValueLoc<T>>>;
-
-template <typename T>
-using MaxLocReduce =
-    ReduceTBB<ValueLoc<T, false>, RAJA::operators::maximum<ValueLoc<T, false>>>;
-
-}
-
-namespace operators
-{
-
-template <typename T, bool B>
-struct limits<::RAJA::detail::ValueLoc<T, B>> : limits<T> {
+  void combine(const T &other) const { Reduce{}(data->local(), other); }
 };
 
 }
@@ -184,231 +146,48 @@ struct limits<::RAJA::detail::ValueLoc<T, B>> : limits<T> {
  **************************************************************************
  */
 template <typename T>
-class ReduceMin<tbb_reduce, T> : public detail::MinReduce<T>
-{
-
-public:
-  using Base = detail::MinReduce<T>;
-
-  //! prohibit compiler-generated default ctor
-  ReduceMin() = delete;
-
-  //! prohibit compiler-generated copy assignment
-  ReduceMin &operator=(const ReduceMin &) = delete;
-
-  //! compiler-generated copy constructor
-  ReduceMin(const ReduceMin &) = default;
-
-  //! compiler-generated move constructor
-  ReduceMin(ReduceMin &&) = default;
-
-  //! compiler-generated move assignment
-  ReduceMin &operator=(ReduceMin &&) = default;
-
-  explicit ReduceMin(T init_val, T initializer = operators::limits<T>::max())
-      : Base(init_val, initializer)
-  {
-  }
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const ReduceMin &min(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  ReduceMin &min(T rhs)
-  {
-    this->combine(rhs);
-    return *this;
-  }
-};
-
-/*!
- **************************************************************************
- *
- * \brief  MinLoc reducer class template for use in tbb execution.
- *
- **************************************************************************
- */
-template <typename T>
-class ReduceMinLoc<tbb_reduce, T> : public detail::MinLocReduce<T>
+class ReduceMin<tbb_reduce, T>
+    : public detail::BaseReduceMin<T, detail::ReduceTBB>
 {
 public:
-  using Base = detail::MinLocReduce<T>;
-  //! prohibit compiler-generated default ctor
-  ReduceMinLoc() = delete;
-
-  //! prohibit compiler-generated copy assignment
-  ReduceMinLoc &operator=(const ReduceMinLoc &) = delete;
-
-  //! compiler-generated copy constructor
-  ReduceMinLoc(const ReduceMinLoc &) = default;
-
-  //! compiler-generated move constructor
-  ReduceMinLoc(ReduceMinLoc &&) = default;
-
-  //! compiler-generated move assignment
-  ReduceMinLoc &operator=(ReduceMinLoc &&) = default;
-
-  //! constructor requires a default value for the reducer
-  explicit ReduceMinLoc(T init_val, Index_type init_idx)
-      : Base(typename Base::value_type(init_val, init_idx))
-  {
-  }
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const ReduceMinLoc &minloc(T rhs, Index_type loc) const
-  {
-    this->combine(typename Base::value_type(rhs, loc));
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  ReduceMinLoc &minloc(T rhs, Index_type loc)
-  {
-    this->combine(typename Base::value_type(rhs, loc));
-    return *this;
-  }
-
-  Index_type getLoc() { return Base::get().loc; }
-  operator T() const { return Base::get(); }
-};
-
-/*!
- **************************************************************************
- *
- * \brief  Max reducer class template for use in tbb execution.
- *
- **************************************************************************
- */
-template <typename T>
-class ReduceMax<tbb_reduce, T> : public detail::MaxReduce<T>
-{
-public:
-  using Base = detail::MaxReduce<T>;
+  using Base = detail::BaseReduceMin<T, detail::ReduceTBB>;
   using Base::Base;
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const ReduceMax &max(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  ReduceMax &max(T rhs)
-  {
-    this->combine(rhs);
-    return *this;
-  }
 };
 
-/*!
- **************************************************************************
- *
- * \brief  Sum reducer class template for use in tbb execution.
- *
- **************************************************************************
- */
 template <typename T>
-class ReduceSum<tbb_reduce, T> : public detail::SumReduce<T>
+class ReduceMax<tbb_reduce, T>
+    : public detail::BaseReduceMax<T, detail::ReduceTBB>
 {
 public:
-  using Base = detail::SumReduce<T>;
+  using Base = detail::BaseReduceMax<T, detail::ReduceTBB>;
   using Base::Base;
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const ReduceSum &operator+=(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  ReduceSum &operator+=(T rhs)
-  {
-    this->combine(rhs);
-    return *this;
-  }
 };
 
-/*!
- **************************************************************************
- *
- * \brief  MaxLoc reducer class template for use in tbb execution.
- *
- **************************************************************************
- */
 template <typename T>
-class ReduceMaxLoc<tbb_reduce, T> : public detail::MaxLocReduce<T>
+class ReduceSum<tbb_reduce, T>
+    : public detail::BaseReduceSum<T, detail::ReduceTBB>
 {
 public:
-  using Base = detail::MaxLocReduce<T>;
-  //! prohibit compiler-generated default ctor
-  ReduceMaxLoc() = delete;
+  using Base = detail::BaseReduceSum<T, detail::ReduceTBB>;
+  using Base::Base;
+};
 
-  //! prohibit compiler-generated copy assignment
-  ReduceMaxLoc &operator=(const ReduceMaxLoc &) = delete;
+template <typename T>
+class ReduceMinLoc<tbb_reduce, T>
+    : public detail::BaseReduceMinLoc<T, detail::ReduceTBB>
+{
+public:
+  using Base = detail::BaseReduceMinLoc<T, detail::ReduceTBB>;
+  using Base::Base;
+};
 
-  //! compiler-generated copy constructor
-  ReduceMaxLoc(const ReduceMaxLoc &) = default;
-
-  //! compiler-generated move constructor
-  ReduceMaxLoc(ReduceMaxLoc &&) = default;
-
-  //! compiler-generated move assignment
-  ReduceMaxLoc &operator=(ReduceMaxLoc &&) = default;
-
-  //! constructor requires a default value for the reducer
-  explicit ReduceMaxLoc(T init_val, Index_type init_idx)
-      : Base(typename Base::value_type(init_val, init_idx))
-  {
-  }
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const ReduceMaxLoc &maxloc(T rhs, Index_type loc) const
-  {
-    this->combine(typename Base::value_type(rhs, loc));
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  ReduceMaxLoc &maxloc(T rhs, Index_type loc)
-  {
-    this->combine(typename Base::value_type(rhs, loc));
-    return *this;
-  }
-
-  Index_type getLoc() { return Base::get().loc; }
-
-  operator T() const { return Base::get(); }
+template <typename T>
+class ReduceMaxLoc<tbb_reduce, T>
+    : public detail::BaseReduceMaxLoc<T, detail::ReduceTBB>
+{
+public:
+  using Base = detail::BaseReduceMaxLoc<T, detail::ReduceTBB>;
+  using Base::Base;
 };
 
 }  // closing brace for RAJA namespace
