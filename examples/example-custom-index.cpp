@@ -63,7 +63,7 @@ const int DIM = 2;
           3, 4, 3, 4];
 
   This codes illustrates how to create a custom RAJA index set on which
-  a RAJA forall loop may iterate on. In this code a RAJA::Forall loop will
+  a RAJA forall loop may iterate on. In this code a RAJA forall loop will
   transverse through values of 1 then 2, etc...
 
   --------[RAJA Concepts]---------
@@ -71,7 +71,7 @@ const int DIM = 2;
   2. RAJA::View           - RAJA's wrapper for multidimensional indexing
   3. RAJA::ListSegment    - Container for an arbitrary collection of indices
   4. RAJA::StaticIndexSet - Container for an index set which is a collection of
-                             ListSegments
+                            ListSegments
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -88,7 +88,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::copy(init.begin(), init.end(), A);
 
   /*
-    The template arguments for StaticIndexSet allow the user to indicate
+    The template arguments for StaticIndexSet enables the user to indicate
     the required storage types of various segments. In this example,
     we only need to store TypedListSegment<Index_type> (aka ListSegment)
   */
@@ -151,8 +151,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    */
   using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
     
-  RAJA::forall<ColorPolicy>
-    (colorset, [=](int idx) {
+  RAJA::forall<ColorPolicy>(
+    colorset, [=](int idx) {
       printf("A[%d] = %d\n", idx, A[idx]);
     });
 

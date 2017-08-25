@@ -48,7 +48,7 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-const int sr = 2;  // Stencil radius
+const int sr    = 2;  // Stencil radius
 const double PI = 3.14159265359;
 
 struct grid_s {
@@ -63,8 +63,8 @@ struct grid_s {
 template <typename T, typename fdNestedPolicy>
 void Wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
-  RAJA::forallN<fdNestedPolicy>
-    (fdBounds, fdBounds, [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {  
+  RAJA::forallN<fdNestedPolicy>(
+    fdBounds, fdBounds, [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {  
       
       /*
         Coefficients for a fourth order stencil
@@ -96,9 +96,9 @@ void Wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
     });
 }
 
-double wave_sol(double t, double x, double y);
-void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid);
-void compute_err(double *P, double tf, grid_s grid);
+double waveSol(double t, double x, double y);
+void setIC(double *P1, double *P2, double t0, double t1, grid_s grid);
+void computeErr(double *P, double tf, grid_s grid);
 
 /*
   Example 4: Solver for the acoustic wave eqation
@@ -107,7 +107,7 @@ void compute_err(double *P, double tf, grid_s grid);
 
   ------[Details]----------------------
   Scheme uses a second order central diffrence discretization for time and a
-  fourth order central discretization for space. Periodic boundary conditions
+  fourth order central difference discretization for space. Periodic boundary conditions
   are assumed.
   NOTE: The x and y dimensions are discretized identically.
 
@@ -188,7 +188,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //RAJA::cuda_threadblock_x_exec<16>>>;
 
   time = 0;
-  set_ic(P1, P2, (time - dt), time, grid);
+  setIC(P1, P2, (time - dt), time, grid);
   for (int k = 0; k < nt; ++k) {
 
     Wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
@@ -201,7 +201,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
-  compute_err(P2, time, grid);
+  computeErr(P2, time, grid);
   printf("Evolved solution to time = %f \n",time); 
 
   memoryManager::deallocate(P1);
@@ -215,7 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   Analytic colution
   P(t,x,y) = Cos(2*PI*t)*Sin(2*PI*x)*Sin(2*PI*y)
 */
-double wave_sol(double t, double x, double y)
+double waveSol(double t, double x, double y)
 {
   return cos(2. * PI * t) * sin(2. * PI * x) * sin(2. * PI * y);
 }
@@ -223,7 +223,7 @@ double wave_sol(double t, double x, double y)
 /*
   Error is computed via ||P_{analytic}(:) - P_{approx}(:)||_{inf} 
 */
-void compute_err(double *P, double tf, grid_s grid)
+void computeErr(double *P, double tf, grid_s grid)
 {
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
@@ -232,13 +232,13 @@ void compute_err(double *P, double tf, grid_s grid)
     RAJA::NestedPolicy<
     RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
-  RAJA::forallN<myPolicy>
-    (fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {          
+  RAJA::forallN<myPolicy>(
+    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {          
       
       int id = tx + grid.nx * ty;
       double x = grid.ox + tx * grid.dx;
       double y = grid.ox + ty * grid.dx;
-      double myErr = std::abs(P[id] - wave_sol(tf, x, y));
+      double myErr = std::abs(P[id] - waveSol(tf, x, y));
       
       tMax.max(myErr);  // Keeps track of the maximum value
     });
@@ -251,21 +251,21 @@ void compute_err(double *P, double tf, grid_s grid)
 /*
   Set intial condition
 */
-void set_ic(double *P1, double *P2, double t0, double t1, grid_s grid)
+void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 {
 
   using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+  RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
   RAJA::RangeSegment fdBounds(0, grid.nx);
   
-  RAJA::forallN<myPolicy>
-    (fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+  RAJA::forallN<myPolicy>(
+    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
       
       int id = tx + ty * grid.nx;
       double x = grid.ox + tx * grid.dx;
       double y = grid.ox + ty * grid.dx;
       
-      P1[id] = wave_sol(t0, x, y);
-      P2[id] = wave_sol(t1, x, y);
+      P1[id] = waveSol(t0, x, y);
+      P2[id] = waveSol(t1, x, y);
     });
 }

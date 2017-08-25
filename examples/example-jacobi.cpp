@@ -51,7 +51,8 @@
 
 #include "memoryManager.hpp"
 
-const int CUDA_BLOCK_SIZE  = 16;
+const int CUDA_BLOCK_DIM_X  = 16;
+const int CUDA_BLOCK_DIM_Y  = 16;
 const int CUDA_REDUCE_SIZE = 256;
 
 
@@ -65,18 +66,18 @@ const int CUDA_REDUCE_SIZE = 256;
   -U_xx - U_yy = 1.0.
   The solution is assumed to satisfy
   U = 0 on the boundary of the domain.
+  The domain is assumed to be a lattice 
+  with unit grid spacing.
 
   Values inside the domain are computed
   using the Jocabi method to solve the associated
-  linear system. The domain is assumed to be a lattice 
-  with unit grid spacing.
-
+  linear system. 
 
   ----[RAJA Concepts]---------------
   1. RAJA ForallN
   2. RAJA Reduction
   3. RAJA::omp_collapse_nowait_exec
-  3. Reducing length of RAJA statements
+  4. Reducing length of RAJA statements
 */
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -84,17 +85,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("Example 3: Jacobi Method \n");
 
-  // Jacobi method is invoked until the l_2 norm of the difference of the
-  // iterations are under a tolerance
-  double tol = 1e-5;
+  /*
+    Jacobi method is invoked until the l_2 norm of the difference of the
+    iterations are under a tolerance. 
+    
+    ----[Solver Parameters]------------
+    tol       - Value in which the l_2 norm should be under
+    N         - Number of unknown gridpoints per cartesian dimension
+    NN        - Total number of gridpoints on the lattice
+    maxIter   - Maximum number of iterations to be taken
+    
+    resI2     - Residual
+    iteration - Iteration number
+  */
+  double tol  = 1e-5;
 
-  int N       = 100;                // Number of unknown gridpoints per cartesian dimension
-  int NN      = (N + 2) * (N + 2);  // Total number of gridpoints on the lattice
-  int maxIter = 100000;             // Maximum number of iterations to be taken
+  int N       = 100;                
+  int NN      = (N + 2) * (N + 2);
+  int maxIter = 100000;
 
-  double resI2;                     // Residual
-  int iteration;                    // Iteration number
-
+  double resI2;
+  int iteration;
+  
   /*
     f       - Right hand side term
     invD    - Accumulation of finite difference coefficients
@@ -114,19 +126,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   iteration = 0;
 
   while (resI2 > tol * tol) {
-
+    
+    /*
+      Jacobi Iteration
+    */
     for (int n = 1; n <= N; ++n) {
       for (int m = 1; m <= N; ++m) {
-
+        
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2] 
-                          - Iold[id - 1] - Iold[id + 1]);        
+                        - Iold[id - 1] - Iold[id + 1]);        
       }
     }
-
+    
     /*
-      Residual is computed via ||I - I_{old}||_{l2}
-      I_{old} is updated
+      Compute residual and update Iold
     */
     resI2 = 0.0;
     for (int k = 0; k < NN; k++) {
@@ -145,13 +159,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("No of iterations: %d \n \n", iteration);
   
   /*
-    RAJA loop calls may be shortened by defining policies before hand
+    RAJA loop calls may be shortened by predefining policies
   */
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
   using jacobiSeqNestedPolicy =
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
-
+  
   printf("RAJA: Sequential Policy - Nested forallN \n");
   resI2 = 1;
   iteration = 0;
@@ -160,8 +174,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
 
-    RAJA::forallN<jacobiSeqNestedPolicy>
-      (jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
+    /*
+      Jacobi Iteration
+    */    
+    RAJA::forallN<jacobiSeqNestedPolicy>(
+      jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
         
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2]
@@ -174,8 +191,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       "ReduceSum" in order to carryout reductions
     */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::seq_exec>
-      (gridRange, [=](RAJA::Index_type k) {
+    RAJA::forall<RAJA::seq_exec>(
+      gridRange, [=](RAJA::Index_type k) {
         
         RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);
         Iold[k] = I[k];
@@ -200,6 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(Iold, 0, NN * sizeof(double));
 
   /*
+    ----[RAJA Policies]-----------
     RAJA::omp_collapse_nowait_exec -
     parallizes nested loops without introducing nested parallism
 
@@ -214,18 +232,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
 
-    RAJA::forallN<jacobiompNestedPolicy>
-      (jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
+    /*
+      Jacobi Iteration
+    */
+    RAJA::forallN<jacobiompNestedPolicy>(
+      jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
         
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
                         - Iold[id + 1]);
       });
     
-    // Reduction step
+    /*
+      Compute residual and update Iold
+    */
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);    
-    RAJA::forall<RAJA::omp_parallel_for_exec>
-      (gridRange, [=](RAJA::Index_type k) {
+    RAJA::forall<RAJA::omp_parallel_for_exec>(
+      gridRange, [=](RAJA::Index_type k) {
         
         RAJA_resI2 += (I[k] - Iold[k])*(I[k] - Iold[k]);
         Iold[k] = I[k];
@@ -246,9 +269,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
 #if defined(RAJA_ENABLE_CUDA)
   using jacobiCUDANestedPolicy = 
-    RAJA::NestedPolicy<RAJA::ExecList
-    <RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE>,
-    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE>>>;
+    RAJA::NestedPolicy<RAJA::ExecList<
+    RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_X>,
+    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_Y>>>;
     
   resI2 = 1;
   iteration = 0;
@@ -256,19 +279,24 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(Iold, 0, NN * sizeof(double));
   
   while (resI2 > tol * tol) {
-    
-    RAJA::forallN<jacobiCUDANestedPolicy>
-      (jacobiRange, jacobiRange, [=] __device__(RAJA::Index_type m,RAJA::Index_type n) {
+
+    /*
+      Jacobi Iteration
+    */
+    RAJA::forallN<jacobiCUDANestedPolicy>(
+      jacobiRange, jacobiRange, [=] __device__(RAJA::Index_type m,RAJA::Index_type n) {
         
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2]
                         - Iold[id - 1] - Iold[id + 1]);
       });
     
-    // Reduction step
+    /*
+      Compute residual and update Iold
+    */
     RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_REDUCE_SIZE>, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::cuda_exec<CUDA_REDUCE_SIZE>>
-      (gridRange, [=] __device__(RAJA::Index_type k) {
+    RAJA::forall<RAJA::cuda_exec<CUDA_REDUCE_SIZE>>(
+      gridRange, [=] __device__(RAJA::Index_type k) {
        
         RAJA_resI2 += (I[k] - Iold[k])*(I[k] - Iold[k]);          
         Iold[k] = I[k];

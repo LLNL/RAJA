@@ -5,7 +5,10 @@
 #include "RAJA/util/defines.hpp"
 
 /*
-  Developer must manage memory
+  As RAJA does not manage memory the user must allocate and deallocate memory. 
+  This header contains a general purpose memory manager which may be used
+  to perform c++ style allocation/deallcoation or allocate/deallocate
+  CUDA unified memory.
 */
 namespace memoryManager{
 
