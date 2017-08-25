@@ -78,14 +78,6 @@ namespace detail
 template <typename T, typename Reduce>
 class ReduceTBB
 {
-  struct reduce_adapter {
-    T operator()(T const &l, T const &r)
-    {
-      T tmp = l;
-      Reduce{}(tmp, r);
-      return tmp;
-    }
-  };
   //! TBB native per-thread container
   std::shared_ptr<tbb::combinable<T>> data;
 
@@ -104,7 +96,7 @@ public:
   /*!
    *  \return the calculated reduced value
    */
-  T get() const { return data->combine(reduce_adapter{}); }
+  T get() const { return data->combine(typename Reduce::operator_type{}); }
 
   /*!
    *  \return update the local value
@@ -113,57 +105,7 @@ public:
 };
 }
 
-/*!
- **************************************************************************
- *
- * \brief  Min reducer class template for use in tbb execution.
- *
- **************************************************************************
- */
-template <typename T>
-class ReduceMin<tbb_reduce, T>
-    : public detail::BaseReduceMin<T, detail::ReduceTBB>
-{
-public:
-  using Base = detail::BaseReduceMin<T, detail::ReduceTBB>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMax<tbb_reduce, T>
-    : public detail::BaseReduceMax<T, detail::ReduceTBB>
-{
-public:
-  using Base = detail::BaseReduceMax<T, detail::ReduceTBB>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceSum<tbb_reduce, T>
-    : public detail::BaseReduceSum<T, detail::ReduceTBB>
-{
-public:
-  using Base = detail::BaseReduceSum<T, detail::ReduceTBB>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMinLoc<tbb_reduce, T>
-    : public detail::BaseReduceMinLoc<T, detail::ReduceTBB>
-{
-public:
-  using Base = detail::BaseReduceMinLoc<T, detail::ReduceTBB>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMaxLoc<tbb_reduce, T>
-    : public detail::BaseReduceMaxLoc<T, detail::ReduceTBB>
-{
-public:
-  using Base = detail::BaseReduceMaxLoc<T, detail::ReduceTBB>;
-  using Base::Base;
-};
+RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB);
 
 }  // closing brace for RAJA namespace
 

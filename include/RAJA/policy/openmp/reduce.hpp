@@ -16,11 +16,6 @@
 
 #if defined(RAJA_ENABLE_OPENMP)
 
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/detail/reduce.hpp"
-
-#include <memory>
-#include <vector>
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -64,16 +59,19 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include "RAJA/config.hpp"
+
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/pattern/detail/reduce.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/openmp/target_reduce.hpp"
 
 #include <omp.h>
 
-#include <unordered_map>
+#include <memory>
+#include <vector>
 
 namespace RAJA
 {
@@ -95,15 +93,17 @@ public:
       : identity{identity_}, my_data{init_val}
   {
   }
+
   constexpr ReduceOMP(ReduceOMP const &other)
       : parent{other.parent ? other.parent : &other},
         identity{other.identity},
         my_data{identity}
   {
   }
+
   ~ReduceOMP()
   {
-    if (parent != this) {
+    if (parent) {
 #pragma omp critical(ompReduceCritical)
       Reduce()(parent->my_data, my_data);
     }
@@ -120,6 +120,18 @@ public:
   void combine(T const &other) { Reduce{}(my_data, other); }
 };
 
+} /* detail */
+
+RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP);
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Old ordered reductions are included below.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+namespace detail
+{
 template <typename T, typename Reduce>
 class ReduceOMPOrdered
 {
@@ -140,6 +152,7 @@ public:
         my_data{init_val}
   {
   }
+
   constexpr ReduceOMPOrdered(ReduceOMPOrdered const &other)
       : parent{other.parent},
         data{other.data},
@@ -147,6 +160,7 @@ public:
         my_data{identity}
   {
   }
+
   ~ReduceOMPOrdered() { Reduce{}((*data)[omp_get_thread_num()], my_data); }
 
   void combine(T const &other) { Reduce{}(my_data, other); }
@@ -170,102 +184,7 @@ public:
 };
 
 } /* detail */
-
-template <typename T>
-class ReduceMin<omp_reduce, T>
-    : public detail::BaseReduceMin<T, detail::ReduceOMP>
-{
-public:
-  using Base = detail::BaseReduceMin<T, detail::ReduceOMP>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMax<omp_reduce, T>
-    : public detail::BaseReduceMax<T, detail::ReduceOMP>
-{
-public:
-  using Base = detail::BaseReduceMax<T, detail::ReduceOMP>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceSum<omp_reduce, T>
-    : public detail::BaseReduceSum<T, detail::ReduceOMP>
-{
-public:
-  using Base = detail::BaseReduceSum<T, detail::ReduceOMP>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMinLoc<omp_reduce, T>
-    : public detail::BaseReduceMinLoc<T, detail::ReduceOMP>
-{
-public:
-  using Base = detail::BaseReduceMinLoc<T, detail::ReduceOMP>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMaxLoc<omp_reduce, T>
-    : public detail::BaseReduceMaxLoc<T, detail::ReduceOMP>
-{
-public:
-  using Base = detail::BaseReduceMaxLoc<T, detail::ReduceOMP>;
-  using Base::Base;
-};
-
-///////////////////////////////////////////////////////////////////////////////
-//
-// Old ordered reductions are included below.
-//
-///////////////////////////////////////////////////////////////////////////////
-
-template <typename T>
-class ReduceMin<omp_reduce_ordered, T>
-    : public detail::BaseReduceMin<T, detail::ReduceOMPOrdered>
-{
-public:
-  using Base = detail::BaseReduceMin<T, detail::ReduceOMPOrdered>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMax<omp_reduce_ordered, T>
-    : public detail::BaseReduceMax<T, detail::ReduceOMPOrdered>
-{
-public:
-  using Base = detail::BaseReduceMax<T, detail::ReduceOMPOrdered>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceSum<omp_reduce_ordered, T>
-    : public detail::BaseReduceSum<T, detail::ReduceOMPOrdered>
-{
-public:
-  using Base = detail::BaseReduceSum<T, detail::ReduceOMPOrdered>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMinLoc<omp_reduce_ordered, T>
-    : public detail::BaseReduceMinLoc<T, detail::ReduceOMPOrdered>
-{
-public:
-  using Base = detail::BaseReduceMinLoc<T, detail::ReduceOMPOrdered>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMaxLoc<omp_reduce_ordered, T>
-    : public detail::BaseReduceMaxLoc<T, detail::ReduceOMPOrdered>
-{
-public:
-  using Base = detail::BaseReduceMaxLoc<T, detail::ReduceOMPOrdered>;
-  using Base::Base;
-};
+RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMPOrdered);
 
 }  // closing brace for RAJA namespace
 

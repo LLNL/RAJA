@@ -108,57 +108,7 @@ public:
 
 } /* detail */
 
-/*!
- **************************************************************************
- *
- * \brief  Min reducer class template for use in sequential execution.
- *
- **************************************************************************
- */
-template <typename T>
-class ReduceMin<seq_reduce, T>
-    : public detail::BaseReduceMin<T, detail::ReduceSeq>
-{
-public:
-  using Base = detail::BaseReduceMin<T, detail::ReduceSeq>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMax<seq_reduce, T>
-    : public detail::BaseReduceMax<T, detail::ReduceSeq>
-{
-public:
-  using Base = detail::BaseReduceMax<T, detail::ReduceSeq>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceSum<seq_reduce, T>
-    : public detail::BaseReduceSum<T, detail::ReduceSeq>
-{
-public:
-  using Base = detail::BaseReduceSum<T, detail::ReduceSeq>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMinLoc<seq_reduce, T>
-    : public detail::BaseReduceMinLoc<T, detail::ReduceSeq>
-{
-public:
-  using Base = detail::BaseReduceMinLoc<T, detail::ReduceSeq>;
-  using Base::Base;
-};
-
-template <typename T>
-class ReduceMaxLoc<seq_reduce, T>
-    : public detail::BaseReduceMaxLoc<T, detail::ReduceSeq>
-{
-public:
-  using Base = detail::BaseReduceMaxLoc<T, detail::ReduceSeq>;
-  using Base::Base;
-};
+RAJA_DECLARE_ALL_REDUCERS(seq_reduce, detail::ReduceSeq);
 
 }  // closing brace for RAJA namespace
 

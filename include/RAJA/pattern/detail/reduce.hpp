@@ -5,6 +5,22 @@
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
 
+#define RAJA_DECLARE_REDUCER(OP, POL, COMBINER)                         \
+  template <typename T>                                                 \
+  class Reduce##OP<POL, T> : public detail::BaseReduce##OP<T, COMBINER> \
+  {                                                                     \
+  public:                                                               \
+    using Base = detail::BaseReduce##OP<T, COMBINER>;                   \
+    using Base::Base;                                                   \
+  };
+
+#define RAJA_DECLARE_ALL_REDUCERS(POL, COMBINER) \
+  RAJA_DECLARE_REDUCER(Sum, POL, COMBINER)       \
+  RAJA_DECLARE_REDUCER(Min, POL, COMBINER)       \
+  RAJA_DECLARE_REDUCER(Max, POL, COMBINER)       \
+  RAJA_DECLARE_REDUCER(MinLoc, POL, COMBINER)    \
+  RAJA_DECLARE_REDUCER(MaxLoc, POL, COMBINER)
+
 namespace RAJA
 {
 
@@ -27,6 +43,7 @@ public:
   }
 
   operator T() const { return val; }
+  Index_type getLoc() { return loc; }
   bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
   bool operator>(ValueLoc const &rhs) const { return val > rhs.val; }
 };
@@ -142,7 +159,7 @@ public:
   }
 
   //! Get the calculated reduced value
-  Index_type getLoc() { return Base::get().loc; }
+  Index_type getLoc() { return Base::get().getLoc(); }
   //! Get the calculated reduced value
   operator T() const { return Base::get(); }
 };
@@ -221,7 +238,7 @@ public:
   }
 
   //! Get the calculated reduced value
-  Index_type getLoc() { return Base::get().loc; }
+  Index_type getLoc() { return Base::get().getLoc(); }
 
   //! Get the calculated reduced value
   operator T() const { return Base::get(); }
