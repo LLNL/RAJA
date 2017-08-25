@@ -270,8 +270,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   using jacobiCUDANestedPolicy = 
     RAJA::NestedPolicy<RAJA::ExecList<
-    RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_X>,
-    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_Y>>>;
+    RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
+    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_DIM_Y>>>;
     
   resI2 = 1;
   iteration = 0;

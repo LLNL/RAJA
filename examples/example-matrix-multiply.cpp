@@ -58,8 +58,11 @@ const int NN  = N * N;
 
 const int DIM = 2;
 
+const int CUDA_BLOCK_SIZE_X = 16;
+const int CUDA_BLOCK_SIZE_Y = 16;
+
 template <typename T>
-void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, RAJA::RangeSegment matBounds);
+void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
 /*
   Example 2: Multiplying Two Matrices
@@ -128,7 +131,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row, col) = dot;
     }
   }
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
 
   printf("RAJA: Sequential Policy - Single forall \n");
   RAJA::forall<RAJA::seq_exec>(
@@ -145,7 +148,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
     
   });
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
 
   printf("RAJA: Sequential Policy - Nested forall \n");
   /*
@@ -165,7 +168,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           Cview(row, col) = dot;
         });
     });
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
   
   
   printf("RAJA: Sequential Policy RAJA - forallN \n");
@@ -183,7 +186,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       
       Cview(row, col) = dot;
     });
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
   
   
 #if defined(RAJA_ENABLE_OPENMP)
@@ -203,7 +206,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       
       Cview(row, col) = dot;
     });
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
 #endif
   
   
@@ -214,7 +217,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     under the CUDA nomenclature
   */
   RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::cuda_threadblock_y_exec<16>, RAJA::cuda_threadblock_x_exec<16>>>>(
+    RAJA::ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_X>, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_Y>>>>(
       matBounds, matBounds, [=] __device__(RAJA::Index_type row, RAJA::Index_type col) { 
       
       double dot = 0.0;
@@ -225,7 +228,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Cview(row, col) = dot;
     });
   cudaDeviceSynchronize();
-  checkSolution<double>(Cview, matBounds);
+  checkSolution<double>(Cview, N);
 #endif
 
 
@@ -237,14 +240,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 template <typename T>
-void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, RAJA::RangeSegment matBounds)
+void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N)
 {
 
   RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](RAJA::Index_type row) {
+    RAJA::RangeSegment(0,N), [=](RAJA::Index_type row) {
 
       RAJA::forall<RAJA::seq_exec>(
-        matBounds, [=](RAJA::Index_type col) {
+        RAJA::RangeSegment(0,N), [=](RAJA::Index_type col) {
       
           double diff = Cview(row,col) - in_N;          
           if (abs(diff) > 1e-9) {
