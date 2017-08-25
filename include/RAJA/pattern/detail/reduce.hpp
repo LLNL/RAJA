@@ -12,9 +12,12 @@ namespace detail
 {
 
 template <typename T, bool doing_min = true>
-struct ValueLoc {
+class ValueLoc
+{
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
+
+public:
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
   ValueLoc &operator=(ValueLoc const &) = default;
@@ -22,14 +25,15 @@ struct ValueLoc {
   constexpr ValueLoc(T const &val, Index_type const &loc) : val{val}, loc{loc}
   {
   }
+
   operator T() const { return val; }
   bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
   bool operator>(ValueLoc const &rhs) const { return val > rhs.val; }
 };
 }  // end namespace detail
+
 namespace operators
 {
-
 template <typename T, bool B>
 struct limits<::RAJA::detail::ValueLoc<T, B>> : limits<T> {
 };
@@ -76,14 +80,10 @@ public:
     return *this;
   }
 
-  /*!
-   *  \return the calculated reduced value
-   */
+  //! Get the calculated reduced value
   operator T() const { return c.get(); }
 
-  /*!
-   *  \return the calculated reduced value
-   */
+  //! Get the calculated reduced value
   T get() const { return c.get(); }
 };
 
@@ -105,20 +105,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
   const BaseReduceMin &min(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  BaseReduceMin &min(T rhs)
   {
     this->combine(rhs);
     return *this;
@@ -146,27 +133,17 @@ public:
       : Base(value_type(init_val, init_idx))
   {
   }
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
+
+  /// \brief reducer function; updates the current instance's state
   const BaseReduceMinLoc &minloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
   }
 
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  BaseReduceMinLoc &minloc(T rhs, Index_type loc)
-  {
-    this->combine(value_type(rhs, loc));
-    return *this;
-  }
-
+  //! Get the calculated reduced value
   Index_type getLoc() { return Base::get().loc; }
+  //! Get the calculated reduced value
   operator T() const { return Base::get(); }
 };
 
@@ -185,20 +162,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
   const BaseReduceMax &max(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
-
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  BaseReduceMax &max(T rhs)
   {
     this->combine(rhs);
     return *this;
@@ -218,21 +182,9 @@ class BaseReduceSum : public BaseReduce<T, RAJA::reduce::sum, Combiner>
 public:
   using Base = BaseReduce<T, RAJA::reduce::sum, Combiner>;
   using Base::Base;
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  const BaseReduceSum &operator+=(T rhs) const
-  {
-    this->combine(rhs);
-    return *this;
-  }
 
   //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  BaseReduceSum &operator+=(T rhs)
+  const BaseReduceSum &operator+=(T rhs) const
   {
     this->combine(rhs);
     return *this;
@@ -260,28 +212,18 @@ public:
       : Base(value_type(init_val, init_idx))
   {
   }
+
   //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
   const BaseReduceMaxLoc &maxloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
   }
 
-  //! reducer function; updates the current instance's state
-  /*!
-   * Assumes each thread has its own copy of the object.
-   */
-  BaseReduceMaxLoc &maxloc(T rhs, Index_type loc)
-  {
-    this->combine(value_type(rhs, loc));
-    return *this;
-  }
-
+  //! Get the calculated reduced value
   Index_type getLoc() { return Base::get().loc; }
 
+  //! Get the calculated reduced value
   operator T() const { return Base::get(); }
 };
 

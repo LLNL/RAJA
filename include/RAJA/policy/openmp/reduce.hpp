@@ -103,7 +103,7 @@ public:
   }
   ~ReduceOMP()
   {
-    if (parent) {
+    if (parent != this) {
 #pragma omp critical(ompReduceCritical)
       Reduce()(parent->my_data, my_data);
     }
@@ -160,7 +160,7 @@ public:
       Reduce{}((*data)[omp_get_thread_num()], my_data);
       my_data = identity;
     }
-    // TODO: determine if parallelizing this is worth it
+
     T res = identity;
     for (size_t i = 0; i < data->size(); ++i) {
       Reduce{}(res, (*data)[i]);
