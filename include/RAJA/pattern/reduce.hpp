@@ -70,12 +70,11 @@ namespace reduce
 namespace detail
 {
 template <typename T, template <typename...> class Op>
-struct op_adapter : private Op<T>
-{
-  static constexpr T identity() { return Op<T>::identity(); }
+struct op_adapter : private Op<T, T, T> {
+  static constexpr T identity() { return Op<T, T, T>::identity(); }
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
   {
-    val = Op<T>::operator()(val, v);
+    val = Op<T, T, T>::operator()(val, v);
   }
 };
 } /* detail */
