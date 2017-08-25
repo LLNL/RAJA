@@ -81,28 +81,30 @@ TYPED_TEST_P(ReductionConstructorTest, ReductionConstructor)
 
 REGISTER_TYPED_TEST_CASE_P(ReductionConstructorTest, ReductionConstructor);
 
-#if defined(RAJA_ENABLE_OPENMP)
 using constructor_types =
     ::testing::Types<std::tuple<RAJA::seq_reduce, int>,
                      std::tuple<RAJA::seq_reduce, float>,
-                     std::tuple<RAJA::seq_reduce, double>,
+                     std::tuple<RAJA::seq_reduce, double>
+#if defined(RAJA_ENABLE_TBB)
+                     ,
+                     std::tuple<RAJA::tbb_reduce, int>,
+                     std::tuple<RAJA::tbb_reduce, float>,
+                     std::tuple<RAJA::tbb_reduce, double>
+#endif
+#if defined(RAJA_ENABLE_OPENMP)
+                     ,
                      std::tuple<RAJA::omp_reduce, int>,
                      std::tuple<RAJA::omp_reduce, float>,
                      std::tuple<RAJA::omp_reduce, double>,
                      std::tuple<RAJA::omp_reduce_ordered, int>,
                      std::tuple<RAJA::omp_reduce_ordered, float>,
-                     std::tuple<RAJA::omp_reduce_ordered, double> >;
-#else
-using constructor_types =
-    ::testing::Types<std::tuple<RAJA::seq_reduce, int>,
-                     std::tuple<RAJA::seq_reduce, float>,
-                     std::tuple<RAJA::seq_reduce, double> >;
+                     std::tuple<RAJA::omp_reduce_ordered, double>
 #endif
+                     >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTests,
                               ReductionConstructorTest,
                               constructor_types);
-
 
 template <typename TUPLE>
 class ReductionCorrectnessTest : public ::testing::Test
@@ -253,16 +255,19 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
                            ReduceMinLoc,
                            ReduceMaxLoc);
 
+using types = ::testing::Types<
+    std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
+    std::tuple<RAJA::simd_exec, RAJA::seq_reduce>
 #if defined(RAJA_ENABLE_OPENMP)
-using types = ::testing::
-    Types<std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
-          std::tuple<RAJA::simd_exec, RAJA::seq_reduce>,
-          std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
-          std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered> >;
-#else
-using types = ::testing::Types<std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
-                               std::tuple<RAJA::simd_exec, RAJA::seq_reduce> >;
+    ,
+    std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
+    std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered>
 #endif
+#if defined(RAJA_ENABLE_TBB)
+    ,
+    std::tuple<RAJA::tbb_for_exec, RAJA::tbb_reduce>
+#endif
+    >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Reduce, ReductionCorrectnessTest, types);
 
@@ -308,10 +313,10 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 
   RAJA::ReduceSum<ReducePolicy, double> sum_reducer(0.0);
 
-  RAJA::View<double, RAJA::Layout<3> > view(this->array,
-                                            this->x_size,
-                                            this->y_size,
-                                            this->z_size);
+  RAJA::View<double, RAJA::Layout<3>> view(this->array,
+                                           this->x_size,
+                                           this->y_size,
+                                           this->z_size);
 
   RAJA::forallN<ExecPolicy>(RAJA::RangeSegment(0, this->x_size),
                             RAJA::RangeSegment(0, this->y_size),
@@ -328,45 +333,32 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, NestedReduceSum);
 
 #if defined(RAJA_ENABLE_OPENMP)
-using nested_types = ::testing::
-    Types<std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
-                                                       RAJA::seq_exec,
-                                                       RAJA::seq_exec> >,
-                     RAJA::seq_reduce>,
-          std::
-              tuple<RAJA::
-                        NestedPolicy<RAJA::
-                                         ExecList<RAJA::
-                                                      omp_collapse_nowait_exec,
-                                                  RAJA::
-                                                      omp_collapse_nowait_exec,
-                                                  RAJA::
-                                                      omp_collapse_nowait_exec>,
-                                     RAJA::OMP_Parallel<> >,
-                    RAJA::omp_reduce>,
-          std::
-              tuple<RAJA::
-                        NestedPolicy<RAJA::ExecList<RAJA::omp_parallel_for_exec,
-                                                    RAJA::seq_exec,
-                                                    RAJA::seq_exec> >,
-                    RAJA::omp_reduce>,
-          std::
-              tuple<RAJA::
-                        NestedPolicy<RAJA::
-                                         ExecList<RAJA::
-                                                      omp_collapse_nowait_exec,
-                                                  RAJA::
-                                                      omp_collapse_nowait_exec,
-                                                  RAJA::
-                                                      omp_collapse_nowait_exec>,
-                                     RAJA::OMP_Parallel<> >,
-                    RAJA::omp_reduce_ordered> >;
+using nested_types = ::testing::Types<
+    std::tuple<
+        RAJA::NestedPolicy<
+            RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_exec>>,
+        RAJA::seq_reduce>,
+    std::tuple<
+        RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
+                                          RAJA::omp_collapse_nowait_exec,
+                                          RAJA::omp_collapse_nowait_exec>,
+                           RAJA::OMP_Parallel<>>,
+        RAJA::omp_reduce>,
+    std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_parallel_for_exec,
+                                                 RAJA::seq_exec,
+                                                 RAJA::seq_exec>>,
+               RAJA::omp_reduce>,
+    std::tuple<
+        RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
+                                          RAJA::omp_collapse_nowait_exec,
+                                          RAJA::omp_collapse_nowait_exec>,
+                           RAJA::OMP_Parallel<>>,
+        RAJA::omp_reduce_ordered>>;
 #else
-using nested_types = ::testing::
-    Types<std::tuple<RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec,
-                                                       RAJA::seq_exec,
-                                                       RAJA::seq_exec> >,
-                     RAJA::seq_reduce> >;
+using nested_types = ::testing::Types<std::tuple<
+    RAJA::NestedPolicy<
+        RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_exec>>,
+    RAJA::seq_reduce>>;
 #endif
 
 INSTANTIATE_TYPED_TEST_CASE_P(NestedReduce,

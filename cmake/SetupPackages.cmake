@@ -81,6 +81,17 @@ if (RAJA_ENABLE_CUDA)
 endif()
 
 
+if (RAJA_ENABLE_TBB)
+  find_package(TBB)
+  if(TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    message(STATUS "TBB Enabled")
+  else()
+    message(WARNING "TBB NOT FOUND")
+    set(RAJA_ENABLE_TBB Off)
+  endif()
+endif ()
+
 if (RAJA_ENABLE_TESTS)
 
 #
@@ -101,6 +112,7 @@ else()
       CMAKE_ARGS                
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_CXX_COMPILER_ARG1=${CMAKE_CXX_COMPILER_ARG1}
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON
       LOG_CONFIGURE ON

@@ -340,7 +340,7 @@ struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return Ret{lhs} + rhs;
   }
-  static constexpr const Ret identity = Ret{0};
+  static constexpr Ret identity() {return Ret{0};}
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -358,7 +358,7 @@ struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return Ret{lhs} * rhs;
   }
-  static constexpr const Ret identity = Ret{1};
+  static constexpr Ret identity() {return Ret{1};}
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -386,7 +386,7 @@ struct logical_and : public detail::comparison_function<Arg1, Arg2>,
   {
     return lhs && rhs;
   }
-  static constexpr const bool identity = true;
+  static constexpr bool identity() {return true;}
 };
 
 template <typename Arg1, typename Arg2 = Arg1>
@@ -396,7 +396,7 @@ struct logical_or : public detail::comparison_function<Arg1, Arg2>,
   {
     return lhs || rhs;
   }
-  static constexpr const bool identity = false;
+  static constexpr bool identity() {return false;}
 };
 
 template <typename T>
@@ -439,7 +439,7 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? lhs : rhs;
   }
-  static constexpr const Ret identity = limits<Ret>::max();
+  static constexpr Ret identity() {return limits<Ret>::max();}
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -449,7 +449,7 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? rhs : lhs;
   }
-  static constexpr const Ret identity = limits<Ret>::min();
+  static constexpr Ret identity() {return limits<Ret>::min();}
 };
 
 // Logical Comparison

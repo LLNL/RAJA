@@ -276,6 +276,7 @@ struct PolLTimesB_GPU {
 };
 
 // Combine OMP Parallel, omp nowait, and cuda thread-block launch
+#if defined(RAJA_ENABLE_OPENMP)
 struct PolLTimesC_GPU {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<ExecList<seq_exec,
@@ -299,33 +300,67 @@ struct PolLTimesC_GPU {
   typedef RAJA::PERM_IJK PHI_PERM;
   typedef RAJA::PERM_IJ ELL_PERM;
 };
+#endif
 
-TEST(NestedCUDA, LTimes_PolA)
+// Combine TBB parallel loop, and cuda thread-block launch
+#if defined(RAJA_ENABLE_TBB)
+struct PolLTimesD_GPU {
+  // Loops: Moments, Directions, Groups, Zones
+  typedef NestedPolicy<ExecList<seq_exec,
+                                seq_exec,
+                                tbb_for_exec,
+                                cuda_threadblock_y_exec<32>>,
+                       Permute<PERM_IJKL>>
+      EXEC;
+
+  // psi[direction, group, zone]
+  typedef RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>
+      PSI_VIEW;
+
+  // phi[moment, group, zone]
+  typedef RAJA::TypedView<double, Layout<3>, IMoment, IGroup, IZone> PHI_VIEW;
+
+  // ell[moment, direction]
+  typedef RAJA::TypedView<double, Layout<2>, IMoment, IDirection> ELL_VIEW;
+
+  typedef RAJA::PERM_IJK PSI_PERM;
+  typedef RAJA::PERM_IJK PHI_PERM;
+  typedef RAJA::PERM_IJ ELL_PERM;
+};
+#endif
+
+using LTimesPolicies = ::testing::Types<PolLTimesA_GPU,
+                                        PolLTimesB_GPU
+#if defined(RAJA_ENABLE_OPENMP)
+                                        ,PolLTimesC_GPU
+#endif
+#if defined(RAJA_ENABLE_TBB)
+                                        ,PolLTimesD_GPU
+#endif
+                                        >;
+
+template <typename POL>
+class NestedCUDA : public ::testing::Test
 {
-  runLTimesTest<PolLTimesA_GPU>(2, 0, 7, 3);
-  runLTimesTest<PolLTimesA_GPU>(2, 3, 7, 3);
-  runLTimesTest<PolLTimesA_GPU>(2, 3, 32, 4);
-  runLTimesTest<PolLTimesA_GPU>(25, 96, 8, 32);
-  runLTimesTest<PolLTimesA_GPU>(100, 15, 7, 13);
+public:
+  virtual void SetUp() {}
+  virtual void TearDown() {}
+};
+
+TYPED_TEST_CASE_P(NestedCUDA);
+
+TYPED_TEST_P(NestedCUDA, LTimes)
+{
+  runLTimesTest<TypeParam>(2, 0, 7, 3);
+  runLTimesTest<TypeParam>(2, 3, 7, 3);
+  runLTimesTest<TypeParam>(2, 3, 32, 4);
+  runLTimesTest<TypeParam>(25, 96, 8, 32);
+  runLTimesTest<TypeParam>(100, 15, 7, 13);
 }
 
-TEST(NestedCUDA, LTimes_PolB)
-{
-  runLTimesTest<PolLTimesB_GPU>(2, 0, 7, 3);
-  runLTimesTest<PolLTimesB_GPU>(2, 3, 7, 3);
-  runLTimesTest<PolLTimesB_GPU>(2, 3, 32, 4);
-  runLTimesTest<PolLTimesB_GPU>(25, 96, 8, 32);
-  runLTimesTest<PolLTimesB_GPU>(100, 15, 7, 13);
-}
+REGISTER_TYPED_TEST_CASE_P(NestedCUDA, LTimes);
 
-TEST(NestedCUDA, LTimes_PolC)
-{
-  runLTimesTest<PolLTimesC_GPU>(2, 0, 7, 3);
-  runLTimesTest<PolLTimesC_GPU>(2, 3, 7, 3);
-  runLTimesTest<PolLTimesC_GPU>(2, 3, 32, 4);
-  runLTimesTest<PolLTimesC_GPU>(25, 96, 8, 32);
-  runLTimesTest<PolLTimesC_GPU>(100, 15, 7, 13);
-}
+INSTANTIATE_TYPED_TEST_CASE_P(LTimes, NestedCUDA, LTimesPolicies);
 
 CUDA_TEST(NestedCUDA, NegativeRange)
 {

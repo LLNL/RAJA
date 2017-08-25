@@ -41,11 +41,9 @@
 #
 ###############################################################################
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-cuda-nested
-    SOURCES test-nested.cpp)
-endif(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-cuda-nested
+  SOURCES test-nested.cpp)
 
 if (NOT RAJA_ENABLE_CLANG_CUDA)
   raja_add_test(

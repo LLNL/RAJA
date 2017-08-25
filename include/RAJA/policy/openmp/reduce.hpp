@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA reduction templates for OpenMP
+ * \brief   Header file containing RAJA reduction templates for
  *          OpenMP execution.
  *
  *          These methods should work on any platform that supports OpenMP.
@@ -11,8 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_omp_HPP
-#define RAJA_forall_omp_HPP
+#ifndef RAJA_omp_reduce_HPP
+#define RAJA_omp_reduce_HPP
 
 #include "RAJA/config.hpp"
 

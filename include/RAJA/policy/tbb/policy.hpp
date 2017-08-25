@@ -3,21 +3,13 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
- *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HPP
-#define RAJA_HPP
+#ifndef policy_tbb_HPP
+#define policy_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,91 +53,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
+#include "RAJA/policy/PolicyBase.hpp"
 
-#include "RAJA/util/defines.hpp"
+#include <cstddef>
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/util/Operators.hpp"
-
-#include "RAJA/util/basic_mempool.hpp"
-
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/policy/sequential.hpp"
-
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/simd.hpp"
-
-#if defined(RAJA_ENABLE_TBB)
-#include "RAJA/policy/tbb.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp.hpp"
-#endif
-
-#include "RAJA/index/IndexSet.hpp"
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/policy/MultiPolicy.hpp"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
-
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/OffsetLayout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
-#include "RAJA/util/View.hpp"
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-#include "RAJA/pattern/reduce.hpp"
+namespace RAJA
+{
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// Execution policies
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hpp"
+///
+/// Segment execution policies
+///
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
+struct tbb_for_dynamic
+    : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host> {
+  std::size_t grain_size;
+  tbb_for_dynamic(std::size_t grain_size_ = 1) : grain_size(grain_size_) {}
+};
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
 
-#include "RAJA/pattern/scan.hpp"
+template <std::size_t GrainSize = 1>
+struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host> {
+};
 
-#endif  // closing endif for header file include guard
+using tbb_for_exec = tbb_for_static<>;
+
+///
+/// Index set segment iteration policies
+///
+using tbb_segit = tbb_for_exec;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host> {
+};
+
+}  // closing brace for RAJA namespace
+
+#endif
