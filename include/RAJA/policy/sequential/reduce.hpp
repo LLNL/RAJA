@@ -77,7 +77,6 @@ class ReduceSeq
   T mutable my_data;
 
 public:
-  using value_type = T;
   //! prohibit compiler-generated default ctor
   ReduceSeq() = delete;
 
@@ -99,17 +98,11 @@ public:
   }
 
   void combine(T const &other) { Reduce{}(my_data, other); }
-  void combine(T const &other) const { Reduce{}(my_data, other); }
 
   /*!
    *  \return the calculated reduced value
    */
-  operator T() const { return my_data; }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return operator T(); }
+  T get() const { return my_data; }
 };
 
 

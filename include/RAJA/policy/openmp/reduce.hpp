@@ -88,11 +88,10 @@ class ReduceOMP
   T mutable my_data;
 
 public:
-  using value_type = T;
   //! prohibit compiler-generated default ctor
   ReduceOMP() = delete;
 
-  constexpr ReduceOMP(T init_val, T identity_ = T())
+  constexpr ReduceOMP(T init_val, T identity_)
       : identity{identity_}, my_data{init_val}
   {
   }
@@ -110,18 +109,15 @@ public:
     }
   }
 
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const { return my_data; }
+
+  /*!
+   *  \return update the local value
+   */
   void combine(T const &other) { Reduce{}(my_data, other); }
-  void combine(T const &other) const { Reduce{}(my_data, other); }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  operator T() const { return my_data; }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return operator T(); }
 };
 
 template <typename T, typename Reduce>
@@ -133,11 +129,10 @@ class ReduceOMPOrdered
   T mutable my_data;
 
 public:
-  using value_type = T;
   //! prohibit compiler-generated default ctor
   ReduceOMPOrdered() = delete;
 
-  constexpr ReduceOMPOrdered(T init_val, T identity_ = T())
+  constexpr ReduceOMPOrdered(T init_val, T identity_)
       : parent{this},
         data{
             std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_)},
@@ -155,9 +150,11 @@ public:
   ~ReduceOMPOrdered() { Reduce{}((*data)[omp_get_thread_num()], my_data); }
 
   void combine(T const &other) { Reduce{}(my_data, other); }
-  void combine(T const &other) const { Reduce{}(my_data, other); }
 
-  T reduce_result() const
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const
   {
     if (my_data != identity) {
       Reduce{}((*data)[omp_get_thread_num()], my_data);
@@ -170,16 +167,6 @@ public:
     }
     return res;
   }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  operator T() const { return reduce_result(); }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return operator T(); }
 };
 
 } /* detail */

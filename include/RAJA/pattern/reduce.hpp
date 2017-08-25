@@ -67,61 +67,29 @@ namespace reduce
 #pragma omp declare target
 #endif
 
-template <typename T>
-struct sum {
-  static constexpr T identity = T(0);
+namespace detail
+{
+template <typename T, template <typename...> class Op>
+struct op_adapter : private Op<T>
+{
+  static constexpr T identity() { return Op<T>::identity(); }
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
   {
-    val += v;
+    val = Op<T>::operator()(val, v);
   }
+};
+} /* detail */
+
+template <typename T>
+struct sum : detail::op_adapter<T, RAJA::operators::plus> {
 };
 
 template <typename T>
-struct min {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    if (v < val) val = v;
-  }
+struct min : detail::op_adapter<T, RAJA::operators::minimum> {
 };
 
 template <typename T>
-struct max {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    if (v > val) val = v;
-  }
-};
-
-template <typename T, typename I>
-struct minloc {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l) const
-  {
-    if (v < val) {
-      loc = l;
-      val = v;
-    }
-  }
-};
-
-template <typename T, typename I>
-struct maxloc {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l) const
-  {
-    if (v > val) {
-      loc = l;
-      val = v;
-    }
-  }
+struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 };
 
 #ifdef RAJA_ENABLE_TARGET_OPENMP
@@ -135,12 +103,6 @@ struct maxloc {
 #define RAJA_MIN(a, b) (((b) < (a)) ? (b) : (a))
 ///
 #define RAJA_MAX(a, b) (((b) > (a)) ? (b) : (a))
-
-///
-/// Macros to support structs used in minmaxloc operations
-#define RAJA_MINLOC(a, b) (((b.val) < (a.val)) ? (b) : (a))
-///
-#define RAJA_MAXLOC(a, b) (((b.val) > (a.val)) ? (b) : (a))
 
 ///
 /// Macros to support unstructured minmaxloc operations

@@ -57,11 +57,6 @@
 
 using namespace RAJA;
 
-struct minmaxloc_t {
-  double val;
-  int idx;
-};
-
 // block_size is needed by the reduction variables to setup shared memory
 // Care should be used here to cover the maximum block dimensions used by this
 // test
@@ -107,8 +102,8 @@ static void runLTimesTest(Index_type num_moments,
   double lsum = 0.0;
   double lmin = DBL_MAX;
   double lmax = -DBL_MAX;
-  minmaxloc_t lminloc = {DBL_MAX, -1};
-  minmaxloc_t lmaxloc = {-DBL_MAX, -1};
+  detail::ValueLoc<double, true> lminloc;
+  detail::ValueLoc<double, false> lmaxloc;
 
   //
   // randomize data
@@ -207,9 +202,9 @@ static void runLTimesTest(Index_type num_moments,
           int index = *d + (*m * num_directions)
                       + (*g * num_directions * num_moments)
                       + (*z * num_directions * num_moments * num_groups);
-          minmaxloc_t testMinMaxLoc = {val, index};
-          lminloc = RAJA_MINLOC(lminloc, testMinMaxLoc);
-          lmaxloc = RAJA_MAXLOC(lmaxloc, testMinMaxLoc);
+          detail::ValueLoc<double> testMinMaxLoc{val, index};
+          lminloc = RAJA_MIN(lminloc, testMinMaxLoc);
+          lmaxloc = RAJA_MAX(lmaxloc, testMinMaxLoc);
         }
         lsum += total;
         ASSERT_FLOAT_EQ(total, phi(m, g, z));

@@ -38,6 +38,56 @@ struct limits<::RAJA::detail::ValueLoc<T, B>> : limits<T> {
 namespace detail
 {
 
+template <typename T,
+          template <typename> class Reduce_,
+          template <typename, typename> class Combiner_>
+class BaseReduce
+{
+  using Reduce = Reduce_<T>;
+  using Combiner = Combiner_<T, Reduce>;
+  Combiner mutable c;
+
+public:
+  using value_type = T;
+
+  //! prohibit compiler-generated default ctor
+  BaseReduce() = delete;
+
+  //! prohibit compiler-generated copy assignment
+  BaseReduce &operator=(const BaseReduce &) = delete;
+
+  //! compiler-generated copy constructor
+  BaseReduce(const BaseReduce &) = default;
+
+  //! compiler-generated move constructor
+  BaseReduce(BaseReduce &&) = default;
+
+  //! compiler-generated move assignment
+  BaseReduce &operator=(BaseReduce &&) = default;
+
+  constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
+      : c{init_val, identity_}
+  {
+  }
+
+  const BaseReduce &combine(T const &other) const
+  {
+    c.combine(other);
+    return *this;
+  }
+
+  /*!
+   *  \return the calculated reduced value
+   */
+  operator T() const { return c.get(); }
+
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const { return c.get(); }
+};
+
+
 /*!
  ******************************************************************************
  *
@@ -48,32 +98,12 @@ namespace detail
  ******************************************************************************
  */
 template <typename T, template <typename, typename> class Combiner>
-class BaseReduceMin : public Combiner<T, RAJA::reduce::min<T>>
+class BaseReduceMin : public BaseReduce<T, RAJA::reduce::min, Combiner>
 {
 public:
-  using Operator = RAJA::reduce::min<T>;
-  using Base = Combiner<T, Operator>;
+  using Base = BaseReduce<T, RAJA::reduce::min, Combiner>;
+  using Base::Base;
 
-  //! prohibit compiler-generated default ctor
-  BaseReduceMin() = delete;
-
-  //! prohibit compiler-generated copy assignment
-  BaseReduceMin &operator=(const BaseReduceMin &) = delete;
-
-  //! compiler-generated copy constructor
-  BaseReduceMin(const BaseReduceMin &) = default;
-
-  //! compiler-generated move constructor
-  BaseReduceMin(BaseReduceMin &&) = default;
-
-  //! compiler-generated move assignment
-  BaseReduceMin &operator=(BaseReduceMin &&) = default;
-
-  explicit BaseReduceMin(T init_val,
-                         T initializer = operators::limits<T>::max())
-      : Base(init_val, initializer)
-  {
-  }
   //! reducer function; updates the current instance's state
   /*!
    * Assumes each thread has its own copy of the object.
@@ -102,32 +132,18 @@ public:
  *
  **************************************************************************
  */
-template <typename TT, template <typename, typename> class Combiner>
+template <typename T, template <typename, typename> class Combiner>
 class BaseReduceMinLoc
-    : public Combiner<ValueLoc<TT>, RAJA::reduce::min<ValueLoc<TT>>>
+    : public BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner>
 {
 public:
-  using T = ValueLoc<TT>;
-  using Operator = RAJA::reduce::min<T>;
-  using Base = Combiner<T, Operator>;
-  //! prohibit compiler-generated default ctor
-  BaseReduceMinLoc() = delete;
-
-  //! prohibit compiler-generated copy assignment
-  BaseReduceMinLoc &operator=(const BaseReduceMinLoc &) = delete;
-
-  //! compiler-generated copy constructor
-  BaseReduceMinLoc(const BaseReduceMinLoc &) = default;
-
-  //! compiler-generated move constructor
-  BaseReduceMinLoc(BaseReduceMinLoc &&) = default;
-
-  //! compiler-generated move assignment
-  BaseReduceMinLoc &operator=(BaseReduceMinLoc &&) = default;
+  using Base = BaseReduce<ValueLoc<T>, RAJA::reduce::min, Combiner>;
+  using value_type = typename Base::value_type;
+  using Base::Base;
 
   //! constructor requires a default value for the reducer
   explicit BaseReduceMinLoc(T init_val, Index_type init_idx)
-      : Base(typename Base::value_type(init_val, init_idx))
+      : Base(value_type(init_val, init_idx))
   {
   }
   //! reducer function; updates the current instance's state
@@ -136,7 +152,7 @@ public:
    */
   const BaseReduceMinLoc &minloc(T rhs, Index_type loc) const
   {
-    this->combine(typename Base::value_type(rhs, loc));
+    this->combine(value_type(rhs, loc));
     return *this;
   }
 
@@ -146,12 +162,12 @@ public:
    */
   BaseReduceMinLoc &minloc(T rhs, Index_type loc)
   {
-    this->combine(typename Base::value_type(rhs, loc));
+    this->combine(value_type(rhs, loc));
     return *this;
   }
 
   Index_type getLoc() { return Base::get().loc; }
-  operator TT() const { return Base::get(); }
+  operator T() const { return Base::get(); }
 };
 
 /*!
@@ -162,12 +178,12 @@ public:
  **************************************************************************
  */
 template <typename T, template <typename, typename> class Combiner>
-class BaseReduceMax : public Combiner<T, RAJA::reduce::max<T>>
+class BaseReduceMax : public BaseReduce<T, RAJA::reduce::max, Combiner>
 {
 public:
-  using Operator = RAJA::reduce::max<T>;
-  using Base = Combiner<T, Operator>;
+  using Base = BaseReduce<T, RAJA::reduce::max, Combiner>;
   using Base::Base;
+
   //! reducer function; updates the current instance's state
   /*!
    * Assumes each thread has its own copy of the object.
@@ -197,11 +213,10 @@ public:
  **************************************************************************
  */
 template <typename T, template <typename, typename> class Combiner>
-class BaseReduceSum : public Combiner<T, RAJA::reduce::sum<T>>
+class BaseReduceSum : public BaseReduce<T, RAJA::reduce::sum, Combiner>
 {
 public:
-  using Operator = RAJA::reduce::sum<T>;
-  using Base = Combiner<T, Operator>;
+  using Base = BaseReduce<T, RAJA::reduce::sum, Combiner>;
   using Base::Base;
   //! reducer function; updates the current instance's state
   /*!
@@ -231,32 +246,18 @@ public:
  *
  **************************************************************************
  */
-template <typename TT, template <typename, typename> class Combiner>
-class BaseReduceMaxLoc : public Combiner<ValueLoc<TT, false>,
-                                         RAJA::reduce::max<ValueLoc<TT, false>>>
+template <typename T, template <typename, typename> class Combiner>
+class BaseReduceMaxLoc
+    : public BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>
 {
 public:
-  using T = ValueLoc<TT, false>;
-  using Operator = RAJA::reduce::max<T>;
-  using Base = Combiner<T, Operator>;
-  //! prohibit compiler-generated default ctor
-  BaseReduceMaxLoc() = delete;
-
-  //! prohibit compiler-generated copy assignment
-  BaseReduceMaxLoc &operator=(const BaseReduceMaxLoc &) = delete;
-
-  //! compiler-generated copy constructor
-  BaseReduceMaxLoc(const BaseReduceMaxLoc &) = default;
-
-  //! compiler-generated move constructor
-  BaseReduceMaxLoc(BaseReduceMaxLoc &&) = default;
-
-  //! compiler-generated move assignment
-  BaseReduceMaxLoc &operator=(BaseReduceMaxLoc &&) = default;
+  using Base = BaseReduce<ValueLoc<T, false>, RAJA::reduce::max, Combiner>;
+  using value_type = typename Base::value_type;
+  using Base::Base;
 
   //! constructor requires a default value for the reducer
   explicit BaseReduceMaxLoc(T init_val, Index_type init_idx)
-      : Base(typename Base::value_type(init_val, init_idx))
+      : Base(value_type(init_val, init_idx))
   {
   }
   //! reducer function; updates the current instance's state
@@ -265,7 +266,7 @@ public:
    */
   const BaseReduceMaxLoc &maxloc(T rhs, Index_type loc) const
   {
-    this->combine(typename Base::value_type(rhs, loc));
+    this->combine(value_type(rhs, loc));
     return *this;
   }
 
@@ -275,13 +276,13 @@ public:
    */
   BaseReduceMaxLoc &maxloc(T rhs, Index_type loc)
   {
-    this->combine(typename Base::value_type(rhs, loc));
+    this->combine(value_type(rhs, loc));
     return *this;
   }
 
   Index_type getLoc() { return Base::get().loc; }
 
-  operator TT() const { return Base::get(); }
+  operator T() const { return Base::get(); }
 };
 
 } /* detail */

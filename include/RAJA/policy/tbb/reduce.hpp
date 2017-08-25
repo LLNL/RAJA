@@ -78,7 +78,6 @@ namespace detail
 template <typename T, typename Reduce>
 class ReduceTBB
 {
-public:
   struct reduce_adapter {
     T operator()(T const &l, T const &r)
     {
@@ -87,28 +86,15 @@ public:
       return tmp;
     }
   };
-  using value_type = T;
-
   //! TBB native per-thread container
   std::shared_ptr<tbb::combinable<T>> data;
 
+public:
   //! prohibit compiler-generated default ctor
   ReduceTBB() = delete;
 
-  //! prohibit compiler-generated copy assignment
-  ReduceTBB &operator=(const ReduceTBB &) = delete;
-
-  //! compiler-generated copy constructor
-  ReduceTBB(const ReduceTBB &) = default;
-
-  //! compiler-generated move constructor
-  ReduceTBB(ReduceTBB &&) = default;
-
-  //! compiler-generated move assignment
-  ReduceTBB &operator=(ReduceTBB &&) = default;
-
   //! constructor requires a default value for the reducer
-  explicit ReduceTBB(T init_val, T initializer = T())
+  explicit ReduceTBB(T init_val, T initializer)
       : data(
             std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
   {
@@ -118,24 +104,13 @@ public:
   /*!
    *  \return the calculated reduced value
    */
-  operator T() const { return data->combine(reduce_adapter{}); }
+  T get() const { return data->combine(reduce_adapter{}); }
 
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return operator T(); }
-
-protected:
   /*!
    *  \return update the local value
    */
   void combine(const T &other) { Reduce{}(data->local(), other); }
-  /*!
-   *  \return update the local value
-   */
-  void combine(const T &other) const { Reduce{}(data->local(), other); }
 };
-
 }
 
 /*!
