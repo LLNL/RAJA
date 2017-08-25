@@ -147,7 +147,7 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
-    RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+    RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
     IndexSet iset;
     iset.push_back(seg0);
@@ -156,10 +156,9 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
     ReduceMax<cuda_reduce<block_size>, double> dmax0(DEFAULT_VAL);
     ReduceMax<cuda_reduce<block_size>, double> dmax1(DEFAULT_VAL);
 
-    int index = int(dist2(mt));
 
     double droll = dist(mt);
-    dvalue[index] = droll;
+    int index = int(dist2(mt));
     double lmax = droll;
     dvalue[index] = droll;
     dcurrentMax = RAJA_MAX(dcurrentMax, lmax);
@@ -215,8 +214,6 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 29457;  // seg 3
 
     double droll = dist(mt);
-    dvalue[index] = droll;
-
     double lmax = droll;
     dvalue[index] = droll;
     dcurrentMax = RAJA_MAX(dcurrentMax, lmax);

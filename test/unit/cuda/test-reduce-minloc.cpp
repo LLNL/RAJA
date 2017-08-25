@@ -157,7 +157,7 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
-    RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+    RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
     IndexSet iset;
     iset.push_back(seg0);
@@ -166,10 +166,9 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
     ReduceMinLoc<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL, -1);
     ReduceMinLoc<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL, -1);
 
-    int index = int(dist2(mt));
 
     double droll = dist(mt);
-    dvalue[index] = droll;
+    int index = int(dist2(mt));
     minloc_t lmin = {droll, index};
     dvalue[index] = droll;
     dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
@@ -229,8 +228,6 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 29457;  // seg 3
 
     double droll = dist(mt);
-    dvalue[index] = droll;
-
     minloc_t lmin = {droll, index};
     dvalue[index] = droll;
     dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
