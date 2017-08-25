@@ -217,8 +217,8 @@ static void runLTimesTest(Index_type num_moments,
   ASSERT_FLOAT_EQ(lmax, pdmax.get());
   ASSERT_FLOAT_EQ(lminloc.val, pdminloc.get());
   ASSERT_FLOAT_EQ(lmaxloc.val, pdmaxloc.get());
-  ASSERT_EQ(lminloc.idx, pdminloc.getLoc());
-  ASSERT_EQ(lmaxloc.idx, pdmaxloc.getLoc());
+  ASSERT_EQ(lminloc.getLoc(), pdminloc.getLoc());
+  ASSERT_EQ(lmaxloc.getLoc(), pdmaxloc.getLoc());
 }
 
 // Use thread-block mappings

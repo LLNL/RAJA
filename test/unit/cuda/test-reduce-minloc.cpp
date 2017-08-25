@@ -55,12 +55,10 @@
 
 using namespace RAJA;
 
-constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 1024 * 8;
+constexpr const RAJA::Index_type TEST_VEC_LEN = 1024 * 8;
 
 static const int test_repeat = 10;
 static const size_t block_size = 256;
-static const double DEFAULT_VAL = DBL_MAX;
-static const double BIG_VAL = -500.0;
 
 // for setting random values in arrays
 static std::random_device rd;
@@ -68,19 +66,69 @@ static std::mt19937 mt(rd());
 static std::uniform_real_distribution<double> dist(-10, 10);
 static std::uniform_real_distribution<double> dist2(0, TEST_VEC_LEN - 1);
 
-struct minloc_t {
-  double val;
-  int idx;
-};
-
-static void reset(double* ptr, long length)
+static void reset(double* ptr, long length, double def)
 {
   for (long i = 0; i < length; ++i) {
-    ptr[i] = DEFAULT_VAL;
+    ptr[i] = def;
   }
 }
 
-class ReduceMinLocCUDA : public ::testing::Test {
+template <typename T>
+struct reduce_applier;
+template <typename T, typename U>
+struct reduce_applier<ReduceMinLoc<T, U>> {
+  static U def() { return DBL_MAX; }
+  static U big() { return -500.0; }
+  RAJA_HOST_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
+                                     U const& val,
+                                     Index_type i)
+  {
+    r.minloc(val, i);
+  }
+  template <bool B>
+  RAJA_HOST_DEVICE static void apply(detail::ValueLoc<U, B>& l,
+                                     detail::ValueLoc<U, B> const& r)
+  {
+    l = l > r ? r : l;
+  }
+  template <bool B>
+  RAJA_HOST_DEVICE static void cmp(ReduceMinLoc<T, U>& l,
+                                   detail::ValueLoc<U, B> const& r)
+  {
+    ASSERT_FLOAT_EQ(r.val, l.get());
+    ASSERT_EQ(r.loc, l.getLoc());
+  }
+};
+template <typename T, typename U>
+struct reduce_applier<ReduceMaxLoc<T, U>> {
+  static U def() { return -DBL_MAX; }
+  static U big() { return 500.0; }
+  RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
+                                     U const& val,
+                                     Index_type i)
+  {
+    r.maxloc(val, i);
+  }
+  template <bool B>
+  RAJA_HOST_DEVICE static void apply(detail::ValueLoc<U, B>& l,
+                                     detail::ValueLoc<U, B> const& r)
+  {
+    l = l > r ? l : r;
+  }
+  template <bool B>
+  RAJA_HOST_DEVICE static void cmp(ReduceMaxLoc<T, U>& l,
+                                   detail::ValueLoc<U, B> const& r)
+  {
+    ASSERT_FLOAT_EQ(r.val, l.get());
+    ASSERT_EQ(r.loc, l.getLoc());
+  }
+};
+
+template <typename Reducer>
+class ReduceCUDA : public ::testing::Test
+{
+  using applier = reduce_applier<Reducer>;
+
 public:
   static double* dvalue;
   static void SetUpTestCase()
@@ -88,50 +136,54 @@ public:
     cudaMallocManaged((void**)&dvalue,
                       sizeof(double) * TEST_VEC_LEN,
                       cudaMemAttachGlobal);
-    reset(dvalue, TEST_VEC_LEN);
+    reset(dvalue, TEST_VEC_LEN, applier::def());
   }
   static void TearDownTestCase() { cudaFree(dvalue); }
 };
 
-double* ReduceMinLocCUDA::dvalue = nullptr;
+template <typename Reducer>
+double* ReduceCUDA<Reducer>::dvalue = nullptr;
 
-CUDA_TEST_F(ReduceMinLocCUDA, generic)
+
+TYPED_TEST_CASE_P(ReduceCUDA);
+
+CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 {
 
-  double* dvalue = ReduceMinLocCUDA::dvalue;
-  reset(dvalue, TEST_VEC_LEN);
+  using applier = reduce_applier<TypeParam>;
+  using reducer = ReduceCUDA<TypeParam>;
+  double* dvalue = reducer::dvalue;
+  reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  minloc_t dcurrentMin;
-  dcurrentMin.val = DEFAULT_VAL;
-  dcurrentMin.idx = -1;
+  detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
 
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL, -1);
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL, -1);
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin2(BIG_VAL, -1);
+    TypeParam dmin0(applier::def(), -1);
+    TypeParam dmin1(applier::def(), -1);
+    TypeParam dmin2(applier::big(), -1);
 
     int loops = 16;
     for (int k = 0; k < loops; k++) {
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      minloc_t lmin = {droll, index};
+      detail::ValueLoc<double> lmin{droll, index};
       dvalue[index] = droll;
-      dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
+      applier::apply(dcurrentMin, lmin);
 
-      forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
-        dmin0.minloc(dvalue[i], i);
-        dmin1.minloc(2 * dvalue[i], i);
-        dmin2.minloc(dvalue[i], i);
+      forall<cuda_exec<block_size>>(0, TEST_VEC_LEN, [=] __device__(int i) {
+        applier::apply(dmin0, dvalue[i], i);
+        applier::apply(dmin1, 2 * dvalue[i], i);
+        applier::apply(dmin2, dvalue[i], i);
       });
 
-      ASSERT_FLOAT_EQ(dcurrentMin.val, dmin0.get());
+      applier::cmp(dmin0, dcurrentMin);
+
       ASSERT_FLOAT_EQ(dcurrentMin.val * 2, dmin1.get());
-      ASSERT_FLOAT_EQ(BIG_VAL, dmin2.get());
-      ASSERT_EQ(dcurrentMin.idx, dmin0.getLoc());
-      ASSERT_EQ(dcurrentMin.idx, dmin1.getLoc());
+      ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
+      ASSERT_FLOAT_EQ(applier::big(), dmin2.get());
     }
   }
 }
@@ -143,16 +195,15 @@ CUDA_TEST_F(ReduceMinLocCUDA, generic)
 //        with two range segments to check reduction object state
 //        is maintained properly across kernel invocations.
 //
-CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
+CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 {
 
-  double* dvalue = ReduceMinLocCUDA::dvalue;
+  using applier = reduce_applier<TypeParam>;
+  double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
-  reset(dvalue, TEST_VEC_LEN);
+  reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  minloc_t dcurrentMin;
-  dcurrentMin.val = DEFAULT_VAL;
-  dcurrentMin.idx = -1;
+  detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -163,27 +214,27 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
     iset.push_back(seg0);
     iset.push_back(seg1);
 
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL, -1);
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL, -1);
+    TypeParam dmin0(applier::def(), -1);
+    TypeParam dmin1(applier::def(), -1);
 
     int index = int(dist2(mt));
 
     double droll = dist(mt);
     dvalue[index] = droll;
-    minloc_t lmin = {droll, index};
+    detail::ValueLoc<double> lmin{droll, index};
     dvalue[index] = droll;
-    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
+    applier::apply(dcurrentMin, lmin);
 
-    forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+    forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] __device__(int i) {
-          dmin0.minloc(dvalue[i], i);
-          dmin1.minloc(2 * dvalue[i], i);
+          applier::apply(dmin0, dvalue[i], i);
+          applier::apply(dmin1, 2 * dvalue[i], i);
         });
 
-    ASSERT_FLOAT_EQ(dcurrentMin.val, double(dmin0));
-    ASSERT_FLOAT_EQ(2 * dcurrentMin.val, double(dmin1));
-    ASSERT_EQ(dcurrentMin.idx, dmin0.getLoc());
-    ASSERT_EQ(dcurrentMin.idx, dmin1.getLoc());
+    ASSERT_FLOAT_EQ(double(dcurrentMin), double(dmin0));
+    ASSERT_FLOAT_EQ(2 * double(dcurrentMin), double(dmin1));
+    ASSERT_EQ(dcurrentMin.getLoc(), dmin0.getLoc());
+    ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
   }
 }
 
@@ -195,15 +246,16 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_align)
 //        warp boundaries to check that reduction mechanics don't
 //        depend on any sort of special indexing.
 //
-CUDA_TEST_F(ReduceMinLocCUDA, indexset_noalign)
+CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 {
 
-  double* dvalue = ReduceMinLocCUDA::dvalue;
+  using applier = reduce_applier<TypeParam>;
+  double* dvalue = ReduceCUDA<TypeParam>::dvalue;
 
-  RangeSegment seg0(1, 1230);
-  RangeSegment seg1(1237, 3385);
-  RangeSegment seg2(4860, 10110);
-  RangeSegment seg3(20490, 32003);
+  RangeSegment seg0(1, 230);
+  RangeSegment seg1(237, 385);
+  RangeSegment seg2(860, 1110);
+  RangeSegment seg3(2490, 4003);
 
   IndexSet iset;
   iset.push_back(seg0);
@@ -213,37 +265,48 @@ CUDA_TEST_F(ReduceMinLocCUDA, indexset_noalign)
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
-    reset(dvalue, TEST_VEC_LEN);
+    reset(dvalue, TEST_VEC_LEN, applier::def());
 
-    minloc_t dcurrentMin;
-    dcurrentMin.val = DEFAULT_VAL;
-    dcurrentMin.idx = -1;
+    detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL, -1);
-    ReduceMinLoc<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL, -1);
+    TypeParam dmin0(applier::def(), -1);
+    TypeParam dmin1(applier::def(), -1);
 
     // pick an index in one of the segments
-    int index = 897;                     // seg 0
-    if (tcount % 2 == 0) index = 1297;   // seg 1
-    if (tcount % 3 == 0) index = 7853;   // seg 2
-    if (tcount % 4 == 0) index = 29457;  // seg 3
+    int index = 97;                     // seg 0
+    if (tcount % 2 == 0) index = 297;   // seg 1
+    if (tcount % 3 == 0) index = 873;   // seg 2
+    if (tcount % 4 == 0) index = 3457;  // seg 3
 
     double droll = dist(mt);
     dvalue[index] = droll;
 
-    minloc_t lmin = {droll, index};
+    detail::ValueLoc<double> lmin{droll, index};
     dvalue[index] = droll;
-    dcurrentMin = RAJA_MINLOC(dcurrentMin, lmin);
+    applier::apply(dcurrentMin, lmin);
 
-    forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
+    forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] __device__(int i) {
-          dmin0.minloc(dvalue[i], i);
-          dmin1.minloc(2 * dvalue[i], i);
+          applier::apply(dmin0, dvalue[i], i);
+          applier::apply(dmin1, 2 * dvalue[i], i);
         });
 
     ASSERT_FLOAT_EQ(dcurrentMin.val, double(dmin0));
     ASSERT_FLOAT_EQ(2 * dcurrentMin.val, double(dmin1));
-    ASSERT_EQ(dcurrentMin.idx, dmin0.getLoc());
-    ASSERT_EQ(dcurrentMin.idx, dmin1.getLoc());
+    ASSERT_EQ(dcurrentMin.getLoc(), dmin0.getLoc());
+    ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
   }
 }
+
+REGISTER_TYPED_TEST_CASE_P(ReduceCUDA,
+                           generic,
+                           indexset_align,
+                           indexset_noalign);
+
+using MinLocTypes =
+    ::testing::Types<ReduceMinLoc<cuda_reduce<block_size>, double>>;
+INSTANTIATE_TYPED_TEST_CASE_P(MinLoc, ReduceCUDA, MinLocTypes);
+
+using MaxLocTypes =
+    ::testing::Types<ReduceMaxLoc<cuda_reduce<block_size>, double>>;
+INSTANTIATE_TYPED_TEST_CASE_P(MaxLoc, ReduceCUDA, MaxLocTypes);

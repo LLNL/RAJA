@@ -184,7 +184,8 @@ public:
 };
 
 } /* detail */
-RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMPOrdered);
+
+RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered);
 
 }  // closing brace for RAJA namespace
 

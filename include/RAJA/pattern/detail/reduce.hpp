@@ -30,22 +30,29 @@ namespace detail
 template <typename T, bool doing_min = true>
 class ValueLoc
 {
+public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-public:
   constexpr ValueLoc() = default;
   constexpr ValueLoc(ValueLoc const &) = default;
   ValueLoc &operator=(ValueLoc const &) = default;
-  constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
-  constexpr ValueLoc(T const &val, Index_type const &loc) : val{val}, loc{loc}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
+  RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, Index_type const &loc)
+      : val{val}, loc{loc}
   {
   }
 
-  operator T() const { return val; }
-  Index_type getLoc() { return loc; }
-  bool operator<(ValueLoc const &rhs) const { return val < rhs.val; }
-  bool operator>(ValueLoc const &rhs) const { return val > rhs.val; }
+  RAJA_HOST_DEVICE operator T() const { return val; }
+  RAJA_HOST_DEVICE Index_type getLoc() { return loc; }
+  RAJA_HOST_DEVICE bool operator<(ValueLoc const &rhs) const
+  {
+    return val < rhs.val;
+  }
+  RAJA_HOST_DEVICE bool operator>(ValueLoc const &rhs) const
+  {
+    return val > rhs.val;
+  }
 };
 }  // end namespace detail
 
@@ -70,6 +77,7 @@ class BaseReduce
 
 public:
   using value_type = T;
+  using reduce_type = Reduce;
 
   //! prohibit compiler-generated default ctor
   BaseReduce() = delete;
@@ -151,6 +159,12 @@ public:
   {
   }
 
+  //! constructor requires a default value for the reducer
+  explicit BaseReduceMinLoc(value_type const & init_)
+      : Base(init_)
+  {
+  }
+
   /// \brief reducer function; updates the current instance's state
   const BaseReduceMinLoc &minloc(T rhs, Index_type loc) const
   {
@@ -227,6 +241,12 @@ public:
   //! constructor requires a default value for the reducer
   explicit BaseReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
+  {
+  }
+
+  //! constructor requires a default value for the reducer
+  explicit BaseReduceMaxLoc(value_type const & init_)
+      : Base(init_)
   {
   }
 
