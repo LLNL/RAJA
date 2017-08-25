@@ -79,7 +79,7 @@ template <typename T, typename U>
 struct reduce_applier<ReduceMinLoc<T, U>> {
   static U def() { return DBL_MAX; }
   static U big() { return -500.0; }
-  RAJA_HOST_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
+  RAJA_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
                                      U const& val,
                                      Index_type i)
   {
@@ -103,7 +103,7 @@ template <typename T, typename U>
 struct reduce_applier<ReduceMaxLoc<T, U>> {
   static U def() { return -DBL_MAX; }
   static U big() { return 500.0; }
-  RAJA_HOST_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
+  RAJA_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
                                      U const& val,
                                      Index_type i)
   {
