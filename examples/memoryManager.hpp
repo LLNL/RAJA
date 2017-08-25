@@ -6,9 +6,11 @@
 
 /*
   As RAJA does not manage memory the user must allocate and deallocate memory. 
+
   This header contains a general purpose memory manager which may be used
-  to perform c++ style allocation/deallcoation or allocate/deallocate
-  CUDA unified memory.
+  to perform c++ style allocation/deallocation or allocate/deallocate
+  CUDA unified memory. The type of memory allocated is dependent on how
+  RAJA was configured.
 */
 namespace memoryManager{
 

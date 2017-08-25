@@ -88,7 +88,7 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
   [&] By-reference capture
   RAJA::NestedPolicy - List of execution policies for the loops
   RAJA::exec_policy  - Specifies how the traversal occurs
-  RAJA::IndexSet     - Iteration space for RAJA::Index_type
+  RAJA::IndexSet    - Iteration space for RAJA loop (any random access container is expected)
 
   3. RAJA::View - RAJA's wrapper for multidimensional indexing
 

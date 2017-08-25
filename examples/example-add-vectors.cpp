@@ -70,7 +70,7 @@ void checkSolution(int *C, int in_N);
   [=] By-copy capture
   [&] By-reference capture
   RAJA::exec_policy - Specifies how the traversal occurs
-  RAJA::IndexSet    - Iteration space for RAJA loop
+  RAJA::IndexSet    - Iteration space for RAJA loop (any random access container is expected)
   RAJA::Index_type  - Index for RAJA loops
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
