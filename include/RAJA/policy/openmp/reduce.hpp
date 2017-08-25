@@ -14,13 +14,13 @@
 #ifndef RAJA_omp_reduce_HPP
 #define RAJA_omp_reduce_HPP
 
+#if defined(RAJA_ENABLE_OPENMP)
+
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/detail/reduce.hpp"
 
 #include <memory>
 #include <vector>
-
-#if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
