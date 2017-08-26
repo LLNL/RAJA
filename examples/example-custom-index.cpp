@@ -68,10 +68,11 @@ const int DIM = 2;
 
   --------[RAJA Concepts]---------
   1. Constructing custom IndexSets
-  2. RAJA::View           - RAJA's wrapper for multidimensional indexing
-  3. RAJA::ListSegment    - Container for an arbitrary collection of indices
-  4. RAJA::StaticIndexSet - Container for an index set which is a collection of
-                            ListSegments
+  2. RAJA::View              - RAJA's wrapper for multidimensional indexing
+  3. RAJA::ListSegment       - Container for an arbitrary collection of indices
+  3. RAJA::TypedListSegment  - Container for an arbitrary collection of typed indices 
+  4. RAJA::StaticIndexSet    - Container for an index set which is a collection of
+                               ListSegments
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {

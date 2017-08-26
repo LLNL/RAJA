@@ -61,7 +61,7 @@ void checkSolution(int *C, int in_N);
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
 
-  RAJA::forall<RAJA::exec_policy>(RAJA::IndexSet I, [=] (RAJA::Index_type i)) {
+  RAJA::forall<exec_policy>(iter_space I, [=] (index_type i)) {
 
          //body
 
@@ -69,9 +69,9 @@ void checkSolution(int *C, int in_N);
 
   [=] By-copy capture
   [&] By-reference capture
-  RAJA::exec_policy - Specifies how the traversal occurs
-  RAJA::IndexSet    - Iteration space for RAJA loop (any random access container is expected)
-  RAJA::Index_type  - Index for RAJA loops
+  exec_policy - Specifies how the traversal occurs
+  iter_space  - Iteration space for RAJA loop (any random access container is expected)
+  index_type  - Index for RAJA loops
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {

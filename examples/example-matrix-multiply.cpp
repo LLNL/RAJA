@@ -77,8 +77,8 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
   2. ForallN loop
 
   RAJA::forallN<
-  RAJA::NestedPolicy<RAJA::exec_policy, .... , RAJA::exec_policy> >(
-  RAJA::IndexSet I1,..., RAJA::IndexSet I2, [=](RAJA::Index_type i1,..., RAJA::Index_type iN) {
+  RAJA::NestedPolicy<exec_policy1, .... , exec_policyN> >(
+  iter_space I1,..., iter_space IN, [=](index_type i1,..., index_type iN) {
 
          //body
 
@@ -86,12 +86,11 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
   [=] By-copy capture
   [&] By-reference capture
-  RAJA::NestedPolicy - List of execution policies for the loops
-  RAJA::exec_policy  - Specifies how the traversal occurs
-  RAJA::IndexSet    - Iteration space for RAJA loop (any random access container is expected)
+  RAJA::NestedPolicy - List of RAJA execution policies
+  exec_policy        - Specifies how the traversal occurs
+  iter_space         - Iteration space for RAJA loop (any random access container is expected)
 
   3. RAJA::View - RAJA's wrapper for multidimensional indexing
-
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
