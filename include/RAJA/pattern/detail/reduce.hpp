@@ -72,8 +72,9 @@ template <typename T,
 class BaseReduce
 {
   using Reduce = Reduce_<T>;
-  using Combiner = Combiner_<T, Reduce>;
-  Combiner mutable c;
+  // NOTE: the _t here is to appease MSVC
+  using Combiner_t = Combiner_<T, Reduce>;
+  Combiner_t mutable c;
 
 public:
   using value_type = T;
