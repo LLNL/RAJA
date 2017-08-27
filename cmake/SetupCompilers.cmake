@@ -54,6 +54,7 @@ else() #cmake has no idea what to do, do it ourselves...
     CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
     if(COMPILER_SUPPORTS_${flag_var})
       set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
+      break()
     endif()
   endforeach(flag_var)
 endif()
