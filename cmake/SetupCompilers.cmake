@@ -40,11 +40,13 @@
 #
 ###############################################################################
 
+set(COMPILERS_KNOWN_TO_PALEOLITHIC_CMAKE AppleClang Clang GNU MSVC)
+
 if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
   set(CMAKE_CXX_STANDARD 17)
 elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
   set(CMAKE_CXX_STANDARD 14)
-elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST "AppleClang" "Clang" "GNU" "MSVC")
+elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_PALEOLITHIC_CMAKE)
   set(CMAKE_CXX_STANDARD 14)
 else() #cmake has no idea what to do, do it ourselves...
   foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
