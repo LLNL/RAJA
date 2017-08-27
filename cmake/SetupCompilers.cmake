@@ -40,7 +40,12 @@
 #
 ###############################################################################
 
-set(CMAKE_CXX_STANDARD 14)
+if("cxx_std_17" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+  set(CMAKE_CXX_STANDARD 17)
+elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
+
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
@@ -79,6 +84,7 @@ if ( MSVC )
 endif()
 
 if (RAJA_ENABLE_CUDA)
+  # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
   if(CUDA_VERSION_MAJOR GREATER "8")
     set(RAJA_NVCC_STD "c++14")
   else()

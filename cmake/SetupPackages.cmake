@@ -58,7 +58,7 @@ if (RAJA_ENABLE_CLANG_CUDA)
 endif ()
 
 if (RAJA_ENABLE_CUDA)
-  find_package(CUDA required)
+  find_package(CUDA REQUIRED)
   set (CUDA_PROPAGATE_HOST_FLAGS OFF)
   include_directories(${CUDA_INCLUDE_DIRS})
 
