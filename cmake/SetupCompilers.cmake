@@ -40,6 +40,7 @@
 #
 ###############################################################################
 
+set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
@@ -63,19 +64,9 @@ if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   endif()
 endif()
 
-include(CheckCXXCompilerFlag)
-foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
-  CHECK_CXX_COMPILER_FLAG(${flag_var} COMPILER_SUPPORTS_${flag_var})
-  if(COMPILER_SUPPORTS_${flag_var})
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${flag_var}")
-    break()
-  endif()
-endforeach(flag_var)
-
 set(RAJA_COMPILER "RAJA_COMPILER_${CMAKE_CXX_COMPILER_ID}")
 
 if ( MSVC )
-  set(CMAKE_CXX_STANDARD 14)
   if (NOT BUILD_SHARED_LIBS)
     foreach(flag_var
         CMAKE_CXX_FLAGS CMAKE_CXX_FLAGS_DEBUG CMAKE_CXX_FLAGS_RELEASE
