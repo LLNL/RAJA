@@ -54,7 +54,6 @@ endif()
 
 if (RAJA_ENABLE_CLANG_CUDA)
   set(RAJA_ENABLE_CUDA On)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
 if (RAJA_ENABLE_CUDA)
