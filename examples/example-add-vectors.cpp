@@ -68,7 +68,7 @@ void checkSolution(int *C, int in_N);
   });
 
   [=] By-copy capture
-  [&] By-reference capture
+  [&] By-reference capture (for non-unified memory targets)
   exec_policy - Specifies how the traversal occurs
   iter_space  - Iteration space for RAJA loop (any random access container is expected)
   index_type  - Index for RAJA loops

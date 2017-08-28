@@ -85,7 +85,7 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
   });
 
   [=] By-copy capture
-  [&] By-reference capture
+  [&] By-reference capture (for non-unified memory targets)
   RAJA::NestedPolicy - List of RAJA execution policies
   exec_policy        - Specifies how the traversal occurs
   iter_space         - Iteration space for RAJA loop (any random access container is expected)
