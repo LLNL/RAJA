@@ -53,6 +53,7 @@ set(RAJA_VERSION_PATCHLEVEL 0)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
+set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
 option(RAJA_ENABLE_TBB "Build TBB support" On)
 option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
