@@ -40,7 +40,7 @@
 #
 ###############################################################################
 
-set(COMPILERS_KNOWN_TO_PALEOLITHIC_CMAKE AppleClang Clang GNU MSVC)
+set(COMPILERS_KNOWN_TO_CMAKE33 AppleClang Clang GNU MSVC)
 
 include(CheckCXXCompilerFlag)
 if(RAJA_CXX_STANDARD_FLAG MATCHES default)
@@ -48,7 +48,7 @@ if(RAJA_CXX_STANDARD_FLAG MATCHES default)
     set(CMAKE_CXX_STANDARD 17)
   elseif("cxx_std_14" IN_LIST CMAKE_CXX_KNOWN_FEATURES)
     set(CMAKE_CXX_STANDARD 14)
-  elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_PALEOLITHIC_CMAKE)
+  elseif("${CMAKE_CXX_COMPILER_ID}" IN_LIST COMPILERS_KNOWN_TO_CMAKE33)
     set(CMAKE_CXX_STANDARD 14)
   else() #cmake has no idea what to do, do it ourselves...
     foreach(flag_var "-std=c++17" "-std=c++1z" "-std=c++14" "-std=c++1y" "-std=c++11")
@@ -61,6 +61,7 @@ if(RAJA_CXX_STANDARD_FLAG MATCHES default)
   endif()
 else(RAJA_CXX_STANDARD_FLAG MATCHES default)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${RAJA_CXX_STANDARD_FLAG}")
+  message("Using C++ standard flag: ${RAJA_CXX_STANDARD_FLAG}")
 endif(RAJA_CXX_STANDARD_FLAG MATCHES default)
 
 
@@ -110,10 +111,12 @@ if (RAJA_ENABLE_CUDA)
   endif()
   if(CMAKE_BUILD_TYPE MATCHES Release)
     set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
-  elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
-  else(CMAKE_BUILD_TYPE MATCHES Debug)
+  elseif(CMAKE_BUILD_TYPE MATCHES Debug)
     set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+  elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
+    set(RAJA_NVCC_FLAGS -Os; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+  else(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
   endif()
   if(RAJA_ENABLE_COVERAGE)
     if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
