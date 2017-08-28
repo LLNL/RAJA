@@ -102,8 +102,8 @@ static void runLTimesTest(Index_type num_moments,
   double lsum = 0.0;
   double lmin = DBL_MAX;
   double lmax = -DBL_MAX;
-  detail::ValueLoc<double, true> lminloc;
-  detail::ValueLoc<double, false> lmaxloc;
+  ReduceMinLoc<seq_reduce, double> lminloc(lmin);
+  ReduceMaxLoc<seq_reduce, double> lmaxloc(lmax);
 
   //
   // randomize data
@@ -202,9 +202,8 @@ static void runLTimesTest(Index_type num_moments,
           int index = *d + (*m * num_directions)
                       + (*g * num_directions * num_moments)
                       + (*z * num_directions * num_moments * num_groups);
-          detail::ValueLoc<double> testMinMaxLoc{val, index};
-          lminloc = RAJA_MIN(lminloc, testMinMaxLoc);
-          lmaxloc = RAJA_MAX(lmaxloc, testMinMaxLoc);
+          lminloc.minloc(val, index);
+          lmaxloc.maxloc(val, index);
         }
         lsum += total;
         ASSERT_FLOAT_EQ(total, phi(m, g, z));
@@ -215,8 +214,8 @@ static void runLTimesTest(Index_type num_moments,
   ASSERT_FLOAT_EQ(lsum, pdsum.get());
   ASSERT_FLOAT_EQ(lmin, pdmin.get());
   ASSERT_FLOAT_EQ(lmax, pdmax.get());
-  ASSERT_FLOAT_EQ(lminloc.val, pdminloc.get());
-  ASSERT_FLOAT_EQ(lmaxloc.val, pdmaxloc.get());
+  ASSERT_FLOAT_EQ(lminloc.get(), pdminloc.get());
+  ASSERT_FLOAT_EQ(lmaxloc.get(), pdmaxloc.get());
   ASSERT_EQ(lminloc.getLoc(), pdminloc.getLoc());
   ASSERT_EQ(lmaxloc.getLoc(), pdmaxloc.getLoc());
 }

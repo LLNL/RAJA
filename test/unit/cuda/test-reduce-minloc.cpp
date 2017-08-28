@@ -86,14 +86,14 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
     r.minloc(val, i);
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void apply(detail::ValueLoc<U, B>& l,
-                                     detail::ValueLoc<U, B> const& r)
+  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, B>& l,
+                                     reduce::detail::ValueLoc<U, B> const& r)
   {
     l = l > r ? r : l;
   }
   template <bool B>
   RAJA_HOST_DEVICE static void cmp(ReduceMinLoc<T, U>& l,
-                                   detail::ValueLoc<U, B> const& r)
+                                   reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
@@ -110,14 +110,14 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
     r.maxloc(val, i);
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void apply(detail::ValueLoc<U, B>& l,
-                                     detail::ValueLoc<U, B> const& r)
+  RAJA_HOST_DEVICE static void apply(reduce::detail::ValueLoc<U, B>& l,
+                                     reduce::detail::ValueLoc<U, B> const& r)
   {
     l = l > r ? l : r;
   }
   template <bool B>
   RAJA_HOST_DEVICE static void cmp(ReduceMaxLoc<T, U>& l,
-                                   detail::ValueLoc<U, B> const& r)
+                                   reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
@@ -155,7 +155,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
   double* dvalue = reducer::dvalue;
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+  reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -169,7 +169,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      detail::ValueLoc<double> lmin{droll, index};
+      reduce::detail::ValueLoc<double> lmin{droll, index};
       dvalue[index] = droll;
       applier::apply(dcurrentMin, lmin);
 
@@ -203,7 +203,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+  reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -221,7 +221,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 
     double droll = dist(mt);
     dvalue[index] = droll;
-    detail::ValueLoc<double> lmin{droll, index};
+    reduce::detail::ValueLoc<double> lmin{droll, index};
     dvalue[index] = droll;
     applier::apply(dcurrentMin, lmin);
 
@@ -267,7 +267,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 
     reset(dvalue, TEST_VEC_LEN, applier::def());
 
-    detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+    reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
 
     TypeParam dmin0(applier::def(), -1);
     TypeParam dmin1(applier::def(), -1);
@@ -281,7 +281,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
     double droll = dist(mt);
     dvalue[index] = droll;
 
-    detail::ValueLoc<double> lmin{droll, index};
+    reduce::detail::ValueLoc<double> lmin{droll, index};
     dvalue[index] = droll;
     applier::apply(dcurrentMin, lmin);
 

@@ -60,43 +60,6 @@
 namespace RAJA
 {
 
-namespace reduce
-{
-
-#ifdef RAJA_ENABLE_TARGET_OPENMP
-#pragma omp declare target
-#endif
-
-namespace detail
-{
-template <typename T, template <typename...> class Op>
-struct op_adapter : private Op<T, T, T> {
-  using operator_type = Op<T, T, T>;
-  static constexpr T identity() { return operator_type::identity(); }
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    val = operator_type::operator()(val, v);
-  }
-};
-} /* detail */
-
-template <typename T>
-struct sum : detail::op_adapter<T, RAJA::operators::plus> {
-};
-
-template <typename T>
-struct min : detail::op_adapter<T, RAJA::operators::minimum> {
-};
-
-template <typename T>
-struct max : detail::op_adapter<T, RAJA::operators::maximum> {
-};
-
-#ifdef RAJA_ENABLE_TARGET_OPENMP
-#pragma omp end declare target
-#endif
-}
-
 ///
 /// Macros for type agnostic reduction operations.
 ///

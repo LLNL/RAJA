@@ -79,9 +79,10 @@ namespace RAJA
 namespace detail
 {
 template <typename T, typename Reduce>
-class ReduceOMP : public detail::BaseCombinable<T, Reduce, ReduceOMP<T, Reduce>>
+class ReduceOMP
+    : public reduce::detail::BaseCombinable<T, Reduce, ReduceOMP<T, Reduce>>
 {
-  using Base = detail::BaseCombinable<T, Reduce, ReduceOMP>;
+  using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceOMP>;
 
 public:
   //! prohibit compiler-generated default ctor
@@ -89,12 +90,12 @@ public:
 
   using Base::Base;
 
-protected:
-  void destructing()
+  ~ReduceOMP()
   {
-    if (parent) {
+    if (Base::parent) {
 #pragma omp critical(ompReduceCritical)
-      Reduce()(parent->my_data, my_data);
+      Reduce()(Base::parent->local(), Base::my_data);
+      Base::my_data = Base::identity;
     }
   }
 };
@@ -113,29 +114,37 @@ namespace detail
 {
 template <typename T, typename Reduce>
 class ReduceOMPOrdered
-    : public detail::BaseCombinable<T, Reduce, ReduceOMPOrdered<T, Reduce>>
+    : public reduce::detail::
+          BaseCombinable<T, Reduce, ReduceOMPOrdered<T, Reduce>>
 {
-  using Base = detail::BaseCombinable<T, Reduce, ReduceOMPOrdered>;
-  std::shared_ptr<std::vector<T>> data =
-      std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_);
+  using Base = reduce::detail::BaseCombinable<T, Reduce, ReduceOMPOrdered>;
+  std::shared_ptr<std::vector<T>> data;
 
 public:
   //! prohibit compiler-generated default ctor
   ReduceOMPOrdered() = delete;
 
-  using Base::Base;
-
-protected:
-  void destructing() { Reduce{}((*data)[omp_get_thread_num()], my_data); }
-
-  T get_combined()
+  //! constructor requires a default value for the reducer
+  explicit ReduceOMPOrdered(T init_val, T identity_)
+      : Base(init_val, identity_),
+        data(std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_))
   {
-    if (my_data != identity) {
-      Reduce{}((*data)[omp_get_thread_num()], my_data);
-      my_data = identity;
+  }
+
+  ~ReduceOMPOrdered()
+  {
+    Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+    Base::my_data = Base::identity;
+  }
+
+  T get_combined() const
+  {
+    if (Base::my_data != Base::identity) {
+      Reduce{}((*data)[omp_get_thread_num()], Base::my_data);
+      Base::my_data = Base::identity;
     }
 
-    T res = identity;
+    T res = Base::identity;
     for (size_t i = 0; i < data->size(); ++i) {
       Reduce{}(res, (*data)[i]);
     }
