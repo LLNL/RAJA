@@ -59,8 +59,8 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
-#include "RAJA/pattern/reduce.hpp"
 #include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -70,39 +70,15 @@ namespace RAJA
 namespace detail
 {
 template <typename T, typename Reduce>
-class ReduceSeq
+class ReduceSeq : public detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>
 {
-  ReduceSeq const *parent = nullptr;
-  T identity;
-  T mutable my_data;
+  using Base = detail::BaseCombinable<T, Reduce, ReduceSeq<T, Reduce>>;
 
 public:
   //! prohibit compiler-generated default ctor
   ReduceSeq() = delete;
 
-  constexpr ReduceSeq(T init_val, T identity_ = T())
-      : identity{identity_}, my_data{init_val}
-  {
-  }
-  constexpr ReduceSeq(ReduceSeq const &other)
-      : parent{other.parent ? other.parent : &other},
-        identity{other.identity},
-        my_data{identity}
-  {
-  }
-  ~ReduceSeq()
-  {
-    if (parent) {
-      Reduce()(parent->my_data, my_data);
-    }
-  }
-
-  void combine(T const &other) { Reduce{}(my_data, other); }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return my_data; }
+  using Base::Base;
 };
 
 

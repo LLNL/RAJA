@@ -101,7 +101,12 @@ public:
   /*!
    *  \return update the local value
    */
-  void combine(const T &other) { Reduce{}(data->local(), other); }
+  void combine(const T &other) { Reduce{}(this->local(), other); }
+
+  /*!
+   *  \return reference to the local value
+   */
+  T& local() { return data->local(); }
 };
 }
 

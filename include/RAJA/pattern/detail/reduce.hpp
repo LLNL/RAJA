@@ -100,17 +100,70 @@ public:
   {
   }
 
-  const BaseReduce &combine(T const &other) const
+  void combine(T const &other) const
   {
     c.combine(other);
-    return *this;
   }
+
+  T &local() const { return c.local(); }
 
   //! Get the calculated reduced value
   operator T() const { return c.get(); }
 
   //! Get the calculated reduced value
   T get() const { return c.get(); }
+};
+
+template <typename T, typename Reduce, typename Derived>
+class BaseCombinable
+{
+  BaseCombinable const *parent = nullptr;
+  T identity;
+  T mutable my_data;
+
+public:
+  //! prohibit compiler-generated default ctor
+  BaseCombinable() = delete;
+
+  constexpr BaseCombinable(T init_val, T identity_ = T())
+      : identity{identity_}, my_data{init_val}
+  {
+  }
+
+  constexpr BaseCombinable(BaseCombinable const &other)
+      : parent{other.parent ? other.parent : &other},
+        identity{other.identity},
+        my_data{identity}
+  {
+  }
+
+  ~BaseCombinable() { derived().destructing(); }
+
+  void combine(T const &other) { Reduce{}(my_data, other); }
+
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const { return derived().get_combined(); }
+
+  /*!
+   *  \return reference to the local value
+   */
+  T &local() { return my_data; }
+
+protected:
+  void constructing() {}
+  void destructing()
+  {
+    if (parent) {
+      Reduce()(parent->my_data, my_data);
+    }
+  }
+  T get_combined() { return my_data; }
+
+private:
+  // Convenience method for CRTP
+  Derived &derived() { return *static_cast<Derived *>(this); }
 };
 
 
@@ -160,12 +213,6 @@ public:
   {
   }
 
-  //! constructor requires a default value for the reducer
-  explicit BaseReduceMinLoc(value_type const & init_)
-      : Base(init_)
-  {
-  }
-
   /// \brief reducer function; updates the current instance's state
   const BaseReduceMinLoc &minloc(T rhs, Index_type loc) const
   {
@@ -174,7 +221,8 @@ public:
   }
 
   //! Get the calculated reduced value
-  Index_type getLoc() { return Base::get().getLoc(); }
+  Index_type getLoc() const { return Base::get().getLoc(); }
+
   //! Get the calculated reduced value
   operator T() const { return Base::get(); }
 };
@@ -245,12 +293,6 @@ public:
   {
   }
 
-  //! constructor requires a default value for the reducer
-  explicit BaseReduceMaxLoc(value_type const & init_)
-      : Base(init_)
-  {
-  }
-
   //! reducer function; updates the current instance's state
   const BaseReduceMaxLoc &maxloc(T rhs, Index_type loc) const
   {
@@ -259,7 +301,7 @@ public:
   }
 
   //! Get the calculated reduced value
-  Index_type getLoc() { return Base::get().getLoc(); }
+  Index_type getLoc() const { return Base::get().getLoc(); }
 
   //! Get the calculated reduced value
   operator T() const { return Base::get(); }

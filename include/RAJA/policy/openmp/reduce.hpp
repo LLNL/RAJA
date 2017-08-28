@@ -79,45 +79,24 @@ namespace RAJA
 namespace detail
 {
 template <typename T, typename Reduce>
-class ReduceOMP
+class ReduceOMP : public detail::BaseCombinable<T, Reduce, ReduceOMP<T, Reduce>>
 {
-  ReduceOMP const *parent = nullptr;
-  T identity;
-  T mutable my_data;
+  using Base = detail::BaseCombinable<T, Reduce, ReduceOMP>;
 
 public:
   //! prohibit compiler-generated default ctor
   ReduceOMP() = delete;
 
-  constexpr ReduceOMP(T init_val, T identity_)
-      : identity{identity_}, my_data{init_val}
-  {
-  }
+  using Base::Base;
 
-  constexpr ReduceOMP(ReduceOMP const &other)
-      : parent{other.parent ? other.parent : &other},
-        identity{other.identity},
-        my_data{identity}
-  {
-  }
-
-  ~ReduceOMP()
+protected:
+  void destructing()
   {
     if (parent) {
 #pragma omp critical(ompReduceCritical)
       Reduce()(parent->my_data, my_data);
     }
   }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const { return my_data; }
-
-  /*!
-   *  \return update the local value
-   */
-  void combine(T const &other) { Reduce{}(my_data, other); }
 };
 
 } /* detail */
@@ -134,41 +113,22 @@ namespace detail
 {
 template <typename T, typename Reduce>
 class ReduceOMPOrdered
+    : public detail::BaseCombinable<T, Reduce, ReduceOMPOrdered<T, Reduce>>
 {
-  ReduceOMPOrdered *parent = nullptr;
-  std::shared_ptr<std::vector<T>> data;
-  T identity;
-  T mutable my_data;
+  using Base = detail::BaseCombinable<T, Reduce, ReduceOMPOrdered>;
+  std::shared_ptr<std::vector<T>> data =
+      std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_);
 
 public:
   //! prohibit compiler-generated default ctor
   ReduceOMPOrdered() = delete;
 
-  constexpr ReduceOMPOrdered(T init_val, T identity_)
-      : parent{this},
-        data{
-            std::make_shared<std::vector<T>>(omp_get_max_threads(), identity_)},
-        identity{identity_},
-        my_data{init_val}
-  {
-  }
+  using Base::Base;
 
-  constexpr ReduceOMPOrdered(ReduceOMPOrdered const &other)
-      : parent{other.parent},
-        data{other.data},
-        identity{other.identity},
-        my_data{identity}
-  {
-  }
+protected:
+  void destructing() { Reduce{}((*data)[omp_get_thread_num()], my_data); }
 
-  ~ReduceOMPOrdered() { Reduce{}((*data)[omp_get_thread_num()], my_data); }
-
-  void combine(T const &other) { Reduce{}(my_data, other); }
-
-  /*!
-   *  \return the calculated reduced value
-   */
-  T get() const
+  T get_combined()
   {
     if (my_data != identity) {
       Reduce{}((*data)[omp_get_thread_num()], my_data);
