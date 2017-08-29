@@ -62,13 +62,22 @@
 
 #include "RAJA/util/defines.hpp"
 
-//
-// Note: since MS Visual C doesn't support "omp atomic capture" we are forced
-//       to use "omp critical" to implement these atomics
-//
 
 namespace RAJA
 {
+
+#ifdef RAJA_COMPILER_MSVC
+
+
+// For MS Visual C, just default to builtin_atomic for everything
+using omp_atomic = RAJA::builtin_atomic;
+
+
+
+#else // not defined RAJA_COMPILER_MSVC
+
+
+
 
 struct omp_atomic{};
 
@@ -78,11 +87,7 @@ template<typename T>
 RAJA_INLINE
 T atomicAdd(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc += value; 
@@ -96,11 +101,7 @@ template<typename T>
 RAJA_INLINE
 T atomicSub(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc -= value; 
@@ -131,11 +132,7 @@ template<typename T>
 RAJA_INLINE
 T atomicInc(omp_atomic, T volatile *acc){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  (*acc) ++;
@@ -158,11 +155,7 @@ template<typename T>
 RAJA_INLINE
 T atomicDec(omp_atomic, T volatile *acc){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  (*acc) --;
@@ -184,11 +177,7 @@ template<typename T>
 RAJA_INLINE
 T atomicAnd(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc &= value;
@@ -201,11 +190,7 @@ template<typename T>
 RAJA_INLINE
 T atomicOr(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc |= value;
@@ -218,11 +203,7 @@ template<typename T>
 RAJA_INLINE
 T atomicXor(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc ^= value;
@@ -235,11 +216,7 @@ template<typename T>
 RAJA_INLINE
 T atomicExchange(omp_atomic, T volatile *acc, T value){
 	T ret;
-#ifdef RAJA_COMPILER_MSVC
-#pragma omp atomic
-#else
 #pragma omp atomic capture
-#endif
   {
 		ret = *acc; // capture old for return value
 	  *acc = value;
@@ -254,6 +231,8 @@ T atomicCAS(omp_atomic, T volatile *acc, T compare, T value){
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
 	return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
 }
+
+#endif // not defined RAJA_COMPILER_MSVC
 
 }  // namespace RAJA
 

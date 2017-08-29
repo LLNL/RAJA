@@ -172,6 +172,7 @@ template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 T atomicAnd(T volatile *acc, T value){
+  static_assert(std::is_integral<T>::value, "atomicAnd can only be used on integral types");
   return RAJA::atomicAnd(Policy{}, acc, value);
 }
 
@@ -180,6 +181,7 @@ template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 T atomicOr(T volatile *acc, T value){
+  static_assert(std::is_integral<T>::value, "atomicOr can only be used on integral types");
   return RAJA::atomicOr(Policy{}, acc, value);
 }
 
@@ -188,6 +190,7 @@ template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 T atomicXor(T volatile *acc, T value){
+  static_assert(std::is_integral<T>::value, "atomicXor can only be used on integral types");
   return RAJA::atomicXor(Policy{}, acc, value);
 }
 
