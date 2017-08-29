@@ -106,7 +106,7 @@ if (RAJA_ENABLE_CUDA)
   set(RAJA_NVCC_STD "c++11")
   # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
   if(CUDA_VERSION_MAJOR GREATER "8")
-    execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 . 
+      execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 -ccbin ${CMAKE_CXX_COMPILER} . 
                     ERROR_VARIABLE TEST_NVCC_ERR
                     OUTPUT_QUIET)
     if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
