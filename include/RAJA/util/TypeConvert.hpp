@@ -3,13 +3,17 @@
  *
  * \file
  *
- * \brief   RAJA header file defining sequential atomic operations.
+ * \brief   Header file for reinterpreting type conversions.
+ *
+ *          These conversions are needed to pass N-bit floating point values
+ *          as integral types for certain API's that have limited type support.
+ *          These conversions are used heavily by the atomic operators.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_sequential_atomic_HPP
-#define RAJA_policy_sequential_atomic_HPP
+#ifndef RAJA_util_TypeConvert_HPP
+#define RAJA_util_TypeConvert_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,134 +60,78 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 
+
 namespace RAJA
 {
+namespace util
+{
+//
+// For all of these to work (and frankly the CUDA API) we need to ensure
+// that the C++ types are the correct sizes.
+//
+// If we run into a case where these assertions don't hold, we will need to 
+// update our implementation to handle it
+//
 
-struct seq_atomic{};
+static_assert(sizeof(unsigned) == 4, "unsigned must be 32-bits");
+static_assert(sizeof(unsigned long long) == 8, "unsigned long long must be 64-bits");
 
 
-RAJA_SUPPRESS_HD_WARN
+/*!
+ * Reinterpret any 32-bit datatype as an "unsigned"
+ */
 template<typename T>
 RAJA_INLINE
-T atomicAdd(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc += value;
-	return ret;
+RAJA_HOST_DEVICE
+constexpr
+unsigned reinterp_T_as_u(T const &val){
+  static_assert(sizeof(T)==4, "T must be 32-bit");
+  return reinterpret_cast<unsigned const volatile &>(val);
 }
 
 
-RAJA_SUPPRESS_HD_WARN
+/*!
+ * Reinterpret a "unsigned" as any 32-bit datatype.
+ */
 template<typename T>
 RAJA_INLINE
-T atomicSub(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc -= value;
-	return ret;
+RAJA_HOST_DEVICE
+constexpr
+T reinterp_u_as_T(unsigned const &val){
+  static_assert(sizeof(T)==4, "T must be 32-bit");
+  return reinterpret_cast<T const &>(val);
 }
 
 
-RAJA_SUPPRESS_HD_WARN
+/*!
+ * Reinterpret any 64-bit datatype as an "unsigned long long"
+ */
 template<typename T>
 RAJA_INLINE
-T atomicMin(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc = ret < value ? ret : value;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicMax(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc = ret > value ? ret : value;
-	return ret;
+RAJA_HOST_DEVICE
+constexpr
+unsigned long long reinterp_T_as_ull(T const &val){
+  static_assert(sizeof(T)==8, "T must be 64-bit");
+  return reinterpret_cast<unsigned long long const volatile &>(val);
 }
 
 
-RAJA_SUPPRESS_HD_WARN
+/*!
+ * Reinterpret a "unsigned long long" as any 64-bit datatype.
+ */
 template<typename T>
 RAJA_INLINE
-T atomicInc(seq_atomic, T volatile *acc){
-  T ret = *acc;
-	(*acc) ++;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicInc(seq_atomic, T volatile *acc, T val){
-  T old = *acc;
-	(*acc) = ((old >= val) ? 0 : (old+1));
-	return old;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicDec(seq_atomic, T volatile *acc){
-  T ret = *acc;
-  (*acc) --;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicDec(seq_atomic, T volatile *acc, T val){
-  T old = *acc;
-  (*acc) = (((old==0)|(old>val))?val:(old-1));
-	return old;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicAnd(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc &= value;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicOr(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc |= value;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicXor(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc ^= value;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicExchange(seq_atomic, T volatile *acc, T value){
-  T ret = *acc;
-  *acc = value;
-	return ret;
-}
-
-RAJA_SUPPRESS_HD_WARN
-template<typename T>
-RAJA_INLINE
-T atomicCAS(seq_atomic, T volatile *acc, T compare, T value){
-  T ret = *acc;
-	*acc = ret == compare ? value : ret;
-	return ret;
+RAJA_HOST_DEVICE
+constexpr
+T reinterp_ull_as_T(unsigned long long const &val){
+  static_assert(sizeof(T)==8, "T must be 64-bit");
+  return reinterpret_cast<T const &>(val);
 }
 
 
-}  // namespace RAJA
 
 
-#endif // guard
+}  // closing brace for util namespace
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

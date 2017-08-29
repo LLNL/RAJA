@@ -13,6 +13,9 @@
 
 #include "RAJA/config.hpp"
 
+// rely on builtin_atomic when OpenMP can't do the job
+#include "RAJA/policy/atomic_builtin.hpp"
+
 #if defined(RAJA_ENABLE_OPENMP)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
@@ -76,7 +79,7 @@ RAJA_INLINE
 T atomicAdd(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -94,7 +97,7 @@ RAJA_INLINE
 T atomicSub(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -112,7 +115,7 @@ RAJA_INLINE
 T atomicMin(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -129,7 +132,7 @@ RAJA_INLINE
 T atomicMax(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -147,7 +150,7 @@ RAJA_INLINE
 T atomicInc(omp_atomic, T volatile *acc){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -158,13 +161,23 @@ T atomicInc(omp_atomic, T volatile *acc){
   return ret;
 }
 
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicInc(omp_atomic, T volatile *acc, T val){
+  // This form doesn't seem to play well with OMP, so use builtin atomics
+	return RAJA::atomicInc(builtin_atomic{}, acc, val);
+}
+
+
 RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicDec(omp_atomic, T volatile *acc){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -175,13 +188,22 @@ T atomicDec(omp_atomic, T volatile *acc){
   return ret;
 }
 
+
+RAJA_SUPPRESS_HD_WARN
+template<typename T>
+RAJA_INLINE
+T atomicDec(omp_atomic, T volatile *acc, T val){
+  // This form doesn't seem to play well with OMP, so use builtin atomics
+	return RAJA::atomicDec(builtin_atomic{}, acc, val);
+}
+
 RAJA_SUPPRESS_HD_WARN
 template<typename T>
 RAJA_INLINE
 T atomicAnd(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -198,7 +220,7 @@ RAJA_INLINE
 T atomicOr(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -215,7 +237,7 @@ RAJA_INLINE
 T atomicXor(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -232,7 +254,7 @@ RAJA_INLINE
 T atomicExchange(omp_atomic, T volatile *acc, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif
@@ -249,7 +271,7 @@ RAJA_INLINE
 T atomicCAS(omp_atomic, T volatile *acc, T compare, T value){
 	T ret;
 #ifdef RAJA_COMPILER_MSVC
-#pragma omp critical
+#pragma omp atomic
 #else
 #pragma omp atomic capture
 #endif

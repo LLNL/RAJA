@@ -8,8 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_atomic_HPP
-#define RAJA_policy_atomic_HPP
+#ifndef RAJA_policy_atomic_auto_HPP
+#define RAJA_policy_atomic_auto_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -91,7 +91,6 @@ struct auto_atomic{};
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-constexpr
 T atomicAdd(RAJA::auto_atomic, T volatile *acc, T value){
   return RAJA::atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
 }
@@ -128,8 +127,22 @@ T atomicInc(RAJA::auto_atomic, T volatile *acc){
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
+T atomicInc(RAJA::auto_atomic, T volatile *acc, T compare){
+  return RAJA::atomicInc(RAJA_AUTO_ATOMIC, acc, compare);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
 T atomicDec(RAJA::auto_atomic, T volatile *acc){
   return RAJA::atomicDec(RAJA_AUTO_ATOMIC, acc);
+}
+
+template<typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicDec(RAJA::auto_atomic, T volatile *acc, T compare){
+  return RAJA::atomicDec(RAJA_AUTO_ATOMIC, acc, compare);
 }
 
 template<typename T>
@@ -167,21 +180,6 @@ T atomicCAS(RAJA::auto_atomic, T volatile *acc, T compare, T value){
   return RAJA::atomicCAS(RAJA_AUTO_ATOMIC, acc, compare, value);
 }
 
-
-struct builtin_sync_atomic{};
-
-
-template<typename T>
-RAJA_INLINE
-T atomicAdd(builtin_sync_atomic, T volatile *acc, T value){
-  return __sync_fetch_and_add(&acc, &value);
-}
-
-template<typename T>
-RAJA_INLINE
-T atomicSub(builtin_sync_atomic, T volatile *acc, T value){
-  return __sync_fetch_and_sub(&acc, &value);
-}
 
 
 }  // namespace RAJA

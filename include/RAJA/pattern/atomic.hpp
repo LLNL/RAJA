@@ -55,7 +55,8 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
-#include "RAJA/policy/atomic.hpp"
+#include "RAJA/policy/atomic_builtin.hpp"
+#include "RAJA/policy/atomic_auto.hpp"
 
 namespace RAJA
 {
@@ -146,9 +147,26 @@ RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
+T atomicInc(T volatile *acc, T compare){
+  return RAJA::atomicInc(Policy{}, acc, compare);
+}
+
+RAJA_SUPPRESS_HD_WARN
+template<typename Policy, typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
 T atomicDec(T volatile *acc){
   return RAJA::atomicDec(Policy{}, acc);
 }
+
+RAJA_SUPPRESS_HD_WARN
+template<typename Policy, typename T>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+T atomicDec(T volatile *acc, T compare){
+  return RAJA::atomicDec(Policy{}, acc, compare);
+}
+
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -156,6 +174,7 @@ RAJA_HOST_DEVICE
 T atomicAnd(T volatile *acc, T value){
   return RAJA::atomicAnd(Policy{}, acc, value);
 }
+
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -259,7 +278,7 @@ class AtomicRef {
     }
 
     
-		RAJA_INLINE
+    RAJA_INLINE
     RAJA_HOST_DEVICE
     T min(T rhs)const{
       return RAJA::atomicMin<Policy>(m_value_ptr, rhs);
