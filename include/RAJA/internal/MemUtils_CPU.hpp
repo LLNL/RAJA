@@ -59,6 +59,8 @@
 #include "RAJA/util/types.hpp"
 
 #include <cstddef>
+#include <cstdlib>
+#include <memory>
 
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
     || defined(__MINGW32__) || defined(__BORLANDC__)
@@ -74,15 +76,22 @@ namespace RAJA
 ///
 inline void* allocate_aligned(size_t alignment, size_t size)
 {
-#if defined(HAVE_POSIX_MEMALIGN)
+#if defined(RAJA_HAVE_POSIX_MEMALIGN)
   // posix_memalign available
   void* ret = nullptr;
   int err = posix_memalign(&ret, alignment, size);
   return err ? nullptr : ret;
+#elif defined(RAJA_HAVE_ALIGNED_ALLOC)
+  return std::aligned_alloc(alignment, size);
 #elif defined(RAJA_PLATFORM_WINDOWS)
   return _aligned_malloc(size, alignment);
 #else
-#error "No known aligned allocator available"
+  char *mem = (char *)malloc(size + alignment + sizeof(void *));
+  if (nullptr == mem) return nullptr;
+  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *))
+                         & ~(alignment - 1));
+  ptr[-1] = mem;
+  return ptr;
 #endif
 }
 
@@ -102,12 +111,12 @@ inline T* allocate_aligned_type(size_t alignment, size_t size)
 ///
 inline void free_aligned(void* ptr)
 {
-#if defined(HAVE_POSIX_MEMALIGN)
+#if defined(RAJA_HAVE_POSIX_MEMALIGN) || defined(RAJA_HAVE_ALIGNED_ALLOC)
   free(ptr);
 #elif defined(RAJA_PLATFORM_WINDOWS)
   _aligned_free(ptr);
 #else
-#error "No known aligned allocator available"
+  free(((void**)ptr)[-1]);
 #endif
 }
 

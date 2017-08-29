@@ -135,8 +135,3 @@ set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
 set(RAJA_DATA_ALIGN 64 CACHE INT "")
 set(RAJA_COHERENCE_BLOCK_SIZE 64 CACHE INT "")
 
-include(CheckFunctionExists)
-check_function_exists(posix_memalign HAVE_POSIX_MEMALIGN)
-if(${HAVE_POSIX_MEMALIGN})
-  add_definitions(-DHAVE_POSIX_MEMALIGN)
-endif(${HAVE_POSIX_MEMALIGN})
