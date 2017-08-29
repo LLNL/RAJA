@@ -62,10 +62,6 @@
 #include <cstdlib>
 #include <memory>
 
-#if defined(RAJA_HAVE_MM_MALLOC)
-#include <malloc.h>
-#endif
-
 #if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
     || defined(__MINGW32__) || defined(__BORLANDC__)
 #define RAJA_PLATFORM_WINDOWS
