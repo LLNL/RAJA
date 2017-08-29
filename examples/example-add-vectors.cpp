@@ -48,6 +48,9 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
+/*
+  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+*/
 const int CUDA_BLOCK_SIZE = 256;
 
 void checkSolution(int *C, int in_N);
@@ -56,7 +59,16 @@ void checkSolution(int *C, int in_N);
   Example 1: Adding Two Vectors
 
   ----[Details]---------------------
-  Adds two vectors of length N
+  Starting with a C++ style for loop this example illustrates
+  how to construct RAJA versions of the same loop using 
+  different execution policies.
+
+  In this example, three integer arrays (A,B,C) are allocated
+  using the templated memory manager found in this folder.
+  The vectors A and B are initalized to have opposite values
+  and thus when the entries are added the result should be zero. 
+  The result of the vector addition are stored in C and the function
+  checkSolution is used to verify correctness.
 
   -----[RAJA Concepts]---------------
   1. Introduces the forall loop and basic RAJA policies
@@ -72,6 +84,16 @@ void checkSolution(int *C, int in_N);
   exec_policy - Specifies how the traversal occurs
   iter_space  - Iteration space for RAJA loop (any random access container is expected)
   index_type  - Index for RAJA loops
+
+  ----[Kernel Variants and RAJA Features]------------  
+  a. C++ style for loop
+  b. RAJA style loop with sequential iterations
+     i.  Introduces the seq_exec policy
+     ii. Introduces RAJA::RangeSegment
+  c. RAJA style for loop with omp parallelism
+     i. Introduces the omp_parallel_for_exec policy
+  d. RAJA style for loop with CUDA parallelism
+     i. Introduces the cuda_exec policy
  */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -103,7 +125,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     by the [start, stop) interval specified
   */
   RAJA::forall<RAJA::seq_exec>(
-    RAJA::RangeSegment(0, N), [=](RAJA::Index_type i) {
+   RAJA::RangeSegment(0, N), [=](RAJA::Index_type i) {
       C[i] = A[i] + B[i]; 
     });
   checkSolution(C, N);
@@ -126,9 +148,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 #if defined(RAJA_ENABLE_CUDA)
   printf("RAJA: CUDA Policy \n");
   /*
-    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API
-    
-    CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API 
+    Here the __device__ keyword is used to specify a CUDA kernel
   */
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
     RAJA::RangeSegment(0, N), [=] __device__(RAJA::Index_type i) {       
@@ -146,7 +167,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 /*
-  RAJA may also be used outside of computational kernels
+  Function which checks for correctness
 */
 void checkSolution(int *C, int in_N)
 {
