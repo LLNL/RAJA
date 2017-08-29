@@ -103,11 +103,16 @@ if ( MSVC )
 endif()
 
 if (RAJA_ENABLE_CUDA)
+  set(RAJA_NVCC_STD "c++11")
   # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
   if(CUDA_VERSION_MAJOR GREATER "8")
-    set(RAJA_NVCC_STD "c++14")
+    execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 . 
+                    ERROR_VARIABLE TEST_NVCC_ERR
+                    OUTPUT_QUIET)
+    if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
+      set(RAJA_NVCC_STD "c++14")
+    endif()
   else()
-    set(RAJA_NVCC_STD "c++11")
   endif()
   if(CMAKE_BUILD_TYPE MATCHES Release)
     set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
