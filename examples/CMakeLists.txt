@@ -42,7 +42,7 @@
 ###############################################################################
 
 #---[Intel Flags]-----
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -c -qopt-report=5 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
+#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -c -qopt-report=5 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
 
 #----[GNU Flags]------
 #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -ftree-vectorize")
