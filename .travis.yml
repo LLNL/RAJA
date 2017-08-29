@@ -3,36 +3,37 @@ dist: trusty
 language: cpp
 env:
   global:
-    secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
+    - secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
+    - OMP_NUM_THREADS=3
 matrix:
   include:
   - compiler: gcc-4
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: gcc-6
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=g++-6
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: gcc-7
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
     env:
     - COMPILER=g++-7
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: clang-3.5
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
     - LLVM_VERSION=3.5.2
   - compiler: clang-3.9
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
     - LLVM_VERSION=3.9.1
   - compiler: clang-4.0
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
     - LLVM_VERSION=4.0.0
@@ -41,24 +42,24 @@ matrix:
     - COMPILER=icpc
     - TRAVIS_INSTALL_COMPILER="intel"
   - compiler: nvcc
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
   - compiler: gcc-4.9-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DRAJA_ENABLE_COVERAGE=On"
   - compiler: clang-3.9-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
     - LLVM_VERSION=3.9.1
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
   - compiler: nvcc-debug
-    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9 ] } }
+    addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_CUDA=On"
@@ -69,12 +70,7 @@ cache:
 before_install:
 - sudo apt-get update -qq
 - mkdir -p ${HOME}/download
-- if [[ -n "${LLVM_VERSION}" ]]; then export LLVM_PATH=${HOME}/llvm/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export PATH=${LLVM_PATH}/bin:${PATH}; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export LD_LIBRARY_PATH=${LLVM_PATH}/lib:${LD_LIBRARY_PATH}; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export DOWNLOAD_URL=http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then export TARFILE=${HOME}/download/llvm-${LLVM_VERSION}.tar.xz; fi
-- if [[ -n "${LLVM_VERSION}" ]]; then if ! [[ -d "${LLVM_PATH}" ]]; then if ! [[ -f ${TARFILE} ]]; then echo "curl -o ${TARFILE} ${DOWNLOAD_URL}"; curl -o ${TARFILE} ${DOWNLOAD_URL}; fi; cd ${HOME}/llvm ; tar xf ${TARFILE}; fi; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then ./scripts/install_llvm.sh ; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
 - cd ${HOME} &&
   curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
@@ -88,7 +84,7 @@ before_install:
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
   travis_retry sudo dpkg -i ${DEBFILE} &&
   travis_retry sudo apt-get update -qq &&
-  travis_retry sudo apt-get install -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
+  travis_retry sudo apt-get install --no-install-suggests --no-install-recommends -y cuda-drivers cuda-core-8-0 cuda-cudart-dev-8-0 cuda-cufft-dev-8-0 &&
   travis_retry sudo apt-get clean; fi &&
   export CUDA_HOME=/usr/local/cuda-8.0 &&
   export CUDA_TOOLKIT_ROOT_DIR=${CUDA_HOME} &&
@@ -100,7 +96,7 @@ script:
 - mkdir travis-build &&
   cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
-- make -j 3
+- make -j 3 VERBOSE=1
 - if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi

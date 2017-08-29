@@ -1,3 +1,23 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA reduction templates for
+ *          TBB execution.
+ *
+ *          These methods should work on any platform that supports TBB.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_tbb_reduce_HPP
+#define RAJA_tbb_reduce_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -9,7 +29,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,38 +60,60 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for RAJAVec
-///
+#include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
+#include "RAJA/util/types.hpp"
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
+#include <tbb/tbb.h>
+#include <memory>
+#include <tuple>
 
-TEST(MemUtils, get_reduction_id)
+namespace RAJA
 {
-  int id1 = RAJA::getCPUReductionId();
-  int id2 = RAJA::getCPUReductionId();
-  ASSERT_NE(id1, id2);
-  ASSERT_NE(RAJA::getCPUReductionMemBlock(id1),
-            RAJA::getCPUReductionMemBlock(id2));
-  RAJA::releaseCPUReductionId(id1);
-  RAJA::releaseCPUReductionId(id2);
+
+namespace detail
+{
+template <typename T, typename Reduce>
+class ReduceTBB
+{
+  //! TBB native per-thread container
+  std::shared_ptr<tbb::combinable<T>> data;
+
+public:
+  //! prohibit compiler-generated default ctor
+  ReduceTBB() = delete;
+
+  //! constructor requires a default value for the reducer
+  explicit ReduceTBB(T init_val, T initializer)
+      : data(
+            std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
+  {
+    data->local() = init_val;
+  }
+
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const { return data->combine(typename Reduce::operator_type{}); }
+
+  /*!
+   *  \return update the local value
+   */
+  void combine(const T &other) { Reduce{}(this->local(), other); }
+
+  /*!
+   *  \return reference to the local value
+   */
+  T& local() { return data->local(); }
+};
 }
 
-TEST(MemUtils, max_reducers_exceeded)
-{
-  const int reducerCount = RAJA_MAX_REDUCE_VARS;
-  for (int i = 0; i < reducerCount; ++i)
-    RAJA::getCPUReductionId();
-  ASSERT_DEATH_IF_SUPPORTED(RAJA::getCPUReductionId(), "Exceeded allowable RAJA CPU reduction count at .*");
-  for (int i = 0; i < reducerCount; ++i)
-    RAJA::releaseCPUReductionId(i);
-}
+RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB)
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
+}  // closing brace for RAJA namespace
 
-TEST(ThreadUtils, basic)
-{
-  ASSERT_LE(1, RAJA::getMaxReduceThreadsCPU());
-  ASSERT_LE(1, RAJA::getMaxOMPThreadsCPU());
-}
+#endif  // closing endif for RAJA_ENABLE_TBB guard
+
+#endif  // closing endif for header file include guard

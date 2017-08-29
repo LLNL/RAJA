@@ -204,8 +204,8 @@ float atomicAdd<float>(cuda_atomic, float volatile *acc, float value){
 }
 
 
-// 64-bit float atomicAdd support added for sm_35
-#if __CUDA_ARCH__ >= 350
+// 64-bit double atomicAdd support added for sm_60
+#if __CUDA_ARCH__ >= 600
 template<>
 RAJA_INLINE
 __device__

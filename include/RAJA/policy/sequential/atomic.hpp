@@ -106,7 +106,7 @@ template<typename T>
 RAJA_INLINE
 T atomicInc(seq_atomic, T volatile *acc){
   T ret = *acc;
-	(*acc) ++;
+	(*acc) += 1;
 	return ret;
 }
 
@@ -124,7 +124,7 @@ template<typename T>
 RAJA_INLINE
 T atomicDec(seq_atomic, T volatile *acc){
   T ret = *acc;
-  (*acc) --;
+  (*acc) -= 1;
 	return ret;
 }
 
