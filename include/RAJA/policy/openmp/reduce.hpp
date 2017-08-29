@@ -102,7 +102,7 @@ public:
 
 } /* detail */
 
-RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP);
+RAJA_DECLARE_ALL_REDUCERS(omp_reduce, detail::ReduceOMP)
 
 ///////////////////////////////////////////////////////////////////////////////
 //
@@ -154,7 +154,7 @@ public:
 
 } /* detail */
 
-RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered);
+RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
 }  // closing brace for RAJA namespace
 
