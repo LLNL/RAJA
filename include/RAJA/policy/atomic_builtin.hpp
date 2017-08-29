@@ -69,8 +69,12 @@ struct builtin_atomic{};
 template<typename T>
 RAJA_INLINE
 T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value){
+#ifdef RAJA_COMPILER_MSVC
+  return _InterlockedCompareExchange(acc, value, compare);
+#else
   __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
   return compare;
+#endif
 }
 
 
