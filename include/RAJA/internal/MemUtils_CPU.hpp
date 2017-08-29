@@ -90,7 +90,7 @@ inline void* allocate_aligned(size_t alignment, size_t size)
   if (nullptr == mem) return nullptr;
   void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *))
                          & ~(alignment - 1));
-  // Store the originall address one position behind what we give the user.
+  // Store the original address one position behind what we give the user.
   ptr[-1] = mem;
   return ptr;
 #endif
