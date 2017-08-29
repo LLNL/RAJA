@@ -110,7 +110,7 @@ public:
 };
 }
 
-RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB);
+RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB)
 
 }  // closing brace for RAJA namespace
 

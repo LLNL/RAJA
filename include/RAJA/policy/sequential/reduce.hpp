@@ -84,7 +84,7 @@ public:
 
 } /* detail */
 
-RAJA_DECLARE_ALL_REDUCERS(seq_reduce, detail::ReduceSeq);
+RAJA_DECLARE_ALL_REDUCERS(seq_reduce, detail::ReduceSeq)
 
 }  // closing brace for RAJA namespace
 
