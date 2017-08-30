@@ -65,70 +65,28 @@ namespace RAJA
 {
 namespace util
 {
-//
-// For all of these to work (and frankly the CUDA API) we need to ensure
-// that the C++ types are the correct sizes.
-//
-// If we run into a case where these assertions don't hold, we will need to 
-// update our implementation to handle it
-//
-
-static_assert(sizeof(unsigned) == 4, "unsigned must be 32-bits");
-static_assert(sizeof(unsigned long long) == 8, "unsigned long long must be 64-bits");
 
 
 /*!
- * Reinterpret any 32-bit datatype as an "unsigned"
+ * Reinterpret any datatype as another datatype of the same size
  */
-template<typename T>
+template<typename A, typename B>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 constexpr
-unsigned reinterp_T_as_u(T const &val){
-  static_assert(sizeof(T)==4, "T must be 32-bit");
-  return reinterpret_cast<unsigned const volatile &>(val);
+B reinterp_A_as_B(A const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
 }
 
-
-/*!
- * Reinterpret a "unsigned" as any 32-bit datatype.
- */
-template<typename T>
+template<typename A, typename B>
 RAJA_INLINE
 RAJA_HOST_DEVICE
 constexpr
-T reinterp_u_as_T(unsigned const &val){
-  static_assert(sizeof(T)==4, "T must be 32-bit");
-  return reinterpret_cast<T const &>(val);
+B reinterp_A_as_B(A volatile const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
 }
-
-
-/*!
- * Reinterpret any 64-bit datatype as an "unsigned long long"
- */
-template<typename T>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-constexpr
-unsigned long long reinterp_T_as_ull(T const &val){
-  static_assert(sizeof(T)==8, "T must be 64-bit");
-  return reinterpret_cast<unsigned long long const volatile &>(val);
-}
-
-
-/*!
- * Reinterpret a "unsigned long long" as any 64-bit datatype.
- */
-template<typename T>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-constexpr
-T reinterp_ull_as_T(unsigned long long const &val){
-  static_assert(sizeof(T)==8, "T must be 64-bit");
-  return reinterpret_cast<T const &>(val);
-}
-
-
 
 
 }  // closing brace for util namespace

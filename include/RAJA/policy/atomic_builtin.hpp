@@ -66,17 +66,45 @@ struct builtin_atomic{};
 
 
 
+#ifdef RAJA_COMPILER_MSVC
+
 template<typename T>
 RAJA_INLINE
-T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value){
-#ifdef RAJA_COMPILER_MSVC
-  return _InterlockedCompareExchange(acc, value, compare);
-#else
-  __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
-  return compare;
-#endif
+T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value);
+
+template<>
+RAJA_INLINE
+unsigned atomicCAS(RAJA::builtin_atomic, unsigned volatile *acc, unsigned compare, unsigned value){
+
+  long long_value =  RAJA::util::reinterp_A_as_B<unsigned, long>(value);
+  long long_compare =  RAJA::util::reinterp_A_as_B<unsigned, long>(compare);
+
+  long old = _InterlockedCompareExchange((long *)acc, long_value, long_compare);
+
+  return RAJA::util::reinterp_A_as_B<long, unsigned>(old);
 }
 
+
+template<>
+RAJA_INLINE
+unsigned long long atomicCAS(RAJA::builtin_atomic, unsigned long long volatile *acc, unsigned long long compare, unsigned long long value){
+
+  long long long_value =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value);
+  long long long_compare =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);
+
+  long long old = _InterlockedCompareExchange((unsigned long long *)acc, long_value, long_compare);
+
+  return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(old);
+}
+
+#else // RAJA_COMPILER_MSVC
+template<typename T>
+RAJA_INLINE
+T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value){  
+  __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+  return compare;
+}
+#endif // RAJA_COMPILER_MSVC
 
 namespace detail {
 
@@ -95,16 +123,19 @@ struct BuiltinAtomicCAS<4> {
   template<typename T, typename OPER>
   RAJA_INLINE
   T operator()(T volatile *acc, OPER const &oper) const {
-    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T will enforce 32-bit T
     unsigned oldval, newval, readback;
-    oldval = RAJA::util::reinterp_T_as_u(*acc);
-    newval = RAJA::util::reinterp_T_as_u( oper( RAJA::util::reinterp_u_as_T<T>(oldval) ) );
+    
+    oldval = RAJA::util::reinterp_A_as_B<T, unsigned>(*acc);
+    newval = RAJA::util::reinterp_A_as_B<T, unsigned>( 
+        oper( RAJA::util::reinterp_A_as_B<unsigned, T>(oldval) ) );
+            
     while ((readback = RAJA::atomicCAS(RAJA::builtin_atomic{}, (unsigned *)acc, oldval, newval))
            != oldval) {
       oldval = readback;
-      newval = RAJA::util::reinterp_T_as_u( oper( RAJA::util::reinterp_u_as_T<T>(oldval) ) );
+      newval = RAJA::util::reinterp_A_as_B<T, unsigned>( 
+        oper( RAJA::util::reinterp_A_as_B<unsigned, T>(oldval) ) );
     }
-    return RAJA::util::reinterp_u_as_T<T>(oldval);
+    return RAJA::util::reinterp_A_as_B<unsigned, T>(oldval);
   }
   
 };
@@ -120,16 +151,19 @@ struct BuiltinAtomicCAS<8> {
   template<typename T, typename OPER>
   RAJA_INLINE
   T operator()(T volatile *acc, OPER const &oper) const {
-    // asserts in RAJA::util::reinterp_T_as_u and RAJA::util::reinterp_u_as_T will enforce 64-bit T
     unsigned long long oldval, newval, readback;
-    oldval = RAJA::util::reinterp_T_as_ull(*acc);
-    newval = RAJA::util::reinterp_T_as_ull( oper( RAJA::util::reinterp_ull_as_T<T>(oldval) ) );
+    
+    oldval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(*acc);
+    newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
+      oper( RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval) ) );
+      
     while ((readback = RAJA::atomicCAS(RAJA::builtin_atomic{}, (unsigned long long *)acc, oldval, newval))
            != oldval) {
       oldval = readback;
-      newval = RAJA::util::reinterp_T_as_ull( oper( RAJA::util::reinterp_ull_as_T<T>(oldval) ) );
+      newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
+      oper( RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval) ) );
     }
-    return RAJA::util::reinterp_ull_as_T<T>(oldval);
+    return RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval);
   }
   
 };
