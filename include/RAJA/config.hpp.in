@@ -266,6 +266,9 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #endif
 
+#cmakedefine RAJA_HAVE_POSIX_MEMALIGN
+#cmakedefine RAJA_HAVE_ALIGNED_ALLOC
+
 }  // closing brace for RAJA namespace
 
 #endif // closing endif for header file include guard

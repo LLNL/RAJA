@@ -54,17 +54,12 @@ endif()
 
 if (RAJA_ENABLE_CLANG_CUDA)
   set(RAJA_ENABLE_CUDA On)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
 if (RAJA_ENABLE_CUDA)
-  find_package(CUDA)
-  if(CUDA_FOUND)
-    message(STATUS "CUDA Enabled")
-    set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    include_directories(${CUDA_INCLUDE_DIRS})
-  endif()
+  find_package(CUDA REQUIRED)
+  set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+  include_directories(${CUDA_INCLUDE_DIRS})
 
   if (RAJA_ENABLE_CUB)
 
