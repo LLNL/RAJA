@@ -190,7 +190,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   setIC(P1, P2, (time - dt), time, grid);
   for (int k = 0; k < nt; ++k) {
 
-    Wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
+    wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
     time += dt;
 
     double *Temp = P2;

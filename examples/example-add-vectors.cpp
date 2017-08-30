@@ -168,7 +168,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-
+/*
+  Function check for correctness
+*/
 void checkSolution(int *C, int in_N)
 {
 

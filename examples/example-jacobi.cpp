@@ -256,7 +256,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     /*
       ----[Reduction step]---------
       The RAJA API introduces a thread-safe accumulation variable
-      "ReduceSum" in order to carryout reductions
+      "ReduceSum" in order to perform reductions
     */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::seq_exec>(
