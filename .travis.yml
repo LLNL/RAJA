@@ -96,7 +96,7 @@ script:
 - mkdir travis-build &&
   cd travis-build
 - cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
-- make -j 3
+- make -j 3 VERBOSE=1
 - if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi

@@ -67,6 +67,8 @@
 #include <iostream>
 #include <string>
 
+#define RAJA_MAX_REDUCE_VARS 8
+
 namespace RAJA
 {
 

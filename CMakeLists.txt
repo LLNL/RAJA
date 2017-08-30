@@ -58,6 +58,7 @@ set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
 set(ENABLE_COPY_HEADERS Off CACHE Bool "")
 set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
+set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
 option(ENABLE_TBB "Build TBB support" On)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
@@ -83,10 +84,10 @@ include(blt/SetupBLT.cmake)
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
-# Setup vendor-specific compiler flags
-include(cmake/SetupCompilers.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
+# Setup vendor-specific compiler flags
+include(cmake/SetupCompilers.cmake)
 # Setup internal RAJA configuration options
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
@@ -96,7 +97,6 @@ set (raja_sources
   src/AlignedRangeIndexSetBuilders.cpp
   src/DepGraphNode.cpp
   src/LockFreeIndexSetBuilders.cpp
-  src/MemUtils_CPU.cpp
   src/MemUtils_CUDA.cpp
   src/ThreadUtils_CPU.cpp)
 
