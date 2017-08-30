@@ -64,7 +64,7 @@
 
   CUDA_BLOCK_SIZE_Y - Number of threads in the 
                       y-dimension of a cuda thread block
- */
+*/
 const int N   = 1000;
 const int NN  = N * N;
 

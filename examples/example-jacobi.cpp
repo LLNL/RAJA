@@ -45,12 +45,21 @@
 #include <cstring>
 
 #include <iostream>
+#include <cmath>
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
 #include "memoryManager.hpp"
 
+/*
+  ----[Constant Values]-----
+  CUDA_BLOCK_SIZE_X - Number of threads in the
+                      x-dimension of a cuda thread block
+
+  CUDA_BLOCK_SIZE_Y - Number of threads in the
+                      y-dimension of a cuda thread block
+*/
 const int CUDA_BLOCK_DIM_X  = 16;
 const int CUDA_BLOCK_DIM_Y  = 16;
 const int CUDA_REDUCE_SIZE = 256;
@@ -61,61 +70,109 @@ const int CUDA_REDUCE_SIZE = 256;
 
   ----[Details]--------------------
   This codes uses a five point finite difference stencil
-  to discretize 
+  to discretize the following boundary value problem
   
-  -U_xx - U_yy = 1.0.
-  The solution is assumed to satisfy
-  U = 0 on the boundary of the domain.
-  The domain is assumed to be a lattice 
-  with unit grid spacing.
+  U_xx + U_yy = f on [0,1] x [0,1].
 
-  Values inside the domain are computed
-  using the Jocabi method to solve the associated
-  linear system. 
+  The right hand side is chosen to be
+  f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
+
+  A structured grid is used to discretize the domain 
+  [0,1] x [0,1]. Values inside the domain are computed
+  using the Jacobi method to solve the associated
+  linear system. The scheme is invoked until the l_2 
+  difference of subsequent iterations is below a 
+  tolerance.
+  
+  The scheme is implemented by allocating two arrays
+  (I, Iold) and initalized to zero. The first set of
+  nested for loops apply an iteration of the Jacobi 
+  scheme. As boundary values are already known the 
+  scheme is only applied to the interior nodes.
+  
+  The second set of nested for loops is used to
+  update Iold and compute the l_2 norm of the 
+  difference of the iterates.
+
+  Computing the l_2 norm requires a reduction operation.
+  To simplify the reduction procedure, the RAJA API
+  introduces thread safe variables. 
 
   ----[RAJA Concepts]---------------
   1. RAJA ForallN
   2. RAJA Reduction
   3. RAJA::omp_collapse_nowait_exec
   4. Reducing length of RAJA statements
+
+  ----[Kernel Variants and RAJA Features]---
+  a. C++ style nested for loops
+  b. RAJA style nested for loops with sequential iterations
+     i. Introduces RAJA reducers for sequential policies
+  c. RAJA style nested for loops with omp parallelism
+     i.  Introduces collapsing loops using RAJA policies
+     ii. Introduces RAJA reducers for omp policies
+  d. RAJA style for loop with CUDA parallelism
+     i. Introduces RAJA reducers for cuda policies
 */
+
+/*
+  Struct to hold grid info
+  o - Origin in a cartesian dimension
+  h - Spacing between grid points
+  n - Number of grid points 
+ */
+struct grid_s{
+  double o, h;
+  int n;
+};
+
+/*
+  ----[Functions]---------
+  solution   - Function for the analytic solution
+  computeErr - Displays the maximum error in the solution
+ */
+double rhs(double x, double y);
+double solution(double x, double y);
+void computeErr(double *I, grid_s grid);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   printf("Example 3: Jacobi Method \n");
 
-  /*
-    Jacobi method is invoked until the l_2 norm of the difference of the
-    iterations are under a tolerance. 
-    
+  /*   
     ----[Solver Parameters]------------
     tol       - Value in which the l_2 norm should be under
     N         - Number of unknown gridpoints per cartesian dimension
-    NN        - Total number of gridpoints on the lattice
+    NN        - Total number of gridpoints on the grid
     maxIter   - Maximum number of iterations to be taken
     
     resI2     - Residual
     iteration - Iteration number
+    grid_s    - Struct with grid information for a cartesian dimension
   */
-  double tol  = 1e-5;
+  double tol  = 1e-10;
 
-  int N       = 100;                
+  int N       = 50;
   int NN      = (N + 2) * (N + 2);
   int maxIter = 100000;
 
   double resI2;
   int iteration;
+
+  grid_s gridx; 
+  gridx.o = 0.0;
+  gridx.h = 1.0/(N+1.0);
+  gridx.n = N+2;
   
   /*
-    f       - Right hand side term
     invD    - Accumulation of finite difference coefficients
     I, Iold - Holds iterates of Jacobi method
   */
-  double f     = 1.0;
   double invD  = 1. / 4.0;
   double *I    = memoryManager::allocate<double>(NN);
   double *Iold = memoryManager::allocate<double>(NN);
+
 
   memset(I, 0, NN * sizeof(double));
   memset(Iold, 0, NN * sizeof(double));
@@ -133,9 +190,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     for (int n = 1; n <= N; ++n) {
       for (int m = 1; m <= N; ++m) {
         
+        double x = gridx.o + m*gridx.h;
+        double y = gridx.o + n*gridx.h;
+
+        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
+
         int id = n * (N + 2) + m;
-        I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2] 
-                        - Iold[id - 1] - Iold[id + 1]);        
+        I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2]
+                          - Iold[id - 1] - Iold[id + 1]);
       }
     }
     
@@ -155,8 +217,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     iteration++;
   }
-  printf("Value at grid point ((N-1), (N-1)): %lg \n", I[N + N * (N + 2)]);
+  computeErr(I,gridx);
   printf("No of iterations: %d \n \n", iteration);
+
   
   /*
     RAJA loop calls may be shortened by predefining policies
@@ -180,6 +243,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::forallN<jacobiSeqNestedPolicy>(
       jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
         
+        double x = gridx.o + m*gridx.h;
+        double y = gridx.o + n*gridx.h;
+        
+        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
+
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2]
                         - Iold[id - 1] - Iold[id + 1]);
@@ -205,7 +273,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
     iteration++;
   }
-  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N + N * (N + 2)]);
+  computeErr(I,gridx);
   printf("No of iterations: %d \n \n", iteration);
   
   
@@ -237,6 +305,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     */
     RAJA::forallN<jacobiompNestedPolicy>(
       jacobiRange, jacobiRange, [=](RAJA::Index_type m,RAJA::Index_type n) {
+
+        double x = gridx.o + m*gridx.h;
+        double y = gridx.o + n*gridx.h;
+
+        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
         
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
@@ -262,12 +335,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     }
     iteration++;
   }
-  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N + N * (N + 2)]);
+  computeErr(I,gridx);
   printf("No of iterations: %d \n \n", iteration);
 #endif
 
   
 #if defined(RAJA_ENABLE_CUDA)
+  printf("RAJA: CUDA Nested Loop Policy \n");
+
   using jacobiCUDANestedPolicy = 
     RAJA::NestedPolicy<RAJA::ExecList<
     RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
@@ -286,6 +361,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::forallN<jacobiCUDANestedPolicy>(
       jacobiRange, jacobiRange, [=] __device__(RAJA::Index_type m,RAJA::Index_type n) {
         
+        double x = gridx.o + m*gridx.h;
+        double y = gridx.o + n*gridx.h;
+
+        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
+
         int id = n * (N + 2) + m;
         I[id] = invD * (f - Iold[id - N - 2] - Iold[id + N + 2]
                         - Iold[id - 1] - Iold[id + 1]);
@@ -311,8 +391,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     iteration++;
   }
   cudaDeviceSynchronize();
-  printf("RAJA: CUDA Nested Loop Policy \n");
-  printf("Value at grid point ((N-1),(N-1)): %lg \n", I[N + N * (N + 2)]);
+  computeErr(I,gridx);
   printf("No of iterations: %d \n \n", iteration);
 #endif
 
@@ -321,4 +400,32 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   return 0;
+}
+
+
+double solution(double x, double y){
+  return x*y*exp(x-y)*(1-x)*(1-y);
+}
+
+void computeErr(double *I, grid_s grid)
+{
+
+  RAJA::RangeSegment fdBounds(0, grid.n);
+  RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
+  using myPolicy =
+    RAJA::NestedPolicy<
+    RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+
+  RAJA::forallN<myPolicy>(
+    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+
+      int id = tx + grid.n * ty;
+      double x = grid.o + tx * grid.h;
+      double y = grid.o + ty * grid.h;
+      double myErr = std::abs(I[id] - solution(x, y));
+      tMax.max(myErr);
+    });
+
+  double l2err = tMax;
+  printf("Max err=%lg, dx=%f \n",l2err,grid.h);
 }

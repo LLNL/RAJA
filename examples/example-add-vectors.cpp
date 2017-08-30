@@ -53,6 +53,9 @@
 */
 const int CUDA_BLOCK_SIZE = 256;
 
+/*
+  Function which checks for correctness (Details below)
+*/
 void checkSolution(int *C, int in_N);
 
 /*
@@ -87,7 +90,7 @@ void checkSolution(int *C, int in_N);
 
   ----[Kernel Variants and RAJA Features]------------  
   a. C++ style for loop
-  b. RAJA style loop with sequential iterations
+  b. RAJA style for loop with sequential iterations
      i.  Introduces the seq_exec policy
      ii. Introduces RAJA::RangeSegment
   c. RAJA style for loop with omp parallelism
@@ -166,12 +169,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 
-/*
-  Function which checks for correctness
-*/
 void checkSolution(int *C, int in_N)
 {
-
 
   RAJA::forall<RAJA::seq_exec>(
     RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
