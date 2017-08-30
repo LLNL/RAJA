@@ -402,16 +402,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
-/*
-  Function for the anlytic solution
-*/
+
 double solution(double x, double y){
   return x*y*exp(x-y)*(1-x)*(1-y);
 }
 
-/*
-  Error is computed via ||I_{approx}(:) - U_{analytic}(:)||_{inf}
-*/
 void computeErr(double *I, grid_s grid)
 {
 
