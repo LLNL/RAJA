@@ -78,13 +78,6 @@ namespace RAJA
 namespace cuda
 {
 
-//! class used to combine data and location in cuda loc reductions
-template <typename T, typename IndexType>
-struct LocType {
-  T val;
-  IndexType idx;
-};
-
 //! Allocator for pinned memory for use in basic_mempool
 struct PinnedAllocator {
 
