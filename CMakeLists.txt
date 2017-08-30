@@ -117,6 +117,12 @@ if (ENABLE_CHAI)
     chai)
 endif ()
 
+if (ENABLE_TBB)
+  set(raja_depends
+    ${raja_depends}
+    tbb)
+endif ()
+
 blt_add_library(
   NAME RAJA
   SOURCES ${raja_sources}

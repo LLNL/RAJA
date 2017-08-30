@@ -49,11 +49,13 @@ if (ENABLE_CUDA)
   if (ENABLE_CUB)
     find_package(CUB)
     if (CUB_FOUND)
-      include_directories(${CUB_INCLUDE_DIRS})
+      blt_register_library(
+        NAME cub
+        INCLUDES ${CUB_INCLUDE_DIRS})
     else()
       message(WARNING "Using deprecated Thrust backend for CUDA scans.\n
   Please set CUB_DIR for better scan performance.")
-      set(ENABLE_CUB False)
+      set(ENABLE_CUB Off)
     endif()
   endif()
 endif()
@@ -61,7 +63,9 @@ endif()
 if (ENABLE_TBB)
   find_package(TBB)
   if(TBB_FOUND)
-    include_directories(${TBB_INCLUDE_DIRS})
+    blt_register_library(
+      NAME tbb
+      INCLUDES ${TBB_INCLUDE_DIRS})
     message(STATUS "TBB Enabled")
   else()
     message(WARNING "TBB NOT FOUND")
