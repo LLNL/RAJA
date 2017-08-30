@@ -59,7 +59,7 @@ void checkSolution(int *C, int in_N);
   Example 1: Adding Two Vectors
 
   ----[Details]---------------------
-  Starting with a C++ style for loop this example illustrates
+  Starting with a C++ style for loop, this example illustrates
   how to construct RAJA versions of the same loop using 
   different execution policies.
 

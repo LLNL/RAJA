@@ -52,7 +52,19 @@
 
 #include "memoryManager.hpp"
 
-// Matrix is of size N x N
+/*
+  ---[Constant values]----
+  N   - Defines the number of rows/columns in a matrix
+  NN  - Total number of entries in a matrix
+  DIM - Dimension of the data structure in which the matrices 
+        stored
+  
+  CUDA_BLOCK_SIZE_X - Number of threads in the 
+                      x-dimension of a cuda thread block
+
+  CUDA_BLOCK_SIZE_Y - Number of threads in the 
+                      y-dimension of a cuda thread block
+ */
 const int N   = 1000;
 const int NN  = N * N;
 
@@ -68,13 +80,22 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
   Example 2: Multiplying Two Matrices
 
   ----[Details]--------------------
-  This example illustrates how RAJA may be
-  gradually introduced into existing codes
+  Starting with C++ style nested for loops, this example
+  illustrates how to construct RAJA versions of the same loops
+  using different execution policies. Furthermore as RAJA
+  nested loops are not currently supported with CUDA, this example
+  makes utility of RAJA's forallN loop which is supported with all
+  policies. 
+
+  In this example two matrices of dimension N x N are allocated and multiplied.
+  The matrix A is populated with a constant value along the rows while B is populated 
+  with a constant value along the columns. The function checkSolution checks
+  for correctness.
 
   -----[RAJA Concepts]-------------
   1. Nesting forall loops (Not currently supported in CUDA)
 
-  2. ForallN loop
+  2. ForallN loop (Supported with all policies)
 
   RAJA::forallN<
   RAJA::NestedPolicy<exec_policy1, .... , exec_policyN> >(
@@ -86,11 +107,26 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
 
   [=] By-copy capture
   [&] By-reference capture (for non-unified memory targets)
-  RAJA::NestedPolicy - List of RAJA execution policies
+  RAJA::NestedPolicy - Stores a list of RAJA execution policies
   exec_policy        - Specifies how the traversal occurs
   iter_space         - Iteration space for RAJA loop (any random access container is expected)
 
   3. RAJA::View - RAJA's wrapper for multidimensional indexing
+
+  ----[Kernel Variants and RAJA Features]-----
+  a. C++ style nested for loops
+  b. RAJA style outer loop with a sequential policy 
+     and a C++ style inner for loop
+  c. RAJA style nested for loops with sequential policies
+  d. RAJA forallN loop with sequential policies
+     i. This kernel illustrates the use of an RAJA::ExecList
+  e. RAJA forallN loop with OpenMP parallism on the outer loop
+  f. RAJA forallN loop executed on the CUDA API
+     i.  This kernel illustrates constructing two-dimensional thread blocks
+         for use of the CUDA execution policy.
+     ii. The current implementation of forallN using the CUDA
+         variant is performed asynchronously and thus a barrier
+         (cudaDeviceSynchronize) is placed after calling forallN.
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -100,21 +136,29 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *B = memoryManager::allocate<double>(NN);
   double *C = memoryManager::allocate<double>(NN);
 
-  for (int i = 0; i < NN; ++i) {
-    A[i] = 1.0;
-    B[i] = 1.0;
-  }
-
   /*
-    RAJA::View - RAJA's wrapper for multidimensional indexing
+    RAJA::View wraps a pointer to a multi-dimensional 
+    data structure and enables multi-dimensional indexing.
+    In this example our data is assumed to be two-dimensional
+    with N values in each component. 
   */
-
   RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N, N);
   RAJA::View<double, RAJA::Layout<DIM>> Bview(B, N, N);
   RAJA::View<double, RAJA::Layout<DIM>> Cview(C, N, N);
 
   /*
-    RAJA bounds may be specified prior to forall statements
+    Intialize matrices
+   */
+  for(int row = 0; row < N; ++row) {
+    for(int col = 0; col < N; ++col) {
+      Aview(row,col) = row;
+      Bview(row,col) = col;
+    }
+  }
+
+  /*
+    As the loops all use the same bounds, we may specify
+    the bounds prior to the use of any RAJA loops
   */
   RAJA::RangeSegment matBounds(0, N);
 
@@ -238,6 +282,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   return 0;
 }
 
+/*
+  Function which checks for correctness
+*/
 template <typename T>
 void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N)
 {
@@ -248,8 +295,8 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int in_N)
       RAJA::forall<RAJA::seq_exec>(
         RAJA::RangeSegment(0,N), [=](RAJA::Index_type col) {
       
-          double diff = Cview(row,col) - in_N;          
-          if (abs(diff) > 1e-9) {
+          double diff = Cview(row,col) - row*col*in_N;
+          if (std::abs(diff) > 1e-9) {
             return;
           }
         });
