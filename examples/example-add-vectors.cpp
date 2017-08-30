@@ -49,32 +49,22 @@
 #include "RAJA/util/defines.hpp"
 
 /*
-  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
-*/
-const int CUDA_BLOCK_SIZE = 256;
-
-/*
-  Function which checks for correctness (Details below)
-*/
-void checkSolution(int *C, int in_N);
-
-/*
   Example 1: Adding Two Vectors
 
   ----[Details]---------------------
   Starting with a C++ style for loop, this example illustrates
-  how to construct RAJA versions of the same loop using 
-  different execution policies.
+  how to construct RAJA versions of the same loop with different
+  execution policies.
 
   In this example, three integer arrays (A,B,C) are allocated
   using the templated memory manager found in this folder.
-  The vectors A and B are initalized to have opposite values
+  The vectors A and B are initialized to have opposite values
   and thus when the entries are added the result should be zero. 
-  The result of the vector addition are stored in C and the function
+  The result of the vector addition is stored in C. The function
   checkSolution is used to verify correctness.
 
   -----[RAJA Concepts]---------------
-  1. Introduces the forall loop and basic RAJA policies
+  1. Introduction of the forall loop and basic RAJA policies
 
   RAJA::forall<exec_policy>(iter_space I, [=] (index_type i)) {
 
@@ -98,6 +88,17 @@ void checkSolution(int *C, int in_N);
   d. RAJA style for loop with CUDA parallelism
      i. Introduces the cuda_exec policy
  */
+
+/*
+  CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
+*/
+const int CUDA_BLOCK_SIZE = 256;
+
+/*
+  Function to verify correctness
+*/
+void checkSolution(int *C, int in_N);
+
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 

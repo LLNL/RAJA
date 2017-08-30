@@ -49,6 +49,32 @@
 #include "RAJA/util/defines.hpp"
 
 /*
+  Example 4: Time-Domain Finite Difference Solver For The 
+             Acoustic Wave Equation
+
+  ------[Details]----------------------
+  This example highlights how to construct a single
+  kernel capable of being executed with different RAJA policies.
+  
+  Here we solve the acoustic wave equation
+ 
+  P_tt = cc*(P_xx + P_yy) via finite differences.
+
+  The scheme uses a second order central difference discretization
+  for time and a fourth order central difference discretization for space.
+  Periodic boundary conditions are assumed on the grid [-1,1] x [-1, 1].
+
+  NOTE: The x and y dimensions are discretized identically.
+
+  ----[RAJA Concepts]-------------------
+  1. RAJA kernels are portable and a single implemenation can run 
+     on various platforms
+
+  2. RAJA MaxReduction - RAJA's implementation for computing a maximum value
+     (MinReduction computes the min)
+*/
+
+/*
   ---[Constant Values]-------
   sr - Radius of the finite difference stencil
   PI - Value of pi
@@ -91,31 +117,6 @@ double waveSol(double t, double x, double y);
 void setIC(double *P1, double *P2, double t0, double t1, grid_s grid);
 void computeErr(double *P, double tf, grid_s grid);
 
-/*
-  Example 4: Time-Domain Finite Difference Solver For The 
-             Acoustic Wave Equation
-
-  ------[Details]----------------------
-  This example highlights how to construct a single
-  kernel capable of being executed with different RAJA policies.
-  
-  Here we solve the acoustic wave equation
- 
-  P_tt = cc*(P_xx + P_yy) via finite differences.
-
-  The scheme uses a second order central difference discretization
-  for time and a fourth order central difference discretization for space.
-  Periodic boundary conditions are assumed on the grid [-1,1] x [-1, 1].
-
-  NOTE: The x and y dimensions are discretized identically.
-
-  ----[RAJA Concepts]-------------------
-  1. RAJA kernels are portable and a single implemenation can run 
-     on various platforms
-
-  2. RAJA MaxReduction - RAJA's implementation for computing a maximum value
-     (MinReduction computes the min)
-*/
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -152,7 +153,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double *P2 = memoryManager::allocate<double>(entries);
 
   /*
-    Time stepping parameters
+    ----[Time stepping parameters]----
     dt - Step size
     nt - Total number of time steps
     ct - Merged coefficents 
@@ -245,7 +246,7 @@ void computeErr(double *P, double tf, grid_s grid)
     });
   
   double lInfErr = tMax;  
-  printf("Max err=%lg, dx=%f \n",lInfErr,grid.dx);
+  printf("Max Error = %lg, dx = %f \n",lInfErr,grid.dx);
 }
 
 

@@ -53,36 +53,12 @@
 #include "memoryManager.hpp"
 
 /*
-  ---[Constant values]----
-  N   - Defines the number of rows/columns in a matrix
-  NN  - Total number of entries in a matrix
-  DIM - Dimension of the data structure in which the matrices 
-        stored
-  
-  CUDA_BLOCK_SIZE_X - Number of threads in the 
-                      x-dimension of a cuda thread block
-
-  CUDA_BLOCK_SIZE_Y - Number of threads in the 
-                      y-dimension of a cuda thread block
-*/
-const int N   = 1000;
-const int NN  = N * N;
-
-const int DIM = 2;
-
-const int CUDA_BLOCK_SIZE_X = 16;
-const int CUDA_BLOCK_SIZE_Y = 16;
-
-template <typename T>
-void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
-
-/*
   Example 2: Multiplying Two Matrices
 
   ----[Details]--------------------
   Starting with C++ style nested for loops, this example
   illustrates how to construct RAJA versions of the same loops
-  using different execution policies. Furthermore as RAJA
+  using different execution policies. Furthermore, as RAJA
   nested loops are not currently supported with CUDA, this example
   makes utility of RAJA's forallN loop which is supported with all
   policies. 
@@ -119,7 +95,7 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
      and a C++ style inner for loop
   c. RAJA style nested for loops with sequential policies
   d. RAJA forallN loop with sequential policies
-     i. This kernel illustrates the use of an RAJA::ExecList
+     i. This kernel introduces RAJA::ExecList
   e. RAJA forallN loop with OpenMP parallism on the outer loop
   f. RAJA forallN loop executed on the CUDA API
      i.  This kernel illustrates constructing two-dimensional thread blocks
@@ -128,6 +104,31 @@ void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
          variant is performed asynchronously and thus a barrier
          (cudaDeviceSynchronize) is placed after calling forallN.
 */
+
+/*
+  ---[Constant values]----
+  N   - Defines the number of rows/columns in a matrix
+  NN  - Total number of entries in a matrix
+  DIM - Dimension of the data structure in which the matrices 
+        are stored
+  
+  CUDA_BLOCK_SIZE_X - Number of threads in the 
+                      x-dimension of a cuda thread block
+
+  CUDA_BLOCK_SIZE_Y - Number of threads in the 
+                      y-dimension of a cuda thread block
+*/
+const int N   = 1000;
+const int NN  = N * N;
+
+const int DIM = 2;
+
+const int CUDA_BLOCK_SIZE_X = 16;
+const int CUDA_BLOCK_SIZE_Y = 16;
+
+template <typename T>
+void checkSolution(RAJA::View<T, RAJA::Layout<DIM>> Cview, int N);
+
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
@@ -162,7 +163,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   RAJA::RangeSegment matBounds(0, N);
 
-  printf("Standard C++ Loop \n");
+  printf("Standard C++ Nested Loops \n");
   for (int row = 0; row < N; ++row) {
     for (int col = 0; col < N; ++col) {
 
@@ -176,7 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
   checkSolution<double>(Cview, N);
 
-  printf("RAJA: Sequential Policy - Single forall \n");
+  printf("RAJA: Forall - Sequential Policies\n");
   RAJA::forall<RAJA::seq_exec>(
     matBounds, [=](RAJA::Index_type row) {
   
@@ -193,7 +194,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
   checkSolution<double>(Cview, N);
 
-  printf("RAJA: Sequential Policy - Nested forall \n");
+  printf("RAJA: Nested Forall - Sequential Policies\n");
   /*
     Forall loops may be nested under sequential and omp policies
   */
@@ -214,7 +215,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution<double>(Cview, N);
   
   
-  printf("RAJA: Sequential Policy RAJA - forallN \n");
+  printf("RAJA: ForallN - Sequential Policies\n");
   /*
     Nested forall loops may be collapsed into a single forallN loop
   */
@@ -233,7 +234,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   
 #if defined(RAJA_ENABLE_OPENMP)
-  printf("RAJA: OpenMP/Sequential Policy - forallN \n");
+  printf("RAJA: ForallN - OpenMP/Sequential Policies\n");
   /*
     Here the outer loop is excuted in parallel while the inner loop
     is executed sequentially
@@ -254,7 +255,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   
 #if defined(RAJA_ENABLE_CUDA)
-  printf("RAJA: CUDA Policy - forallN \n");
+  printf("RAJA: ForallN - CUDA Policies\n");
   /*
     This example illustrates creating two-dimensional thread blocks as described
     under the CUDA nomenclature
