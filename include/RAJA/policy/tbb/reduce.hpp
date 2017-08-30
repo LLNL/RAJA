@@ -3,14 +3,20 @@
  *
  * \file
  *
- * \brief   Header file defining prototypes for routines used to manage
- *          memory for CPU reductions and other operations.
+ * \brief   Header file containing RAJA reduction templates for
+ *          TBB execution.
+ *
+ *          These methods should work on any platform that supports TBB.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_MemUtils_CPU_HPP
-#define RAJA_MemUtils_CPU_HPP
+#ifndef RAJA_tbb_reduce_HPP
+#define RAJA_tbb_reduce_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -54,75 +60,60 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-
+#include "RAJA/internal/MemUtils_CPU.hpp"
+#include "RAJA/pattern/detail/reduce.hpp"
+#include "RAJA/pattern/reduce.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
 #include "RAJA/util/types.hpp"
 
-#include <cstddef>
-#include <cstdlib>
+#include <tbb/tbb.h>
 #include <memory>
-
-#if defined(_WIN32) || defined(WIN32) || defined(__CYGWIN__) \
-    || defined(__MINGW32__) || defined(__BORLANDC__)
-#define RAJA_PLATFORM_WINDOWS
-#include <malloc.h>
-#endif
+#include <tuple>
 
 namespace RAJA
 {
 
-///
-/// Portable aligned memory allocation
-///
-inline void* allocate_aligned(size_t alignment, size_t size)
+namespace detail
 {
-#if defined(RAJA_HAVE_POSIX_MEMALIGN)
-  // posix_memalign available
-  void* ret = nullptr;
-  int err = posix_memalign(&ret, alignment, size);
-  return err ? nullptr : ret;
-#elif defined(RAJA_HAVE_ALIGNED_ALLOC)
-  return std::aligned_alloc(alignment, size);
-#elif defined(RAJA_PLATFORM_WINDOWS)
-  return _aligned_malloc(size, alignment);
-#else
-  char *mem = (char *)malloc(size + alignment + sizeof(void *));
-  if (nullptr == mem) return nullptr;
-  void **ptr = (void **)((std::uintptr_t)(mem + alignment + sizeof(void *))
-                         & ~(alignment - 1));
-  // Store the original address one position behind what we give the user.
-  ptr[-1] = mem;
-  return ptr;
-#endif
+template <typename T, typename Reduce>
+class ReduceTBB
+{
+  //! TBB native per-thread container
+  std::shared_ptr<tbb::combinable<T>> data;
+
+public:
+  //! prohibit compiler-generated default ctor
+  ReduceTBB() = delete;
+
+  //! constructor requires a default value for the reducer
+  explicit ReduceTBB(T init_val, T initializer)
+      : data(
+            std::make_shared<tbb::combinable<T>>([=]() { return initializer; }))
+  {
+    data->local() = init_val;
+  }
+
+  /*!
+   *  \return the calculated reduced value
+   */
+  T get() const { return data->combine(typename Reduce::operator_type{}); }
+
+  /*!
+   *  \return update the local value
+   */
+  void combine(const T &other) { Reduce{}(this->local(), other); }
+
+  /*!
+   *  \return reference to the local value
+   */
+  T& local() { return data->local(); }
+};
 }
 
-
-///
-/// Portable aligned memory allocation
-///
-template <typename T>
-inline T* allocate_aligned_type(size_t alignment, size_t size)
-{
-  return reinterpret_cast<T*>(allocate_aligned(alignment, size));
-}
-
-
-///
-/// Portable aligned memory free - required for Windows
-///
-inline void free_aligned(void* ptr)
-{
-#if defined(RAJA_HAVE_POSIX_MEMALIGN) || defined(RAJA_HAVE_ALIGNED_ALLOC)
-  free(ptr);
-#elif defined(RAJA_PLATFORM_WINDOWS)
-  _aligned_free(ptr);
-#else
-  // Free the address stored one position behind the user data in ptr.
-  // This is valid for pointers allocated with allocate_aligned
-  free(((void**)ptr)[-1]);
-#endif
-}
+RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB)
 
 }  // closing brace for RAJA namespace
+
+#endif  // closing endif for RAJA_ENABLE_TBB guard
 
 #endif  // closing endif for header file include guard

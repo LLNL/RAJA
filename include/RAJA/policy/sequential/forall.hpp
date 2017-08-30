@@ -68,7 +68,6 @@
 #include "RAJA/internal/fault_tolerance.hpp"
 
 using RAJA::concepts::enable_if;
-using RAJA::concepts::requires_;
 
 namespace RAJA
 {
@@ -88,26 +87,25 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
-
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+    body(*(begin + i));
+  }
+}
+
+template <typename Iterable, typename Func, typename IndexType>
+RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
+forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    body(static_cast<IndexType>(i + icount), *(begin + i));
   }
 }
 

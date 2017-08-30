@@ -1,20 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -26,7 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
+// For additional details, please also read RAJA/README.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -57,56 +40,48 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+///
+/// Source file containing tests for RAJAVec
+///
 
-#include "RAJA/config.hpp"
+#include "RAJA/RAJA.hpp"
+#include "RAJA_gtest.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
-namespace RAJA
+TEST(RAJAVec, basic_test)
 {
-
-namespace impl
-{
-
-
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
+  RAJA::RAJAVec<int> a;
+  ASSERT_TRUE(a.empty());
+  ASSERT_EQ(0lu, a.size());
+  a.push_back(5);
+  ASSERT_FALSE(a.empty());
+  ASSERT_EQ(5, *a.begin());
+  ASSERT_EQ(5, *(a.end() - 1));
+  a.push_front(10);
+  ASSERT_EQ(10, *a.begin());
+  ASSERT_EQ(5, *(a.end() - 1));
+  a.resize(5, 20);
+  ASSERT_EQ(20, a[2]);
+  ASSERT_EQ(20, a[3]);
+  ASSERT_EQ(20, a[4]);
+  ASSERT_EQ(5lu, a.size());
+  a.resize(1);
+  ASSERT_EQ(1lu, a.size());
+  a.resize(0);
+  for (int i = 0; i < 100; ++i)
+    a.push_back(i);
+  ASSERT_EQ(100lu, a.size());
+  auto b = a;
+  b.resize(0);
+  ASSERT_EQ(0lu, b.size());
+  ASSERT_EQ(100lu, a.size());
+  a.swap(b);
+  ASSERT_EQ(0lu, a.size());
+  ASSERT_EQ(100lu, b.size());
+  RAJA::RAJAVec<int> c;
+  for (int i = 0; i < 100; ++i)
+    c.push_front(i);
+  for (int i = 0; i < 100; ++i)
+    ASSERT_EQ(c[i], b[99 - i]);
+  ASSERT_EQ(c.data() + c.size(), c.end());
+  ASSERT_EQ(c.data(), c.begin());
 }
-
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard

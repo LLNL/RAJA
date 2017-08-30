@@ -53,11 +53,25 @@ raja_add_test(
   NAME test-integral-limits
   SOURCES test-integral-limits.cpp)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-multipolicy
-    SOURCES test-multipolicy.cpp)
-endif(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-rajavec
+  SOURCES test-rajavec.cpp)
+
+raja_add_test(
+  NAME test-iterators
+  SOURCES test-iterators.cpp)
+
+raja_add_test(
+  NAME test-indexvalue
+  SOURCES test-indexvalue.cpp)
+
+raja_add_test(
+  NAME test-span
+  SOURCES test-span.cpp)
+
+raja_add_test(
+  NAME test-multipolicy
+  SOURCES test-multipolicy.cpp)
 
 add_subdirectory(cpu)
 
