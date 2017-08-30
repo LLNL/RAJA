@@ -92,7 +92,7 @@ unsigned long long atomicCAS(RAJA::builtin_atomic, unsigned long long volatile *
   long long long_value =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value);
   long long long_compare =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);
 
-  long long old = _InterlockedCompareExchange((unsigned long long *)acc, long_value, long_compare);
+  long long old = _InterlockedCompareExchange((long long *)acc, long_value, long_compare);
 
   return RAJA::util::reinterp_A_as_B<long long, unsigned long long>(old);
 }
