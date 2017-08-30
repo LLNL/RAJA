@@ -341,7 +341,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   
 #if defined(RAJA_ENABLE_CUDA)
-  printf("RAJA: CUDA Nested Loop Policy \n");
+  printf("RAJA: CUDA Policy - Nested forallN \n");
 
   using jacobiCUDANestedPolicy = 
     RAJA::NestedPolicy<RAJA::ExecList<

@@ -183,8 +183,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   // CUDA
   //using fdPolicy
   //= RAJA::NestedPolicy<RAJA::ExecList
-  //<RAJA::cuda_threadblock_y_exec<16>,        
-  //RAJA::cuda_threadblock_x_exec<16>>>;
+  //<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,       
+  //RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_DIM_Y>>>;
 
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
