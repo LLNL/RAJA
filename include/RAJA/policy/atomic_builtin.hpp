@@ -61,7 +61,7 @@
 namespace RAJA
 {
 
-//! Atomic policy that uses the compilers builtin __sync_XXX or __atomic_XXX routines
+//! Atomic policy that uses the compilers builtin __atomic_XXX routines
 struct builtin_atomic{};
 
 

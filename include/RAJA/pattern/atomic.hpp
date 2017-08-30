@@ -63,7 +63,8 @@ namespace RAJA
 
 
 
-/*
+/*!
+ * \file
  * Atomic operation functions
  *
  * The dispatch of all of these is:
@@ -102,6 +103,12 @@ namespace RAJA
 
 
 
+/*!
+ * @brief Atomic add
+ * @param acc Pointer to location of result value
+ * @param value Value to add to *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -111,6 +118,12 @@ T atomicAdd(T volatile *acc, T value){
 }
 
 
+/*!
+ * @brief Atomic subtract
+ * @param acc Pointer to location of result value
+ * @param value Value to subtract from *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -119,6 +132,13 @@ T atomicSub(T volatile *acc, T value){
   return RAJA::atomicSub(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic minimum equivalent to (*acc) = std::min(*acc, value)
+ * @param acc Pointer to location of result value
+ * @param value Value to compare to *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -127,6 +147,13 @@ T atomicMin(T volatile *acc, T value){
   return RAJA::atomicMin(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic maximum equivalent to (*acc) = std::max(*acc, value)
+ * @param acc Pointer to location of result value
+ * @param value Value to compare to *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -135,6 +162,12 @@ T atomicMax(T volatile *acc, T value){
   return RAJA::atomicMax(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic increment
+ * @param acc Pointer to location of value to increment
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -143,6 +176,15 @@ T atomicInc(T volatile *acc){
   return RAJA::atomicInc(Policy{}, acc);
 }
 
+
+/*!
+ * @brief Atomic increment with bound
+ * Equivalent to *acc = ((*acc >= compare) ? 0 : ((*acc)+1))
+ * This is for compatability with the CUDA atomicInc.
+ * @param acc Pointer to location of value to increment
+ * @param compare Bound value
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -151,6 +193,12 @@ T atomicInc(T volatile *acc, T compare){
   return RAJA::atomicInc(Policy{}, acc, compare);
 }
 
+
+/*!
+ * @brief Atomic decrement
+ * @param acc Pointer to location of value to decrement
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -159,6 +207,15 @@ T atomicDec(T volatile *acc){
   return RAJA::atomicDec(Policy{}, acc);
 }
 
+
+/*!
+ * @brief Atomic decrement with bound
+ * Equivalent to *acc = (((*acc==0)|(*acc>compare))?compare:((*acc)-1))
+ * This is for compatability with the CUDA atomicDec.
+ * @param acc Pointer to location of value to decrement
+ * @param compare Bound value
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -167,6 +224,14 @@ T atomicDec(T volatile *acc, T compare){
   return RAJA::atomicDec(Policy{}, acc, compare);
 }
 
+
+/*!
+ * @brief Atomic bitwise AND equivalent to (*acc) = (*acc) & value
+ * This only works with integral data types
+ * @param acc Pointer to location of result value
+ * @param value Value to bitwise AND with *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -176,6 +241,14 @@ T atomicAnd(T volatile *acc, T value){
   return RAJA::atomicAnd(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic bitwise OR equivalent to (*acc) = (*acc) | value
+ * This only works with integral data types
+ * @param acc Pointer to location of result value
+ * @param value Value to bitwise OR with *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -185,6 +258,14 @@ T atomicOr(T volatile *acc, T value){
   return RAJA::atomicOr(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic bitwise XOR equivalent to (*acc) = (*acc) ^ value
+ * This only works with integral data types
+ * @param acc Pointer to location of result value
+ * @param value Value to bitwise XOR with *acc
+ * @return Returns value at acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -194,6 +275,13 @@ T atomicXor(T volatile *acc, T value){
   return RAJA::atomicXor(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic value exchange
+ * @param acc Pointer to location to store value
+ * @param value Value to exchange with *acc
+ * @return Returns value at *acc immediately before this operation completed
+ */
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
@@ -202,18 +290,36 @@ T atomicExchange(T volatile *acc, T value){
   return RAJA::atomicExchange(Policy{}, acc, value);
 }
 
+
+/*!
+ * @brief Atomic compare and swap
+ * @param acc Pointer to location to store value
+ * @param value Value to exchange with *acc
+ * @param compare Value to compare with *acc
+ * @return Returns value at *acc immediately before this operation completed
+ */
+
 RAJA_SUPPRESS_HD_WARN
 template<typename Policy, typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicCAS(T volatile *acc, T value){
-  return RAJA::atomicCAS(Policy{}, acc, value);
+T atomicCAS(T volatile *acc, T compare, T value){
+  return RAJA::atomicCAS(Policy{}, acc, compare, value);
 }
 
 /*!
- * Atomic operation object
+ * \brief Atomic wrapper object
  *
- * @TODO DOCUMENT THIS
+ * Provides an interface akin to that provided by std::atomic, but for an
+ * arbitrary memory location.
+ *
+ * This object provides an OO interface to the global function calls provided
+ * as RAJA::atomicXXX
+ *
+ * However, the behavior of these operator overloads returns this object,
+ * rather than the atomicXXX functions which return the previous value.
+ * If your algorithm needs to capture the old value, you must use the functions
+ * directly.
  */
 template<typename T, typename Policy = RAJA::auto_atomic>
 class AtomicRef {
