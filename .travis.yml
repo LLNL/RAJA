@@ -5,6 +5,8 @@ env:
   global:
     - secure: xN+lGOH8LzepE1OoOrHelDgu1wf7nL/B7nBWhN7EnCB7S7hZJL/AakruHy4lMfQfF4XkrnPWmBlmc4wdLH+o6jPkUISm4nLRSTMnRV2L+Mjyzg3aIEua0xpO6rLUNgsShB8mfkieTJq+kSj3Yp2CM7GEzm+UNNxeJcY0VdUHy9msRRRbXiLViIrfwBEVC9He7xG9NWfqkpsORfoiPmVDm7YzuXALdB8qkX4AWggysz/BCVj0PwBMr754eEpOodQ9GeKDF2Kwy5vPAqK5f7zwshJtF9VevyA1A2M9y8BHJMymz4wGaSxLNMeUU85AmVIvmzX0weG94JQ7mlUVszNpO5CCIyjwCOF+IDUI8HCDJGOY7+gGnv4H2LhDwAXvFLD65FlMntQQe2e4KRTnFxtJvvghjv5FyxJSHwctLsgeDpr2uZDcAhK1yf8TNsqqMiXQj2yGLByJy8j5PjUyd8oN47uZo0T5DDMd5c3ztUppc5+DisIoqmoYQeom3lYbpeudaf492ZDBWEV4rS9COl1h7CnpanMBpXWLFc2zXyfTpRn3GifutiF8M3rSS2KHcPyb9JLePTrC4+itMkwB4SHo1VYk4H2RQAdPMDFHMKCeVs2Z4sF9pGPJR+JzRekaKFLDm73ihsuE0cnx1oPVQMjSWa0e7A1a9W4UQBvp9xR++i4=
     - OMP_NUM_THREADS=3
+    - DO_BUILD=yes
+    - DO_TEST=yes
 matrix:
   include:
   - compiler: gcc-4
@@ -47,6 +49,7 @@ matrix:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
+    - DO_TEST=no
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
@@ -64,6 +67,7 @@ matrix:
     - COMPILER=g++-4.9
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_CUDA=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
+    - DO_TEST=no
 cache:
   directories:
   - $HOME/llvm
@@ -72,13 +76,12 @@ before_install:
 - mkdir -p ${HOME}/download
 - if [[ -n "${LLVM_VERSION}" ]]; then ./scripts/install_llvm.sh ; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
-- cd ${HOME} &&
-  curl -o cmake-tarball.tar.gz ${CMAKE_URL} &&
+- curl -o ${HOME}/cmake-tarball.tar.gz ${CMAKE_URL} &&
   mkdir -p ${HOME}/cmake &&
-  cd ${HOME}/cmake &&
-  tar xf ${HOME}/cmake-tarball.tar.gz --strip-components=1 &&
-  export PATH=${PWD}/bin:${PATH}
-- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
+  tar xf ${HOME}/cmake-tarball.tar.gz -C ${HOME}/cmake --strip-components=1 &&
+  export PATH=${HOME}/cmake/bin:${PATH}
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -n "$INTEL_SERIAL_NUMBER" ]] ; then wget -q -O /dev/stdout 'https://raw.githubusercontent.com/nemequ/icc-travis/master/install-icc.sh' | /bin/sh; fi
+- if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" && -z "$INTEL_SERIAL_NUMBER" ]] ; then export DO_BUILD=no ; export DO_TEST=no ; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DEBFILE=${HOME}/download/cuda-repo.deb; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then export DOWNLOAD_URL=http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1404/x86_64/cuda-repo-ubuntu1404_8.0.61-1_amd64.deb; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]]; then if [[ ! -f /usr/local/cuda-8.0/bin/nvcc ]]; then if [[ ! -f ${DEBFILE} ]]; then travis_retry wget -O ${DEBFILE} ${DOWNLOAD_URL}; fi &&
@@ -91,13 +94,7 @@ before_install:
   export LD_LIBRARY_PATH=${CUDA_HOME}/lib64:${LD_LIBRARY_PATH} &&
   export PATH=${CUDA_HOME}/bin:${PATH}; fi
 script:
-- source ~/.bashrc
-- cd ${TRAVIS_BUILD_DIR}
-- mkdir travis-build &&
-  cd travis-build
-- cmake -DCMAKE_CXX_COMPILER="${COMPILER}" ${CMAKE_EXTRA_FLAGS} ../
-- make -j 3 VERBOSE=1
-- if ! [[ "${TRAVIS_INSTALL_COMPILER}" == "nvcc" ]] ; then ctest -V; fi
+- ./scripts/travis_build_and_test.sh
 after_success:
 - if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
