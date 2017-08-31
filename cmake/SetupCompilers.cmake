@@ -103,26 +103,39 @@ if ( MSVC )
 endif()
 
 if (RAJA_ENABLE_CUDA)
-  set(RAJA_NVCC_STD "c++11")
-  # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
-  if(CUDA_VERSION_MAJOR GREATER "8")
+
+  if ( NOT DEFINED RAJA_NVCC_STD ) 
+    set(RAJA_NVCC_STD "c++11")
+    # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
+    if(CUDA_VERSION_MAJOR GREATER "8")
       execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 -ccbin ${CMAKE_CXX_COMPILER} . 
-                    ERROR_VARIABLE TEST_NVCC_ERR
-                    OUTPUT_QUIET)
-    if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
-      set(RAJA_NVCC_STD "c++14")
+                      ERROR_VARIABLE TEST_NVCC_ERR
+                      OUTPUT_QUIET)
+      if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
+        set(RAJA_NVCC_STD "c++14")
+      endif()
+    else()
     endif()
-  else()
   endif()
+
   if(CMAKE_BUILD_TYPE MATCHES Release)
-    set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
+      set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    endif() 
   elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-    set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
+      set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    endif() 
   elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
-    set(RAJA_NVCC_FLAGS -Os; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
+      set(RAJA_NVCC_FLAGS -Os; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    endif() 
   else(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-    set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
+      set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    endif()
   endif()
+
   if(RAJA_ENABLE_COVERAGE)
     if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
       message(INFO "Coverage analysis enabled")
@@ -133,7 +146,9 @@ if (RAJA_ENABLE_CUDA)
     endif()
   endif()
   set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
+
 endif()
+# end RAJA_ENABLE_CUDA section
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")
