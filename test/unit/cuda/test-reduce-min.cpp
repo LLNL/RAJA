@@ -111,9 +111,10 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      double lmin = droll;
-      dvalue[index] = droll;
-      dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+      if (dvalue[index] > droll) {
+        dvalue[index] = droll;
+        dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+      }
 
       forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
         dmin0.min(dvalue[i]);
@@ -158,9 +159,10 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
 
     double droll = dist(mt);
     int index = int(dist2(mt));
-    double lmin = droll;
-    dvalue[index] = droll;
-    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+    if (dvalue[index] > droll) {
+      dvalue[index] = droll;
+      dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -213,9 +215,10 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 29457;  // seg 3
 
     double droll = dist(mt);
-    double lmin = droll;
-    dvalue[index] = droll;
-    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+    if (dvalue[index] > droll) {
+      dvalue[index] = droll;
+      dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {

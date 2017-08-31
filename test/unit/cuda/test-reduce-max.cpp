@@ -111,9 +111,10 @@ CUDA_TEST_F(ReduceMaxCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      double lmax = droll;
-      dvalue[index] = droll;
-      dcurrentMax = RAJA_MAX(dcurrentMax, lmax);
+      if (droll > dvalue[index]) {
+        dvalue[index] = droll;
+        dcurrentMax = RAJA_MAX(dcurrentMax, droll);
+      }
 
       forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
         dmax0.max(dvalue[i]);
@@ -159,9 +160,10 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_align)
 
     double droll = dist(mt);
     int index = int(dist2(mt));
-    double lmax = droll;
-    dvalue[index] = droll;
-    dcurrentMax = RAJA_MAX(dcurrentMax, lmax);
+    if (droll > dvalue[index]) {
+      dvalue[index] = droll;
+      dcurrentMax = RAJA_MAX(dcurrentMax, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -214,9 +216,10 @@ CUDA_TEST_F(ReduceMaxCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 29457;  // seg 3
 
     double droll = dist(mt);
-    double lmax = droll;
-    dvalue[index] = droll;
-    dcurrentMax = RAJA_MAX(dcurrentMax, lmax);
+    if (droll > dvalue[index]) {
+      dvalue[index] = droll;
+      dcurrentMax = RAJA_MAX(dcurrentMax, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
