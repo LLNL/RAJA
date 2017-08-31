@@ -58,7 +58,5 @@
 
 #include "RAJA/policy/loop/forall.hpp"
 #include "RAJA/policy/loop/policy.hpp"
-#include "RAJA/policy/loop/scan.hpp"
-//#include "RAJA/policy/loop/reduce.hpp" do we need this?
 
 #endif  // closing endif for header file include guard
