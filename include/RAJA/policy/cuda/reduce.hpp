@@ -567,18 +567,6 @@ private:
 //////////////////////////////////////////////////////////////////////
 //
 
-//! Information necessary for Cuda offload to be considered
-struct Offload_Info {
-
-  // Offload_Info() = delete;
-  Offload_Info() = default;
-
-  RAJA_HOST_DEVICE
-  Offload_Info(const Offload_Info &)
-  {
-  }
-};
-
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device pointer
 template <bool Async, typename Reducer, typename T>
 struct Reduce_Data {
@@ -633,7 +621,7 @@ struct Reduce_Data {
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
   RAJA_INLINE
-  bool setupForDevice(Offload_Info &info)
+  bool setupForDevice()
   {
     bool act = !device.allocated() && setupReducers();
     if (act) {
@@ -650,7 +638,7 @@ struct Reduce_Data {
   //! if own resources teardown device setup
   //  free device pointers
   RAJA_INLINE
-  void teardownForDevice(Offload_Info&)
+  void teardownForDevice()
   {
     if(own_device_ptr) {
       device.deallocate();
@@ -662,13 +650,13 @@ struct Reduce_Data {
 
   //! transfers from the host to the device
   RAJA_INLINE
-  void hostToDevice(Offload_Info &)
+  void hostToDevice()
   {
   }
 
   //! transfers from the device to the host
   RAJA_INLINE
-  void deviceToHost(Offload_Info &)
+  void deviceToHost()
   {
     auto end = tally_or_val_ptr.list->streamEnd();
     for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
@@ -679,7 +667,7 @@ struct Reduce_Data {
   //! frees all data used
   //  frees all values in the pinned tally
   RAJA_INLINE
-  void cleanup(Offload_Info &)
+  void cleanup()
   {
     tally_or_val_ptr.list->free_list();
   }
@@ -740,7 +728,7 @@ struct ReduceAtomic_Data {
   //! check and setup for device
   //  allocate device pointers and get a new result buffer from the pinned tally
   RAJA_INLINE
-  bool setupForDevice(Offload_Info &info)
+  bool setupForDevice()
   {
     bool act = !device && setupReducers();
     if (act) {
@@ -755,7 +743,7 @@ struct ReduceAtomic_Data {
   //! if own resources teardown device setup
   //  free device pointers
   RAJA_INLINE
-  void teardownForDevice(Offload_Info&)
+  void teardownForDevice()
   {
     if(own_device_ptr) {
       device_mempool_type::getInstance().free(device);  device = nullptr;
@@ -767,13 +755,13 @@ struct ReduceAtomic_Data {
 
   //! transfers from the host to the device
   RAJA_INLINE
-  void hostToDevice(Offload_Info &)
+  void hostToDevice()
   {
   }
 
   //! transfers from the device to the host
   RAJA_INLINE
-  void deviceToHost(Offload_Info &)
+  void deviceToHost()
   {
     auto end = tally_or_val_ptr.list->streamEnd();
     for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
@@ -784,7 +772,7 @@ struct ReduceAtomic_Data {
   //! frees all data used
   //  frees all values in the pinned tally
   RAJA_INLINE
-  void cleanup(Offload_Info &)
+  void cleanup()
   {
     tally_or_val_ptr.list->free_list();
   }
@@ -799,7 +787,6 @@ struct Reduce {
   //  the original object's parent is itself
   explicit Reduce(T init_val)
       : parent{this},
-        info{},
         val(init_val)
   {
   }
@@ -812,12 +799,11 @@ struct Reduce {
 #else
       : parent{&other},
 #endif
-        info(other.info),
         val(other.val)
   {
 #if !defined(__CUDA_ARCH__)
     if (parent) {
-      if (val.setupForDevice(info)) {
+      if (val.setupForDevice()) {
         parent = nullptr;
       }
     }
@@ -838,7 +824,7 @@ struct Reduce {
 #endif
       parent->reduce(val.value);
     } else {
-      val.teardownForDevice(info);
+      val.teardownForDevice();
     }
 #else
     if (!parent->parent) {
@@ -861,11 +847,11 @@ struct Reduce {
     auto n = val.tally_or_val_ptr.list->begin();
     auto end = val.tally_or_val_ptr.list->end();
     if (n != end) {
-      val.deviceToHost(info);
+      val.deviceToHost();
       for ( ; n != end; ++n) {
         Reducer{}(val.value, *n);
       }
-      val.cleanup(info);
+      val.cleanup();
     }
     return val.value;
   }
@@ -892,8 +878,6 @@ struct Reduce {
 
 private:
   const Reduce<Async, Reducer, T>* parent;
-  //! storage for offload information (host ID, device ID)
-  cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::Reduce_Data<Async, Reducer, T> val;
 };
@@ -908,7 +892,6 @@ struct ReduceAtomic {
   //  the original object's parent is itself
   explicit ReduceAtomic(T init_val)
       : parent{this},
-        info{},
         val{init_val}
   {
   }
@@ -922,12 +905,11 @@ struct ReduceAtomic {
 #else
       : parent{&other},
 #endif
-        info(other.info),
         val(other.val)
   {
 #if !defined(__CUDA_ARCH__)
     if (parent) {
-      if (val.setupForDevice(info)) {
+      if (val.setupForDevice()) {
         parent = nullptr;
       }
     }
@@ -948,7 +930,7 @@ struct ReduceAtomic {
 #endif
       parent->reduce(val.value);
     } else {
-      val.teardownForDevice(info);
+      val.teardownForDevice();
     }
 #else
     if (!parent->parent) {
@@ -971,11 +953,11 @@ struct ReduceAtomic {
     auto n = val.tally_or_val_ptr.list->begin();
     auto end = val.tally_or_val_ptr.list->end();
     if (n != end) {
-      val.deviceToHost(info);
+      val.deviceToHost();
       for ( ; n != end; ++n) {
         Reducer{}(val.value, *n);
       }
-      val.cleanup(info);
+      val.cleanup();
     }
     return val.value;
   }
@@ -1002,8 +984,6 @@ struct ReduceAtomic {
 
 private:
   const ReduceAtomic<Async, Reducer, T>* parent;
-  //! storage for offload information (host ID, device ID)
-  cuda::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   cuda::ReduceAtomic_Data<Async, Reducer, T> val;
 };
