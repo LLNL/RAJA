@@ -159,7 +159,7 @@ T shfl_xor_sync(T var, int laneMask)
 
   for (int i = 0; i < int_sizeof_T; ++i) {
 #if (__CUDACC_VER_MAJOR__ >= 9)
-    Tunion.arr[i] = ::__shfl_xor_sync(Tunion.arr[i], laneMask);
+    Tunion.arr[i] = ::__shfl_xor_sync(0xffffffffu, Tunion.arr[i], laneMask);
 #else
     Tunion.arr[i] = ::__shfl_xor(Tunion.arr[i], laneMask);
 #endif
@@ -181,7 +181,7 @@ T shfl_sync(T var, int srcLane)
 
   for (int i = 0; i < int_sizeof_T; ++i) {
 #if (__CUDACC_VER_MAJOR__ >= 9)
-    Tunion.arr[i] = ::__shfl_sync(Tunion.arr[i], srcLane);
+    Tunion.arr[i] = ::__shfl_sync(0xffffffffu, Tunion.arr[i], srcLane);
 #else
     Tunion.arr[i] = ::__shfl(Tunion.arr[i], srcLane);
 #endif
