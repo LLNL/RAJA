@@ -79,4 +79,3 @@ raja_add_test(
 raja_add_test(
   NAME test-reductions
   SOURCES test-reductions.cpp)
-  
