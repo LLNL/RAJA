@@ -77,8 +77,8 @@ namespace impl
 // SIMD forall(ListSegment)
 template <typename LSegment, typename Func>
 RAJA_INLINE
-    typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
-    forall(const simd_exec &, LSegment &&iseg, Func &&loop_body)
+typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
+forall(const simd_exec &, LSegment &&iseg, Func &&loop_body)
 {
   const auto *RAJA_RESTRICT idx = iseg.getIndex();
   auto len = iseg.getLength();
@@ -90,7 +90,7 @@ RAJA_INLINE
 // SIMD forall(Iterable)
 template <typename Iterable, typename Func>
 RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
-                                                     Iterable>::value>::type
+                                          Iterable>::value>::type
 forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
   // TODO: if KNL, make sure long is used
@@ -106,11 +106,8 @@ forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 template <typename LSegment, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
                                     && std::is_base_of<ListSegment,
-                                                       LSegment>::value>::type
-forall_Icount(const simd_exec &,
-              LSegment &&iseg,
-              IndexType icount,
-              Func &&loop_body)
+                                            LSegment>::value>::type
+forall_Icount(const simd_exec &,LSegment &&iseg,IndexType icount, Func &&loop_body)
 {
   const auto *RAJA_RESTRICT idx = iseg.getIndex();
   auto len = iseg.getLength();
@@ -124,10 +121,7 @@ template <typename Iterable, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
                                     && !std::is_base_of<ListSegment,
                                                         Iterable>::value>::type
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+forall_Icount(const simd_exec &, Iterable &&iter, IndexType icount, Func &&loop_body)             
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
