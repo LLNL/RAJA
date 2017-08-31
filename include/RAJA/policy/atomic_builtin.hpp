@@ -90,7 +90,7 @@ unsigned atomicCAS(builtin_atomic, unsigned volatile *acc, unsigned compare, uns
 
 template<>
 RAJA_INLINE
-unsigned long long atomicCAS(RAJA::builtin_atomic, unsigned long long volatile *acc, unsigned long long compare, unsigned long long value){
+unsigned long long atomicCAS(builtin_atomic, unsigned long long volatile *acc, unsigned long long compare, unsigned long long value){
 
   long long long_value =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(value);
   long long long_compare =  RAJA::util::reinterp_A_as_B<unsigned long long, long long>(compare);

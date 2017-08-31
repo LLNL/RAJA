@@ -66,7 +66,7 @@ namespace atomic
 
 /*!
  * \file
- * Atomic operation functions in the namespace RAJA::atomic::atomic
+ * Atomic operation functions in the namespace RAJA::atomic
  *
  * The dispatch of all of these is:
  *
