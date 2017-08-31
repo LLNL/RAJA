@@ -172,6 +172,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
       reduce::detail::ValueLoc<double> lmin{droll, index};
       dvalue[index] = droll;
       applier::apply(dcurrentMin, lmin);
+      fprintf(stderr, "dvalue[%i] = %f\n", index, droll);
 
       forall<cuda_exec<block_size>>(0, TEST_VEC_LEN, [=] __device__(int i) {
         applier::apply(dmin0, dvalue[i], i);
