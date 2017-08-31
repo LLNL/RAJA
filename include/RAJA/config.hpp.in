@@ -273,7 +273,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_SIMD  _Pragma("omp simd")
 #define RAJA_NoSIMD
 #else
-#define RAJA_SIMD    _Pragma("clang loop vectorize(enable)")
+#define RAJA_SIMD    _Pragma("clang loop vectorize(assume_safety)")
 #define RAJA_NoSIMD  _Pragma("clang loop vectorize(disable)")
 #endif
 
