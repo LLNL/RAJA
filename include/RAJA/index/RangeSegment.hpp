@@ -141,9 +141,6 @@ struct TypedRangeSegment {
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeSegment() {}
 
-  //! compiler generated assignment
-  TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
-
   //! swap one TypedRangeSegment with another
   /*!
    * \param[in] other another TypedRangeSegment instance
@@ -179,7 +176,7 @@ struct TypedRangeSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o)
+  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
     return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
@@ -216,8 +213,8 @@ private:
  * NOTE: TypedRangeStrideSegment allows for positive or negative strides, but
  *       a stride of zero is undefined and will cause DBZ
  *
- * 
- * As with other segment, the iteration space is inclusive of begin() and 
+ *
+ * As with other segment, the iteration space is inclusive of begin() and
  * exclusive of end()
  *
  * For positive strides, begin() > end() implies size()==0
@@ -308,9 +305,6 @@ struct TypedRangeStrideSegment {
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
 
-  //! compiler generated assignment
-  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
-
   //! swap one TypedRangeStrideSegment with another
   /*!
    * \param[in] other another TypedRangeStrideSegment instance
@@ -349,7 +343,7 @@ struct TypedRangeStrideSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeStrideSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o)
+  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
     return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
@@ -402,6 +396,7 @@ using common_type_t = typename common_type<Ts...>::type;
 template <typename BeginT,
           typename EndT,
           typename Common = detail::common_type_t<BeginT, EndT>>
+RAJA_HOST_DEVICE
 TypedRangeSegment<Common> make_range(BeginT&& begin, EndT&& end)
 {
   return {begin, end};
@@ -421,6 +416,7 @@ template <typename BeginT,
           typename EndT,
           typename StrideT,
           typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
+RAJA_HOST_DEVICE
 TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
                                                    EndT&& end,
                                                    StrideT&& stride)

@@ -87,7 +87,7 @@ forall(const simd_exec &, LSegment &&iseg, Func &&loop_body)
   }
 }
 
-// SIMD forall(Iterable)
+
 template <typename Iterable, typename Func>
 RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
                                           Iterable>::value>::type
@@ -113,6 +113,15 @@ forall_Icount(const simd_exec &,LSegment &&iseg,IndexType icount, Func &&loop_bo
   auto len = iseg.getLength();
   for (decltype(len) k = 0; k < len; ++k) {
     loop_body(static_cast<IndexType>(k + icount), idx[k]);
+RAJA_INLINE void
+forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
+{
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  RAJA_SIMD
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(*(begin + i));
   }
 }
 
@@ -122,13 +131,18 @@ RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
                                     && !std::is_base_of<ListSegment,
                                                         Iterable>::value>::type
 forall_Icount(const simd_exec &, Iterable &&iter, IndexType icount, Func &&loop_body)             
+RAJA_INLINE void
+forall_Icount(const simd_exec &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
   }
 }
 

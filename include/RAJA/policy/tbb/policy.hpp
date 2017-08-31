@@ -3,13 +3,13 @@
  *
  * \file
  *
- * \brief   RAJA header file for simple comparison operations used in tests.
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_Compare_HXX
-#define RAJA_Compare_HXX
+#ifndef policy_tbb_HPP
+#define policy_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -53,37 +53,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#define rcabs(val) (((val) < 0) ? (-(val)) : (val))
+#include "RAJA/policy/PolicyBase.hpp"
+
+#include <cstddef>
 
 namespace RAJA
 {
 
 //
-// Test approximate equality of floating point numbers. Borrowed from Knuth.
+//////////////////////////////////////////////////////////////////////
 //
-template <typename T>
-bool equal(T a, T b)
-{
-  return (rcabs(a - b)
-          <= ((rcabs(a) < rcabs(b) ? rcabs(a) : rcabs(b)) * T(1.0e-12)));
-}
-
+// Execution policies
 //
-// Equality for integers.  Mainly here for consistent usage with above.
+//////////////////////////////////////////////////////////////////////
 //
-bool equal(int a, int b) { return a == b; }
 
-template <typename T>
-bool array_equal(T ref_result, T to_check, Index_type alen)
-{
-  bool is_correct = true;
-  for (Index_type i = 0; i < alen && is_correct; ++i) {
-    is_correct &= equal(ref_result[i], to_check[i]);
-  }
+///
+/// Segment execution policies
+///
 
-  return is_correct;
-}
+struct tbb_for_dynamic
+    : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host> {
+  std::size_t grain_size;
+  tbb_for_dynamic(std::size_t grain_size_ = 1) : grain_size(grain_size_) {}
+};
+
+
+template <std::size_t GrainSize = 1>
+struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host> {
+};
+
+using tbb_for_exec = tbb_for_static<>;
+
+///
+/// Index set segment iteration policies
+///
+using tbb_segit = tbb_for_exec;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host> {
+};
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif

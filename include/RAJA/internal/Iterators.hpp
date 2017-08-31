@@ -67,32 +67,18 @@ namespace RAJA
 namespace Iterators
 {
 
-
-// Helpers
-
-
-template <typename Container>
-using IteratorCategoryOf =
-    typename std::iterator_traits<typename std::remove_reference<Container>::
-                                      type::iterator>::iterator_category;
-
-template <typename Container>
-using OffersRAI = std::is_base_of<std::random_access_iterator_tag,
-                                  IteratorCategoryOf<Container>>;
-
 // Containers
 
 template <typename Type,
           typename DifferenceType = std::ptrdiff_t,
           typename PointerType = Type*>
-class base_iterator : public std::iterator<std::random_access_iterator_tag,
-                                           Type,
-                                           DifferenceType>
-{
-public:
-  using difference_type =
-      typename std::iterator<std::random_access_iterator_tag,
-                             Type>::difference_type;
+struct base_iterator {
+
+  using value_type = Type;
+  using difference_type = DifferenceType;
+  using pointer = value_type*;
+  using reference = value_type&;
+  using iterator_category = std::random_access_iterator_tag;
 
   RAJA_HOST_DEVICE constexpr base_iterator() : val(0) {}
   RAJA_HOST_DEVICE constexpr base_iterator(Type rhs) : val(rhs) {}
@@ -135,11 +121,14 @@ template <typename Type = Index_type,
           typename PointerType = Type*>
 class numeric_iterator : public base_iterator<Type, DifferenceType>
 {
-public:
-  using difference_type =
-      typename std::iterator<std::random_access_iterator_tag,
-                             Type>::difference_type;
   using base = base_iterator<Type, DifferenceType>;
+
+public:
+  using value_type = typename base::value_type;
+  using difference_type = typename base::difference_type;
+  using pointer = typename base::pointer;
+  using reference = typename base::reference;
+  using iterator_category = typename base::iterator_category;
 
   RAJA_HOST_DEVICE constexpr numeric_iterator() : base(0) {}
   RAJA_HOST_DEVICE constexpr numeric_iterator(const Type& rhs) : base(rhs) {}
@@ -244,11 +233,14 @@ template <typename Type = Index_type,
           typename PointerType = Type*>
 class strided_numeric_iterator : public base_iterator<Type, DifferenceType>
 {
-public:
-  using difference_type =
-      typename std::iterator<std::random_access_iterator_tag,
-                             Type>::difference_type;
   using base = base_iterator<Type, DifferenceType>;
+
+public:
+  using value_type = typename base::value_type;
+  using difference_type = typename base::difference_type;
+  using pointer = typename base::pointer;
+  using reference = typename base::reference;
+  using iterator_category = typename base::iterator_category;
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : base(0), stride(1) {}
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(const Type& rhs,
@@ -289,14 +281,17 @@ public:
   RAJA_HOST_DEVICE inline difference_type operator+(
       const strided_numeric_iterator& rhs) const
   {
-    return static_cast<difference_type>(base::val)
-           + (static_cast<difference_type>(rhs.val * stride));
+    return (static_cast<difference_type>(base::val)
+            + (static_cast<difference_type>(rhs.val)))
+           / stride;
   }
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
-    return static_cast<difference_type>(base::val)
-           - (static_cast<difference_type>(rhs.val * stride));
+    difference_type diff = (static_cast<difference_type>(base::val)
+                            - (static_cast<difference_type>(rhs.val)));
+
+    return (diff % stride) ? (1 + diff / stride) : diff / stride;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
@@ -315,34 +310,34 @@ public:
       const strided_numeric_iterator& rhs) const
   {
     return (base::val - rhs.val) / stride;
-  }  
+  }
   RAJA_HOST_DEVICE inline bool operator==(
       const strided_numeric_iterator& rhs) const
   {
     return !((base::val - rhs.val) / stride);
   }
-  
+
   RAJA_HOST_DEVICE inline bool operator>(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val*stride > rhs.val*stride;
+    return base::val * stride > rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator<(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val*stride < rhs.val*stride;
+    return base::val * stride < rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator>=(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val*stride >= rhs.val*stride;
+    return base::val * stride >= rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator<=(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val*stride <= rhs.val*stride;
+    return base::val * stride <= rhs.val * stride;
   }
-  
+
 
   RAJA_HOST_DEVICE inline Type operator*() const { return base::val; }
   RAJA_HOST_DEVICE inline Type operator->() const { return base::val; }
@@ -355,56 +350,8 @@ private:
   DifferenceType stride;
 };
 
-// TODO: this should really be a generic Zip, then using Enumerator =
-// Zip<numeric_iterator, Iterator>
-template <typename Iterator>
-class Enumerater : public numeric_iterator<>
-{
-public:
-  template <typename First, typename Second>
-  class InnerPair
-  {
-  public:
-    InnerPair() = delete;
-    RAJA_HOST_DEVICE constexpr InnerPair(First&& f, Second&& s)
-        : first(f), second(s){};
-    First first;
-    Second second;
-  };
-  using base = numeric_iterator<>;
+} // closing brace for namespace Iterators
 
-  using pair = InnerPair<std::ptrdiff_t, Iterator>;
-  using value_type = pair;
-  using pointer_type = pair*;
-  using reference = pair&;
-
-  Enumerater() = delete;
-  RAJA_HOST_DEVICE constexpr Enumerater(const Iterator& rhs,
-                                        std::ptrdiff_t val = 0,
-                                        std::ptrdiff_t offset = 0)
-      : base(val), offset(offset), wrapped(rhs)
-  {
-  }
-  RAJA_HOST_DEVICE constexpr Enumerater(const Enumerater& rhs)
-      : base(rhs.val), offset(rhs.offset), wrapped(rhs.wrapped)
-  {
-  }
-
-  RAJA_HOST_DEVICE inline pair operator*() const
-  {
-    return pair(offset + val, wrapped + val);
-  }
-  RAJA_HOST_DEVICE constexpr pair operator[](
-      typename base::difference_type rhs) const
-  {
-    return pair(val + offset + rhs, wrapped + val + rhs);
-  }
-
-private:
-  std::ptrdiff_t offset;
-  Iterator wrapped;
-};
-}
-}
+} // closing brace for namespace RAJA
 
 #endif /* RAJA_ITERATORS_HPP */

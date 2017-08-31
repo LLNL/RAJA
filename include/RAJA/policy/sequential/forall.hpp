@@ -93,6 +93,7 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 
+
   RAJA_NoSIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
     body(*(begin + i));
