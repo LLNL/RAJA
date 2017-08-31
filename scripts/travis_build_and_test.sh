@@ -14,3 +14,4 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
     fi
 fi
 
+exit 0
