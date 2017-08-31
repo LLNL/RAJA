@@ -95,9 +95,21 @@ namespace RAJA
  *   seq_atomic        -- Non-atomic, does an unprotected (raw) operation
  *
  *
+ * Current supported data types include:
+ *
+ *   32-bit and 64-bit integral types:
+ *      -Native atomic support for "unsigned", "long", "unsigned long long" and
+ *      "long long"
+ *
+ *      -General support, via CAS algorithm, for any 32-bit or 64-bit datatype
+ *
+ *   32-bit and 64-bit floating point types:  float and double
+ *
+ *
  * The implementation code lives in:
- * RAJA/policy/atomic/auto.hpp    -- for auto_atomic and builtin_atomic
- * RAJA/policy/XXX/atomic.hpp   -- for omp_atomic, cuda_atomic, etc.
+ * RAJA/policy/atomic_auto.hpp     -- for auto_atomic
+ * RAJA/policy/atomic_builtin.hpp  -- for builtin_atomic
+ * RAJA/policy/XXX/atomic.hpp      -- for omp_atomic, cuda_atomic, etc.
  *
  */
 

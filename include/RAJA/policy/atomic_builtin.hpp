@@ -101,7 +101,7 @@ unsigned long long atomicCAS(RAJA::builtin_atomic, unsigned long long volatile *
 template<typename T>
 RAJA_INLINE
 T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value){  
-  __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_RELAXED, __ATOMIC_RELAXED);
+  __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
   return compare;
 }
 #endif // RAJA_COMPILER_MSVC
