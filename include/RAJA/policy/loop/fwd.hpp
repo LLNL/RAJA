@@ -1,19 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
- *
- *          These methods should work on any platform.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_sequential_HPP
-#define RAJA_forall_sequential_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -56,18 +40,28 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forward_sequential_HXX
+#define RAJA_forward_sequential_HXX
+
+#include <type_traits>
+
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/types.hpp"
-
 #include "RAJA/policy/sequential/policy.hpp"
-
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
@@ -75,44 +69,25 @@ namespace RAJA
 namespace impl
 {
 
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
+template <typename Func>
+RAJA_INLINE void forall(const loop_exec &,
+                        const PolicyBase &,
+                        const RangeSegment &iter,
+                        Func &&loop_body);
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+RAJA_INLINE void forall(const loop_exec &,
+                        const PolicyBase &,
+                        Iterable &&iter,
+                        Func &&loop_body);
 
-
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
-  }
-}
-
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
-forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const loop_exec &,
+              const PolicyBase &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body);
 
 }  // closing brace for impl namespace
 

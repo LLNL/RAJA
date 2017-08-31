@@ -70,9 +70,14 @@
 #include "RAJA/util/Operators.hpp"
 
 //
-// All platforms must support sequential execution.
+// All platforms must support strictly sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
+
+//
+// All platforms must support generic for execution
+//
+#include "RAJA/policy/loop.hpp"
 
 //
 // All platforms should support simd execution.

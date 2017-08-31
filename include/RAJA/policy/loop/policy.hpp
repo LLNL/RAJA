@@ -3,16 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
- *
- *          These methods should work on any platform.
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_sequential_HPP
-#define RAJA_forall_sequential_HPP
+#ifndef policy_loop_HPP
+#define policy_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -56,66 +53,47 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
 
-namespace impl
-{
-
-
 //
 //////////////////////////////////////////////////////////////////////
 //
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
+// Execution policies
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+///
+/// Segment execution policies
+///
 
+struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
+                                                         Pattern::forall,
+                                                         Launch::undefined,
+                                                         Platform::host> {
+};
 
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
-  }
-}
+///
+/// Index set segment iteration policies
+///
+using loop_segit = loop_exec;
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
-forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
-
-}  // closing brace for impl namespace
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct loop_reduce : make_policy_pattern_launch_platform_t<Policy::loop,
+                                                           Pattern::forall,
+                                                           Launch::undefined,
+                                                           Platform::host> {
+};
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif

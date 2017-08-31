@@ -80,6 +80,7 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>>
 inclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f)
 {
   auto agg = *begin;
+  RAJA_NoSIMD
   for (Iter i = ++begin; i != end; ++i) {
     agg = f(*i, agg);
     *i = agg;
@@ -96,6 +97,7 @@ exclusive_inplace(const ExecPolicy &, Iter begin, Iter end, BinFn f, T v)
 {
   const int n = end - begin;
   decltype(*begin) agg = v;
+  RAJA_NoSIMD
   for (int i = 0; i < n; ++i) {
     auto t = *(begin + i);
     *(begin + i) = agg;
@@ -117,6 +119,7 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> inclusive(
 {
   auto agg = *begin;
   *out++ = agg;
+  RAJA_NoSIMD
   for (Iter i = begin + 1; i != end; ++i) {
     agg = f(agg, *i);
     *out++ = agg;
@@ -143,6 +146,7 @@ concepts::enable_if<type_traits::is_sequential_policy<ExecPolicy>> exclusive(
   decltype(*begin) agg = v;
   OutIter o = out;
   *o++ = v;
+  RAJA_NoSIMD
   for (Iter i = begin; i != end - 1; ++i, ++o) {
     agg = f(*i, agg);
     *o = agg;

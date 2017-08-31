@@ -1,19 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA index set and segment iteration
- *          template methods for sequential execution.
- *
- *          These methods should work on any platform.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forall_sequential_HPP
-#define RAJA_forall_sequential_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -56,66 +40,50 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/config.hpp"
+#include <iostream>
 
-#include "RAJA/util/types.hpp"
+#include "RAJA/RAJA.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include "RAJA/policy/sequential/policy.hpp"
+#define N 256
 
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
-
-namespace RAJA
-{
-
-namespace impl
-{
+int a[N], b[N], c[N];
 
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// The following function templates iterate over index set segments
-// sequentially.  Segment execution is defined by segment
-// execution policy template parameter.
-//
-//////////////////////////////////////////////////////////////////////
-//
+void RAJAloop(){
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-
-
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
-  }
+  RAJA::forall<RAJA::loop_exec>
+    (RAJA::RangeSegment(0,N), [&] (RAJA::Index_type i) { 
+      a[i] = b[i] + c[i];
+    });
 }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
-forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
 
-  RAJA_NoSIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
+void RAJAseq(){
+
+  RAJA::forall<RAJA::seq_exec>
+    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
+      a[i] = b[i] + c[i];
+
+    });
 }
 
-}  // closing brace for impl namespace
 
-}  // closing brace for RAJA namespace
+void RAJAsimd(){
 
-#endif  // closing endif for header file include guard
+  RAJA::forall<RAJA::simd_exec>
+    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
+      a[i] = b[i] + c[i];
+
+    });
+}
+
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
+{
+
+  RAJAloop();
+  RAJAseq();
+  RAJAsimd();
+
+  return 0;
+}
