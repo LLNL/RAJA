@@ -92,8 +92,8 @@ namespace reduce
 
 namespace cuda
 {
-//! atomic operator version of Reducer object
-template <typename Reducer>
+//! atomic operator version of Combiner object
+template <typename Combiner>
 struct atomic;
 
 template <typename T>
@@ -190,7 +190,7 @@ T shfl_sync(T var, int srcLane)
 }
 
 //! reduce values in block into thread 0
-template <typename Reducer, typename T>
+template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE
 T block_reduce(T val)
 {
@@ -209,7 +209,7 @@ T block_reduce(T val)
     // reduce each warp
     for (int i = 1; i < WARP_SIZE ; i *= 2) {
       T rhs = shfl_xor_sync(temp, i);
-      Reducer{}(temp, rhs);
+      Combiner{}(temp, rhs);
     }
 
   } else {
@@ -220,7 +220,7 @@ T block_reduce(T val)
       T rhs = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
       if (srcLane < numThreads) {
-        Reducer{}(temp, rhs);
+        Combiner{}(temp, rhs);
       }
     }
 
@@ -244,12 +244,12 @@ T block_reduce(T val)
       if (warpId*WARP_SIZE < numThreads) {
         temp = sd.get(warpId);
       } else {
-        temp = Reducer::identity();
+        temp = Combiner::identity();
       }
 
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
-        Reducer{}(temp, rhs);
+        Combiner{}(temp, rhs);
       }
     }
 
@@ -263,7 +263,7 @@ T block_reduce(T val)
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename Reducer, typename T, typename TempIterator>
+template <typename Combiner, typename T, typename TempIterator>
 RAJA_DEVICE RAJA_INLINE
 bool grid_reduce(T& val,
                  TempIterator device_mem,
@@ -279,7 +279,7 @@ bool grid_reduce(T& val,
   int threadId = threadIdx.x + blockDim.x * threadIdx.y
                  + (blockDim.x * blockDim.y) * threadIdx.z;
 
-  T temp = block_reduce<Reducer>(val);
+  T temp = block_reduce<Combiner>(val);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
@@ -297,13 +297,13 @@ bool grid_reduce(T& val,
 
   // last block accumulates values from device_mem
   if (lastBlock) {
-    temp = Reducer::identity();
+    temp = Combiner::identity();
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      Reducer{}(temp, device_mem.get(i));
+      Combiner{}(temp, device_mem.get(i));
     }
 
-    temp = block_reduce<Reducer>(temp);
+    temp = block_reduce<Combiner>(temp);
 
     // one thread returns value
     if (threadId == 0) {
@@ -317,7 +317,7 @@ bool grid_reduce(T& val,
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename Reducer, typename T>
+template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE
 bool grid_reduce_atomic(T& val,
                         T* device_mem,
@@ -333,13 +333,13 @@ bool grid_reduce_atomic(T& val,
   if (threadId == 0) {
     unsigned int old_val = ::atomicCAS(device_count, 0u, 1u);
     if (old_val == 0u) {
-      device_mem[0] = Reducer::identity();
+      device_mem[0] = Combiner::identity();
       __threadfence();
       ::atomicAdd(device_count, 1u);
     }
   }
 
-  T temp = block_reduce<Reducer>(val);
+  T temp = block_reduce<Combiner>(val);
 
   // one thread per block performs atomic on device_mem
   bool lastBlock = false;
@@ -347,7 +347,7 @@ bool grid_reduce_atomic(T& val,
     // thread waits for device_mem to be initialized
     while(static_cast<volatile unsigned int*>(device_count)[0] < 2u);
     __threadfence();
-    RAJA::reduce::cuda::atomic<Reducer>{}(device_mem[0], temp);
+    RAJA::reduce::cuda::atomic<Combiner>{}(device_mem[0], temp);
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
     unsigned int old_count = ::atomicInc(device_count, wrap_around);
@@ -568,7 +568,7 @@ private:
 //
 
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device pointer
-template <bool Async, typename Reducer, typename T>
+template <bool Async, typename Combiner, typename T>
 struct Reduce_Data {
   //! union to hold either pointer to PinnedTally or poiter to value
   //  only use list before setup for device and only use val_ptr after
@@ -603,7 +603,7 @@ struct Reduce_Data {
 
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data &other)
-      : value{Reducer::identity()},
+      : value{Combiner::identity()},
         tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
@@ -675,7 +675,7 @@ struct Reduce_Data {
 
 
 //! Reduction data for Cuda Offload -- stores value, host pointer
-template <bool Async, typename Reducer, typename T>
+template <bool Async, typename Combiner, typename T>
 struct ReduceAtomic_Data {
   //! union to hold either pointer to PinnedTally or poiter to value
   //  only use list before setup for device and only use val_ptr after
@@ -710,7 +710,7 @@ struct ReduceAtomic_Data {
 
   RAJA_HOST_DEVICE
   ReduceAtomic_Data(const ReduceAtomic_Data &other)
-      : value{Reducer::identity()},
+      : value{Combiner::identity()},
         tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
@@ -779,7 +779,7 @@ struct ReduceAtomic_Data {
 };
 
 //! Cuda Reduction entity -- generalize on reduction, and type
-template <bool Async, typename Reducer, typename T>
+template <bool Async, typename Combiner, typename T>
 struct Reduce {
   Reduce() = delete;
 
@@ -822,7 +822,7 @@ struct Reduce {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
       lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
 #endif
-      parent->reduce(val.value);
+      parent->combine(val.value);
     } else {
       val.teardownForDevice();
     }
@@ -831,12 +831,12 @@ struct Reduce {
 
       T temp = val.value;
 
-      if (impl::grid_reduce<Reducer>(temp, val.device,
+      if (impl::grid_reduce<Combiner>(temp, val.device,
                                      val.device_count)) {
         val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
-      parent->reduce(val.value);
+      parent->combine(val.value);
     }
 #endif
   }
@@ -849,7 +849,7 @@ struct Reduce {
     if (n != end) {
       val.deviceToHost();
       for ( ; n != end; ++n) {
-        Reducer{}(val.value, *n);
+        Combiner{}(val.value, *n);
       }
       val.cleanup();
     }
@@ -860,31 +860,31 @@ struct Reduce {
 
   //! apply reduction
   RAJA_HOST_DEVICE
-  Reduce &reduce(T rhsVal)
+  Reduce &combine(T rhsVal)
   {
-    Reducer{}(val.value, rhsVal);
+    Combiner{}(val.value, rhsVal);
     return *this;
   }
 
-  //! apply reduction (const version) -- still reduces internal values
+  //! apply reduction (const version) -- still combines internal values
   RAJA_HOST_DEVICE
-  const Reduce &reduce(T rhsVal) const
+  const Reduce &combine(T rhsVal) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
     auto ptr = const_cast<NonConst>(this);
-    Reducer{}(ptr->val.value,rhsVal);
+    Combiner{}(ptr->val.value,rhsVal);
     return *this;
   }
 
 private:
-  const Reduce<Async, Reducer, T>* parent;
+  const Reduce<Async, Combiner, T>* parent;
   //! storage for reduction data (host ptr, device ptr, value)
-  cuda::Reduce_Data<Async, Reducer, T> val;
+  cuda::Reduce_Data<Async, Combiner, T> val;
 };
 
 
 //! Cuda Reduction Atomic entity -- generalize on reduction, and type
-template <bool Async, typename Reducer, typename T>
+template <bool Async, typename Combiner, typename T>
 struct ReduceAtomic {
   ReduceAtomic() = delete;
 
@@ -928,7 +928,7 @@ struct ReduceAtomic {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
       lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
 #endif
-      parent->reduce(val.value);
+      parent->combine(val.value);
     } else {
       val.teardownForDevice();
     }
@@ -937,12 +937,12 @@ struct ReduceAtomic {
 
       T temp = val.value;
 
-      if (impl::grid_reduce_atomic<Reducer>(temp, val.device,
+      if (impl::grid_reduce_atomic<Combiner>(temp, val.device,
                                             val.device_count)) {
         val.tally_or_val_ptr.val_ptr[0] = temp;
       }
     } else {
-      parent->reduce(val.value);
+      parent->combine(val.value);
     }
 #endif
   }
@@ -955,7 +955,7 @@ struct ReduceAtomic {
     if (n != end) {
       val.deviceToHost();
       for ( ; n != end; ++n) {
-        Reducer{}(val.value, *n);
+        Combiner{}(val.value, *n);
       }
       val.cleanup();
     }
@@ -966,26 +966,26 @@ struct ReduceAtomic {
 
   //! apply reduction
   RAJA_HOST_DEVICE
-  ReduceAtomic &reduce(T rhsVal)
+  ReduceAtomic &combine(T rhsVal)
   {
-    Reducer{}(val.value, rhsVal);
+    Combiner{}(val.value, rhsVal);
     return *this;
   }
 
-  //! apply reduction (const version) -- still reduces internal values
+  //! apply reduction (const version) -- still combines internal values
   RAJA_HOST_DEVICE
-  const ReduceAtomic &reduce(T rhsVal) const
+  const ReduceAtomic &combine(T rhsVal) const
   {
     using NonConst = typename std::remove_const<decltype(this)>::type;
     auto ptr = const_cast<NonConst>(this);
-    Reducer{}(ptr->val.value,rhsVal);
+    Combiner{}(ptr->val.value,rhsVal);
     return *this;
   }
 
 private:
-  const ReduceAtomic<Async, Reducer, T>* parent;
+  const ReduceAtomic<Async, Combiner, T>* parent;
   //! storage for reduction data (host ptr, device ptr, value)
-  cuda::ReduceAtomic_Data<Async, Reducer, T> val;
+  cuda::ReduceAtomic_Data<Async, Combiner, T> val;
 };
 
 }  // end namespace cuda
@@ -997,18 +997,18 @@ struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>
   using self = ReduceSum<cuda_reduce<BLOCK_SIZE, Async>, T>;
   using Base = cuda::Reduce<Async, RAJA::reduce::sum<T>, T>;
   using Base::Base;
-  //! enable operator+= for ReduceSum -- alias for reduce()
+  //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
   self &operator+=(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable operator+= for ReduceSum -- alias for reduce()
+  //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
   const self &operator+=(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1020,18 +1020,18 @@ struct ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
   using self = ReduceSum<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
   using Base = cuda::ReduceAtomic<Async, RAJA::reduce::sum<T>, T>;
   using Base::Base;
-  //! enable operator+= for ReduceSum -- alias for reduce()
+  //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
   self &operator+=(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable operator+= for ReduceSum -- alias for reduce()
+  //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
   const self &operator+=(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1043,18 +1043,18 @@ struct ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
   using self = ReduceMin<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
   using Base = cuda::ReduceAtomic<Async, RAJA::reduce::min<T>, T>;
   using Base::Base;
-  //! enable min() for ReduceMin -- alias for reduce()
+  //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
   self &min(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable min() for ReduceMin -- alias for reduce()
+  //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
   const self &min(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1066,18 +1066,18 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>
   using self = ReduceMin<cuda_reduce<BLOCK_SIZE, Async>, T>;
   using Base = cuda::Reduce<Async, RAJA::reduce::min<T>, T>;
   using Base::Base;
-  //! enable min() for ReduceMin -- alias for reduce()
+  //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
   self &min(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable min() for ReduceMin -- alias for reduce()
+  //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
   const self &min(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1089,18 +1089,18 @@ struct ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>
   using self = ReduceMax<cuda_reduce_atomic<BLOCK_SIZE, Async>, T>;
   using Base = cuda::ReduceAtomic<Async, RAJA::reduce::max<T>, T>;
   using Base::Base;
-  //! enable max() for ReduceMax -- alias for reduce()
+  //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
   self &max(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable max() for ReduceMax -- alias for reduce()
+  //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
   const self &max(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1112,18 +1112,18 @@ struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>
   using self = ReduceMax<cuda_reduce<BLOCK_SIZE, Async>, T>;
   using Base = cuda::Reduce<Async, RAJA::reduce::max<T>, T>;
   using Base::Base;
-  //! enable max() for ReduceMax -- alias for reduce()
+  //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
   self &max(T rhsVal)
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
-  //! enable max() for ReduceMax -- alias for reduce()
+  //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
   const self &max(T rhsVal) const
   {
-    Base::reduce(rhsVal);
+    Base::combine(rhsVal);
     return *this;
   }
 };
@@ -1145,14 +1145,14 @@ struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async>, T>
   RAJA_HOST_DEVICE
   ReduceMinLoc &minloc(T rhs, Index_type loc)
   {
-    Base::reduce(value_type(rhs, loc));
+    Base::combine(value_type(rhs, loc));
     return *this;
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
   const ReduceMinLoc &minloc(T rhs, Index_type loc) const
   {
-    Base::reduce(value_type(rhs, loc));
+    Base::combine(value_type(rhs, loc));
     return *this;
   }
 
@@ -1185,14 +1185,14 @@ struct ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async>, T>
   RAJA_HOST_DEVICE
   ReduceMaxLoc &maxloc(T rhs, Index_type loc)
   {
-    Base::reduce(value_type(rhs, loc));
+    Base::combine(value_type(rhs, loc));
     return *this;
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
   const ReduceMaxLoc &maxloc(T rhs, Index_type loc) const
   {
-    Base::reduce(value_type(rhs, loc));
+    Base::combine(value_type(rhs, loc));
     return *this;
   }
 
