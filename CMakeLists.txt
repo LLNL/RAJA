@@ -73,10 +73,10 @@ set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
-# Setup vendor-specific compiler flags
-include(cmake/SetupCompilers.cmake)
 # Find third-party packages
 include(cmake/SetupPackages.cmake)
+# Setup vendor-specific compiler flags
+include(cmake/SetupCompilers.cmake)
 # Setup internal RAJA configuration options
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries

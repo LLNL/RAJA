@@ -61,10 +61,6 @@ if (RAJA_ENABLE_CUDA)
   set (CUDA_PROPAGATE_HOST_FLAGS OFF)
   include_directories(${CUDA_INCLUDE_DIRS})
 
-  message(STATUS "Setting CUDA_NVCC_FLAGS to ${RAJA_NVCC_FLAGS}")
-  set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-
-
   if (RAJA_ENABLE_CUB)
 
     find_package(CUB)
