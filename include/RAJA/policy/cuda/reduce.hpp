@@ -64,6 +64,10 @@
 
 #include "RAJA/util/basic_mempool.hpp"
 
+#include "RAJA/util/SoAArray.hpp"
+
+#include "RAJA/util/SoAPtr.hpp"
+
 #include "RAJA/pattern/detail/reduce.hpp"
 
 #include "RAJA/pattern/reduce.hpp"
@@ -225,11 +229,11 @@ T block_reduce(T val)
   // reduce per warp values
   if (numThreads > WARP_SIZE) {
 
-    __shared__ T sd[MAX_WARPS];
+    __shared__ RAJA::detail::SoAArray<T, MAX_WARPS> sd;
 
     // write per warp values to shared memory
     if (warpId == 0) {
-      sd[warpNum] = temp;
+      sd.set(warpNum, temp);
     }
 
     __syncthreads();
@@ -238,7 +242,7 @@ T block_reduce(T val)
 
       // read per warp values
       if (warpId*WARP_SIZE < numThreads) {
-        temp = sd[warpId];
+        temp = sd.get(warpId);
       } else {
         temp = Reducer::identity();
       }
@@ -259,10 +263,10 @@ T block_reduce(T val)
 
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
-template <typename Reducer, typename T>
+template <typename Reducer, typename T, typename TempIterator>
 RAJA_DEVICE RAJA_INLINE
 bool grid_reduce(T& val,
-                 T* device_mem,
+                 TempIterator device_mem,
                  unsigned int* device_count)
 {
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
@@ -280,7 +284,7 @@ bool grid_reduce(T& val,
   // one thread per block writes to device_mem
   bool lastBlock = false;
   if (threadId == 0) {
-    device_mem[blockId] = temp;
+    device_mem.set(blockId, temp);
     // ensure write visible to all threadblocks
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
@@ -296,7 +300,7 @@ bool grid_reduce(T& val,
     temp = Reducer::identity();
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
-      Reducer{}(temp, device_mem[i]);
+      Reducer{}(temp, device_mem.get(i));
     }
 
     temp = block_reduce<Reducer>(temp);
@@ -329,7 +333,7 @@ bool grid_reduce_atomic(T& val,
   if (threadId == 0) {
     unsigned int old_val = ::atomicCAS(device_count, 0u, 1u);
     if (old_val == 0u) {
-      *device_mem = Reducer::identity();
+      device_mem[0] = Reducer::identity();
       __threadfence();
       ::atomicAdd(device_count, 1u);
     }
@@ -343,7 +347,7 @@ bool grid_reduce_atomic(T& val,
     // thread waits for device_mem to be initialized
     while(static_cast<volatile unsigned int*>(device_count)[0] < 2u);
     __threadfence();
-    RAJA::reduce::cuda::atomic<Reducer>{}(*device_mem, temp);
+    RAJA::reduce::cuda::atomic<Reducer>{}(device_mem[0], temp);
     __threadfence();
     // increment counter, (wraps back to zero if old count == wrap_around)
     unsigned int old_count = ::atomicInc(device_count, wrap_around);
@@ -351,7 +355,7 @@ bool grid_reduce_atomic(T& val,
 
     // last block gets value from device_mem
     if (lastBlock) {
-      val = *device_mem;
+      val = device_mem[0];
     }
   }
 
@@ -521,7 +525,7 @@ public:
       sn->node_list = nullptr;
       stream_list = sn;
     }
-    Node* n = cuda::pinned_mempool_type::getInstance().malloc<Node>(1);
+    Node* n = cuda::pinned_mempool_type::getInstance().template malloc<Node>(1);
     n->next = sn->node_list;
     sn->node_list = n;
     return &n->value;
@@ -590,7 +594,7 @@ struct Reduce_Data {
   mutable T value;
   tally_u tally_or_val_ptr;
   unsigned int *device_count;
-  T *device;
+  RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
   //! disallow default constructor
@@ -604,7 +608,7 @@ struct Reduce_Data {
       : value{initValue},
         tally_or_val_ptr{new PinnedTally<T>},
         device_count{nullptr},
-        device{nullptr},
+        device{},
         own_device_ptr{false}
   {
   }
@@ -631,12 +635,12 @@ struct Reduce_Data {
   RAJA_INLINE
   bool setupForDevice(Offload_Info &info)
   {
-    bool act = !device && setupReducers();
+    bool act = !device.allocated() && setupReducers();
     if (act) {
       dim3 gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
-      device = device_mempool_type::getInstance().malloc<T>(numBlocks);
-      device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      device.allocate(numBlocks);
+      device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
       tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
@@ -649,7 +653,7 @@ struct Reduce_Data {
   void teardownForDevice(Offload_Info&)
   {
     if(own_device_ptr) {
-      device_mempool_type::getInstance().free(device);  device = nullptr;
+      device.deallocate();
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
@@ -740,8 +744,8 @@ struct ReduceAtomic_Data {
   {
     bool act = !device && setupReducers();
     if (act) {
-      device = device_mempool_type::getInstance().malloc<T>(1);
-      device_count = device_zeroed_mempool_type::getInstance().malloc<unsigned int>(1);
+      device = device_mempool_type::getInstance().template malloc<T>(1);
+      device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
       tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
