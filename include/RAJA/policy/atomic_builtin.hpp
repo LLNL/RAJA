@@ -60,6 +60,9 @@
 
 namespace RAJA
 {
+namespace atomic
+{
+
 
 //! Atomic policy that uses the compilers builtin __atomic_XXX routines
 struct builtin_atomic{};
@@ -70,11 +73,11 @@ struct builtin_atomic{};
 
 template<typename T>
 RAJA_INLINE
-T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value);
+T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value);
 
 template<>
 RAJA_INLINE
-unsigned atomicCAS(RAJA::builtin_atomic, unsigned volatile *acc, unsigned compare, unsigned value){
+unsigned atomicCAS(builtin_atomic, unsigned volatile *acc, unsigned compare, unsigned value){
 
   long long_value =  RAJA::util::reinterp_A_as_B<unsigned, long>(value);
   long long_compare =  RAJA::util::reinterp_A_as_B<unsigned, long>(compare);
@@ -100,7 +103,7 @@ unsigned long long atomicCAS(RAJA::builtin_atomic, unsigned long long volatile *
 #else // RAJA_COMPILER_MSVC
 template<typename T>
 RAJA_INLINE
-T atomicCAS(RAJA::builtin_atomic, T volatile *acc, T compare, T value){  
+T atomicCAS(builtin_atomic, T volatile *acc, T compare, T value){
   __atomic_compare_exchange_n(acc, &compare, value, false, __ATOMIC_ACQ_REL, __ATOMIC_RELAXED);
   return compare;
 }
@@ -129,7 +132,7 @@ struct BuiltinAtomicCAS<4> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned>( 
         oper( RAJA::util::reinterp_A_as_B<unsigned, T>(oldval) ) );
             
-    while ((readback = RAJA::atomicCAS(RAJA::builtin_atomic{}, (unsigned *)acc, oldval, newval))
+    while ((readback = RAJA::atomic::atomicCAS(builtin_atomic{}, (unsigned *)acc, oldval, newval))
            != oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned>( 
@@ -157,7 +160,7 @@ struct BuiltinAtomicCAS<8> {
     newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
       oper( RAJA::util::reinterp_A_as_B<unsigned long long, T>(oldval) ) );
       
-    while ((readback = RAJA::atomicCAS(RAJA::builtin_atomic{}, (unsigned long long *)acc, oldval, newval))
+    while ((readback = RAJA::atomic::atomicCAS(builtin_atomic{}, (unsigned long long *)acc, oldval, newval))
            != oldval) {
       oldval = readback;
       newval = RAJA::util::reinterp_A_as_B<T, unsigned long long>(
@@ -190,7 +193,7 @@ T builtin_atomic_CAS_oper(T volatile *acc, OPER && oper){
 
 template<typename T>
 RAJA_INLINE
-T atomicAdd(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicAdd(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a+value;});
 }
 
@@ -198,67 +201,67 @@ T atomicAdd(RAJA::builtin_atomic, T volatile *acc, T value){
 
 template<typename T>
 RAJA_INLINE
-T atomicSub(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicSub(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a-value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicMin(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicMin(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a<value ? a : value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicMax(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicMax(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a>value ? a : value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicInc(RAJA::builtin_atomic, T volatile *acc){
+T atomicInc(builtin_atomic, T volatile *acc){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a+1;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicInc(RAJA::builtin_atomic, T volatile *acc, T val){
+T atomicInc(builtin_atomic, T volatile *acc, T val){
   return detail::builtin_atomic_CAS_oper(acc, [=](T old){return ((old >= val) ? 0 : (old+1));});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicDec(RAJA::builtin_atomic, T volatile *acc){
+T atomicDec(builtin_atomic, T volatile *acc){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a-1;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicDec(RAJA::builtin_atomic, T volatile *acc, T val){
+T atomicDec(builtin_atomic, T volatile *acc, T val){
   return detail::builtin_atomic_CAS_oper(acc, [=](T old){return (((old==0)|(old>val))?val:(old-1));});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicAnd(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicAnd(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a&value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicOr(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicOr(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a|value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicXor(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicXor(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T a){return a^value;});
 }
 
 template<typename T>
 RAJA_INLINE
-T atomicExchange(RAJA::builtin_atomic, T volatile *acc, T value){
+T atomicExchange(builtin_atomic, T volatile *acc, T value){
   return detail::builtin_atomic_CAS_oper(acc, [=](T){return value;});
 }
 
@@ -269,7 +272,7 @@ T atomicExchange(RAJA::builtin_atomic, T volatile *acc, T value){
 
 
 
-
+}  // namespace atomic
 }  // namespace RAJA
 
 // make sure this define doesn't bleed out of this header

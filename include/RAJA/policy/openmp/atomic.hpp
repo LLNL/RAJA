@@ -65,12 +65,14 @@
 
 namespace RAJA
 {
+namespace atomic
+{
 
 #ifdef RAJA_COMPILER_MSVC
 
 
 // For MS Visual C, just default to builtin_atomic for everything
-using omp_atomic = RAJA::builtin_atomic;
+using omp_atomic = builtin_atomic;
 
 
 
@@ -146,7 +148,7 @@ template<typename T>
 RAJA_INLINE
 T atomicInc(omp_atomic, T volatile *acc, T val){
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-	return RAJA::atomicInc(builtin_atomic{}, acc, val);
+	return RAJA::atomic::atomicInc(builtin_atomic{}, acc, val);
 }
 
 
@@ -169,7 +171,7 @@ template<typename T>
 RAJA_INLINE
 T atomicDec(omp_atomic, T volatile *acc, T val){
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-	return RAJA::atomicDec(builtin_atomic{}, acc, val);
+	return RAJA::atomic::atomicDec(builtin_atomic{}, acc, val);
 }
 
 RAJA_SUPPRESS_HD_WARN
@@ -229,11 +231,13 @@ template<typename T>
 RAJA_INLINE
 T atomicCAS(omp_atomic, T volatile *acc, T compare, T value){
   // OpenMP doesn't define atomic trinary operators so use builtin atomics
-	return RAJA::atomicCAS(builtin_atomic{}, acc, compare, value);
+	return RAJA::atomic::atomicCAS(builtin_atomic{}, acc, compare, value);
 }
 
 #endif // not defined RAJA_COMPILER_MSVC
 
+
+}  // namespace atomic
 }  // namespace RAJA
 
 #endif // RAJA_ENABLE_OPENMP

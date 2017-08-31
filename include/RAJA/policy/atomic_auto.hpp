@@ -71,17 +71,19 @@
  * because we assume there is no thread safety issues (no parallel model)
  */
 #ifdef __CUDA_ARCH__
-  #define RAJA_AUTO_ATOMIC RAJA::cuda_atomic{}
+  #define RAJA_AUTO_ATOMIC RAJA::atomic::cuda_atomic{}
 #else
 #  ifdef RAJA_ENABLE_OPENMP
-  #define RAJA_AUTO_ATOMIC RAJA::omp_atomic{}
+  #define RAJA_AUTO_ATOMIC RAJA::atomic::omp_atomic{}
 #  else
-  #define RAJA_AUTO_ATOMIC RAJA::seq_atomic{}
+  #define RAJA_AUTO_ATOMIC RAJA::atomic::seq_atomic{}
 #  endif
 #endif
 
 
 namespace RAJA
+{
+namespace atomic
 {
 
 //! Atomic policy that automatically does "the right thing"
@@ -91,97 +93,98 @@ struct auto_atomic{};
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicAdd(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
+T atomicAdd(auto_atomic, T volatile *acc, T value){
+  return atomicAdd(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicSub(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicSub(RAJA_AUTO_ATOMIC, acc, value);
+T atomicSub(auto_atomic, T volatile *acc, T value){
+  return atomicSub(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicMin(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicMin(RAJA_AUTO_ATOMIC, acc, value);
+T atomicMin(auto_atomic, T volatile *acc, T value){
+  return atomicMin(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicMax(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicMax(RAJA_AUTO_ATOMIC, acc, value);
+T atomicMax(auto_atomic, T volatile *acc, T value){
+  return atomicMax(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicInc(RAJA::auto_atomic, T volatile *acc){
-  return RAJA::atomicInc(RAJA_AUTO_ATOMIC, acc);
+T atomicInc(auto_atomic, T volatile *acc){
+  return atomicInc(RAJA_AUTO_ATOMIC, acc);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicInc(RAJA::auto_atomic, T volatile *acc, T compare){
-  return RAJA::atomicInc(RAJA_AUTO_ATOMIC, acc, compare);
+T atomicInc(auto_atomic, T volatile *acc, T compare){
+  return atomicInc(RAJA_AUTO_ATOMIC, acc, compare);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicDec(RAJA::auto_atomic, T volatile *acc){
-  return RAJA::atomicDec(RAJA_AUTO_ATOMIC, acc);
+T atomicDec(auto_atomic, T volatile *acc){
+  return atomicDec(RAJA_AUTO_ATOMIC, acc);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicDec(RAJA::auto_atomic, T volatile *acc, T compare){
-  return RAJA::atomicDec(RAJA_AUTO_ATOMIC, acc, compare);
+T atomicDec(auto_atomic, T volatile *acc, T compare){
+  return atomicDec(RAJA_AUTO_ATOMIC, acc, compare);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicAnd(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicAnd(RAJA_AUTO_ATOMIC, acc, value);
+T atomicAnd(auto_atomic, T volatile *acc, T value){
+  return atomicAnd(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicOr(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicOr(RAJA_AUTO_ATOMIC, acc, value);
+T atomicOr(auto_atomic, T volatile *acc, T value){
+  return atomicOr(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicXor(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicXor(RAJA_AUTO_ATOMIC, acc, value);
+T atomicXor(auto_atomic, T volatile *acc, T value){
+  return atomicXor(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicExchange(RAJA::auto_atomic, T volatile *acc, T value){
-  return RAJA::atomicExchange(RAJA_AUTO_ATOMIC, acc, value);
+T atomicExchange(auto_atomic, T volatile *acc, T value){
+  return atomicExchange(RAJA_AUTO_ATOMIC, acc, value);
 }
 
 template<typename T>
 RAJA_INLINE
 RAJA_HOST_DEVICE
-T atomicCAS(RAJA::auto_atomic, T volatile *acc, T compare, T value){
-  return RAJA::atomicCAS(RAJA_AUTO_ATOMIC, acc, compare, value);
+T atomicCAS(auto_atomic, T volatile *acc, T compare, T value){
+  return atomicCAS(RAJA_AUTO_ATOMIC, acc, compare, value);
 }
 
 
 
+}  // namespace atomic
 }  // namespace RAJA
 
 // make sure this define doesn't bleed out of this header

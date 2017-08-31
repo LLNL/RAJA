@@ -64,94 +64,94 @@
 namespace RAJA
 {
 
-template <typename DATA_TYPE,
-          typename LAYOUT_TYPE,
-          typename DATA_POINTER = DATA_TYPE *>
+template <typename ValueType,
+          typename LayoutType,
+          typename PointerType = ValueType *>
 struct View {
-  using DataType = DATA_TYPE;
-  using DataPointer = DATA_POINTER;
-  using LayoutType = LAYOUT_TYPE;
-  LayoutType const layout;
-  DataPointer data;
+  using value_type = ValueType;
+  using pointer_type = PointerType;
+  using layout_type = LayoutType;
+  layout_type const layout;
+  pointer_type data;
 
 
   template <typename... Args>
-  RAJA_INLINE constexpr View(DataPointer data_ptr, Args... dim_sizes)
+  RAJA_INLINE constexpr View(pointer_type data_ptr, Args... dim_sizes)
       : layout(dim_sizes...), data(data_ptr)
   {
   }
 
-  RAJA_INLINE constexpr View(DataPointer data_ptr, LayoutType &&layout)
+  RAJA_INLINE constexpr View(pointer_type data_ptr, layout_type &&layout)
       : layout(layout), data(data_ptr)
   {
   }
 
-  RAJA_INLINE void set_data(DataPointer data_ptr) { data = data_ptr; }
+  RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   // making this specifically typed would require unpacking the layout,
   // this is easier to maintain
   template <typename... Args>
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(Args... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(Args... args) const
   {
     return data[convertIndex<Index_type>(layout(args...))];
   }
 };
 
-template <typename DataType,
-          typename DataPointer,
-          typename LayoutT,
+template <typename ValueType,
+          typename PointerType,
+          typename LayoutType,
           typename... IndexTypes>
 struct TypedViewBase {
-  using Base = View<DataType, LayoutT, DataPointer>;
+  using Base = View<ValueType, LayoutType, PointerType>;
 
   Base base_;
 
   template <typename... Args>
-  RAJA_INLINE constexpr TypedViewBase(DataPointer data_ptr, Args... dim_sizes)
+  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, Args... dim_sizes)
       : base_(data_ptr, dim_sizes...)
   {
   }
 
-  RAJA_INLINE constexpr TypedViewBase(DataPointer data_ptr, LayoutT &&layout)
+  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, LayoutType &&layout)
       : base_(data_ptr, layout)
   {
   }
 
-  RAJA_INLINE void set_data(DataPointer data_ptr) { base_.set_data(data_ptr); }
+  RAJA_INLINE void set_data(PointerType data_ptr) { base_.set_data(data_ptr); }
 
-  RAJA_HOST_DEVICE RAJA_INLINE DataType &operator()(IndexTypes... args) const
+  RAJA_HOST_DEVICE RAJA_INLINE ValueType &operator()(IndexTypes... args) const
   {
     return base_.operator()(convertIndex<Index_type>(args)...);
   }
 };
 
-template <typename DataType, typename LayoutT, typename... IndexTypes>
-using TypedView = TypedViewBase<DataType, DataType *, LayoutT, IndexTypes...>;
+template <typename ValueType, typename LayoutType, typename... IndexTypes>
+using TypedView = TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
 
 #if defined(RAJA_ENABLE_CHAI)
 
-template <typename DataType, typename LayoutT>
-using ManagedArrayView = View<DataType, LayoutT, chai::ManagedArray<DataType>>;
+template <typename ValueType, typename LayoutType>
+using ManagedArrayView = View<ValueType, LayoutType, chai::ManagedArray<ValueType>>;
 
 
-template <typename DataType, typename LayoutT, typename... IndexTypes>
-using TypedManagedArrayView = TypedViewBase<DataType,
-                                            chai::ManagedArray<DataType>,
-                                            LayoutT,
+template <typename ValueType, typename LayoutType, typename... IndexTypes>
+using TypedManagedArrayView = TypedViewBase<ValueType,
+                                            chai::ManagedArray<ValueType>,
+                                            LayoutType,
                                             IndexTypes...>;
 
 #endif
 
 
 template <typename ViewType,
-          typename AtomicPolicy = RAJA::auto_atomic>
+          typename AtomicPolicy = RAJA::atomic::auto_atomic>
 struct AtomicViewWrapper {
-  using Base = ViewType;
-  using DataPointer = typename Base::DataPointer;
-  using DataType = typename Base::DataType;
-  using AtomicType = RAJA::AtomicRef<DataType, AtomicPolicy>;
+  using base_type = ViewType;
+  using pointer_type = typename base_type::pointer_type;
+  using value_type = typename base_type::value_type;
+  using atomic_type = RAJA::atomic::AtomicRef<value_type, AtomicPolicy>;
 
-  Base base_;
+  base_type base_;
 
   RAJA_INLINE
   constexpr
@@ -161,14 +161,14 @@ struct AtomicViewWrapper {
   {
   }
 
-  RAJA_INLINE void set_data(DataPointer data_ptr) { base_.set_data(data_ptr); }
+  RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
 
   template<typename ... ARGS>
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  AtomicType operator()(ARGS &&... args) const
+  atomic_type operator()(ARGS &&... args) const
   {
-    return AtomicType(&base_.operator()(std::forward<ARGS>(args)...));
+    return atomic_type(&base_.operator()(std::forward<ARGS>(args)...));
   }
 
 };

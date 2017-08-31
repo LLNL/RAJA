@@ -213,7 +213,7 @@ public:
       }
 
       if (threadId < 1) {
-        RAJA::atomicMin<T>(cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
+        RAJA::atomic::atomicMin<T>(RAJA::atomic::cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
       }
     }
 #else
@@ -417,7 +417,7 @@ public:
       }
 
       if (threadId < 1) {
-        RAJA::atomicMax<T>(cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
+        RAJA::atomic::atomicMax<T>(RAJA::atomic::cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
       }
     }
 #else
@@ -887,7 +887,7 @@ public:
 
       // one thread adds to tally
       if (threadId == 0) {
-        RAJA::atomicAdd<T>(cuda_atomic{}, &(m_tally_device->tally), temp);
+        RAJA::atomic::atomicAdd<T>(RAJA::atomic::cuda_atomic{}, &(m_tally_device->tally), temp);
       }
     }
 #else
