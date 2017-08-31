@@ -130,7 +130,7 @@ if (RAJA_ENABLE_CUDA)
     if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
       set(RAJA_NVCC_FLAGS -Os; -restrict; -arch ${RAJA_CUDA_ARCH}; -std ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
     endif() 
-  else(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+  else() # CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
     if ( NOT DEFINED RAJA_NVCC_FLAGS ) 
       set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${RAJA_CUDA_ARCH}; -std  ${RAJA_NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
     endif()
@@ -145,8 +145,6 @@ if (RAJA_ENABLE_CUDA)
       message(WARNING "Code coverage specified but not enabled -- GCC was not detected")
     endif()
   endif()
-  set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-
 endif()
 # end RAJA_ENABLE_CUDA section
 
