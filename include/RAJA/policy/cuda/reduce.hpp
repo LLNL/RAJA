@@ -585,6 +585,15 @@ public:
     return &n->value;
   }
 
+  //! synchronize all streams used
+  void synchronize_streams()
+  {
+    auto end = streamEnd();
+    for(auto s = streamBegin(); s != end; ++s) {
+      synchronize(*s);
+    }
+  }
+
   //! all values used in all streams
   void free_list()
   {
@@ -624,17 +633,8 @@ private:
 //! Reduction data for Cuda Offload -- stores value, host pointer, and device pointer
 template <bool Async, typename Combiner, typename T>
 struct Reduce_Data {
-  //! union to hold either pointer to PinnedTally or poiter to value
-  //  only use list before setup for device and only use val_ptr after
-  union tally_u {
-    PinnedTally<T>* list;
-    T *val_ptr;
-    constexpr tally_u(PinnedTally<T>* l) : list(l) {};
-    constexpr tally_u(T *v_ptr) : val_ptr(v_ptr) {};
-  };
 
   mutable T value;
-  tally_u tally_or_val_ptr;
   unsigned int *device_count;
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
@@ -648,7 +648,6 @@ struct Reduce_Data {
    */
   explicit Reduce_Data(T initValue)
       : value{initValue},
-        tally_or_val_ptr{new PinnedTally<T>},
         device_count{nullptr},
         device{},
         own_device_ptr{false}
@@ -658,7 +657,6 @@ struct Reduce_Data {
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data &other)
       : value{Combiner::identity()},
-        tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -666,20 +664,14 @@ struct Reduce_Data {
   }
 
   RAJA_DEVICE
-  void grid_reduce()
+  void grid_reduce(T* output)
   {
     T temp = value;
 
     if (impl::grid_reduce<Combiner>(temp, device,
                                     device_count)) {
-      tally_or_val_ptr.val_ptr[0] = temp;
+      *output = temp;
     }
-  }
-
-  //! delete pinned tally
-  void destroy()
-  {
-    delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
   }
 
   //! check and setup for device
@@ -692,7 +684,6 @@ struct Reduce_Data {
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
       device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
-      tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return act;
@@ -705,25 +696,8 @@ struct Reduce_Data {
     if(own_device_ptr) {
       device.deallocate();
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
-      tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
     }
-  }
-
-  //! transfers from the device to the host
-  void deviceToHost()
-  {
-    auto end = tally_or_val_ptr.list->streamEnd();
-    for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
-      synchronize(*s);
-    }
-  }
-
-  //! frees all data used
-  //  frees all values in the pinned tally
-  void cleanup()
-  {
-    tally_or_val_ptr.list->free_list();
   }
 };
 
@@ -731,17 +705,8 @@ struct Reduce_Data {
 //! Reduction data for Cuda Offload -- stores value, host pointer
 template <bool Async, typename Combiner, typename T>
 struct ReduceAtomic_Data {
-  //! union to hold either pointer to PinnedTally or poiter to value
-  //  only use list before setup for device and only use val_ptr after
-  union tally_u {
-    PinnedTally<T>* list;
-    T *val_ptr;
-    constexpr tally_u(PinnedTally<T>* l) : list(l) {};
-    constexpr tally_u(T *v_ptr) : val_ptr(v_ptr) {};
-  };
 
   mutable T value;
-  tally_u tally_or_val_ptr;
   unsigned int* device_count;
   T* device;
   bool own_device_ptr;
@@ -755,7 +720,6 @@ struct ReduceAtomic_Data {
    */
   explicit ReduceAtomic_Data(T initValue)
       : value{initValue},
-        tally_or_val_ptr{new PinnedTally<T>},
         device_count{nullptr},
         device{nullptr},
         own_device_ptr{false}
@@ -765,7 +729,6 @@ struct ReduceAtomic_Data {
   RAJA_HOST_DEVICE
   ReduceAtomic_Data(const ReduceAtomic_Data &other)
       : value{Combiner::identity()},
-        tally_or_val_ptr{other.tally_or_val_ptr},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -773,20 +736,14 @@ struct ReduceAtomic_Data {
   }
 
   RAJA_DEVICE
-  void grid_reduce()
+  void grid_reduce(T* output)
   {
     T temp = value;
 
     if (impl::grid_reduce_atomic<Combiner>(temp, device,
                                     device_count)) {
-      tally_or_val_ptr.val_ptr[0] = temp;
+      *output = temp;
     }
-  }
-
-  //! delete pinned tally
-  void destroy()
-  {
-    delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
   }
 
   //! check and setup for device
@@ -797,7 +754,6 @@ struct ReduceAtomic_Data {
     if (act) {
       device = device_mempool_type::getInstance().template malloc<T>(1);
       device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
-      tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
       own_device_ptr = true;
     }
     return act;
@@ -810,25 +766,8 @@ struct ReduceAtomic_Data {
     if(own_device_ptr) {
       device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
-      tally_or_val_ptr.val_ptr = nullptr;
       own_device_ptr = false;
     }
-  }
-
-  //! transfers from the device to the host
-  void deviceToHost()
-  {
-    auto end = tally_or_val_ptr.list->streamEnd();
-    for(auto s = tally_or_val_ptr.list->streamBegin(); s != end; ++s) {
-      synchronize(*s);
-    }
-  }
-
-  //! frees all data used
-  //  frees all values in the pinned tally
-  void cleanup()
-  {
-    tally_or_val_ptr.list->free_list();
   }
 };
 
@@ -841,6 +780,7 @@ struct Reduce {
   //  the original object's parent is itself
   explicit Reduce(T init_val)
       : parent{this},
+        tally_or_val_ptr{new PinnedTally<T>},
         val(init_val)
   {
   }
@@ -853,11 +793,13 @@ struct Reduce {
 #else
       : parent{&other},
 #endif
+        tally_or_val_ptr{other.tally_or_val_ptr},
         val(other.val)
   {
 #if !defined(__CUDA_ARCH__)
     if (parent) {
       if (val.setupForDevice()) {
+        tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
         parent = nullptr;
       }
     }
@@ -871,18 +813,19 @@ struct Reduce {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      val.destroy();
+      delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
     } else if (parent) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(val.tally_or_val_ptr.list->m_mutex);
+      lock_guard<omp::mutex> lock(tally_or_val_ptr.list->m_mutex);
 #endif
       parent->combine(val.value);
     } else {
       val.teardownForDevice();
+      tally_or_val_ptr.val_ptr = nullptr;
     }
 #else
     if (!parent->parent) {
-      val.grid_reduce();
+      val.grid_reduce(tally_or_val_ptr.val_ptr);
     } else {
       parent->combine(val.value);
     }
@@ -892,14 +835,14 @@ struct Reduce {
   //! map result value back to host if not done already; return aggregate value
   operator T()
   {
-    auto n = val.tally_or_val_ptr.list->begin();
-    auto end = val.tally_or_val_ptr.list->end();
+    auto n = tally_or_val_ptr.list->begin();
+    auto end = tally_or_val_ptr.list->end();
     if (n != end) {
-      val.deviceToHost();
+      tally_or_val_ptr.list->synchronize_streams();
       for ( ; n != end; ++n) {
         Combiner{}(val.value, *n);
       }
-      val.cleanup();
+      tally_or_val_ptr.list->free_list();
     }
     return val.value;
   }
@@ -922,6 +865,17 @@ struct Reduce {
 
 private:
   const Reduce* parent;
+
+  //! union to hold either pointer to PinnedTally or poiter to value
+  //  only use list before setup for device and only use val_ptr after
+  union tally_u {
+    PinnedTally<T>* list;
+    T *val_ptr;
+    constexpr tally_u(PinnedTally<T>* l) : list(l) {};
+    constexpr tally_u(T *v_ptr) : val_ptr(v_ptr) {};
+  };
+
+  tally_u tally_or_val_ptr;
 
   //! cuda reduction data storage class and folding algorithm
   using reduce_data_type = typename std::conditional<maybe_atomic && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
