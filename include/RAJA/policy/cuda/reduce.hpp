@@ -186,6 +186,14 @@ union AsIntegerArray {
   RAJA_HOST_DEVICE constexpr size_t array_size() const { return num_integer_type; }
 };
 
+// cuda 8 only has shfl primitives for 32 bits while cuda 9 has 32 and 64 bits
+constexpr const size_t min_shfl_int_type_size = sizeof(int);
+#if (__CUDACC_VER_MAJOR__ >= 9)
+constexpr const size_t max_shfl_int_type_size = sizeof(long long);
+#else
+constexpr const size_t max_shfl_int_type_size = sizeof(int);
+#endif
+
 /*!
  ******************************************************************************
  *
@@ -196,14 +204,6 @@ union AsIntegerArray {
  *
  ******************************************************************************
  */
-
-constexpr const size_t min_shfl_int_type_size = sizeof(int);
-#if (__CUDACC_VER_MAJOR__ >= 9)
-constexpr const size_t max_shfl_int_type_size = sizeof(long long);
-#else
-constexpr const size_t max_shfl_int_type_size = sizeof(int);
-#endif
-
 template <typename T>
 RAJA_DEVICE RAJA_INLINE
 T shfl_xor_sync(T var, int laneMask)

@@ -81,11 +81,6 @@ public:
   {
   }
 
-  RAJA_HOST_DEVICE SoAPtr(const SoAPtr&) = default;
-  RAJA_HOST_DEVICE SoAPtr& operator=(const SoAPtr&) = default;
-
-  RAJA_HOST_DEVICE ~SoAPtr() = default;
-
   SoAPtr& allocate(size_t size)
   {
     mem = mempool::getInstance().template malloc<value_type>(size);
@@ -128,11 +123,6 @@ public:
       mem_idx(mempool::getInstance().template malloc<second_type>(size))
   {
   }
-
-  RAJA_HOST_DEVICE SoAPtr(const SoAPtr&) = default;
-  RAJA_HOST_DEVICE SoAPtr& operator=(const SoAPtr&) = default;
-
-  RAJA_HOST_DEVICE ~SoAPtr() = default;
 
   SoAPtr& allocate(size_t size)
   {
