@@ -104,7 +104,7 @@ struct atomic<sum<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::cuda::atomicAdd(&val, v);
+    RAJA::atomic::atomicAdd<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
@@ -114,7 +114,7 @@ struct atomic<min<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::cuda::atomicMin(&val, v);
+    RAJA::atomic::atomicMin<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
@@ -124,7 +124,7 @@ struct atomic<max<T>>
   RAJA_DEVICE RAJA_INLINE
   void operator()(T &val, const T v)
   {
-    RAJA::cuda::atomicMax(&val, v);
+    RAJA::atomic::atomicMax<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
