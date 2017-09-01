@@ -4,6 +4,4 @@
 Features and Examples
 =====================
 
-test
-
 
