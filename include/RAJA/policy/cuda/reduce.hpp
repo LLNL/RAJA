@@ -693,13 +693,15 @@ struct Reduce_Data {
 
   //! if own resources teardown device setup
   //  free device pointers
-  void teardownForDevice()
+  bool teardownForDevice()
   {
-    if(own_device_ptr) {
+    bool act = own_device_ptr;
+    if(act) {
       device.deallocate();
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       own_device_ptr = false;
     }
+    return act;
   }
 };
 
@@ -766,13 +768,15 @@ struct ReduceAtomic_Data {
 
   //! if own resources teardown device setup
   //  free device pointers
-  void teardownForDevice()
+  bool teardownForDevice()
   {
-    if(own_device_ptr) {
+    bool act = own_device_ptr;
+    if(act) {
       device_mempool_type::getInstance().free(device);  device = nullptr;
       device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
       own_device_ptr = false;
     }
+    return act;
   }
 };
 
@@ -825,8 +829,9 @@ struct Reduce {
 #endif
       parent->combine(val.value);
     } else {
-      val.teardownForDevice();
-      tally_or_val_ptr.val_ptr = nullptr;
+      if (val.teardownForDevice()) {
+        tally_or_val_ptr.val_ptr = nullptr;
+      }
     }
 #else
     if (!parent->parent) {
