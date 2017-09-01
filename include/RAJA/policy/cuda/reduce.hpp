@@ -246,7 +246,7 @@ T shfl_sync(T var, int srcLane)
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE
-T block_reduce(T val)
+T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
@@ -298,7 +298,7 @@ T block_reduce(T val)
       if (warpId*WARP_SIZE < numThreads) {
         temp = sd.get(warpId);
       } else {
-        temp = Combiner::identity();
+        temp = identity;
       }
 
       for (int i = 1; i < WARP_SIZE ; i *= 2) {
@@ -319,7 +319,7 @@ T block_reduce(T val)
 //  returns true if put reduced value in val
 template <typename Combiner, typename T, typename TempIterator>
 RAJA_DEVICE RAJA_INLINE
-bool grid_reduce(T& val,
+bool grid_reduce(T& val, T identity,
                  TempIterator device_mem,
                  unsigned int* device_count)
 {
@@ -333,7 +333,7 @@ bool grid_reduce(T& val,
   int threadId = threadIdx.x + blockDim.x * threadIdx.y
                  + (blockDim.x * blockDim.y) * threadIdx.z;
 
-  T temp = block_reduce<Combiner>(val);
+  T temp = block_reduce<Combiner>(val, identity);
 
   // one thread per block writes to device_mem
   bool lastBlock = false;
@@ -351,13 +351,13 @@ bool grid_reduce(T& val,
 
   // last block accumulates values from device_mem
   if (lastBlock) {
-    temp = Combiner::identity();
+    temp = identity;
 
     for (int i = threadId; i < numBlocks; i += numThreads) {
       Combiner{}(temp, device_mem.get(i));
     }
 
-    temp = block_reduce<Combiner>(temp);
+    temp = block_reduce<Combiner>(temp, identity);
 
     // one thread returns value
     if (threadId == 0) {
@@ -373,7 +373,7 @@ bool grid_reduce(T& val,
 //  returns true if put reduced value in val
 template <typename Combiner, typename T>
 RAJA_DEVICE RAJA_INLINE
-bool grid_reduce_atomic(T& val,
+bool grid_reduce_atomic(T& val, T identity,
                         T* device_mem,
                         unsigned int* device_count)
 {
@@ -387,13 +387,13 @@ bool grid_reduce_atomic(T& val,
   if (threadId == 0) {
     unsigned int old_val = ::atomicCAS(device_count, 0u, 1u);
     if (old_val == 0u) {
-      device_mem[0] = Combiner::identity();
+      device_mem[0] = identity;
       __threadfence();
       ::atomicAdd(device_count, 1u);
     }
   }
 
-  T temp = block_reduce<Combiner>(val);
+  T temp = block_reduce<Combiner>(val, identity);
 
   // one thread per block performs atomic on device_mem
   bool lastBlock = false;
@@ -635,6 +635,7 @@ template <bool Async, typename Combiner, typename T>
 struct Reduce_Data {
 
   mutable T value;
+  T identity;
   unsigned int *device_count;
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
@@ -646,8 +647,9 @@ struct Reduce_Data {
    *
    *  allocates PinnedTally to hold device values
    */
-  explicit Reduce_Data(T initValue)
+  explicit Reduce_Data(T initValue, T identity_)
       : value{initValue},
+        identity{identity_},
         device_count{nullptr},
         device{},
         own_device_ptr{false}
@@ -656,7 +658,8 @@ struct Reduce_Data {
 
   RAJA_HOST_DEVICE
   Reduce_Data(const Reduce_Data &other)
-      : value{Combiner::identity()},
+      : value{other.identity},
+        identity{other.identity},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -668,8 +671,7 @@ struct Reduce_Data {
   {
     T temp = value;
 
-    if (impl::grid_reduce<Combiner>(temp, device,
-                                    device_count)) {
+    if (impl::grid_reduce<Combiner>(temp, identity, device, device_count)) {
       *output = temp;
     }
   }
@@ -707,6 +709,7 @@ template <bool Async, typename Combiner, typename T>
 struct ReduceAtomic_Data {
 
   mutable T value;
+  T identity;
   unsigned int* device_count;
   T* device;
   bool own_device_ptr;
@@ -718,8 +721,9 @@ struct ReduceAtomic_Data {
    *
    *  allocates PinnedTally to hold device values
    */
-  explicit ReduceAtomic_Data(T initValue)
+  explicit ReduceAtomic_Data(T initValue, T identity_)
       : value{initValue},
+        identity{identity_},
         device_count{nullptr},
         device{nullptr},
         own_device_ptr{false}
@@ -728,7 +732,8 @@ struct ReduceAtomic_Data {
 
   RAJA_HOST_DEVICE
   ReduceAtomic_Data(const ReduceAtomic_Data &other)
-      : value{Combiner::identity()},
+      : value{other.identity},
+        identity{other.identity},
         device_count{other.device_count},
         device{other.device},
         own_device_ptr{false}
@@ -740,8 +745,8 @@ struct ReduceAtomic_Data {
   {
     T temp = value;
 
-    if (impl::grid_reduce_atomic<Combiner>(temp, device,
-                                    device_count)) {
+    if (impl::grid_reduce_atomic<Combiner>(temp, identity, device,
+                                           device_count)) {
       *output = temp;
     }
   }
@@ -778,10 +783,10 @@ struct Reduce {
 
   //! create a reduce object
   //  the original object's parent is itself
-  explicit Reduce(T init_val)
+  explicit Reduce(T init_val, T identity_ = Combiner::identity())
       : parent{this},
         tally_or_val_ptr{new PinnedTally<T>},
-        val(init_val)
+        val(init_val, identity_)
   {
   }
 
