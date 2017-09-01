@@ -824,10 +824,12 @@ struct Reduce {
     if (parent == this) {
       delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
     } else if (parent) {
+      if (val.value != val.identity) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-      lock_guard<omp::mutex> lock(tally_or_val_ptr.list->m_mutex);
+        lock_guard<omp::mutex> lock(tally_or_val_ptr.list->m_mutex);
 #endif
-      parent->combine(val.value);
+        parent->combine(val.value);
+      }
     } else {
       if (val.teardownForDevice()) {
         tally_or_val_ptr.val_ptr = nullptr;
