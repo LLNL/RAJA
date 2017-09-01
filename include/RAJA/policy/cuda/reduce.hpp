@@ -68,6 +68,8 @@
 
 #include "RAJA/util/SoAPtr.hpp"
 
+#include "RAJA/util/mutex.hpp"
+
 #include "RAJA/pattern/detail/reduce.hpp"
 
 #include "RAJA/pattern/reduce.hpp"
@@ -82,7 +84,7 @@
 
 #include <cuda.h>
 
-#include "RAJA/util/mutex.hpp"
+#include <type_traits>
 
 namespace RAJA
 {
@@ -135,6 +137,55 @@ namespace cuda
 
 namespace impl
 {
+
+/*!
+ * \brief Abstracts T into an equal or greater size array of integers whose
+ * size is between min_integer_type_size and max_interger_type_size inclusive.
+ */
+template < typename T, size_t min_integer_type_size = 1, size_t max_integer_type_size = sizeof(long long) >
+union AsIntegerArray {
+
+  static_assert(min_integer_type_size<=max_integer_type_size, "incompatible min and max integer type size");
+  using integer_type =
+    typename std::conditional<((alignof(T)>=alignof(long long) &&
+                                sizeof(long long)<=max_integer_type_size) ||
+                               sizeof(long)<min_integer_type_size),
+      long long,
+      typename std::conditional<((alignof(T)>=alignof(long) &&
+                                  sizeof(long)<=max_integer_type_size) ||
+                                 sizeof(int)<min_integer_type_size),
+        long,
+        typename std::conditional<((alignof(T)>=alignof(int) &&
+                                    sizeof(int)<=max_integer_type_size) ||
+                                   sizeof(short)<min_integer_type_size),
+          int,
+          typename std::conditional<((alignof(T)>=alignof(short) &&
+                                      sizeof(short)<=max_integer_type_size) ||
+                                     sizeof(char)<min_integer_type_size),
+            short,
+            typename std::conditional<((alignof(T)>=alignof(char) &&
+                                        sizeof(char)<=max_integer_type_size)),
+              char,
+              void
+            >::type
+          >::type
+        >::type
+      >::type
+    >::type;
+  static_assert(!std::is_same<integer_type, void>::value,    "could not find a compatible integer type");
+  static_assert(sizeof(integer_type)>=min_integer_type_size, "integer_type smaller than min integer type size");
+  static_assert(sizeof(integer_type)<=max_integer_type_size, "integer_type greater than max integer type size");
+
+  constexpr static size_t num_integer_type = (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
+
+  T value;
+  integer_type array[num_integer_type];
+
+  RAJA_HOST_DEVICE constexpr AsIntegerArray(T value_) : value(value_) {};
+
+  RAJA_HOST_DEVICE constexpr size_t array_size() const { return num_integer_type; }
+};
+
 /*!
  ******************************************************************************
  *
@@ -145,48 +196,44 @@ namespace impl
  *
  ******************************************************************************
  */
+
+constexpr const size_t min_shfl_int_type_size = sizeof(int);
+#if (__CUDACC_VER_MAJOR__ >= 9)
+constexpr const size_t max_shfl_int_type_size = sizeof(long long);
+#else
+constexpr const size_t max_shfl_int_type_size = sizeof(int);
+#endif
+
 template <typename T>
 RAJA_DEVICE RAJA_INLINE
 T shfl_xor_sync(T var, int laneMask)
 {
-  const int int_sizeof_T = (sizeof(T) + sizeof(int) - 1) / sizeof(int);
-  union Tint_u {
-    T var;
-    int arr[int_sizeof_T];
-    RAJA_DEVICE constexpr Tint_u(T var_) : var(var_) {};
-  };
-  Tint_u Tunion(var);
+  AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < int_sizeof_T; ++i) {
+  for (int i = 0; i < u.array_size(); ++i) {
 #if (__CUDACC_VER_MAJOR__ >= 9)
-    Tunion.arr[i] = ::__shfl_xor_sync(0xffffffffu, Tunion.arr[i], laneMask);
+    u.array[i] = ::__shfl_xor_sync(0xffffffffu, u.array[i], laneMask);
 #else
-    Tunion.arr[i] = ::__shfl_xor(Tunion.arr[i], laneMask);
+    u.array[i] = ::__shfl_xor(u.array[i], laneMask);
 #endif
   }
-  return Tunion.var;
+  return u.value;
 }
 
 template <typename T>
 RAJA_DEVICE RAJA_INLINE
 T shfl_sync(T var, int srcLane)
 {
-  const int int_sizeof_T = (sizeof(T) + sizeof(int) - 1) / sizeof(int);
-  union Tint_u {
-    T var;
-    int arr[int_sizeof_T];
-    RAJA_DEVICE constexpr Tint_u(T var_) : var(var_) {};
-  };
-  Tint_u Tunion(var);
+  AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
-  for (int i = 0; i < int_sizeof_T; ++i) {
+  for (int i = 0; i < u.array_size(); ++i) {
 #if (__CUDACC_VER_MAJOR__ >= 9)
-    Tunion.arr[i] = ::__shfl_sync(0xffffffffu, Tunion.arr[i], srcLane);
+    u.array[i] = ::__shfl_sync(0xffffffffu, u.array[i], srcLane);
 #else
-    Tunion.arr[i] = ::__shfl(Tunion.arr[i], srcLane);
+    u.array[i] = ::__shfl(u.array[i], srcLane);
 #endif
   }
-  return Tunion.var;
+  return u.value;
 }
 
 //! reduce values in block into thread 0
