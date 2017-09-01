@@ -157,7 +157,7 @@ struct cuda_exec
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <size_t BLOCK_SIZE, bool Async = false>
+template <size_t BLOCK_SIZE, bool Async = false, bool maybe_atomic = false>
 struct cuda_reduce
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
@@ -168,20 +168,13 @@ struct cuda_reduce
 };
 
 template <size_t BLOCK_SIZE>
-using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
-
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::reduce,
-                                                detail::get_launch<Async>::
-                                                    value,
-                                                RAJA::Platform::cuda> {
-};
+using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true, false>;
 
 template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
+using cuda_reduce_atomic = cuda_reduce<BLOCK_SIZE, false, true>;
+
+template <size_t BLOCK_SIZE>
+using cuda_reduce_atomic_async = cuda_reduce<BLOCK_SIZE, true, true>;
 
 namespace cuda
 {
