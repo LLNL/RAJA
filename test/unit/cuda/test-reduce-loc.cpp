@@ -80,7 +80,7 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
   static U def() { return DBL_MAX; }
   static U big() { return -500.0; }
   template <bool B>
-  RAJA_HOST_DEVICE static void updatedvalue(U* dvalue,
+  static void updatedvalue(U* dvalue,
                                 reduce::detail::ValueLoc<U, B>& randval,
                                 reduce::detail::ValueLoc<U, B>& dcurrent)
   {
@@ -102,7 +102,7 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
     l = l > r ? r : l;
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void cmp(ReduceMinLoc<T, U>& l,
+  static void cmp(ReduceMinLoc<T, U>& l,
                                    reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
@@ -114,7 +114,7 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
   static U def() { return -DBL_MAX; }
   static U big() { return 500.0; }
   template <bool B>
-  RAJA_HOST_DEVICE static void updatedvalue(U* dvalue,
+  static void updatedvalue(U* dvalue,
                                 reduce::detail::ValueLoc<U, B>& randval,
                                 reduce::detail::ValueLoc<U, B>& dcurrent)
   {
@@ -136,7 +136,7 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
     l = l > r ? l : r;
   }
   template <bool B>
-  RAJA_HOST_DEVICE static void cmp(ReduceMaxLoc<T, U>& l,
+  static void cmp(ReduceMaxLoc<T, U>& l,
                                    reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
