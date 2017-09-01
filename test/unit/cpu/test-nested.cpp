@@ -111,10 +111,20 @@ using POLICIES =
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>>;
 #else
+
+#if defined(RAJA_ENABLE_TBB)
+    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
+               ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
+               ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>>;
+#else               
     std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
                ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
                ExecInfo<TRANSFORMS, simd_exec, simd_exec>>;
 #endif
+#endif
+
 
 using InstPolicies =
     ForTesting<tt::apply_t<POLICIES, tt::apply_t<TRANSFORMS, PERMS>>>;
@@ -137,7 +147,7 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 
   using Pair = std::pair<Index_type, Index_type>;
 
-  for (auto size : {Pair(128, 1024), Pair(37, 1)}) {
+  for (auto size : {Pair(63, 255), Pair(37, 1)}) {
 
     Index_type size_i = std::get<0>(size);
     Index_type size_j = std::get<1>(size);
@@ -259,6 +269,11 @@ using LTimesPolicies = ::testing::Types<PolLTimesA,
                                         ,
                                         PolLTimesD_OMP,
                                         PolLTimesE_OMP
+#endif
+#if defined(RAJA_ENABLE_TBB)
+                                        ,
+                                        PolLTimesF_TBB,
+                                        PolLTimesG_TBB
 #endif
                                         >;
 

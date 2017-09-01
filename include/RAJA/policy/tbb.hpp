@@ -3,15 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
+ * \brief   Header file containing RAJA headers for tbb execution.
  *
  *          These methods work on all platforms.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HPP
-#define RAJA_sequential_HPP
+#ifndef RAJA_tbb_HPP
+#define RAJA_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -45,7 +45,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONtbb
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -55,10 +55,16 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/sequential/atomic.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
+
+#include "RAJA/policy/tbb/forall.hpp"
+#include "RAJA/policy/tbb/forallN.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
+#include "RAJA/policy/tbb/reduce.hpp"
+#include "RAJA/policy/tbb/scan.hpp"
+
+#endif
 
 #endif  // closing endif for header file include guard

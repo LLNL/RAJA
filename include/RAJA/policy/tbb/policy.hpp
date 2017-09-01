@@ -3,15 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_sequential_HPP
-#define RAJA_sequential_HPP
+#ifndef policy_tbb_HPP
+#define policy_tbb_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,10 +53,63 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/sequential/atomic.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
+#include "RAJA/policy/PolicyBase.hpp"
 
-#endif  // closing endif for header file include guard
+#include <cstddef>
+
+namespace RAJA
+{
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+///
+/// Segment execution policies
+///
+
+struct tbb_for_dynamic
+    : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                            Pattern::forall,
+                                            Launch::undefined,
+                                            Platform::host> {
+  std::size_t grain_size;
+  tbb_for_dynamic(std::size_t grain_size_ = 1) : grain_size(grain_size_) {}
+};
+
+
+template <std::size_t GrainSize = 1>
+struct tbb_for_static : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                              Pattern::forall,
+                                                              Launch::undefined,
+                                                              Platform::host> {
+};
+
+using tbb_for_exec = tbb_for_static<>;
+
+///
+/// Index set segment iteration policies
+///
+using tbb_segit = tbb_for_exec;
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
+                                                          Pattern::reduce,
+                                                          Launch::undefined,
+                                                          Platform::host> {
+};
+
+}  // closing brace for RAJA namespace
+
+#endif

@@ -83,6 +83,11 @@ else ()
     set(RAJA_USE_CLOCK   OFF CACHE BOOL "Use clock from time.h for timer"    )
 endif ()
 
+include(CheckFunctionExists)
+check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
+check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
+check_function_exists(_mm_malloc RAJA_HAVE_MM_MALLOC)
+
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)

@@ -24,9 +24,9 @@ Any complete type is a value
 
 # Concepts
 
-### New namespaces:
-* RAJA::concepts -- describes "Concepts" that RAJA provides
-* RAJA::type_traits -- describes type traits of Concepts that can be used in SFINAE/static_assert contexts
+### namespaces:
+* `RAJA::concepts` -- describes "Concepts" that RAJA provides
+* `RAJA::type_traits` -- describes type traits of Concepts that can be used in SFINAE/static_assert contexts
 
 ## Concepts:
 * Iterators: `Iterator`, `ForwardIterator`, `BidirectionalIterator`, `RandomAccessIterator`
@@ -121,3 +121,85 @@ Other usages can be found under:
 * `include/RAJA/util/concepts.hpp`
 * `include/RAJA/policy/PolicyBase.hpp`
 * `include/RAJA/util/Operators.hpp`
+
+# Deprecating older features in RAJA
+
+As the RAJA codebase evolves, there may come a point where features onced used have been replaced with more viable options. To aid users in transitioning from an older API call to a prefered API, we introduce deprecation macros which should *cautiously* and *effectively* be used by RAJA developers.
+
+The following macros are defined by RAJA that assist with defining deprecation attributes for Functions, Types (structs/classes), `typedefs`, and type aliases:
+
+* `RAJA_DEPRECATE("Message")`
+* `RAJA_DEPRECATE_ALIAS("Message")` -- this will **only** work with a C++14 - enabled compiler
+
+The following preprocessor tokens are defined by RAJA with the following constraints:
+
+* `RAJA_HAS_CXX14` -- defined IFF RAJA detects a C++14 compiler
+* `RAJA_HAS_ATTRIBUTE_DEPRECATED` -- defined IFF RAJA detects compiler support of `[[deprecated("Message")]]`
+
+RAJA will automatically expand `RAJA_DEPRECATE()` and `RAJA_DEPRECATE_ALIAS()` if they are supported with the toolchain used for compilation.
+
+Below is a source code example where deprecation annotations are added to several constructs:
+
+```cpp
+
+// Deprecating a class member variable
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename T>
+struct Pair {
+  T first;
+  RAJA_DEPRECATE("Second has been removed") T second;
+};
+
+// Deprecating a type
+////////////////////////////////////////////////////////////////////////////////
+
+struct RAJA_DEPRECATE("The Cilk execution policy has been removed from RAJA")
+cilk_exec {
+};
+
+
+// Deprecating a function
+////////////////////////////////////////////////////////////////////////////////
+
+template <typename Exec, typename Index1, typename Index2, typename Body>
+RAJA_DEPRECATE("This version of forall is deprecated. switch to using RAJA::make_range(begin, end) instead of listing the index parameters)")
+int forall(Exec && p, Index1, Index2, Body &&) {
+  return 0;
+}
+
+
+// Deprecating a typedef
+////////////////////////////////////////////////////////////////////////////////
+
+RAJA_DEPRECATE("RAJA::Index_type will be removed in 2019 (JK)")
+typedef unsigned long Index_type;
+
+// Deprecating a type alias (requires C++14)
+////////////////////////////////////////////////////////////////////////////////
+
+using Real_ptr RAJA_DEPRECATE_ALIAS("Real_ptr will be removed in 2018 (JK)") = double*;
+
+int bar() {
+  return 0;
+}
+
+// Example code with information showing where warnings will be emitted by
+// a compiler given the above deprecation attributes constructed above
+////////////////////////////////////////////////////////////////////////////////
+
+using exec_pol = cilk_exec; // warning is emitted here
+
+int main() {
+  Index_type ind = 4; // warning emitted here (Index_type)
+  Real_ptr ptr = nullptr; // warning emitted here (Real_ptr) (C++14 only)
+  forall(exec_pol{}, 0, 100, [] { }); // warnings emitted here (exec_pol, forall specialization)
+  Pair<int> pair;
+  pair.first = 4;
+  pair.second = 4; // warning here (second member)
+  return pair.first + ind + (ptr - ptr);
+}
+
+```
+
+It is important to note that deprecation macros should only be used for user-facing API calls. An end user should never receive a compiler warning stemming from an internal API call. All requests for feature deprecation must be approved in a pull request.

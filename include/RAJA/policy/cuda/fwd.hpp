@@ -62,6 +62,7 @@
 
 #if defined(RAJA_ENABLE_CUDA)
 
+#include "RAJA/policy/sequential/policy.hpp"
 #include "RAJA/policy/cuda/policy.hpp"
 
 namespace RAJA

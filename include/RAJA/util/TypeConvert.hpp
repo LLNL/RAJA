@@ -1,3 +1,20 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for reinterpreting type conversions.
+ *
+ *          These conversions are needed to pass N-bit floating point values
+ *          as integral types for certain API's that have limited type support.
+ *          These conversions are used heavily by the atomic operators.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_util_TypeConvert_HPP
+#define RAJA_util_TypeConvert_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -9,7 +26,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
+// For additional details, please also read RAJA/LICENSE.
 //
 // Redistribution and use in source and binary forms, with or without
 // modification, are permitted provided that the following conditions are met:
@@ -40,38 +57,39 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-///
-/// Source file containing tests for RAJAVec
-///
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include "RAJA/RAJA.hpp"
-#include "RAJA_gtest.hpp"
 
-TEST(MemUtils, get_reduction_id)
+namespace RAJA
 {
-  int id1 = RAJA::getCPUReductionId();
-  int id2 = RAJA::getCPUReductionId();
-  ASSERT_NE(id1, id2);
-  ASSERT_NE(RAJA::getCPUReductionMemBlock(id1),
-            RAJA::getCPUReductionMemBlock(id2));
-  RAJA::releaseCPUReductionId(id1);
-  RAJA::releaseCPUReductionId(id2);
+namespace util
+{
+
+
+/*!
+ * Reinterpret any datatype as another datatype of the same size
+ */
+template<typename A, typename B>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+B reinterp_A_as_B(A const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
 }
 
-TEST(MemUtils, max_reducers_exceeded)
-{
-  const int reducerCount = RAJA_MAX_REDUCE_VARS;
-  for (int i = 0; i < reducerCount; ++i)
-    RAJA::getCPUReductionId();
-  ASSERT_DEATH_IF_SUPPORTED(RAJA::getCPUReductionId(), "Exceeded allowable RAJA CPU reduction count at .*");
-  for (int i = 0; i < reducerCount; ++i)
-    RAJA::releaseCPUReductionId(i);
+template<typename A, typename B>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+B reinterp_A_as_B(A volatile const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
 }
 
-#include "RAJA/internal/ThreadUtils_CPU.hpp"
 
-TEST(ThreadUtils, basic)
-{
-  ASSERT_LE(1, RAJA::getMaxReduceThreadsCPU());
-  ASSERT_LE(1, RAJA::getMaxOMPThreadsCPU());
-}
+}  // closing brace for util namespace
+}  // closing brace for RAJA namespace
+
+#endif  // closing endif for header file include guard

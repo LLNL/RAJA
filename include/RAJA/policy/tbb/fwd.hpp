@@ -1,18 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA headers for sequential execution.
- *
- *          These methods work on all platforms.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_sequential_HPP
-#define RAJA_sequential_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -55,10 +40,64 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/sequential/atomic.hpp"
-#include "RAJA/policy/sequential/forall.hpp"
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/sequential/reduce.hpp"
-#include "RAJA/policy/sequential/scan.hpp"
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA segment template methods for
+ *          execution via CUDA kernel launch.
+ *
+ *          These methods should work on any platform that supports
+ *          CUDA devices.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forward_tbb_HXX
+#define RAJA_forward_tbb_HXX
+
+#include <type_traits>
+
+#include "RAJA/config.hpp"
+
+#include "RAJA/policy/tbb/policy.hpp"
+
+namespace RAJA
+{
+
+namespace impl
+{
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const tbb_for_dynamic& p,
+                        Iterable&& iter,
+                        Func&& loop_body);
+
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_dynamic& p,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body);
+
+template <typename Iterable, typename Func, size_t ChunkSize>
+RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
+                        Iterable&& iter,
+                        Func&& loop_body);
+
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const tbb_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body);
+
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

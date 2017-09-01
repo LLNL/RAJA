@@ -79,6 +79,10 @@
 //
 #include "RAJA/policy/simd.hpp"
 
+#if defined(RAJA_ENABLE_TBB)
+#include "RAJA/policy/tbb.hpp"
+#endif
+
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
 #endif
@@ -111,6 +115,13 @@
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
+//
+// Atomic operations support
+//
+#include "RAJA/pattern/atomic.hpp"
+
+
 //
 // Generic iteration templates for perfectly nested loops
 //
@@ -118,6 +129,9 @@
 
 
 #include "RAJA/pattern/reduce.hpp"
+
+
+
 
 //
 //////////////////////////////////////////////////////////////////////

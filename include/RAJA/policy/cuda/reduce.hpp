@@ -213,7 +213,7 @@ public:
       }
 
       if (threadId < 1) {
-        _atomicMin<T>(&m_tally_device->tally, sd[threadId]);
+        RAJA::atomic::atomicMin<T>(RAJA::atomic::cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
       }
     }
 #else
@@ -417,7 +417,7 @@ public:
       }
 
       if (threadId < 1) {
-        _atomicMax<T>(&m_tally_device->tally, sd[threadId]);
+        RAJA::atomic::atomicMax<T>(RAJA::atomic::cuda_atomic{}, &m_tally_device->tally, sd[threadId]);
       }
     }
 #else
@@ -637,7 +637,7 @@ public:
         __threadfence();
         // increment counter, (wraps back to zero at second parameter)
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            ::atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
                       (blocks - 1));
         lastBlock = (oldBlockCount == (blocks - 1));
       }
@@ -887,7 +887,7 @@ public:
 
       // one thread adds to tally
       if (threadId == 0) {
-        _atomicAdd<T>(&(m_tally_device->tally), temp);
+        RAJA::atomic::atomicAdd<T>(RAJA::atomic::cuda_atomic{}, &(m_tally_device->tally), temp);
       }
     }
 #else
@@ -1124,7 +1124,7 @@ public:
 
         __threadfence();
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            ::atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
                       (blocks - 1));
         lastBlock = (oldBlockCount == (blocks - 1));
       }
@@ -1437,7 +1437,7 @@ public:
 
         __threadfence();
         unsigned int oldBlockCount =
-            atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
+            ::atomicInc((unsigned int *)&m_tally_device->retiredBlocks,
                       (blocks - 1));
         lastBlock = (oldBlockCount == (blocks - 1));
       }

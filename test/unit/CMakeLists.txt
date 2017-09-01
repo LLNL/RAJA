@@ -42,6 +42,10 @@
 ###############################################################################
 
 raja_add_test(
+  NAME test-atomic
+  SOURCES test-atomic.cpp)
+
+raja_add_test(
   NAME test-layout
   SOURCES test-layout.cpp)
 
@@ -73,11 +77,9 @@ raja_add_test(
   NAME nested
   SOURCES nested.cpp)
 
-if(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-multipolicy
-    SOURCES test-multipolicy.cpp)
-endif(RAJA_ENABLE_OPENMP)
+raja_add_test(
+  NAME test-multipolicy
+  SOURCES test-multipolicy.cpp)
 
 add_subdirectory(cpu)
 
@@ -88,4 +90,3 @@ endif(RAJA_ENABLE_CUDA)
 if(RAJA_ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
 endif(RAJA_ENABLE_TARGET_OPENMP)
-
