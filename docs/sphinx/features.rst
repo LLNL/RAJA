@@ -3,10 +3,10 @@
 =====================
 Features and Examples
 =====================
-This page provide basic examples of RAJA kernels and highlight basic features.
+This page provides an introduction to RAJA features and basic examples. 
 
 ------------
-Add Vectors
+Vector Addition
 ------------
 
 ------------
@@ -18,11 +18,11 @@ Jacobi Method
 ------------
 
 ------------
-Time Domain Finite Difference Solver
+Wave Equation
 ------------
 
 ------------
-Building a Custom IndexSet
+Custom Indexset
 ------------
 
 
