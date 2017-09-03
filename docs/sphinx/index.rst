@@ -46,13 +46,13 @@ interested in improving RAJA and exploring new ways to use it.
 
    getting_started
    tutorial
-   features
 
 .. toctree::
    :maxdepth: 2
    :caption: Reference
 
-   config_build
+   advanced_config
+   features
    plugins
 
 .. toctree::
@@ -61,5 +61,4 @@ interested in improving RAJA and exploring new ways to use it.
 
    contributing
    raja_license
-
    future
