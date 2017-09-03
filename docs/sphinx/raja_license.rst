@@ -27,7 +27,6 @@ LLNL-CODE-689114
 
 OCEC-16-063
 
-
 Redistribution and use in source and binary forms, with or without 
 modification, are permitted provided that the following conditions are met:
 

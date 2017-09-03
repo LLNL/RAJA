@@ -9,9 +9,9 @@
 .. ##
 
 
-***********************
-What is RAJA?
-***********************
+****
+RAJA
+****
 
 RAJA is a collection of C++ software abstractions, being developed at Lawrence
 Livermore National Laboratory (LLNL), that enable architecture portability for
@@ -27,16 +27,9 @@ to adapt RAJA concepts and specialize them for different code implementation
 patterns and C++ usage, since data structures and algorithms vary widely 
 across applications.
 
-RAJA shares goals and concepts found in
-other C++ portability abstraction approaches, such as
-`Kokkos <https://github.com/kokkos/kokkos>`_
-and `Thrust <https://developer.nvidia.com/thrust>`_. 
-However, it includes concepts that are absent in other models and which are 
-fundamental to LLNL codes. 
-
 If you are new to RAJA, check out our guide to :doc:`getting_started`.
 
-See the :doc:`features.rst` for examples.
+See the :doc:`features` for detailed documentation for each feature.
 
 If you are interested in keeping up with RAJA development and communicating
 with developers and users, please join our `Google Group
@@ -59,7 +52,6 @@ interested in improving RAJA and exploring new ways to use it.
    :maxdepth: 2
    :caption: Reference
 
-   advanced_examples
    config_build
    plugins
 
@@ -68,5 +60,6 @@ interested in improving RAJA and exploring new ways to use it.
    :caption: Contributing
 
    contributing
-   future
    raja_license
+
+   future
