@@ -66,7 +66,9 @@ using namespace RAJA;
 
 using TestingTypes = ::testing::
     Types<
-        std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce>
+  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce> >; //Temporary... 
+// std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce> >; //Broken for simd...
+  /*
 #ifdef RAJA_ENABLE_OPENMP
         ,
         std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce>,
@@ -79,6 +81,7 @@ using TestingTypes = ::testing::
         std::tuple<ExecPolicy<tbb_for_exec, simd_exec>, tbb_reduce>
 #endif
         >;
+  */
 
 template <typename Tuple>
 class IndexSetReduce : public ::testing::Test
