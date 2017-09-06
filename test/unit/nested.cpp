@@ -54,7 +54,7 @@ constexpr Index_type get_val(T v)
 {
   return *v;
 }
-TYPED_TEST_P(Nested, Basic)
+CUDA_TYPED_TEST_P(Nested, Basic)
 {
   using camp::at_v;
   using Pol = at_v<TypeParam, 0>;
@@ -65,9 +65,10 @@ TYPED_TEST_P(Nested, Basic)
   RAJA::Real_type total{0.0};
   auto ranges = camp::make_tuple(RAJA::RangeSegment(0, x_len),
                                  RAJA::RangeSegment(0, y_len));
+  auto v = this->view;
   using namespace RAJA::nested;
-  RAJA::nested::forall(Pol{}, ranges, [=](Idx0 i, Idx1 j) {
-    this->view(get_val(i), j) = get_val(i) * x_len + j;
+  RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+    v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
   });
   for (Index_type i = 0; i < x_len; ++i) {
@@ -102,16 +103,16 @@ using OMPTypes = ::testing::Types<list<
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
 #endif
 #if defined(RAJA_ENABLE_TBB)
-using TBBTypes = ::testing::Types<list<
-    Policy<For<1, RAJA::tbb_for_exec>, TypedFor<0, s, TypedIndex>>,
-    list<TypedIndex, Index_type>,
-    RAJA::tbb_reduce>>;
+using TBBTypes = ::testing::Types<
+    list<Policy<For<1, RAJA::tbb_for_exec>, TypedFor<0, s, TypedIndex>>,
+         list<TypedIndex, Index_type>,
+         RAJA::tbb_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
-    list<Policy<For<1, s>, TypedFor<0, RAJA::cuda_exec, TypedIndex>>,
+    list<Policy<For<1, s>, TypedFor<0, RAJA::cuda_exec<128>, TypedIndex>>,
          list<TypedIndex, Index_type>,
-         RAJA::cuda_reduce>>;
+         RAJA::cuda_reduce<128>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 #endif

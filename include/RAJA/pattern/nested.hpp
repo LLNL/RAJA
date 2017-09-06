@@ -174,8 +174,11 @@ struct Executor {
     ForWrapper(BaseWrapper const &w) : bw{w} {}
     BaseWrapper bw;
     using data_type = typename BaseWrapper::data_type;
-    data_type privatize() { return bw.data; }
-    ForWrapper re_wrap(data_type &d) { return ForWrapper{BaseWrapper{d}}; }
+    data_type privatize() const { return bw.data; }
+    ForWrapper re_wrap(data_type &d) const
+    {
+      return ForWrapper{BaseWrapper{d}};
+    }
     template <typename InIndexType>
     void operator()(InIndexType i)
     {
@@ -208,8 +211,6 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
     ForWrapper(BaseWrapper const &w) : data(w.data) {}
     using data_type = typename BaseWrapper::data_type;
     data_type data;
-    data_type privatize() { return bw.data; }
-    ForWrapper re_wrap(data_type &d) { return ForWrapper{BaseWrapper{d}}; }
     template <typename InIndexType>
     RAJA_DEVICE void operator()(InIndexType i)
     {
@@ -268,8 +269,8 @@ struct Wrapper {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  Data privatize() { return data; }
-  Wrapper re_wrap(Data &d) { return Wrapper{d}; }
+  Data privatize() const { return data; }
+  Wrapper re_wrap(Data &d) const { return Wrapper{d}; }
   void operator()() const
   {
     auto const &pol = camp::get<idx>(data.pt);
@@ -285,8 +286,8 @@ struct Wrapper<n_policies, n_policies, Data, Own> {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  Data privatize() { return data; }
-  Wrapper re_wrap(Data &d) { return Wrapper{d}; }
+  Data privatize() const { return data; }
+  Wrapper re_wrap(Data &d) const { return Wrapper{d}; }
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
 

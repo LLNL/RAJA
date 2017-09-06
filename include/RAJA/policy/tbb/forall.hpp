@@ -72,6 +72,8 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+#include "RAJA/pattern/forall.hpp"
+
 #include <tbb/tbb.h>
 
 
@@ -112,8 +114,10 @@ RAJA_INLINE void forall(const tbb_for_dynamic& p,
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
                     [=](const brange& r) {
+                      auto privatizer = impl::thread_privatize(loop_body);
+                      auto body = privatizer.get_priv();
                       for (const auto& i : r)
-                        loop_body(i);
+                        body(i);
                     });
 }
 
@@ -138,13 +142,13 @@ forall_Icount(const tbb_for_dynamic& p,
 /// TBB parallel for static policy implementation
 ///
 
-/** 
+/**
  * @brief TBB static for implementation
- * 
+ *
  * @param tbb_for_static tbb tag
  * @param iter any iterable
  * @param loop_body loop body
- * 
+ *
  * @return None
  *
  * This forall implements a TBB parallel_for loop over the specified iterable
@@ -161,9 +165,11 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
-                    [&] (const brange& r) {
+                    [=](const brange& r) {
+                      auto privatizer = impl::thread_privatize(loop_body);
+                      auto body = privatizer.get_priv();
                       for (const auto& i : r)
-                        loop_body(i);
+                        body(i);
                     },
                     tbb_static_partitioner{});
 }

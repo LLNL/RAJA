@@ -46,7 +46,10 @@ namespace internal
     tuple_storage() = default;
     CAMP_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
 
-    constexpr const Type& get_inner() const noexcept { return val; }
+    CAMP_HOST_DEVICE constexpr const Type& get_inner() const noexcept
+    {
+      return val;
+    }
 
     CAMP_CONSTEXPR14
     CAMP_HOST_DEVICE
@@ -92,9 +95,9 @@ template <typename T, camp::idx_t I>
 using tpl_get_store = internal::tuple_storage<I, tpl_get_ret<T, I>>;
 
 template <typename... Elements>
-struct tuple
-    : public internal::tuple_helper<typename camp::make_idx_seq<sizeof...(Elements)>::type,
-                                    camp::list<Elements...>> {
+struct tuple : public internal::tuple_helper<
+                   typename camp::make_idx_seq<sizeof...(Elements)>::type,
+                   camp::list<Elements...>> {
   using TList = camp::list<Elements...>;
   using type = tuple;
 
@@ -104,7 +107,7 @@ private:
                                       camp::list<Elements...>>;
 
 public:
-  // Constructors
+// Constructors
 #if !defined(CAMP_COMPILER_MSVC)
   tuple() = default;
 #endif
