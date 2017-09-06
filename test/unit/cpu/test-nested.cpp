@@ -262,6 +262,32 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
+#ifdef RAJA_ENABLE_TBB
+
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
+struct PolLTimesF_TBB : PolLTimesCommon {
+  // Loops: Moments, Directions, Groups, Zones
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_exec>,
+                   OMP_Parallel<Permute<PERM_LKIJ>>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
+};
+
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
+struct PolLTimesG_TBB : PolLTimesCommon {
+  // Loops: Moments, Directions, Groups, Zones
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_dynamic>,
+                   OMP_Parallel<Permute<PERM_LKIJ>>>;
+  using PSI_PERM = PERM_KJI;
+  using PHI_PERM = PERM_KJI;
+  using ELL_PERM = PERM_IJ;
+};
+
+#endif
+
 using LTimesPolicies = ::testing::Types<PolLTimesA,
                                         PolLTimesB,
                                         PolLTimesC

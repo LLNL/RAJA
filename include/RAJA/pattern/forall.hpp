@@ -159,7 +159,7 @@ struct Privatizer {
 template <typename T>
 struct Privatizer<
     T,
-    typename std::enable_if<is_privatizable_wrapper<T>::value>::type> {
+    typename concepts::requires_<PrivatizableWrapper, T>::type> {
   using data_type = decltype(concepts::val<T>().privatize());
   using value_type = concepts::types::decay_t<T>;
   using reference_type = value_type&;
