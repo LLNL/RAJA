@@ -201,7 +201,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
-#define RAJA_NO_SIMD
+#define RAJA_NO_SIMD _Pragma("novector")
 #else
 #define RAJA_SIMD  _Pragma("ivdep") \
                    _Pragma("vector aligned") \
@@ -217,7 +217,6 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
-#define RAJA_GNU_NoSIMD  __attribute__((noinline, optimize("no-tree-vectorize")))
 
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
@@ -227,11 +226,13 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
-#define RAJA_NO_SIMD
+#define RAJA_NO_SIMD 
+// __attribute__((noinline, optimize("no-tree-vectorize"))) 
 #elif defined(__GNUC__) && defined(__GNUC_MINOR__) && \
       ( ( (__GNUC__ == 4) && (__GNUC_MINOR__ == 9) ) || (__GNUC__ >= 5) )
 #define RAJA_SIMD    _Pragma("GCC ivdep")
-#define RAJA_NO_SIMD
+#define RAJA_NO_SIMD 
+// __attribute__((noinline, optimize("no-tree-vectorize")))
 #else
 #define RAJA_SIMD
 #define RAJA_NO_SIMD
@@ -250,7 +251,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 //#define RAJA_SIMD  _Pragma("simd_level(10)")
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
-#define RAJA_NO_SIMD
+#define RAJA_NO_SIMD _Pragma("nosimd")
 #else
 // This pragma is unreliable.  It may not work on Blue Gene/Q or POWER7.
 #define RAJA_SIMD  _Pragma("ibm independent_loop")
@@ -273,7 +274,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
 #define RAJA_SIMD  _Pragma("omp simd")
-#define RAJA_NO_SIMD
+#define RAJA_NO_SIMD _Pragma("clang loop vectorize(disable)")
 #else
 #define RAJA_SIMD    _Pragma("clang loop vectorize(assume_safety)")
 #define RAJA_NO_SIMD  _Pragma("clang loop vectorize(disable)")
