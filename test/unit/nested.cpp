@@ -61,17 +61,22 @@ TYPED_TEST_P(Nested, Basic)
   using IndexTypes = at_v<TypeParam, 1>;
   using Idx0 = at_v<IndexTypes, 0>;
   using Idx1 = at_v<IndexTypes, 1>;
+  RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
+  RAJA::Real_type total{0.0};
   auto ranges = camp::make_tuple(RAJA::RangeSegment(0, x_len),
                                  RAJA::RangeSegment(0, y_len));
   using namespace RAJA::nested;
   RAJA::nested::forall(Pol{}, ranges, [=](Idx0 i, Idx1 j) {
     this->view(get_val(i), j) = get_val(i) * x_len + j;
+    tsum += get_val(i) * 1.1 + j;
   });
   for (Index_type i = 0; i < x_len; ++i) {
     for (Index_type j = 0; j < y_len; ++j) {
       ASSERT_EQ(this->view(i, j), i * x_len + j);
+      total += i * 1.1 + j;
     }
   }
+  ASSERT_FLOAT_EQ(total, tsum.get());
 }
 
 REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
@@ -79,22 +84,34 @@ REGISTER_TYPED_TEST_CASE_P(Nested, Basic);
 using namespace RAJA::nested;
 using camp::list;
 using s = RAJA::seq_exec;
-using TestTypes = ::testing::Types<
-    list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
-         list<TypedIndex, Index_type>>,
-    list<Policy<Collapse<s, For<0>, For<1>>>, list<Index_type, Index_type>>>;
+using TestTypes =
+    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
+                          list<TypedIndex, Index_type>,
+                          RAJA::seq_reduce>,
+                     list<Policy<Collapse<s, For<0>, For<1>>>,
+                          list<Index_type, Index_type>,
+                          RAJA::seq_reduce>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Nested, TestTypes);
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OMPTypes =
-    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
-                          list<TypedIndex, Index_type>>>;
+using OMPTypes = ::testing::Types<list<
+    Policy<For<1, RAJA::omp_parallel_for_exec>, TypedFor<0, s, TypedIndex>>,
+    list<TypedIndex, Index_type>,
+    RAJA::omp_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
 #endif
+#if defined(RAJA_ENABLE_TBB)
+using TBBTypes = ::testing::Types<list<
+    Policy<For<1, RAJA::tbb_for_exec>, TypedFor<0, s, TypedIndex>>,
+    list<TypedIndex, Index_type>,
+    RAJA::tbb_reduce>>;
+INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
+#endif
 #if defined(RAJA_ENABLE_CUDA)
-using CUDATypes =
-    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
-                          list<TypedIndex, Index_type>>>;
+using CUDATypes = ::testing::Types<
+    list<Policy<For<1, s>, TypedFor<0, RAJA::cuda_exec, TypedIndex>>,
+         list<TypedIndex, Index_type>,
+         RAJA::cuda_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 #endif

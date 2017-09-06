@@ -8,6 +8,7 @@
 
 // #include "RAJA/external/metal.hpp"
 #include "camp/camp.hpp"
+#include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
 
 #include <iostream>
@@ -172,6 +173,9 @@ struct Executor {
   struct ForWrapper {
     ForWrapper(BaseWrapper const &w) : bw{w} {}
     BaseWrapper bw;
+    using data_type = typename BaseWrapper::data_type;
+    data_type privatize() { return bw.data; }
+    ForWrapper re_wrap(data_type &d) { return ForWrapper{BaseWrapper{d}}; }
     template <typename InIndexType>
     void operator()(InIndexType i)
     {
@@ -202,7 +206,10 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
   struct ForWrapper {
     // Explicitly unwrap the data from the wrapper
     ForWrapper(BaseWrapper const &w) : data(w.data) {}
-    typename BaseWrapper::data_type data;
+    using data_type = typename BaseWrapper::data_type;
+    data_type data;
+    data_type privatize() { return bw.data; }
+    ForWrapper re_wrap(data_type &d) { return ForWrapper{BaseWrapper{d}}; }
     template <typename InIndexType>
     RAJA_DEVICE void operator()(InIndexType i)
     {
@@ -255,26 +262,31 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
   }
 };
 
-template <int idx, int n_policies, typename Data>
+template <int idx, int n_policies, typename Data, bool Own = false>
 struct Wrapper {
   using Next = Wrapper<idx + 1, n_policies, Data>;
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
+  Data privatize() { return data; }
+  Wrapper re_wrap(Data &d) { return Wrapper{d}; }
   void operator()() const
   {
     auto const &pol = camp::get<idx>(data.pt);
     Executor<internal::remove_all_t<decltype(pol)>> e{};
-    e(pol, Next{data});
+    Next next_wrapper{data};
+    e(pol, next_wrapper);
   }
 };
 
 // Innermost, execute body
-template <int n_policies, typename Data>
-struct Wrapper<n_policies, n_policies, Data> {
+template <int n_policies, typename Data, bool Own>
+struct Wrapper<n_policies, n_policies, Data, Own> {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
+  Data privatize() { return data; }
+  Wrapper re_wrap(Data &d) { return Wrapper{d}; }
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
 

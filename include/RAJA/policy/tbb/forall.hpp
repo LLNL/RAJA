@@ -161,7 +161,7 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
 {
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
-                    [=](const brange& r) {
+                    [&] (const brange& r) {
                       for (const auto& i : r)
                         loop_body(i);
                     },

@@ -125,9 +125,61 @@ namespace RAJA
 //
 //////////////////////////////////////////////////////////////////////
 //
+namespace internal
+{
+struct WrapperBase;
+}
 
 namespace impl
 {
+
+template <typename T>
+struct Privatizable : DefineConcept(concepts::val<T>().privatize()) {
+};
+DefineTypeTraitFromConcept(is_privatizable, Privatizable);
+
+template <typename T>
+struct PrivatizableWrapper
+    : DefineConcept(
+          concepts::val<T>().privatize(),
+          concepts::val<T>().re_wrap(
+              concepts::val<decltype(concepts::val<T>().privatize())>())) {
+};
+DefineTypeTraitFromConcept(is_privatizable_wrapper, PrivatizableWrapper);
+
+template <typename T, class Enable = void>
+struct Privatizer {
+  using value_type = concepts::types::decay_t<T>;
+  using reference_type = value_type&;
+  value_type priv;
+  Privatizer(T&& o) : priv{o} {}
+  reference_type get_priv() { return priv; }
+};
+
+template <typename T>
+struct Privatizer<
+    T,
+    typename std::enable_if<is_privatizable_wrapper<T>::value>::type> {
+  using data_type = decltype(concepts::val<T>().privatize());
+  using value_type = concepts::types::decay_t<T>;
+  using reference_type = value_type&;
+  data_type data;
+  value_type priv;
+  Privatizer(T&& o) : data{o.privatize()}, priv{o.re_wrap(data)} {}
+  reference_type get_priv() { return priv; }
+};
+
+template <typename T>
+auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
+{
+  return item;
+}
+
+template <typename T>
+auto thread_privatize(T&& item) -> Privatizer<T>
+{
+  return Privatizer<T>{item};
+}
 
 struct CallForall {
   template <typename T, typename ExecPol, typename Body>
@@ -203,11 +255,10 @@ namespace wrap
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
@@ -215,7 +266,7 @@ RAJA_INLINE concepts::
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  typename std::remove_reference<LoopBody>::type body = loop_body;
+  auto body = impl::trigger_updates_before(loop_body);
   impl::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                body);
@@ -248,7 +299,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  typename std::remove_reference<LoopBody>::type body = loop_body;
+  auto body = impl::trigger_updates_before(loop_body);
   impl::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       std::forward<IndexType>(icount),
@@ -278,7 +329,7 @@ RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  typename std::remove_reference<LoopBody>::type body = loop_body;
+  auto body = impl::trigger_updates_before(loop_body);
   impl::forall(std::forward<ExecutionPolicy>(p), std::forward<IdxSet>(c), body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -305,7 +356,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  typename std::remove_reference<LoopBody>::type body = loop_body;
+  auto body = impl::trigger_updates_before(loop_body);
   impl::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
                       body);
@@ -347,9 +398,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_indexset_policy<ExecutionPolicy>>
-    forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_indexset_policy<ExecutionPolicy>>
+forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
@@ -394,11 +445,10 @@ forall_Icount(ExecutionPolicy&& p,
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    concepts::negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
+    type_traits::is_range<Container>>
+forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
@@ -426,15 +476,15 @@ template <typename ExecutionPolicy,
           typename Iterator,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              type_traits::is_iterator<Iterator>,
-              concepts::negate<type_traits::is_integral<Iterator>>>
-    forall_Icount(ExecutionPolicy&& p,
-                  Iterator begin,
-                  Iterator end,
-                  const IndexType icount,
-                  LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_integral<IndexType>,
+    type_traits::is_iterator<Iterator>,
+    concepts::negate<type_traits::is_integral<Iterator>>>
+forall_Icount(ExecutionPolicy&& p,
+              Iterator begin,
+              Iterator end,
+              const IndexType icount,
+              LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_iterator<Iterator>::value,
                 "Iterator pair does not meet requirement of "
@@ -456,13 +506,10 @@ RAJA_INLINE concepts::
  ******************************************************************************
  */
 template <typename ExecutionPolicy, typename Iterator, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_iterator<Iterator>,
-              concepts::negate<type_traits::is_integral<Iterator>>>
-    forall(ExecutionPolicy&& p,
-           Iterator begin,
-           Iterator end,
-           LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_iterator<Iterator>,
+    concepts::negate<type_traits::is_integral<Iterator>>>
+forall(ExecutionPolicy&& p, Iterator begin, Iterator end, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_iterator<Iterator>::value,
                 "Iterator pair does not meet requirement of "
@@ -644,13 +691,13 @@ template <typename ExecutionPolicy,
           typename ArrayIdxType,
           typename IndexType,
           typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              concepts::negate<type_traits::is_iterator<IndexType>>>
-    forall(ExecutionPolicy&& p,
-           const ArrayIdxType* idx,
-           const IndexType len,
-           LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_integral<IndexType>,
+    concepts::negate<type_traits::is_iterator<IndexType>>>
+forall(ExecutionPolicy&& p,
+       const ArrayIdxType* idx,
+       const IndexType len,
+       LoopBody&& loop_body)
 {
   wrap::forall(std::forward<ExecutionPolicy>(p),
                TypedListSegment<ArrayIdxType>(idx, len, Unowned),
@@ -671,18 +718,18 @@ template <typename ExecutionPolicy,
           typename IndexType,
           typename OffsetType,
           typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<type_traits::is_integral<IndexType>,
-              concepts::negate<type_traits::is_iterator<IndexType>>,
-              type_traits::is_integral<OffsetType>,
-              concepts::negate<type_traits::is_iterator<OffsetType>>,
-              type_traits::is_integral<ArrayIdxType>,
-              concepts::negate<type_traits::is_iterator<ArrayIdxType>>>
-    forall_Icount(ExecutionPolicy&& p,
-                  const ArrayIdxType* idx,
-                  const IndexType len,
-                  const OffsetType icount,
-                  LoopBody&& loop_body)
+RAJA_INLINE concepts::enable_if<
+    type_traits::is_integral<IndexType>,
+    concepts::negate<type_traits::is_iterator<IndexType>>,
+    type_traits::is_integral<OffsetType>,
+    concepts::negate<type_traits::is_iterator<OffsetType>>,
+    type_traits::is_integral<ArrayIdxType>,
+    concepts::negate<type_traits::is_iterator<ArrayIdxType>>>
+forall_Icount(ExecutionPolicy&& p,
+              const ArrayIdxType* idx,
+              const IndexType len,
+              const OffsetType icount,
+              LoopBody&& loop_body)
 {
   // turn into an iterator
   forall_Icount(std::forward<ExecutionPolicy>(p),

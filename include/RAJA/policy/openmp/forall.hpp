@@ -70,6 +70,8 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
+#include "RAJA/pattern/forall.hpp"
+
 #include <iostream>
 #include <thread>
 
@@ -91,8 +93,8 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel
   {
-    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
-    forall<InnerPolicy>(std::forward<Iterable>(iter), std::forward<Func>(body));
+    auto body = impl::thread_privatize(loop_body);
+    forall<InnerPolicy>(std::forward<Iterable>(iter), body.get_priv());
   }
 }
 
@@ -108,10 +110,10 @@ forall_Icount(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel
   {
-    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
+    auto body = impl::thread_privatize(loop_body);
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                                icount,
-                               std::forward<Func>(body));
+                               body.get_priv());
   }
 }
 
@@ -243,7 +245,7 @@ forall_Icount(const omp_for_static<ChunkSize>&,
  */
 
 /*
-* TODO: Fix this!!!
+ * TODO: Fix this!!!
  */
 
 /*
