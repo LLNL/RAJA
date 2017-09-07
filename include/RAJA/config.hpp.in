@@ -264,7 +264,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #if defined(RAJA_ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
-#define RAJA_ALIGN_DATA(d) // TODO: Define this...
+#define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
 #endif
 
 #if defined(_OPENMP) && (_OPENMP >= 201307)
