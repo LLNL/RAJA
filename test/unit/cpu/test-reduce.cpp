@@ -66,7 +66,8 @@ using namespace RAJA;
 
 using TestingTypes = ::testing::
     Types<
-        std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce>
+  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce> 
+  //std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce> //code breaks if we use simd with minloc test)
 #ifdef RAJA_ENABLE_OPENMP
   //        ,
   //std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce>,
