@@ -272,7 +272,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 #define RAJA_NO_SIMD _Pragma("clang loop vectorize(disable)")
 #else
 
-#if (__clang_major__ >= 3 && __clang_minor__ > 7)
+#if ( (__clang_major__ >= 4 ) ||  (__clang_major__ >= 3 && __clang_minor__ > 7) )
 #define RAJA_SIMD    _Pragma("clang loop vectorize(assume_safety)")
 #else 
 #define RAJA_SIMD    _Pragma("clang loop vectorize(enable)")
