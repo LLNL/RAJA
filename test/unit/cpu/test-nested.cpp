@@ -118,7 +118,7 @@ using POLICIES =
                ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
                ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
                ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>>;
-#else               
+#else
     std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
                ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
                ExecInfo<TRANSFORMS, simd_exec, simd_exec>>;
@@ -269,7 +269,7 @@ struct PolLTimesF_TBB : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
   using EXEC =
       NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_exec>,
-                   OMP_Parallel<Permute<PERM_LKIJ>>>;
+                   Permute<PERM_LKIJ>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -280,7 +280,7 @@ struct PolLTimesG_TBB : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
   using EXEC =
       NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_dynamic>,
-                   OMP_Parallel<Permute<PERM_LKIJ>>>;
+                   Permute<PERM_LKIJ>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
