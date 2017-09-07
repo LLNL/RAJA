@@ -165,34 +165,52 @@ struct LoopData {
 template <typename Policy>
 struct Executor;
 
+template <camp::idx_t Index, typename BaseWrapper>
+struct ForWrapper {
+  using data_type = typename BaseWrapper::data_type;
+  ForWrapper(BaseWrapper const &w) : bw{w} {}
+  ForWrapper(data_type &d) : bw{d} {}
+  BaseWrapper bw;
+  template <typename InIndexType>
+  void operator()(InIndexType i)
+  {
+    bw.data.template assign_index<Index>(i);
+    bw();
+  }
+};
+
+template <typename T>
+struct NestedPrivatizer {
+  using data_type = typename T::data_type;
+  using value_type = camp::decay<T>;
+  using reference_type = value_type &;
+  data_type data;
+  value_type priv;
+  NestedPrivatizer(const T &o) : data{o.bw.data}, priv{value_type{data}} {}
+  reference_type get_priv() { return priv; }
+};
+
+
+/**
+ * @brief specialization of internal::thread_privatize for nested
+ */
+template <camp::idx_t Index, typename BW>
+auto thread_privatize(const nested::ForWrapper<Index, BW> &item)
+    -> NestedPrivatizer<nested::ForWrapper<Index, BW>>
+{
+  return NestedPrivatizer<nested::ForWrapper<Index, BW>>{item};
+}
+
 template <typename ForType>
 struct Executor {
   static_assert(std::is_base_of<internal::ForBase, ForType>::value,
                 "Only For-based policies should get here");
-  template <typename BaseWrapper>
-  struct ForWrapper {
-    ForWrapper(BaseWrapper const &w) : bw{w} {}
-    BaseWrapper bw;
-    using data_type = typename BaseWrapper::data_type;
-    data_type privatize() const { return bw.data; }
-    ForWrapper re_wrap(data_type &d) const
-    {
-      return ForWrapper{BaseWrapper{d}};
-    }
-    template <typename InIndexType>
-    void operator()(InIndexType i)
-    {
-      bw.data.template assign_index<ForType::index_val>(i);
-      bw();
-    }
-  };
   template <typename WrappedBody>
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
-
     impl::forall(fp.pol,
                  camp::get<ForType::index_val>(wrap.data.st),
-                 ForWrapper<WrappedBody>{wrap});
+                 ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }
 };
 
@@ -269,8 +287,6 @@ struct Wrapper {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  Data privatize() const { return data; }
-  Wrapper re_wrap(Data &d) const { return Wrapper{d}; }
   void operator()() const
   {
     auto const &pol = camp::get<idx>(data.pt);
@@ -286,8 +302,6 @@ struct Wrapper<n_policies, n_policies, Data, Own> {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  Data privatize() const { return data; }
-  Wrapper re_wrap(Data &d) const { return Wrapper{d}; }
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
 

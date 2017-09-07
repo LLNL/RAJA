@@ -93,7 +93,8 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel
   {
-    auto body = impl::thread_privatize(loop_body);
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
     forall<InnerPolicy>(std::forward<Iterable>(iter), body.get_priv());
   }
 }
@@ -110,7 +111,8 @@ forall_Icount(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel
   {
-    auto body = impl::thread_privatize(loop_body);
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
                                icount,
                                body.get_priv());

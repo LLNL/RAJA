@@ -4,6 +4,7 @@
 #include <iterator>
 #include <type_traits>
 
+#include "camp/helpers.hpp"
 #include "camp/number.hpp"
 
 namespace camp
@@ -131,14 +132,6 @@ namespace concepts
   template <typename T>
   using negate = metalib::negate_t<T>;
 
-  /// metafunction to get instance of value type for concepts
-  template <typename T>
-  auto val() noexcept -> decltype(std::declval<T>());
-
-  /// metafunction to get instance of const type for concepts
-  template <typename T>
-  auto cval() noexcept -> decltype(std::declval<T const>());
-
   /// metafunction for use within decltype expression to validate return type is
   /// convertible to given type
   template <typename T, typename U>
@@ -181,24 +174,6 @@ namespace concepts
   template <template <class...> class Op, class... Args>
   struct requires_ : detail::detected<Op, detail::TL<Args...>> {
   };
-
-  namespace types
-  {
-
-    template <typename T>
-    using decay_t =
-        typename std::remove_reference<typename std::remove_cv<T>::type>::type;
-
-    template <typename T>
-    using plain_t = typename std::remove_reference<T>::type;
-
-    template <typename T>
-    using diff_t = decltype(val<plain_t<T>>() - val<plain_t<T>>());
-
-    template <typename T>
-    using iterator_t = decltype(std::begin(val<plain_t<T>>()));
-
-  }  // end namespace types
 
   template <typename T>
   struct LessThanComparable
@@ -289,12 +264,12 @@ namespace concepts
   struct RandomAccessIterator
       : DefineConcept(BidirectionalIterator<T>(),
                       Comparable<T>(),
-                      has_type<T &>(val<T &>() += val<types::diff_t<T>>()),
-                      has_type<T>(val<T>() + val<types::diff_t<T>>()),
-                      has_type<T>(val<types::diff_t<T>>() + val<T>()),
-                      has_type<T &>(val<T &>() -= val<types::diff_t<T>>()),
-                      has_type<T>(val<T>() - val<types::diff_t<T>>()),
-                      val<T>()[val<types::diff_t<T>>()]) {
+                      has_type<T &>(val<T &>() += val<diff_from<T>>()),
+                      has_type<T>(val<T>() + val<diff_from<T>>()),
+                      has_type<T>(val<diff_from<T>>() + val<T>()),
+                      has_type<T &>(val<T &>() -= val<diff_from<T>>()),
+                      has_type<T>(val<T>() - val<diff_from<T>>()),
+                      val<T>()[val<diff_from<T>>()]) {
   };
 
   template <typename T>
@@ -303,24 +278,24 @@ namespace concepts
 
   template <typename T>
   struct Range
-      : DefineConcept(HasBeginEnd<T>(), Iterator<types::iterator_t<T>>()) {
+      : DefineConcept(HasBeginEnd<T>(), Iterator<iterator_from<T>>()) {
   };
 
   template <typename T>
   struct ForwardRange : DefineConcept(HasBeginEnd<T>(),
-                                      ForwardIterator<types::iterator_t<T>>()) {
+                                      ForwardIterator<iterator_from<T>>()) {
   };
 
   template <typename T>
   struct BidirectionalRange
       : DefineConcept(HasBeginEnd<T>(),
-                      BidirectionalIterator<types::iterator_t<T>>()) {
+                      BidirectionalIterator<iterator_from<T>>()) {
   };
 
   template <typename T>
   struct RandomAccessRange
       : DefineConcept(HasBeginEnd<T>(),
-                      RandomAccessIterator<types::iterator_t<T>>()) {
+                      RandomAccessIterator<iterator_from<T>>()) {
   };
 
 }  // end namespace concepts
@@ -352,10 +327,10 @@ namespace type_traits
   DefineTypeTraitFromConcept(is_unsigned, camp::concepts::Unsigned);
 
   template <typename T>
-  using IterableValue = decltype(*std::begin(camp::concepts::val<T>()));
+  using IterableValue = decltype(*std::begin(camp::val<T>()));
 
   template <typename T>
-  using IteratorValue = decltype(*camp::concepts::val<T>());
+  using IteratorValue = decltype(*camp::val<T>());
 
   namespace detail
   {
@@ -366,7 +341,7 @@ namespace type_traits
 
     template <template <typename...> class Template, typename... T>
     struct IsSpecialized<typename concepts::detail::voider<decltype(
-                             concepts::val<Template<T...>>())>::type,
+                             camp::val<Template<T...>>())>::type,
                          Template,
                          T...> : camp::true_type {
     };

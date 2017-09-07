@@ -125,47 +125,16 @@ namespace RAJA
 //
 //////////////////////////////////////////////////////////////////////
 //
+
 namespace internal
 {
-struct WrapperBase;
-}
-
-namespace impl
-{
 
 template <typename T>
-struct Privatizable : DefineConcept(concepts::val<T>().privatize()) {
-};
-DefineTypeTraitFromConcept(is_privatizable, Privatizable);
-
-template <typename T>
-struct PrivatizableWrapper
-    : DefineConcept(
-          concepts::val<T>().privatize(),
-          concepts::val<T>().re_wrap(
-              concepts::val<decltype(concepts::val<T>().privatize())>())) {
-};
-DefineTypeTraitFromConcept(is_privatizable_wrapper, PrivatizableWrapper);
-
-template <typename T, class Enable = void>
 struct Privatizer {
-  using value_type = concepts::types::decay_t<T>;
+  using value_type = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
-  Privatizer(T&& o) : priv{o} {}
-  reference_type get_priv() { return priv; }
-};
-
-template <typename T>
-struct Privatizer<
-    T,
-    typename concepts::requires_<PrivatizableWrapper, T>::type> {
-  using data_type = decltype(concepts::val<T>().privatize());
-  using value_type = concepts::types::decay_t<T>;
-  using reference_type = value_type&;
-  data_type data;
-  value_type priv;
-  Privatizer(T&& o) : data{o.privatize()}, priv{o.re_wrap(data)} {}
+  Privatizer(const T& o) : priv{o} {}
   reference_type get_priv() { return priv; }
 };
 
@@ -175,11 +144,33 @@ auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
   return item;
 }
 
+/** 
+ * @brief Create a private copy of the argument to be stored on the current
+ * thread's stack in a class of the Privatizer concept
+ * 
+ * @param item data to privatize
+ * 
+ * @return Privatizer<T>
+ *
+ * This function will be invoked such that ADL can be used to extend its
+ * functionality.  Anywhere it is called it should be invoked by:
+ *
+ * `using RAJA::internal::thread_privatize; thread_privatize()`
+ *
+ * This allows other namespaces to add new versions to support functionality
+ * that does not belong here.
+ *
+ */
 template <typename T>
-auto thread_privatize(T&& item) -> Privatizer<T>
+auto thread_privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{item};
 }
+
+}  // end namespace internal
+
+namespace impl
+{
 
 struct CallForall {
   template <typename T, typename ExecPol, typename Body>
@@ -266,7 +257,8 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  auto body = impl::trigger_updates_before(loop_body);
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   impl::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                body);
@@ -299,7 +291,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  auto body = impl::trigger_updates_before(loop_body);
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   impl::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       std::forward<IndexType>(icount),
@@ -329,7 +322,8 @@ RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  auto body = impl::trigger_updates_before(loop_body);
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   impl::forall(std::forward<ExecutionPolicy>(p), std::forward<IdxSet>(c), body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -356,7 +350,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  auto body = impl::trigger_updates_before(loop_body);
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   impl::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
                       body);

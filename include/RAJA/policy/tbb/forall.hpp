@@ -114,7 +114,8 @@ RAJA_INLINE void forall(const tbb_for_dynamic& p,
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
                     [=](const brange& r) {
-                      auto privatizer = impl::thread_privatize(loop_body);
+                      using RAJA::internal::thread_privatize;
+                      auto privatizer = thread_privatize(loop_body);
                       auto body = privatizer.get_priv();
                       for (const auto& i : r)
                         body(i);
@@ -166,7 +167,8 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
   using brange = tbb::blocked_range<decltype(iter.begin())>;
   tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
                     [=](const brange& r) {
-                      auto privatizer = impl::thread_privatize(loop_body);
+                      using RAJA::internal::thread_privatize;
+                      auto privatizer = thread_privatize(loop_body);
                       auto body = privatizer.get_priv();
                       for (const auto& i : r)
                         body(i);
