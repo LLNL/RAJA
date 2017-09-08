@@ -9,6 +9,10 @@
  *          These methods should work on any platform. They make no
  *          asumptions about data alignment.
  *
+ *          Note: SIMD reductions under nested parallelism are 
+ *          currently not supported
+ *
+ *
  ******************************************************************************
  */
 
