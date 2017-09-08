@@ -8,7 +8,6 @@ if ! [[ -d "${LLVM_PATH}" ]]; then
         echo "curl -o ${TARFILE} ${DOWNLOAD_URL}"
         curl -o ${TARFILE} ${DOWNLOAD_URL}
     fi
-    cd ${HOME}/llvm 
-    tar xf ${TARFILE}
+    tar xf ${TARFILE} -C ${HOME}/llvm
 fi
 
