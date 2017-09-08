@@ -9,5 +9,7 @@ if ! [[ -d "${LLVM_PATH}" ]]; then
         curl -o ${TARFILE} ${DOWNLOAD_URL}
     fi
     tar xf ${TARFILE} -C ${HOME}/llvm
+    ln -s ${LLVM_PATH}/bin/clang++ ${LLVM_PATH}/bin/clang++-${LLVM_VERSION}
+    ln -s ${LLVM_PATH}/bin/clang ${LLVM_PATH}/bin/clang-${LLVM_VERSION}
 fi
 
