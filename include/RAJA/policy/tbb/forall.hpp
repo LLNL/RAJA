@@ -111,8 +111,9 @@ RAJA_INLINE void forall(const tbb_for_dynamic& p,
                         Iterable&& iter,
                         Func&& loop_body)
 {
+  RAJA_EXTRACT_BED_IT(iter);
   using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
+  tbb::parallel_for(brange(begin_it, end_it, p.grain_size),
                     [=](const brange& r) {
                       using RAJA::internal::thread_privatize;
                       auto privatizer = thread_privatize(loop_body);
@@ -129,13 +130,11 @@ forall_Icount(const tbb_for_dynamic& p,
               IndexType icount,
               Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance, p.grain_size), [=](const brange& r) {
-    for (decltype(distance) i = r.begin(); i != r.end(); ++i)
-      loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  RAJA_EXTRACT_BED_IT(iter);
+  using brange = tbb::blocked_range<decltype(distance_it)>;
+  tbb::parallel_for(brange(0, distance_it, p.grain_size), [=](const brange& r) {
+    for (decltype(distance_it) i = r.begin(); i != r.end(); ++i)
+      loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
   });
 }
 
@@ -164,8 +163,9 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
+  RAJA_EXTRACT_BED_IT(iter);
   using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
+  tbb::parallel_for(brange(begin_it, end_it, ChunkSize),
                     [=](const brange& r) {
                       using RAJA::internal::thread_privatize;
                       auto privatizer = thread_privatize(loop_body);
@@ -186,14 +186,14 @@ forall_Icount(const tbb_for_static<ChunkSize>&,
               IndexType icount,
               Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance, ChunkSize),
+  RAJA_EXTRACT_BED_IT(iter);
+  using brange = tbb::blocked_range<decltype(distance_it)>;
+  tbb::parallel_for(brange(0, distance_it, ChunkSize),
                     [=](const brange& r) {
-                      for (decltype(distance) i = r.begin(); i != r.end(); ++i)
-                        loop_body(static_cast<IndexType>(i + icount), begin[i]);
+                      for (decltype(distance_it) i = r.begin(); i != r.end();
+                           ++i)
+                        loop_body(static_cast<IndexType>(i + icount),
+                                  begin_it[i]);
                     },
                     tbb_static_partitioner{});
 }

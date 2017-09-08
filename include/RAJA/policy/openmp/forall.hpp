@@ -128,12 +128,10 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -144,12 +142,10 @@ forall_Icount(const omp_for_nowait_exec&,
               IndexType icount,
               Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
   }
 }
 
@@ -160,12 +156,10 @@ forall_Icount(const omp_for_nowait_exec&,
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -176,12 +170,10 @@ forall_Icount(const omp_for_exec&,
               IndexType icount,
               Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
   }
 }
 
@@ -194,12 +186,10 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -213,12 +203,10 @@ forall_Icount(const omp_for_static<ChunkSize>&,
               IndexType icount,
               Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
   }
 }
 

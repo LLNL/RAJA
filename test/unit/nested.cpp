@@ -48,9 +48,12 @@ protected:
 };
 TYPED_TEST_CASE_P(Nested);
 
-constexpr Index_type get_val(Index_type v) { return v; }
+RAJA_HOST_DEVICE constexpr Index_type get_val(Index_type v) noexcept
+{
+  return v;
+}
 template <typename T>
-constexpr Index_type get_val(T v)
+RAJA_HOST_DEVICE constexpr Index_type get_val(T v) noexcept
 {
   return *v;
 }

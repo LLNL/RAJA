@@ -311,7 +311,7 @@ struct TypedRangeStrideSegment {
    */
   RAJA_HOST_DEVICE void swap(TypedRangeStrideSegment& other)
   {
-    using std::swap;
+    using camp::swap;
     swap(m_begin, other.m_begin);
     swap(m_end, other.m_end);
     swap(m_size, other.m_size);

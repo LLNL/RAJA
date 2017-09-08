@@ -107,6 +107,8 @@
 
 #include "RAJA/policy/fwd.hpp"
 
+#include "RAJA/pattern/detail/forall.hpp"
+
 #if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 
@@ -114,6 +116,7 @@
 #include "chai/ExecutionSpaces.hpp"
 
 #endif
+
 
 namespace RAJA
 {
@@ -134,8 +137,8 @@ struct Privatizer {
   using value_type = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
-  Privatizer(const T& o) : priv{o} {}
-  reference_type get_priv() { return priv; }
+  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+  RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
 };
 
 template <typename T>
@@ -144,12 +147,12 @@ auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
   return item;
 }
 
-/** 
+/**
  * @brief Create a private copy of the argument to be stored on the current
  * thread's stack in a class of the Privatizer concept
- * 
+ *
  * @param item data to privatize
- * 
+ *
  * @return Privatizer<T>
  *
  * This function will be invoked such that ADL can be used to extend its
@@ -162,7 +165,7 @@ auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
  *
  */
 template <typename T>
-auto thread_privatize(const T& item) -> Privatizer<T>
+RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
 {
   return Privatizer<T>{item};
 }
@@ -259,8 +262,8 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  impl::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
+  impl::forall(camp::forward<ExecutionPolicy>(p),
+               camp::forward<Container>(c),
                body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -293,9 +296,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  impl::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<Container>(c),
-                      std::forward<IndexType>(icount),
+  impl::forall_Icount(camp::forward<ExecutionPolicy>(p),
+                      camp::forward<Container>(c),
+                      camp::forward<IndexType>(icount),
                       body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -324,7 +327,7 @@ RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  impl::forall(std::forward<ExecutionPolicy>(p), std::forward<IdxSet>(c), body);
+  impl::forall(camp::forward<ExecutionPolicy>(p), camp::forward<IdxSet>(c), body);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -352,8 +355,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
-  impl::forall_Icount(std::forward<ExecutionPolicy>(p),
-                      std::forward<IdxSet>(c),
+  impl::forall_Icount(camp::forward<ExecutionPolicy>(p),
+                      camp::forward<IdxSet>(c),
                       body);
 
 #if defined(RAJA_ENABLE_CHAI)
@@ -380,9 +383,9 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
                 "IndexSet policy by mistake?");
-  wrap::indexset::forall_Icount(std::forward<ExecutionPolicy>(p),
-                                std::forward<IdxSet>(c),
-                                std::forward<LoopBody>(loop_body));
+  wrap::indexset::forall_Icount(camp::forward<ExecutionPolicy>(p),
+                                camp::forward<IdxSet>(c),
+                                camp::forward<LoopBody>(loop_body));
 }
 
 /*!

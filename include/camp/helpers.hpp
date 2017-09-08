@@ -47,6 +47,8 @@
 #include <iterator>
 #include <utility>
 
+#include "camp/defines.hpp"
+
 namespace camp
 {
 
@@ -173,12 +175,12 @@ template <typename T>
 using iterator_from = decltype(begin(val<plain<T>>()));
 
 template <class T>
-constexpr T&& forward(type::ref::rem<T>& t) noexcept
+CAMP_HOST_DEVICE constexpr T&& forward(type::ref::rem<T>& t) noexcept
 {
   return static_cast<T&&>(t);
 }
 template <class T>
-constexpr T&& forward(type::ref::rem<T>&& t) noexcept
+CAMP_HOST_DEVICE constexpr T&& forward(type::ref::rem<T>&& t) noexcept
 {
   return static_cast<T&&>(t);
 }
