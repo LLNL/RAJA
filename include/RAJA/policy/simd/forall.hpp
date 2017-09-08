@@ -10,7 +10,7 @@
  *          asumptions about data alignment.
  *
  *          Note: SIMD reductions under nested parallelism are 
- *          currently not supported
+ *          currently not supported.
  *
  *
  ******************************************************************************
