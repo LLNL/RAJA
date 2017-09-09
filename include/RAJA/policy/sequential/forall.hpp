@@ -7,6 +7,8 @@
  *          template methods for sequential execution.
  *
  *          These methods should work on any platform.
+ *          
+ *          Note: GNU compiler does not enforce sequential iterations.
  *
  ******************************************************************************
  */
