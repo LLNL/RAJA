@@ -55,6 +55,8 @@
 
 #include "RAJA/policy/PolicyBase.hpp"
 
+#include "RAJA/policy/sequential/policy.hpp"
+
 namespace RAJA
 {
 
@@ -88,11 +90,7 @@ using loop_segit = loop_exec;
 ///
 ///////////////////////////////////////////////////////////////////////
 ///
-struct loop_reduce : make_policy_pattern_launch_platform_t<Policy::loop,
-                                                           Pattern::forall,
-                                                           Launch::undefined,
-                                                           Platform::host> {
-};
+using loop_reduce = seq_reduce;
 
 }  // closing brace for RAJA namespace
 

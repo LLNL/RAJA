@@ -1,17 +1,15 @@
 /*!
-******************************************************************************
-*
-* \file
-*
-* \brief   Header file containing RAJA headers for sequential execution.
-*
-*          These methods work on all platforms.
-*
-******************************************************************************
-*/
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file defining loop atomic operations.
+ *
+ ******************************************************************************
+ */
 
-#ifndef RAJA_loop_HPP
-#define RAJA_loop_HPP
+#ifndef RAJA_policy_loop_atomic_HPP
+#define RAJA_policy_loop_atomic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -55,9 +53,20 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/policy/loop/atomic.hpp"
-#include "RAJA/policy/loop/forall.hpp"
-#include "RAJA/policy/loop/policy.hpp"
-#include "RAJA/policy/loop/scan.hpp"
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#endif  // closing endif for header file include guard
+#include "RAJA/policy/sequential/atomic.hpp"
+
+namespace RAJA
+{
+namespace atomic
+{
+
+using loop_atomic = seq_atomic;
+
+} // closing namespace atomic
+
+} // closing namespace RAJA
+
+#endif  // guard
