@@ -1,4 +1,4 @@
-export LLVM_PATH=${HOME}/llvm/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04
+export LLVM_PATH=${HOME}/llvm/
 export PATH=${LLVM_PATH}/bin:${PATH}
 export LD_LIBRARY_PATH=${LLVM_PATH}/lib:${LD_LIBRARY_PATH}
 [[ -z ${DOWNLOAD_URL+x} ]] && export DOWNLOAD_URL=http://releases.llvm.org/${LLVM_VERSION}/clang+llvm-${LLVM_VERSION}-x86_64-linux-gnu-ubuntu-14.04.tar.xz
@@ -8,8 +8,8 @@ if ! [[ -d "${LLVM_PATH}" ]]; then
         echo "curl -o ${TARFILE} ${DOWNLOAD_URL}"
         curl -o ${TARFILE} ${DOWNLOAD_URL}
     fi
-    tar xf ${TARFILE} -C ${HOME}/llvm
-    ln -s ${HOME}/llvm/bin/clang++ ${HOME}/llvm/bin/clang++-${LLVM_VERSION}
-    ln -s ${HOME}/llvm/bin/clang ${HOME}/llvm/bin/clang-${LLVM_VERSION}
+    tar xf ${TARFILE} -C ${HOME}/llvm --strip-components 1
+    ln -s ${LLVM_PATH}/bin/clang++ ${LLVM_PATH}/bin/clang++-${LLVM_VERSION}
+    ln -s ${LLVM_PATH}/bin/clang ${LLVM_PATH}/bin/clang-${LLVM_VERSION}
 fi
 
