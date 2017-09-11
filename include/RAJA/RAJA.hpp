@@ -91,6 +91,10 @@
 #include "RAJA/policy/openmp.hpp"
 #endif
 
+#if defined(RAJA_ENABLE_OPENACC)
+#include "RAJA/policy/openacc.hpp"
+#endif
+
 #include "RAJA/index/IndexSet.hpp"
 
 //

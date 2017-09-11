@@ -59,7 +59,7 @@
 namespace RAJA
 {
 
-enum class Policy { undefined, sequential, simd, openmp, target_openmp, cuda, tbb };
+enum class Policy { undefined, sequential, simd, openmp, target_openmp, cuda, tbb, openacc };
 
 enum class Pattern { undefined, forall, reduce, taskgraph };
 
@@ -137,7 +137,7 @@ namespace reduce
 struct ordered {
 };
 
-}  // end namespace wrapper
+}  // end namespace reduce
 
 
 template <Policy Pol, Pattern Pat, typename... Args>
@@ -189,6 +189,10 @@ struct is_tbb_policy : RAJA::policy_is<Pol, RAJA::Policy::tbb> {
 template <typename Pol>
 struct is_target_openmp_policy
     : RAJA::policy_is<Pol, RAJA::Policy::target_openmp> {
+};
+template <typename Pol>
+struct is_openacc_policy
+    : RAJA::policy_is<Pol, RAJA::Policy::openacc> {
 };
 template <typename Pol>
 struct is_cuda_policy : RAJA::policy_is<Pol, RAJA::Policy::cuda> {
