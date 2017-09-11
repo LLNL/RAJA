@@ -7,6 +7,8 @@
  *          template methods for sequential execution.
  *
  *          These methods should work on any platform.
+ *          
+ *          Note: GNU compiler does not enforce sequential iterations.
  *
  ******************************************************************************
  */
@@ -92,6 +94,8 @@ template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
+
+  RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(*(begin_it + i));
   }
@@ -102,6 +106,8 @@ RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
 forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
+
+  RAJA_NO_SIMD
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     body(static_cast<IndexType>(i + icount), *(begin_it + i));
   }

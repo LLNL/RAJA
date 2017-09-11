@@ -103,27 +103,16 @@ using TRANSFORMS =
 
 template <typename TRANSFORMS>
 using POLICIES =
+    std::tuple<ExecInfo<TRANSFORMS, loop_exec, loop_exec>
+               //,ExecInfo<TRANSFORMS, seq_exec, simd_exec> //Need to fix... 
 #if defined(RAJA_ENABLE_OPENMP)
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
-               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
-               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>>;
-#else
-
+               ,ExecInfo<TRANSFORMS, loop_exec, omp_parallel_for_exec>
+               ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
+#endif
 #if defined(RAJA_ENABLE_TBB)
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>>;
-#else
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>>;
+               ,ExecInfo<TRANSFORMS, loop_exec, tbb_for_exec>
 #endif
-#endif
+               >;
 
 
 using InstPolicies =

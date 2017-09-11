@@ -3,21 +3,16 @@
  *
  * \file
  *
- * \brief   Main RAJA header file.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for loop execution.
  *
- *          This is the main header file to include in code that uses RAJA.
- *          It includes other RAJA headers files that define types, index
- *          sets, ieration methods, etc.
- *
- *          IMPORTANT: If changes are made to this file, note that contents
- *                     of some header files require that they are included
- *                     in the order found here.
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_HPP
-#define RAJA_HPP
+#ifndef RAJA_forall_loop_HPP
+#define RAJA_forall_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,7 +46,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONLOOP
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -63,102 +58,56 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/util/defines.hpp"
-
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/util/Operators.hpp"
+#include "RAJA/policy/loop/policy.hpp"
 
-//
-// All platforms must support sequential execution.
-//
-#include "RAJA/policy/sequential.hpp"
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 
-//
-// All platforms must support loop execution.
-//
-#include "RAJA/policy/loop.hpp"
+#include "RAJA/internal/fault_tolerance.hpp"
 
-//
-// All platforms should support simd execution.
-//
-#include "RAJA/policy/simd.hpp"
+using RAJA::concepts::enable_if;
 
-#if defined(RAJA_ENABLE_TBB)
-#include "RAJA/policy/tbb.hpp"
-#endif
+namespace RAJA
+{
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda.hpp"
-#endif
-
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp.hpp"
-#endif
-
-#include "RAJA/index/IndexSet.hpp"
-
-//
-// Strongly typed index class.
-//
-#include "RAJA/index/IndexValue.hpp"
-
-#include "RAJA/policy/MultiPolicy.hpp"
-
-//
-// Generic iteration templates require specializations defined
-// in the files included below.
-//
-#include "RAJA/pattern/forall.hpp"
-
-
-//
-// Multidimensional layouts and views.
-//
-#include "RAJA/util/Layout.hpp"
-#include "RAJA/util/OffsetLayout.hpp"
-#include "RAJA/util/PermutedLayout.hpp"
-#include "RAJA/util/View.hpp"
-
-
-//
-// Atomic operations support
-//
-#include "RAJA/pattern/atomic.hpp"
-
-
-//
-// Generic iteration templates for perfectly nested loops
-//
-#include "RAJA/pattern/forallN.hpp"
-
-
-#include "RAJA/pattern/reduce.hpp"
-
-
+namespace impl
+{
 
 
 //
 //////////////////////////////////////////////////////////////////////
 //
-// These contents of the header files included here define index set
-// and segment execution methods whose implementations depend on
-// programming model choice.
-//
-// The ordering of these file inclusions must be preserved since there
-// are dependencies among them.
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
 //
 //////////////////////////////////////////////////////////////////////
 //
 
-#include "RAJA/index/IndexSetUtils.hpp"
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
+{
+  RAJA_EXTRACT_BED_IT(iter);
 
-// Tiling policies
-#include "RAJA/pattern/tile.hpp"
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(*(begin_it + i));
+  }
+}
 
-// Loop interchange policies
-#include "RAJA/pattern/permute.hpp"
+template <typename Iterable, typename Func, typename IndexType>
+RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
+forall_Icount(const loop_exec &, Iterable &&iter, IndexType icount, Func &&body)
+{
+  RAJA_EXTRACT_BED_IT(iter);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(static_cast<IndexType>(i + icount), *(begin_it + i));
+  }
+}
 
-#include "RAJA/pattern/scan.hpp"
+}  // closing brace for impl namespace
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard
