@@ -7,6 +7,8 @@
  *          template methods for sequential execution.
  *
  *          These methods should work on any platform.
+ *          
+ *          Note: GNU compiler does not enforce sequential iterations.
  *
  ******************************************************************************
  */
@@ -92,6 +94,8 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+
+  RAJA_NO_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
     body(*(begin + i));
   }
@@ -104,6 +108,8 @@ forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+
+  RAJA_NO_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
     body(static_cast<IndexType>(i + icount), *(begin + i));
   }
