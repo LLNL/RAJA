@@ -3,21 +3,16 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for loop execution.
  *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- *          Note: Reduction operations should not be used with simd
- *          policies. Limited support.
- *
+ *          These methods should work on any platform.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef RAJA_forall_loop_HPP
+#define RAJA_forall_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -51,7 +46,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONLOOP
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -61,16 +56,18 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
-
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
 
+#include "RAJA/policy/loop/policy.hpp"
+
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
+
 #include "RAJA/internal/fault_tolerance.hpp"
 
-#include "RAJA/policy/simd/policy.hpp"
+using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
@@ -79,33 +76,36 @@ namespace impl
 {
 
 
+//
+//////////////////////////////////////////////////////////////////////
+//
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
+RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
+    body(*(begin + i));
   }
 }
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+template <typename Iterable, typename Func, typename IndexType>
+RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
+forall_Icount(const loop_exec &, Iterable &&iter, IndexType icount, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
-  RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
+    body(static_cast<IndexType>(i + icount), *(begin + i));
   }
 }
 

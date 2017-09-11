@@ -3,21 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- *          Note: Reduction operations should not be used with simd
- *          policies. Limited support.
- *
+ * \brief   Header file containing RAJA sequential policy definitions.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef policy_loop_HPP
+#define policy_loop_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,56 +53,45 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
+#include "RAJA/policy/PolicyBase.hpp"
 
-#include "RAJA/config.hpp"
-
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/sequential/policy.hpp"
 
 namespace RAJA
 {
 
-namespace impl
-{
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Execution policies
+//
+//////////////////////////////////////////////////////////////////////
+//
 
+///
+/// Segment execution policies
+///
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
-}
+struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
+                                                        Pattern::forall,
+                                                        Launch::undefined,
+                                                        Platform::host> {
+};
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+///
+/// Index set segment iteration policies
+///
+using loop_segit = loop_exec;
 
-}  // closing brace for impl namespace
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Reduction execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+using loop_reduce = seq_reduce;
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif
