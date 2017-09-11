@@ -111,9 +111,10 @@ RAJA_INLINE void forall(const tbb_for_dynamic& p,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  RAJA_EXTRACT_BED_IT(iter);
+  using std::begin;
+  using std::end;
   using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(begin_it, end_it, p.grain_size),
+  tbb::parallel_for(brange(begin(iter), end(iter), p.grain_size),
                     [=](const brange& r) {
                       using RAJA::internal::thread_privatize;
                       auto privatizer = thread_privatize(loop_body);
