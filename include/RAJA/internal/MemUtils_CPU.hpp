@@ -83,6 +83,8 @@ inline void* allocate_aligned(size_t alignment, size_t size)
   return err ? nullptr : ret;
 #elif defined(RAJA_HAVE_ALIGNED_ALLOC)
   return std::aligned_alloc(alignment, size);
+#elif defined(RAJA_HAVE_MM_MALLOC)
+  return _mm_malloc(size, alignment);
 #elif defined(RAJA_PLATFORM_WINDOWS)
   return _aligned_malloc(size, alignment);
 #else
@@ -114,6 +116,8 @@ inline void free_aligned(void* ptr)
 {
 #if defined(RAJA_HAVE_POSIX_MEMALIGN) || defined(RAJA_HAVE_ALIGNED_ALLOC)
   free(ptr);
+#elif defined(RAJA_HAVE_MM_MALLOC)
+  _mm_free(ptr);
 #elif defined(RAJA_PLATFORM_WINDOWS)
   _aligned_free(ptr);
 #else

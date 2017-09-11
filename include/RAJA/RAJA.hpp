@@ -119,6 +119,13 @@
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
+//
+// Atomic operations support
+//
+#include "RAJA/pattern/atomic.hpp"
+
+
 //
 // Generic iteration templates for perfectly nested loops
 //
@@ -126,6 +133,9 @@
 
 
 #include "RAJA/pattern/reduce.hpp"
+
+
+
 
 //
 //////////////////////////////////////////////////////////////////////
