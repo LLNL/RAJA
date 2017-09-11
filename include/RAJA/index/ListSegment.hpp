@@ -237,10 +237,9 @@ public:
   ///
   RAJA_HOST_DEVICE void swap(TypedListSegment& other)
   {
-    using std::swap;
-    swap(m_data, other.m_data);
-    swap(m_size, other.m_size);
-    swap(m_owned, other.m_owned);
+    camp::safe_swap(m_data, other.m_data);
+    camp::safe_swap(m_size, other.m_size);
+    camp::safe_swap(m_owned, other.m_owned);
   }
 
   //! accessor to get the end iterator for a TypedListSegment

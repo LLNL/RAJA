@@ -147,10 +147,9 @@ struct TypedRangeSegment {
    */
   RAJA_HOST_DEVICE void swap(TypedRangeSegment& other)
   {
-    using std::swap;
-    swap(m_begin, other.m_begin);
-    swap(m_end, other.m_end);
-    swap(m_size, other.m_size);
+    camp::safe_swap(m_begin, other.m_begin);
+    camp::safe_swap(m_end, other.m_end);
+    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeSegment
@@ -311,10 +310,9 @@ struct TypedRangeStrideSegment {
    */
   RAJA_HOST_DEVICE void swap(TypedRangeStrideSegment& other)
   {
-    using camp::swap;
-    swap(m_begin, other.m_begin);
-    swap(m_end, other.m_end);
-    swap(m_size, other.m_size);
+    camp::safe_swap(m_begin, other.m_begin);
+    camp::safe_swap(m_end, other.m_end);
+    camp::safe_swap(m_size, other.m_size);
   }
 
   //! obtain an iterator to the beginning of this TypedRangeStrideSegment
@@ -457,7 +455,7 @@ namespace std
 
 //! specialization of swap for TypedRangeSegment
 template <typename T>
-RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
+RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
                       RAJA::TypedRangeSegment<T>& b)
 {
   a.swap(b);
@@ -465,7 +463,7 @@ RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
 
 //! specialization of swap for TypedRangeStrideSegment
 template <typename T>
-RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
+RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
                       RAJA::TypedRangeStrideSegment<T>& b)
 {
   a.swap(b);

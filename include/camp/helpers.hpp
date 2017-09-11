@@ -184,6 +184,27 @@ CAMP_HOST_DEVICE constexpr T&& forward(type::ref::rem<T>&& t) noexcept
 {
   return static_cast<T&&>(t);
 }
+
+template <typename T>
+CAMP_HOST_DEVICE void safe_swap(T& t1, T& t2)
+{
+#if defined(__CUDA_ARCH__)
+  T temp{std::move(t1)};
+  t1 = std::move(t2);
+  t2 = std::move(temp);
+#else
+  using std::swap;
+  swap(t1, t2);
+#endif
+}
+
+template <typename T, typename = decltype(sink(swap(val<T>(), val<T>())))>
+CAMP_HOST_DEVICE void safe_swap(T& t1, T& t2)
+{
+  using std::swap;
+  swap(t1, t2);
+}
+
 }
 
 #endif /* CAMP_HELPERS_HPP */

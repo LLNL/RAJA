@@ -137,7 +137,11 @@ struct Privatizer {
   using value_type = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
-  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+#ifdef __CUDA_ARCH__
+  RAJA_DEVICE Privatizer(const T& o) : priv{o} {}
+#else
+  Privatizer(const T& o) : priv{o} {}
+#endif
   RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
 };
 

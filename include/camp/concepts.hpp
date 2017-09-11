@@ -176,6 +176,11 @@ namespace concepts
   };
 
   template <typename T>
+  struct Swappable
+      : DefineConcept(swap(val<T>(), val<T>())) {
+  };
+
+  template <typename T>
   struct LessThanComparable
       : DefineConcept(convertible_to<bool>(val<T>() < val<T>())) {
   };
