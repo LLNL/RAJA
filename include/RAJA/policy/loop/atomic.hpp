@@ -3,21 +3,13 @@
  *
  * \file
  *
- * \brief   Header file containing RAJA segment template methods for
- *          SIMD execution.
- *
- *          These methods should work on any platform. They make no
- *          asumptions about data alignment.
- *
- *          Note: Reduction operations should not be used with simd
- *          policies. Limited support.
- *
+ * \brief   RAJA header file defining loop atomic operations.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_simd_HPP
-#define RAJA_forall_simd_HPP
+#ifndef RAJA_policy_loop_atomic_HPP
+#define RAJA_policy_loop_atomic_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -61,56 +53,20 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iterator>
-#include <type_traits>
-
 #include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/internal/fault_tolerance.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
+#include "RAJA/policy/sequential/atomic.hpp"
 
 namespace RAJA
 {
-
-namespace impl
+namespace atomic
 {
 
+using loop_atomic = seq_atomic;
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(*(begin + i));
-  }
-}
+} // closing namespace atomic
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  RAJA_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+} // closing namespace RAJA
 
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+#endif  // guard

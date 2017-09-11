@@ -24,20 +24,21 @@ matrix:
     env:
     - COMPILER=g++-7
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
-  - compiler: clang-3.5
+  - compiler: clang-5
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=clang++
-    - LLVM_VERSION=3.5.2
+    - COMPILER=clang++-5.0.0
+    - LLVM_VERSION=5.0.0
+    - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
   - compiler: clang-3.9
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=clang++
+    - COMPILER=clang++-3.9.1
     - LLVM_VERSION=3.9.1
   - compiler: clang-4.0
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
-    - COMPILER=clang++
+    - COMPILER=clang++-4.0.0
     - LLVM_VERSION=4.0.0
   - compiler: intel-17
     env:
@@ -74,7 +75,7 @@ cache:
 before_install:
 - sudo apt-get update -qq
 - mkdir -p ${HOME}/download
-- if [[ -n "${LLVM_VERSION}" ]]; then ./scripts/install_llvm.sh ; fi
+- if [[ -n "${LLVM_VERSION}" ]]; then . ./scripts/install_llvm.sh ; fi
 - CMAKE_URL="https://cmake.org/files/v3.7/cmake-3.7.0-rc2-Linux-x86_64.tar.gz"
 - curl -o ${HOME}/cmake-tarball.tar.gz ${CMAKE_URL} &&
   mkdir -p ${HOME}/cmake &&

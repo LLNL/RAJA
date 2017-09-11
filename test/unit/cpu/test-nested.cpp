@@ -103,19 +103,19 @@ using TRANSFORMS =
 
 template <typename TRANSFORMS>
 using POLICIES =
-    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
-               ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, simd_exec>
+    std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>
+               //,ExecInfo<TRANSFORMS, seq_exec, simd_exec> //Need to fix... 
+               //ExecInfo<TRANSFORMS, simd_exec, simd_exec>
 #if defined(RAJA_ENABLE_OPENMP)
-               ,
+               //,
                // ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
-               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
-               OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>
+               //OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
+               //OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>
 #endif
 #if defined(RAJA_ENABLE_TBB)
-               ,
-               ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
-               ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>
+               //,
+               ,ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>
+               //,ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>
 #endif
                >;
 
