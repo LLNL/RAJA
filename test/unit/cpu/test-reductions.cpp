@@ -257,7 +257,7 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
 
 using types = ::testing::Types<
     std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
-    std::tuple<RAJA::simd_exec, RAJA::seq_reduce>
+    std::tuple<RAJA::loop_exec, RAJA::seq_reduce>
 #if defined(RAJA_ENABLE_OPENMP)
     ,
     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
