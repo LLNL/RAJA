@@ -91,9 +91,9 @@ TYPED_TEST_P(ForallTest, BasicForallIcount)
 REGISTER_TYPED_TEST_CASE_P(ForallTest, BasicForall, BasicForallIcount);
 
 using SequentialTypes = ::testing::Types<
-  ExecPolicy<seq_segit, seq_exec>,
-  ExecPolicy<seq_segit, loop_exec>,
-  ExecPolicy<seq_segit, simd_exec>>;
+    ExecPolicy<seq_segit, seq_exec>,
+    ExecPolicy<seq_segit, loop_exec>,
+    ExecPolicy<seq_segit, simd_exec>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 
