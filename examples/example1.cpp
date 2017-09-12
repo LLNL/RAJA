@@ -53,54 +53,27 @@ using namespace std;
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-const int N       = 1280;
-const int NN      = (N + 2) * (N + 2);
-const int maxIter = 500;
+const int NN      = 20000000;
+const int maxIter = 50;
 
 
-RAJA_INLINE void Jacobi_native(double *RAJA_RESTRICT I, double *RAJA_RESTRICT Iold){
-
-
-#pragma novector
-  for(int n=1; n<=N; ++n){
-    
-#pragma omp simd
-    for(int m=1; m<=N; ++m){
-      int id = n * (N + 2) + m;         
-      I[id] = - 0.25 * (Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1] + Iold[id + 1]);
-    }
-  }
-
-
-#pragma omp simd
-  for(int k=0; k<NN; ++k){
-    Iold[k] = I[k];
-  }
-
+RAJA_INLINE void simple_native(double *RAJA_RESTRICT I, double * A, double * B){
+  
+#pragma simd
+  for(int id=0; id<NN; ++id){
+    I[id] += 0.24*A[id] + 0.35*B[id];
+  };
+  
 }
 
 
 template<typename jacobiPolicy>
-RAJA_INLINE void Jacobi(double *RAJA_RESTRICT I, double *RAJA_RESTRICT Iold){
+RAJA_INLINE void simple(double *RAJA_RESTRICT I, double * A, double * B){
   
-
-  RAJA::forall<RAJA::loop_exec>
-    (1,N+1, [=] (int n) {
-      
-      RAJA::forall<jacobiPolicy>
-        (1,N+1, [=] (int m) {
-          
-          int id = n * (N + 2) + m;         
-          I[id] = - 0.25 * (Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1] + Iold[id + 1]);          
-        });
-    });
-  
-
   RAJA::forall<jacobiPolicy>
-    (0,NN, [=] (int k) {                 
-      Iold[k] = I[k];
-  });
-    
+    (0,NN, [=] (int id) {      
+      I[id] += 0.24*A[id] + 0.35*B[id];
+    });    
 }
 
 
@@ -112,20 +85,21 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int iter=0;
   size_t dataSz = NN*sizeof(double);
   double *RAJA_RESTRICT I     = (double *) _mm_malloc(dataSz,64);
-  double *RAJA_RESTRICT Iold  = (double *) _mm_malloc(dataSz,64);
+  double *RAJA_RESTRICT A     = (double *) _mm_malloc(dataSz,64);
+  double *RAJA_RESTRICT B     = (double *) _mm_malloc(dataSz,64);
 
   //double *RAJA_RESTRICT I     = (double *) malloc(dataSz);
   //double *RAJA_RESTRICT Iold  = (double *) malloc(dataSz);
 
-  memset(I, 0, NN * sizeof(double));
-  memset(Iold, 0, NN * sizeof(double));
+  memset(A, 0, NN * sizeof(double));
+  memset(B, 0, NN * sizeof(double));
   std::chrono::time_point<std::chrono::system_clock> start, end;
   std::chrono::duration<double> elapsed_seconds;
 
   //-------[Sequential]--------
   start = std::chrono::system_clock::now();
   while(iter<maxIter){
-    Jacobi<RAJA::seq_exec>(I,Iold);
+    simple<RAJA::seq_exec>(I,A,B);
     iter++;
   }
   end = std::chrono::system_clock::now();
@@ -136,14 +110,13 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //Reset data
   iter = 0; 
-  memset(I, 0, NN * sizeof(double));
-  memset(Iold, 0, NN * sizeof(double));
-
+  memset(A, 0, NN * sizeof(double));
+  memset(B, 0, NN * sizeof(double));
 
   //-------[Native]--------
   start = std::chrono::system_clock::now();
   while(iter<maxIter){
-    Jacobi_native(I,Iold);
+    simple_native(I,A,B);
     iter++;
   }
   end = std::chrono::system_clock::now();
@@ -154,14 +127,14 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   //Reset data
   iter = 0; 
-  memset(I, 0, NN * sizeof(double));
-  memset(Iold, 0, NN * sizeof(double));
+  memset(A, 0, NN * sizeof(double));
+  memset(B, 0, NN * sizeof(double));
 
 
   //-------[SIMD]---------
   start = std::chrono::system_clock::now();
   while(iter<maxIter){
-    Jacobi<RAJA::simd_exec>(I,Iold);
+    simple<RAJA::simd_exec>(I,A,B);
     iter++;
   }
   end = std::chrono::system_clock::now();
@@ -173,6 +146,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
 
   _mm_free(I);
-  _mm_free(Iold);
+  _mm_free(A);
+  _mm_free(B);
   return 0;
 }

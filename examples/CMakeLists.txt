@@ -41,9 +41,13 @@
 #
 ###############################################################################
 
-set (CMAKE_CXX_FLAGS "-O3 -xCORE-AVX2 -qopt-report=6 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
+set (CMAKE_CXX_FLAGS "-O3 -qopenmp -xCORE-AVX2 -qopt-report=6 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
 
 raja_add_executable(
   NAME simd
   SOURCES simd.cpp)
+
+raja_add_executable(
+  NAME example1
+  SOURCES example1.cpp)
 
