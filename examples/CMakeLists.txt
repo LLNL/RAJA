@@ -41,14 +41,9 @@
 #
 ###############################################################################
 
-#---[Intel Flags]-----
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -c -qopt-report=5 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
+set (CMAKE_CXX_FLAGS "-O3 -xCORE-AVX2 -qopt-report=6 -qopt-report-phase=loop,vec -qopt-report-file=stderr")
 
 raja_add_executable(
-  NAME example-raja-pi
-  SOURCES pi.cpp)
-
-#raja_add_executable(
-#  NAME main
-#  SOURCES simd.cpp)
+  NAME simd
+  SOURCES simd.cpp)
 

@@ -39,51 +39,115 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+#include <stdio.h>
+#include <cstdlib>
+#include <string.h>
+#include <iostream>
+#include <chrono>
+#include <ctime>
+
 
 #include <iostream>
+using namespace std;
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-#define N 256
-
-int a[N], b[N], c[N];
-
-
-void RAJAloop(){
-
-  RAJA::forall<RAJA::loop_exec>
-    (RAJA::RangeSegment(0,N), [&] (RAJA::Index_type i) { 
-      a[i] = b[i] + c[i];
-    });
-}
+const int N       = 1024;
+const int NN      = (N + 2) * (N + 2);
+const int maxIter = 1000;
 
 
-void RAJAseq(){
+template<typename jacobiPolicy>
+void Jacobi(double *RAJA_RESTRICT I, double *RAJA_RESTRICT Iold){
 
   RAJA::forall<RAJA::seq_exec>
-    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
-      a[i] = b[i] + c[i];
-
+    (1,N+1, [=] (int n) {
+      
+      RAJA::forall<jacobiPolicy>
+        (1,N+1, [=] (int m) {
+          
+          int id = n * (N + 2) + m;         
+          I[id] = - 0.25 * (Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1] + Iold[id + 1]);          
+        });
     });
-}
 
-
-void RAJAsimd(){
-
-  RAJA::forall<RAJA::simd_exec>
-    (RAJA::RangeSegment(0,N), [=] (RAJA::Index_type i) { 
-      a[i] = b[i] + c[i];
-
-    });
+  RAJA::forall<jacobiPolicy>(
+    0,NN, [=] (int k) {      
+        Iold[k] = I[k];
+  });
+    
 }
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  RAJAloop();
-  RAJAseq();
-  RAJAsimd();
 
+  int iter=0;
+  size_t dataSz = NN*sizeof(double);
+  double *RAJA_RESTRICT I     = (double *) _mm_malloc(dataSz,64);
+  double *RAJA_RESTRICT Iold  = (double *) _mm_malloc(dataSz,64);
+
+  //double *RAJA_RESTRICT I     = (double *) malloc(dataSz);
+  //double *RAJA_RESTRICT Iold  = (double *) malloc(dataSz);
+
+  memset(I, 0, NN * sizeof(double));
+  memset(Iold, 0, NN * sizeof(double));
+  std::chrono::time_point<std::chrono::system_clock> start, end;
+  std::chrono::duration<double> elapsed_seconds;
+
+
+  //-------[Sequential]--------
+  start = std::chrono::system_clock::now();
+  while(iter<maxIter){
+    Jacobi<RAJA::seq_exec>(I,Iold);
+    //Jacobi(I,Iold);
+    iter++;
+  }
+  end = std::chrono::system_clock::now();
+
+  elapsed_seconds = end-start;
+  std::cout << "Seq elapsed time: " << elapsed_seconds.count() << "s\n";
+
+  //Reset data
+  iter = 0; 
+  memset(I, 0, NN * sizeof(double));
+  memset(Iold, 0, NN * sizeof(double));
+
+
+#if 0
+  //-------[Loop]--------
+  start = std::chrono::system_clock::now();
+  while(iter<maxIter){
+    Jacobi<RAJA::loop_exec>(I,Iold);
+    iter++;
+  }
+  end = std::chrono::system_clock::now();
+
+  elapsed_seconds = end-start;
+  std::cout << "loop elapsed time: " << elapsed_seconds.count() << "s\n";
+
+  //Reset data
+  iter = 0; 
+  memset(I, 0, NN * sizeof(double));
+  memset(Iold, 0, NN * sizeof(double));
+#endif
+
+
+  //-------[SIMD]---------
+  start = std::chrono::system_clock::now();
+  while(iter<maxIter){
+    Jacobi<RAJA::simd_exec>(I,Iold);
+    iter++;
+  }
+  end = std::chrono::system_clock::now();
+
+  elapsed_seconds = end-start;
+  std::time_t end_time = std::chrono::system_clock::to_time_t(end);
+  std::cout << "simd elapsed time: " << elapsed_seconds.count() << "s\n";
+
+
+  //free(I);
+  //free(Iold);
   return 0;
 }
