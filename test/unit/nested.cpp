@@ -71,7 +71,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   auto v = this->view;
   using namespace RAJA::nested;
   RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
-    std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
+    // std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
     v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
   });
@@ -132,3 +132,27 @@ using CUDATypes = ::testing::Types<
          RAJA::cuda_reduce<128>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);
 #endif
+
+TEST(Nested, TileDynamic)
+{
+  camp::idx_t count = 0;
+  camp::idx_t length = 5;
+  camp::idx_t tile_size = 3;
+  RAJA::nested::forall(
+      camp::make_tuple(Tile<1, tile<2>, RAJA::loop_exec>{tile_size},
+                       For<0, RAJA::loop_exec>{},
+                       For<1, RAJA::loop_exec>{}),
+      camp::make_tuple(RAJA::RangeSegment(0, length),
+                       RAJA::RangeSegment(0, length)),
+      [=, &count](Index_type i, Index_type j) {
+        // std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
+        //           << std::endl;
+
+        ASSERT_EQ(count,
+                  count < (length * tile_size)
+                      ? (i * 3 + j)
+                      : (length * tile_size)
+                            + (i * (length - tile_size) + j - tile_size));
+        count++;
+      });
+}
