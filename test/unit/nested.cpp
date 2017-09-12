@@ -139,14 +139,14 @@ TEST(Nested, TileDynamic)
   camp::idx_t length = 5;
   camp::idx_t tile_size = 3;
   RAJA::nested::forall(
-      camp::make_tuple(Tile<1, tile<2>, RAJA::loop_exec>{tile_size},
-                       For<0, RAJA::loop_exec>{},
-                       For<1, RAJA::loop_exec>{}),
+      camp::make_tuple(Tile<1, tile<2>, RAJA::seq_exec>{tile_size},
+                       For<0, RAJA::seq_exec>{},
+                       For<1, RAJA::seq_exec>{}),
       camp::make_tuple(RAJA::RangeSegment(0, length),
                        RAJA::RangeSegment(0, length)),
       [=, &count](Index_type i, Index_type j) {
-        // std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
-        //           << std::endl;
+        std::cerr << "i: " << get_val(i) << " j: " << j << " count: " << count
+                  << std::endl;
 
         ASSERT_EQ(count,
                   count < (length * tile_size)

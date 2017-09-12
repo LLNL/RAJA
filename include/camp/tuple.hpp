@@ -107,14 +107,23 @@ private:
                                       camp::list<Elements...>>;
 
 public:
-// Constructors
-#if !defined(CAMP_COMPILER_MSVC)
-  tuple() = default;
-#endif
-  tuple(tuple const&) = default;
-  tuple(tuple&&) = default;
-  tuple& operator=(tuple const& rhs) = default;
-  tuple& operator=(tuple&& rhs) = default;
+  // Constructors
+  CAMP_HOST_DEVICE constexpr tuple() : Base{} {};
+  CAMP_HOST_DEVICE constexpr tuple(tuple const& o) : Base{static_cast<Base>(o)}
+  {
+  }
+  CAMP_HOST_DEVICE constexpr tuple(tuple&& o)
+      : Base{std::move(static_cast<Base>(o))}
+  {
+  }
+  CAMP_HOST_DEVICE tuple& operator=(tuple const& rhs)
+  {
+    Base::operator=(static_cast<Base>(rhs.base));
+  }
+  CAMP_HOST_DEVICE tuple& operator=(tuple&& rhs)
+  {
+    Base::operator=(std::move(static_cast<Base>(rhs)));
+  }
 
   template <typename... OtherTypes>
   CAMP_HOST_DEVICE constexpr explicit tuple(OtherTypes&&... rest)

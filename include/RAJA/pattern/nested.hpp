@@ -345,7 +345,8 @@ struct IterableTiler {
 
   class iterator
   {
-    const IterableTiler &itiler;
+    // NOTE: this must be held by value for NVCC support, *even on the host*
+    const IterableTiler itiler;
     const Index_type block_id;
 
   public:
