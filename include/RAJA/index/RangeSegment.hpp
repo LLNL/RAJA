@@ -59,6 +59,8 @@
 
 #include "RAJA/util/concepts.hpp"
 
+#include <iostream>
+
 namespace RAJA
 {
 
@@ -138,6 +140,15 @@ struct TypedRangeSegment {
   {
   }
 
+  //! copy assignment
+  RAJA_HOST_DEVICE TypedRangeSegment& operator=(TypedRangeSegment const& o)
+  {
+    m_begin = o.m_begin;
+    m_end = o.m_end;
+    m_size = o.m_size;
+    return *this;
+  }
+
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeSegment() {}
 
@@ -169,6 +180,19 @@ struct TypedRangeSegment {
    * \return the range (end - begin) of this Segment
    */
   RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+
+  //! Create a slice of this instance as a new instance
+  /*!
+   * \return A new instance spanning *begin() + begin to *begin() + begin +
+   * length
+   */
+  RAJA_HOST_DEVICE TypedRangeSegment slice(Index_type begin,
+                                           Index_type length) const
+  {
+    auto start = m_begin[0] + begin;
+    auto end = start + length > m_end[0] ? m_end[0] : start + length;
+    return TypedRangeSegment{start, end};
+  }
 
   //! equality comparison
   /*!
@@ -277,7 +301,7 @@ struct TypedRangeStrideSegment {
         m_end(iterator(end, stride)),
         // essentially a ceil((end-begin)/stride) but using integer math,
         // and allowing for negative strides
-        m_size((end - begin + stride - ( stride > 0 ? 1 : -1  ) ) / stride)
+        m_size((end - begin + stride - (stride > 0 ? 1 : -1)) / stride)
   {
     // if m_size was initialized as negative, that indicates a zero iteration
     // space
@@ -335,6 +359,19 @@ struct TypedRangeStrideSegment {
    * \return the total number of steps for this Segment
    */
   RAJA_HOST_DEVICE StorageT size() const { return m_size; }
+
+  //! Create a slice of this instance as a new instance
+  /*!
+   * \return A new instance spanning *begin() + begin * stride to *begin() +
+   * (begin + length) * stride
+   */
+  RAJA_HOST_DEVICE TypedRangeStrideSegment slice(Index_type begin,
+                                                 Index_type length) const
+  {
+    return TypedRangeStrideSegment{*(this->begin() + begin),
+                                   *(this->begin() + begin + length),
+                                   m_begin.stride};
+  }
 
   //! equality comparison
   /*!
@@ -394,8 +431,8 @@ using common_type_t = typename common_type<Ts...>::type;
 template <typename BeginT,
           typename EndT,
           typename Common = detail::common_type_t<BeginT, EndT>>
-RAJA_HOST_DEVICE
-TypedRangeSegment<Common> make_range(BeginT&& begin, EndT&& end)
+RAJA_HOST_DEVICE TypedRangeSegment<Common> make_range(BeginT&& begin,
+                                                      EndT&& end)
 {
   return {begin, end};
 }
@@ -414,10 +451,10 @@ template <typename BeginT,
           typename EndT,
           typename StrideT,
           typename Common = detail::common_type_t<BeginT, EndT, StrideT>>
-RAJA_HOST_DEVICE
-TypedRangeStrideSegment<Common> make_strided_range(BeginT&& begin,
-                                                   EndT&& end,
-                                                   StrideT&& stride)
+RAJA_HOST_DEVICE TypedRangeStrideSegment<Common> make_strided_range(
+    BeginT&& begin,
+    EndT&& end,
+    StrideT&& stride)
 {
   return {begin, end, stride};
 }
@@ -456,7 +493,7 @@ namespace std
 //! specialization of swap for TypedRangeSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
-                      RAJA::TypedRangeSegment<T>& b)
+                                       RAJA::TypedRangeSegment<T>& b)
 {
   a.swap(b);
 }
@@ -464,7 +501,7 @@ RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeSegment<T>& a,
 //! specialization of swap for TypedRangeStrideSegment
 template <typename T>
 RAJA_HOST_DEVICE RAJA_INLINE void swap(RAJA::TypedRangeStrideSegment<T>& a,
-                      RAJA::TypedRangeStrideSegment<T>& b)
+                                       RAJA::TypedRangeStrideSegment<T>& b)
 {
   a.swap(b);
 }

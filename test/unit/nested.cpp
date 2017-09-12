@@ -71,6 +71,7 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   auto v = this->view;
   using namespace RAJA::nested;
   RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
+    std::cerr << "i: " << get_val(i) << " j: " << j << std::endl;
     v(get_val(i), j) = get_val(i) * x_len + j;
     tsum += get_val(i) * 1.1 + j;
   });
@@ -92,6 +93,12 @@ using TestTypes =
     ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
                           list<TypedIndex, Index_type>,
                           RAJA::seq_reduce>,
+                     list<Policy<Tile<1, tile_static<2>, RAJA::loop_exec>,
+                                 Tile<0, tile<2>, RAJA::loop_exec>,
+                                 For<0, s>,
+                                 For<1, s>>,
+                          list<Index_type, Index_type>,
+                          RAJA::seq_reduce>,
                      list<Policy<Collapse<s, For<0>, For<1>>>,
                           list<Index_type, Index_type>,
                           RAJA::seq_reduce>>;
@@ -99,10 +106,16 @@ using TestTypes =
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Nested, TestTypes);
 
 #if defined(RAJA_ENABLE_OPENMP)
-using OMPTypes = ::testing::Types<list<
-    Policy<For<1, RAJA::omp_parallel_for_exec>, TypedFor<0, s, TypedIndex>>,
-    list<TypedIndex, Index_type>,
-    RAJA::omp_reduce>>;
+using OMPTypes = ::testing::Types<
+    list<
+        Policy<For<1, RAJA::omp_parallel_for_exec>, TypedFor<0, s, TypedIndex>>,
+        list<TypedIndex, Index_type>,
+        RAJA::omp_reduce>,
+    list<Policy<Tile<1, tile_static<2>, RAJA::omp_parallel_for_exec>,
+                For<1, RAJA::loop_exec>,
+                TypedFor<0, s, TypedIndex>>,
+         list<TypedIndex, Index_type>,
+         RAJA::omp_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
 #endif
 #if defined(RAJA_ENABLE_TBB)

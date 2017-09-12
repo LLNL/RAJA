@@ -150,9 +150,26 @@ namespace type
 
   namespace cv
   {
+    template <class T>
+    struct rem_s {
+      using type = T;
+    };
+    template <class T>
+    struct rem_s<const T> {
+      using type = T;
+    };
+    template <class T>
+    struct rem_s<volatile T> {
+      using type = T;
+    };
+    template <class T>
+    struct rem_s<const volatile T> {
+      using type = T;
+    };
+
     /// remove const and volatile qualifiers from T
     template <class T>
-    using rem = c::rem<v::rem<T>>;
+    using rem = typename rem_s<T>::type;
 
     /// add const and volatile qualifiers to T
     template <class T>
@@ -161,7 +178,7 @@ namespace type
 }  // end namespace type
 
 template <typename T>
-using decay = type::ref::rem<type::cv::rem<T>>;
+using decay = type::cv::rem<type::ref::rem<T>>;
 
 template <typename T>
 using plain = type::ref::rem<T>;
