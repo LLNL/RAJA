@@ -118,14 +118,14 @@ struct select_element<0, AType_in> {
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  static constexpr return_type get(AType_in& a, size_t offset)
+  static constexpr return_type get(AType_in& a, size_t)
   {
     return get_data<index_storage<0, value_type>>(a);
   }
 
   RAJA_HOST_DEVICE
   RAJA_INLINE
-  static constexpr const_return_type get(const AType_in& a, size_t offset)
+  static constexpr const_return_type get(const AType_in& a, size_t)
   {
     return get_data<const index_storage<0, value_type>>(a);
   }
@@ -169,7 +169,7 @@ struct index_array
   static_assert(Size > 0, "index_arrays must have at least one element");
   using base =
       detail::index_array_helper<Type, VarOps::make_index_sequence<Size>>;
-  using base::index_array_helper;
+  using base::base;
   using base::operator[];
 };
 

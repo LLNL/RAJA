@@ -12,7 +12,6 @@ module RAJA {
     header "RAJA/internal/DepGraphNode.hpp"
     header "RAJA/internal/fault_tolerance.hpp"
     header "RAJA/internal/ForallNPolicy.hpp"
-    header "RAJA/internal/IndexArray.hpp"
     header "RAJA/internal/Iterators.hpp"
     header "RAJA/internal/LegacyCompatibility.hpp"
     header "RAJA/internal/MemUtils_CPU.hpp"

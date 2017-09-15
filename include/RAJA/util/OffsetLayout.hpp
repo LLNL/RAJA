@@ -59,6 +59,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
+#include "RAJA/internal/IndexArray.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
@@ -100,15 +101,7 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
   {
-    return internal::OffsetLayout_impl<IndexRange, IdxLin>(offsets_in, rhs);
-  }
-
-private:
-  constexpr RAJA_INLINE OffsetLayout_impl(
-      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
-      const Layout<sizeof...(RangeInts), IdxLin>& rhs)
-      : base_{rhs}, offsets{offsets_in[RangeInts]...}
-  {
+    return OffsetLayout_impl{offsets_in, {rhs.sizes[RangeInts]...}};
   }
 };
 
