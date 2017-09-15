@@ -75,7 +75,7 @@ struct OffsetLayout_impl;
 template <size_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
   using IndexRange = VarOps::index_sequence<RangeInts...>;
-  using Base = LayoutBase_impl<IndexRange, IdxLin>;
+  using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   IdxLin offsets[sizeof...(RangeInts)];

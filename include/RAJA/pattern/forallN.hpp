@@ -105,8 +105,7 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   RAJA_INLINE void operator()(BODY const &body) const
   {
     ForallN_PeelOuter<build_device, NextExec, BODY> outer(next_exec, body);
-    using policy::sequential::forall_impl;
-    forall_impl(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
+    wrap::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
   }
 };
 
