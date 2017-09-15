@@ -26,11 +26,12 @@ matrix:
     - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
   - compiler: clang-5
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
-    env:
-    - COMPILER=clang++-5.0.0
-    - LLVM_VERSION=5.0.0
-    - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS='-fmodules -Wincomplete-umbrella'"
+    env: #multi-line string to deal with breaking on spaces
+    - |
+      COMPILER=clang++-5.0.0
+      LLVM_VERSION=5.0.0
+      DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
+      CMAKE_EXTRA_FLAGS='-DCMAKE_CXX_FLAGS="-fmodules -Wincomplete-umbrella"'
   - compiler: clang-3.9
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
