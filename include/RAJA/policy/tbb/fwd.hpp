@@ -74,27 +74,10 @@ RAJA_INLINE void forall(const tbb_for_dynamic& p,
                         Iterable&& iter,
                         Func&& loop_body);
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_for_dynamic& p,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body);
-
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body);
-
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          size_t ChunkSize>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_for_static<ChunkSize>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body);
 
 }  // closing brace for impl namespace
 

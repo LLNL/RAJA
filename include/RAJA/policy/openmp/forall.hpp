@@ -72,6 +72,7 @@
 
 #include <iostream>
 #include <thread>
+#include <type_traits>
 
 #include <omp.h>
 
@@ -96,25 +97,6 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
   }
 }
 
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          typename InnerPolicy>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_parallel_exec<InnerPolicy>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-#pragma omp parallel
-  {
-    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
-    forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
-                               icount,
-                               std::forward<Func>(body));
-  }
-}
-
 ///
 /// OpenMP for nowait policy implementation
 ///
@@ -133,22 +115,6 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
   }
 }
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_nowait_exec&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-#pragma omp for nowait
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  }
-}
-
 ///
 /// OpenMP parallel for policy implementation
 ///
@@ -162,22 +128,6 @@ RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
 #pragma omp for
   for (decltype(distance) i = 0; i < distance; ++i) {
     loop_body(begin[i]);
-  }
-}
-
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_exec&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-#pragma omp for
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
   }
 }
 
@@ -198,26 +148,6 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
     loop_body(begin[i]);
   }
 }
-
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          size_t ChunkSize>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_static<ChunkSize>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-#pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  }
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////

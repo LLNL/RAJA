@@ -73,10 +73,6 @@ template <typename Iterable, typename Func>
 RAJA_INLINE void
 forall(const simd_exec &, Iterable &&, Func &&);
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
-
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace

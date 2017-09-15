@@ -101,20 +101,6 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
   }
 }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
-forall_Icount(const seq_exec &, Iterable &&iter, IndexType icount, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-
-  RAJA_NO_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
-
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace

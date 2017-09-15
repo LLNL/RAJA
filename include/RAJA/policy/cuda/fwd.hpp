@@ -74,15 +74,6 @@ template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
 
 
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
-
-
 template <typename LoopBody,
           size_t BlockSize,
           bool Async,
@@ -91,15 +82,6 @@ RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                         const StaticIndexSet<SegmentTypes...>&,
                         LoopBody&&);
 
-
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>&,
-    LoopBody&&);
 
 }  // closing brace for impl namespace
 

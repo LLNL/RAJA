@@ -81,14 +81,6 @@ RAJA_INLINE void forall(const loop_exec &,
                         Iterable &&iter,
                         Func &&loop_body);
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const loop_exec &,
-              const PolicyBase &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body);
-
 }  // closing brace for impl namespace
 
 }  // closing brace for RAJA namespace

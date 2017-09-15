@@ -152,31 +152,6 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
   }
 }
 
-/*!
- ******************************************************************************
- *
- * \brief  CUDA kernal forall_Icount template for indiraction array.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename Iterator,
-          typename LoopBody,
-          typename IndexType,
-          typename IndexType2>
-__global__ void forall_Icount_cuda_kernel(LoopBody loop_body,
-                                          const Iterator idx,
-                                          IndexType length,
-                                          IndexType2 icount)
-{
-  auto body = loop_body;
-  auto ii = static_cast<IndexType>(getGlobalIdx_1D_1D());
-  if (ii < length) {
-    body(static_cast<IndexType>(ii + icount), idx[ii]);
-  }
-}
-
 }  // end INTERNAL namespace for helper functions
 
 //
@@ -225,49 +200,6 @@ RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
 }
 
 
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>,
-              Iterable&& iter,
-              IndexType icount,
-              LoopBody&& loop_body)
-{
-  beforeCudaKernelLaunch();
-
-  auto body = loop_body;
-
-  auto first_begin = std::begin(iter);
-  auto final_end = std::end(iter);
-  auto total_len = std::distance(first_begin, final_end);
-
-  auto max_step_size = (getCudaMemblockUsedCount() > 0)
-                           ? BlockSize * RAJA_CUDA_MAX_NUM_BLOCKS
-                           : total_len;
-
-  for (decltype(total_len) step_size, offset = 0; offset < total_len;
-       offset += step_size) {
-
-    step_size = RAJA_MIN(total_len - offset, max_step_size);
-
-    auto begin = first_begin + offset;
-    auto end = begin + step_size;
-
-    auto len = std::distance(begin, end);
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
-
-    INTERNAL::forall_Icount_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize,
-                                                                  BlockSize)>>>(
-        body, std::move(begin), len, static_cast<IndexType>(icount + offset));
-  }
-
-  RAJA_CUDA_CHECK_AND_SYNC(Async);
-
-  afterCudaKernelLaunch();
-}
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -301,40 +233,6 @@ RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                      CallForall(),
                      cuda_exec<BlockSize, Async>(),
                      loop_body);
-  }  // iterate over segments of index set
-
-  RAJA_CUDA_CHECK_AND_SYNC(Async);
-}
-
-
-/*!
- ******************************************************************************
- *
- * \brief  Sequential iteration over segments of index set and
- *         CUDA execution for segments.
- *
- *         This method passes index count to segment iteration.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>& iset,
-    LoopBody&& loop_body)
-{
-  auto num_seg = iset.getNumSegments();
-  for (decltype(num_seg) isi = 0; isi < num_seg; ++isi) {
-    iset.segmentCall(isi,
-                     CallForallIcount(iset.getStartingIcount(isi)),
-                     cuda_exec<BlockSize>(),
-                     loop_body);
-
   }  // iterate over segments of index set
 
   RAJA_CUDA_CHECK_AND_SYNC(Async);
