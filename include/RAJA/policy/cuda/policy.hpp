@@ -11,6 +11,8 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#if defined(RAJA_ENABLE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -380,4 +382,5 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 
+#endif // RAJA_ENABLE_CUDA
 #endif

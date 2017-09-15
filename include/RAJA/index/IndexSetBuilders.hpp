@@ -56,11 +56,10 @@
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
+#include "RAJA/index/IndexSet.hpp"
 
 namespace RAJA
 {
-
-class IndexSet;
 
 /*!
  ******************************************************************************
