@@ -497,9 +497,11 @@ public:
   {
     StaticIndexSet<T0, TREST...> *retVal = new StaticIndexSet<T0, TREST...>();
     int numSeg = getNumSegments();
-    for (auto &seg : segIds)
-      if (seg >= 0 && seg < numSeg)
+    for (auto &seg : segIds) {
+      if (seg >= 0 && seg < numSeg) {
         segment_push_into(seg, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      }
+    }
     return retVal;
   }
 
