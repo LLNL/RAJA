@@ -15,14 +15,14 @@
 Tutorial
 ========
 
-This is an overview of the examples included in RAJA and an overview view
-of the different features each examples highlights.
+This is an overview of the examples included in RAJA. In particular
+we highlight RAJA features which simplify scientific computing.
 
 ---------------
 Vector Addition
 ---------------
-In this example, two arrays A, and B, of length N are added together
-and the result is stored in a third vector C. As a starting point we begin
+In this example, two arrays A, and B, of length N are added together.
+The result is stored in a third array C. As a starting point we begin
 with a classic C++ style for loop and illustrate how to create a RAJA analog. 
 
 .. code-block:: cpp
@@ -31,15 +31,15 @@ with a classic C++ style for loop and illustrate how to create a RAJA analog.
     C[i] = A[i] + B[i];
   }
 
-A RAJA analog of the previous example is simply the following
+The RAJA analog is simply the following
 
 .. code-block:: cpp
                 
-  RAJA::forall<RAJA::exec_policy>(0, len, [=] (int i) {
+  RAJA::forall<RAJA::exec_policy>(0, N, [=] (int i) {
     C[i] = A[i] + b[i];
   });
 
-Where exec_policy may be any policy listed in the refence guide (TODO Add reference guide). 
+where RAJA::exec_policy may be any policy listed in the refence guide.  
   
 ---------------------
 Matrix Multiplication
@@ -61,9 +61,6 @@ of matrix multiplication
       Cview(row, col) = dot;    
     }
   }
-                
-and highlight the presence of nested loops. 
-
 
 
 -------------
@@ -75,24 +72,23 @@ In this example we solve the following boundary value equation
    
   U_{xx} + U_{yy} &= f, \quad U \in (0,1) \times (0,1), \\
   U(0,y) = U(1,y) &= 0, \\
-  U(x,0) = U(x,1) &= 0.
+  U(x,0) = U(x,1) &= 0,
 
-Where
+where
 
 .. math::
 
-  f = 2x(y-1)(y-2x+xy+2) e^{(x-y)}
+  f = 2x(y-1)(y-2x+xy+2) e^{(x-y)} .
 
-To discretize the equation we consider a uniform grid
-on the domain [0,1] \times [0,1]. Furthemore we approximate
-spatial derivatives as
+To discretize the equation we consider the following
+difference approximations on a structured grid
 
 .. math::
    
    U_{xx} \approx \frac{U_{i+1,j} - 2U_{i,j} + U_{i+1,j}}{(\Delta x)^2}, \\
    U_{yy} \approx \frac{U_{i,j+1} - 2U_{i,j} + U_{i,j+1}}{(\Delta y)^2},
 
-where (i,j) corresponds to a location on the structured grid. 
+where (i,j) corresponds to a location on grid. 
 
    
 -------------
@@ -117,9 +113,8 @@ where
   D_{xx} p^{n} = \frac{1}{\Delta x^2} \left( c_0 p^{n} + \sum_{k=1}^n c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
   D_{yy} p^{n} = \frac{1}{\Delta y^2} \left( c_0 p^{n} + \sum_{k=1}^n c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
 
-Here the equation is assumed to be discretized on a structured grid where n corresponds to a particular time step and (i,j)
-corresponds to a location on the structured grid. 
-
+As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and (i,j)
+corresponds to a location on the grid. 
    
 ---------------
 Custom Indexset
@@ -128,5 +123,4 @@ Custom Indexset
 ---------------
 Gauss-Sidel 
 ---------------
-In this example we revisit the equation solved by the Jacobi method and consider
-an alternative scheme, Gauss-Sidel. 
+In this example we revisit the equation solved by the Jacobi method consider the Gausidel-Seidel scheme.
