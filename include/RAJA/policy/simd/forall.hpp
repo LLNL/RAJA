@@ -74,14 +74,15 @@
 
 namespace RAJA
 {
-
-namespace impl
+namespace policy
+{
+namespace simd
 {
 
 
 template <typename Iterable, typename Func>
 RAJA_INLINE void
-forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
+forall_impl(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -92,7 +93,9 @@ forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
   }
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for simd namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

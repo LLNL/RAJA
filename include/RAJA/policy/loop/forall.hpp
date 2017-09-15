@@ -71,10 +71,10 @@ using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
-
-namespace impl
+namespace policy
 {
-
+namespace loop
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
+RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -97,7 +97,9 @@ RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
   }
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for loop namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

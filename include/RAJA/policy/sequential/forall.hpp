@@ -7,7 +7,7 @@
  *          template methods for sequential execution.
  *
  *          These methods should work on any platform.
- *          
+ *
  *          Note: GNU compiler does not enforce sequential iterations.
  *
  ******************************************************************************
@@ -64,17 +64,13 @@
 
 #include "RAJA/policy/sequential/policy.hpp"
 
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
-
-namespace impl
+namespace policy
+{
+namespace sequential
 {
 
 
@@ -89,7 +85,7 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
+RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -101,7 +97,9 @@ RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&body)
   }
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for sequential namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

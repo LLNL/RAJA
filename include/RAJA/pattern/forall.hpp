@@ -105,7 +105,7 @@
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/policy/fwd.hpp"
+#include "RAJA/policy/sequential/forall.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
@@ -155,6 +155,29 @@ struct CallForallIcount {
 };
 }
 
+namespace policy
+{
+namespace indexset
+{
+template <typename SegmentIterPolicy,
+          typename SegmentExecPolicy,
+          typename LoopBody,
+          typename... SegmentTypes>
+RAJA_INLINE void forall_impl(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
+                             const StaticIndexSet<SegmentTypes...>& iset,
+                             LoopBody loop_body)
+{
+  using policy::sequential::forall_impl;
+  forall_impl(SegmentIterPolicy(), iset, [=](int segID) {
+    iset.segmentCall(segID,
+                     detail::CallForall{},
+                     SegmentExecPolicy(),
+                     loop_body);
+  });
+}
+}
+}
+
 /*!
  ******************************************************************************
  *
@@ -164,22 +187,6 @@ struct CallForallIcount {
  */
 namespace wrap
 {
-
-template <typename SegmentIterPolicy,
-          typename SegmentExecPolicy,
-          typename LoopBody,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
-                        const StaticIndexSet<SegmentTypes...>& iset,
-                        LoopBody loop_body)
-{
-  impl::forall(SegmentIterPolicy(), iset, [=](int segID) {
-    iset.segmentCall(segID,
-                     detail::CallForall{},
-                     SegmentExecPolicy(),
-                     loop_body);
-  });
-}
 
 
 /*!
@@ -200,7 +207,8 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                                LoopBody loop_body)
 {
   // no need for icount variant here
-  impl::forall(SegmentIterPolicy(), iset, [=](int segID) {
+  using policy::sequential::forall_impl;
+  forall_impl(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID,
                      detail::CallForallIcount(iset.getStartingIcount(segID)),
                      SegmentExecPolicy(),
@@ -228,9 +236,10 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 #endif
 
   typename std::remove_reference<LoopBody>::type body = loop_body;
-  impl::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               body);
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              std::forward<Container>(c),
+              body);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -267,7 +276,8 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   detail::icount_adaptder<Container, LoopBody, IndexType> adapted(c,
                                                                   loop_body,
                                                                   icount);
-  impl::forall(std::forward<ExecutionPolicy>(p), range, adapted);
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
@@ -311,9 +321,10 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
                 "IndexSet policy by mistake?");
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<IdxSet>(c),
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              std::forward<IdxSet>(c),
+              std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -358,9 +369,10 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               std::forward<Container>(c),
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              std::forward<Container>(c),
+              std::forward<LoopBody>(loop_body));
 }
 
 //
@@ -423,9 +435,10 @@ forall(ExecutionPolicy&& p, Iterator begin, Iterator end, LoopBody&& loop_body)
 
   auto len = std::distance(begin, end);
   using SpanType = impl::Span<Iterator, decltype(len)>;
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               SpanType{begin, len},
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              SpanType{begin, len},
+              std::forward<LoopBody>(loop_body));
 }
 
 //
@@ -458,9 +471,10 @@ forall(ExecutionPolicy&& p,
   static_assert(
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               make_range(begin, end),
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              make_range(begin, end),
+              std::forward<LoopBody>(loop_body));
 }
 
 /*!
@@ -529,9 +543,10 @@ forall(ExecutionPolicy&& p,
                                                            IndexType3>::value,
                 "Cannot deduce a common type between begin and end for Range "
                 "creation");
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               make_strided_range(begin, end, stride),
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              make_strided_range(begin, end, stride),
+              std::forward<LoopBody>(loop_body));
 }
 
 static_assert(
@@ -605,9 +620,10 @@ forall(ExecutionPolicy&& p,
        const IndexType len,
        LoopBody&& loop_body)
 {
-  wrap::forall(std::forward<ExecutionPolicy>(p),
-               TypedListSegment<ArrayIdxType>(idx, len, Unowned),
-               std::forward<LoopBody>(loop_body));
+  using policy::sequential::forall_impl;
+  forall_impl(std::forward<ExecutionPolicy>(p),
+              TypedListSegment<ArrayIdxType>(idx, len, Unowned),
+              std::forward<LoopBody>(loop_body));
 }
 
 /*!
