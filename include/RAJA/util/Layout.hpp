@@ -86,7 +86,7 @@ struct stride_calculator {
 template <size_t n_dims, typename IdxLin>
 struct stride_calculator<n_dims, n_dims, IdxLin> {
   constexpr IdxLin operator()(IdxLin cur_stride,
-                              IdxLin const (&sizes)[n_dims]) const
+                              IdxLin const (&)[n_dims]) const
   {
     return cur_stride;
   }
