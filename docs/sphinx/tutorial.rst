@@ -121,6 +121,6 @@ Custom Indexset
 ---------------
 
 ---------------
-Gauss-Sidel 
+Gauss-Seidel
 ---------------
-In this example we revisit the equation solved by the Jacobi method consider the Gausidel-Seidel scheme.
+In this example we revisit the equation solved by the Jacobi method consider the Gauss-Seidel scheme.
