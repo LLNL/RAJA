@@ -100,7 +100,16 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
   {
-    return OffsetLayout_impl{offsets_in, {rhs.sizes[RangeInts]...}};
+    OffsetLayout_impl ret{rhs};
+    VarOps::ignore_args((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
+    return ret;
+  }
+
+private:
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+      : base_{rhs}
+  {
   }
 };
 
@@ -142,9 +151,11 @@ auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
   for (size_t i = 0; i < Rank; ++i) {
     sizes[i] = upper[i] - lower[i] + 1;
   }
-  return internal::OffsetLayout_impl<VarOps::make_index_sequence<Rank>,
-                                     IdxLin>::
-      from_layout_and_offsets(lower, make_permuted_layout(sizes, permutation));
+  return internal::OffsetLayout_impl<
+      VarOps::make_index_sequence<Rank>,
+      IdxLin>::from_layout_and_offsets(lower,
+                                       make_permuted_layout(sizes,
+                                                            permutation));
 }
 
 }  // namespace RAJA
