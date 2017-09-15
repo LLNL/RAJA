@@ -1,4 +1,7 @@
 *.pyc
 *.o
+*.a
 *.exe
+*.gch
 build/
+build-*/

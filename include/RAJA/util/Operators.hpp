@@ -553,13 +553,13 @@ template <typename Function,
           typename Arg1 = Return,
           typename Arg2 = Arg1>
 struct BinaryFunction
-    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg1>(),
-                                                           val<Arg2>()))) {
+    : DefineConcept(convertible_to<Return>(
+          camp::val<Function>()(camp::val<Arg1>(), camp::val<Arg2>()))) {
 };
 
 template <typename Function, typename Return, typename Arg = Return>
 struct UnaryFunction
-    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg>()))) {
+    : DefineConcept(convertible_to<Return>(camp::val<Function>()(camp::val<Arg>()))) {
 };
 
 namespace detail

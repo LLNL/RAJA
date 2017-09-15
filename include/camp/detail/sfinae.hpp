@@ -1,3 +1,6 @@
+#ifndef CAMP_DETAIL_SFINAE_HPP
+#define CAMP_DETAIL_SFINAE_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,72 +43,44 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
+#include "camp/helpers.hpp"
+#include "camp/value.hpp"
+#include "camp/number/number.hpp"
 
-#ifndef RAJA_forward_cuda_HXX
-#define RAJA_forward_cuda_HXX
+#include <type_traits>
 
-#include "RAJA/config.hpp"
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-
-namespace RAJA
+namespace camp
 {
 
-namespace impl
+  /// \cond
+namespace detail
 {
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
+  // caller pattern from metal library
+  template <template <typename...> class expr, typename... vals>
+  struct caller;
 
+  template <
+      template <typename...> class expr,
+      typename... vals,
+      typename std::enable_if<is_value<expr<vals...>>::value>::type* = nullptr>
+  value<expr<vals...>> sfinae(caller<expr, vals...>*);
 
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
+  value<> sfinae(...);
 
+  template <template <typename...> class expr, typename... vals>
+  struct caller : decltype(sfinae(declptr<caller<expr, vals...>>())) {
+  };
 
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>&,
-                        LoopBody&&);
+  template <template <typename...> class Expr, typename... Vals>
+  struct call_s : caller<Expr, Vals...> {
+  };
 
+  template <template <typename...> class Expr, typename... Vals>
+  using call = Expr<Vals...>;
+};
+/// \endcond
 
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>&,
-    LoopBody&&);
+}  // end namespace camp
 
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
-
-#endif  // closing endif for header file include guard
+#endif /* CAMP_DETAIL_SFINAE_HPP */

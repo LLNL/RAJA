@@ -54,6 +54,7 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+#include "camp/camp.hpp"
 
 namespace RAJA
 {
@@ -81,9 +82,9 @@ struct Permute {
 template <typename Range, typename PERM, typename BODY>
 struct ForallN_Permute_Functor_impl;
 
-template <size_t... Range, size_t... PermInts, typename BODY>
-struct ForallN_Permute_Functor_impl<VarOps::index_sequence<Range...>,
-                                    VarOps::index_sequence<PermInts...>,
+template <camp::idx_t... Range, camp::idx_t... PermInts, typename BODY>
+struct ForallN_Permute_Functor_impl<camp::idx_seq<Range...>,
+                                    camp::idx_seq<PermInts...>,
                                     BODY> {
   RAJA_INLINE
   constexpr explicit ForallN_Permute_Functor_impl(BODY const &b) : body(b) {}
@@ -109,7 +110,7 @@ struct ForallN_Permute_Functor_impl<VarOps::index_sequence<Range...>,
 };
 template <typename PERM, typename BODY>
 using ForallN_Permute_Functor =
-    ForallN_Permute_Functor_impl<VarOps::make_index_sequence<PERM::size>,
+    ForallN_Permute_Functor_impl<camp::idx_seq_from_t<PERM>,
                                  PERM,
                                  BODY>;
 

@@ -1,3 +1,6 @@
+#ifndef CAMP_NUMBER_IF_HPP
+#define CAMP_NUMBER_IF_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,72 +43,43 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
+#include "camp/list/list.hpp"
+#include "camp/number/number.hpp"
+#include "camp/value.hpp"
 
-#ifndef RAJA_forward_cuda_HXX
-#define RAJA_forward_cuda_HXX
+#include <type_traits>
 
-#include "RAJA/config.hpp"
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-
-namespace RAJA
+namespace camp
 {
 
-namespace impl
-{
+// TODO: document
+template <bool Cond, typename Then, typename Else>
+struct if_cs {
+  using type = Then;
+};
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
+template <typename Then, typename Else>
+struct if_cs<false, Then, Else> {
+  using type = Else;
+};
 
+// TODO: document
+template <bool Cond, typename Then, typename Else>
+using if_c = typename if_cs<Cond, Then, Else>::type;
 
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
+// TODO: document
+template <typename Cond, typename Then, typename Else>
+struct if_s : if_cs<Cond::value, Then, Else> {
+};
 
+template <typename Then, typename Else>
+struct if_s<nil, Then, Else> : if_cs<false, Then, Else> {
+};
 
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>&,
-                        LoopBody&&);
+// TODO: document
+template <typename... Ts>
+using if_ = typename if_s<Ts...>::type;
 
+}  // end namespace camp
 
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>&,
-    LoopBody&&);
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
-
-#endif  // closing endif for header file include guard
+#endif /* CAMP_NUMBER_IF_HPP */

@@ -97,6 +97,18 @@ macro(raja_add_library)
       target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES})
 
     else ()
+			# AJK: LIST(FILTER... doesn't work on chaos5's latest cmake version (3.4.1)
+      # list(FILTER arg_SOURCES EXCLUDE REGEX ".*hpp")
+      # so let's do it another way:      
+      set(old_SOURCES ${arg_SOURCES})
+      set(arg_SOURCES )
+      foreach(item ${old_SOURCES})        
+        STRING(REGEX MATCH "hpp$" result ${item})
+        IF(NOT result)          
+          LIST(APPEND arg_SOURCES ${item})
+        ENDIF()
+      endforeach()
+      
       set_source_files_properties(
         ${arg_SOURCES}
         PROPERTIES

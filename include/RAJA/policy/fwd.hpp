@@ -61,6 +61,9 @@
 #if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/fwd.hpp"
 #endif
+#if defined(RAJA_ENABLE_TBB)
+#include "RAJA/policy/tbb/fwd.hpp"
+#endif
 #include "RAJA/policy/sequential/fwd.hpp"
 #include "RAJA/policy/simd/fwd.hpp"
 

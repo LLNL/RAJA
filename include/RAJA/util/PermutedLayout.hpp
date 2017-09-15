@@ -96,7 +96,7 @@ namespace RAJA
  */
 template <size_t Rank, typename IdxLin = Index_type>
 auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
-                          std::array<size_t, Rank> permutation)
+                          std::array<camp::idx_t, Rank> permutation)
     -> Layout<Rank, IdxLin>
 {
   std::array<IdxLin, Rank> strides;
@@ -118,10 +118,10 @@ auto make_permuted_layout(std::array<IdxLin, Rank> sizes,
 }
 
 
-template <size_t... Ints>
-using Perm = VarOps::index_sequence<Ints...>;
-template <size_t N>
-using MakePerm = VarOps::make_index_sequence<N>;
+template <camp::idx_t... Ints>
+using Perm = camp::idx_seq<Ints...>;
+template <camp::idx_t N>
+using MakePerm = typename camp::make_idx_seq<N>::type;
 
 }  // namespace RAJA
 

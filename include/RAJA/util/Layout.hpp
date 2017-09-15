@@ -64,14 +64,13 @@ namespace RAJA
 {
 
 template <typename Range, typename IdxLin = Index_type>
-struct LayoutBase_impl {
-};
+struct LayoutBase_impl;
 
-template <size_t... RangeInts, typename IdxLin>
-struct LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
+template <camp::idx_t... RangeInts, typename IdxLin>
+struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin> {
 public:
   typedef IdxLin IndexLinear;
-  typedef VarOps::make_index_sequence<sizeof...(RangeInts)> IndexRange;
+  typedef camp::make_idx_seq_t<sizeof...(RangeInts)> IndexRange;
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
@@ -205,12 +204,12 @@ private:
   }
 };
 
-template <size_t... RangeInts, typename IdxLin>
+template <camp::idx_t... RangeInts, typename IdxLin>
 constexpr size_t
-    LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::n_dims;
-template <size_t... RangeInts, typename IdxLin>
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin>::n_dims;
+template <camp::idx_t... RangeInts, typename IdxLin>
 constexpr size_t
-    LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin>::limit;
 
 
 /*!
@@ -263,7 +262,7 @@ constexpr size_t
  *
  */
 template <size_t n_dims, typename IdxLin = Index_type>
-using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+using Layout = LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin>;
 
 template <typename IdxLin, typename... DimTypes>
 struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
@@ -305,7 +304,7 @@ struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
                                               Indices &... indices) const
   {
-    toIndicesHelper(VarOps::make_index_sequence<sizeof...(DimTypes)>{},
+    toIndicesHelper(camp::make_idx_seq_t<sizeof...(DimTypes)>{},
                     std::forward<IdxLin>(linear_index),
                     std::forward<Indices &>(indices)...);
   }
@@ -318,9 +317,9 @@ private:
    * result to typed indices
    *
    */
-  template <typename... Indices, size_t... RangeInts>
+  template <typename... Indices, camp::idx_t... RangeInts>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndicesHelper(
-      VarOps::index_sequence<RangeInts...>,
+      camp::idx_seq<RangeInts...>,
       IdxLin linear_index,
       Indices &... indices) const
   {

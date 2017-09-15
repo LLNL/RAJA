@@ -89,11 +89,10 @@ namespace impl
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
+  RAJA_EXTRACT_BED_IT(iter);
+
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(*(begin_it + i));
   }
 }
 
@@ -101,11 +100,9 @@ template <typename Iterable, typename Func, typename IndexType>
 RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
 forall_Icount(const loop_exec &, Iterable &&iter, IndexType icount, Func &&body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
+  RAJA_EXTRACT_BED_IT(iter);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(static_cast<IndexType>(i + icount), *(begin_it + i));
   }
 }
 

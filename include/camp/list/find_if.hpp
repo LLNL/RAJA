@@ -1,3 +1,6 @@
+#ifndef CAMP_LIST_FIND_IF_HPP
+#define CAMP_LIST_FIND_IF_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,72 +43,70 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
+#include <cstddef>
+#include <type_traits>
 
-#ifndef RAJA_forward_cuda_HXX
-#define RAJA_forward_cuda_HXX
+#include "camp/lambda.hpp"
+#include "camp/list/list.hpp"
+#include "camp/number.hpp"
+#include "camp/value.hpp"
 
-#include "RAJA/config.hpp"
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-#include "RAJA/policy/sequential/policy.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-
-namespace RAJA
+namespace camp
 {
 
-namespace impl
+/// \cond
+namespace detail
 {
+  template <template <typename...> class Cond, typename... Elements>
+  struct _find_if;
+  template <template <typename...> class Cond, typename First, typename... Rest>
+  struct _find_if<Cond, First, Rest...> {
+    using type = if_<typename Cond<First>::type,
+                     First,
+                     typename _find_if<Cond, Rest...>::type>;
+  };
+  template <template <typename...> class Cond>
+  struct _find_if<Cond> {
+    using type = nil;
+  };
+}
+/// \endcond
 
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
+template <template <typename...> class Cond, typename Seq>
+struct find_if;
 
+// TODO: document
+template <template <typename...> class Cond, typename... Elements>
+struct find_if<Cond, list<Elements...>> {
+  using type = typename detail::_find_if<Cond, Elements...>::type;
+};
 
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
+CAMP_MAKE_L(find_if);
 
+#if defined(CAMP_TEST)
+#include "camp/lambda.hpp"
+namespace test
+{
+  template <typename Index, typename ForPol>
+  struct index_matches {
+    using type = typename std::is_same<Index, typename ForPol::index>::type;
+  };
+  template <typename Index, typename T>
+  struct For {
+    using index = Index;
+    constexpr static std::size_t value = Index::value;
+  };
+  CHECK_TSAME((find_if<std::is_pointer, list<float, double, int*>>), (int*));
+  CHECK_TSAME((find_if<std::is_pointer, list<float, double>>), (nil));
+  CHECK_TSAME((find_if_l<bind_front<std::is_same, For<num<1>, int>>,
+                         list<For<num<0>, int>, For<num<1>, int>>>),
+              (For<num<1>, int>));
+  CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
+                         list<For<num<0>, int>, For<num<1>, int>>>),
+              (For<num<1>, int>));
+}
+#endif
 
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>&,
-                        LoopBody&&);
+}  // end namespace camp
 
-
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>&,
-    LoopBody&&);
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
-
-#endif  // closing endif for header file include guard
+#endif /* CAMP_LIST_FIND_IF_HPP */

@@ -109,13 +109,12 @@ using POLICIES =
 #if defined(RAJA_ENABLE_OPENMP)
                ,ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>
                ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
-               ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
 #endif
 #if defined(RAJA_ENABLE_TBB)
-               ,ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>
                ,ExecInfo<TRANSFORMS, loop_exec, tbb_for_exec>
 #endif
                >;
+
 
 using InstPolicies =
     ForTesting<tt::apply_t<POLICIES, tt::apply_t<TRANSFORMS, PERMS>>>;
@@ -145,7 +144,8 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 
     std::vector<Index_type> v(size_i * size_j, 1);
     View view(v.data(),
-              make_permuted_layout({{size_i, size_j}}, POL::PERM::value));
+              make_permuted_layout({{size_i, size_j}},
+                                   RAJA::as_array<typename POL::PERM>::get()));
 
     forallN<Policy>(RangeSegment(1, size_i),
                     RangeSegment(0, size_j),
@@ -265,15 +265,12 @@ struct PolLTimesF_TBB : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-// Same as D, but with tiling on zones and TBB 2D blocked range on groups and zones
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesG_TBB : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<
-      ExecList<seq_exec, seq_exec, tbb_for_exec, tbb_for_exec>,
-      Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
-           Permute<PERM_LKIJ,
-                   Execute  // implicit
-                   >>>;
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_dynamic>,
+                   Permute<PERM_LKIJ>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -337,18 +334,18 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
     }
 
     // create views on data
-    typename POL::ELL_VIEW ell(&ell_data[0],
-                               make_permuted_layout({num_moments,
-                                                     num_directions},
-                                                    POL::ELL_PERM::value));
+    typename POL::ELL_VIEW ell(
+        &ell_data[0],
+        make_permuted_layout({num_moments, num_directions},
+                             RAJA::as_array<typename POL::ELL_PERM>::get()));
     typename POL::PSI_VIEW psi(
         &psi_data[0],
         make_permuted_layout({num_directions, num_groups, num_zones},
-                             POL::PSI_PERM::value));
+                             RAJA::as_array<typename POL::PSI_PERM>::get()));
     typename POL::PHI_VIEW phi(
         &phi_data[0],
         make_permuted_layout({num_moments, num_groups, num_zones},
-                             POL::PHI_PERM::value));
+                             RAJA::as_array<typename POL::PHI_PERM>::get()));
 
     // get execution policy
     using EXEC = typename POL::EXEC;
