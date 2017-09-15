@@ -77,7 +77,9 @@
 namespace RAJA
 {
 
-namespace impl
+namespace policy
+{
+namespace cuda
 {
 //
 //////////////////////////////////////////////////////////////////////
@@ -163,7 +165,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 //
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>,
+RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
                         Iterable&& iter,
                         LoopBody&& loop_body)
 {
@@ -223,14 +225,14 @@ template <typename LoopBody,
           size_t BlockSize,
           bool Async,
           typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
+RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
                         const StaticIndexSet<SegmentTypes...>& iset,
                         LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {
     iset.segmentCall(isi,
-                     CallForall(),
+                     detail::CallForall(),
                      cuda_exec<BlockSize, Async>(),
                      loop_body);
   }  // iterate over segments of index set
@@ -238,7 +240,9 @@ RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
   RAJA_CUDA_CHECK_AND_SYNC(Async);
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for cuda namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 
