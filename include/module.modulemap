@@ -2,7 +2,7 @@ module RAJA {
   requires cplusplus11
     umbrella header "RAJA/RAJA.hpp"
 
-    header "RAJA/config.hpp"
+    /* header "RAJA/config.hpp" */
     header "RAJA/index/IndexSet.hpp"
     header "RAJA/index/IndexSetBuilders.hpp"
     header "RAJA/index/IndexSetUtils.hpp"
