@@ -53,69 +53,34 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 6: Gauss-Seidel
+  Example 6: Gauss-Seidel with Red-Black Ordering
 
   ----[Details]--------------------
-  This code uses a five point finite difference stencil
-  to discretize the following boundary value problem
+  This example is an extension of Example 3.
+  In particular we maintain the five point stencil
+  to discretize the boundary value problem
   
-  U_xx + U_yy = f on [0,1] x [0,1].
+  U_xx + U_yy = f on [0,1] x [0,1]
 
-  The right-hand side is chosen to be
-  f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
-
-  A structured grid is used to discretize the domain 
-  [0,1] x [0,1]. Values inside the domain are computed
-  using the Jacobi method to solve the associated
-  linear system. The scheme is invoked until the l_2 
-  difference of subsequent iterations is below a 
-  tolerance.
+  on a structured grid. The right-hand side is 
+  chosen to be f = 2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y).
   
-  The scheme is implemented by allocating two arrays
-  (I, Iold) and initialized to zero. The first set of
-  nested for loops apply an iteration of the Jacobi 
-  scheme. As boundary values are already known the 
-  scheme is only applied to the interior nodes.
+  Rather than computing values inside the domain with 
+  the Jacobi method, a Gauss-Seidel method with red-black
+  ordering is now used. 
   
-  The second set of nested for loops is used to
-  update Iold and compute the l_2 norm of the 
-  difference of the iterates.
-
-  Computing the l_2 norm requires a reduction operation.
-  To simplify the reduction procedure, the RAJA API
-  introduces thread safe variables. 
+  The scheme is implemented by treating the grid as 
+  a checker board and storing the indices of red and
+  black cells in RAJA segments. The segments are 
+  then stored in a RAJA static index set. 
 
   ----[RAJA Concepts]---------------
-  1. ForallN loop
+  1. Forall loop
   2. RAJA Reduction 
   3. RAJA::omp_collapse_nowait_exec
-
-  ----[Kernel Variants and RAJA Features]---
-  a. C++ style nested for loops
-  b. RAJA style nested for loops with sequential iterations
-     i. Introduces RAJA reducers for sequential policies
-  c. RAJA style nested for loops with omp parallelism
-     i.  Introduces collapsing loops using RAJA omp policies
-     ii. Introduces RAJA reducers for omp policies
-  d. RAJA style for loop with CUDA parallelism
-     i. Introduces RAJA reducers for cuda policies
+  4. RAJA::ListSegment
+  5. RAJA::StaticIndexSet
 */
-
-
-/*
-  ----[Constant Values]-----
-  CUDA_BLOCK_SIZE_X - Number of threads in the
-                      x-dimension of a cuda thread block
-
-  CUDA_BLOCK_SIZE_Y - Number of threads in the
-                      y-dimension of a cuda thread block
-
-  CUDA_BLOCK_SIZE   - Number of threads per threads block                      
-*/
-const int CUDA_BLOCK_DIM_X  = 16;
-const int CUDA_BLOCK_DIM_Y  = 16;
-const int CUDA_BLOCK_SIZE  = 256;
-
 
 /*
   Struct to hold grid info
@@ -130,11 +95,13 @@ struct grid_s{
 
 /*
   ----[Functions]---------
-  solution   - Function for the analytic solution
-  computeErr - Displays the maximum error in the solution
+  solution      - Function for the analytic solution
+  computeErr    - Displays the maximum error in the solution
+  gsColorPolicy - Generates the custom index set for this example
 */
 double solution(double x, double y);
 void computeErr(double *I, grid_s grid);
+RAJA::StaticIndexSet<RAJA::ListSegment> gsColorPolicy(int N);
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
@@ -154,7 +121,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   double tol  = 1e-10;
 
-  int N       = 50;
+  int N       = 100;
   int NN      = (N + 2) * (N + 2);
   int maxIter = 100000;
 
@@ -166,72 +133,42 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   gridx.h = 1.0/(N+1.0);
   gridx.n = N+2;
   
-
   double *I    = memoryManager::allocate<double>(NN);
-  double *Iold = memoryManager::allocate<double>(NN);
-
 
   memset(I, 0, NN * sizeof(double));
-  memset(Iold, 0, NN * sizeof(double));
 
-  int blkN = ceil(N*N/2);
-  int redN = floor(N*N/2);
-  RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
-  RAJA::Index_type *Red = new RAJA::Index_type[redN];
-
-  iteration =0;
-
-  int myct, ib, ir;
-  ib = 0;
-  ir = 0;
-  resI2 = 0.0;
-  myct = 0; 
-  bool isBlk = true;
-  for (int n = 1; n <= N; ++n) {
-    for (int m = 1; m <= N; ++m) {
-      
-      int id = n * (N + 2) + m;        
-      if(isBlk){
-        Blk[ib] = id;
-        ib++;
-      }else{
-        Red[ir] = id;
-        ir++;
-      }
-      isBlk = !isBlk;
-    }
-  }    
-
-
-  //Create Index
-  RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorSet;
-  colorSet.push_back(RAJA::ListSegment(Blk,blkN));
-  colorSet.push_back(RAJA::ListSegment(Red,redN));
-
+  RAJA::StaticIndexSet<RAJA::ListSegment> colorSet = gsColorPolicy(N);
 
   //-----------[RAJA Gauss-Sidel]--------
   memset(I, 0, NN * sizeof(double));
-  printf("GS  C++ Loop \n");
-  resI2 = 1;
-  iteration = 0;
+  printf("Gauss-Seidel with Red and Black Ordering \n");
 
 #if defined(RAJA_ENABLE_OPENMP)
   using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
 #else
   using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
 #endif
-  //using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+
+  resI2 = 1;
+  iteration = 0;
   while (resI2 > tol * tol) {
     
     /*
       Gauss-Seidel Iteration
     */
+#if defined(RAJA_ENABLE_OPENMP)
+    RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
+#else
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<colorPolicy>
-      (colorSet, [=](int id){
+#endif
+   
+    RAJA::forall<colorPolicy>(
+      colorSet, [=](RAJA::Index_type id){
         
-        //int id = Red[i]; 
-        int m = id%(N+2);
+        /*
+          Compute x,y grid index
+        */
+        int m = id%(N+2); 
         int n = id/(N+2);
         
         double x = gridx.o + m*gridx.h;
@@ -239,37 +176,76 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
         
         double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
         
-        double newI =  0.25 * (f - I[id - N - 2] - I[id + N + 2]
-                               - I[id - 1] - I[id + 1]);
-        
-        
+        double newI =  - 0.25 * (f - I[id - N - 2] - I[id + N + 2]
+                                   - I[id - 1] - I[id + 1]);
+                
         double oldI = I[id]; 
         RAJA_resI2 += (newI-oldI)*(newI-oldI);
         I[id]   = newI;
         
       });
-    resI2 = RAJA_resI2;
-    
-    
-  
+     resI2 = RAJA_resI2;
+          
     if (iteration > maxIter) {
-      printf("Standard C++ Loop - Maxed out on iterations \n");
+      printf("Gauss-Seidel Maxed out on iterations \n");
       break;
     }
     
     iteration++;
   }
   computeErr(I,gridx);
-  std::cout<<"RAJA - Residual: "<<resI2<<std::endl;
-  printf("RAJA - No of iterations: %d \n \n", iteration);
+  printf("No of iterations: %d \n \n", iteration);
   
- 
 
   memoryManager::deallocate(I);
-  memoryManager::deallocate(Iold);
 
   return 0;
 }
+
+/*
+  This function will loop over the red and black cells of a grid
+  and store the index in a buffer. The buffers will then be used
+  to generate RAJA ListSegments and populate a RAJA Static Index
+  Set. 
+*/
+RAJA::StaticIndexSet<RAJA::ListSegment> gsColorPolicy(int N){
+
+  RAJA::StaticIndexSet<RAJA::ListSegment> colorSet;
+  
+  int redN = ceil(N*N/2);
+  int blkN = floor(N*N/2);
+  RAJA::Index_type *Red = new RAJA::Index_type[redN];
+  RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
+
+
+  int ib = 0;
+  int ir = 0;
+
+  bool isRed = true;
+  for (int n = 1; n <= N; ++n) {
+    for (int m = 1; m <= N; ++m) {
+      
+      RAJA::Index_type id = n * (N + 2) + m;
+      if(isRed){
+        Red[ib] = id;
+        ib++;
+      }else{
+        Blk[ir] = id;
+        ir++;
+      }
+      isRed = !isRed;
+    }
+  }    
+  //Create Index
+  colorSet.push_back(RAJA::ListSegment(Blk,blkN));
+  colorSet.push_back(RAJA::ListSegment(Red,redN));
+  delete[] Blk;
+  delete[] Red;
+
+  return colorSet;
+}
+
+
 
 /*
   Function for the anlytic solution
