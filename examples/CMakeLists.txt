@@ -64,3 +64,7 @@ raja_add_executable(
 raja_add_executable(
   NAME example-custom-index
   SOURCES example-custom-index.cpp)
+
+raja_add_executable(
+  NAME example-gauss-seidel
+  SOURCES example-gauss-seidel.cpp)
