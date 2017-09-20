@@ -91,6 +91,11 @@ include_directories(${PROJECT_BINARY_DIR}/include)
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
         DESTINATION "include/RAJA")
+install(FILES include/module.modulemap
+              include/module.private.modulemap
+        DESTINATION "include/")
+install(FILES include/module.modulemap
+        DESTINATION "include/")
 
 add_subdirectory(src)
 
