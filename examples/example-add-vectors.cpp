@@ -59,7 +59,7 @@
   In this example, three integer arrays (A,B,C) are allocated
   using the templated memory manager found in this folder.
   The vectors A and B are initialized to have opposite values
-  and thus when the entries are added the result should be zero. 
+  and thus when the entries are added the result should be zero.
   The result of the vector addition is stored in C. The function
   checkSolution is used to verify correctness.
 
@@ -75,10 +75,11 @@
   [=] By-copy capture
   [&] By-reference capture (for non-unified memory targets)
   exec_policy - Specifies how the traversal occurs
-  iter_space  - Iteration space for RAJA loop (any random access container is expected)
+  iter_space  - Iteration space for RAJA loop (any random access container is
+  expected)
   index_type  - Index for RAJA loops
 
-  ----[Kernel Variants and RAJA Features]------------  
+  ----[Kernel Variants and RAJA Features]------------
   a. C++ style for loop
   b. RAJA style for loop with sequential iterations
      i.  Introduces the seq_exec policy
@@ -111,7 +112,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   for (int i = 0; i < N; ++i) {
     A[i] = -i;
-    B[i] =  i;
+    B[i] = i;
   }
 
   printf("Standard C++ Loop \n");
@@ -129,12 +130,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     by the [start, stop) interval specified
   */
   RAJA::forall<RAJA::seq_exec>(
-   RAJA::RangeSegment(0, N), [=](RAJA::Index_type i) {
+    RAJA::RangeSegment(0, N), [=](RAJA::Index_type i) { 
+
       C[i] = A[i] + B[i]; 
-    });
+
+    });    
   checkSolution(C, N);
-  
-  
+
+
 #if defined(RAJA_ENABLE_OPENMP)
   printf("RAJA: OpenMP Policy \n");
   /*
@@ -143,22 +146,26 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   RAJA::forall<RAJA::omp_parallel_for_exec>(
     RAJA::RangeSegment(0, N), [=](RAJA::Index_type i) {
+    
       C[i] = A[i] + B[i];
+
     });
   checkSolution(C, N);
 #endif
-  
-  
+
+
 #if defined(RAJA_ENABLE_CUDA)
   printf("RAJA: CUDA Policy \n");
   /*
-    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API 
+    RAJA::cuda_exec<CUDA_BLOCK_SIZE> - excecutes loop using the CUDA API
     Here the __device__ keyword is used to specify a CUDA kernel
   */
-  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(
-    RAJA::RangeSegment(0, N), [=] __device__(RAJA::Index_type i) {       
+  RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>
+    (RAJA::RangeSegment(0, N), [=] __device__(RAJA::Index_type i) { 
+      
       C[i] = A[i] + B[i]; 
-    });
+
+    });          
   checkSolution(C, N);
 #endif
 
@@ -170,18 +177,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 }
 
 /*
-  Function check for correctness
+  Function to check for correctness
 */
 void checkSolution(int *C, int in_N)
 {
 
-  RAJA::forall<RAJA::seq_exec>(
-    RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
+  RAJA::forall<RAJA::seq_exec>
+    (RAJA::RangeSegment(0, in_N), [=](RAJA::Index_type i) {
+     
       if (std::abs(C[i]) != 0) {
         printf("Error in Result \n \n");
         return;
-      }    
-    });
+      }
 
+  });
+  
   printf("Correct Result \n \n");
 }

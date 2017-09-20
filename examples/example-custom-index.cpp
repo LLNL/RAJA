@@ -55,7 +55,7 @@ const int DIM = 2;
   Example 5: Custom Index Set
 
   ----[Details]-------------------
-  This example illustrates how to construct a custom 
+  This example illustrates how to construct a custom
   iteration space composed of segments. Here a segment
   is an arbitrary collection of indices.
 
@@ -66,7 +66,7 @@ const int DIM = 2;
           1, 2, 1, 2,
           3, 4, 3, 4];
 
-  The following code will construct four segments wherein 
+  The following code will construct four segments wherein
   each segment will store indices corresponding to a particular
   value on the grid. For example the first segment will store the
   indices {0,2,8,10} corresponding to the location of values equal to 1.
@@ -75,8 +75,10 @@ const int DIM = 2;
   1. Constructing custom IndexSets
   2. RAJA::View              - RAJA's wrapper for multidimensional indexing
   3. RAJA::ListSegment       - Container for an arbitrary collection of indices
-  4. RAJA::TypedListSegment  - Container for an arbitrary collection of typed indices 
-  5. RAJA::StaticIndexSet    - Container for an index set which is a collection of
+  4. RAJA::TypedListSegment  - Container for an arbitrary collection of typed
+  indices
+  5. RAJA::StaticIndexSet    - Container for an index set which is a collection
+  of
                                ListSegments
 */
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -86,10 +88,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   int n = 4;
   int *A = new int[n * n];
 
-  auto init = {1, 2, 1, 2,
-               3, 4, 3, 4,
-               1, 2, 1, 2,
-               3, 4, 3, 4};
+  auto init = {1, 2, 1, 2, 3, 4, 3, 4, 1, 2, 1, 2, 3, 4, 3, 4};
 
   std::copy(init.begin(), init.end(), A);
 
@@ -147,22 +146,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   delete[] idx;
 
 
-  /*
-    -----[RAJA Loop Traversal]-------
-    Under the custom color policy, a RAJA forall loop will transverse
-    through each list segment stored in the colorset sequentially and transverse
-    each segment in parallel (if enabled).
-   */
+/*
+  -----[RAJA Loop Traversal]-------
+  Under the custom color policy, a RAJA forall loop will transverse
+  through each list segment stored in the colorset sequentially and transverse
+  each segment in parallel (if enabled).
+ */
 #if defined(RAJA_ENABLE_OPENMP)
-  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
+  using ColorPolicy =
+      RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
 #else
   using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
 #endif
-    
+
   RAJA::forall<ColorPolicy>(
-    colorset, [=](int idx) {
-      printf("A[%d] = %d\n", idx, A[idx]);
-    });
+   colorset, [=](int idx) {
+   
+     printf("A[%d] = %d\n", idx, A[idx]);
+
+   });
 
   return 0;
 }
