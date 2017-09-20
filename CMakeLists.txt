@@ -72,7 +72,7 @@ option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
 
-
+if (NOT BLT_LOADED) 
 if (NOT EXISTS ${PROJECT_SOURCE_DIR}/blt/SetupBLT.cmake)
   message(FATAL_ERROR "\
   The BLT submodule is not present. \
@@ -81,6 +81,7 @@ if (NOT EXISTS ${PROJECT_SOURCE_DIR}/blt/SetupBLT.cmake)
 endif()
 
 include(blt/SetupBLT.cmake)
+endif()
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
