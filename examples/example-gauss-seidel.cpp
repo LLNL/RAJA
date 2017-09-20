@@ -53,7 +53,7 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 3: Gauss-Seidel
+  Example 6: Gauss-Seidel
 
   ----[Details]--------------------
   This code uses a five point finite difference stencil
@@ -139,7 +139,7 @@ void computeErr(double *I, grid_s grid);
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  printf("Example 3:  Method \n");
+  printf("Example 6: Red-Black Gauss-Seidel \n");
 
   /*   
     ----[Solver Parameters]------------
@@ -152,9 +152,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     iteration - Iteration number
     grid_s    - Struct with grid information for a cartesian dimension
   */
-  double tol  = 1e-6;
+  double tol  = 1e-10;
 
-  int N       = 10;
+  int N       = 50;
   int NN      = (N + 2) * (N + 2);
   int maxIter = 100000;
 
@@ -166,9 +166,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   gridx.h = 1.0/(N+1.0);
   gridx.n = N+2;
   
-  /*
-    I, Iold - Holds iterates of Jacobi method
-  */
+
   double *I    = memoryManager::allocate<double>(NN);
   double *Iold = memoryManager::allocate<double>(NN);
 
@@ -176,123 +174,83 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(I, 0, NN * sizeof(double));
   memset(Iold, 0, NN * sizeof(double));
 
-  
-  int *Blk = new int[50];
-  int *Red = new int[50];
+  int blkN = ceil(N*N/2);
+  int redN = floor(N*N/2);
+  RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
+  RAJA::Index_type *Red = new RAJA::Index_type[redN];
 
-
-  printf("Standard  C++ Loop \n");
-  resI2 = 1;
   iteration =0;
 
   int myct, ib, ir;
-  //while (resI2 > tol * tol) {
-    
-    /*
-      Gauss-Seidel Iteration
-    */
-    ib = 0;
-    ir = 0;
-    resI2 = 0.0;
-    myct = 0; 
-    bool isBlk = true;
-    for (int n = 1; n <= N; ++n) {
-      for (int m = 1; m <= N; ++m) {
-        
-        double x = gridx.o + m*gridx.h;
-        double y = gridx.o + n*gridx.h;
-
-        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
-        
-        int id = n * (N + 2) + m;
-        
-        if(isBlk){
-          Blk[ib] = id;
-          ib++;
-        }else{
-          Red[ir] = id;
-          ir++;
-          //std::cout<<id<<std::endl;
-          //std::cout<<ir<<std::endl;
-        }
-        //std::cout<<id<<std::endl;
-        isBlk = !isBlk;
-
-        double newI =  0.25 * (f - I[id - N - 2] - I[id + N + 2]
-                                 - I[id - 1] - I[id + 1]);
-        double oldI = I[id]; 
-        resI2 += (newI-oldI)*(newI-oldI);
-        I[id]   = newI;
-
-        //std::cout<<id<<std::endl;
-        myct++;
+  ib = 0;
+  ir = 0;
+  resI2 = 0.0;
+  myct = 0; 
+  bool isBlk = true;
+  for (int n = 1; n <= N; ++n) {
+    for (int m = 1; m <= N; ++m) {
+      
+      int id = n * (N + 2) + m;        
+      if(isBlk){
+        Blk[ib] = id;
+        ib++;
+      }else{
+        Red[ir] = id;
+        ir++;
       }
-    }    
-    
-    if (iteration > maxIter) {
-      printf("Standard C++ Loop - Maxed out on iterations \n");
-      exit(-1);
+      isBlk = !isBlk;
     }
-    
-    iteration++;
-    //  }
-  computeErr(I,gridx);
-  std::cout<<"Residual: "<<resI2<<std::endl;
-  printf("No of iterations: %d \n \n", iteration);
+  }    
 
 
-  //-----------[Gauss-Sidel]--------
+  //Create Index
+  RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorSet;
+  colorSet.push_back(RAJA::ListSegment(Blk,blkN));
+  colorSet.push_back(RAJA::ListSegment(Red,redN));
+
+
+  //-----------[RAJA Gauss-Sidel]--------
   memset(I, 0, NN * sizeof(double));
-  memset(Iold, 0, NN * sizeof(double));
   printf("GS  C++ Loop \n");
   resI2 = 1;
   iteration = 0;
 
+#if defined(RAJA_ENABLE_OPENMP)
+  using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
+#else
+  using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+#endif
+  //using colorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
   while (resI2 > tol * tol) {
     
     /*
       Gauss-Seidel Iteration
     */
-    resI2 = 0.0;
-    for (int i=0; i<50; ++i){
-      
-      int id = Blk[i]; 
-      int m = id%(N+2);
-      int n = id/(N+2);
-
-      double x = gridx.o + m*gridx.h;
-      double y = gridx.o + n*gridx.h;
-
-      double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
-
-      double newI =  0.25 * (f - I[id - N - 2] - I[id + N + 2]
-                             - I[id - 1] - I[id + 1]);
-
-
-      double oldI = I[id]; 
-      resI2 += (newI-oldI)*(newI-oldI);
-      I[id]   = newI;
-    }
-
-    for (int i=0; i<50; ++i){
-      
-      int id = Red[i]; 
-      int m = id%(N+2);
-      int n = id/(N+2);
-      
-      double x = gridx.o + m*gridx.h;
-      double y = gridx.o + n*gridx.h;
-
-      double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
-      
-      double newI =  0.25 * (f - I[id - N - 2] - I[id + N + 2]
-                             - I[id - 1] - I[id + 1]);
-      
-      
-      double oldI = I[id]; 
-      resI2 += (newI-oldI)*(newI-oldI);
-      I[id]   = newI;
-    }        
+    RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
+    RAJA::forall<colorPolicy>
+      (colorSet, [=](int id){
+        
+        //int id = Red[i]; 
+        int m = id%(N+2);
+        int n = id/(N+2);
+        
+        double x = gridx.o + m*gridx.h;
+        double y = gridx.o + n*gridx.h;
+        
+        double f = gridx.h*gridx.h*(2*x*(y-1)*(y-2*x+x*y+2)*exp(x-y));
+        
+        double newI =  0.25 * (f - I[id - N - 2] - I[id + N + 2]
+                               - I[id - 1] - I[id + 1]);
+        
+        
+        double oldI = I[id]; 
+        RAJA_resI2 += (newI-oldI)*(newI-oldI);
+        I[id]   = newI;
+        
+      });
+    resI2 = RAJA_resI2;
+    
+    
   
     if (iteration > maxIter) {
       printf("Standard C++ Loop - Maxed out on iterations \n");
@@ -302,12 +260,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     iteration++;
   }
   computeErr(I,gridx);
-  std::cout<<"Residual: "<<resI2<<std::endl;
-  printf("No of iterations: %d \n \n", iteration);
+  std::cout<<"RAJA - Residual: "<<resI2<<std::endl;
+  printf("RAJA - No of iterations: %d \n \n", iteration);
   
-
-  
-
+ 
 
   memoryManager::deallocate(I);
   memoryManager::deallocate(Iold);
