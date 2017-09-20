@@ -141,9 +141,6 @@ struct TypedRangeSegment {
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeSegment() {}
 
-  //! compiler generated assignment
-  TypedRangeSegment& operator=(TypedRangeSegment const&) = default;
-
   //! swap one TypedRangeSegment with another
   /*!
    * \param[in] other another TypedRangeSegment instance
@@ -179,7 +176,7 @@ struct TypedRangeSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o)
+  RAJA_HOST_DEVICE bool operator==(TypedRangeSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
     return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;
@@ -308,9 +305,6 @@ struct TypedRangeStrideSegment {
   //! destructor
   RAJA_HOST_DEVICE ~TypedRangeStrideSegment() {}
 
-  //! compiler generated assignment
-  TypedRangeStrideSegment& operator=(TypedRangeStrideSegment const&) = default;
-
   //! swap one TypedRangeStrideSegment with another
   /*!
    * \param[in] other another TypedRangeStrideSegment instance
@@ -349,7 +343,7 @@ struct TypedRangeStrideSegment {
    * \return true if and only if the begin, end, and size match
    * \param[in] other a TypedRangeStrideSegment to compare
    */
-  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o)
+  RAJA_HOST_DEVICE bool operator==(TypedRangeStrideSegment const& o) const
   {
     // someday this shall be replaced with a compiler-generated operator==
     return m_begin == o.m_begin && m_end == o.m_end && m_size == o.m_size;

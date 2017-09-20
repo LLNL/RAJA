@@ -97,7 +97,7 @@ struct ForallN_BindFirstArg_HostDevice {
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  constexpr ForallN_BindFirstArg_HostDevice(BODY b, INDEX_TYPE i0)
+  constexpr ForallN_BindFirstArg_HostDevice(BODY const &b, INDEX_TYPE i0)
       : body(b), i(i0)
   {
   }

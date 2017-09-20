@@ -41,13 +41,41 @@
 #
 ###############################################################################
 
-add_gtest_sources(
-  test-reduce.cpp
-  test-nested.cpp
-  test-nested-reduce.cpp
-  test-segments.cpp
-  test-indexsets.cpp
-  test-forall.cpp
-  test-scan.cpp
-  test-reductions.cpp
-  buildIndexSet.cpp)
+raja_add_library(
+  NAME bis
+  SOURCES buildIndexSet.cpp)
+
+raja_add_test(
+  NAME test-reduce
+  SOURCES test-reduce.cpp
+  DEPENDS_ON bis)
+
+raja_add_test(
+  NAME test-forall
+  SOURCES test-forall.cpp
+  DEPENDS_ON bis)
+
+raja_add_test(
+  NAME test-indexset
+  SOURCES test-indexsets.cpp
+  DEPENDS_ON bis)
+
+raja_add_test(
+  NAME test-nested
+  SOURCES test-nested.cpp)
+
+raja_add_test(
+  NAME test-nested-reduce
+  SOURCES test-nested-reduce.cpp)
+
+raja_add_test(
+  NAME test-segments
+  SOURCES test-segments.cpp)
+
+raja_add_test(
+  NAME test-scan
+  SOURCES test-scan.cpp)
+
+raja_add_test(
+  NAME test-reductions
+  SOURCES test-reductions.cpp)

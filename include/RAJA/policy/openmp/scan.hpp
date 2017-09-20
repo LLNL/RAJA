@@ -104,7 +104,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
-        ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
+        ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
@@ -139,7 +139,7 @@ concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
-        seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
+        seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }

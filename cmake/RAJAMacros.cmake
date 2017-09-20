@@ -108,12 +108,6 @@ macro(raja_add_library)
     add_library(${arg_NAME} ${arg_SOURCES})
   endif ()
 
-  if (NOT (CMAKE_CXX_COMPILER_ID MATCHES Intel OR RAJA_ENABLE_CLANG_CUDA) )
-      set_target_properties(${arg_NAME}
-      PROPERTIES
-      CXX_STANDARD 11
-      CXX_STANDARD_REQUIRED YES)
-  endif()
 endmacro(raja_add_library)
 
 macro(raja_add_test)

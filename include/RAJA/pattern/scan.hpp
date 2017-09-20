@@ -136,7 +136,7 @@ exclusive_scan_inplace(const ExecPolicy &p,
                        Iter begin,
                        Iter end,
                        Function binop = Function{},
-                       T value = Function::identity)
+                       T value = Function::identity())
 {
   using R = detail::IterVal<Iter>;
   static_assert(type_traits::is_binary_function<Function, R, T, R>::value,
@@ -219,7 +219,7 @@ exclusive_scan(const ExecPolicy &p,
                Iter end,
                IterOut out,
                Function binop = Function{},
-               T value = Function::identity)
+               T value = Function::identity())
 {
   using R = detail::IterVal<IterOut>;
   using U = detail::IterVal<Iter>;
@@ -284,7 +284,7 @@ concepts::enable_if<type_traits::is_execution_policy<ExecPolicy>,
 exclusive_scan_inplace(const ExecPolicy &p,
                        Container &c,
                        Function binop = Function{},
-                       T value = Function::identity)
+                       T value = Function::identity())
 {
   using R = detail::ContainerVal<Container>;
   static_assert(type_traits::is_binary_function<Function, R, T, R>::value,
@@ -365,7 +365,7 @@ exclusive_scan(const ExecPolicy &p,
                Container &c,
                IterOut out,
                Function binop = Function{},
-               T value = Function::identity)
+               T value = Function::identity())
 {
   using R = detail::IterVal<IterOut>;
   using U = detail::ContainerVal<Container>;

@@ -155,4 +155,41 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
   }
 }
 
+//! Macros for marking deprecated features in RAJA
+/*!
+ * To deprecate a function, place immediately before the return type
+ * To deprecate a member of a class or struct, place immediately before the declaration
+ * To deprecate a typedef, place immediately before the declaration.
+ * To deprecate a struct or class, place immediately after the 'struct'/'class' keyword
+ */
+
+#if ( __cplusplus >= 201402L )
+# define RAJA_HAS_CXX14 1
+# define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+#elif defined(__has_cpp_attribute)
+# if __has_cpp_attribute(deprecated)
+#  define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+# endif
+#endif
+
+#ifdef RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED
+
+// When using a C++14 compiler, use the standard-specified deprecated attribute
+# define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
+# define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
+
+#elif defined(_MSC_VER)
+
+// for MSVC, use __declspec
+# define RAJA_DEPRECATE(Msg) __declspec(deprecated(Msg))
+# define RAJA_DEPRECATE_ALIAS(Msg)
+
+#else
+
+// else use __attribute__(deprecated("Message"))
+#define RAJA_DEPRECATE(Msg) __attribute__((deprecated(Msg)))
+#define RAJA_DEPRECATE_ALIAS(Msg)
+
+#endif
+
 #endif /* RAJA_INTERNAL_DEFINES_HPP */
