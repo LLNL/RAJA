@@ -9,6 +9,10 @@
  *          These methods should work on any platform. They make no
  *          asumptions about data alignment.
  *
+ *          Note: Reduction operations should not be used with simd
+ *          policies. Limited support.
+ *
+ *
  ******************************************************************************
  */
 
@@ -74,54 +78,23 @@ namespace RAJA
 namespace impl
 {
 
-// SIMD forall(ListSegment)
-template <typename LSegment, typename Func>
-RAJA_INLINE
-    typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
-    forall(const simd_exec &, LSegment &&iseg, Func &&loop_body)
-{
-  const auto *RAJA_RESTRICT idx = iseg.getIndex();
-  auto len = iseg.getLength();
-  for (decltype(len) k = 0; k < len; ++k) {
-    loop_body(idx[k]);
-  }
-}
 
-// SIMD forall(Iterable)
 template <typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
-                                                     Iterable>::value>::type
+RAJA_INLINE void
 forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
+  auto begin = std::begin(iter);
   auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
   RAJA_SIMD
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
-
-// SIMD forall(ListSegment)
-template <typename LSegment, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && std::is_base_of<ListSegment,
-                                                       LSegment>::value>::type
-forall_Icount(const simd_exec &,
-              LSegment &&iseg,
-              IndexType icount,
-              Func &&loop_body)
-{
-  const auto *RAJA_RESTRICT idx = iseg.getIndex();
-  auto len = iseg.getLength();
-  for (decltype(len) k = 0; k < len; ++k) {
-    loop_body(static_cast<IndexType>(k + icount), idx[k]);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(*(begin + i));
   }
 }
 
 // SIMD forall(Iterable)
 template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && !std::is_base_of<ListSegment,
-                                                        Iterable>::value>::type
+RAJA_INLINE void
 forall_Icount(const simd_exec &,
               Iterable &&iter,
               IndexType icount,
@@ -132,7 +105,7 @@ forall_Icount(const simd_exec &,
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
   }
 }
 

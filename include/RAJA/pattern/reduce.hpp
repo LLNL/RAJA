@@ -57,83 +57,8 @@
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/defines.hpp"
 
-///
-/// Define max number of reductions allowed within a RAJA traversal
-/// (sizes of shared memory blocks for reductions are set based on this value)
-///
-#define RAJA_MAX_REDUCE_VARS (8)
-
 namespace RAJA
 {
-
-namespace reduce
-{
-
-#ifdef RAJA_ENABLE_TARGET_OPENMP
-#pragma omp declare target
-#endif
-
-template <typename T>
-struct sum {
-  static constexpr T identity = T(0);
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    val += v;
-  }
-};
-
-template <typename T>
-struct min {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    if (v < val) val = v;
-  }
-};
-
-template <typename T>
-struct max {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
-  {
-    if (v > val) val = v;
-  }
-};
-
-template <typename T, typename I>
-struct minloc {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l) const
-  {
-    if (v < val) {
-      loc = l;
-      val = v;
-    }
-  }
-};
-
-template <typename T, typename I>
-struct maxloc {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val,
-                                               I &loc,
-                                               const T v,
-                                               const I l) const
-  {
-    if (v > val) {
-      loc = l;
-      val = v;
-    }
-  }
-};
-
-#ifdef RAJA_ENABLE_TARGET_OPENMP
-#pragma omp end declare target
-#endif
-}
 
 ///
 /// Macros for type agnostic reduction operations.
@@ -141,12 +66,6 @@ struct maxloc {
 #define RAJA_MIN(a, b) (((b) < (a)) ? (b) : (a))
 ///
 #define RAJA_MAX(a, b) (((b) > (a)) ? (b) : (a))
-
-///
-/// Macros to support structs used in minmaxloc operations
-#define RAJA_MINLOC(a, b) (((b.val) < (a.val)) ? (b) : (a))
-///
-#define RAJA_MAXLOC(a, b) (((b.val) > (a.val)) ? (b) : (a))
 
 ///
 /// Macros to support unstructured minmaxloc operations
@@ -295,7 +214,6 @@ class ReduceMaxLoc;
  */
 template <typename REDUCE_POLICY_T, typename T>
 class ReduceSum;
-
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

@@ -73,7 +73,7 @@ TEST_F(IndexSetTest, IndexSetEquality)
   }
 }
 
-#if !defined(RAJA_COMPILER_XLC12) && 1
+#if !defined(RAJA_COMPILER_XLC12)
 TEST_F(IndexSetTest, conditionalOperation_even_indices)
 {
 
@@ -116,4 +116,51 @@ TEST_F(IndexSetTest, conditionalOperation_lt300_indices)
       EXPECT_EQ(lt300_indices[i], ref_lt300_indices[i]);
   }
 }
-#endif // !defined(RAJA_COMPILER_XLC12) && 1
+#endif // !defined(RAJA_COMPILER_XLC12)
+
+TEST(IndexSet, empty)
+{
+  RAJA::StaticIndexSet<> is;
+  ASSERT_EQ(0, is.size());
+  ASSERT_EQ(is.begin(), is.end());
+  RAJA::StaticIndexSet<> is2;
+  ASSERT_EQ(is2.size(), is.size());
+  is.swap(is2);
+  ASSERT_EQ(is2.size(), is.size());
+}
+
+TEST(IndexSet, compare)
+{
+  using RangeIndexSet = RAJA::StaticIndexSet<RAJA::RangeSegment>;
+  RangeIndexSet is1, is2;
+  is1.push_back(RAJA::RangeSegment(0, 10));
+  is2.push_back(RAJA::RangeSegment(0, 5));
+  is2.push_back(RAJA::RangeSegment(5, 10));
+  ASSERT_TRUE(is1 != is2);
+  ASSERT_FALSE(is1 == is2);
+  ASSERT_NE(is1.size(), is2.size());
+  ASSERT_EQ(is1.getLength(), is2.getLength());
+}
+
+TEST(IndexSet, swap)
+{
+  RAJA::IndexSet iset1;
+  RAJA::RangeSegment range(0, 10);
+  iset1.push_back(range);
+  iset1.push_back_nocopy(&range);
+  iset1.push_front(range);
+  iset1.push_front_nocopy(&range);
+  RAJA::IndexSet iset2;
+
+  ASSERT_EQ(4l, iset1.size());
+  ASSERT_EQ(40lu, iset1.getLength());
+  ASSERT_EQ(0l, iset2.size());
+  ASSERT_EQ(0lu, iset2.getLength());
+
+  iset1.swap(iset2);
+
+  ASSERT_EQ(4l, iset2.size());
+  ASSERT_EQ(40lu, iset2.getLength());
+  ASSERT_EQ(0l, iset1.size());
+  ASSERT_EQ(0lu, iset1.getLength());
+}
