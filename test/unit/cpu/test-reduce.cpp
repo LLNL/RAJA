@@ -1,4 +1,3 @@
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -66,17 +65,16 @@ using namespace RAJA;
 
 using TestingTypes = ::testing::
     Types<
-  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce> 
-  //std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce> //code breaks if we use simd with minloc test)
+  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
+  std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
 #ifdef RAJA_ENABLE_OPENMP
-  //        ,
-  //std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce>,
-  //std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>,
-  //omp_reduce_ordered>
+  
+  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
+  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
 #endif
 #ifdef RAJA_ENABLE_TBB
           ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
-        //,std::tuple<ExecPolicy<tbb_for_exec, simd_exec>, tbb_reduce>
+           ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
 #endif
         >;
 
