@@ -64,6 +64,7 @@ option(RAJA_ENABLE_CUB "Use cub for scans using CUDA" On)
 option(RAJA_ENABLE_TESTS "Build tests" On)
 option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
 option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
+option(RAJA_ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 
@@ -84,14 +85,17 @@ include (cmake/RAJAMacros.cmake)
 # Sanity check for compiler compatibility
 include (cmake/CompilerCompatibility.cmake)
 
-include_directories(${PROJECT_BINARY_DIR}/include/RAJA)
-include_directories(${PROJECT_BINARY_DIR}/include)
-
 include_directories(include)
 
+include_directories(${PROJECT_BINARY_DIR}/include)
+
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
-        DESTINATION "include/RAJA")
+
+install(FILES
+  ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
+  include/RAJA/module.modulemap
+  include/RAJA/module.private.modulemap
+  DESTINATION "include/RAJA/")
 
 add_subdirectory(src)
 
