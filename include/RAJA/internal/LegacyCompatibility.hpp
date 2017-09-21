@@ -214,8 +214,9 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
 
 struct maxer {
   template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(const Result& l,
-                                                           const Result& r) const
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
+      const Result& l,
+      const Result& r) const
   {
     return l > r ? l : r;
   }

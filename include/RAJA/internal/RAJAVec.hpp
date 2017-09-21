@@ -56,7 +56,10 @@
 
 #include "RAJA/config.hpp"
 
-#include <algorithm>
+#include <memory>
+#include <utility>
+
+#include "RAJA/internal/MemUtils_CPU.hpp"
 
 namespace RAJA
 {
@@ -77,14 +80,18 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename T>
+template <typename T, typename allocator_type = std::allocator<T> >
 class RAJAVec
 {
 public:
+  using iterator = T*;
+
   ///
   /// Construct empty vector with given capacity.
   ///
-  explicit RAJAVec(size_t init_cap = 0) : m_capacity(0), m_size(0), m_data(0)
+  explicit RAJAVec(size_t init_cap = 0,
+                   const allocator_type& a = allocator_type())
+      : m_data(nullptr), m_allocator(a), m_capacity(0), m_size(0)
   {
     grow_cap(init_cap);
   }
@@ -92,7 +99,11 @@ public:
   ///
   /// Copy ctor for vector.
   ///
-  RAJAVec(const RAJAVec<T>& other) : m_capacity(0), m_size(0), m_data(0)
+  RAJAVec(const RAJAVec<T>& other)
+      : m_data(nullptr),
+        m_allocator(other.m_allocator),
+        m_capacity(0),
+        m_size(0)
   {
     copy(other);
   }
@@ -125,10 +136,8 @@ public:
   ///
   ~RAJAVec()
   {
-    if (m_capacity > 0) delete[] m_data;
+    if (m_capacity > 0) m_allocator.deallocate(m_data, m_capacity);
   }
-
-  using iterator = T*;
 
   ///
   /// Get a pointer to the beginning of the contiguous vector
@@ -148,12 +157,33 @@ public:
   ///
   /// Return true if vector has size zero; false otherwise.
   ///
-  size_t empty() const { return (m_size == 0); }
+  bool empty() const { return (m_size == 0); }
 
   ///
   /// Return current size of vector.
   ///
   size_t size() const { return m_size; }
+
+  RAJA_INLINE
+  void resize(size_t new_size)
+  {
+    grow_cap(new_size);
+    m_size = new_size;
+  }
+
+  RAJA_INLINE
+  void resize(size_t new_size, T const& new_value)
+  {
+    grow_cap(new_size);
+
+    if (new_size > m_size) {
+      for (size_t i = m_size; i < new_size; ++i) {
+        m_data[i] = new_value;
+      }
+    }
+
+    m_size = new_size;
+  }
 
   ///
   /// Const bracket operator.
@@ -195,8 +225,8 @@ private:
   // memory allocation scheme to mimick std::vector behavior without
   // relying on STL directly.  These are initialized at the end of this file.
   //
-  static const size_t s_init_cap;
-  static const double s_grow_fac;
+  static constexpr const size_t s_init_cap = 8;
+  static constexpr const double s_grow_fac = 1.5;
 
   size_t nextCap(size_t current_cap)
   {
@@ -214,13 +244,13 @@ private:
     }
 
     if (m_capacity < target_cap) {
-      T* tdata = new T[target_cap];
+      T* tdata = m_allocator.allocate(target_cap);
 
       if (m_data) {
         for (size_t i = 0; (i < m_size) && (i < target_cap); ++i) {
           tdata[i] = m_data[i];
         }
-        delete[] m_data;
+        m_allocator.deallocate(m_data, m_capacity);
       }
 
       m_data = tdata;
@@ -247,22 +277,11 @@ private:
     m_size++;
   }
 
+  T* m_data;
+  allocator_type m_allocator;
   size_t m_capacity;
   size_t m_size;
-  T* m_data;
 };
-
-/*
-*************************************************************************
-*
-* Initialize static members
-*
-*************************************************************************
-*/
-template <typename T>
-const size_t RAJAVec<T>::s_init_cap = 8;
-template <typename T>
-const double RAJAVec<T>::s_grow_fac = 1.5;
 
 }  // closing brace for RAJA namespace
 

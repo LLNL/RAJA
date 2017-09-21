@@ -54,17 +54,20 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
-
-#include "RAJA/index/BaseSegment.hpp"
+#include "RAJA/util/defines.hpp"
+#include "RAJA/util/types.hpp"
+#include "RAJA/util/concepts.hpp"
+#include "RAJA/internal/Span.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
+#else
+#define cudaErrchk(...)
 #endif
 
-#include <algorithm>
-#include <iosfwd>
+#include <memory>
 #include <type_traits>
-#include <vector>
+#include <utility>
 
 namespace RAJA
 {
@@ -82,20 +85,106 @@ namespace RAJA
  *
  ******************************************************************************
  */
-class ListSegment : public BaseSegment
+template <typename T>
+class TypedListSegment
 {
+
+#if defined(RAJA_ENABLE_CUDA)
+  static constexpr bool Has_CUDA = true;
+#else
+  static constexpr bool Has_CUDA = false;
+#endif
+
+  //! tag for trivial per-element copy
+  struct TrivialCopy {
+  };
+  //! tag for memcpy-style copy
+  struct BlockCopy {
+  };
+
+  //! alias for GPU memory tag
+  using GPU_memory = std::integral_constant<bool, true>;
+  //! alias for CPU memory tag
+  using CPU_memory = std::integral_constant<bool, false>;
+
+  //! specialization for deallocation of GPU_memory
+  void deallocate(GPU_memory) {
+    cudaErrchk(cudaFree(m_data));
+  }
+
+  //! specialization for allocation of GPU_memory
+  void allocate(GPU_memory)
+  {
+    cudaErrchk(cudaMallocManaged((void**)&m_data, m_size * sizeof(value_type), cudaMemAttachGlobal));
+  }
+
+  //! specialization for deallocation of CPU_memory
+  void deallocate(CPU_memory) {
+    delete[] m_data;
+  }
+
+  //! specialization for allocation of CPU_memory
+  void allocate(CPU_memory) {
+    m_data = new T[m_size];
+  }
+
+  //! copy data from container using BlockCopy
+  template <typename Container>
+  void copy(Container&& src, BlockCopy)
+  {
+    cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
+  }
+
+  //! copy data from container using TrivialCopy
+  template <typename Container>
+  void copy(Container&& source, TrivialCopy)
+  {
+    auto dest = m_data;
+    auto src = source.begin();
+    auto const end = source.end();
+    while (src != end) {
+      *dest = *src;
+      ++dest;
+      ++src;
+    }
+  }
+
+  // internal helper to allocate data and populate with data from a container
+  template <bool GPU, typename Container>
+  void allocate_and_copy(Container&& src)
+  {
+    allocate(std::integral_constant<bool, GPU>());
+    static constexpr bool use_cuda = GPU && std::is_pointer<decltype(src.begin())>::value
+      && std::is_same<type_traits::IterableValue<Container>,value_type>::value;
+    using TagType = typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
+    copy(src, TagType());
+  }
+
 public:
+  //! value type for storage
+  using value_type = T;
+
+  //! iterator type for storage (will be a pointer)
+  using iterator = T*;
+
+  //! prevent compiler from providing a default constructor
+  TypedListSegment() = delete;
+
   ///
-  /// Construct list segment from given array with specified length.
+  /// \brief Construct list segment from given array with specified length.
   ///
   /// By default the ctor performs deep copy of array elements.
   /// If 'Unowned' is passed as last argument, the constructed object
   /// does not own the segment data and will hold a pointer to given data.
   /// In this case, caller must manage object lifetimes properly.
   ///
-  ListSegment(const Index_type* indx,
-              Index_type len,
-              IndexOwnership indx_own = Owned);
+  TypedListSegment(const value_type* values,
+                   Index_type length,
+                   IndexOwnership owned = Owned)
+  {
+    // future TODO -- change to initializer list somehow
+    initIndexData(values, length, owned);
+  }
 
   ///
   /// Construct list segment from arbitrary object holding
@@ -103,203 +192,156 @@ public:
   ///
   /// The object must provide methods: begin(), end(), size().
   ///
-  template <typename T>
-  explicit ListSegment(const T& indx);
+  template <typename Container>
+  explicit TypedListSegment(const Container& container)
+      : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
+  {
+    if (m_size <= 0)
+      return;
+    allocate_and_copy<Has_CUDA>(container);
+    m_owned = Owned;
+  }
 
   ///
   /// Copy-constructor for list segment.
   ///
-  ListSegment(const ListSegment& other);
-
-  ///
-  /// Copy-assignment for list segment.
-  ///
-  ListSegment& operator=(const ListSegment& rhs);
+  TypedListSegment(const TypedListSegment& other)
+  {
+    // future TODO: switch to member initialization list ... somehow
+    initIndexData(other.m_data, other.m_size, other.m_owned);
+  }
 
   ///
   /// Move-constructor for list segment.
   ///
-  ListSegment(ListSegment&& other)
-      : BaseSegment(std::move(other)),
-        m_indx(other.m_indx),
-        m_len(other.m_len),
-        m_indx_own(other.m_indx_own)
+  TypedListSegment(TypedListSegment&& rhs)
+      : m_data(rhs.m_data), m_size(rhs.m_size), m_owned(rhs.m_owned)
   {
-    other.m_indx = nullptr;
+    // make the rhs non-owning so it's destructor won't have any side effects
+    rhs.m_owned = Unowned;
   }
 
   ///
-  /// Move-assignment for list segment.
+  /// Destroy segment including its contents
   ///
-  ListSegment& operator=(ListSegment&& rhs)
+  ~TypedListSegment()
   {
-    if (this != &rhs) {
-      BaseSegment::operator=(std::move(rhs));
-      m_indx = rhs.m_indx;
-      m_len = rhs.m_len;
-      m_indx_own = rhs.m_indx_own;
-      rhs.m_indx = nullptr;
-    }
-    return *this;
+    if (m_data == nullptr || m_owned != Owned)
+      return;
+    deallocate(std::integral_constant<bool, Has_CUDA>());
   }
 
-  ///
-  /// Destroy segment including its contents.
-  ///
-  ~ListSegment();
 
   ///
   /// Swap function for copy-and-swap idiom.
   ///
-  void swap(ListSegment& other);
+  RAJA_HOST_DEVICE void swap(TypedListSegment& other)
+  {
+    using std::swap;
+    swap(m_data, other.m_data);
+    swap(m_size, other.m_size);
+    swap(m_owned, other.m_owned);
+  }
 
-  ///
-  ///  Return const pointer to array of indices in segment.
-  ///
-  const Index_type* getIndex() const { return m_indx; }
+  //! accessor to get the end iterator for a TypedListSegment
+  RAJA_HOST_DEVICE iterator end() const {
+    return m_data + m_size;
+  }
 
-  ///
-  ///  Return length of list segment (# indices).
-  ///
-  Index_type getLength() const { return m_len; }
+  //! accessor to get the begin iterator for a TypedListSegment
+  RAJA_HOST_DEVICE iterator begin() const {
+    return m_data;
+  }
+  //! accessor to retrieve the total number of elements in a TypedListSegment
+  RAJA_HOST_DEVICE Index_type size() const {
+    return m_size;
+  }
 
-  using iterator = Index_type*;
+  //! get ownership of the data (Owned/Unowned)
+  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const {
+    return m_owned;
+  }
 
-  ///
-  /// Get an iterator to the end.
-  ///
-  iterator end() const { return m_indx + m_len; }
-
-  ///
-  /// Get an iterator to the beginning.
-  ///
-  Index_type* begin() const { return m_indx; }
-
-  ///
-  /// Return the number of elements in the range.
-  ///
-  Index_type size() const { return m_len; }
-
-  ///
-  /// Return enum value indicating whether segment object owns the data
-  /// representing its indices.
-  ///
-  IndexOwnership getIndexOwnership() const { return m_indx_own; }
-
-  ///
-  /// Return true if given array of indices is same as indices described
-  /// by this segment object; else false.
-  ///
-  bool indicesEqual(const Index_type* indx, Index_type len) const;
+  //! checks a pointer and size (Span) for equality to all elements in the
+  //! TypedListSegment
+  RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
+                                     Index_type len) const
+  {
+    if (container == m_data)
+      return len == m_size;
+    if (len != m_size || container == nullptr || m_data == nullptr)
+      return false;
+    for (Index_type i = 0; i < m_size; ++i)
+      if (m_data[i] != container[i])
+        return false;
+    return true;
+  }
 
   ///
   /// Equality operator returns true if segments are equal; else false.
   ///
-  bool operator==(const ListSegment& other) const
+  RAJA_HOST_DEVICE bool operator==(const TypedListSegment& other) const
   {
-    return (indicesEqual(other.m_indx, other.m_len));
+    return (indicesEqual(other.m_data, other.m_size));
   }
 
   ///
   /// Inequality operator returns true if segments are not equal, else false.
   ///
-  bool operator!=(const ListSegment& other) const
+  RAJA_HOST_DEVICE bool operator!=(const TypedListSegment& other) const
   {
     return (!(*this == other));
   }
-
-  ///
-  /// Equality operator returns true if segments are equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator==(const BaseSegment& other) const
-  {
-    const ListSegment* o_ptr = dynamic_cast<const ListSegment*>(&other);
-    if (o_ptr) {
-      return (*this == *o_ptr);
-    } else {
-      return false;
-    }
-  }
-
-  ///
-  /// Inequality operator returns true if segments are not equal; else false.
-  /// (Implements pure virtual method in BaseSegment class).
-  ///
-  bool operator!=(const BaseSegment& other) const
-  {
-    return (!(*this == other));
-  }
-
-  ///
-  /// Print segment data to given output stream.
-  ///
-  void print(std::ostream& os) const;
 
 private:
-  //
-  // The default ctor is not implemented.
-  //
-  ListSegment();
-
   //
   // Initialize segment data properly based on whether object
   // owns the index data.
   //
-  void initIndexData(const Index_type* indx,
+  void initIndexData(const value_type* container,
                      Index_type len,
-                     IndexOwnership indx_own);
+                     IndexOwnership container_own)
+  {
+    // empty
+    if (len <= 0 || container == nullptr) {
+      m_data = nullptr;
+      m_size = 0;
+      m_owned = Unowned;
+      return;
+    }
+    // some size -- initialize accordingly
+    m_size = len;
+    m_owned = container_own;
+    if (m_owned == Owned) {
+      allocate_and_copy<Has_CUDA>(RAJA::impl::make_span(container, len));
+      return;
+    }
+    // Uh-oh. Using evil const_cast....
+    m_data = const_cast<value_type*>(container);
+  }
 
-  Index_type* RAJA_RESTRICT m_indx;
-  Index_type m_len;
-  IndexOwnership m_indx_own;
+  //! buffer storage for list data
+  value_type* RAJA_RESTRICT m_data;
+  //! size of list segment
+  Index_type m_size;
+  //! ownership flag to guide data copying/management
+  IndexOwnership m_owned;
 };
 
-/*!
- ******************************************************************************
- *
- *  \brief Implementation of generic constructor template.
- *
- ******************************************************************************
- */
-template <typename T>
-ListSegment::ListSegment(const T& indx)
-    : BaseSegment(_ListSeg_), m_indx(0), m_len(indx.size()), m_indx_own(Unowned)
-{
-  if (!indx.empty()) {
-#if defined(RAJA_ENABLE_CUDA)
-    cudaErrchk(cudaMallocManaged((void**)&m_indx,
-                                 m_len * sizeof(Index_type),
-                                 cudaMemAttachGlobal));
-    using T_TYPE = typename std::remove_reference<decltype(indx[0])>::type;
-    if (sizeof(T_TYPE) == sizeof(Index_type) && std::is_integral<T_TYPE>::value
-        && std::is_same<std::vector<T_TYPE>,
-                        typename std::decay<T>::type>::value) {
-      // this will bitwise copy signed or unsigned integral types
-      cudaErrchk(cudaMemcpy(
-          m_indx, &indx[0], m_len * sizeof(Index_type), cudaMemcpyDefault));
-    } else {
-      cudaErrchk(cudaDeviceSynchronize());
-      std::copy(indx.begin(), indx.end(), m_indx);
-    }
-#else
-    m_indx = new Index_type[indx.size()];
-    std::copy(indx.begin(), indx.end(), m_indx);
-#endif
-    m_indx_own = Owned;
-  }
-}
+//! alias for A TypedListSegment with storage type @Index_type
+using ListSegment = TypedListSegment<Index_type>;
 
 }  // closing brace for RAJA namespace
 
-/*!
- *  Specialization of std swap method.
- */
 namespace std
 {
 
-template <>
-RAJA_INLINE void swap(RAJA::ListSegment& a, RAJA::ListSegment& b)
+/*!
+ *  Specialization of std::swap for TypedListSegment
+ */
+template <typename T>
+RAJA_INLINE void swap(RAJA::TypedListSegment<T>& a,
+                      RAJA::TypedListSegment<T>& b)
 {
   a.swap(b);
 }

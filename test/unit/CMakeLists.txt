@@ -1,4 +1,3 @@
-
 ###############################################################################
 #
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -42,43 +41,48 @@
 #
 ###############################################################################
 
-if (NOT MSVC)
-  raja_add_test(
-    NAME test-layout
-    SOURCES test-layout.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-  raja_add_test(
-    NAME test-timer
-    SOURCES test-timer.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-  if(RAJA_ENABLE_OPENMP)
-    raja_add_test(
-            NAME test-multipolicy
-            SOURCES test-multipolicy.cpp
-            DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-    )
-  endif(RAJA_ENABLE_OPENMP)
-  raja_add_test(
-    NAME test-integral-limits
-    SOURCES test-integral-limits.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
+raja_add_test(
+  NAME test-atomic
+  SOURCES test-atomic.cpp)
 
-  raja_add_test(
-    NAME test-type-traits
-    SOURCES test-type-traits.cpp
-    DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT}
-  )
-endif()
+raja_add_test(
+  NAME test-layout
+  SOURCES test-layout.cpp)
+
+raja_add_test(
+  NAME test-timer
+  SOURCES test-timer.cpp)
+
+raja_add_test(
+  NAME test-integral-limits
+  SOURCES test-integral-limits.cpp)
+
+raja_add_test(
+  NAME test-rajavec
+  SOURCES test-rajavec.cpp)
+
+raja_add_test(
+  NAME test-iterators
+  SOURCES test-iterators.cpp)
+
+raja_add_test(
+  NAME test-indexvalue
+  SOURCES test-indexvalue.cpp)
+
+raja_add_test(
+  NAME test-span
+  SOURCES test-span.cpp)
+
+raja_add_test(
+  NAME test-multipolicy
+  SOURCES test-multipolicy.cpp)
 
 add_subdirectory(cpu)
 
 if(RAJA_ENABLE_CUDA)
-  add_subdirectory(gpu)
-endif()
+  add_subdirectory(cuda)
+endif(RAJA_ENABLE_CUDA)
 
 if(RAJA_ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
-endif()
+endif(RAJA_ENABLE_TARGET_OPENMP)

@@ -83,11 +83,12 @@ int firstIndex(int n, int p, int pid)
         \brief explicit inclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn>
-void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
-                       Iter begin,
-                       Iter end,
-                       BinFn f)
+template <typename Policy, typename Iter, typename BinFn>
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive_inplace(
+    const Policy&,
+    Iter begin,
+    Iter end,
+    BinFn f)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
@@ -103,7 +104,7 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
-        ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
+        ::RAJA::seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
@@ -114,12 +115,13 @@ void inclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
         \brief explicit exclusive inplace scan given range, function, and
    initial value
 */
-template <typename Iter, typename BinFn, typename ValueT>
-void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
-                       Iter begin,
-                       Iter end,
-                       BinFn f,
-                       ValueT v)
+template <typename Policy, typename Iter, typename BinFn, typename ValueT>
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive_inplace(
+    const Policy&,
+    Iter begin,
+    Iter end,
+    BinFn f,
+    ValueT v)
 {
   using Value = typename ::std::iterator_traits<Iter>::value_type;
   const int n = end - begin;
@@ -137,7 +139,7 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
 #pragma omp barrier
 #pragma omp single
     exclusive_inplace(
-        seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity);
+        seq_exec{}, sums.data(), sums.data() + p, f, BinFn::identity());
     for (int i = i0; i < i1; ++i) {
       *(begin + i) = f(*(begin + i), sums[pid]);
     }
@@ -148,12 +150,13 @@ void exclusive_inplace(const ::RAJA::omp_parallel_for_exec&,
         \brief explicit inclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn>
-void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
-               Iter begin,
-               Iter end,
-               OutIter out,
-               BinFn f)
+template <typename Policy, typename Iter, typename OutIter, typename BinFn>
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> inclusive(
+    const Policy& exec,
+    Iter begin,
+    Iter end,
+    OutIter out,
+    BinFn f)
 {
   ::std::copy(begin, end, out);
   inclusive_inplace(exec, out, out + (end - begin), f);
@@ -163,13 +166,18 @@ void inclusive(const ::RAJA::omp_parallel_for_exec& exec,
         \brief explicit exclusive scan given input range, output, function, and
    initial value
 */
-template <typename Iter, typename OutIter, typename BinFn, typename ValueT>
-void exclusive(const ::RAJA::omp_parallel_for_exec& exec,
-               Iter begin,
-               Iter end,
-               OutIter out,
-               BinFn f,
-               ValueT v)
+template <typename Policy,
+          typename Iter,
+          typename OutIter,
+          typename BinFn,
+          typename ValueT>
+concepts::enable_if<type_traits::is_openmp_policy<Policy>> exclusive(
+    const Policy& exec,
+    Iter begin,
+    Iter end,
+    OutIter out,
+    BinFn f,
+    ValueT v)
 {
   ::std::copy(begin, end, out);
   exclusive_inplace(exec, out, out + (end - begin), f, v);

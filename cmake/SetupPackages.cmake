@@ -1,12 +1,12 @@
 ###############################################################################
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-#
+#    
 # Produced at the Lawrence Livermore National Laboratory
-#
+#    
 # LLNL-CODE-689114
-#
+# 
 # All rights reserved.
-#
+#  
 # This file is part of RAJA.
 #
 # For additional details, please also read RAJA/LICENSE.
@@ -54,17 +54,12 @@ endif()
 
 if (RAJA_ENABLE_CLANG_CUDA)
   set(RAJA_ENABLE_CUDA On)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
 if (RAJA_ENABLE_CUDA)
-  find_package(CUDA)
-  if(CUDA_FOUND)
-    message(STATUS "CUDA Enabled")
-    set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    include_directories(${CUDA_INCLUDE_DIRS})
-  endif()
+  find_package(CUDA REQUIRED)
+  set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+  include_directories(${CUDA_INCLUDE_DIRS})
 
   if (RAJA_ENABLE_CUB)
 
@@ -81,7 +76,26 @@ if (RAJA_ENABLE_CUDA)
 endif()
 
 
+if (RAJA_ENABLE_TBB)
+  find_package(TBB)
+  if(TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    message(STATUS "TBB Enabled")
+  else()
+    message(WARNING "TBB NOT FOUND")
+    set(RAJA_ENABLE_TBB Off)
+  endif()
+endif ()
+
 if (RAJA_ENABLE_TESTS)
+
+#
+# This conditional prevents build problems resulting from BLT and
+# RAJA each having their own copy of googletest.
+#
+if (RAJA_BUILD_WITH_BLT)
+else()
+
   include(ExternalProject)
   # Set default ExternalProject root directory
   SET_DIRECTORY_PROPERTIES(PROPERTIES EP_PREFIX ${CMAKE_BINARY_DIR}/tpl)
@@ -90,9 +104,10 @@ if (RAJA_ENABLE_TESTS)
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
       GIT_TAG release-1.7.0
-      CMAKE_ARGS
+      CMAKE_ARGS                
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_CXX_COMPILER_ARG1=${CMAKE_CXX_COMPILER_ARG1}
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON
       LOG_CONFIGURE ON
@@ -127,6 +142,8 @@ if (RAJA_ENABLE_TESTS)
   find_package(Threads)
 
   enable_testing()
+endif ()
+
 endif ()
 
 if (RAJA_ENABLE_DOCUMENTATION)

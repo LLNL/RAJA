@@ -9,6 +9,10 @@
  *          These methods should work on any platform. They make no
  *          asumptions about data alignment.
  *
+ *          Note: Reduction operations should not be used with simd
+ *          policies. Limited support.
+ *
+ *
  ******************************************************************************
  */
 
@@ -57,6 +61,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <iterator>
+#include <type_traits>
+
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/types.hpp"
@@ -71,100 +78,36 @@ namespace RAJA
 namespace impl
 {
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  RAJA_SIMD
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE void forall_Icount(const simd_exec &,
-                               Iterable &&iter,
-                               IndexType icount,
-                               Func &&loop_body)
+template <typename Iterable, typename Func>
+RAJA_INLINE void
+forall(const simd_exec &, Iterable &&iter, Func &&loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
   RAJA_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+    loop_body(*(begin + i));
   }
 }
 
-//
-//////////////////////////////////////////////////////////////////////
-//
-// Function templates that iterate over list segment objects.
-//
-// NOTE: These operations will not vectorize. We include them here and
-//       force sequential execution for convenience.
-//
-//////////////////////////////////////////////////////////////////////
-//
-
-/*!
- ******************************************************************************
- *
- * \brief  "Fake" SIMD iteration over list segment object.
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY>
-RAJA_INLINE void forall(simd_exec, const ListSegment &iseg, LOOP_BODY loop_body)
+// SIMD forall(Iterable)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE void
+forall_Icount(const simd_exec &,
+              Iterable &&iter,
+              IndexType icount,
+              Func &&loop_body)
 {
-  const auto *RAJA_RESTRICT idx = iseg.getIndex();
-  auto len = iseg.getLength();
-
-  RAJA_FT_BEGIN;
-
-  for (decltype(len) k = 0; k < len; ++k) {
-    loop_body(idx[k]);
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  RAJA_SIMD
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    loop_body(static_cast<IndexType>(i + icount), *(begin + i));
   }
-
-  RAJA_FT_END;
 }
-
-/*!
- ******************************************************************************
- *
- * \brief  "Fake" SIMD iteration over list segment object with index count.
- *
- *         NOTE: lambda loop body requires two args (icount, index).
- *
- ******************************************************************************
- */
-template <typename LOOP_BODY, typename IndexType>
-RAJA_INLINE void forall_Icount(simd_exec,
-                               const ListSegment &iseg,
-                               IndexType icount,
-                               LOOP_BODY loop_body)
-{
-  const auto *RAJA_RESTRICT idx = iseg.getIndex();
-  auto len = iseg.getLength();
-
-  RAJA_FT_BEGIN;
-
-  for (decltype(len) k = 0; k < len; ++k) {
-    loop_body(static_cast<IndexType>(k + icount), idx[k]);
-  }
-
-  RAJA_FT_END;
-}
-
-//
-//////////////////////////////////////////////////////////////////////
-//
-// SIMD execution policy does not apply to iteration over index
-// set segments, only to execution of individual segments. So there
-// are no index set traversal methods in this file.
-//
-//////////////////////////////////////////////////////////////////////
-//
 
 }  // closing brace for impl namespace
 

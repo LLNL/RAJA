@@ -1,12 +1,12 @@
 ###############################################################################
 # Copyright (c) 2016, Lawrence Livermore National Security, LLC.
-#    
+#
 # Produced at the Lawrence Livermore National Laboratory
-#    
+#
 # LLNL-CODE-689114
-# 
+#
 # All rights reserved.
-#  
+#
 # This file is part of RAJA.
 #
 # For additional details, please also read RAJA/LICENSE.
@@ -41,7 +41,6 @@
 ###############################################################################
 
 macro(raja_add_executable)
-
   set(options )
   set(singleValueArgs NAME)
   set(multiValueArgs SOURCES DEPENDS_ON)
@@ -53,12 +52,12 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON chai)
   endif ()
 
-  if (RAJA_ENABLE_CUDA) 
-    if (RAJA_ENABLE_CLANG_CUDA) 
+  if (RAJA_ENABLE_CUDA)
+    if (RAJA_ENABLE_CLANG_CUDA)
       add_executable(${arg_NAME} ${arg_SOURCES})
-      target_compile_options(${arg_NAME} PRIVATE 
+      target_compile_options(${arg_NAME} PRIVATE
         -x cuda --cuda-gpu-arch=${RAJA_CUDA_ARCH} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
-      target_include_directories(${arg_NAME} 
+      target_include_directories(${arg_NAME}
         PUBLIC ${EXPT_CUDA_INCLUDE_LOCATION})
       target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES} RAJA ${arg_DEPENDS_ON})
     else ()
@@ -67,7 +66,7 @@ macro(raja_add_executable)
         PROPERTIES
         CUDA_SOURCE_PROPERTY_FORMAT OBJ)
       cuda_add_executable(${arg_NAME} ${arg_SOURCES})
-      target_link_libraries(${arg_NAME} RAJA ${arg_DEPENDS_ON})
+      target_link_libraries(${arg_NAME} PUBLIC RAJA ${arg_DEPENDS_ON})
     endif()
   else ()
     add_executable(${arg_NAME} ${arg_SOURCES})
@@ -91,9 +90,9 @@ macro(raja_add_library)
     if (RAJA_ENABLE_CLANG_CUDA)
 
       add_library(${arg_NAME} ${arg_SOURCES})
-      target_compile_options(${arg_NAME} PRIVATE 
+      target_compile_options(${arg_NAME} PRIVATE
         -x cuda --cuda-gpu-arch=${RAJA_CUDA_ARCH} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
-      target_include_directories(${arg_NAME} 
+      target_include_directories(${arg_NAME}
         PUBLIC ${EXPT_CUDA_INCLUDE_LOCATION})
       target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES})
 
@@ -109,12 +108,6 @@ macro(raja_add_library)
     add_library(${arg_NAME} ${arg_SOURCES})
   endif ()
 
-  if (NOT (CMAKE_CXX_COMPILER_ID MATCHES Intel OR RAJA_ENABLE_CLANG_CUDA) )
-      set_target_properties(${arg_NAME}
-      PROPERTIES
-      CXX_STANDARD 11
-      CXX_STANDARD_REQUIRED YES)
-  endif()
 endmacro(raja_add_library)
 
 macro(raja_add_test)
@@ -125,11 +118,13 @@ macro(raja_add_test)
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
+  list (APPEND arg_DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+
   raja_add_executable(
-    NAME ${arg_NAME}.exe 
-    SOURCES ${arg_SOURCES} 
+    NAME ${arg_NAME}.exe
+    SOURCES ${arg_SOURCES}
     DEPENDS_ON ${arg_DEPENDS_ON})
 
-  add_test(NAME ${arg_NAME} 
+  add_test(NAME ${arg_NAME}
     COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
 endmacro(raja_add_test)

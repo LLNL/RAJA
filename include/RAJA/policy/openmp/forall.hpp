@@ -80,16 +80,11 @@ namespace RAJA
 
 namespace impl
 {
-
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
-RAJA_INLINE void executeRangeList_forall(const IndexSetSegInfo* seg_info,
-                                         LOOP_BODY&& loop_body);
-
 ///
 /// OpenMP parallel for policy implementation
 ///
 
-template <typename Iterable, typename InnerPolicy, typename Func>
+template <typename Iterable, typename Func, typename InnerPolicy>
 RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
@@ -101,13 +96,17 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
   }
 }
 
-  template <typename Iterable, typename InnerPolicy, typename Func, typename IndexType>
-RAJA_INLINE void forall_Icount(const omp_parallel_exec<InnerPolicy>&,
-                               Iterable&& iter,
-                               IndexType icount,
-                               Func&& loop_body)
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          typename InnerPolicy>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_parallel_exec<InnerPolicy>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
-  #pragma omp parallel
+#pragma omp parallel
   {
     typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
     forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
@@ -134,11 +133,12 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
   }
 }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE void forall_Icount(const omp_for_nowait_exec&,
-                               Iterable&& iter,
-                               IndexType icount,
-                               Func&& loop_body)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_nowait_exec&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -165,11 +165,12 @@ RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
   }
 }
 
-  template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE void forall_Icount(const omp_for_exec&,
-                               Iterable&& iter,
-                               IndexType icount,
-                               Func&& loop_body)
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_exec&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -198,11 +199,15 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
   }
 }
 
-template <typename Iterable, typename Func, size_t ChunkSize, typename IndexType>
-RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
-                               Iterable&& iter,
-                               IndexType icount,
-                               Func&& loop_body)
+template <typename Iterable,
+          typename IndexType,
+          typename Func,
+          size_t ChunkSize>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_static<ChunkSize>&,
+              Iterable&& iter,
+              IndexType icount,
+              Func&& loop_body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -236,10 +241,17 @@ RAJA_INLINE void forall_Icount(const omp_for_static<ChunkSize>&,
  *
  ******************************************************************************
  */
-template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY>
+
+/*
+* TODO: Fix this!!!
+ */
+
+/*
+template <typename SEG_EXEC_POLICY_T, typename LOOP_BODY, typename ...
+SEG_TYPES>
 RAJA_INLINE void forall(
-    IndexSet::ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
-    const IndexSet& iset,
+    ExecPolicy<omp_taskgraph_segit, SEG_EXEC_POLICY_T>,
+    const IndexSet<SEG_TYPES ...>& iset,
     LOOP_BODY loop_body)
 {
   if (!iset.dependencyGraphSet()) {
@@ -259,9 +271,6 @@ RAJA_INLINE void forall(
 
     task->wait();
 
-    /*
-     * TODO: Fix this!!!
-     */
     executeRangeList_forall<SEG_EXEC_POLICY_T>(seg_info, loop_body);
 
     task->reset();
@@ -280,6 +289,7 @@ RAJA_INLINE void forall(
 
   }  // iterate over segments of index set
 }
+*/
 
 }  // closing brace for impl namespace
 
