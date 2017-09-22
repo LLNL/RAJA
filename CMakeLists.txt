@@ -148,8 +148,6 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-#include_directories(${PROJECT_BINARY_DIR}/include)
-
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 
 install(FILES

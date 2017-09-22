@@ -86,7 +86,7 @@ macro(raja_add_test)
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  list (APPEND arg_DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  list (APPEND arg_DEPENDS_ON gtest ${CMAKE_THREAD_LIBS_INIT})
 
   raja_add_executable(
     NAME ${arg_NAME}.exe
