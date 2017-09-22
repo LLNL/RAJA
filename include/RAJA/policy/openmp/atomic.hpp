@@ -8,18 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_policy_openmp_atomic_HPP
-#define RAJA_policy_openmp_atomic_HPP
-
-#include "RAJA/config.hpp"
-
-// rely on builtin_atomic when OpenMP can't do the job
-#include "RAJA/policy/atomic_builtin.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -59,6 +49,16 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_policy_openmp_atomic_HPP
+#define RAJA_policy_openmp_atomic_HPP
+
+#include "RAJA/config.hpp"
+
+// rely on builtin_atomic when OpenMP can't do the job
+#include "RAJA/policy/atomic_builtin.hpp"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/util/defines.hpp"
 

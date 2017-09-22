@@ -11,14 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_omp_reduce_HPP
-#define RAJA_omp_reduce_HPP
-
-#if defined(RAJA_ENABLE_OPENMP)
-
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -59,7 +53,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_omp_reduce_HPP
+#define RAJA_omp_reduce_HPP
+
 #include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/util/types.hpp"
 

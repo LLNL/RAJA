@@ -11,15 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_target_forall_openmp_HXX
-#define RAJA_target_forall_openmp_HXX
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_TARGET_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -59,6 +52,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_target_forall_openmp_HXX
+#define RAJA_target_forall_openmp_HXX
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 #include "RAJA/util/types.hpp"
 

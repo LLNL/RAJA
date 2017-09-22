@@ -11,15 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_tbb_HPP
-#define RAJA_forall_tbb_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_TBB)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -60,7 +53,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_forall_tbb_HPP
+#define RAJA_forall_tbb_HPP
+
 #include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
 
 #include "RAJA/util/types.hpp"
 

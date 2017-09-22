@@ -8,11 +8,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_scan_openmp_HPP
-#define RAJA_scan_openmp_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -54,6 +51,9 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "RAJA/config.hpp"
+
+#ifndef RAJA_scan_openmp_HPP
+#define RAJA_scan_openmp_HPP
 
 #include "RAJA/policy/openmp/policy.hpp"
 #include "RAJA/policy/sequential/scan.hpp"

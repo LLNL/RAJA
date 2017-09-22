@@ -8,15 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_openmp_HPP
-#define RAJA_forallN_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -56,6 +49,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forallN_openmp_HPP
+#define RAJA_forallN_openmp_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/policy/openmp/policy.hpp"

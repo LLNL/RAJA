@@ -12,17 +12,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_cuda_HPP
-#define RAJA_forall_cuda_HPP
-
-#include "RAJA/config.hpp"
-#include "RAJA/pattern/forall.hpp"
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -62,6 +53,15 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forall_cuda_HPP
+#define RAJA_forall_cuda_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
+
+#include "RAJA/pattern/forall.hpp"
 
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"

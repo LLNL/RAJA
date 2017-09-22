@@ -11,15 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_tbb_reduce_HPP
-#define RAJA_tbb_reduce_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_TBB)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -59,6 +52,13 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_tbb_reduce_HPP
+#define RAJA_tbb_reduce_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
 
 #include "RAJA/internal/MemUtils_CPU.hpp"
 #include "RAJA/pattern/detail/reduce.hpp"

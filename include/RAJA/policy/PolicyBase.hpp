@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_POLICYBASE_HPP
-#define RAJA_POLICYBASE_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,6 +49,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_POLICYBASE_HPP
+#define RAJA_POLICYBASE_HPP
 
 #include <cstddef>
 #include "RAJA/util/concepts.hpp"

@@ -10,11 +10,8 @@
 ******************************************************************************
 */
 
-#ifndef RAJA_loop_HPP
-#define RAJA_loop_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -54,6 +51,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_loop_HPP
+#define RAJA_loop_HPP
 
 #include "RAJA/policy/loop/atomic.hpp"
 #include "RAJA/policy/loop/forall.hpp"
