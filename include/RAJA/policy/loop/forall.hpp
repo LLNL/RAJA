@@ -1,3 +1,19 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file containing RAJA index set and segment iteration
+ *          template methods for loop execution.
+ *
+ *          These methods should work on any platform.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_forall_loop_HPP
+#define RAJA_forall_loop_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -30,7 +46,7 @@
 // IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
 // ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
 // LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONLOOP
 // DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
 // OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
 // HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
@@ -40,59 +56,51 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Forward declarations for impl::forall overloads
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_policy_fwd_HPP
-#define RAJA_policy_fwd_HPP
-
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda/fwd.hpp"
-#endif
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/fwd.hpp"
-#endif
-#include "RAJA/policy/sequential/fwd.hpp"
-#include "RAJA/policy/simd/fwd.hpp"
+#include "RAJA/util/types.hpp"
+
+#include "RAJA/policy/loop/policy.hpp"
+
+#include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
+
+#include "RAJA/internal/fault_tolerance.hpp"
+
+using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
-template <typename Selector, typename... Policies>
-class MultiPolicy;
-
-namespace impl
+namespace policy
+{
+namespace loop
 {
 
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&,
-                        Body &&);
-}  // end namespace impl
+//
+//////////////////////////////////////////////////////////////////////
+//
+// The following function templates iterate over index set segments
+// sequentially.  Segment execution is defined by segment
+// execution policy template parameter.
+//
+//////////////////////////////////////////////////////////////////////
+//
 
-namespace wrap
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 {
-
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
-                        Iterable &&,
-                        Body &&);
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+  for (decltype(distance) i = 0; i < distance; ++i) {
+    body(*(begin + i));
+  }
 }
 
-}  // end namespace RAJA
+}  // closing brace for loop namespace
+
+}  // closing brace for policy namespace
+
+}  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

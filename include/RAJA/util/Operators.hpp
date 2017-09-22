@@ -66,6 +66,10 @@
 #include <cstdint>
 #include <type_traits>
 
+#ifdef RAJA_CHECK_LIMITS
+#include <limits>
+#endif
+
 namespace RAJA
 {
 
@@ -307,7 +311,6 @@ struct limits : public std::conditional<
 };
 
 #ifdef RAJA_CHECK_LIMITS
-#include <limits>
 template <typename T>
 constexpr bool check()
 {

@@ -72,6 +72,10 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} -O3" CACHE STRING "")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -O0" CACHE STRING "")
 
+if (RAJA_ENABLE_MODULES AND CMAKE_CXX_COMPILER_ID MATCHES Clang)
+  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fmodules")
+endif()
+
 if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
   if (CMAKE_CXX_COMPILER_VERSION VERSION_LESS 4.9)
     message(FATAL_ERROR "RAJA requires GCC 4.9 or greater!")
@@ -100,14 +104,13 @@ if ( MSVC )
 endif()
 
 if (ENABLE_CUDA)
-
   if ( NOT DEFINED NVCC_STD ) 
     set(NVCC_STD "c++11")
     # When we require cmake 3.8+, replace this with setting CUDA_STANDARD
     if(CUDA_VERSION_MAJOR GREATER "8")
-        execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 -ccbin ${CMAKE_CXX_COMPILER} . 
-                        ERROR_VARIABLE TEST_NVCC_ERR
-                        OUTPUT_QUIET)
+      execute_process(COMMAND ${CUDA_TOOLKIT_ROOT_DIR}/bin/nvcc -std c++14 -ccbin ${CMAKE_CXX_COMPILER} . 
+                      ERROR_VARIABLE TEST_NVCC_ERR
+                      OUTPUT_QUIET)
       if (NOT TEST_NVCC_ERR MATCHES "flag is not supported with the configured host compiler")
         set(NVCC_STD "c++14")
       endif()
@@ -116,32 +119,30 @@ if (ENABLE_CUDA)
   endif()
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
-
     if(CMAKE_BUILD_TYPE MATCHES Release)
-      set(CUDA_NVCC_FLAGS -O2; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "" FORCE)
+        set(NVCC_FLAGS -O2; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
     elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-      set(CUDA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "" FORCE)
+        set(NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
     elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
-      set(CUDA_NVCC_FLAGS -Os; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "" FORCE)
-    else(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-      set(CUDA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "" FORCE)
+        set(NVCC_FLAGS -Os; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+    else() # CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
+        set(NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
     endif()
 
     if(RAJA_ENABLE_COVERAGE)
       if (CMAKE_CXX_COMPILER_ID MATCHES GNU)
         message(INFO "Coverage analysis enabled")
-        set(CUDA_NVCC_FLAGS ${NVCC_FLAGS}; -Xcompiler -coverage; -Xlinker -coverage CACHE LIST "" FORCE)
+        set(NVCC_FLAGS ${NVCC_FLAGS}; -Xcompiler -coverage; -Xlinker -coverage)
         set(CMAKE_EXE_LINKER_FLAGS "-coverage ${CMAKE_EXE_LINKER_FLAGS}")
       else()
         message(WARNING "Code coverage specified but not enabled -- GCC was not detected")
       endif()
     endif()
+  endif()
 
-  # close if (NOT RAJA_HOST_CONFIG_LOADED) conditional
-  endif() 
-
-# close if (ENABLE_CUDA) conditional 
+set(CUDA_NVCC_FLAGS ${NVCC_FLAGS})
 endif()
+# end RAJA_ENABLE_CUDA section
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")

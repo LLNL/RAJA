@@ -1,3 +1,18 @@
+/*!
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file containing RAJA headers for sequential execution.
+*
+*          These methods work on all platforms.
+*
+******************************************************************************
+*/
+
+#ifndef RAJA_loop_HPP
+#define RAJA_loop_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,71 +55,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_cuda_HXX
-#define RAJA_forward_cuda_HXX
-
-#include "RAJA/config.hpp"
-
-
-#if defined(RAJA_ENABLE_CUDA)
-
-#include "RAJA/policy/cuda/policy.hpp"
-
-namespace RAJA
-{
-
-namespace impl
-{
-
-template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
-RAJA_INLINE void forall(cuda_exec<BlockSize, Async>, Iterable&&, LoopBody&&);
-
-
-template <typename Iterable,
-          typename IndexType,
-          typename LoopBody,
-          size_t BlockSize,
-          bool Async>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(cuda_exec<BlockSize, Async>, Iterable&&, IndexType, LoopBody&&);
-
-
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>&,
-                        LoopBody&&);
-
-
-template <typename LoopBody,
-          size_t BlockSize,
-          bool Async,
-          typename... SegmentTypes>
-RAJA_INLINE void forall_Icount(
-    ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-    const StaticIndexSet<SegmentTypes...>&,
-    LoopBody&&);
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#include "RAJA/policy/loop/atomic.hpp"
+#include "RAJA/policy/loop/forall.hpp"
+#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/loop/scan.hpp"
 
 #endif  // closing endif for header file include guard

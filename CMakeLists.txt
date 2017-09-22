@@ -48,7 +48,7 @@ project(RAJA LANGUAGES CXX C)
 # Set version number
 set(RAJA_VERSION_MAJOR 0)
 set(RAJA_VERSION_MINOR 3)
-set(RAJA_VERSION_PATCHLEVEL 0)
+set(RAJA_VERSION_PATCHLEVEL 1)
 
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
@@ -59,6 +59,7 @@ set(ENABLE_COPY_HEADERS Off CACHE Bool "")
 set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
 set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
+
 option(ENABLE_TBB "Build TBB support" On)
 option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
 option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
@@ -66,6 +67,7 @@ set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds"
 option(ENABLE_CUB "Use cub for scans using CUDA" On)
 option(ENABLE_TESTS "Build tests" On)
 option(ENABLE_EXAMPLES "Build simple examples" On)
+option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
 option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
 option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
 option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
@@ -144,9 +146,15 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
+include_directories(${PROJECT_BINARY_DIR}/include)
+
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
-install(FILES ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
-        DESTINATION "include/RAJA")
+
+install(FILES
+  ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp
+  include/RAJA/module.modulemap
+  include/RAJA/module.private.modulemap
+  DESTINATION "include/RAJA/")
 
 if(ENABLE_TESTS)
   add_subdirectory(test)

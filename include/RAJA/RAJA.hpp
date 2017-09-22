@@ -75,6 +75,11 @@
 #include "RAJA/policy/sequential.hpp"
 
 //
+// All platforms must support loop execution.
+//
+#include "RAJA/policy/loop.hpp"
+
+//
 // All platforms should support simd execution.
 //
 #include "RAJA/policy/simd.hpp"
@@ -115,6 +120,13 @@
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
+//
+// Atomic operations support
+//
+#include "RAJA/pattern/atomic.hpp"
+
+
 //
 // Generic iteration templates for perfectly nested loops
 //
@@ -122,6 +134,9 @@
 
 
 #include "RAJA/pattern/reduce.hpp"
+
+
+
 
 //
 //////////////////////////////////////////////////////////////////////
