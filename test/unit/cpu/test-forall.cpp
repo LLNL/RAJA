@@ -97,7 +97,7 @@ using SequentialTypes = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 
 
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 using OpenMPTypes = ::testing::Types<
     ExecPolicy<seq_segit, omp_parallel_for_exec>,
     ExecPolicy<omp_parallel_for_segit, seq_exec>,
@@ -106,7 +106,7 @@ using OpenMPTypes = ::testing::Types<
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
 #endif
 
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<
     ExecPolicy<seq_segit, tbb_for_exec>,
     ExecPolicy<tbb_for_exec, seq_exec>,

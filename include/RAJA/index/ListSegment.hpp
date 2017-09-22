@@ -59,7 +59,7 @@
 #include "RAJA/util/concepts.hpp"
 #include "RAJA/internal/Span.hpp"
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 #else
 #define cudaErrchk(...)
@@ -89,7 +89,7 @@ template <typename T>
 class TypedListSegment
 {
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
   static constexpr bool Has_CUDA = true;
 #else
   static constexpr bool Has_CUDA = false;

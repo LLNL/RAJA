@@ -76,7 +76,7 @@ TEST(NestedReduce, seq_seq)
   test<RAJA::seq_exec, RAJA::seq_exec, RAJA::seq_reduce>(37, 73);
 }
 
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 TEST(NestedReduce, omp_seq)
 {
   test<RAJA::omp_parallel_for_exec, RAJA::seq_exec, RAJA::omp_reduce>(10, 20);
@@ -89,7 +89,7 @@ TEST(NestedReduce, seq_omp)
   test<RAJA::seq_exec, RAJA::omp_parallel_for_exec, RAJA::omp_reduce>(37, 73);
 }
 #endif
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 TEST(NestedReduce, tbb_seq)
 {
   test<RAJA::tbb_for_exec, RAJA::seq_exec, RAJA::tbb_reduce>(10, 20);

@@ -56,7 +56,7 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/Layout.hpp"
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
 #include "chai/ManagedArray.hpp"
 #endif
 
@@ -123,7 +123,7 @@ struct TypedViewBase {
 template <typename DataType, typename LayoutT, typename... IndexTypes>
 using TypedView = TypedViewBase<DataType, DataType *, LayoutT, IndexTypes...>;
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
 
 template <typename DataType, typename LayoutT>
 using ManagedArrayView = View<DataType, LayoutT, chai::ManagedArray<DataType>>;

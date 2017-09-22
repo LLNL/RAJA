@@ -55,10 +55,10 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/fwd.hpp"
 #endif
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 #include "RAJA/policy/openmp/fwd.hpp"
 #endif
 #include "RAJA/policy/sequential/fwd.hpp"

@@ -85,13 +85,13 @@ using constructor_types =
     ::testing::Types<std::tuple<RAJA::seq_reduce, int>,
                      std::tuple<RAJA::seq_reduce, float>,
                      std::tuple<RAJA::seq_reduce, double>
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
                      ,
                      std::tuple<RAJA::tbb_reduce, int>,
                      std::tuple<RAJA::tbb_reduce, float>,
                      std::tuple<RAJA::tbb_reduce, double>
 #endif
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
                      ,
                      std::tuple<RAJA::omp_reduce, int>,
                      std::tuple<RAJA::omp_reduce, float>,
@@ -258,12 +258,12 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTest,
 using types = ::testing::Types<
     std::tuple<RAJA::seq_exec, RAJA::seq_reduce>,
     std::tuple<RAJA::simd_exec, RAJA::seq_reduce>
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     ,
     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce>,
     std::tuple<RAJA::omp_parallel_for_exec, RAJA::omp_reduce_ordered>
 #endif
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
     ,
     std::tuple<RAJA::tbb_for_exec, RAJA::tbb_reduce>
 #endif
@@ -332,7 +332,7 @@ TYPED_TEST_P(NestedReductionCorrectnessTest, NestedReduceSum)
 
 REGISTER_TYPED_TEST_CASE_P(NestedReductionCorrectnessTest, NestedReduceSum);
 
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 using nested_types = ::testing::Types<
     std::tuple<
         RAJA::NestedPolicy<

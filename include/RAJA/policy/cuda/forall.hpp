@@ -19,7 +19,7 @@
 #include "RAJA/pattern/forall.hpp"
 
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -344,6 +344,6 @@ RAJA_INLINE void forall_Icount(
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for ENABLE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

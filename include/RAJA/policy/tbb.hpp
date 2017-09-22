@@ -57,7 +57,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 
 #include "RAJA/policy/tbb/forall.hpp"
 #include "RAJA/policy/tbb/forallN.hpp"

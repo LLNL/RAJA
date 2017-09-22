@@ -65,7 +65,7 @@
 
 #include "RAJA/config.hpp"
 
-#ifdef ENABLE_FT
+#ifdef RAJA_ENABLE_FT
 
 #ifdef RAJA_REPORT_FT
 #include <stdio.h>
@@ -134,6 +134,6 @@
 
 #define RAJA_FT_END
 
-#endif  // ENABLE_FT
+#endif  // RAJA_ENABLE_FT
 
 #endif  // closing endif for header file include guard

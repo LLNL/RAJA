@@ -87,6 +87,15 @@ include(CheckFunctionExists)
 check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
 check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
 
+# Set up RAJA_ENABLE prefixed options
+set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
+set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
+set(RAJA_ENABLE_TBB ${ENABLE_TBB})
+set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
+set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
+set(RAJA_ENABLE_CHAI ${ENABLE_CHAI})
+set(RAJA_ENABLE_CUB ${ENABLE_CUB})
+
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)

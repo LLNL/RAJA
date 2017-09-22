@@ -59,7 +59,7 @@
 namespace RAJA
 {
 
-#if defined(ENABLE_CLANG_CUDA)
+#if defined(RAJA_ENABLE_CLANG_CUDA)
 using cuda_dim_t = uint3;
 #else
 using cuda_dim_t = dim3;

@@ -13,7 +13,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -224,6 +224,6 @@ RAJA_INLINE void forallN_policy(detail::ForallN_TBB_Parallel_Tag,
 
 }  // namespace RAJA
 
-#endif  // closing endif for if defined(ENABLE_TBB)
+#endif  // closing endif for if defined(RAJA_ENABLE_TBB)
 
 #endif  // closing endif for header file include guard

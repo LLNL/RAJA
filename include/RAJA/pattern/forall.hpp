@@ -107,7 +107,7 @@
 
 #include "RAJA/policy/fwd.hpp"
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 
 #include "chai/ArrayManager.hpp"
@@ -209,7 +209,7 @@ RAJA_INLINE concepts::
               type_traits::is_range<Container>>
     forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   using EP = typename std::decay<ExecutionPolicy>::type;
   rm->setExecutionSpace(detail::get_space<EP>::value);
@@ -220,7 +220,7 @@ RAJA_INLINE concepts::
                std::forward<Container>(c),
                body);
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -242,7 +242,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   using EP = typename std::decay<ExecutionPolicy>::type;
   rm->setExecutionSpace(detail::get_space<EP>::value);
@@ -254,7 +254,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                       std::forward<IndexType>(icount),
                       body);
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -272,7 +272,7 @@ template <typename ExecutionPolicy, typename IdxSet, typename LoopBody>
 RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
 {
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   using EP = typename std::decay<ExecutionPolicy>::type;
   rm->setExecutionSpace(detail::get_space<EP>::value);
@@ -281,7 +281,7 @@ RAJA_INLINE void forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   typename std::remove_reference<LoopBody>::type body = loop_body;
   impl::forall(std::forward<ExecutionPolicy>(p), std::forward<IdxSet>(c), body);
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
@@ -299,7 +299,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody loop_body)
 {
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   using EP = typename std::decay<ExecutionPolicy>::type;
   rm->setExecutionSpace(detail::get_space<EP>::value);
@@ -310,7 +310,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                       std::forward<IdxSet>(c),
                       body);
 
-#if defined(ENABLE_CHAI)
+#if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
 #endif
 }

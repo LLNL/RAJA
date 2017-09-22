@@ -270,7 +270,7 @@ struct PolLTimesB_GPU {
 };
 
 // Combine OMP Parallel, omp nowait, and cuda thread-block launch
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 struct PolLTimesC_GPU {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<ExecList<seq_exec,
@@ -297,7 +297,7 @@ struct PolLTimesC_GPU {
 #endif
 
 // Combine TBB parallel loop, and cuda thread-block launch
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 struct PolLTimesD_GPU {
   // Loops: Moments, Directions, Groups, Zones
   typedef NestedPolicy<ExecList<seq_exec,
@@ -325,10 +325,10 @@ struct PolLTimesD_GPU {
 
 using LTimesPolicies = ::testing::Types<PolLTimesA_GPU,
                                         PolLTimesB_GPU
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
                                         ,PolLTimesC_GPU
 #endif
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
                                         ,PolLTimesD_GPU
 #endif
                                         >;

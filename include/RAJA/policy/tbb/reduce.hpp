@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -114,6 +114,6 @@ RAJA_DECLARE_ALL_REDUCERS(tbb_reduce, detail::ReduceTBB)
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for ENABLE_TBB guard
+#endif  // closing endif for RAJA_ENABLE_TBB guard
 
 #endif  // closing endif for header file include guard

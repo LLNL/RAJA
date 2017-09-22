@@ -60,7 +60,7 @@
 #include "RAJA/config.hpp"
 
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/policy/cuda/policy.hpp"
 
@@ -105,6 +105,6 @@ RAJA_INLINE void forall_Icount(
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for ENABLE_CUDA guard
+#endif  // closing endif for RAJA_ENABLE_CUDA guard
 
 #endif  // closing endif for header file include guard

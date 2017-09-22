@@ -15,7 +15,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -107,6 +107,6 @@ inline void cudaAssert(cudaError_t code,
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for if defined(ENABLE_CUDA)
+#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
 #endif  // closing endif for header file include guard

@@ -16,7 +16,7 @@
 
 #include "RAJA/config.hpp"
 
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -195,6 +195,6 @@ forall_Icount(const tbb_for_static<ChunkSize>&,
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for if defined(ENABLE_TBB)
+#endif  // closing endif for if defined(RAJA_ENABLE_TBB)
 
 #endif  // closing endif for header file include guard

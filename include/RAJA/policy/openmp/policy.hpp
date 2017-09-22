@@ -79,7 +79,7 @@ template <unsigned int ChunkSize>
 struct Static : std::integral_constant<unsigned int, ChunkSize> {
 };
 
-#if defined(ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 
 template <unsigned int TeamSize>
 struct Teams : std::integral_constant<unsigned int, TeamSize> {
@@ -153,7 +153,7 @@ struct omp_collapse_nowait_exec
                                             omp::Collapse> {
 };
 
-#if defined(ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 template <size_t Teams>
 struct omp_target_parallel_for_exec
     : make_policy_pattern_t<Policy::target_openmp,
@@ -191,7 +191,7 @@ struct omp_taskgraph_interval_segit
 struct omp_reduce : make_policy_pattern_t<Policy::openmp, Pattern::reduce> {
 };
 
-#if defined(ENABLE_TARGET_OPENMP)
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
 template <size_t Teams>
 struct omp_target_reduce
     : make_policy_pattern_t<Policy::target_openmp, Pattern::reduce> {

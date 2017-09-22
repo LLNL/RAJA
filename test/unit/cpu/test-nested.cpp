@@ -87,7 +87,7 @@ struct ExecInfo : public Transform {
   using EXEC = NestedPolicy<ExecList<Exec...>, typename Transform::TILE>;
 };
 
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
 template <typename Transform, typename... Exec>
 struct OMPExecInfo : public Transform {
   using EXEC =
@@ -106,13 +106,13 @@ using POLICIES =
     std::tuple<ExecInfo<TRANSFORMS, seq_exec, seq_exec>,
                ExecInfo<TRANSFORMS, seq_exec, simd_exec>,
                ExecInfo<TRANSFORMS, simd_exec, simd_exec>
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
                ,
                // ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>,
                OMPExecInfo<TRANSFORMS, simd_exec, omp_for_nowait_exec>
 #endif
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
                ,
                ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>,
                ExecInfo<TRANSFORMS, simd_exec, tbb_for_exec>
@@ -221,7 +221,7 @@ struct PolLTimesC : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-#ifdef ENABLE_OPENMP
+#ifdef RAJA_ENABLE_OPENMP
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesD_OMP : PolLTimesCommon {
@@ -254,7 +254,7 @@ struct PolLTimesE_OMP : PolLTimesCommon {
 
 #endif
 
-#ifdef ENABLE_TBB
+#ifdef RAJA_ENABLE_TBB
 
 // Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesF_TBB : PolLTimesCommon {
@@ -286,12 +286,12 @@ struct PolLTimesG_TBB : PolLTimesCommon {
 using LTimesPolicies = ::testing::Types<PolLTimesA,
                                         PolLTimesB,
                                         PolLTimesC
-#if defined(ENABLE_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
                                         ,
                                         PolLTimesD_OMP,
                                         PolLTimesE_OMP
 #endif
-#if defined(ENABLE_TBB)
+#if defined(RAJA_ENABLE_TBB)
                                         ,
                                         PolLTimesF_TBB,
                                         PolLTimesG_TBB
