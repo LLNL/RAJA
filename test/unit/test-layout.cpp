@@ -62,7 +62,7 @@ TEST(OffsetLayoutTest, 1D)
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({10}, std::array<RAJA::Index_type, 1>{14});
+  const layout l({10}, {14});
 
   /*
    * First element, 10, should have index 0.

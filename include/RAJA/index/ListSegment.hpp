@@ -128,12 +128,14 @@ class TypedListSegment
     m_data = new T[m_size];
   }
 
+#ifdef RAJA_ENABLE_CUDA
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)
   {
     cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
   }
+#endif
 
   //! copy data from container using TrivialCopy
   template <typename Container>

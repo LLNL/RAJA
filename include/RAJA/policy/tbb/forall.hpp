@@ -85,7 +85,9 @@ using tbb_static_partitioner = tbb::static_partitioner;
 using tbb_static_partitioner = tbb::auto_partitioner;
 #endif
 
-namespace impl
+namespace policy
+{
+namespace tbb
 {
 
 
@@ -105,46 +107,29 @@ namespace impl
  * stealing at the cost of initial start-up overhead for a top-level loop.
  */
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const tbb_for_dynamic& p,
+RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
+  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
+  ::tbb::parallel_for(brange(std::begin(iter), std::end(iter), p.grain_size),
                     [=](const brange& r) {
                       for (const auto& i : r)
                         loop_body(i);
                     });
 }
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_for_dynamic& p,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance, p.grain_size), [=](const brange& r) {
-    for (decltype(distance) i = r.begin(); i != r.end(); ++i)
-      loop_body(static_cast<IndexType>(i + icount), begin[i]);
-  });
-}
-
 ///
 /// TBB parallel for static policy implementation
 ///
 
-/** 
+/**
  * @brief TBB static for implementation
- * 
+ *
  * @param tbb_for_static tbb tag
  * @param iter any iterable
  * @param loop_body loop body
- * 
+ *
  * @return None
  *
  * This forall implements a TBB parallel_for loop over the specified iterable
@@ -155,12 +140,12 @@ forall_Icount(const tbb_for_dynamic& p,
  * correctnes requires the per-thread mapping, you *must* use TBB 2017 or newer
  */
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
+RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  using brange = tbb::blocked_range<decltype(iter.begin())>;
-  tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
+  using brange = ::tbb::blocked_range<decltype(iter.begin())>;
+  ::tbb::parallel_for(brange(std::begin(iter), std::end(iter), ChunkSize),
                     [=](const brange& r) {
                       for (const auto& i : r)
                         loop_body(i);
@@ -168,30 +153,8 @@ RAJA_INLINE void forall(const tbb_for_static<ChunkSize>&,
                     tbb_static_partitioner{});
 }
 
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          size_t ChunkSize>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const tbb_for_static<ChunkSize>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  using brange = tbb::blocked_range<decltype(distance)>;
-  tbb::parallel_for(brange(0, distance, ChunkSize),
-                    [=](const brange& r) {
-                      for (decltype(distance) i = r.begin(); i != r.end(); ++i)
-                        loop_body(static_cast<IndexType>(i + icount), begin[i]);
-                    },
-                    tbb_static_partitioner{});
-}
-
-
-}  // closing brace for impl namespace
+}  // closing brace for tbb namespace
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

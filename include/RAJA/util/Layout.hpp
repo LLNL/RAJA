@@ -58,13 +58,38 @@
 #include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+#include "RAJA/util/Operators.hpp"
 #include "RAJA/util/Permutations.hpp"
 
 namespace RAJA
 {
 
+namespace detail
+{
 template <typename Range, typename IdxLin = Index_type>
 struct LayoutBase_impl {
+};
+
+/*!
+ * Helper function to compute the strides
+ */
+
+template <size_t j, size_t n_dims, typename IdxLin = Index_type>
+struct stride_calculator {
+  constexpr IdxLin operator()(IdxLin cur_stride,
+                              IdxLin const (&sizes)[n_dims]) const
+  {
+    return stride_calculator<j + 1, n_dims, IdxLin>{}(
+        cur_stride * (sizes[j] ? sizes[j] : 1), sizes);
+  }
+};
+template <size_t n_dims, typename IdxLin>
+struct stride_calculator<n_dims, n_dims, IdxLin> {
+  constexpr IdxLin operator()(IdxLin cur_stride,
+                              IdxLin const (&)[n_dims]) const
+  {
+    return cur_stride;
+  }
 };
 
 template <size_t... RangeInts, typename IdxLin>
@@ -85,44 +110,28 @@ public:
 
 
   /*!
-   * Helper function to compute the strides
-   */
-
-
-  /*!
    * Default constructor with zero sizes and strides.
    */
-  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl()
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl()
+      : sizes{0}, strides{0}, inv_strides{0}, inv_mods{0}
   {
-    for (size_t i = 0; i < n_dims; ++i) {
-      sizes[i] = strides[i] = 0;
-      inv_strides[i] = inv_mods[i] = 1;
-    }
   }
 
   /*!
    * Construct a layout given the size of each dimension.
-   *
-   * @todo this should be constexpr in c++14 mode
    */
   template <typename... Types>
-  RAJA_INLINE RAJA_HOST_DEVICE LayoutBase_impl(Types... ns)
-      : sizes{convertIndex<IdxLin>(ns)...}
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_impl(Types... ns)
+      : sizes{convertIndex<IdxLin>(ns)...},
+        strides{(detail::stride_calculator<RangeInts + 1, n_dims, IdxLin>{}(
+            sizes[RangeInts] ? 1 : 0,
+            sizes))...},
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
   {
     static_assert(n_dims == sizeof...(Types),
                   "number of dimensions must "
                   "match");
-    for (size_t i = 0; i < n_dims; i++) {
-      // If the size of dimension i is zero, then the stride is zero
-      strides[i] = sizes[i] ? 1 : 0;
-
-      for (size_t j = i + 1; j < n_dims; j++) {
-        // only take product of non-zero sizes
-        strides[i] *= sizes[j] ? sizes[j] : 1;
-      }
-    }
-
-    computeInverse();
   }
 
   /*!
@@ -142,11 +151,14 @@ public:
    *  Construct a Layout given the size and stride of each dimension
    */
   template <typename... Types>
-  RAJA_INLINE LayoutBase_impl(const std::array<IdxLin, n_dims> &sizes_in,
-                              const std::array<IdxLin, n_dims> &strides_in)
-      : sizes{sizes_in[RangeInts]...}, strides{strides_in[RangeInts]...}
+  RAJA_INLINE constexpr LayoutBase_impl(
+      const std::array<IdxLin, n_dims> &sizes_in,
+      const std::array<IdxLin, n_dims> &strides_in)
+      : sizes{sizes_in[RangeInts]...},
+        strides{strides_in[RangeInts]...},
+        inv_strides{(strides[RangeInts] ? strides[RangeInts] : 1)...},
+        inv_mods{(sizes[RangeInts] ? sizes[RangeInts] : 1)...}
   {
-    computeInverse();
   }
 
 
@@ -182,27 +194,6 @@ public:
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
                                    % inv_mods[RangeInts])...);
   }
-
-private:
-  /*!
-   * @internal
-   *
-   * Computes the inverse mapping used by toIndices given the forward mapping
-   * described by strides[] and sizes[]
-   */
-  RAJA_INLINE
-  RAJA_HOST_DEVICE
-  void computeInverse()
-  {
-    // Inverse strides and mods map directly from strides and sizes,
-    // except when a size (or stride) is zero for a projective layout.
-    // In this case, having a stride and size of 1 will ensure that
-    // toIndices for that dimension is always 0
-    for (size_t i = 0; i < n_dims; i++) {
-      inv_strides[i] = strides[i] ? strides[i] : 1;
-      inv_mods[i] = sizes[i] ? sizes[i] : 1;
-    }
-  }
 };
 
 template <size_t... RangeInts, typename IdxLin>
@@ -211,7 +202,7 @@ constexpr size_t
 template <size_t... RangeInts, typename IdxLin>
 constexpr size_t
     LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
-
+}
 
 /*!
  * @brief A mapping of n-dimensional index space to a linear index space.
@@ -263,7 +254,8 @@ constexpr size_t
  *
  */
 template <size_t n_dims, typename IdxLin = Index_type>
-using Layout = LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+using Layout =
+    detail::LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
 
 template <typename IdxLin, typename... DimTypes>
 struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {

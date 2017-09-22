@@ -59,6 +59,8 @@
 
 namespace RAJA
 {
+namespace policy
+{
 
 namespace omp
 {
@@ -92,7 +94,6 @@ struct Distribute {
 };
 
 #endif
-}
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -201,6 +202,25 @@ struct omp_target_reduce
 struct omp_reduce_ordered
     : make_policy_pattern_t<Policy::openmp, Pattern::reduce, reduce::ordered> {
 };
+
+}  // closing brace for omp namespace
+}  // closing brace for policy namespace
+
+using policy::omp::omp_for_exec;
+using policy::omp::omp_for_nowait_exec;
+using policy::omp::omp_for_static;
+using policy::omp::omp_parallel_exec;
+using policy::omp::omp_parallel_for_exec;
+using policy::omp::omp_parallel_segit;
+using policy::omp::omp_parallel_for_segit;
+using policy::omp::omp_collapse_nowait_exec;
+using policy::omp::omp_reduce;
+using policy::omp::omp_reduce_ordered;
+
+#if defined(RAJA_ENABLE_TARGET_OPENMP)
+using policy::omp::omp_target_parallel_for_exec;
+using policy::omp::omp_target_reduce;
+#endif
 
 }  // closing brace for RAJA namespace
 
