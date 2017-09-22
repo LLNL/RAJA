@@ -120,13 +120,13 @@ if (ENABLE_CUDA)
 
   if (NOT RAJA_HOST_CONFIG_LOADED)
     if(CMAKE_BUILD_TYPE MATCHES Release)
-        set(NVCC_FLAGS -O2; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+        set(RAJA_NVCC_FLAGS -O2; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
     elseif(CMAKE_BUILD_TYPE MATCHES Debug)
-        set(NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+        set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
     elseif(CMAKE_BUILD_TYPE MATCHES MinSizeRel)
-        set(NVCC_FLAGS -Os; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
+        set(RAJA_NVCC_FLAGS -Os; -restrict; -arch ${CUDA_ARCH}; -std ${NVCC_STD}; --expt-extended-lambda; -ccbin; ${CMAKE_CXX_COMPILER} CACHE LIST "")
     else() # CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
-        set(NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+        set(RAJA_NVCC_FLAGS -g; -G; -O2; -restrict; -arch ${CUDA_ARCH}; -std  ${NVCC_STD}; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
     endif()
 
     if(RAJA_ENABLE_COVERAGE)
@@ -140,7 +140,7 @@ if (ENABLE_CUDA)
     endif()
   endif()
 
-set(CUDA_NVCC_FLAGS ${NVCC_FLAGS})
+  set(CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
 endif()
 # end RAJA_ENABLE_CUDA section
 

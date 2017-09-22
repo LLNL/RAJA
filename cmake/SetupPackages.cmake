@@ -42,7 +42,7 @@
 
 if (ENABLE_CUDA)
   if (ENABLE_OPENMP)
-    set(NVCC_FLAGS "${NVCC_FLAGS};-Xcompiler ${OpenMP_CXX_FLAGS}")
+    set(RAJA_NVCC_FLAGS "${RAJA_NVCC_FLAGS};-Xcompiler ${OpenMP_CXX_FLAGS}")
   endif()
 
   if (ENABLE_CUB)
