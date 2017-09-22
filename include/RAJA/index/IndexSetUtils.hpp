@@ -9,11 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_IndexSetUtils_HPP
-#define RAJA_IndexSetUtils_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -53,6 +50,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_IndexSetUtils_HPP
+#define RAJA_IndexSetUtils_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/forall.hpp"
