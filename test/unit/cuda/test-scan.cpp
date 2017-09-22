@@ -133,7 +133,7 @@ template <typename Function, typename T>
   return ::testing::AssertionSuccess();
 }
 
-TYPED_TEST_P(ScanCUDA, inclusive)
+CUDA_TYPED_TEST_P(ScanCUDA, inclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -151,7 +151,7 @@ TYPED_TEST_P(ScanCUDA, inclusive)
   cudaFree(out);
 }
 
-TYPED_TEST_P(ScanCUDA, inclusive_inplace)
+CUDA_TYPED_TEST_P(ScanCUDA, inclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -169,7 +169,7 @@ TYPED_TEST_P(ScanCUDA, inclusive_inplace)
   cudaFree(data);
 }
 
-TYPED_TEST_P(ScanCUDA, exclusive)
+CUDA_TYPED_TEST_P(ScanCUDA, exclusive)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -187,7 +187,7 @@ TYPED_TEST_P(ScanCUDA, exclusive)
   cudaFree(out);
 }
 
-TYPED_TEST_P(ScanCUDA, exclusive_inplace)
+CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -205,7 +205,7 @@ TYPED_TEST_P(ScanCUDA, exclusive_inplace)
   cudaFree(data);
 }
 
-TYPED_TEST_P(ScanCUDA, exclusive_offset)
+CUDA_TYPED_TEST_P(ScanCUDA, exclusive_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
@@ -224,7 +224,7 @@ TYPED_TEST_P(ScanCUDA, exclusive_offset)
   cudaFree(out);
 }
 
-TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
+CUDA_TYPED_TEST_P(ScanCUDA, exclusive_inplace_offset)
 {
   using T = typename Info<TypeParam>::data_type;
   using Function = typename Info<TypeParam>::function;
