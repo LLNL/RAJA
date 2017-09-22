@@ -48,23 +48,22 @@
 #include "gtest/gtest.h"
 
 // Tag type to dispatch to test bodies based on policy selected by multipolicy
+
+struct mp_test_body;
+namespace test_policy
+{
 template <int i>
 struct mp_tag {
 };
-
-struct mp_test_body;
-namespace RAJA
-{
-namespace impl
-{
-// fake RAJA::impl::forall overload to test multipolicy dispatch
+// fake forall_impl overload to test multipolicy dispatch
 template <int i, typename Iterable>
-void forall(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
+void forall_impl(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
 {
   body(p, iter.size());
 }
 }
-}
+
+using test_policy::mp_tag;
 
 // NOTE: this *must* be after the above to work
 #include "RAJA/RAJA.hpp"

@@ -57,7 +57,6 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/policy/fwd.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -72,6 +71,10 @@ template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker;
 }
 
+namespace policy
+{
+namespace multi
+{
 
 /// MultiPolicy - Meta-policy for choosing between a compile-time list of
 /// policies at runtime
@@ -104,6 +107,27 @@ public:
       policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
           _policies;
 };
+
+/// forall_impl - MultiPolicy specialization, select at runtime from a
+/// compile-time list of policies, build with make_multi_policy()
+/// \param p MultiPolicy to use for selection
+/// \param iter iterable of items to supply to body
+/// \param body functor, will receive each value produced by iterable iter
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
+                        Iterable &&iter,
+                        Body &&body)
+{
+  p.invoke(iter, body);
+}
+
+}  // end namespace multi
+}  // end namespace policy
+
+using policy::multi::MultiPolicy;
 
 namespace detail
 {
@@ -148,34 +172,6 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
-namespace wrap
-{
-
-template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy &&, Container &&, LoopBody &&);
-
-/// forall - MultiPolicy specialization, select at runtime from a
-/// compile-time list of policies, build with make_multi_policy()
-/// \param p MultiPolicy to use for selection
-/// \param iter iterable of items to supply to body
-/// \param body functor, will receive each value produced by iterable iter
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&iter,
-                        Body &&body)
-{
-  p.invoke(iter, body);
-}
-
-}  // closing brace for namespace wrap
-
 namespace detail
 {
 
@@ -191,7 +187,8 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
-      RAJA::wrap::forall(_p, iter, body);
+      using policy::multi::forall_impl;
+      forall_impl(_p, iter, body);
     } else {
       NextInvoker::invoke(offset, iter, body);
     }
@@ -206,7 +203,8 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-      RAJA::wrap::forall(_p, iter, body);
+      using policy::multi::forall_impl;
+      forall_impl(_p, iter, body);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }
