@@ -53,8 +53,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_target_reduce_omp_HXX
-#define RAJA_target_reduce_omp_HXX
+#ifndef RAJA_omp_target_reduce_HPP
+#define RAJA_omp_target_reduce_HPP
 
 #include "RAJA/config.hpp"
 

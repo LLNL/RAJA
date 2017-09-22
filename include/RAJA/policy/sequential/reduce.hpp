@@ -53,8 +53,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_reduce_sequential_HPP
-#define RAJA_reduce_sequential_HPP
+#ifndef RAJA_sequential_reduce_HPP
+#define RAJA_sequential_reduce_HPP
 
 #include "RAJA/config.hpp"
 

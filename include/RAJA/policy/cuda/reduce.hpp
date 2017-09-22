@@ -53,8 +53,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_reduce_cuda_HPP
-#define RAJA_reduce_cuda_HPP
+#ifndef RAJA_cuda_reduce_HPP
+#define RAJA_cuda_reduce_HPP
 
 #include "RAJA/config.hpp"
 
