@@ -1,8 +1,15 @@
-#ifndef RAJA_PATTERN_DETAIL_REDUCE_HPP
-#define RAJA_PATTERN_DETAIL_REDUCE_HPP
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief  Base types used in common for RAJA reducer objects.
+ *
+ ******************************************************************************
+ */
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -43,6 +50,8 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_PATTERN_DETAIL_REDUCE_HPP
+#define RAJA_PATTERN_DETAIL_REDUCE_HPP
 
 #include "RAJA/util/Operators.hpp"
 #include "RAJA/util/types.hpp"
