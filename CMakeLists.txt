@@ -103,6 +103,8 @@ set (raja_sources
   src/MemUtils_CUDA.cpp
   src/ThreadUtils_CPU.cpp)
 
+set (raja_depends)
+
 if (ENABLE_OPENMP)
   set (raja_depends
     openmp)
@@ -146,7 +148,7 @@ target_include_directories(RAJA
   $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
   $<INSTALL_INTERFACE:include>)
 
-include_directories(${PROJECT_BINARY_DIR}/include)
+#include_directories(${PROJECT_BINARY_DIR}/include)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 
