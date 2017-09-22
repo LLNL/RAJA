@@ -59,6 +59,10 @@
 
 namespace RAJA
 {
+namespace policy
+{
+namespace tbb
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -109,6 +113,15 @@ struct tbb_reduce : make_policy_pattern_launch_platform_t<Policy::tbb,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
+
+}  // closing brace for tbb
+}  // closing brace for policy
+
+using policy::tbb::tbb_for_exec;
+using policy::tbb::tbb_for_static;
+using policy::tbb::tbb_for_dynamic;
+using policy::tbb::tbb_segit;
+using policy::tbb::tbb_reduce;
 
 }  // closing brace for RAJA namespace
 

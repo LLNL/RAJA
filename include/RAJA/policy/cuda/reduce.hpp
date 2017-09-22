@@ -253,15 +253,15 @@ T block_reduce(T val, T identity)
   int threadId = threadIdx.x + blockDim.x * threadIdx.y
                  + (blockDim.x * blockDim.y) * threadIdx.z;
 
-  int warpId = threadId % WARP_SIZE;
-  int warpNum = threadId / WARP_SIZE;
+  int warpId = threadId % policy::cuda::WARP_SIZE;
+  int warpNum = threadId / policy::cuda::WARP_SIZE;
 
   T temp = val;
 
-  if (numThreads % WARP_SIZE == 0) {
+  if (numThreads % policy::cuda::WARP_SIZE == 0) {
 
     // reduce each warp
-    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+    for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
       T rhs = shfl_xor_sync(temp, i);
       Combiner{}(temp, rhs);
     }
@@ -269,7 +269,7 @@ T block_reduce(T val, T identity)
   } else {
 
     // reduce each warp
-    for (int i = 1; i < WARP_SIZE ; i *= 2) {
+    for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
@@ -281,9 +281,9 @@ T block_reduce(T val, T identity)
   }
 
   // reduce per warp values
-  if (numThreads > WARP_SIZE) {
+  if (numThreads > policy::cuda::WARP_SIZE) {
 
-    __shared__ RAJA::detail::SoAArray<T, MAX_WARPS> sd;
+    __shared__ RAJA::detail::SoAArray<T, policy::cuda::MAX_WARPS> sd;
 
     // write per warp values to shared memory
     if (warpId == 0) {
@@ -295,13 +295,13 @@ T block_reduce(T val, T identity)
     if (warpNum == 0) {
 
       // read per warp values
-      if (warpId*WARP_SIZE < numThreads) {
+      if (warpId*policy::cuda::WARP_SIZE < numThreads) {
         temp = sd.get(warpId);
       } else {
         temp = identity;
       }
 
-      for (int i = 1; i < WARP_SIZE ; i *= 2) {
+      for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
         Combiner{}(temp, rhs);
       }

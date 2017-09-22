@@ -59,6 +59,10 @@
 
 namespace RAJA
 {
+namespace policy
+{
+namespace loop
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -73,9 +77,9 @@ namespace RAJA
 ///
 
 struct loop_exec : make_policy_pattern_launch_platform_t<Policy::loop,
-                                                        Pattern::forall,
-                                                        Launch::undefined,
-                                                        Platform::host> {
+                                                         Pattern::forall,
+                                                         Launch::undefined,
+                                                         Platform::host> {
 };
 
 ///
@@ -91,6 +95,14 @@ using loop_segit = loop_exec;
 ///////////////////////////////////////////////////////////////////////
 ///
 using loop_reduce = seq_reduce;
+
+}  // end namespace loop
+
+}  // end namespace policy
+
+using policy::loop::loop_exec;
+using policy::loop::loop_segit;
+using policy::loop::loop_reduce;
 
 }  // closing brace for RAJA namespace
 

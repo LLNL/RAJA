@@ -11,6 +11,8 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#if defined(RAJA_ENABLE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -133,7 +135,12 @@ template <>
 struct get_launch<false> {
   static constexpr RAJA::Launch value = RAJA::Launch::sync;
 };
-}
+} // end namespace detail
+
+namespace policy
+{
+namespace cuda
+{
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec
@@ -176,8 +183,15 @@ using cuda_reduce_atomic = cuda_reduce<BLOCK_SIZE, false, true>;
 template <size_t BLOCK_SIZE>
 using cuda_reduce_atomic_async = cuda_reduce<BLOCK_SIZE, true, true>;
 
-namespace cuda
-{
+
+template <typename POL>
+struct CudaPolicy
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::forall,
+                                                RAJA::Launch::undefined,
+                                                RAJA::Platform::cuda> {
+};
 
 //
 // Operations in the included files are parametrized using the following
@@ -192,7 +206,15 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
       "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
       "a multiple of WARP_SIZE");
 
-} // namespace cuda
+} // end namespace cuda
+} // end namespace policy
+
+using policy::cuda::cuda_exec;
+using policy::cuda::cuda_reduce;
+using policy::cuda::cuda_reduce_async;
+using policy::cuda::cuda_reduce_atomic;
+using policy::cuda::cuda_reduce_atomic_async;
+using policy::cuda::CudaPolicy;
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
@@ -214,15 +236,6 @@ struct CudaDim {
            num_threads.y,
            num_threads.z);
   }
-};
-
-template <typename POL>
-struct CudaPolicy
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
 };
 
 template <typename POL, typename IDX>
@@ -363,4 +376,5 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 
+#endif // RAJA_ENABLE_CUDA
 #endif

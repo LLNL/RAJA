@@ -58,7 +58,7 @@
 
 TEST(TimerTest, No1)
 {
-  RAJA::Timer timer;
+  auto timer = RAJA::Timer();
 
   timer.start("test_timer");
 

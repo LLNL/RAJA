@@ -220,13 +220,13 @@ struct ForallN_Executor<device,
       cudaStream_t stream = 0;
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
                                  std::move(loop_body)),
           cargs...);
-      cuda::peekAtLastError();
+      RAJA::cuda::peekAtLastError();
 
-      cuda::launch(stream);
-      if (!Async) cuda::synchronize(stream);
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
     }
   }
 };
@@ -252,13 +252,13 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
       cudaStream_t stream = 0;
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
                                  std::move(loop_body)),
           c0);
-      cuda::peekAtLastError();
+      RAJA::cuda::peekAtLastError();
 
-      cuda::launch(stream);
-      if (!Async) cuda::synchronize(stream);
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
     }
   }
 };

@@ -54,14 +54,14 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iostream>
-#include <limits>
-
 #include "RAJA/config.hpp"
 #include "RAJA/index/IndexValue.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/Permutations.hpp"
 #include "RAJA/util/PermutedLayout.hpp"
+
+#include <limits>
+#include <array>
 
 namespace RAJA
 {
@@ -75,7 +75,7 @@ struct OffsetLayout_impl;
 template <size_t... RangeInts, typename IdxLin>
 struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
   using IndexRange = VarOps::index_sequence<RangeInts...>;
-  using Base = LayoutBase_impl<IndexRange, IdxLin>;
+  using Base = detail::LayoutBase_impl<IndexRange, IdxLin>;
   Base base_;
 
   IdxLin offsets[sizeof...(RangeInts)];
@@ -100,14 +100,15 @@ struct OffsetLayout_impl<VarOps::index_sequence<RangeInts...>, IdxLin> {
       const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
       const Layout<sizeof...(RangeInts), IdxLin>& rhs)
   {
-    return internal::OffsetLayout_impl<IndexRange, IdxLin>(offsets_in, rhs);
+    OffsetLayout_impl ret{rhs};
+    VarOps::ignore_args((ret.offsets[RangeInts] = offsets_in[RangeInts])...);
+    return ret;
   }
 
 private:
-  constexpr RAJA_INLINE OffsetLayout_impl(
-      const std::array<IdxLin, sizeof...(RangeInts)>& offsets_in,
-      const Layout<sizeof...(RangeInts), IdxLin>& rhs)
-      : base_{rhs}, offsets{offsets_in[RangeInts]...}
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE
+  OffsetLayout_impl(const Layout<sizeof...(RangeInts), IdxLin>& rhs)
+      : base_{rhs}
   {
   }
 };
@@ -150,9 +151,11 @@ auto make_permuted_offset_layout(const std::array<IdxLin, Rank>& lower,
   for (size_t i = 0; i < Rank; ++i) {
     sizes[i] = upper[i] - lower[i] + 1;
   }
-  return internal::OffsetLayout_impl<VarOps::make_index_sequence<Rank>,
-                                     IdxLin>::
-      from_layout_and_offsets(lower, make_permuted_layout(sizes, permutation));
+  return internal::OffsetLayout_impl<
+      VarOps::make_index_sequence<Rank>,
+      IdxLin>::from_layout_and_offsets(lower,
+                                       make_permuted_layout(sizes,
+                                                            permutation));
 }
 
 }  // namespace RAJA
