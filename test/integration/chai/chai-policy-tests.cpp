@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for CHAI with different RAJA policies
+///
+
 #include "gtest/gtest.h"
 
 #include "chai/ExecutionSpaces.hpp"

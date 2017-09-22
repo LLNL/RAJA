@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for CHAI with basic RAJA constructs
+///
+
 #include "chai/ManagedArray.hpp"
 
 #include "RAJA/RAJA.hpp"

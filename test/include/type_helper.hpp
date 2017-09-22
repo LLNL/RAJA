@@ -8,9 +8,6 @@
  ******************************************************************************
  */
 
-#ifndef _TYPE_HELPER_HPP_
-#define _TYPE_HELPER_HPP_
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
@@ -52,6 +49,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef _TYPE_HELPER_HPP_
+#define _TYPE_HELPER_HPP_
 
 #include "gtest/gtest.h"
 

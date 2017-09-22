@@ -40,6 +40,10 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+///
+/// Source file containing tests for CHAI in RAJA nested loops.
+///
+
 #include <time.h>
 #include <cfloat>
 #include <cstdlib>

@@ -8,9 +8,6 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_gtest_HPP
-#define RAJA_gtest_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
@@ -52,6 +49,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_gtest_HPP
+#define RAJA_gtest_HPP
 
 #include "gtest/gtest.h"
 
