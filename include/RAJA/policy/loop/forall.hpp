@@ -71,10 +71,10 @@ using RAJA::concepts::enable_if;
 
 namespace RAJA
 {
-
-namespace impl
+namespace policy
 {
-
+namespace loop
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -87,7 +87,7 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
+RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
@@ -97,19 +97,9 @@ RAJA_INLINE void forall(const loop_exec &, Iterable &&iter, Func &&body)
   }
 }
 
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE concepts::enable_if<type_traits::is_integral<IndexType>>
-forall_Icount(const loop_exec &, Iterable &&iter, IndexType icount, Func &&body)
-{
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(static_cast<IndexType>(i + icount), *(begin + i));
-  }
-}
+}  // closing brace for loop namespace
 
-}  // closing brace for impl namespace
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

@@ -57,8 +57,10 @@
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 #include "RAJA/util/defines.hpp"
+#include "RAJA/util/Operators.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/policy/sequential/forall.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -103,7 +105,7 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   RAJA_INLINE void operator()(BODY const &body) const
   {
     ForallN_PeelOuter<build_device, NextExec, BODY> outer(next_exec, body);
-    RAJA::impl::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
+    wrap::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
   }
 };
 
@@ -272,11 +274,6 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
 template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
-#ifdef RAJA_ENABLE_CUDA
-  // this call should be moved into a cuda file
-  // but must be made before loop_body is copied
-  beforeCudaKernelLaunch();
-#endif
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager *rm = chai::ArrayManager::getInstance();
@@ -291,10 +288,6 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
-#endif
-
-#ifdef RAJA_ENABLE_CUDA
-  afterCudaKernelLaunch();
 #endif
 }
 

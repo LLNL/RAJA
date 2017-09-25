@@ -72,6 +72,13 @@ namespace RAJA
 enum PushEnd { PUSH_FRONT, PUSH_BACK };
 enum PushCopy { PUSH_COPY, PUSH_NOCOPY };
 
+template <typename... TALL>
+class StaticIndexSet;
+
+namespace policy
+{
+namespace indexset
+{
 
 ///
 /// Class representing index set execution policy.
@@ -88,8 +95,10 @@ struct ExecPolicy
   typedef SEG_EXEC_POLICY_T seg_exec;
 };
 
-template <typename... TALL>
-class StaticIndexSet;
+}  // end namespace indexset
+}  // end namespace policy
+
+using policy::indexset::ExecPolicy;
 
 
 /*!
@@ -107,7 +116,6 @@ class StaticIndexSet<T0, TREST...> : public StaticIndexSet<TREST...>
   const int T0_TypeId = sizeof...(TREST);
 
 public:
-
   //! Construct empty index set
   RAJA_INLINE constexpr StaticIndexSet() : PARENT() {}
 
@@ -220,9 +228,7 @@ public:
 
   //! Returns the number of types this IndexSet can store.
   RAJA_INLINE
-  constexpr size_t getNumTypes() const {
-    return 1 + PARENT::getNumTypes();
-  }
+  constexpr size_t getNumTypes() const { return 1 + PARENT::getNumTypes(); }
 
   /*
    * IMPORTANT: Some methods to add a segment to an index set
@@ -255,20 +261,20 @@ private:
     Index_type num = getNumSegments();
 
     RangeStrideSegment Iter = (pend == PUSH_BACK)
-      ? RangeStrideSegment(0, num, 1)
-      : RangeStrideSegment(num - 1, -1, -1);
+                                  ? RangeStrideSegment(0, num, 1)
+                                  : RangeStrideSegment(num - 1, -1, -1);
 
     for (Index_type i : Iter)
       segment_push_into(i, c, pend, pcopy);
   }
 
 
-  static constexpr int value_for(PushEnd end, PushCopy copy) {
+  static constexpr int value_for(PushEnd end, PushCopy copy)
+  {
     return (end == PUSH_BACK) << 1 | (copy == PUSH_COPY);
   }
 
 public:
-
   template <typename... CALL>
   RAJA_INLINE void segment_push_into(size_t segid,
                                      StaticIndexSet<CALL...> &c,
@@ -281,18 +287,18 @@ public:
     }
     Index_type offset = getSegmentOffsets()[segid];
     switch (value_for(pend, pcopy)) {
-    case value_for(PUSH_BACK, PUSH_COPY):
-      c.push_back(*data[offset]);
-      break;
-    case value_for(PUSH_BACK, PUSH_NOCOPY):
-      c.push_back_nocopy(data[offset]);
-      break;
-    case value_for(PUSH_FRONT, PUSH_COPY):
-      c.push_front(*data[offset]);
-      break;
-    case value_for(PUSH_FRONT, PUSH_NOCOPY):
-      c.push_front_nocopy(data[offset]);
-      break;
+      case value_for(PUSH_BACK, PUSH_COPY):
+        c.push_back(*data[offset]);
+        break;
+      case value_for(PUSH_BACK, PUSH_NOCOPY):
+        c.push_back_nocopy(data[offset]);
+        break;
+      case value_for(PUSH_FRONT, PUSH_COPY):
+        c.push_front(*data[offset]);
+        break;
+      case value_for(PUSH_FRONT, PUSH_NOCOPY):
+        c.push_front_nocopy(data[offset]);
+        break;
     }
   }
 
@@ -355,7 +361,9 @@ public:
   RAJA_INLINE void segmentCall(size_t segid, BODY body, ARGS... args) const
   {
     if (getSegmentTypes()[segid] != T0_TypeId) {
-      PARENT::segmentCall(segid, std::forward<BODY>(body), std::forward<ARGS>(args)...);
+      PARENT::segmentCall(segid,
+                          std::forward<BODY>(body),
+                          std::forward<ARGS>(args)...);
       return;
     }
     Index_type offset = getSegmentOffsets()[segid];
@@ -363,7 +371,6 @@ public:
   }
 
 protected:
-
   //! Internal logic to add a new segment -- catch invalid type insertion
   template <typename Tnew>
   RAJA_INLINE void push_internal(Tnew *val,
@@ -412,38 +419,28 @@ protected:
   }
 
   //! Returns the number of indices (the total icount of segments
-  RAJA_INLINE Index_type &getTotalLength() {
-    return PARENT::getTotalLength();
-  }
+  RAJA_INLINE Index_type &getTotalLength() { return PARENT::getTotalLength(); }
 
   //! set total length of the indexset
-  RAJA_INLINE void setTotalLength(int n) {
-    return PARENT::setTotalLength(n);
-  }
+  RAJA_INLINE void setTotalLength(int n) { return PARENT::setTotalLength(n); }
 
   //! increase the total stored size of the indexset
-  RAJA_INLINE void increaseTotalLength(int n) {
+  RAJA_INLINE void increaseTotalLength(int n)
+  {
     return PARENT::increaseTotalLength(n);
   }
 
 public:
-
   using iterator = Iterators::numeric_iterator<Index_type>;
 
   //! Get an iterator to the end.
-  iterator end() const {
-    return iterator(getNumSegments());
-  }
+  iterator end() const { return iterator(getNumSegments()); }
 
   //! Get an iterator to the beginning.
-  iterator begin() const {
-    return iterator(0);
-  }
+  iterator begin() const { return iterator(0); }
 
   //! Return the number of elements in the range.
-  Index_type size() const {
-    return getNumSegments();
-  }
+  Index_type size() const { return getNumSegments(); }
 
   //!  @name IndexSet segment subsetting methods (slices ranges)
   ///
@@ -500,9 +497,11 @@ public:
   {
     StaticIndexSet<T0, TREST...> *retVal = new StaticIndexSet<T0, TREST...>();
     int numSeg = getNumSegments();
-    for (auto & seg : segIds)
-      if (seg >= 0 && seg < numSeg)
+    for (auto &seg : segIds) {
+      if (seg >= 0 && seg < numSeg) {
         segment_push_into(seg, *retVal, PUSH_BACK, PUSH_NOCOPY);
+      }
+    }
     return retVal;
   }
 
@@ -526,7 +525,6 @@ public:
   }
 
 protected:
-
   //! Returns the mapping of  segment_index -> segment_type
   RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentTypes()
   {
@@ -564,7 +562,6 @@ protected:
   }
 
 public:
-
   ///
   /// Equality operator returns true if all segments are equal; else false.
   ///
@@ -575,8 +572,7 @@ public:
   RAJA_INLINE bool operator==(const StaticIndexSet<P0, PREST...> &other) const
   {
     size_t num_seg = getNumSegments();
-    if (num_seg != other.getNumSegments())
-      return false;
+    if (num_seg != other.getNumSegments()) return false;
 
     for (size_t segid = 0; segid < num_seg; ++segid) {
       if (!compareSegmentById(segid, other)) {
@@ -594,7 +590,6 @@ public:
   }
 
 private:
-
   //! vector of IndexSet data objects of type T0
   RAJA::RAJAVec<T0 *> data;
 
@@ -613,7 +608,6 @@ template <>
 class StaticIndexSet<>
 {
 public:
-
   //! create empty IndexSet
   RAJA_INLINE StaticIndexSet() : m_len(0) {}
 
@@ -642,9 +636,7 @@ public:
   }
 
 protected:
-  RAJA_INLINE static size_t getNumTypes() {
-    return 0;
-  }
+  RAJA_INLINE static size_t getNumTypes() { return 0; }
 
   template <typename T>
   RAJA_INLINE constexpr bool isValidSegmentType(T const &) const
@@ -653,22 +645,17 @@ protected:
     return false;
   }
 
-  RAJA_INLINE static int getNumSegments()
-  {
-    return 0;
-  }
+  RAJA_INLINE static int getNumSegments() { return 0; }
 
-  RAJA_INLINE static size_t getLength()
-  {
-    return 0;
-  }
+  RAJA_INLINE static size_t getLength() { return 0; }
 
   template <typename BODY, typename... ARGS>
   RAJA_INLINE void segmentCall(size_t, BODY, ARGS...) const
   {
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentTypes() {
+  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentTypes()
+  {
     return segment_types;
   }
 
@@ -677,7 +664,8 @@ protected:
     return segment_types;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentOffsets() {
+  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentOffsets()
+  {
     return segment_offsets;
   }
 
@@ -686,7 +674,8 @@ protected:
     return segment_offsets;
   }
 
-  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentIcounts() {
+  RAJA_INLINE RAJA::RAJAVec<Index_type> &getSegmentIcounts()
+  {
     return segment_icounts;
   }
 
@@ -695,17 +684,11 @@ protected:
     return segment_icounts;
   }
 
-  RAJA_INLINE Index_type &getTotalLength() {
-    return m_len;
-  }
+  RAJA_INLINE Index_type &getTotalLength() { return m_len; }
 
-  RAJA_INLINE void setTotalLength(int n) {
-    m_len = n;
-  }
+  RAJA_INLINE void setTotalLength(int n) { m_len = n; }
 
-  RAJA_INLINE void increaseTotalLength(int n) {
-    m_len += n;
-  }
+  RAJA_INLINE void increaseTotalLength(int n) { m_len += n; }
 
   template <typename P0, typename... PREST>
   RAJA_INLINE bool compareSegmentById(
@@ -724,13 +707,13 @@ protected:
   template <typename P0>
   RAJA_INLINE P0 &getSegment(size_t)
   {
-    return *((P0*)(this - this));
+    return *((P0 *)(this - this));
   }
 
   template <typename P0>
   RAJA_INLINE P0 const &getSegment(size_t) const
   {
-    return *((P0*)(this - this));
+    return *((P0 *)(this - this));
   }
 
   template <typename... CALL>
@@ -752,31 +735,26 @@ protected:
   }
 
 public:
-
   using iterator = Iterators::numeric_iterator<Index_type>;
 
-  RAJA_INLINE int getStartingIcount(int segid) {
+  RAJA_INLINE int getStartingIcount(int segid)
+  {
     return segment_icounts[segid];
   }
 
-  RAJA_INLINE int getStartingIcount(int segid) const {
+  RAJA_INLINE int getStartingIcount(int segid) const
+  {
     return segment_icounts[segid];
   }
 
   //! Get an iterator to the end.
-  iterator end() const {
-    return iterator(getNumSegments());
-  }
+  iterator end() const { return iterator(getNumSegments()); }
 
   //! Get an iterator to the beginning.
-  iterator begin() const {
-    return iterator(0);
-  }
+  iterator begin() const { return iterator(0); }
 
   //! Return the number of elements in the range.
-  Index_type size() const {
-    return getNumSegments();
-  }
+  Index_type size() const { return getNumSegments(); }
 
 private:
   //! Vector of segment types:    seg_index -> seg_type

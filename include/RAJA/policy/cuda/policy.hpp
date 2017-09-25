@@ -11,6 +11,8 @@
 #ifndef RAJA_policy_cuda_HPP
 #define RAJA_policy_cuda_HPP
 
+#if defined(RAJA_ENABLE_CUDA)
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -55,6 +57,7 @@
 
 #include "RAJA/config.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/pattern/reduce.hpp"
 
 namespace RAJA
 {
@@ -132,7 +135,12 @@ template <>
 struct get_launch<false> {
   static constexpr RAJA::Launch value = RAJA::Launch::sync;
 };
-}
+} // end namespace detail
+
+namespace policy
+{
+namespace cuda
+{
 
 template <size_t BLOCK_SIZE, bool Async = false>
 struct cuda_exec
@@ -156,7 +164,7 @@ struct cuda_exec
 ///////////////////////////////////////////////////////////////////////
 ///
 
-template <size_t BLOCK_SIZE, bool Async = false>
+template <size_t BLOCK_SIZE, bool Async = false, bool maybe_atomic = false>
 struct cuda_reduce
     : public RAJA::
           make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
@@ -167,35 +175,46 @@ struct cuda_reduce
 };
 
 template <size_t BLOCK_SIZE>
-using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true>;
-
-template <size_t BLOCK_SIZE, bool Async = false>
-struct cuda_reduce_atomic
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::reduce,
-                                                detail::get_launch<Async>::
-                                                    value,
-                                                RAJA::Platform::cuda> {
-};
+using cuda_reduce_async = cuda_reduce<BLOCK_SIZE, true, false>;
 
 template <size_t BLOCK_SIZE>
-using cuda_reduce_atomic_async = cuda_reduce_atomic<BLOCK_SIZE, true>;
+using cuda_reduce_atomic = cuda_reduce<BLOCK_SIZE, false, true>;
+
+template <size_t BLOCK_SIZE>
+using cuda_reduce_atomic_async = cuda_reduce<BLOCK_SIZE, true, true>;
+
+
+template <typename POL>
+struct CudaPolicy
+    : public RAJA::
+          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                RAJA::Pattern::forall,
+                                                RAJA::Launch::undefined,
+                                                RAJA::Platform::cuda> {
+};
 
 //
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-const int WARP_SIZE = 32;
-const int RAJA_CUDA_MAX_BLOCK_SIZE = 2048;
+constexpr const int WARP_SIZE = 32;
+constexpr const int MAX_BLOCK_SIZE = 1024;
+constexpr const int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
+static_assert(WARP_SIZE >= MAX_WARPS,
+      "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
+static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
+      "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
+      "a multiple of WARP_SIZE");
 
-/*!
- * \def RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize)
- * Macro that generates kernel launch parameters.
- */
-#define RAJA_CUDA_LAUNCH_PARAMS(gridSize, blockSize) \
-  gridSize, blockSize, getCudaSharedmemAmount(gridSize, blockSize)
+} // end namespace cuda
+} // end namespace policy
 
+using policy::cuda::cuda_exec;
+using policy::cuda::cuda_reduce;
+using policy::cuda::cuda_reduce_async;
+using policy::cuda::cuda_reduce_atomic;
+using policy::cuda::cuda_reduce_atomic_async;
+using policy::cuda::CudaPolicy;
 
 /*!
  * \brief Struct that contains two CUDA dim3's that represent the number of
@@ -217,15 +236,6 @@ struct CudaDim {
            num_threads.y,
            num_threads.z);
   }
-};
-
-template <typename POL>
-struct CudaPolicy
-    : public RAJA::
-          make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                RAJA::Pattern::forall,
-                                                RAJA::Launch::undefined,
-                                                RAJA::Platform::cuda> {
 };
 
 template <typename POL, typename IDX>
@@ -366,4 +376,5 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 
+#endif // RAJA_ENABLE_CUDA
 #endif
