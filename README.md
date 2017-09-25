@@ -122,10 +122,12 @@ Produced at the Lawrence Livermore National Laboratory.
 
 All rights reserved.
 
+`LLNL-CODE-689114`  `OCEC-16-063`
+
 Unlimited Open Source - BSD Distribution
 
-For release details and restrictions, please read the LICENSE file.
-It is also linked here:
+For release details and restrictions, please read the RELEASE, LICENSE,
+and NOTICE files, also linked here:
+- [RELEASE](./RELEASE)
 - [LICENSE](./LICENSE)
-
-`LLNL-CODE-689114`  `OCEC-16-063`
+- [NOTICE](./NOTICE)
