@@ -3,19 +3,15 @@
  *
  * \file
  *
- * \brief   Header file containing utility methods used in CUDA operations.
- *
- *          These methods work only on platforms that support CUDA.
+ * \brief   RAJA header file containing an implementation of std align.
  *
  ******************************************************************************
  */
 
-#ifndef RAJA_raja_cudaerrchk_HPP
-#define RAJA_raja_cudaerrchk_HPP
-
+#ifndef RAJA_ALIGN_HPP
+#define RAJA_ALIGN_HPP
+ 
 #include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,44 +55,32 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iostream>
-#include <string>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-
-#include "RAJA/util/defines.hpp"
-
 namespace RAJA
 {
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Utility assert method used in CUDA operations to report CUDA
-/// error codes when encountered.
-///
-///////////////////////////////////////////////////////////////////////
-///
-#define cudaErrchk(ans)                            \
-  {                                                \
-    ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
-  }
-
-inline void cudaAssert(cudaError_t code,
-                       const char *file,
-                       int line,
-                       bool abort = true)
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Taken from libc++ 
+// See libc++ license in docs/Licenses/libc++ License
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+RAJA_INLINE
+void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
-  if (code != cudaSuccess) {
-    fprintf(
-        stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
-  }
+    void* r = nullptr;
+    if (size <= space)
+    {
+        char* p1 = static_cast<char*>(ptr);
+        char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
+        size_t d = static_cast<size_t>(p2 - p1);
+        if (d <= space - size)
+        {
+            r = p2;
+            ptr = r;
+            space -= d;
+        }
+    }
+    return r;
 }
 
-}  // closing brace for RAJA namespace
+} // end namespace RAJA
 
-#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
-
-#endif  // closing endif for header file include guard
+#endif

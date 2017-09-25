@@ -1,21 +1,17 @@
 /*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing utility methods used in CUDA operations.
- *
- *          These methods work only on platforms that support CUDA.
- *
- ******************************************************************************
- */
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file providing functionality similar to std mutex header.
+*
+******************************************************************************
+*/
 
-#ifndef RAJA_raja_cudaerrchk_HPP
-#define RAJA_raja_cudaerrchk_HPP
+#ifndef RAJA_util_mutex_HPP
+#define RAJA_util_mutex_HPP
 
 #include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -59,44 +55,89 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <iostream>
-#include <string>
-
-#include <cuda.h>
-#include <cuda_runtime.h>
-
-#include "RAJA/util/defines.hpp"
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#include <omp.h>
+#endif
 
 namespace RAJA
 {
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Utility assert method used in CUDA operations to report CUDA
-/// error codes when encountered.
-///
-///////////////////////////////////////////////////////////////////////
-///
-#define cudaErrchk(ans)                            \
-  {                                                \
-    ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
-  }
-
-inline void cudaAssert(cudaError_t code,
-                       const char *file,
-                       int line,
-                       bool abort = true)
+#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+namespace omp
 {
-  if (code != cudaSuccess) {
-    fprintf(
-        stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
+
+//! class wrapping omp_lock_t with std::mutex interface
+class mutex {
+public:
+  using native_handle_type = omp_lock_t;
+
+  mutex()
+  {
+    omp_init_lock(&m_lock);
   }
-}
 
-}  // closing brace for RAJA namespace
+  mutex( const mutex& ) = delete;
+  mutex( mutex&& ) = delete;
+  mutex& operator=( const mutex& ) = delete;
+  mutex& operator=( mutex&& ) = delete;
 
-#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
+  void lock()
+  {
+    omp_set_lock(&m_lock);
+  }
+
+  bool try_lock()
+  {
+    return omp_test_lock(&m_lock) != 0;
+  }
+
+  void unlock()
+  {
+    omp_unset_lock(&m_lock);
+  }
+
+  native_handle_type& native_handle()
+  {
+    return m_lock;
+  }
+
+  ~mutex()
+  {
+    omp_destroy_lock(&m_lock);
+  }
+
+private:
+  native_handle_type m_lock;
+};
+
+} // namespace omp
+#endif  // closing endif for if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+
+//! class providing functionality of std::lock_guard
+template < typename mutex_type >
+class lock_guard {
+public:
+  
+  explicit lock_guard( mutex_type& m )
+    : m_mutex(m)
+  {
+    m_mutex.lock();
+  }
+
+  lock_guard( const lock_guard& ) = delete;
+  lock_guard( lock_guard&& ) = delete;
+  lock_guard& operator=( const lock_guard& ) = delete;
+  lock_guard& operator=( lock_guard&& ) = delete;
+
+  ~lock_guard()
+  {
+    m_mutex.unlock();
+  }
+
+private:
+  mutex_type& m_mutex;
+};
+
+}  // namespace RAJA
 
 #endif  // closing endif for header file include guard

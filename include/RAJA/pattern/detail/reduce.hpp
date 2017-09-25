@@ -80,7 +80,9 @@ namespace detail
 template <typename T, template <typename...> class Op>
 struct op_adapter : private Op<T, T, T> {
   using operator_type = Op<T, T, T>;
-  static constexpr T identity() { return operator_type::identity(); }
+  RAJA_HOST_DEVICE static constexpr T identity() {
+    return operator_type::identity();
+  }
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
   {
     val = operator_type::operator()(val, v);
@@ -114,9 +116,9 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-  constexpr ValueLoc() = default;
-  constexpr ValueLoc(ValueLoc const &) = default;
-  ValueLoc &operator=(ValueLoc const &) = default;
+  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
+  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
+  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &) = default;
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, Index_type const &loc)
       : val{val}, loc{loc}
