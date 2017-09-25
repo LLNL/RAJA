@@ -1,0 +1,6 @@
+module RAJA {
+  requires cplusplus11
+  umbrella header "RAJA.hpp"
+
+  export *
+}

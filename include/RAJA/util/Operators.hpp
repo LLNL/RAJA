@@ -66,6 +66,10 @@
 #include <cstdint>
 #include <type_traits>
 
+#ifdef RAJA_CHECK_LIMITS
+#include <limits>
+#endif
+
 namespace RAJA
 {
 
@@ -307,7 +311,6 @@ struct limits : public std::conditional<
 };
 
 #ifdef RAJA_CHECK_LIMITS
-#include <limits>
 template <typename T>
 constexpr bool check()
 {
@@ -339,7 +342,7 @@ struct plus : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return Ret{lhs} + rhs;
   }
-  static constexpr Ret identity() { return Ret{0}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{0}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -357,7 +360,7 @@ struct multiplies : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return Ret{lhs} * rhs;
   }
-  static constexpr Ret identity() { return Ret{1}; }
+  RAJA_HOST_DEVICE static constexpr Ret identity() { return Ret{1}; }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -385,7 +388,7 @@ struct logical_and : public detail::comparison_function<Arg1, Arg2>,
   {
     return lhs && rhs;
   }
-  static constexpr bool identity() { return true; }
+  RAJA_HOST_DEVICE static constexpr bool identity() { return true; }
 };
 
 template <typename Arg1, typename Arg2 = Arg1>
@@ -395,7 +398,7 @@ struct logical_or : public detail::comparison_function<Arg1, Arg2>,
   {
     return lhs || rhs;
   }
-  static constexpr bool identity() { return false; }
+  RAJA_HOST_DEVICE static constexpr bool identity() { return false; }
 };
 
 template <typename T>
@@ -438,7 +441,10 @@ struct minimum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? lhs : rhs;
   }
-  static constexpr Ret identity() { return limits<Ret>::max(); }
+  RAJA_HOST_DEVICE static constexpr Ret identity()
+  {
+    return limits<Ret>::max();
+  }
 };
 
 template <typename Ret, typename Arg1 = Ret, typename Arg2 = Arg1>
@@ -448,7 +454,10 @@ struct maximum : public detail::binary_function<Arg1, Arg2, Ret>,
   {
     return (lhs < rhs) ? rhs : lhs;
   }
-  static constexpr Ret identity() { return limits<Ret>::min(); }
+  RAJA_HOST_DEVICE static constexpr Ret identity()
+  {
+    return limits<Ret>::min();
+  }
 };
 
 // Logical Comparison

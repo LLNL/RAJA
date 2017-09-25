@@ -96,12 +96,12 @@
 /*
  * Detect the host C++ compiler we are using.
  */
-#if defined(__clang__)
-#define RAJA_COMPILER_CLANG
-#elif defined(__INTEL_COMPILER)
+#if defined(__INTEL_COMPILER)
 #define RAJA_COMPILER_INTEL
 #elif defined(__xlc__)
 #define RAJA_COMPILER_XLC
+#elif defined(__clang__)
+#define RAJA_COMPILER_CLANG
 #elif defined(__PGI)
 #define RAJA_COMPILER_PGI
 #elif defined(_WIN32)
