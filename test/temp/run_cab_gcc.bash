@@ -15,4 +15,5 @@ sleep 1
 for i in `seq 1 10`;
 do
   ./gcc49.x    $1 $2 $3 100 2 1
+    sleep 1
 done

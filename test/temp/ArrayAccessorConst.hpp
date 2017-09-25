@@ -35,21 +35,24 @@ namespace multidimensionalArray
 inline integer_t constexpr maxDim() { return 8; }
 
 template < int N >
-inline integer_t stride_helper( integer_t const * const restrict lengths )
+inline constexpr integer_t stride_helper( integer_t const * const restrict lengths )
 {
   return lengths[0]*stride_helper<N-1>(lengths+1);
 }
 template<>
-inline integer_t stride_helper<0>( integer_t const * const restrict )
+inline constexpr integer_t stride_helper<0>( integer_t const * const restrict )
 {
   return 1;
 }
 
 template <int N>
-inline integer_t stride( integer_t const * const restrict lengths )
+inline constexpr integer_t stride( integer_t const * const restrict lengths )
 {
 	return stride_helper<N-1>(lengths+1);
 }
+
+
+
 
 
 
@@ -92,8 +95,6 @@ struct STRIDE_HELPER<1,JUNK,REST...>
     return JUNK;
   }
 };
-
-
 
 
 template< int COUNT, int JUNK, int ...REST >
@@ -182,29 +183,6 @@ public:
     m_data(    inputData + maxDim() ),
     m_dims( reinterpret_cast<integer_t*>( inputData ) + 1 )
   {}
-
-
-  /// default destructor
-  ~ArrayAccessor() = default;
-
-  /**
-   * @param source object to copy
-   * copy constructor invokes direct copy of each member in source
-   */
-  ArrayAccessor( ArrayAccessor const & source ):
-    m_data(source.m_data),
-    m_dims(source.m_dims)
-  {}
-
-  /**
-   * @param source object to move
-   * move constructor invokes direct move of each member in source. In the case of data members that are pointers, this
-   * is a straight copy. Not really a move, but rather a copy.
-   */
-  ArrayAccessor( ArrayAccessor && source ):
-    m_data( std::move(source.m_data) ),
-    m_dims( std::move(source.m_dims) )
-  {}
   
   /**
    * @param index index of the element in array to access
@@ -213,15 +191,7 @@ public:
    * parameter "index". Thus, the returned object has m_data pointing to the beginning of the data associated with its
    * sub-array.
    */
-  inline ArrayAccessor<T,NDIM-1> operator[](integer_t const index)
-  {
-#if ARRAY_BOUNDS_CHECK == 1
-    assert( index < m_dims[0] );
-#endif
-    return ArrayAccessor<T,NDIM-1>( &(m_data[ index*stride<NDIM>(m_dims) ] ), m_dims+1);
-  }
-
-  inline ArrayAccessor<T,NDIM-1> const operator[](integer_t const index) const
+  inline constexpr ArrayAccessor<T,NDIM-1> const operator[](integer_t const index) const
   {
 #if ARRAY_BOUNDS_CHECK == 1
     assert( index < m_dims[0] );
@@ -229,68 +199,40 @@ public:
     return ArrayAccessor<T,NDIM-1>( &(m_data[ index*stride<NDIM>(m_dims) ] ), m_dims+1 );
   }
 
-
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==2, integer_t>::type index( integer_t const index0, integer_t const index1 ) const
+  template< typename...INDICES >
+  inline constexpr T & operator()( INDICES... indices ) const
   {
-    return index0*stride<NDIM>(m_dims)+index1;
+    return m_data[ index(indices...) ];
   }
 
 
-
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==1, T&>::type operator()( integer_t const index0 )
+  template< int DIM, typename INDEX, typename...REMAINING_INDICES >
+  struct index_helper
   {
-    return m_data[index0];
-  }
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==1, T const &>::type operator()( integer_t const index0 ) const
+    inline constexpr static integer_t f( integer_t const * const restrict dims,
+                                         INDEX index,
+                                         REMAINING_INDICES... indices )
+    {
+      return index*stride<DIM>(dims) + index_helper<DIM-1,REMAINING_INDICES...>::f(dims+1,indices...);
+    }
+  };
+
+  template< typename INDEX, typename...REMAINING_INDICES >
+  struct index_helper<1,INDEX,REMAINING_INDICES...>
   {
-    return m_data[index0];
-  }
+    inline constexpr static integer_t f( integer_t const * const restrict dims,
+                                         INDEX index,
+                                         REMAINING_INDICES... indices )
+    {
+      return index;
+    }
+  };
 
-
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==2, T&>::type operator()( integer_t const index0, integer_t const index1 )
+  template< typename... INDICES >
+  inline constexpr integer_t index( INDICES... indices ) const
   {
-    return m_data[index0*stride<NDIM>(m_dims)+index1];
+    return index_helper<NDIM,INDICES...>::f(m_dims,indices...);
   }
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==2, T const &>::type operator()( integer_t const index0, integer_t const index1 ) const
-  {
-    return m_data[index0*stride<NDIM>(m_dims)+index1];
-  }
-
-
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==3, T&>::type operator()( integer_t const index0, integer_t const index1, integer_t const index2 )
-  {
-    return m_data[index0*stride<NDIM>(m_dims)+index1*stride<NDIM-1>(m_dims+1)+index2];
-  }
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==3, T const &>::type operator()( integer_t const index0, integer_t const index1, integer_t const index2 ) const
-  {
-    return m_data[index0*stride<NDIM>(m_dims)+index1*stride<NDIM-1>(m_dims+1)+index2];
-  }
-
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==4, T&>::type operator()( integer_t const index0, integer_t const index1, integer_t const index2, integer_t const index3 )
-  {
-    return m_data[index0*stride<NDIM>(m_dims)+index1*stride<NDIM-1>(m_dims+1)+index2*stride<NDIM-2>(m_dims+2)+index3];
-  }
-  template<int DIM = NDIM>
-  inline typename std::enable_if<DIM==4, T const &>::type operator()( integer_t const index0, integer_t const index1, integer_t const index2, integer_t const index3 ) const
-  {
-    return m_data[index0*stride<NDIM>(m_dims)+index1*stride<NDIM-1>(m_dims+1)+index2*stride<NDIM-2>(m_dims+2)+index3];
-  }
-
-
-
-  T * restrict data() { return m_data ;}
-  T const * restrict data() const { return m_data ;}
-
-  integer_t const * lengths() { return m_dims ;}
-  integer_t const * lengths() const { return m_dims ;}
 
 
 private:
@@ -304,36 +246,36 @@ private:
 };
 
 
-
-template< typename T >
-class ArrayAccessor<T,2>
-{
-public:
-  inline explicit constexpr ArrayAccessor( T * const restrict inputData,
-                                           integer_t const * const restrict inputLength ):
-    m_data(inputData),
-    m_lengths(inputLength)
-  {}
-
-  inline explicit constexpr ArrayAccessor( T * const restrict inputData ):
-    m_data(    inputData + maxDim() ),
-    m_lengths( reinterpret_cast<integer_t*>( inputData ) + 1 )
-  {}
-
-  inline T * restrict operator[](integer_t const index) const
-  {
-    return &(m_data[ index*stride<2>(m_lengths) ] );
-  }
-
-  inline T & operator()( integer_t const index0, integer_t const index1 ) const
-  {
-    return m_data[index0*stride<2>(m_lengths)+index1];
-  }
-
-private:
-  T * const restrict m_data;
-  integer_t const * const restrict m_lengths;
-};
+//
+//template< typename T >
+//class ArrayAccessor<T,2>
+//{
+//public:
+//  inline explicit constexpr ArrayAccessor( T * const restrict inputData,
+//                                           integer_t const * const restrict inputLength ):
+//    m_data(inputData),
+//    m_dims(inputLength)
+//  {}
+//
+//  inline explicit constexpr ArrayAccessor( T * const restrict inputData ):
+//    m_data(    inputData + maxDim() ),
+//    m_dims( reinterpret_cast<integer_t*>( inputData ) + 1 )
+//  {}
+//
+//  inline constexpr T * restrict operator[](integer_t const index) const
+//  {
+//    return &(m_data[ index*stride<2>(m_dims) ] );
+//  }
+//
+//  inline constexpr T & operator()( integer_t const index0, integer_t const index1 ) const
+//  {
+//    return m_data[index0*stride<2>(m_dims)+index1];
+//  }
+//
+//private:
+//  T * const restrict m_data;
+//  integer_t const * const restrict m_dims;
+//};
 
 /**
  * Specialization for the ArrayAccessor<typename T, int NDIM> class template. This specialization defines the lowest
@@ -396,25 +338,13 @@ public:
    * @return a reference to the m_data[index], where m_data is a T*.
    * This function simply returns a reference to the pointer deferenced using index.
    */
-  inline T& operator[](integer_t const index)
+  inline constexpr T & operator[](integer_t const index) const
   {
 #if ARRAY_BOUNDS_CHECK == 1
     assert( index < m_dims[0] );
 #endif
     return m_data[index];
   }
-
-  inline T const & operator[](integer_t const index) const
-  {
-#if ARRAY_BOUNDS_CHECK == 1
-    assert( index < m_dims[0] );
-#endif
-    return m_data[index];
-  }
-
-  T * restrict data() { return m_data ;}
-  integer_t const * lengths() { return m_dims ;}
-
 private:
   /// pointer to beginning of data for this array, or sub-array.
   T * const restrict m_data;

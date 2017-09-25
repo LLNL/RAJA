@@ -12,5 +12,6 @@ sleep 1
 #echo icc17
 for i in `seq 1 10`;
 do
-    ./icc17.x  $1 $2 $3 100 2 1
+  ./icc17.x  $1 $2 $3 100 2 1
+  sleep 1
 done

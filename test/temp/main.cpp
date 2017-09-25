@@ -307,9 +307,9 @@ int main( int /*argc*/, char* argv[] )
     std::cout<<"error_ParenPBV = "<<error_ParenPBV<<std::endl;
     std::cout<<"error_ParenPBR = "<<error_ParenPBR<<std::endl;
 
-    std::cout<<"error_RajaNFC = "<<error_ParenNFC<<std::endl;
-    std::cout<<"error_RajaPBV = "<<error_ParenPBV<<std::endl;
-    std::cout<<"error_RajaPBR = "<<error_ParenPBR<<std::endl;
+    std::cout<<"error_RajaNFC = "<<error_RajaNFC<<std::endl;
+    std::cout<<"error_RajaPBV = "<<error_RajaPBV<<std::endl;
+    std::cout<<"error_RajaPBR = "<<error_RajaPBR<<std::endl;
   }
 
   if( output > 1 )
