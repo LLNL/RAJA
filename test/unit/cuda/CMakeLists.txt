@@ -61,7 +61,7 @@ raja_add_test(
 
 raja_add_test(
   NAME test-cuda-reduce-loc
-  SOURCES test-reduce-minloc.cpp)
+  SOURCES test-reduce-loc.cpp)
 
 raja_add_test(
   NAME test-cuda-reduce-max

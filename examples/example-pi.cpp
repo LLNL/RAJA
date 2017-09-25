@@ -1,15 +1,3 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing utility methods used in CUDA operations.
- *
- *          These methods work only on platforms that support CUDA.
- *
- ******************************************************************************
- */
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
@@ -52,51 +40,30 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_raja_cudaerrchk_HPP
-#define RAJA_raja_cudaerrchk_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
+#include <cstdlib>
 #include <iostream>
-#include <string>
 
-#include <cuda.h>
-#include <cuda_runtime.h>
-
+#include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
-namespace RAJA
+int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
+  typedef RAJA::seq_reduce reduce_policy;
+  typedef RAJA::seq_exec execute_policy;
 
-///
-///////////////////////////////////////////////////////////////////////
-///
-/// Utility assert method used in CUDA operations to report CUDA
-/// error codes when encountered.
-///
-///////////////////////////////////////////////////////////////////////
-///
-#define cudaErrchk(ans)                            \
-  {                                                \
-    ::RAJA::cudaAssert((ans), __FILE__, __LINE__); \
-  }
+  RAJA::Index_type begin = 0;
+  RAJA::Index_type numBins = 512 * 512;
 
-inline void cudaAssert(cudaError_t code,
-                       const char *file,
-                       int line,
-                       bool abort = true)
-{
-  if (code != cudaSuccess) {
-    fprintf(
-        stderr, "CUDAassert: %s %s %d\n", cudaGetErrorString(code), file, line);
-    if (abort) RAJA_ABORT_OR_THROW("CUDAassert");
-  }
+  RAJA::ReduceSum<reduce_policy, double> piSum(0.0);
+
+  RAJA::forall<execute_policy>(begin,
+                               numBins,
+                               [=](int i) {
+                                 double x = (double(i) + 0.5) / numBins;
+                                 piSum += 4.0 / (1.0 + x * x);
+                               });
+
+  std::cout << "PI is ~ " << double(piSum) / numBins << std::endl;
+
+  return 0;
 }
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
-
-#endif  // closing endif for header file include guard

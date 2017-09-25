@@ -42,6 +42,29 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME example-raja-pi
-  SOURCES pi.cpp)
+  NAME example-pi
+  SOURCES example-pi.cpp)
 
+raja_add_executable(
+  NAME example-add-vectors
+  SOURCES example-add-vectors.cpp)
+
+raja_add_executable(
+  NAME example-matrix-multiply
+  SOURCES example-matrix-multiply.cpp)
+
+raja_add_executable(
+  NAME example-jacobi
+  SOURCES example-jacobi.cpp)
+
+raja_add_executable(
+  NAME example-wave
+  SOURCES example-wave.cpp)
+
+raja_add_executable(
+  NAME example-custom-index
+  SOURCES example-custom-index.cpp)
+
+raja_add_executable(
+  NAME example-gauss-seidel
+  SOURCES example-gauss-seidel.cpp)

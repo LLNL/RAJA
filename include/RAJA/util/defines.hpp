@@ -122,7 +122,8 @@
  * \endcode
  *******************************************************************************
  */
-#define RAJA_UNUSED_VAR(_x) static_cast<void>(_x)
+template < typename... T >
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -138,13 +139,9 @@
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
 
-/*!
- * \def RAJA_DIVIDE_CEILING_INT(dividend, divisor)
- *
- * Macro to find ceiling (dividend / divisor) for integer types
- */
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
   (((dividend) + (divisor)-1) / (divisor))
+
 
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {

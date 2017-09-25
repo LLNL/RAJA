@@ -343,7 +343,7 @@ public:
 
 TYPED_TEST_CASE_P(NestedCUDA);
 
-TYPED_TEST_P(NestedCUDA, LTimes)
+CUDA_TYPED_TEST_P(NestedCUDA, LTimes)
 {
   runLTimesTest<TypeParam>(2, 0, 7, 3);
   runLTimesTest<TypeParam>(2, 3, 7, 3);

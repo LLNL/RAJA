@@ -74,6 +74,8 @@
 
 #include "RAJA/index/IndexSet.hpp"
 
+#include <algorithm>
+
 namespace RAJA
 {
 
@@ -81,17 +83,26 @@ namespace policy
 {
 namespace cuda
 {
-//
-//////////////////////////////////////////////////////////////////////
-//
-// CUDA kernel templates.
-//
-//////////////////////////////////////////////////////////////////////
-//
 
-// INTERNAL namespace to encapsulate helper functions
-namespace INTERNAL
+namespace impl
 {
+
+/*!
+ ******************************************************************************
+ *
+ * \brief calculate gridDim from length of iteration and blockDim
+ *
+ ******************************************************************************
+ */
+RAJA_INLINE
+dim3 getGridDim(size_t len, dim3 blockDim)
+{
+  size_t block_size = blockDim.x * blockDim.y * blockDim.z;
+
+  size_t gridSize = (len + block_size-1) / block_size;
+
+  return gridSize;
+}
 
 /*!
  ******************************************************************************
@@ -135,6 +146,14 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
   return numThreads;
 }
 
+//
+//////////////////////////////////////////////////////////////////////
+//
+// CUDA kernel templates.
+//
+//////////////////////////////////////////////////////////////////////
+//
+
 /*!
  ******************************************************************************
  *
@@ -142,7 +161,8 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
-template <typename Iterator, typename LOOP_BODY, typename IndexType>
+template <size_t BlockSize, typename Iterator, typename LOOP_BODY, typename IndexType>
+__launch_bounds__ (BlockSize, 1)
 __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
                                    const Iterator idx,
                                    IndexType length)
@@ -154,7 +174,7 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
   }
 }
 
-}  // end INTERNAL namespace for helper functions
+}  // end impl namespace
 
 //
 ////////////////////////////////////////////////////////////////////////
@@ -169,36 +189,30 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
                         Iterable&& iter,
                         LoopBody&& loop_body)
 {
-  beforeCudaKernelLaunch();
+  auto begin = std::begin(iter);
+  auto end   = std::end(iter);
 
-  auto body = loop_body;
+  auto len = std::distance(begin, end);
 
-  auto first_begin = std::begin(iter);
-  auto final_end = std::end(iter);
-  auto total_len = std::distance(first_begin, final_end);
-  auto max_step_size = (getCudaMemblockUsedCount() > 0)
-                           ? BlockSize * RAJA_CUDA_MAX_NUM_BLOCKS
-                           : total_len;
+  if (len > 0 && BlockSize > 0) {
 
-  for (decltype(total_len) step_size, offset = 0; offset < total_len;
-       offset += step_size) {
+    auto gridSize = impl::getGridDim(len, BlockSize);
 
-    step_size = RAJA_MIN(total_len - offset, max_step_size);
+    RAJA_FT_BEGIN;
 
-    auto begin = first_begin + offset;
-    auto end = begin + step_size;
+    cudaStream_t stream = 0;
 
-    auto len = std::distance(begin, end);
-    auto gridSize = RAJA_DIVIDE_CEILING_INT(len, BlockSize);
+    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
+        RAJA::cuda::make_launch_body(gridSize, BlockSize, 0, stream,
+                               std::forward<LoopBody>(loop_body)),
+        std::move(begin), len);
+    RAJA::cuda::peekAtLastError();
 
-    INTERNAL::
-        forall_cuda_kernel<<<RAJA_CUDA_LAUNCH_PARAMS(gridSize, BlockSize)>>>(
-            body, std::move(begin), len);
+    RAJA::cuda::launch(stream);
+    if (!Async) RAJA::cuda::synchronize(stream);
+
+    RAJA_FT_END;
   }
-
-  RAJA_CUDA_CHECK_AND_SYNC(Async);
-
-  afterCudaKernelLaunch();
 }
 
 
@@ -233,11 +247,11 @@ RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
   for (int isi = 0; isi < num_seg; ++isi) {
     iset.segmentCall(isi,
                      detail::CallForall(),
-                     cuda_exec<BlockSize, Async>(),
+                     cuda_exec<BlockSize, true>(),
                      loop_body);
   }  // iterate over segments of index set
 
-  RAJA_CUDA_CHECK_AND_SYNC(Async);
+  if (!Async) RAJA::cuda::synchronize();
 }
 
 }  // closing brace for cuda namespace
