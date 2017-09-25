@@ -1,5 +1,20 @@
-#ifndef __MEMORYMANAGER_HPP__
-#define __MEMORYMANAGER_HPP__
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+//
+// Produced at the Lawrence Livermore National Laboratory
+//
+// LLNL-CODE-689114
+//
+// All rights reserved.
+//
+// This file is part of RAJA.
+//
+// For details about use and distribution, please read RAJA/LICENSE.
+//
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef EXAMPLES_MEMORYMANAGER_HPP
+#define EXAMPLES_MEMORYMANAGER_HPP
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"

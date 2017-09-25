@@ -110,22 +110,13 @@ The original developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Contributors include:
-
-  * David Beckingsale (beckingsale1@llnl.gov)
-  * Jason Burmark (burmark1@llnl.gov)
-  * Holger Jones (jones19@llnl.gov)
-  * Will Killian (killian4@llnl.gov)
-  * Adam Kunen (kunen1@llnl.gov)
-  * Olga Pearce (pearce8@llnl.gov)
-  * David Poliakoff (poliakoff1@llnl.gov)
-  * Tom Scogland (scogland1@llnl.gov)
+Please see the {RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
 Release
 -----------
 
-Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-2017, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 
@@ -133,8 +124,8 @@ All rights reserved.
 
 Unlimited Open Source - BSD Distribution
 
-For release details and restrictions, please read the LICENSE.txt file.
+For release details and restrictions, please read the LICENSE file.
 It is also linked here:
-- [LICENSE](./LICENSE.txt)
+- [LICENSE](./LICENSE)
 
 `LLNL-CODE-689114`  `OCEC-16-063`
