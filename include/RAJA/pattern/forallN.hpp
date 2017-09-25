@@ -274,11 +274,6 @@ RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
 template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
-#ifdef RAJA_ENABLE_CUDA
-  // this call should be moved into a cuda file
-  // but must be made before loop_body is copied
-  beforeCudaKernelLaunch();
-#endif
 
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager *rm = chai::ArrayManager::getInstance();
@@ -293,10 +288,6 @@ RAJA_INLINE void forallN(Ts &&... args)
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
-#endif
-
-#ifdef RAJA_ENABLE_CUDA
-  afterCudaKernelLaunch();
 #endif
 }
 
