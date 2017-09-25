@@ -56,10 +56,12 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   RAJA::ReduceSum<reduce_policy, double> piSum(0.0);
 
-  RAJA::forall<execute_policy>(begin, numBins, [=](int i) {
-    double x = (double(i) + 0.5) / numBins;
-    piSum += 4.0 / (1.0 + x * x);
-  });
+  RAJA::forall<execute_policy>(begin,
+                               numBins,
+                               [=](int i) {
+                                 double x = (double(i) + 0.5) / numBins;
+                                 piSum += 4.0 / (1.0 + x * x);
+                               });
 
   std::cout << "PI is ~ " << double(piSum) / numBins << std::endl;
 
