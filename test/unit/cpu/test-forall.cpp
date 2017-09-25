@@ -3,6 +3,7 @@
 #include <string>
 
 #include "RAJA/RAJA.hpp"
+#include "RAJA/policy/tbb/policy.hpp"
 #include "gtest/gtest.h"
 
 using namespace RAJA;
@@ -91,6 +92,7 @@ REGISTER_TYPED_TEST_CASE_P(ForallTest, BasicForall, BasicForallIcount);
 
 using SequentialTypes = ::testing::Types<
     ExecPolicy<seq_segit, seq_exec>,
+    ExecPolicy<seq_segit, loop_exec>,
     ExecPolicy<seq_segit, simd_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
@@ -100,7 +102,20 @@ INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 using OpenMPTypes = ::testing::Types<
     ExecPolicy<seq_segit, omp_parallel_for_exec>,
     ExecPolicy<omp_parallel_for_segit, seq_exec>,
-    ExecPolicy<omp_parallel_for_segit, simd_exec> >;
+    ExecPolicy<omp_parallel_for_segit, loop_exec> >;
 
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, ForallTest, OpenMPTypes);
+#endif
+
+#if defined(RAJA_ENABLE_TBB)
+using TBBTypes = ::testing::Types<
+    ExecPolicy<seq_segit, tbb_for_exec>,
+    ExecPolicy<tbb_for_exec, seq_exec>,
+    ExecPolicy<tbb_for_exec, loop_exec>,
+    ExecPolicy<seq_segit, tbb_for_dynamic>,
+    ExecPolicy<tbb_for_dynamic, seq_exec>,
+    ExecPolicy<tbb_for_dynamic, loop_exec>
+    >;
+
+INSTANTIATE_TYPED_TEST_CASE_P(TBB, ForallTest, TBBTypes);
 #endif

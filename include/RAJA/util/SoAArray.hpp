@@ -1,3 +1,16 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for common RAJA internal definitions.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_SOA_ARRAY_HPP
+#define RAJA_SOA_ARRAY_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,59 +53,68 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Forward declarations for impl::forall overloads
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_policy_fwd_HPP
-#define RAJA_policy_fwd_HPP
-
 #include "RAJA/config.hpp"
 
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda/fwd.hpp"
-#endif
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/fwd.hpp"
-#endif
-#include "RAJA/policy/sequential/fwd.hpp"
-#include "RAJA/policy/simd/fwd.hpp"
+// for RAJA::reduce::detail::ValueLoc
+#include "RAJA/pattern/detail/reduce.hpp"
 
 namespace RAJA
 {
-template <typename Selector, typename... Policies>
-class MultiPolicy;
 
-namespace impl
+namespace detail
 {
 
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&,
-                        Body &&);
-}  // end namespace impl
+/*!
+ * @brief Array class specialized for Struct of Array data layout.
+ *
+ * This is useful for creating a vectorizable data layout and getting
+ * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
+ */
+template < typename T, size_t size >
+class SoAArray {
+  using value_type = T;
+public:
 
-namespace wrap
-{
+  RAJA_HOST_DEVICE value_type get(size_t i) const
+  {
+    return mem[i];
+  }
+  RAJA_HOST_DEVICE void set(size_t i, value_type val)
+  {
+    mem[i] = val;
+  }
 
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
-                        Iterable &&,
-                        Body &&);
-}
+private:
+  value_type mem[size];
+};
 
-}  // end namespace RAJA
+/*!
+ * @brief Specialization for RAJA::reduce::detail::ValueLoc.
+ */
+template < typename T, bool doing_min, size_t size >
+class SoAArray< ::RAJA::reduce::detail::ValueLoc<T, doing_min>, size > {
+  using value_type = ::RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using first_type  = T;
+  using second_type = Index_type;
+public:
 
-#endif  // closing endif for header file include guard
+  RAJA_HOST_DEVICE value_type get(size_t i) const
+  {
+    return value_type(mem[i], mem_idx[i]);
+  }
+  RAJA_HOST_DEVICE void set(size_t i, value_type val)
+  {
+    mem[i] = val;
+    mem_idx[i] = val.getLoc();
+  }
+
+private:
+  first_type mem[size];
+  second_type mem_idx[size];
+};
+
+}  // closing brace for detail namespace
+
+}  // closing brace for RAJA namespace
+
+#endif /* RAJA_SOA_ARRAY_HPP */

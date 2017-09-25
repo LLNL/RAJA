@@ -1,0 +1,14 @@
+ignore:
+  - "test/"
+
+coverage:
+  precision: 3
+  range: "97...100"
+
+parsers:
+  gcov:
+    branch_detection:
+      conditional: no
+      loop: no
+      method: no
+      macro: no

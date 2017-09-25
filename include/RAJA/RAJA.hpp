@@ -69,15 +69,26 @@
 
 #include "RAJA/util/Operators.hpp"
 
+#include "RAJA/util/basic_mempool.hpp"
+
 //
 // All platforms must support sequential execution.
 //
 #include "RAJA/policy/sequential.hpp"
 
 //
+// All platforms must support loop execution.
+//
+#include "RAJA/policy/loop.hpp"
+
+//
 // All platforms should support simd execution.
 //
 #include "RAJA/policy/simd.hpp"
+
+#if defined(RAJA_ENABLE_TBB)
+#include "RAJA/policy/tbb.hpp"
+#endif
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda.hpp"
@@ -111,6 +122,13 @@
 #include "RAJA/util/PermutedLayout.hpp"
 #include "RAJA/util/View.hpp"
 
+
+//
+// Atomic operations support
+//
+#include "RAJA/pattern/atomic.hpp"
+
+
 //
 // Generic iteration templates for perfectly nested loops
 //
@@ -118,6 +136,9 @@
 
 
 #include "RAJA/pattern/reduce.hpp"
+
+
+
 
 //
 //////////////////////////////////////////////////////////////////////

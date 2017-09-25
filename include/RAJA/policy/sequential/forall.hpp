@@ -8,6 +8,8 @@
  *
  *          These methods should work on any platform.
  *
+ *          Note: GNU compiler does not enforce sequential iterations.
+ *
  ******************************************************************************
  */
 
@@ -62,18 +64,13 @@
 
 #include "RAJA/policy/sequential/policy.hpp"
 
-#include "RAJA/index/ListSegment.hpp"
-#include "RAJA/index/RangeSegment.hpp"
-
 #include "RAJA/internal/fault_tolerance.hpp"
-
-using RAJA::concepts::enable_if;
-using RAJA::concepts::requires_;
 
 namespace RAJA
 {
-
-namespace impl
+namespace policy
+{
+namespace sequential
 {
 
 
@@ -88,30 +85,21 @@ namespace impl
 //
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &, Iterable &&iter, Func &&loop_body)
-{
-  auto end = std::end(iter);
-  for (auto ii = std::begin(iter); ii < end; ++ii) {
-    loop_body(*ii);
-  }
-}
-
-template <typename Iterable, typename Func, typename IndexType>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body)
+RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
 {
   auto begin = std::begin(iter);
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
+
+  RAJA_NO_SIMD
   for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin[i]);
+    body(*(begin + i));
   }
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for sequential namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 
