@@ -45,6 +45,10 @@ raja_add_library(
   NAME bis
   SOURCES buildIndexSet.cpp)
 
+raja_add_executable(
+  NAME main-graph-olga
+  SOURCES main-graph-olga.cpp)
+
 raja_add_test(
   NAME test-reduce
   SOURCES test-reduce.cpp
