@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_INTERNAL_DEFINES_HPP
-#define RAJA_INTERNAL_DEFINES_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,6 +49,9 @@
 // POSSIBILITY OF SUCH DAMAGE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_INTERNAL_DEFINES_HPP
+#define RAJA_INTERNAL_DEFINES_HPP
 
 #include "RAJA/config.hpp"
 
@@ -126,7 +126,8 @@
  * \endcode
  *******************************************************************************
  */
-#define RAJA_UNUSED_VAR(_x) static_cast<void>(_x)
+template < typename... T >
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -142,13 +143,9 @@
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
 
-/*!
- * \def RAJA_DIVIDE_CEILING_INT(dividend, divisor)
- *
- * Macro to find ceiling (dividend / divisor) for integer types
- */
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
   (((dividend) + (divisor)-1) / (divisor))
+
 
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {
