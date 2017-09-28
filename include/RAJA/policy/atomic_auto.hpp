@@ -56,7 +56,15 @@
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 
+#ifdef __CUDA_ARCH__
+#include "RAJA/policy/cuda/atomic.hpp"
+#else
+#ifdef RAJA_ENABLE_OPENMP
+#include "RAJA/policy/openmp/atomic.hpp"
+#else
 #include "RAJA/policy/sequential/atomic.hpp"
+#endif
+#endif
 
 /*!
  * Provides priority between atomic policies that should do the "right thing"
