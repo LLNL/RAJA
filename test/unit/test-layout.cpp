@@ -35,7 +35,7 @@ TEST(OffsetLayoutTest, 1D)
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({10}, {14});
+  const layout l({{10}}, {{14}});
 
   /*
    * First element, 10, should have index 0.
@@ -74,9 +74,9 @@ TEST(TypedLayoutTest, 1D)
 TEST(LayoutTest, OffsetVsRegular)
 {
   const auto layout =
-      RAJA::make_permuted_layout({6, 6}, RAJA::Perm<1, 0>::value);
+      RAJA::make_permuted_layout({{6, 6}}, RAJA::Perm<1, 0>::value);
   const auto offset =
-      RAJA::make_permuted_offset_layout({0, 0}, {5, 5}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_offset_layout({{0, 0}}, {{5, 5}}, RAJA::PERM_JI::value);
 
   /*
    * OffsetLayout with 0 offset should function like the regular Layout.
@@ -98,7 +98,7 @@ TEST(OffsetLayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const auto layout = RAJA::make_offset_layout<2>({-1, -2}, {1, 0});
+  const auto layout = RAJA::make_offset_layout<2>({{-1, -2}}, {{1, 0}});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -128,7 +128,7 @@ TEST(OffsetLayoutTest, 2D_JI)
    * (-1, -2), (0, -2), (1, -2)
    */
   const my_layout layout =
-      RAJA::make_permuted_offset_layout({-1, -2}, {1, 0}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_offset_layout({{-1, -2}}, {{1, 0}}, RAJA::PERM_JI::value);
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -153,7 +153,7 @@ TEST(OffsetLayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({1}, {10}));
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({{1}}, {{10}}));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;
@@ -230,7 +230,7 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 5}, RAJA::PERM_JI::value);
+      RAJA::make_permuted_layout({{3, 5}}, RAJA::PERM_JI::value);
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -327,7 +327,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 0, 7}, RAJA::PERM_KJI::value);
+      RAJA::make_permuted_layout({{3, 0, 7}}, RAJA::PERM_KJI::value);
 
   ASSERT_EQ(0, layout(0, 0, 0));
 

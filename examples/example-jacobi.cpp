@@ -85,9 +85,11 @@
 
   CUDA_BLOCK_SIZE   - Number of threads per threads block
 */
+#if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_DIM_X = 16;
 const int CUDA_BLOCK_DIM_Y = 16;
 const int CUDA_BLOCK_SIZE = 256;
+#endif
 
 
 /*
