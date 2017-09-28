@@ -62,6 +62,7 @@
 #include <map>
 #include <cstddef>
 #include <cstdlib>
+#include <cstdio>
 
 namespace RAJA {
 

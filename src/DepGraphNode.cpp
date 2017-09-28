@@ -23,9 +23,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include "RAJA/internal/DepGraphNode.hpp"
-
 #include <iostream>
+
+#include "RAJA/internal/DepGraphNode.hpp"
 
 namespace RAJA
 {
