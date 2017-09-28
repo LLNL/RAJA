@@ -23,6 +23,7 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#include <string>
 #include <iostream>
 
 #include "RAJA/internal/DepGraphNode.hpp"
