@@ -89,6 +89,12 @@ if (ENABLE_CUDA)
     cuda)
 endif ()
 
+if (ENABLE_CUB)
+  set (raja_depends
+    ${raja_depends}
+    cub)
+endif ()
+
 if (ENABLE_CHAI)
   set (raja_depends
     ${raja_depends}
