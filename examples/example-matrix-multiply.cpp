@@ -96,8 +96,10 @@ const int N = 1000;
 const int NN = N * N;
 const int DIM = 2;
 
+#if defined(RAJA_ENABLE_CUDA)
 const int CUDA_BLOCK_SIZE_X = 16;
 const int CUDA_BLOCK_SIZE_Y = 16;
+#endif
 
 /*
  Macros are used here to simplify indexing
