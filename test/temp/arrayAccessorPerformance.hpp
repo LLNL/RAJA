@@ -59,8 +59,8 @@ double MatrixMultiply_2D_accessor( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
-                                   ArrayAccessor<double,2> const A,
-                                   ArrayAccessor<double,2> const B,
+                                   ArrayAccessor<double const,2> const A,
+                                   ArrayAccessor<double const,2> const B,
                                    ArrayAccessor<double,2> C );
 
 
@@ -68,27 +68,35 @@ double MatrixMultiply_2D_accessorRef( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
-                                   ArrayAccessor<double,2> const & A,
-                                   ArrayAccessor<double,2> const & B,
+                                   ArrayAccessor<double const,2> const & A,
+                                   ArrayAccessor<double const,2> const & B,
                                    ArrayAccessor<double,2>& C );
 
 double MatrixMultiply_2D_accessorRef2( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
-                                   ArrayAccessor<double,2> const & A,
-                                   ArrayAccessor<double,2> const & B,
+                                   ArrayAccessor<double const,2> const & A,
+                                   ArrayAccessor<double const,2> const & B,
                                    ArrayAccessor<double,2>& C );
 
 double MatrixMultiply_2D_accessorPBV2( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
-                                   ArrayAccessor<double,2> const  A,
-                                   ArrayAccessor<double,2> const  B,
+                                   ArrayAccessor<double const,2> const  A,
+                                   ArrayAccessor<double const,2> const  B,
                                    ArrayAccessor<double,2> C );
 
-double MatrixMultiply_2D_RajaView_PBR( integer_t const num_i,
+double MatrixMultiply_2D_RajaViewParen_PBV( integer_t const num_i,
+                                   integer_t const num_j,
+                                   integer_t const num_k,
+                                   integer_t const ITERATIONS,
+                                   RAJA::View< double const, RAJA::Layout<2> > A,
+                                   RAJA::View< double const, RAJA::Layout<2> > B,
+                                   RAJA::View< double, RAJA::Layout<2> > C );
+
+double MatrixMultiply_2D_RajaViewParen_PBR( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
@@ -96,13 +104,22 @@ double MatrixMultiply_2D_RajaView_PBR( integer_t const num_i,
                                    RAJA::View< double const, RAJA::Layout<2> > const & B,
                                    RAJA::View< double, RAJA::Layout<2> > & C );
 
-double MatrixMultiply_2D_RajaView_PBV( integer_t const num_i,
+double MatrixMultiply_2D_RajaViewSquare_PBV( integer_t const num_i,
                                    integer_t const num_j,
                                    integer_t const num_k,
                                    integer_t const ITERATIONS,
-                                   RAJA::View< double const, RAJA::Layout<2> > A,
-                                   RAJA::View< double const, RAJA::Layout<2> > B,
-                                   RAJA::View< double, RAJA::Layout<2> > C );
+                                   RAJA::View< double const, RAJA::Layout2<2> > A,
+                                   RAJA::View< double const, RAJA::Layout2<2> > B,
+                                   RAJA::View< double, RAJA::Layout2<2> > C );
+
+double MatrixMultiply_2D_RajaViewSquare_PBR( integer_t const num_i,
+                                   integer_t const num_j,
+                                   integer_t const num_k,
+                                   integer_t const ITERATIONS,
+                                   RAJA::View< double const, RAJA::Layout2<2> > const & A,
+                                   RAJA::View< double const, RAJA::Layout2<2> > const & B,
+                                   RAJA::View< double, RAJA::Layout2<2> > & C );
+
 
 double MatrixMultiply_2D_constructAccessorR( integer_t const num_i,
                                             integer_t const num_j,

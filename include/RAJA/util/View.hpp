@@ -74,6 +74,7 @@ struct View {
   layout_type const layout;
   pointer_type data;
 
+  using junk = typename LayoutType::IndexRange;
 
   template <typename... Args>
   RAJA_INLINE constexpr View(pointer_type data_ptr, Args... dim_sizes)
@@ -86,6 +87,13 @@ struct View {
   {
   }
 
+  template< typename InputLayoutType >
+  RAJA_INLINE constexpr View( View<ValueType,InputLayoutType,PointerType> const & input )
+      : layout(input.layout), data(input.data)
+  {
+  }
+
+
   RAJA_INLINE void set_data(pointer_type data_ptr) { data = data_ptr; }
 
   // making this specifically typed would require unpacking the layout,
@@ -95,7 +103,37 @@ struct View {
   {
     return data[convertIndex<Index_type>(layout(args...))];
   }
+
+
+  template< size_t NDIM = layout_type::n_dims >
+  RAJA_HOST_DEVICE RAJA_INLINE
+  typename std::enable_if<  NDIM != 1,
+                            View<ValueType, typename layout_type::sliced_layout, PointerType> >::type
+  operator[]( typename layout_type::IndexLinear index ) const
+  {
+    return View<ValueType, typename layout_type::sliced_layout, PointerType>( data+index*layout.strides[0], layout[index] );
+  }
+
+  template< size_t NDIM = layout_type::n_dims >
+  RAJA_HOST_DEVICE RAJA_INLINE
+  typename std::enable_if< NDIM == 1, ValueType & >::type
+  operator[]( typename layout_type::IndexLinear index ) const
+  {
+    return data[index];
+  }
+
+
 };
+
+
+
+
+
+
+
+
+
+
 
 template <typename ValueType,
           typename PointerType,

@@ -55,10 +55,13 @@ int main( int /*argc*/, char* argv[] )
   double * const restrict ptrC_ParenPBV = new double[num_i*num_j];
   double * const restrict ptrC_ParenPBR = new double[num_i*num_j];
 
-  double * const restrict ptrC_NFCRajaView = new double[num_i*num_j];
-  double * const restrict ptrC_PBVRajaView = new double[num_i*num_j];
-  double * const restrict ptrC_PBRRajaView = new double[num_i*num_j];
+  double * const restrict ptrC_RajaViewParenNFC = new double[num_i*num_j];
+  double * const restrict ptrC_RajaViewParenPBV = new double[num_i*num_j];
+  double * const restrict ptrC_RajaViewParenPBR = new double[num_i*num_j];
 
+  double * const restrict ptrC_RajaViewSquareNFC = new double[num_i*num_j];
+  double * const restrict ptrC_RajaViewSquarePBV = new double[num_i*num_j];
+  double * const restrict ptrC_RajaViewSquarePBR = new double[num_i*num_j];
 
   double * const restrict ptrA_SelfDescribing  = new double[num_i*num_k + maxDim()];
   double * const restrict ptrB_SelfDescribing  = new double[num_k*num_j + maxDim()];
@@ -117,9 +120,14 @@ int main( int /*argc*/, char* argv[] )
       ptrC_ParenPBV[i*num_j+j] = 0.0;
       ptrC_ParenPBR[i*num_j+j] = 0.0;
 
-      ptrC_NFCRajaView[i*num_j+j] = 0.0;
-      ptrC_PBVRajaView[i*num_j+j] = 0.0;
-      ptrC_PBRRajaView[i*num_j+j] = 0.0;
+      ptrC_RajaViewParenNFC[i*num_j+j] = 0.0;
+      ptrC_RajaViewParenPBV[i*num_j+j] = 0.0;
+      ptrC_RajaViewParenPBR[i*num_j+j] = 0.0;
+
+      ptrC_RajaViewSquareNFC[i*num_j+j] = 0.0;
+      ptrC_RajaViewSquarePBV[i*num_j+j] = 0.0;
+      ptrC_RajaViewSquarePBR[i*num_j+j] = 0.0;
+
       ptrCdata_SelfDescribing[i*num_j+j] = 0.0;
     }
   }
@@ -131,8 +139,8 @@ int main( int /*argc*/, char* argv[] )
   integer_t lengthsB[] = { num_k , num_j };
   integer_t lengthsC[] = { num_i , num_j };
 
-  ArrayAccessor<double,2> accessorA( A, lengthsA );
-  ArrayAccessor<double,2> accessorB( B, lengthsB );
+  ArrayAccessor<double const,2> accessorA( A, lengthsA );
+  ArrayAccessor<double const,2> accessorB( B, lengthsB );
   ArrayAccessor<double,2> accessorC_SquareNFC( ptrC_SquareNFC, lengthsC );
   ArrayAccessor<double,2> accessorC_SquarePBV( ptrC_SquarePBV, lengthsC );
   ArrayAccessor<double,2> accessorC_SquarePBR( ptrC_SquarePBR, lengthsC );
@@ -142,16 +150,19 @@ int main( int /*argc*/, char* argv[] )
   ArrayAccessor<double,2> accessorC_ParenPBR( ptrC_ParenPBR, lengthsC );
 
 
-  ArrayAccessor<double,2> accessorA_SelfDescribing( ptrAdata_SelfDescribing, lengthsA );
-  ArrayAccessor<double,2> accessorB_SelfDescribing( ptrBdata_SelfDescribing, lengthsB );
+  ArrayAccessor<double const,2> accessorA_SelfDescribing( ptrAdata_SelfDescribing, lengthsA );
+  ArrayAccessor<double const,2> accessorB_SelfDescribing( ptrBdata_SelfDescribing, lengthsB );
   ArrayAccessor<double,2> accessorC_SelfDescribing( ptrCdata_SelfDescribing, lengthsC );
 
   RAJA::View< double const, RAJA::Layout<2> > A_View( A, num_i, num_k );
   RAJA::View< double const, RAJA::Layout<2> > B_View( B, num_k, num_j );
-  RAJA::View< double, RAJA::Layout<2> > C_ViewNFC( ptrC_NFCRajaView, num_i, num_j );
-  RAJA::View< double, RAJA::Layout<2> > C_ViewPBV( ptrC_PBVRajaView, num_i, num_j );
-  RAJA::View< double, RAJA::Layout<2> > C_ViewPBR( ptrC_PBRRajaView, num_i, num_j );
+  RAJA::View< double, RAJA::Layout<2> > C_ViewParenNFC( ptrC_RajaViewParenNFC, num_i, num_j );
+  RAJA::View< double, RAJA::Layout<2> > C_ViewParenPBV( ptrC_RajaViewParenPBV, num_i, num_j );
+  RAJA::View< double, RAJA::Layout<2> > C_ViewParenPBR( ptrC_RajaViewParenPBR, num_i, num_j );
 
+  RAJA::View< double, RAJA::Layout<2> > C_ViewSquareNFC( ptrC_RajaViewSquareNFC, num_i, num_j );
+  RAJA::View< double, RAJA::Layout<2> > C_ViewSquarePBV( ptrC_RajaViewSquarePBV, num_i, num_j );
+  RAJA::View< double, RAJA::Layout<2> > C_ViewSquarePBR( ptrC_RajaViewSquarePBR, num_i, num_j );
 
 
 
@@ -232,16 +243,41 @@ int main( int /*argc*/, char* argv[] )
       {
         for( integer_t k = 0 ; k < num_k ; ++k )
         {
-          C_ViewNFC(i,j) += A_View(i,k) * B_View(k,j) + 3.1415 * A_View(i,k) + 1.61803 * B_View(k,j);
+          C_ViewParenNFC(i,j) += A_View(i,k) * B_View(k,j) + 3.1415 * A_View(i,k) + 1.61803 * B_View(k,j);
         }
       }
     }
   }
   endTime = GetTimeMs64();
-  double runTime_RAJA_NFC =( endTime - startTime ) / 1000.0;
+  double runTime_RAJA_Paren_NFC =( endTime - startTime ) / 1000.0;
+  double runTime_RAJA_Paren_PBV = MatrixMultiply_2D_RajaViewParen_PBV( num_i, num_j, num_k, ITERATIONS, A_View, B_View, C_ViewParenPBV );
+  double runTime_RAJA_Paren_PBR = MatrixMultiply_2D_RajaViewParen_PBR( num_i, num_j, num_k, ITERATIONS, A_View, B_View, C_ViewParenPBR );
 
-  double runTime_RAJA_PBV = MatrixMultiply_2D_RajaView_PBV( num_i, num_j, num_k, ITERATIONS, A_View, B_View, C_ViewPBV );
-  double runTime_RAJA_PBR = MatrixMultiply_2D_RajaView_PBV( num_i, num_j, num_k, ITERATIONS, A_View, B_View, C_ViewPBR );
+
+  startTime = GetTimeMs64();
+  for( integer_t iter = 0 ; iter < ITERATIONS ; ++iter )
+  {
+    for( integer_t i = 0 ; i < num_i ; ++i )
+    {
+      for( integer_t j = 0 ; j < num_j ; ++j )
+      {
+        for( integer_t k = 0 ; k < num_k ; ++k )
+        {
+          C_ViewSquareNFC[i][j] += A_View[i][k] * B_View[k][j] + 3.1415 * A_View[i][k] + 1.61803 * B_View[k][j];
+        }
+      }
+    }
+  }
+  endTime = GetTimeMs64();
+  double runTime_RAJA_Square_NFC =( endTime - startTime ) / 1000.0;
+  double runTime_RAJA_Square_PBV = MatrixMultiply_2D_RajaViewSquare_PBV( num_i, num_j, num_k, ITERATIONS, A_View, B_View, C_ViewSquarePBV );
+
+
+  double runTime_RAJA_Square_PBR = 10;//MatrixMultiply_2D_RajaViewSquare_PBR( num_i, num_j, num_k, ITERATIONS,
+//                                                                         RAJA::View< double const, RAJA::Layout2<2> >(A_View),
+//                                                                         RAJA::View< double const, RAJA::Layout2<2> >(B_View),
+//                                                                         RAJA::View< double, RAJA::Layout2<2> >(C_ViewSquarePBR) );
+
 
 
 
@@ -255,9 +291,13 @@ int main( int /*argc*/, char* argv[] )
   minRunTime = std::min( minRunTime, runTime_ParenNFC );
   minRunTime = std::min( minRunTime, runTime_ParenPBV );
   minRunTime = std::min( minRunTime, runTime_ParenPBR );
-  minRunTime = std::min( minRunTime, runTime_RAJA_NFC );
-  minRunTime = std::min( minRunTime, runTime_RAJA_PBV );
-  minRunTime = std::min( minRunTime, runTime_RAJA_PBR );
+  minRunTime = std::min( minRunTime, runTime_RAJA_Paren_NFC );
+  minRunTime = std::min( minRunTime, runTime_RAJA_Paren_PBV );
+  minRunTime = std::min( minRunTime, runTime_RAJA_Paren_PBR );
+
+  minRunTime = std::min( minRunTime, runTime_RAJA_Square_NFC );
+  minRunTime = std::min( minRunTime, runTime_RAJA_Square_PBV );
+  minRunTime = std::min( minRunTime, runTime_RAJA_Square_PBR );
 
   if( output > 2 )
   {
@@ -271,10 +311,13 @@ int main( int /*argc*/, char* argv[] )
     double error_ParenPBV = 0.0;
     double error_ParenPBR = 0.0;
 
-    double error_RajaNFC = 0.0;
-    double error_RajaPBV = 0.0;
-    double error_RajaPBR = 0.0;
+    double error_RajaParenNFC = 0.0;
+    double error_RajaParenPBV = 0.0;
+    double error_RajaParenPBR = 0.0;
 
+    double error_RajaSquareNFC = 0.0;
+    double error_RajaSquarePBV = 0.0;
+    double error_RajaSquarePBR = 0.0;
 
     for( integer_t i = 0 ; i < num_i ; ++i )
     {
@@ -291,9 +334,14 @@ int main( int /*argc*/, char* argv[] )
         error_ParenPBR += pow( C1D[i*num_j+j] - ptrC_ParenPBR[i*num_j+j] , 2 ) ;
 
 
-        error_RajaNFC += pow( C1D[i*num_j+j] - ptrC_NFCRajaView[i*num_j+j] , 2 ) ;
-        error_RajaPBV += pow( C1D[i*num_j+j] - ptrC_PBVRajaView[i*num_j+j] , 2 ) ;
-        error_RajaPBR += pow( C1D[i*num_j+j] - ptrC_PBRRajaView[i*num_j+j] , 2 ) ;
+        error_RajaParenNFC += pow( C1D[i*num_j+j] - ptrC_RajaViewParenNFC[i*num_j+j] , 2 ) ;
+        error_RajaParenPBV += pow( C1D[i*num_j+j] - ptrC_RajaViewParenPBV[i*num_j+j] , 2 ) ;
+        error_RajaParenPBR += pow( C1D[i*num_j+j] - ptrC_RajaViewParenPBR[i*num_j+j] , 2 ) ;
+
+        error_RajaSquareNFC += pow( C1D[i*num_j+j] - ptrC_RajaViewSquareNFC[i*num_j+j] , 2 ) ;
+        error_RajaSquarePBV += pow( C1D[i*num_j+j] - ptrC_RajaViewSquarePBV[i*num_j+j] , 2 ) ;
+        error_RajaSquarePBR += pow( C1D[i*num_j+j] - ptrC_RajaViewSquarePBR[i*num_j+j] , 2 ) ;
+
       }
     }
     std::cout<<"error_SquareNFC = "<<error_SquareNFC<<std::endl;
@@ -307,9 +355,13 @@ int main( int /*argc*/, char* argv[] )
     std::cout<<"error_ParenPBV = "<<error_ParenPBV<<std::endl;
     std::cout<<"error_ParenPBR = "<<error_ParenPBR<<std::endl;
 
-    std::cout<<"error_RajaNFC = "<<error_RajaNFC<<std::endl;
-    std::cout<<"error_RajaPBV = "<<error_RajaPBV<<std::endl;
-    std::cout<<"error_RajaPBR = "<<error_RajaPBR<<std::endl;
+    std::cout<<"error_RajaNFC = "<<error_RajaParenNFC<<std::endl;
+    std::cout<<"error_RajaPBV = "<<error_RajaParenPBV<<std::endl;
+    std::cout<<"error_RajaPBR = "<<error_RajaParenPBR<<std::endl;
+
+    std::cout<<"error_RajaNFC = "<<error_RajaSquareNFC<<std::endl;
+    std::cout<<"error_RajaPBV = "<<error_RajaSquarePBV<<std::endl;
+    std::cout<<"error_RajaPBR = "<<error_RajaSquarePBR<<std::endl;
   }
 
   if( output > 1 )
@@ -326,15 +378,19 @@ int main( int /*argc*/, char* argv[] )
     printf( "accessor() pbv                       : %8.3f, %8.2f\n", runTime_ParenPBV, runTime_ParenPBV / minRunTime);
     printf( "accessor() pbr                       : %8.3f, %8.2f\n", runTime_ParenPBR, runTime_ParenPBR / minRunTime);
 
-    printf( "RAJA::View::operator() nfc           : %8.3f, %8.2f\n", runTime_RAJA_NFC, runTime_RAJA_NFC / minRunTime);
-    printf( "RAJA::View::operator() pbv           : %8.3f, %8.2f\n", runTime_RAJA_PBV, runTime_RAJA_PBV / minRunTime);
-    printf( "RAJA::View::operator() pbr           : %8.3f, %8.2f\n", runTime_RAJA_PBR, runTime_RAJA_PBR / minRunTime);
+    printf( "RAJA::View::operator() nfc           : %8.3f, %8.2f\n", runTime_RAJA_Paren_NFC, runTime_RAJA_Paren_NFC / minRunTime);
+    printf( "RAJA::View::operator() pbv           : %8.3f, %8.2f\n", runTime_RAJA_Paren_PBV, runTime_RAJA_Paren_PBV / minRunTime);
+    printf( "RAJA::View::operator() pbr           : %8.3f, %8.2f\n", runTime_RAJA_Paren_PBR, runTime_RAJA_Paren_PBR / minRunTime);
+
+    printf( "RAJA::View::operator[] nfc           : %8.3f, %8.2f\n", runTime_RAJA_Square_NFC, runTime_RAJA_Square_NFC / minRunTime);
+    printf( "RAJA::View::operator[]Square          : %8.3f, %8.2f\n", runTime_RAJA_Square_PBV, runTime_RAJA_Square_PBV / minRunTime);
+//    printf( "RAJA::View::operator() pbr           : %8.3f, %8.2f\n", runTime_RAJA_Paren_PBR, runTime_RAJA_Paren_PBR / minRunTime);
   }
 
 
   if( output == 1 )
   {
-    printf( "%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n",
+    printf( "%8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f %8.3f\n",
     runTime_Direct1dAccess,
     runTime_Direct1dRestrict,
 
@@ -347,9 +403,12 @@ int main( int /*argc*/, char* argv[] )
     runTime_ParenPBV,
     runTime_ParenPBR,
 
-    runTime_RAJA_NFC,
-    runTime_RAJA_PBV,
-    runTime_RAJA_PBR );
+    runTime_RAJA_Paren_NFC,
+    runTime_RAJA_Paren_PBV,
+    runTime_RAJA_Paren_PBR,
+
+    runTime_RAJA_Square_NFC,
+    runTime_RAJA_Square_PBV );
   }
   return 0;
 }

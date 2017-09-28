@@ -70,6 +70,10 @@ template <typename Range, typename IdxLin = Index_type>
 struct LayoutBase_impl {
 };
 
+template <typename Range, typename IdxLin = Index_type>
+struct LayoutBase_interface {
+};
+
 /*!
  * Helper function to compute the strides
  */
@@ -177,6 +181,35 @@ public:
   }
 
 
+
+
+  template< size_t Range0, size_t... RemainingRange >
+  struct sliced_layout_helper
+  {
+    using type = LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>;
+  };
+
+  using sliced_layout =  typename sliced_layout_helper<RangeInts...>::type ;
+
+  template< size_t Range0, size_t... RemainingRange >
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>
+  SquareHelper( IdxLin index) const
+  {
+    return LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>( sizes+1,
+                                                                             strides+1,
+                                                                             inv_strides+1,
+                                                                             inv_mods+1);
+  }
+
+
+
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr auto operator[] (IdxLin index) const -> decltype( SquareHelper<RangeInts...>(index) )
+  {
+    return SquareHelper<RangeInts...>(index);
+  }
+
+
   /*!
    * Given a linear-space index, compute the n-dimensional indices defined
    * by this layout.
@@ -202,6 +235,146 @@ constexpr size_t
 template <size_t... RangeInts, typename IdxLin>
 constexpr size_t
     LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+template <size_t... RangeInts, typename IdxLin>
+struct LayoutBase_interface<VarOps::index_sequence<RangeInts...>, IdxLin> {
+public:
+  typedef IdxLin IndexLinear;
+  typedef VarOps::make_index_sequence<sizeof...(RangeInts)> IndexRange;
+
+  static constexpr size_t n_dims = sizeof...(RangeInts);
+  static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
+
+  // const char *index_types[sizeof...(RangeInts)];
+
+  IdxLin const * const sizes;
+  IdxLin const * const strides;
+  IdxLin const * const inv_strides;
+  IdxLin const * const inv_mods;
+
+
+  /*!
+   * Default constructor with zero sizes and strides.
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_interface() = delete;
+
+  /*!
+   * Construct a layout given the size of each dimension.
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_interface( IdxLin const * const input_sizes,
+                                                               IdxLin const * const input_strides,
+                                                               IdxLin const * const input_inv_strides,
+                                                               IdxLin const * const input_inv_mods )
+      : sizes(input_sizes),
+        strides(input_strides),
+        inv_strides(input_inv_strides),
+        inv_mods(input_inv_mods)
+  {}
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr
+  LayoutBase_interface( LayoutBase_impl<VarOps::index_sequence<RangeInts...>, IdxLin> const & input )
+      : sizes(input.sizes),
+        strides(input.strides),
+        inv_strides(input.inv_strides),
+        inv_mods(input.inv_mods)
+  {}
+
+
+  /*!
+   * Computes a linear space index from specified indices.
+   * This is formed by the dot product of the indices and the layout strides.
+   *
+   * @param indices  Indices in the n-dimensional space of this layout
+   * @return Linear space index.
+   */
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
+      Indices... indices) const
+  {
+    return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
+  }
+
+
+  template< size_t Range0, size_t... RemainingRange >
+  struct sliced_layout_helper
+  {
+    using type = LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>;
+  };
+
+  using sliced_layout =  typename sliced_layout_helper<RangeInts...>::type ;
+
+  template< size_t Range0, size_t... RemainingRange >
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>
+  SquareHelper( IdxLin index) const
+  {
+    return LayoutBase_interface<VarOps::index_sequence<RemainingRange...>, IdxLin>( sizes+1,
+                                                                             strides+1,
+                                                                             inv_strides+1,
+                                                                             inv_mods+1);
+  }
+
+
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr auto operator[] (IdxLin index) const -> decltype( SquareHelper<RangeInts...>(index) )
+  {
+    return SquareHelper<RangeInts...>(index);
+  }
+
+  /*!
+   * Given a linear-space index, compute the n-dimensional indices defined
+   * by this layout.
+   *
+   * Note that this operation requires 2n integer divide instructions
+   *
+   * @param linear_index  Linear space index to be converted to indices.
+   * @param indices  Variadic list of indices to be assigned, number must match
+   *                 dimensionality of this layout.
+   */
+  template <typename... Indices>
+  RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
+                                              Indices &... indices) const
+  {
+    VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
+                                   % inv_mods[RangeInts])...);
+  }
+};
+
+template <size_t... RangeInts, typename IdxLin>
+constexpr size_t
+  LayoutBase_interface<VarOps::index_sequence<RangeInts...>, IdxLin>::n_dims;
+template <size_t... RangeInts, typename IdxLin>
+constexpr size_t
+  LayoutBase_interface<VarOps::index_sequence<RangeInts...>, IdxLin>::limit;
+
+
+
+
+
+
+
+
+
+
+
+
 }
 
 /*!
@@ -256,6 +429,25 @@ constexpr size_t
 template <size_t n_dims, typename IdxLin = Index_type>
 using Layout =
     detail::LayoutBase_impl<VarOps::make_index_sequence<n_dims>, IdxLin>;
+
+template <size_t n_dims, typename IdxLin = Index_type>
+using Layout2 =
+    detail::LayoutBase_interface<VarOps::make_index_sequence<n_dims>, IdxLin>;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 template <typename IdxLin, typename... DimTypes>
 struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
