@@ -42,15 +42,19 @@
 namespace RAJA
 {
 
-namespace impl
+namespace policy
 {
+
+namespace omp
+{  
 
 ///
 /// OpenMP target parallel for policy implementation
 ///
 
 template <size_t Teams, typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
+//RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
@@ -67,7 +71,9 @@ RAJA_INLINE void forall(const omp_target_parallel_for_exec<Teams>&,
   }
 }
 
-}  // closing brace for impl namespace
+}  // closing brace for omp namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 
