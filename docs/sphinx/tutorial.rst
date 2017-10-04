@@ -17,8 +17,41 @@ Tutorial
 
 This is an overview of the examples included in RAJA. In particular
 we highlight RAJA features which simplify scientific computing.
-The objective in this tutorial is illustrate basic usage 
-As a starting point we review key RAJA concepts starting with the
+
+At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction
+in place functions. An underlying concept of lambda's is that variables maybe ``captured" from the local context
+and used in the body of the loop. A lambda expression consist is of the following form
+
+.. code-block:: cpp
+
+   [capture list] (parameter list) {function body}
+
+
+Here the capture and parameter list may be empty and thus the following is a valid lambda
+
+.. code-block:: cpp
+
+  [](){std::cout<<"RAJA Rocks!"<<std::endl;};
+
+
+By default Lambda's capture by copy any variables within a block of code. Thus to modify values values the & symbol
+must be added to the capture list. For example
+
+.. code-block:: cpp
+
+   int x;
+   int y= 100;
+   int istart = 0, iend = 10;
+   [&x, &y](){x=y;]
+
+will assign the value of y to x. Furthermore there are shortcuts for setting the capture type
+1. [=] capture all variables within the block scope by copy
+2. [&] capture all variables within the block scopy by reference
+
+
+RAJA uses lambda functions .. 
+
+
 ``RAJA::forall`` and ``RAJA::forallN`` loops.
 
 .. code-block:: cpp
