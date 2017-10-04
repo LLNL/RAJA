@@ -120,8 +120,8 @@ A full working version ``example-add-vectors.cpp`` may be found in the example f
 ---------------------
 Matrix Multiplication
 ---------------------
-As a stepping stone to ``RAJA::ForallN`` we consider matrix multiplication.
-Here we multiply two N x N matrices, A, and B, and store the result in C.
+As an example of nesting for loops we consider matrix multiplication.
+Here we multiply two N x N matrices, A, and B. The result is then stored in C. 
 Assuming that have pointers to the data
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
@@ -132,44 +132,45 @@ and with the aid of some macros
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 132-134
 
-A C++ version of matrix multiplication takes the following form. 
+a C++ version of matrix multiplcation takes the form of 
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 161-171
 
-In order to bypass the need for macros RAJA introduces the ``RAJA::View``
-which simplifies multi-dimensional indexing (for more info see :ref:`ref-view`).
-
+With minimal effort we can start introducing RAJA into the algorithm.
+First we can relive the need of macros by making use of ``RAJA::View``, which
+simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
+                           
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 180-182
-                            
-With minimal effort we can convert the outermost loop into a ``RAJA::forall`` loop.
+
+Second we can convert the outermost loop into a ``RAJA::forall`` loop
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 192-205
 
-
+resulting in code that can be paired with different execution policies.
 In the case the user will not offload to a device ``RAJA::forall`` loops
 may be nested.
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 212-226  
 
-As general purpose nested loop, RAJA introduces the ``RAJA::forallN`` loop
-which collapses a finite number of nested loops. This variant of the nested
-loop may be used with any execution policy. Basic usage of the ``RAJA::forallN``
-loop requires a ``RAJA::NestedPolicy<>`` and a ``RAJA::ExecList<>``,
-which encapsulate how each loop of the should be traversed.
+As a generalization of nested loops, RAJA introduces the ``RAJA::forallN`` loop
+which collapses a finite number of nested loops. Basic usage of ``RAJA::forallN``
+requires an execution list ``RAJA::ExecList<>`` for the
+``RAJA::NestedPolicy<>`` (for more info see :ref:`ref-nested`) . Each execution policy encapsulates how each loop should be
+traversed. In the following example we pair the outerloop with an OpenMP policy and the inner loop with a sequential policy. 
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 254-264
 
-
-
+A full working version ``example-matrix-multiply.cpp`` may be found in the example folder.
+                            
 -------------
 Jacobi Method
 -------------
-In this example we solve the following boundary value equation
+Branching out to scientific computing we consider solving the following boundary value problem
 
 .. math::
    
