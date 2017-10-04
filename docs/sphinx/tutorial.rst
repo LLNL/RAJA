@@ -99,6 +99,7 @@ as
                             
 Ofcourse the standard C++ loop won't take advatage of the cores of multi/many-core processors,
 but our RAJA analogue will! To construct the RAJA version we must first specify an execution policy
+:ref:`ref-policy`
 and construct an iteration space. 
 
                             
