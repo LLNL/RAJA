@@ -40,19 +40,22 @@ must be added to the capture list. For example
 .. code-block:: cpp
 
    int x;
-   int y= 100;
+   int y = 100;
    int istart = 0, iend = 10;
    [&x, &y](){x=y;]
 
 will assign the value of y to x. Furthermore there are shortcuts for setting the capture type
+
+
 1. [=] capture all variables within the block scope by copy
 2. [&] capture all variables within the block scopy by reference
 
 
-RAJA uses lambda functions .. 
-
-
-``RAJA::forall`` and ``RAJA::forallN`` loops.
+Building from the C++ lambda, RAJA introduces two main types of templated loops, namely
+the ``RAJA::forall`` and ``RAJA::forallN`` loops. Here RAJA decouples a body loop
+from its traversal. For example the ``RAJA::forall`` method is an abstracted version of the basic C++ loop.
+The method is templated on an execution policies and takes an iteration space and a lambda which encapsulates
+the loop body. 
 
 .. code-block:: cpp
                 
@@ -60,7 +63,9 @@ RAJA uses lambda functions ..
     //body
   });
 
-
+Similarly the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
+templated on up to N execution policies and takes in an iteration space and index for each execution policy.
+  
 .. code-block:: cpp
                 
   RAJA::forallN<
@@ -69,34 +74,36 @@ RAJA uses lambda functions ..
          //body
   });
   
+In each of these loops the developer must specify the following
 
 1. [=] By-copy capture
 2. [&] By-reference capture (for non-unified memory targets)
 3. exec_policy - Specifies how the traversal occurs
 4. iter_space  - Iteration space for RAJA loop (any random access container is expected)
 5. index_type  - Index for RAJA loops
-  
+
+For the remainder of the tutorial we demonstrate the utility of RAJA by illustrating how
+to create analogues of C++ style loops and highlighting features of RAJA which simplify
+scientific computing.
 
 ---------------
 Vector Addition
 ---------------
-In this example, two arrays A, and B, of length N are added together.
-The result is stored in a third array C. As a starting point we begin
-with a classic C++ style for loop and illustrate how to create a RAJA analog. 
+As a starting point we begin with simple vector addition. 
+In this example, two vectors A, and B, of length N are added together.
+The result is stored in a third array C. In standard C++ this may be carried out
+as 
 
-.. code-block:: cpp
-                
-  for (int i = 0; i < N; ++i) {
-    C[i] = A[i] + B[i];
-  }
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 119-121
+                            
+Ofcourse the standard C++ loop won't take advatage of the cores of multi/many-core processors,
+but our RAJA analogue will! To construct the RAJA version we must first specify an execution policy
+and construct an iteration space. 
 
-The RAJA analog is simply the following
-
-.. code-block:: cpp
-                
-  RAJA::forall<RAJA::exec_policy>(0, N, [=] (int i) {
-    C[i] = A[i] + b[i];
-  });
+                            
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 132-137
 
 where RAJA::exec_policy may be any policy listed in the refence guide.  
   
@@ -141,7 +148,7 @@ of matrix multiplication
     }
   }
 
-With minimal disruption we can convert the outermost loop into a ``RAJA::forall`` loop.
+With minimal effort we can convert the outermost loop into a ``RAJA::forall`` loop.
 Furthermore we will make use of the ``RAJA::RangeSegment`` enabling us to predifined loop bounds
 
 .. code-block:: cpp
