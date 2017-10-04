@@ -50,35 +50,6 @@ namespace omp
 #ifdef RAJA_ENABLE_TARGET_OPENMP
 #pragma omp declare target
 #endif
-#if 0
-template <typename T>
-struct sum {
-  static constexpr T identity = T(0);
-  RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v) { val += v; }
-};
-
-template <typename T>
-struct min {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
-  RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
-  {
-    if (v < val) val = v;
-  }
-};
-
-template <typename T>
-struct max {
-  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
-  RAJA_HOST_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
-  {
-    if (v > val) val = v;
-  }
-};
-
-#endif
 
 template <typename T, typename I>
 struct minloc {
