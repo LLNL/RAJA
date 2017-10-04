@@ -278,91 +278,15 @@ where
 As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and (i,j)
 corresponds to a location on the grid. 
    
----------------
-Custom Indexset
----------------
-This example illustrates how to construct a custom 
-iteration space composed of segments. Here a segment
-is an arbitrary collection of indices. In this example we wish
-to create an iteration space composed of four segments coressponding
-to the following grid
-
-.. image:: figures/index_set_fig.png
-   :scale: 40 %
-   :align: center
-
-Each segment will store incices corespoding to colors on the grid.
-For example the first segment will store the indeces denoted by blue,
-the second segment will store indeces denotes by red etc... 
-
-In order to accomplish this we first create an instance of a
-``RAJA::StaticIndexSet``
-
-.. code-block:: cpp
-                
-   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
-
-In this example the StaticIndexSet is templated to hold TypedListSegments.
-
-.. code-block:: cpp
-
-  /*
-    Buffer used for intermediate indices storage
-  */
-  auto *idx = new RAJA::Index_type[(n + 1) * (n + 1) / 4];
-
-  /*
-    Iterate over each dimension (DIM=2) for this example
-  */
-
-  for ( int xdim : {0,1}) {
-    for ( int ydim : {0,1}) {
-    
-     RAJA::Index_type count = 0;
-
-     
-     /*
-       Iterate over each dimension, incrementing by two to safely
-       advance over neighbors
-    */
-
-    for (int xiter = xdim; xiter < n; xiter += 2) {
-      for (int yiter = ydim; yiter < n; yiter += 2) {
-
-      /*
-        Add the computed index to the buffer
-      */
-      idx[count] = std::distance(std::addressof(Aview(0, 0)),
-                                 std::addressof(Aview(xiter, yiter)));
-
-      ++cout;
-      }
-    }
-
-    /*
-      RAJA::ListSegment - creates a list segment from a given array
-      with a specific length.
-
-      Here the indices are inserted from the buffer as a new ListSegment
-    */
-    colorset.push_back(RAJA::ListSegment(idx, count));
-   }
-  }
-
-  delete[] idx;
-
-Finally we have a custom colorset policy. With this policy we may have a ``RAJA::forall`` loop
-transverse through each list segment stored in the colorset sequentially and transverse each
-segment in parallel (if enabled). The policy may be defined as
-
-.. code-block:: cpp
-                
-  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
-  
-
-
-
----------------
+------------
 Gauss-Seidel
----------------
-In this example we revisit the equation solved by the Jacobi method consider the Gauss-Seidel scheme. Furthermore we build on the previous colorset example and 
+------------
+In this example we revisit the equation solved by boundary value problem previously solved by the Jacobi method
+and use a Red-Black Gauss-Seidel scheme. Traditionally, Gauss-Seidel scheme is inherently a serial algorithm but by
+exploiting the structure of the problem we can color the domain in such a way to expose parallism. 
+
+
+
+.. image:: figures/gsboard.png
+   :scale: 10 %
+   :align: center
