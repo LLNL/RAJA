@@ -120,109 +120,50 @@ A full working version ``example-add-vectors.cpp`` may be found in the example f
 ---------------------
 Matrix Multiplication
 ---------------------
-In this example we multiply two matrices, A, and B, of dimension N X N
-and store the result in a third marix C. To simplify indexing we make use
-of ``RAJA::Views``. A ``RAJA::View`` wraps a pointer to simplify
-multi-dimensional indexing. The basic usage is as follows
+As a stepping stone to ``RAJA::ForallN`` we consider matrix multiplication.
+Here we multiply two N x N matrices, A, and B, and store the result in C.
+Assuming that have pointers to the data
 
-.. code-block:: cpp
-                
-  double* A = new double[N*N];
-  double* B = new double[N*N];
-  double* C = new double[N*N];
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 146-148
 
-  RAJA::View<double, RAJA::Layout<2>> Aview(A, N, N);
-  RAJA::View<double, RAJA::Layout<2>> Bview(B, N, N);
-  RAJA::View<double, RAJA::Layout<2>> Cview(C, N, N);
+and with the aid of some macros
 
-Where the arguments in ``RAJA::View`` denotes the type and layout of the data.
-The argument in ``RAJA::Layout`` specifies the dimension of the data. In our case
-we wish to treat the data as if it were two dimensional.
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 132-134
 
-  
+A C++ version of matrix multiplication takes the following form. 
 
-We begin with a native C++ version
-of matrix multiplication 
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 161-171
 
-.. code-block:: cpp
-                
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
+In order to bypass the need for macros RAJA introduces the ``RAJA::View``
+which simplifies multi-dimensional indexing (for more info see :ref:`ref-view`).
 
-     double dot = 0.0;
-      for (int k = 0; k < N; ++k){
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      
-      Cview(row, col) = dot;    
-    }
-  }
-
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 180-182
+                            
 With minimal effort we can convert the outermost loop into a ``RAJA::forall`` loop.
-Furthermore we will make use of the ``RAJA::RangeSegment`` enabling us to predifined loop bounds
 
-.. code-block:: cpp
-                
- RAJA::RangeSegment matBounds(0, N);
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 192-205
 
-The resulting RAJA variant is as follows
- 
-.. code-block:: cpp
-                
-  RAJA::forall<exec_policy>(
-    matBounds, [=](int row) {
-  
-      for (int col = 0; col < N; ++col) {
-
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
-
-        Cview(row, col) = dot;
-        }
-  });
 
 In the case the user will not offload to a device ``RAJA::forall`` loops
 may be nested.
 
-.. code-block:: cpp
-
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](int row) {  
-      
-    RAJA::forall<RAJA::seq_exec>(
-      matBounds, [=](int col) {
-          
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-                
-      Cview(row, col) = dot;
-      });
-  });
-  
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 212-226  
 
 As general purpose nested loop, RAJA introduces the ``RAJA::forallN`` loop
 which collapses a finite number of nested loops. This variant of the nested
 loop may be used with any execution policy. Basic usage of the ``RAJA::forallN``
 loop requires a ``RAJA::NestedPolicy<>`` and a ``RAJA::ExecList<>``,
-which encapsulate how each loop of the should be traversed. 
+which encapsulate how each loop of the should be traversed.
 
-.. code-block:: cpp
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 254-264
 
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::exec_policy, exec_policy>>>(
-       matBounds, matBounds, [=](int row, int col) {
-      
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {        
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      
-      Cview(row, col) = dot;
-  });
 
 
 -------------
