@@ -65,6 +65,7 @@ struct op_adapter : private Op<T, T, T> {
   RAJA_HOST_DEVICE static constexpr T identity() {
     return operator_type::identity();
   }
+
   RAJA_HOST_DEVICE RAJA_INLINE void operator()(T &val, const T v) const
   {
     val = operator_type::operator()(val, v);
