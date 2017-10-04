@@ -97,17 +97,26 @@ as
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 119-121
                             
-Ofcourse the standard C++ loop won't take advatage of the cores of multi/many-core processors,
+Of course the standard C++ loop won't take advatage of the cores of multi/many-core processors,
 but our RAJA analogue will! To construct the RAJA version we must first specify an execution policy
-:ref:`ref-policy`
-and construct an iteration space. 
+(more info see :ref:`ref-policy`) and construct an iteration space. For this example we can generate
+an iteration space composed of a contiguous sequence of numbers by using the ``RAJA::RangeSegment``. 
 
-                            
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
 
-where RAJA::exec_policy may be any policy listed in the refence guide.  
-  
+By swapping out execution policies we can target different backends with the caveat being backends which offload
+to devices. Here it is important that memory management is beyond the scope of RAJA (a seperate plug in is available
+see :ref:`ref-plugins`) furthemore off loading to a device requires the ``__device__`` decorator on the lambda. 
+
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 163-168
+
+As remark the CUDA exectution policy requires a number of threads per thread block.
+
+
+A full working version ``example-add-vectors.cpp`` may be found in the example folder. 
+
 ---------------------
 Matrix Multiplication
 ---------------------
