@@ -39,90 +39,129 @@ using namespace std;
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
-  int starting_vertex = 2;
+  int starting_vertex = 0; //2;
   int graph_size = 8;
-  RAJA::Graph<unsigned> g(starting_vertex,starting_vertex + graph_size);
-  //Color map: indices
-  //3434     : 4567
+  RAJA::RangeSegment r(starting_vertex,starting_vertex+graph_size);
+  RAJA::Graph<RangeSegment> g(r);
+  //Color map: indices - size 4
+  //32     : 23
+  //01     : 01
+
+  //Color map: indices - size 8
+  //4343     : 4567
   //1212     : 0123
 
 
-  { //build the graph
-    RAJA::GraphBuilder<unsigned> gb(g);
 
-    std::vector<unsigned> v0_deps;
+
+  { //build the graph
+    RAJA::GraphBuilder<RangeSegment> gb(g);
+
+/*
+    std::vector<Index_type> v0_deps;
     v0_deps.push_back(starting_vertex+1);
-    v0_deps.push_back(starting_vertex+4);
-    v0_deps.push_back(starting_vertex+5);
     gb.addVertex(starting_vertex+0,v0_deps);
 
-    std::vector<unsigned> v1_deps;
-    v1_deps.push_back(starting_vertex+0);
-    v1_deps.push_back(starting_vertex+2);
-    v1_deps.push_back(starting_vertex+4);
-    v1_deps.push_back(starting_vertex+5);
-    v1_deps.push_back(starting_vertex+6);
+    std::vector<Index_type> v1_deps;
+    v1_deps.push_back(starting_vertex+3);
     gb.addVertex(starting_vertex+1,v1_deps);
 
-    std::vector<unsigned> v2_deps;
-    v2_deps.push_back(starting_vertex+1);
-    v2_deps.push_back(starting_vertex+3);
-    v2_deps.push_back(starting_vertex+5);
-    v2_deps.push_back(starting_vertex+6);
-    v2_deps.push_back(starting_vertex+7);
+    std::vector<Index_type> v2_deps;
     gb.addVertex(starting_vertex+2,v2_deps);
 
-    std::vector<unsigned> v3_deps;
+    std::vector<Index_type> v3_deps;
     v3_deps.push_back(starting_vertex+2);
-    v3_deps.push_back(starting_vertex+6);
+    gb.addVertex(starting_vertex+3,v3_deps);
+*/
+
+
+    std::vector<Index_type> v0_deps;
+    v0_deps.push_back(starting_vertex+1);
+    gb.addVertex(starting_vertex+0,v0_deps);
+
+    std::vector<Index_type> v1_deps;
+    v1_deps.push_back(starting_vertex+5);
+    gb.addVertex(starting_vertex+1,v1_deps);
+
+    std::vector<Index_type> v2_deps;
+    v2_deps.push_back(starting_vertex+3);
+    gb.addVertex(starting_vertex+2,v2_deps);
+
+    std::vector<Index_type> v3_deps;
     v3_deps.push_back(starting_vertex+7);
     gb.addVertex(starting_vertex+3,v3_deps);
 
-    std::vector<unsigned> v4_deps;
-    v4_deps.push_back(starting_vertex+0);
-    v4_deps.push_back(starting_vertex+1);
-    v4_deps.push_back(starting_vertex+5);
+    std::vector<Index_type> v4_deps;
     gb.addVertex(starting_vertex+4,v4_deps);
 
-    std::vector<unsigned> v5_deps;
-    v5_deps.push_back(starting_vertex+0);
-    v5_deps.push_back(starting_vertex+1);
-    v5_deps.push_back(starting_vertex+2);
+    std::vector<Index_type> v5_deps;
     v5_deps.push_back(starting_vertex+4);
-    v5_deps.push_back(starting_vertex+6);
     gb.addVertex(starting_vertex+5,v5_deps);
 
-    std::vector<unsigned> v6_deps;
-    v6_deps.push_back(starting_vertex+1);
-    v6_deps.push_back(starting_vertex+2);
-    v6_deps.push_back(starting_vertex+3);
-    v6_deps.push_back(starting_vertex+5);
-    v6_deps.push_back(starting_vertex+7);
+    std::vector<Index_type> v6_deps;
     gb.addVertex(starting_vertex+6,v6_deps);
 
-    std::vector<unsigned> v7_deps;
-    v7_deps.push_back(starting_vertex+2);
-    v7_deps.push_back(starting_vertex+3);
+    std::vector<Index_type> v7_deps;
     v7_deps.push_back(starting_vertex+6);
     gb.addVertex(starting_vertex+7,v7_deps);
 
-  }//when GraphBuilder is destroyed, the graph is finalized
+    gb.createDependenceGraph();
+  }
 
 
-  std::cout<<"Built graph:"<<std::endl;
+  std::cout<<"Built graph of size="<<g.size()<<":"<<std::endl;
   g.printGraph(std::cout);
-
+/*
   std::cout<<std::endl;
   g.satisfyDependents(starting_vertex+3);
 
   std::cout<<"Satisfied dependencies of vertex 3:"<<std::endl;
   g.printGraph(std::cout);
+*/
+
+  std::cout<<std::endl;
+  std::cout<<"Starting forall on IndexSet containing the graph as one of the segments"<<std::endl;
+
+  // Insert the Graph/Range segment into an IndexSet
+
+  //RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::ListSegment> is0;
+
+  //RAJA::StaticIndexSet<RAJA::RangeSegment, RAJA::GraphRangeSegment> is0; //OLGA FIX ME - should be able to have RangeSegment also
+  RAJA::StaticIndexSet<RAJA::GraphRangeSegment> is0;
+
+//  is0.push_back(RAJA::RangeSegment(0,5));  //OLGA FIX ME - should be able to add this back in
+  is0.push_back(g);
+
+
+  using seq_seq_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;
+  RAJA::forall<seq_seq_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::seq_exec>;"<<std::endl;
 
 
 
+  std::cout<<std::endl;
+  std::cout<<"Starting forall using OpenMP"<<std::endl;
+
+  using seq_omp_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;
+  RAJA::forall<seq_omp_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;"<<std::endl;
 
 
 
+/*
+  std::cout<<std::endl;
+  std::cout<<"Starting forall using OpenMP with dependencies"<<std::endl;
+
+  using seq_ompdep_pol = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;
+  RAJA::forall<seq_ompdep_pol>(is0, [=](int i){printf("body(%d)\n",i);});
+  std::cout<<"finished forall with RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_for_dependence_graph>;"<<std::endl;
+*/
+
+
+  //TO DO:
+  //figure out which forall this is going through and how to use the dependence graph there
+  //put in the implementaiton without atomics
+  //try to put in the atomics back
 
 
 

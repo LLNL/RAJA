@@ -79,59 +79,68 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT>
+//template <typename value_type>
+template <typename P> // P = Graph<value_type>
 class GraphBuilder //: public Graph
 {
-
 public:
 
-  RAJA_INLINE GraphBuilder(Graph<StorageT>& _g) : g(_g) {
-    num_vertices = g.getNumTasks();
-    starting_vertex = g.getStartingTask();
-    temp_adjacency.resize(num_vertices);
-    vertex_degree.resize(num_vertices);
-    vertex_degree_prefix_sum.resize(num_vertices);
-    std::fill(vertex_degree.begin(),vertex_degree.end(),0);
+  using value_type = typename P::value_type;
+
+  RAJA_INLINE GraphBuilder(Graph<P>& _g) : g(_g) {
+    m_size = g.getNumTasks();
+    m_starting_vertex = g.getStartingTask();
+    m_temp_adjacency.resize(m_size);
+    m_vertex_degree.resize(m_size);
+    m_vertex_degree_prefix_sum.resize(m_size);
+    m_dependencies.resize(m_size);
+    std::fill(m_vertex_degree.begin(),m_vertex_degree.end(),0);
+    std::fill(m_dependencies.begin(),m_dependencies.end(),0);
   }
 
   //! Copy-constructor for GraphBuilder ??
   //! Copy-assignment operator for GraphBuilder ??
 
-  //! Destroy GraphBuilder - set up the actual dependence Graph
+  //! Destructor
   RAJA_INLINE ~GraphBuilder() {
-    //}
+  }
 
-    // If the destructor is not the place to finalize the graph, can have a separate method
-    //RAJA_INLINE
-    //void finalizeGraph() {
+  ///
+  /// Create the CSR format graph
+  ///
+  void createDependenceGraph() {
 
-    std::partial_sum(vertex_degree.begin(),vertex_degree.end(),vertex_degree_prefix_sum.begin());
-    int adj_size = vertex_degree_prefix_sum[vertex_degree_prefix_sum.size()-1];
-    adjacency.resize(adj_size);
+    std::partial_sum(m_vertex_degree.begin(),m_vertex_degree.end(),m_vertex_degree_prefix_sum.begin());
+    int adj_size = m_vertex_degree_prefix_sum[m_vertex_degree_prefix_sum.size()-1];
+    m_adjacency.resize(adj_size);
 
-    for (int i=0; i<num_vertices; i++) {
+    for (int i=0; i<m_size; i++) {
       int start = 0;
-      if (i>0) { start = vertex_degree_prefix_sum[i-1]; }
-      std::copy(temp_adjacency[i].begin(), temp_adjacency[i].end(),
-                &(adjacency[start]));
+      if (i>0) { start = m_vertex_degree_prefix_sum[i-1]; }
+      std::copy(m_temp_adjacency[i].begin(), m_temp_adjacency[i].end(),
+                &(m_adjacency[start]));
     }
 
-    g.set_vertex_degree(vertex_degree);
-    g.set_vertex_degree_prefix_sum(vertex_degree_prefix_sum);
-    g.set_adjacency(adjacency);
-    g.resetSemaphores();
+    g.set_vertex_degree(m_vertex_degree);
+    g.set_vertex_degree_prefix_sum(m_vertex_degree_prefix_sum);
+    g.set_dependencies(m_dependencies);
+    g.set_adjacency(m_adjacency);
   }
 
 
   ///
   /// Add a vertex and its dependents to the graph
   ///
-  void addVertex(StorageT v, std::vector<StorageT>& deps) {
+  void addVertex(value_type v, std::vector<value_type>& deps) {
     //put the dependencies into a map; will streamline on graphFinalize
     int num_deps = deps.size();
-    vertex_degree[v-starting_vertex] = num_deps;
-    temp_adjacency[v-starting_vertex].resize(num_deps);
-    std::copy(deps.begin(),deps.end(),temp_adjacency[v-starting_vertex].begin());
+    m_vertex_degree[v-m_starting_vertex] = num_deps;
+    m_temp_adjacency[v-m_starting_vertex].resize(num_deps);
+    std::copy(deps.begin(),deps.end(),m_temp_adjacency[v-m_starting_vertex].begin());
+
+    for (typename std::vector<value_type>::iterator it = deps.begin(); it != deps.end(); ++it) {
+      m_dependencies[*it-m_starting_vertex]++;
+    }
   }
 
 
@@ -141,24 +150,25 @@ protected:
 private:
 
   //! number of vertices in the graph and the starting vertex id
-  StorageT num_vertices;
-  StorageT starting_vertex;
+  value_type m_size;
+  value_type m_starting_vertex;
 
-  /// The graph is stored in CSR format, which stores vertex_degree and corresponding adjacency list
+  /// The graph is stored in CSR format, which stores m_vertex_degree and corresponding m_adjacency list
 
-  //! vector vertex_degree - degree for each vertex (one per vertex)
-  RAJA::RAJAVec<StorageT> vertex_degree;
-  RAJA::RAJAVec<StorageT> vertex_degree_prefix_sum;
+  //! vector m_vertex_degree - degree for each vertex (one per vertex)
+  RAJA::RAJAVec<value_type> m_vertex_degree;
+  RAJA::RAJAVec<value_type> m_vertex_degree_prefix_sum;
+  RAJA::RAJAVec<value_type> m_dependencies;
 
-  //! vector adjacency - edges for each vertex v, starting at vertex_degree_prefix_sum[v-1] (one per edge)
-  RAJA::RAJAVec<StorageT> adjacency;
+  //! vector m_adjacency - edges for each vertex v, starting at m_vertex_degree_prefix_sum[v-1] (one per edge)
+  RAJA::RAJAVec<value_type> m_adjacency;
 
   //! When building the graph, use a map of adjacent edges per vertex
   // - rewrite in CSR format when GraphBuilder is destroyed
-  std::vector<std::vector<StorageT> > temp_adjacency;
+  std::vector<std::vector<value_type> > m_temp_adjacency;
 
   //! the graph we are building
-  Graph<StorageT>& g;
+  Graph<P>& g;
 
 };//end GraphBuilder
 

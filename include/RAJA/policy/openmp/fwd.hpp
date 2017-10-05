@@ -94,6 +94,18 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&, Iterable&&, Func&&);
 template <typename Iterable, typename IndexType, typename Func>
 RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
 forall_Icount(const omp_for_nowait_exec&, Iterable&&, IndexType, Func&&);
+
+///
+/// OpenMP for dependence graph policy implementation
+///
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall(const omp_for_dependence_graph&, Iterable&&, Func&&);
+
+template <typename Iterable, typename IndexType, typename Func>
+RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
+forall_Icount(const omp_for_dependence_graph&, Iterable&&, IndexType, Func&&);
+
 ///
 /// OpenMP parallel for policy implementation
 ///
