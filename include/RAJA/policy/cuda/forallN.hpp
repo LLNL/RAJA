@@ -211,16 +211,23 @@ struct ForallN_Executor<device,
 
   template <typename BODY, typename... CARGS>
   RAJA_INLINE void callLauncher(CudaDim const &dims,
-                                BODY body,
+                                BODY loop_body,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body,
-                                                                   cargs...);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      bool Async = true;
+      cudaStream_t stream = 0;
+
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+                                 std::move(loop_body)),
+          cargs...);
+      RAJA::cuda::peekAtLastError();
+
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
+    }
   }
 };
 
@@ -234,17 +241,25 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   }
 
   template <typename BODY>
-  RAJA_INLINE void operator()(BODY body) const
+  RAJA_INLINE void operator()(BODY loop_body) const
   {
     CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body, c0);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      bool Async = true;
+      cudaStream_t stream = 0;
+
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+                                 std::move(loop_body)),
+          c0);
+      RAJA::cuda::peekAtLastError();
+
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
+    }
   }
 };
 

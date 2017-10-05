@@ -1,3 +1,18 @@
+/*!
+******************************************************************************
+*
+* \file
+*
+* \brief   Header file containing RAJA headers for sequential execution.
+*
+*          These methods work on all platforms.
+*
+******************************************************************************
+*/
+
+#ifndef RAJA_loop_HPP
+#define RAJA_loop_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,59 +55,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Forward declarations for impl::forall overloads
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_policy_fwd_HPP
-#define RAJA_policy_fwd_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda/fwd.hpp"
-#endif
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/fwd.hpp"
-#endif
-#include "RAJA/policy/sequential/fwd.hpp"
-#include "RAJA/policy/simd/fwd.hpp"
-
-namespace RAJA
-{
-template <typename Selector, typename... Policies>
-class MultiPolicy;
-
-namespace impl
-{
-
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&,
-                        Body &&);
-}  // end namespace impl
-
-namespace wrap
-{
-
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
-                        Iterable &&,
-                        Body &&);
-}
-
-}  // end namespace RAJA
+#include "RAJA/policy/loop/atomic.hpp"
+#include "RAJA/policy/loop/forall.hpp"
+#include "RAJA/policy/loop/policy.hpp"
+#include "RAJA/policy/loop/scan.hpp"
 
 #endif  // closing endif for header file include guard

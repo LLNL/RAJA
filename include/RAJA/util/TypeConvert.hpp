@@ -1,3 +1,20 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for reinterpreting type conversions.
+ *
+ *          These conversions are needed to pass N-bit floating point values
+ *          as integral types for certain API's that have limited type support.
+ *          These conversions are used heavily by the atomic operators.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_util_TypeConvert_HPP
+#define RAJA_util_TypeConvert_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,63 +57,39 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_simd_HXX
-#define RAJA_forward_simd_HXX
-
-#include <type_traits>
-
 #include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
 
-#include "RAJA/policy/simd/policy.hpp"
 
 namespace RAJA
 {
-
-namespace impl
+namespace util
 {
 
-// SIMD forall(ListSegment)
-template <typename LSegment, typename Func>
+
+/*!
+ * Reinterpret any datatype as another datatype of the same size
+ */
+template<typename A, typename B>
 RAJA_INLINE
-    typename std::enable_if<std::is_base_of<ListSegment, LSegment>::value>::type
-    forall(const simd_exec &, LSegment &&, Func &&);
+RAJA_HOST_DEVICE
+constexpr
+B reinterp_A_as_B(A const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
+}
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename Func>
-RAJA_INLINE typename std::enable_if<!std::is_base_of<ListSegment,
-                                                     Iterable>::value>::type
-forall(const simd_exec &, Iterable &&, Func &&);
+template<typename A, typename B>
+RAJA_INLINE
+RAJA_HOST_DEVICE
+constexpr
+B reinterp_A_as_B(A volatile const &val){
+  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+  return reinterpret_cast<B const volatile &>(val);
+}
 
-// SIMD forall(ListSegment)
-template <typename LSegment, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && std::is_base_of<ListSegment,
-                                                       LSegment>::value>::type
-forall_Icount(const simd_exec &, LSegment &&, IndexType, Func &&);
 
-// SIMD forall(Iterable)
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value
-                                    && !std::is_base_of<ListSegment,
-                                                        Iterable>::value>::type
-forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
-
-}  // closing brace for impl namespace
-
+}  // closing brace for util namespace
 }  // closing brace for RAJA namespace
 
 #endif  // closing endif for header file include guard

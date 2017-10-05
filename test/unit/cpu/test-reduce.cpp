@@ -1,4 +1,3 @@
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -65,199 +64,199 @@ using namespace RAJA;
 
 
 using TestingTypes = ::testing::
-    Types<std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>,
-          std::tuple<ExecPolicy<seq_segit, simd_exec>, seq_reduce>
+    Types<
+  std::tuple<ExecPolicy<seq_segit, seq_exec>, seq_reduce>, 
+  std::tuple<ExecPolicy<seq_segit, loop_exec>, loop_reduce> 
 #ifdef RAJA_ENABLE_OPENMP
-          ,
-          std::tuple<ExecPolicy<seq_segit, omp_parallel_for_exec>, omp_reduce>,
-          std::tuple<ExecPolicy<omp_parallel_for_segit, seq_exec>, omp_reduce>,
-          std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>, omp_reduce>,
-          std::tuple<ExecPolicy<seq_segit, omp_parallel_for_exec>,
-                     omp_reduce_ordered>,
-          std::tuple<ExecPolicy<omp_parallel_for_segit, seq_exec>,
-                     omp_reduce_ordered>,
-          std::tuple<ExecPolicy<omp_parallel_for_segit, simd_exec>,
-                     omp_reduce_ordered>
+  
+  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>, omp_reduce>
+  ,std::tuple<ExecPolicy<omp_parallel_for_segit, loop_exec>,omp_reduce_ordered>              
 #endif
-          >;
+#ifdef RAJA_ENABLE_TBB
+          ,std::tuple<ExecPolicy<seq_segit, tbb_for_exec>, tbb_reduce>
+           ,std::tuple<ExecPolicy<tbb_for_exec, loop_exec>, tbb_reduce>
+#endif
+        >;
 
 template <typename Tuple>
-class IndexSetReduceTest : public ::testing::Test
+class IndexSetReduce : public ::testing::Test
 {
 public:
   IndexSet iset;
   Index_type alen;
   RAJAVec<Index_type> is_indices;
   Real_ptr in_array;
+  Real_ptr test_array;
 
   virtual void SetUp()
   {
     alen = buildIndexSet(&iset, static_cast<IndexSetBuildMethod>(0)) + 1;
     in_array = (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
+    test_array =
+        (Real_ptr)allocate_aligned(DATA_ALIGN, alen * sizeof(Real_type));
     for (Index_type i = 0; i < alen; ++i) {
       in_array[i] = Real_type(rand() % 65536);
     }
     getIndices(is_indices, iset);
   }
 
-  virtual void TearDown() { free_aligned(in_array); }
+  virtual void TearDown()
+  {
+    free_aligned(in_array);
+    free_aligned(test_array);
+  }
 };
 
-TYPED_TEST_CASE_P(IndexSetReduceTest);
+TYPED_TEST_CASE(IndexSetReduce, TestingTypes);
 
-TYPED_TEST_P(IndexSetReduceTest, ReduceMinTest)
+TYPED_TEST(IndexSetReduce, ReduceMinTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
 
-  Real_ptr test_array =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, this->alen * sizeof(Real_type));
-
   for (Index_type i = 0; i < this->alen; ++i) {
-    test_array[i] = fabs(this->in_array[i]);
+    this->test_array[i] = fabs(this->in_array[i]);
   }
 
   const RAJA::Index_type ref_min_indx =
       this->is_indices[this->is_indices.size() / 2];
   const Real_type ref_min_val = -100.0;
 
-  test_array[ref_min_indx] = ref_min_val;
+  this->test_array[ref_min_indx] = ref_min_val;
 
   RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20);
   RAJA::ReduceMin<REDUCE_POLICY_T, Real_type> tmin1(-200.0);
+  tmin1.min(-100.0);
 
   int loops = 2;
 
   for (int k = 1; k <= loops; ++k) {
     RAJA::forall<ISET_POLICY_T>(this->iset, [=](RAJA::Index_type idx) {
-      tmin0.min(k * test_array[idx]);
-      tmin1.min(test_array[idx]);
+      tmin0.min(k * this->test_array[idx]);
+      tmin1.min(this->test_array[idx]);
     });
     ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
     ASSERT_EQ(tmin1.get(), Real_type(-200.0));
   }
-
-  free_aligned(test_array);
 }
 
 
-TYPED_TEST_P(IndexSetReduceTest, ReduceMinLocTest)
+TYPED_TEST(IndexSetReduce, ReduceMinLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
 
-  Real_ptr test_array =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, this->alen * sizeof(Real_type));
-
   for (Index_type i = 0; i < this->alen; ++i) {
-    test_array[i] = fabs(this->in_array[i]);
+    this->test_array[i] = fabs(this->in_array[i]);
   }
 
   const Index_type ref_min_indx =
       Index_type(this->is_indices[this->is_indices.size() / 2]);
   const Real_type ref_min_val = -100.0;
 
-  test_array[ref_min_indx] = ref_min_val;
+  this->test_array[ref_min_indx] = ref_min_val;
 
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin0(1.0e+20, -1);
   ReduceMinLoc<REDUCE_POLICY_T, Real_type> tmin1(-200.0, -1);
+  tmin1.minloc(-100.0, -1);
 
-  int loops = 2;
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+      this->iset, [=](Index_type idx) {
+        tmin0.minloc(1 * this->test_array[idx], idx);
+        tmin1.minloc(this->test_array[idx], idx);
+      });
 
-  for (int k = 1; k <= loops; ++k) {
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmin0), Real_type(1 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
 
-    forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
-        this->iset, [=](Index_type idx) {
-          tmin0.minloc(k * test_array[idx], idx);
-          tmin1.minloc(test_array[idx], idx);
-        });
+  forallN<NestedPolicy<ExecList<ISET_POLICY_T>>>(
+      this->iset, [=](Index_type idx) {
+        tmin0.minloc(2 * this->test_array[idx], idx);
+        tmin1.minloc(this->test_array[idx], idx);
+      });
 
-    ASSERT_EQ(Real_type(tmin0), Real_type(k * ref_min_val));
-    ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
-    ASSERT_EQ(tmin1.get(), Real_type(-200.0));
-    ASSERT_EQ(tmin1.getLoc(), -1);
-  }
-
-  free_aligned(test_array);
+  ASSERT_EQ(Real_type(tmin0), Real_type(2 * ref_min_val));
+  ASSERT_EQ(tmin1.get(), Real_type(-200.0));
+  ASSERT_EQ(tmin0.getLoc(), ref_min_indx);
+  ASSERT_EQ(tmin1.getLoc(), -1);
 }
 
-TYPED_TEST_P(IndexSetReduceTest, ReduceMaxTest)
+TYPED_TEST(IndexSetReduce, ReduceMaxTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
 
-  Real_ptr test_array =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, this->alen * sizeof(Real_type));
-
   for (Index_type i = 0; i < this->alen; ++i) {
-    test_array[i] = -fabs(this->in_array[i]);
+    this->test_array[i] = -fabs(this->in_array[i]);
   }
 
   const Index_type ref_max_indx =
       Index_type(this->is_indices[this->is_indices.size() / 2]);
   const Real_type ref_max_val = 100.0;
 
-  test_array[ref_max_indx] = ref_max_val;
+  this->test_array[ref_max_indx] = ref_max_val;
 
   ReduceMax<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20);
   ReduceMax<REDUCE_POLICY_T, Real_type> tmax1(200.0);
+  tmax1.max(100);
 
   int loops = 2;
 
   for (int k = 1; k <= loops; ++k) {
 
     forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
-      tmax0.max(k * test_array[idx]);
-      tmax1.max(test_array[idx]);
+      tmax0.max(k * this->test_array[idx]);
+      tmax1.max(this->test_array[idx]);
     });
 
     ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
     ASSERT_EQ(tmax1.get(), Real_type(200.0));
   }
-
-  free_aligned(test_array);
 }
 
-TYPED_TEST_P(IndexSetReduceTest, ReduceMaxLocTest)
+TYPED_TEST(IndexSetReduce, ReduceMaxLocTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
 
-  Real_ptr test_array =
-      (Real_ptr)allocate_aligned(DATA_ALIGN, this->alen * sizeof(Real_type));
-
   for (Index_type i = 0; i < this->alen; ++i) {
-    test_array[i] = -fabs(this->in_array[i]);
+    this->test_array[i] = -fabs(this->in_array[i]);
   }
 
   const Index_type ref_max_indx =
       Index_type(this->is_indices[this->is_indices.size() / 2]);
   const Real_type ref_max_val = 100.0;
 
-  test_array[ref_max_indx] = ref_max_val;
+  this->test_array[ref_max_indx] = ref_max_val;
 
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax0(-1.0e+20, -1);
   ReduceMaxLoc<REDUCE_POLICY_T, Real_type> tmax1(200.0, -1);
+  tmax1.maxloc(100.0, -1);
 
-  int loops = 2;
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(1 * this->test_array[idx], idx);
+    tmax1.maxloc(this->test_array[idx], idx);
+  });
 
-  for (int k = 1; k <= loops; ++k) {
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
+  ASSERT_EQ(Real_type(tmax0), Real_type(1 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
 
-    forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
-      tmax0.maxloc(k * test_array[idx], idx);
-      tmax1.maxloc(test_array[idx], idx);
-    });
+  forall<ISET_POLICY_T>(this->iset, [=](Index_type idx) {
+    tmax0.maxloc(2 * this->test_array[idx], idx);
+    tmax1.maxloc(this->test_array[idx], idx);
+  });
 
-    ASSERT_EQ(Real_type(tmax0), Real_type(k * ref_max_val));
-    ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
-    ASSERT_EQ(tmax1.get(), Real_type(200.0));
-    ASSERT_EQ(tmax1.getLoc(), -1);
-  }
-
-  free_aligned(test_array);
+  ASSERT_EQ(Real_type(tmax0), Real_type(2 * ref_max_val));
+  ASSERT_EQ(tmax1.get(), Real_type(200.0));
+  ASSERT_EQ(tmax0.getLoc(), ref_max_indx);
+  ASSERT_EQ(tmax1.getLoc(), -1);
 }
 
-TYPED_TEST_P(IndexSetReduceTest, ReduceSumTest)
+TYPED_TEST(IndexSetReduce, ReduceSumTest)
 {
   using ISET_POLICY_T = typename std::tuple_element<0, TypeParam>::type;
   using REDUCE_POLICY_T = typename std::tuple_element<1, TypeParam>::type;
@@ -270,6 +269,7 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceSumTest)
 
   ReduceSum<REDUCE_POLICY_T, Real_type> tsum0(0.0);
   ReduceSum<REDUCE_POLICY_T, Real_type> tsum1(5.0);
+  tsum1 += 0.0;
 
   int loops = 2;
 
@@ -281,16 +281,6 @@ TYPED_TEST_P(IndexSetReduceTest, ReduceSumTest)
     });
 
     ASSERT_FLOAT_EQ(Real_type(tsum0), Real_type(k * ref_sum));
-    ASSERT_FLOAT_EQ(tsum1.get(),
-                    Real_type(k * this->iset.getLength() + 5.0));
+    ASSERT_FLOAT_EQ(tsum1.get(), Real_type(k * this->iset.getLength() + 5.0));
   }
 }
-
-REGISTER_TYPED_TEST_CASE_P(IndexSetReduceTest,
-                           ReduceMinTest,
-                           ReduceMinLocTest,
-                           ReduceMaxTest,
-                           ReduceMaxLocTest,
-                           ReduceSumTest);
-
-INSTANTIATE_TYPED_TEST_CASE_P(IndexSetReduce, IndexSetReduceTest, TestingTypes);

@@ -88,18 +88,18 @@ struct Span {
                 "ValueType must model RandomAccessIterator");
 
   iterator begin() { return _data; }
-  iterator end() { return std::advance(_data, _length); }
+  iterator end() { return _data + _length; }
   const_iterator begin() const { return _data; }
-  const_iterator end() const { return std::advance(_data, _length); }
+  const_iterator end() const { return _data + _length; }
   const_iterator cbegin() const { return _data; }
-  const_iterator cend() const { return std::advance(_data, _length); }
+  const_iterator cend() const { return _data + _length; }
 
   ValueType data() const { return _data; }
   IndexType size() const { return _length; }
   IndexType max_size() const { return _length; }
   bool empty() const { return _length == 0; }
 
-  ValueType _data;
+  iterator _data;
   IndexType _length;
 };
 

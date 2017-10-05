@@ -57,6 +57,10 @@
 
 namespace RAJA
 {
+namespace policy
+{
+namespace sequential
+{
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -93,6 +97,12 @@ struct seq_reduce : make_policy_pattern_launch_platform_t<Policy::sequential,
                                                           Launch::undefined,
                                                           Platform::host> {
 };
+} // end namespace policy
+} // end namespace sequential
+
+using policy::sequential::seq_exec;
+using policy::sequential::seq_segit;
+using policy::sequential::seq_reduce;
 
 }  // closing brace for RAJA namespace
 

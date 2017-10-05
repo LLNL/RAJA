@@ -61,11 +61,15 @@ const int N = 32000;
 
 // Unit Test Space Exploration
 
+using ExecTypes = std::tuple<
+    RAJA::seq_exec
 #ifdef RAJA_ENABLE_OPENMP
-using ExecTypes = std::tuple<RAJA::seq_exec, RAJA::omp_parallel_for_exec>;
-#else
-using ExecTypes = std::tuple<RAJA::seq_exec>;
+    ,RAJA::omp_parallel_for_exec
 #endif
+#ifdef RAJA_ENABLE_TBB
+    ,RAJA::tbb_for_exec
+#endif
+>;
 
 using ReduceTypes = std::tuple<RAJA::operators::plus<int>,
                                RAJA::operators::plus<double>,
@@ -108,7 +112,7 @@ TYPED_TEST_CASE_P(Scan);
 template <typename Function, typename T>
 ::testing::AssertionResult check_inclusive(const T* actual, const T* original)
 {
-  T init = Function::identity;
+  T init = Function::identity();
   for (int i = 0; i < N; ++i) {
     init = Function()(init, *original);
     if (*actual != init)
@@ -123,7 +127,7 @@ template <typename Function, typename T>
 template <typename Function, typename T>
 ::testing::AssertionResult check_exclusive(const T* actual,
                                            const T* original,
-                                           T init = Function::identity)
+                                           T init = Function::identity())
 {
   for (int i = 0; i < N; ++i) {
     if (*actual != init)

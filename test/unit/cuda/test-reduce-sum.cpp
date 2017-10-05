@@ -153,7 +153,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   double* dvalue = ReduceSumCUDA::dvalue;
   int* ivalue = ReduceSumCUDA::ivalue;
 
-    RangeSegment seg0(0, TEST_VEC_LEN / 2);
+  RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
   IndexSet iset;
@@ -267,5 +267,25 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
 
     ASSERT_FLOAT_EQ(dsumN.get(), neg_chk_val);
     ASSERT_FLOAT_EQ(dsumP.get(), pos_chk_val);
+  }
+}
+
+CUDA_TEST_F(ReduceSumCUDA, increasing_size)
+{
+  double* dvalue = ReduceSumCUDA::dvalue;
+
+  double dtinit = 5.0;
+
+  for (int size = block_size; size <= TEST_VEC_LEN; size+=block_size ) {
+
+    ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
+
+    forall<cuda_exec<block_size, true> >(0, size, [=] __device__(int i) {
+      dsum0 += dvalue[i];
+    });
+
+    double base_chk_val = dinit_val * double(size);
+
+    ASSERT_FLOAT_EQ(base_chk_val + dtinit, dsum0.get());
   }
 }

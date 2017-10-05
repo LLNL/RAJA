@@ -14,12 +14,34 @@
 ========
 Tutorial
 ========
+At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction of
+in place functions. A lambda has the ability to ``capture" variables from a local context and use within the
+body of a loop. A lambda expression takes the following form
 
-This is an overview of the examples included in RAJA. In particular
-we highlight RAJA features which simplify scientific computing.
-The objective in this tutorial is illustrate basic usage 
-As a starting point we review key RAJA concepts starting with the
-``RAJA::forall`` and ``RAJA::forallN`` loops.
+.. code-block:: cpp
+
+   [capture list] (parameter list) {function body}
+
+The capture list corresponds to variables within the scope and paramter list correponds to values which will be used within the
+lambda. By default, a lambda captures by copy any variables within a block of code. We can specify variables to capture by reference by using the & symbol. The code block
+
+.. code-block:: cpp
+
+   int x;
+   int y = 100;
+   int istart = 0, iend = 10;
+   [&x, &y](){x=y;]
+
+will assign the value of y to x. Specifying capture type of ``[=]`` or ``[&]`` with capure all variables by copy or reference respectively. 
+
+1. [=] capture all variables within the block scope by copy
+2. [&] capture all variables within the block scopy by reference
+
+
+Building from the C++ lambda, RAJA introduces two types of templated loops, namely
+the ``RAJA::forall`` and ``RAJA::forallN`` loops. The ``RAJA::forall`` methods is an abstraction
+of the standard C++ loop. The method is templated on an execution policies and takes an iteration space
+and a lambda which encapsulates the loop body. 
 
 .. code-block:: cpp
                 
@@ -27,7 +49,9 @@ As a starting point we review key RAJA concepts starting with the
     //body
   });
 
-
+Similarly, the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
+templated on up to N execution policies and takes in an iteration space and index for each execution policy.
+  
 .. code-block:: cpp
                 
   RAJA::forallN<
@@ -36,149 +60,98 @@ As a starting point we review key RAJA concepts starting with the
          //body
   });
   
+A RAJA templated loop requires the developer to supply the following
 
-1. [=] By-copy capture
-2. [&] By-reference capture (for non-unified memory targets)
-3. exec_policy - Specifies how the traversal occurs
-4. iter_space  - Iteration space for RAJA loop (any random access container is expected)
+1. Capture type [=] or [&]
+3. exec_policy - Specifying how the traversal occurs
+4. iter_space  - An iteration space for the RAJA loop (any random access container is expected)
 5. index_type  - Index for RAJA loops
-  
+
+The remainder of the tutorial demonstrates the utility of RAJA by drawing from commonly used
+computing patterns.
 
 ---------------
 Vector Addition
 ---------------
-In this example, two arrays A, and B, of length N are added together.
-The result is stored in a third array C. As a starting point we begin
-with a classic C++ style for loop and illustrate how to create a RAJA analog. 
 
-.. code-block:: cpp
-                
-  for (int i = 0; i < N; ++i) {
-    C[i] = A[i] + B[i];
-  }
+Our starting point is vector addition. In this example, two vectors A, and B, of length N are added together
+and the result is stored in a third vector, C. The C++ version of this loop takes the following form
 
-The RAJA analog is simply the following
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 119-121
 
-.. code-block:: cpp
-                
-  RAJA::forall<RAJA::exec_policy>(0, N, [=] (int i) {
-    C[i] = A[i] + b[i];
-  });
+Unfortunatly this loop won't take advantage of the many cores of a modern day processor but fortunately
+we can create a RAJA analog quite easily. A RAJA loop begins by first specifying an excution policy
+(more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
+an iteration space composed of a contiguous sequence of numbers by using the ``RAJA::RangeSegment``. 
 
-where RAJA::exec_policy may be any policy listed in the refence guide.  
-  
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 132-137
+
+By swapping out execution policies we can target different backends with the caveat that the developer must
+handle all memory management (for more info see :ref:`ref-plugins`). Furthermore off loading to a device requires
+the ``__device__`` decorator on the lambda. 
+
+.. literalinclude:: ../../examples/example-add-vectors.cpp
+                    :lines: 163-168
+
+Lastly, invoking the CUDA execution policy requires the number of threads in a given block.
+A full working version ``example-add-vectors.cpp`` may be found in the example folder.
+
 ---------------------
 Matrix Multiplication
 ---------------------
-In this example we multiply two matrices, A, and B, of dimension N X N
-and store the result in a third marix C. To simplify indexing we make use
-of ``RAJA::Views``. A ``RAJA::View`` wraps a pointer to simplify
-multi-dimensional indexing. The basic usage is as follows
+As an example of nesting for loops we consider matrix multiplication.
+Here we multiply two N x N matrices, A, and B. The result is then stored in C. 
+Assuming that have pointers to the data
 
-.. code-block:: cpp
-                
-  double* A = new double[N*N];
-  double* B = new double[N*N];
-  double* C = new double[N*N];
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 146-148
 
-  RAJA::View<double, RAJA::Layout<2>> Aview(A, N, N);
-  RAJA::View<double, RAJA::Layout<2>> Bview(B, N, N);
-  RAJA::View<double, RAJA::Layout<2>> Cview(C, N, N);
+and with the aid of some macros
 
-Where the arguments in ``RAJA::View`` denotes the type and layout of the data.
-The argument in ``RAJA::Layout`` specifies the dimension of the data. In our case
-we wish to treat the data as if it were two dimensional.
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 132-134
 
-  
+a C++ version of matrix multiplcation takes the form of 
 
-We begin with a native C++ version
-of matrix multiplication 
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 161-171
 
-.. code-block:: cpp
-                
-  for (int row = 0; row < N; ++row) {
-    for (int col = 0; col < N; ++col) {
+With minimal effort we can start introducing RAJA into the algorithm.
+First we can relive the need of macros by making use of ``RAJA::View``, which
+simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
+                           
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 180-182
 
-     double dot = 0.0;
-      for (int k = 0; k < N; ++k){
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      
-      Cview(row, col) = dot;    
-    }
-  }
+Second we can convert the outermost loop into a ``RAJA::forall`` loop
 
-With minimal disruption we can convert the outermost loop into a ``RAJA::forall`` loop.
-Furthermore we will make use of the ``RAJA::RangeSegment`` enabling us to predifined loop bounds
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 192-205
 
-.. code-block:: cpp
-                
- RAJA::RangeSegment matBounds(0, N);
-
-The resulting RAJA variant is as follows
- 
-.. code-block:: cpp
-                
-  RAJA::forall<exec_policy>(
-    matBounds, [=](int row) {
-  
-      for (int col = 0; col < N; ++col) {
-
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
-
-        Cview(row, col) = dot;
-        }
-  });
-
+resulting in code that can be paired with different execution policies.
 In the case the user will not offload to a device ``RAJA::forall`` loops
 may be nested.
 
-.. code-block:: cpp
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 212-226  
 
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](int row) {  
-      
-    RAJA::forall<RAJA::seq_exec>(
-      matBounds, [=](int col) {
-          
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {
-        dot += Aview(row, k) * Bview(k, col);
-      }
-                
-      Cview(row, col) = dot;
-      });
-  });
-  
+As a generalization of nested loops, RAJA introduces the ``RAJA::forallN`` loop
+which collapses a finite number of nested loops. Basic usage of ``RAJA::forallN``
+requires an execution list ``RAJA::ExecList<>`` for the
+``RAJA::NestedPolicy<>`` (for more info see :ref:`ref-nested`) . Each execution policy encapsulates how each loop should be
+traversed. In the following example we pair the outerloop with an OpenMP policy and the inner loop with a sequential policy. 
 
-As general purpose nested loop, RAJA introduces the ``RAJA::forallN`` loop
-which collapses a finite number of nested loops. This variant of the nested
-loop may be used with any execution policy. Basic usage of the ``RAJA::forallN``
-loop requires a ``RAJA::NestedPolicy<>`` and a ``RAJA::ExecList<>``,
-which encapsulate how each loop of the should be traversed. 
+.. literalinclude:: ../../examples/example-matrix-multiply.cpp
+                    :lines: 254-264
 
-.. code-block:: cpp
-
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::exec_policy, exec_policy>>>(
-       matBounds, matBounds, [=](int row, int col) {
-      
-      double dot = 0.0;
-      for (int k = 0; k < N; ++k) {        
-        dot += Aview(row, k) * Bview(k, col);
-      }
-      
-      Cview(row, col) = dot;
-  });
-
-
+A full working version ``example-matrix-multiply.cpp`` may be found in the example folder.
+                            
 -------------
 Jacobi Method
 -------------
-In this example we solve the following boundary value equation
+Branching out to scientific computing we consider solving the following boundary value problem
 
 .. math::
    
@@ -228,91 +201,15 @@ where
 As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and (i,j)
 corresponds to a location on the grid. 
    
----------------
-Custom Indexset
----------------
-This example illustrates how to construct a custom 
-iteration space composed of segments. Here a segment
-is an arbitrary collection of indices. In this example we wish
-to create an iteration space composed of four segments coressponding
-to the following grid
-
-.. image:: figures/index_set_fig.png
-   :scale: 40 %
-   :align: center
-
-Each segment will store incices corespoding to colors on the grid.
-For example the first segment will store the indeces denoted by blue,
-the second segment will store indeces denotes by red etc... 
-
-In order to accomplish this we first create an instance of a
-``RAJA::StaticIndexSet``
-
-.. code-block:: cpp
-                
-   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
-
-In this example the StaticIndexSet is templated to hold TypedListSegments.
-
-.. code-block:: cpp
-
-  /*
-    Buffer used for intermediate indices storage
-  */
-  auto *idx = new RAJA::Index_type[(n + 1) * (n + 1) / 4];
-
-  /*
-    Iterate over each dimension (DIM=2) for this example
-  */
-
-  for ( int xdim : {0,1}) {
-    for ( int ydim : {0,1}) {
-    
-     RAJA::Index_type count = 0;
-
-     
-     /*
-       Iterate over each dimension, incrementing by two to safely
-       advance over neighbors
-    */
-
-    for (int xiter = xdim; xiter < n; xiter += 2) {
-      for (int yiter = ydim; yiter < n; yiter += 2) {
-
-      /*
-        Add the computed index to the buffer
-      */
-      idx[count] = std::distance(std::addressof(Aview(0, 0)),
-                                 std::addressof(Aview(xiter, yiter)));
-
-      ++cout;
-      }
-    }
-
-    /*
-      RAJA::ListSegment - creates a list segment from a given array
-      with a specific length.
-
-      Here the indices are inserted from the buffer as a new ListSegment
-    */
-    colorset.push_back(RAJA::ListSegment(idx, count));
-   }
-  }
-
-  delete[] idx;
-
-Finally we have a custom colorset policy. With this policy we may have a ``RAJA::forall`` loop
-transverse through each list segment stored in the colorset sequentially and transverse each
-segment in parallel (if enabled). The policy may be defined as
-
-.. code-block:: cpp
-                
-  using ColorPolicy = RAJA::ExecPolicy<RAJA::seq_segit, RAJA::omp_parallel_for_exec>;
-  
-
-
-
----------------
+------------
 Gauss-Seidel
----------------
-In this example we revisit the equation solved by the Jacobi method consider the Gauss-Seidel scheme. Furthermore we build on the previous colorset example and 
+------------
+In this example we revisit the equation solved by boundary value problem previously solved by the Jacobi method
+and use a Red-Black Gauss-Seidel scheme. Traditionally, Gauss-Seidel scheme is inherently a serial algorithm but by
+exploiting the structure of the problem we can color the domain in such a way to expose parallism. 
+
+
+
+.. image:: figures/gsboard.png
+   :scale: 10 %
+   :align: center

@@ -49,6 +49,7 @@
 #include "RAJA/util/Timer.hpp"
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include <chrono>
@@ -57,22 +58,25 @@
 
 TEST(TimerTest, No1)
 {
-  RAJA::Timer timer;
+  auto timer = RAJA::Timer();
 
   timer.start("test_timer");
 
-  std::cout << "Printing 1000 stars...\n";
-  for (int i = 0; i < 1000; ++i)
-    std::cout << "*";
-  std::cout << std::endl;
+  {
+      std::stringstream sink;
+      sink << "Printing 1000 stars...\n";
+      for (int i = 0; i < 1000; ++i)
+          sink << "*";
+      sink << std::endl;
+  }
 
   timer.stop();
 
   RAJA::Timer::ElapsedType elapsed = timer.elapsed();
 
-  EXPECT_TRUE(elapsed > 0.0);
+  EXPECT_GT(elapsed, 0.0);
 
-  std::cout << "Printing 1000 stars took " << elapsed << " seconds.";
+  // std::cout << "Printing 1000 stars took " << elapsed << " seconds.";
 }
 
 
@@ -84,15 +88,14 @@ TEST(TimerTest, No2)
 
   for (int i = 2; i > 0; --i) {
     std::cout << i << std::endl;
-    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
   }
 
   timer.stop();
 
   RAJA::Timer::ElapsedType elapsed = timer.elapsed();
 
-  EXPECT_TRUE(elapsed > 2.0);
+  EXPECT_GT(elapsed, 0.02);
+  EXPECT_LT(elapsed, 0.05);
 
-  std::cout << "I slept for " << elapsed << " seconds. Refreshing!";
-  std::cout << std::endl;
 }

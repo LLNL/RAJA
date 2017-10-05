@@ -44,7 +44,7 @@ if (RAJA_ENABLE_OPENMP)
   find_package(OpenMP)
   if(OPENMP_FOUND)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${OpenMP_CXX_FLAGS}")
-    list(APPEND RAJA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
+    list(APPEND RAJA_EXTRA_NVCC_FLAGS -Xcompiler ${OpenMP_CXX_FLAGS})
     message(STATUS "OpenMP Enabled")
   else()
     message(WARNING "OpenMP NOT FOUND")
@@ -54,17 +54,12 @@ endif()
 
 if (RAJA_ENABLE_CLANG_CUDA)
   set(RAJA_ENABLE_CUDA On)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 endif ()
 
 if (RAJA_ENABLE_CUDA)
-  find_package(CUDA)
-  if(CUDA_FOUND)
-    message(STATUS "CUDA Enabled")
-    set (CUDA_NVCC_FLAGS ${RAJA_NVCC_FLAGS})
-    set (CUDA_PROPAGATE_HOST_FLAGS OFF)
-    include_directories(${CUDA_INCLUDE_DIRS})
-  endif()
+  find_package(CUDA REQUIRED)
+  set (CUDA_PROPAGATE_HOST_FLAGS OFF)
+  include_directories(${CUDA_INCLUDE_DIRS})
 
   if (RAJA_ENABLE_CUB)
 
@@ -80,6 +75,17 @@ if (RAJA_ENABLE_CUDA)
   endif()
 endif()
 
+
+if (RAJA_ENABLE_TBB)
+  find_package(TBB)
+  if(TBB_FOUND)
+    include_directories(${TBB_INCLUDE_DIRS})
+    message(STATUS "TBB Enabled")
+  else()
+    message(WARNING "TBB NOT FOUND")
+    set(RAJA_ENABLE_TBB Off)
+  endif()
+endif ()
 
 if (RAJA_ENABLE_TESTS)
 
@@ -101,6 +107,7 @@ else()
       CMAKE_ARGS                
           -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
           -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+          -DCMAKE_CXX_COMPILER_ARG1=${CMAKE_CXX_COMPILER_ARG1}
       INSTALL_COMMAND ""
       LOG_DOWNLOAD ON
       LOG_CONFIGURE ON
