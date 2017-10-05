@@ -213,12 +213,12 @@ void buildLockFreeBlockIndexset(RAJA::IndexSet& iset,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(RAJA::IndexSet& iset,
-                                int const* domainToRange,
+                                Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,
                                 int numEntityRange,
-                                int* elemPermutation,
-                                int* ielemPermutation)
+                                Index_type* elemPermutation,
+                                Index_type* ielemPermutation)
 {
   bool done = false;
   bool* isMarked = new bool[numEntity];
