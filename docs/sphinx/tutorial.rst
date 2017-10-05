@@ -68,37 +68,35 @@ A RAJA templated loop requires the developer to supply the following
 5. index_type  - Index for RAJA loops
 
 The remainder of the tutorial demonstrates the utility of RAJA by drawing from commonly used
-computing patterns. 
+computing patterns.
+
 ---------------
 Vector Addition
 ---------------
-As a starting point we begin with simple vector addition. 
-In this example, two vectors A, and B, of length N are added together.
-The result is stored in a third array C. In standard C++ this may be carried out
-as 
+
+Our starting point is vector addition. In this example, two vectors A, and B, of length N are added together
+and the result is stored in a third vector, C. The C++ version of this loop takes the following form
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 119-121
-                            
-Of course the standard C++ loop won't take advatage of the cores of multi/many-core processors,
-but our RAJA analogue will! To construct the RAJA version we must first specify an execution policy
-(more info see :ref:`ref-policy`) and construct an iteration space. For this example we can generate
+
+Unfortunatly this loop won't take advantage of the many cores of a modern day processor but fortunately
+we can create a RAJA analog quite easily. A RAJA loop begins by first specifying an excution policy
+(more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
 an iteration space composed of a contiguous sequence of numbers by using the ``RAJA::RangeSegment``. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
 
-By swapping out execution policies we can target different backends with the caveat being backends which offload
-to devices. Here it is important that memory management is beyond the scope of RAJA (a seperate plug in is available
-see :ref:`ref-plugins`) furthemore off loading to a device requires the ``__device__`` decorator on the lambda. 
+By swapping out execution policies we can target different backends with the caveat that the developer must
+handle all memory management (for more info see :ref:`ref-plugins`). Furthermore off loading to a device requires
+the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 163-168
 
-As remark the CUDA exectution policy requires a number of threads per thread block.
-
-
-A full working version ``example-add-vectors.cpp`` may be found in the example folder. 
+Lastly, invoking the CUDA execution policy requires the number of threads in a given block.
+A full working version ``example-add-vectors.cpp`` may be found in the example folder.
 
 ---------------------
 Matrix Multiplication
