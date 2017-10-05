@@ -14,28 +14,16 @@
 ========
 Tutorial
 ========
-
-This is an overview of the examples included in RAJA. In particular
-we highlight RAJA features which simplify scientific computing.
-
-At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction
-in place functions. An underlying concept of lambda's is that variables maybe ``captured" from the local context
-and used in the body of the loop. A lambda expression consist is of the following form
+At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction of
+in place functions. A lambda has the ability to ``capture" variables from a local context and use within the
+body of a loop. A lambda expression takes the following form
 
 .. code-block:: cpp
 
    [capture list] (parameter list) {function body}
 
-
-Here the capture and parameter list may be empty and thus the following is a valid lambda
-
-.. code-block:: cpp
-
-  [](){std::cout<<"RAJA Rocks!"<<std::endl;};
-
-
-By default Lambda's capture by copy any variables within a block of code. Thus to modify values values the & symbol
-must be added to the capture list. For example
+The capture list corresponds to variables within the scope and paramter list correponds to values which will be used within the
+lambda. By default, a lambda captures by copy any variables within a block of code. We can specify variables to capture by reference by using the & symbol. The code block
 
 .. code-block:: cpp
 
@@ -44,18 +32,16 @@ must be added to the capture list. For example
    int istart = 0, iend = 10;
    [&x, &y](){x=y;]
 
-will assign the value of y to x. Furthermore there are shortcuts for setting the capture type
-
+will assign the value of y to x. Specifying capture type of ``[=]`` or ``[&]`` with capure all variables by copy or reference respectively. 
 
 1. [=] capture all variables within the block scope by copy
 2. [&] capture all variables within the block scopy by reference
 
 
-Building from the C++ lambda, RAJA introduces two main types of templated loops, namely
-the ``RAJA::forall`` and ``RAJA::forallN`` loops. Here RAJA decouples a body loop
-from its traversal. For example the ``RAJA::forall`` method is an abstracted version of the basic C++ loop.
-The method is templated on an execution policies and takes an iteration space and a lambda which encapsulates
-the loop body. 
+Building from the C++ lambda, RAJA introduces two types of templated loops, namely
+the ``RAJA::forall`` and ``RAJA::forallN`` loops. The ``RAJA::forall`` methods is an abstraction
+of the standard C++ loop. The method is templated on an execution policies and takes an iteration space
+and a lambda which encapsulates the loop body. 
 
 .. code-block:: cpp
                 
@@ -63,7 +49,7 @@ the loop body.
     //body
   });
 
-Similarly the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
+Similarly, the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
 templated on up to N execution policies and takes in an iteration space and index for each execution policy.
   
 .. code-block:: cpp
@@ -74,18 +60,15 @@ templated on up to N execution policies and takes in an iteration space and inde
          //body
   });
   
-In each of these loops the developer must specify the following
+A RAJA templated loop requires the developer to supply the following
 
-1. [=] By-copy capture
-2. [&] By-reference capture (for non-unified memory targets)
-3. exec_policy - Specifies how the traversal occurs
-4. iter_space  - Iteration space for RAJA loop (any random access container is expected)
+1. Capture type [=] or [&]
+3. exec_policy - Specifying how the traversal occurs
+4. iter_space  - An iteration space for the RAJA loop (any random access container is expected)
 5. index_type  - Index for RAJA loops
 
-For the remainder of the tutorial we demonstrate the utility of RAJA by illustrating how
-to create analogues of C++ style loops and highlighting features of RAJA which simplify
-scientific computing.
-
+The remainder of the tutorial demonstrates the utility of RAJA by drawing from commonly used
+computing patterns. 
 ---------------
 Vector Addition
 ---------------
