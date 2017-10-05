@@ -60,5 +60,3 @@ interested in improving RAJA and exploring new ways to use it.
    :caption: Contributing
 
    contributing
-   raja_license
-   future
