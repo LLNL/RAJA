@@ -6,17 +6,18 @@ Plugins
 =======
 
 RAJA provides parallel execution primitives without the need to subscribe to
-any other components such as data management, however, through a plugin
-mechanism we support additional components to provide additional functionality
+any other components such as data management. However, through a plugin
+mechanism we support optional components to provide additional functionality
 and to make writing applications easier.
 
 CHAI
 ----
 
-Currently we only have one third-party plugin integrated in RAJA, CHAI. CHAI is
-an array abstraction that uses RAJA's execution policies to inform data
-movement operations. The data can be accessed inside any RAJA kernel, and
-regardless of where that kernel executes, CHAI will make the data available.
+Currently we only have one third-party plugin integrated in RAJA, CHAI. `CHAI
+<https://github.com/LLNL/CHAI>`_ is an array abstraction that uses RAJA's
+execution policies to inform data movement operations. The data can be accessed
+inside any RAJA kernel, and regardless of where that kernel executes, CHAI will
+make the data available.
 
 To build RAJA with CHAI integration, first download and install CHAI. Please
 see the CHAI documentation for details. Once CHAI has been installed, RAJA can
@@ -27,7 +28,7 @@ be configured with two additional arguments:
     $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
 
 Once RAJA has been built with CHAI support, applications can use CHAI's
-ManangedArray class to transparently access data inside a RAJA kernel.
+``ManangedArray`` class to transparently access data inside a RAJA kernel.
 
 .. code-block:: cpp
 
