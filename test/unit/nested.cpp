@@ -1,4 +1,3 @@
-#include "RAJA/pattern/nested.hpp"
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
@@ -155,4 +154,21 @@ TEST(Nested, TileDynamic)
                             + (i * (length - tile_size) + j - tile_size));
         count++;
       });
+}
+
+
+
+CUDA_TEST(Nested, CudaCollapse)
+{
+  camp::idx_t length = 5;
+  RAJA::nested::forall(
+      camp::make_tuple(RAJA::nested::Collapse<
+                         RAJA::nested::cuda_collapse_exec,
+                         RAJA::nested::For<0, RAJA::cuda_exec<32>>,
+                         RAJA::nested::For<1, RAJA::cuda_exec<32>>>{}),
+      camp::make_tuple(RAJA::RangeSegment(0, length),
+                       RAJA::RangeSegment(0, length)),
+      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j) {
+          printf("(%d, %d)\n", i, j);
+       });
 }

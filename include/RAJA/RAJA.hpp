@@ -99,7 +99,7 @@
 #include "RAJA/index/IndexSet.hpp"
 
 //
-// Strongly typed index class.
+// Strongly typed index class
 //
 #include "RAJA/index/IndexValue.hpp"
 
@@ -113,7 +113,7 @@
 
 
 //
-// Multidimensional layouts and views.
+// Multidimensional layouts and views
 //
 #include "RAJA/util/Layout.hpp"
 #include "RAJA/util/OffsetLayout.hpp"
@@ -131,8 +131,13 @@
 // Generic iteration templates for perfectly nested loops
 //
 #include "RAJA/pattern/forallN.hpp"
+#include "RAJA/pattern/nested.hpp"
 
 
+
+//
+// Reduction objects
+//
 #include "RAJA/pattern/reduce.hpp"
 
 
