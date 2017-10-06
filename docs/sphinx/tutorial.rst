@@ -68,36 +68,34 @@ computing patterns.
 ---------------
 Vector Addition
 ---------------
-
-Our starting point is vector addition. In this example, two vectors A, and B, of length N are added together
+As a first example we consider vector addition. Here two vectors A, and B, of length N are added together
 and the result is stored in a third vector, C. The C++ version of this loop takes the following form
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 119-121
 
-Unfortunatly this loop won't take advantage of the many cores of a modern day processor but fortunately
-we can create a RAJA analog quite easily. A RAJA loop begins by first specifying an excution policy
-(more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
-an iteration space composed of a contiguous sequence of numbers by using the ``RAJA::RangeSegment``. 
+The construction of a RAJA analog begins by first specifying an expecution policy
+(for more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
+an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment``. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
 
 By swapping out execution policies we can target different backends with the caveat that the developer must
-handle all memory management (for more info see :ref:`ref-plugins`). Furthermore off loading to a device requires
+handle all memory management (for more info see :ref:`ref-plugins`). Furthermore using the cuda backend requires
 the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 163-168
 
-Lastly, invoking the CUDA execution policy requires the number of threads in a given block.
+Lastly, invoking the CUDA execution policy requires specifying threads per block. 
 A full working version ``example-add-vectors.cpp`` may be found in the example folder.
 
 ---------------------
 Matrix Multiplication
 ---------------------
-As an example of nesting for loops we consider matrix multiplication.
-Here we multiply two N x N matrices, A, and B. The result is then stored in C. 
+As a second example we consider matrix multiplication. Here two matrices, A, and B, of dimension
+N x N are multiplied and the result is stored in a third matrix, C. 
 Assuming that have pointers to the data
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
@@ -125,18 +123,16 @@ Second we can convert the outermost loop into a ``RAJA::forall`` loop
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 192-205
 
-resulting in code that can be paired with different execution policies.
-In the case the user will not offload to a device ``RAJA::forall`` loops
-may be nested.
+In the case that the code will not be off loaded to a device, ``RAJA::forall`` loops
+may be nested
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 212-226  
 
-As a generalization of nested loops, RAJA introduces the ``RAJA::forallN`` loop
-which collapses a finite number of nested loops. Basic usage of ``RAJA::forallN``
-requires an execution list ``RAJA::ExecList<>`` for the
-``RAJA::NestedPolicy<>`` (for more info see :ref:`ref-nested`) . Each execution policy encapsulates how each loop should be
-traversed. In the following example we pair the outerloop with an OpenMP policy and the inner loop with a sequential policy. 
+Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
+Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
+execution policy may be specified inside a ``RAJA::ExecList<>``. In the following example we pair the outer loop
+with an OpenMP policy and the inner loop with a sequential policy. 
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 254-264
