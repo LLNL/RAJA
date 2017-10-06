@@ -105,9 +105,10 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
 
-    impl::forall(fp.pol,
-                 camp::get<ForType::index_val>(wrap.data.st),
-                 ForWrapper<WrappedBody>{wrap});
+    using ::RAJA::policy::sequential::forall_impl;
+    forall_impl(fp.pol,
+                camp::get<ForType::index_val>(wrap.data.st),
+                ForWrapper<WrappedBody>{wrap});
   }
 };
 
