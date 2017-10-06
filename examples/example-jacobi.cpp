@@ -196,8 +196,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                    * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
         int id = n * (N + 2) + m;
-        I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                         - Iold[id + 1]);
+        I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                           + Iold[id + 1]);
       }
     }
 
@@ -251,8 +251,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
           int id = n * (N + 2) + m;
           I[id] =
-              -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                       - Iold[id + 1]);
+               0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                          + Iold[id + 1]);
         });
 
     /*
@@ -314,8 +314,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
           int id = n * (N + 2) + m;
-          I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);              
+          I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                             + Iold[id + 1]);              
         });
     /*
       Compute residual and update Iold
@@ -368,8 +368,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
           int id = n * (N + 2) + m;
-          I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);                            
+          I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
+                             + Iold[id + 1]);                            
         });
 
     /*
