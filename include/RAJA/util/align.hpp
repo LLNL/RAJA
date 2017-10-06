@@ -1,3 +1,18 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file containing an implementation of std align.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_ALIGN_HPP
+#define RAJA_ALIGN_HPP
+ 
+#include "RAJA/config.hpp"
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,45 +55,32 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_simd_HXX
-#define RAJA_forward_simd_HXX
-
-#include <type_traits>
-
-#include "RAJA/config.hpp"
-
-#include "RAJA/policy/simd/policy.hpp"
-
 namespace RAJA
 {
 
-namespace impl
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Taken from libc++ 
+// See libc++ license in docs/Licenses/libc++ License
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+RAJA_INLINE
+void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
+    void* r = nullptr;
+    if (size <= space)
+    {
+        char* p1 = static_cast<char*>(ptr);
+        char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
+        size_t d = static_cast<size_t>(p2 - p1);
+        if (d <= space - size)
+        {
+            r = p2;
+            ptr = r;
+            space -= d;
+        }
+    }
+    return r;
+}
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void
-forall(const simd_exec &, Iterable &&, Func &&);
+} // end namespace RAJA
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE void
-forall_Icount(const simd_exec &, Iterable &&, IndexType, Func &&);
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+#endif

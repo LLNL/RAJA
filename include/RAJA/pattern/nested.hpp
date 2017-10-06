@@ -124,7 +124,8 @@ struct Executor {
   template <typename WrappedBody>
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
-    impl::forall(fp.pol,
+    using ::RAJA::policy::sequential::forall_impl;
+    forall_impl(fp.pol,
                  camp::get<ForType::index_val>(wrap.data.st),
                  ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }

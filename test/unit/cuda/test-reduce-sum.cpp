@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -9,34 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -153,7 +126,7 @@ CUDA_TEST_F(ReduceSumCUDA, indexset_aligned)
   double* dvalue = ReduceSumCUDA::dvalue;
   int* ivalue = ReduceSumCUDA::ivalue;
 
-    RangeSegment seg0(0, TEST_VEC_LEN / 2);
+  RangeSegment seg0(0, TEST_VEC_LEN / 2);
   RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
   IndexSet iset;
@@ -267,5 +240,25 @@ CUDA_TEST_F(ReduceSumCUDA, atomic_reduce)
 
     ASSERT_FLOAT_EQ(dsumN.get(), neg_chk_val);
     ASSERT_FLOAT_EQ(dsumP.get(), pos_chk_val);
+  }
+}
+
+CUDA_TEST_F(ReduceSumCUDA, increasing_size)
+{
+  double* dvalue = ReduceSumCUDA::dvalue;
+
+  double dtinit = 5.0;
+
+  for (int size = block_size; size <= TEST_VEC_LEN; size+=block_size ) {
+
+    ReduceSum<cuda_reduce<block_size, true>, double> dsum0(dtinit);
+
+    forall<cuda_exec<block_size, true> >(0, size, [=] __device__(int i) {
+      dsum0 += dvalue[i];
+    });
+
+    double base_chk_val = dinit_val * double(size);
+
+    ASSERT_FLOAT_EQ(base_chk_val + dtinit, dsum0.get());
   }
 }

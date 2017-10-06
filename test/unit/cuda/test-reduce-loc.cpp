@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -9,34 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -79,6 +52,16 @@ template <typename T, typename U>
 struct reduce_applier<ReduceMinLoc<T, U>> {
   static U def() { return DBL_MAX; }
   static U big() { return -500.0; }
+  template <bool B>
+  static void updatedvalue(U* dvalue,
+                                reduce::detail::ValueLoc<U, B>& randval,
+                                reduce::detail::ValueLoc<U, B>& dcurrent)
+  {
+    if (dvalue[randval.loc] > randval.val) {
+      dvalue[randval.loc] = randval.val;
+      apply(dcurrent, randval);
+    }
+  }
   RAJA_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
                                 U const& val,
                                 Index_type i)
@@ -103,6 +86,16 @@ template <typename T, typename U>
 struct reduce_applier<ReduceMaxLoc<T, U>> {
   static U def() { return -DBL_MAX; }
   static U big() { return 500.0; }
+  template <bool B>
+  static void updatedvalue(U* dvalue,
+                                reduce::detail::ValueLoc<U, B>& randval,
+                                reduce::detail::ValueLoc<U, B>& dcurrent)
+  {
+    if (randval.val > dvalue[randval.loc]) {
+      dvalue[randval.loc] = randval.val;
+      apply(dcurrent, randval);
+    }
+  }
   RAJA_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
                                 U const& val,
                                 Index_type i)
@@ -155,7 +148,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
   double* dvalue = reducer::dvalue;
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+  reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
@@ -169,9 +162,8 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      reduce::detail::ValueLoc<double> lmin{droll, index};
-      dvalue[index] = droll;
-      applier::apply(dcurrentMin, lmin);
+      reduce::detail::ValueLoc<double> randval(droll, index);
+      applier::updatedvalue(dvalue, randval, dcurrent);
 
       forall<cuda_exec<block_size>>(0, TEST_VEC_LEN, [=] __device__(int i) {
         applier::apply(dmin0, dvalue[i], i);
@@ -179,10 +171,10 @@ CUDA_TYPED_TEST_P(ReduceCUDA, generic)
         applier::apply(dmin2, dvalue[i], i);
       });
 
-      applier::cmp(dmin0, dcurrentMin);
+      applier::cmp(dmin0, dcurrent);
 
-      ASSERT_FLOAT_EQ(dcurrentMin.val * 2, dmin1.get());
-      ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
+      ASSERT_FLOAT_EQ(dcurrent.val * 2, dmin1.get());
+      ASSERT_EQ(dcurrent.getLoc(), dmin1.getLoc());
       ASSERT_FLOAT_EQ(applier::big(), dmin2.get());
     }
   }
@@ -203,12 +195,12 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
 
   reset(dvalue, TEST_VEC_LEN, applier::def());
 
-  reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+  reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
 
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
-    RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+    RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
     IndexSet iset;
     iset.push_back(seg0);
@@ -217,13 +209,10 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
     TypeParam dmin0(applier::def(), -1);
     TypeParam dmin1(applier::def(), -1);
 
-    int index = int(dist2(mt));
-
     double droll = dist(mt);
-    dvalue[index] = droll;
-    reduce::detail::ValueLoc<double> lmin{droll, index};
-    dvalue[index] = droll;
-    applier::apply(dcurrentMin, lmin);
+    int index = int(dist2(mt));
+    reduce::detail::ValueLoc<double> randval(droll, index);
+    applier::updatedvalue(dvalue, randval, dcurrent);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] __device__(int i) {
@@ -231,10 +220,10 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_align)
           applier::apply(dmin1, 2 * dvalue[i], i);
         });
 
-    ASSERT_FLOAT_EQ(double(dcurrentMin), double(dmin0));
-    ASSERT_FLOAT_EQ(2 * double(dcurrentMin), double(dmin1));
-    ASSERT_EQ(dcurrentMin.getLoc(), dmin0.getLoc());
-    ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
+    ASSERT_FLOAT_EQ(double(dcurrent), double(dmin0));
+    ASSERT_FLOAT_EQ(2 * double(dcurrent), double(dmin1));
+    ASSERT_EQ(dcurrent.getLoc(), dmin0.getLoc());
+    ASSERT_EQ(dcurrent.getLoc(), dmin1.getLoc());
   }
 }
 
@@ -267,7 +256,7 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
 
     reset(dvalue, TEST_VEC_LEN, applier::def());
 
-    reduce::detail::ValueLoc<double> dcurrentMin(applier::def(), -1);
+    reduce::detail::ValueLoc<double> dcurrent(applier::def(), -1);
 
     TypeParam dmin0(applier::def(), -1);
     TypeParam dmin1(applier::def(), -1);
@@ -279,11 +268,8 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 3457;  // seg 3
 
     double droll = dist(mt);
-    dvalue[index] = droll;
-
-    reduce::detail::ValueLoc<double> lmin{droll, index};
-    dvalue[index] = droll;
-    applier::apply(dcurrentMin, lmin);
+    reduce::detail::ValueLoc<double> randval(droll, index);
+    applier::updatedvalue(dvalue, randval, dcurrent);
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size>>>(
         iset, [=] __device__(int i) {
@@ -291,10 +277,10 @@ CUDA_TYPED_TEST_P(ReduceCUDA, indexset_noalign)
           applier::apply(dmin1, 2 * dvalue[i], i);
         });
 
-    ASSERT_FLOAT_EQ(dcurrentMin.val, double(dmin0));
-    ASSERT_FLOAT_EQ(2 * dcurrentMin.val, double(dmin1));
-    ASSERT_EQ(dcurrentMin.getLoc(), dmin0.getLoc());
-    ASSERT_EQ(dcurrentMin.getLoc(), dmin1.getLoc());
+    ASSERT_FLOAT_EQ(dcurrent.val, double(dmin0));
+    ASSERT_FLOAT_EQ(2 * dcurrent.val, double(dmin1));
+    ASSERT_EQ(dcurrent.getLoc(), dmin0.getLoc());
+    ASSERT_EQ(dcurrent.getLoc(), dmin1.getLoc());
   }
 }
 

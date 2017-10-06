@@ -162,15 +162,12 @@ struct Executor<Tile<Index, TPol, EPol>> {
   {
     auto const &st = camp::get<Index>(wrap.data.st);
     IterableTiler<decltype(st)> tiled_iterable(st, fp.tpol.get_chunk_size());
-    impl::forall(fp.epol,
-                 tiled_iterable,
-                 TileWrapper<Index, WrappedBody>{wrap});
+    using ::RAJA::policy::sequential::forall_impl;
+    forall_impl(fp.epol, tiled_iterable, TileWrapper<Index, WrappedBody>{wrap});
     // Set range back to original values
     camp::get<Index>(wrap.data.st) = tiled_iterable.it;
   }
 };
-
-
 
 
 }  // end namespace nested

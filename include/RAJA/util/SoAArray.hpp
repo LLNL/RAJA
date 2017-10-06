@@ -1,3 +1,16 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   Header file for common RAJA internal definitions.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_SOA_ARRAY_HPP
+#define RAJA_SOA_ARRAY_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,57 +53,68 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_sequential_HXX
-#define RAJA_forward_sequential_HXX
-
-#include <type_traits>
-
 #include "RAJA/config.hpp"
 
-#include "RAJA/policy/sequential/policy.hpp"
+// for RAJA::reduce::detail::ValueLoc
+#include "RAJA/pattern/detail/reduce.hpp"
 
 namespace RAJA
 {
 
-namespace impl
+namespace detail
 {
 
-template <typename Func>
-RAJA_INLINE void forall(const seq_exec &,
-                        const PolicyBase &,
-                        const RangeSegment &iter,
-                        Func &&loop_body);
+/*!
+ * @brief Array class specialized for Struct of Array data layout.
+ *
+ * This is useful for creating a vectorizable data layout and getting
+ * coalesced memory accesses or avoiding shared memory bank conflicts in cuda.
+ */
+template < typename T, size_t size >
+class SoAArray {
+  using value_type = T;
+public:
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &,
-                        const PolicyBase &,
-                        Iterable &&iter,
-                        Func &&loop_body);
+  RAJA_HOST_DEVICE value_type get(size_t i) const
+  {
+    return mem[i];
+  }
+  RAJA_HOST_DEVICE void set(size_t i, value_type val)
+  {
+    mem[i] = val;
+  }
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              const PolicyBase &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body);
+private:
+  value_type mem[size];
+};
 
-}  // closing brace for impl namespace
+/*!
+ * @brief Specialization for RAJA::reduce::detail::ValueLoc.
+ */
+template < typename T, bool doing_min, size_t size >
+class SoAArray< ::RAJA::reduce::detail::ValueLoc<T, doing_min>, size > {
+  using value_type = ::RAJA::reduce::detail::ValueLoc<T, doing_min>;
+  using first_type  = T;
+  using second_type = Index_type;
+public:
+
+  RAJA_HOST_DEVICE value_type get(size_t i) const
+  {
+    return value_type(mem[i], mem_idx[i]);
+  }
+  RAJA_HOST_DEVICE void set(size_t i, value_type val)
+  {
+    mem[i] = val;
+    mem_idx[i] = val.getLoc();
+  }
+
+private:
+  first_type mem[size];
+  second_type mem_idx[size];
+};
+
+}  // closing brace for detail namespace
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for header file include guard
+#endif /* RAJA_SOA_ARRAY_HPP */

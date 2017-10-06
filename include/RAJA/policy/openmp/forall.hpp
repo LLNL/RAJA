@@ -11,15 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_openmp_HPP
-#define RAJA_forall_openmp_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_OPENMP)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -29,36 +22,16 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forall_openmp_HPP
+#define RAJA_forall_openmp_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_OPENMP)
 
 #include "RAJA/util/types.hpp"
 
@@ -73,21 +46,23 @@
 #include "RAJA/pattern/forall.hpp"
 
 #include <iostream>
-#include <thread>
+#include <type_traits>
 
 #include <omp.h>
 
 namespace RAJA
 {
 
-namespace impl
+namespace policy
+{
+namespace omp
 {
 ///
 /// OpenMP parallel for policy implementation
 ///
 
 template <typename Iterable, typename Func, typename InnerPolicy>
-RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
+RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
@@ -95,27 +70,7 @@ RAJA_INLINE void forall(const omp_parallel_exec<InnerPolicy>&,
   {
     using RAJA::internal::thread_privatize;
     auto body = thread_privatize(loop_body);
-    forall<InnerPolicy>(std::forward<Iterable>(iter), body.get_priv());
-  }
-}
-
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          typename InnerPolicy>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_parallel_exec<InnerPolicy>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-#pragma omp parallel
-  {
-    using RAJA::internal::thread_privatize;
-    auto body = thread_privatize(loop_body);
-    forall_Icount<InnerPolicy>(std::forward<Iterable>(iter),
-                               icount,
-                               body.get_priv());
+    forall_impl(InnerPolicy{}, std::forward<Iterable>(iter), body.get_priv());
   }
 }
 
@@ -124,7 +79,7 @@ forall_Icount(const omp_parallel_exec<InnerPolicy>&,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_for_nowait_exec&,
+RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
@@ -132,20 +87,6 @@ RAJA_INLINE void forall(const omp_for_nowait_exec&,
 #pragma omp for nowait
   for (decltype(distance_it) i = 0; i < distance_it; ++i) {
     loop_body(begin_it[i]);
-  }
-}
-
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_nowait_exec&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for nowait
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
   }
 }
 
@@ -154,7 +95,7 @@ forall_Icount(const omp_for_nowait_exec&,
 ///
 
 template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
+RAJA_INLINE void forall_impl(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
@@ -163,26 +104,12 @@ RAJA_INLINE void forall(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
   }
 }
 
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_exec&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
-  }
-}
-
 ///
 /// OpenMP parallel for static policy implementation
 ///
 
 template <typename Iterable, typename Func, size_t ChunkSize>
-RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
+RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
@@ -192,24 +119,6 @@ RAJA_INLINE void forall(const omp_for_static<ChunkSize>&,
     loop_body(begin_it[i]);
   }
 }
-
-template <typename Iterable,
-          typename IndexType,
-          typename Func,
-          size_t ChunkSize>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const omp_for_static<ChunkSize>&,
-              Iterable&& iter,
-              IndexType icount,
-              Func&& loop_body)
-{
-  RAJA_EXTRACT_BED_IT(iter);
-#pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
-    loop_body(static_cast<IndexType>(i + icount), begin_it[i]);
-  }
-}
-
 
 //
 //////////////////////////////////////////////////////////////////////
@@ -283,7 +192,9 @@ RAJA_INLINE void forall(
 }
 */
 
-}  // closing brace for impl namespace
+}  // closing brace for omp namespace
+
+}  // closing brace for policy namespace
 
 }  // closing brace for RAJA namespace
 

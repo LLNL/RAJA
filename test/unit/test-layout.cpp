@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -9,34 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -62,7 +35,7 @@ TEST(OffsetLayoutTest, 1D)
    *
    * 10, 11, 12, 13, 14
    */
-  const layout l({10}, std::array<RAJA::Index_type, 1>{14});
+  const layout l({{10}}, {{14}});
 
   /*
    * First element, 10, should have index 0.
@@ -128,7 +101,7 @@ TEST(OffsetLayoutTest, 2D_IJ)
    * (-1, -1), (0, -1), (1, -1)
    * (-1, -2), (0, -2), (1, -2)
    */
-  const auto layout = RAJA::make_offset_layout<2>({-1, -2}, {1, 0});
+  const auto layout = RAJA::make_offset_layout<2>({{-1, -2}}, {{1, 0}});
 
   /*
    * First element, (-1, -2), should have index 0.
@@ -185,7 +158,7 @@ TEST(OffsetLayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({1}, {10}));
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({{1}}, {{10}}));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;
@@ -262,7 +235,7 @@ TEST(LayoutTest, 2D_JI)
    *
    */
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 5}, RAJA::as_array<RAJA::PERM_JI>::get());
+      RAJA::make_permuted_layout({{3, 5}}, RAJA::as_array<RAJA::PERM_JI>::get());
 
   ASSERT_EQ(0, layout(0, 0));
 
@@ -359,7 +332,7 @@ TEST(LayoutTest, 3D_KJI_ProjJ)
   // Construct using variadic "sizes" ctor
   // Zero for J size should correctly produce projective layout
   const my_layout layout =
-      RAJA::make_permuted_layout({3, 0, 7},
+      RAJA::make_permuted_layout({{3, 0, 7}},
                                  RAJA::as_array<RAJA::PERM_KJI>::get());
 
   ASSERT_EQ(0, layout(0, 0, 0));

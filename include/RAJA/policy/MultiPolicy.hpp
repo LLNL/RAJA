@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_MultiPolicy_HPP
-#define RAJA_MultiPolicy_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -22,42 +19,17 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_MultiPolicy_HPP
+#define RAJA_MultiPolicy_HPP
 
 #include <tuple>
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/policy/fwd.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -72,6 +44,10 @@ template <size_t index, size_t size, typename Policy, typename... rest>
 struct policy_invoker;
 }
 
+namespace policy
+{
+namespace multi
+{
 
 /// MultiPolicy - Meta-policy for choosing between a compile-time list of
 /// policies at runtime
@@ -104,6 +80,27 @@ public:
       policy_invoker<sizeof...(Policies) - 1, sizeof...(Policies), Policies...>
           _policies;
 };
+
+/// forall_impl - MultiPolicy specialization, select at runtime from a
+/// compile-time list of policies, build with make_multi_policy()
+/// \param p MultiPolicy to use for selection
+/// \param iter iterable of items to supply to body
+/// \param body functor, will receive each value produced by iterable iter
+template <typename Iterable,
+          typename Body,
+          typename Selector,
+          typename... Policies>
+RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
+                        Iterable &&iter,
+                        Body &&body)
+{
+  p.invoke(iter, body);
+}
+
+}  // end namespace multi
+}  // end namespace policy
+
+using policy::multi::MultiPolicy;
 
 namespace detail
 {
@@ -148,34 +145,6 @@ auto make_multi_policy(std::tuple<Policies...> policies, Selector s)
       VarOps::make_index_sequence<sizeof...(Policies)>{}, s, policies);
 }
 
-namespace wrap
-{
-
-template <typename ExecutionPolicy, typename Container, typename LoopBody>
-RAJA_INLINE concepts::
-    enable_if<concepts::
-                  negate<type_traits::is_indexset_policy<ExecutionPolicy>>,
-              type_traits::is_range<Container>>
-    forall(ExecutionPolicy &&, Container &&, LoopBody &&);
-
-/// forall - MultiPolicy specialization, select at runtime from a
-/// compile-time list of policies, build with make_multi_policy()
-/// \param p MultiPolicy to use for selection
-/// \param iter iterable of items to supply to body
-/// \param body functor, will receive each value produced by iterable iter
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&iter,
-                        Body &&body)
-{
-  p.invoke(iter, body);
-}
-
-}  // closing brace for namespace wrap
-
 namespace detail
 {
 
@@ -191,7 +160,8 @@ struct policy_invoker : public policy_invoker<index - 1, size, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - index - 1) {
-      RAJA::wrap::forall(_p, iter, body);
+      using policy::multi::forall_impl;
+      forall_impl(_p, iter, body);
     } else {
       NextInvoker::invoke(offset, iter, body);
     }
@@ -206,7 +176,8 @@ struct policy_invoker<0, size, Policy, rest...> {
   void invoke(int offset, Iterable &&iter, Body &&body)
   {
     if (offset == size - 1) {
-      RAJA::wrap::forall(_p, iter, body);
+      using policy::multi::forall_impl;
+      forall_impl(_p, iter, body);
     } else {
       throw std::runtime_error("unknown offset invoked");
     }

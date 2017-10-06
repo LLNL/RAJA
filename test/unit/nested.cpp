@@ -158,6 +158,7 @@ TEST(Nested, TileDynamic)
 
 
 
+#if defined(RAJA_ENABLE_CUDA)
 CUDA_TEST(Nested, CudaCollapse)
 {
   camp::idx_t length = 5;
@@ -172,3 +173,4 @@ CUDA_TEST(Nested, CudaCollapse)
           printf("(%d, %d)\n", i, j);
        });
 }
+#endif
