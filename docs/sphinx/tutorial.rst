@@ -179,7 +179,8 @@ while
 
    \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } > tol
 
-Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. Pictorally, for each node on a grid (black) we carryout a weighted sum
+Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. As the solution to the equation is zero we only apply the stencil compuation to interior nodes.
+Pictorally, for each node on a grid (black) we carryout a weighted sum
 using four neighboring points (blue)
 
 .. image:: figures/jacobi.png
@@ -213,14 +214,15 @@ A full working version ``example-jacobi.cpp`` may be found in the example folder
 -------------
 Wave Equation
 -------------
-In this example we create a wave propagator which solves the
-acoustic wave equation
+
+In this example we create a wave propagator which solves the following equation 
 
 .. math::  
    p_{tt} = c^{2} \left( p_{xx} + p_{yy} \right), \\
-   (x,y) \in [0,1] \times [0,1].
+   (x,y) \in [0,1] \times [0,1]. 
 
-To discretize the equation we consider the following difference approximations
+As in the previous example we discretize the equation on a lattice with equidistant spacing between the nodes.
+The discretization of the equation takes the form 
 
 .. math::
    p^{n+1}_{i,j} = 2 p^{n}_{i,j} - p^{n-1}_{i,j} + \Delta t^2 \left( D_{xx}p^{n} + D_{yy}p^{n} \right)
@@ -229,12 +231,20 @@ where
 
 .. math::
    
-  D_{xx} p^{n} = \frac{1}{\Delta x^2} \left( c_0 p^{n} + \sum_{k=1}^n c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
-  D_{yy} p^{n} = \frac{1}{\Delta y^2} \left( c_0 p^{n} + \sum_{k=1}^n c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
+  D_{xx} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
+  D_{yy} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
 
-As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and (i,j)
-corresponds to a location on the grid. 
-   
+As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and :math:`(i,j)`
+corresponds to a location on the grid. Assuming a fourth order discretization (stencil width N=2) the iteration
+
+.. literalinclude:: ../../examples/example-wave.cpp
+                    :lines: 279-312
+
+Here we included the ``RAJA_HOST_DEVICE`` decorator to our lambda to create a portable kernel that may be executed on either
+the CPU (with a variety of execution policies) the GPU (via the ``cuda_exec`` policy). 
+
+A full working version ``example-wave.cpp`` may be found in the example folder.
+
 ------------
 Gauss-Seidel
 ------------
