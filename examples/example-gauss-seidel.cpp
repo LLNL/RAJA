@@ -219,7 +219,6 @@ RAJA::StaticIndexSet<RAJA::ListSegment> gsColorPolicy(int N)
   RAJA::Index_type *Red = new RAJA::Index_type[redN];
   RAJA::Index_type *Blk = new RAJA::Index_type[blkN];
 
-
   int ib = 0;
   int ir = 0;
 
@@ -264,8 +263,9 @@ void computeErr(double *I, grid_s grid)
 
   RAJA::RangeSegment fdBounds(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
+
   using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::omp_parallel_for>>;
 
   RAJA::forallN<myPolicy>(
     fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
