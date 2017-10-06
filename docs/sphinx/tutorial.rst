@@ -16,32 +16,27 @@ Tutorial
 ========
 At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction of
 in place functions. A lambda has the ability to ``capture" variables from a local context and use within the
-body of a loop. A lambda expression takes the following form
+function.  A lambda expression takes the following form 
 
 .. code-block:: cpp
 
    [capture list] (parameter list) {function body}
 
-The capture list corresponds to variables within the scope and paramter list correponds to values which will be used within the
-lambda. By default, a lambda captures by copy any variables within a block of code. We can specify variables to capture by reference by using the & symbol. The code block
+The capture list corresponds to variables within the scope while the parameter list corresponds to values which will be used within the function. By default, a lambda will capture by making a copy of variables in the capture list.
+We may specify capturing by refence by using the & symbol, for example 
 
 .. code-block:: cpp
 
    int x;
    int y = 100;
-   int istart = 0, iend = 10;
    [&x, &y](){x=y;]
 
-will assign the value of y to x. Specifying capture type of ``[=]`` or ``[&]`` with capure all variables by copy or reference respectively. 
+will assign the value of y to x. By setting the capture list as ``[=]`` or ``[&]`` all variables within scope will becaptured by copy or reference respectively.
 
-1. [=] capture all variables within the block scope by copy
-2. [&] capture all variables within the block scopy by reference
-
-
-Building from the C++ lambda, RAJA introduces two types of templated loops, namely
-the ``RAJA::forall`` and ``RAJA::forallN`` loops. The ``RAJA::forall`` methods is an abstraction
-of the standard C++ loop. The method is templated on an execution policies and takes an iteration space
-and a lambda which encapsulates the loop body. 
+Building from the C++ lambda, RAJA introduces two types of templated methods, namely
+the ``RAJA::forall`` and ``RAJA::forallN``. The ``RAJA::forall`` method is an abstraction
+of the standard C++ loop. The method is templated on execution policies; and takes an iteration space and lambda
+which captures the loop body. 
 
 .. code-block:: cpp
                 
@@ -50,7 +45,7 @@ and a lambda which encapsulates the loop body.
   });
 
 Similarly, the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
-templated on up to N execution policies and takes in an iteration space and index for each execution policy.
+templated on up to N execution policies and expects an iteration space and index for each execution policy.
   
 .. code-block:: cpp
                 
@@ -60,7 +55,7 @@ templated on up to N execution policies and takes in an iteration space and inde
          //body
   });
   
-A RAJA templated loop requires the developer to supply the following
+A RAJA templated method requires the developer to supply the following
 
 1. Capture type [=] or [&]
 3. exec_policy - Specifying how the traversal occurs
