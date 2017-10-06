@@ -245,15 +245,26 @@ the CPU (with a variety of execution policies) the GPU (via the ``cuda_exec`` po
 
 A full working version ``example-wave.cpp`` may be found in the example folder.
 
-------------
-Gauss-Seidel
-------------
-In this example we revisit the equation solved by boundary value problem previously solved by the Jacobi method
-and use a Red-Black Gauss-Seidel scheme. Traditionally, Gauss-Seidel scheme is inherently a serial algorithm but by
-exploiting the structure of the problem we can color the domain in such a way to expose parallism. 
+----------------------
+Red-Black Gauss-Seidel
+----------------------
+In this example we revisit the boundary value problem solved by the Jacobi method and apply a Red-Black Gauss-Sidel scheme.
+Although the Gauss-Sidel scheme is inherently a sequential algorithm we may expose parallism by applying the following coloring
+to the interior nodes of the domain
 
-
-
-.. image:: figures/gsboard.png
+.. image:: figures/redblackGS.png
    :scale: 10 %
    :align: center
+
+By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the transversal using a ``RAJA::NestedPolicy`` where we specify can specify the outer policy to be executed sequentially and
+the inner policy in parallel
+
+.. literalinclude:: ../../examples/example-gauss-seidel.cpp
+                    :lines: 267-268
+
+The details of the transveral are captured using a ``RAJA::StaticIndexSet`` (for more info see ___ ).
+The following code block illustrates how to construct the index set for a Red-Black Gauss-Sidel scheme. 
+           
+.. literalinclude:: ../../examples/example-gauss-seidel.cpp
+                    :lines: 215-244
+A full working version ``example-gauss-seidel.cpp`` may be found in the example folder.
