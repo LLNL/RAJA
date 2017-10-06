@@ -39,8 +39,12 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax'
+    'sphinx.ext.mathjax',
+    'breathe'
 ]
+
+breathe_projects = { "RAJA": "@CMAKE_BINARY_DIR@/docs/doxygen/xml" }
+breathe_default_project = "RAJA"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -309,7 +313,3 @@ texinfo_documents = [
 #texinfo_no_detailmenu = False
 
 #
-# TODO: Add breathe support to include generated doxygen.
-#
-# breathe_projects = { "RAJA": "../doxygen/xml/" }
-# breathe_default_project = "RAJA"
