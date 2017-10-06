@@ -142,13 +142,14 @@ A full working version ``example-matrix-multiply.cpp`` may be found in the examp
 -------------
 Jacobi Method
 -------------
-Branching out to scientific computing we consider solving the following boundary value problem
+
+As a third example we consider solving the following boundary value problem
 
 .. math::
    
-  U_{xx} + U_{yy} &= f, \quad U \in (0,1) \times (0,1), \\
-  U(0,y) = U(1,y) &= 0, \\
-  U(x,0) = U(x,1) &= 0,
+  u_{xx} + u_{yy} &= f, \quad u \in (0,1) \times (0,1), \\
+  u(0,y) = u(1,y) &= 0, \\
+  u(x,0) = u(x,1) &= 0,
 
 where
 
@@ -156,17 +157,59 @@ where
 
   f = 2x(y-1)(y-2x+xy+2) e^{(x-y)} .
 
-To discretize the equation we consider the following
-difference approximations on a structured grid
+Here we assume a discretization on a lattice with equidistant nodes.
+The values we seek to approximate are the nodes on the lattice, in order
+to approximate the derivatives we consider the following discretization
 
 .. math::
    
-   U_{xx} \approx \frac{U_{i+1,j} - 2U_{i,j} + U_{i-1,j}}{(\Delta x)^2}, \\
-   U_{yy} \approx \frac{U_{i,j+1} - 2U_{i,j} + U_{i,j-1}}{(\Delta y)^2},
+   u_{xx} \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2}, \\
+   u_{yy} \approx \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{h^2},
 
-where (i,j) corresponds to a location on grid. 
+where (i,j) corresponds to a location on grid. After substituting the approximations
+into the equation and rearranging, the Jacobi method iterates
 
-   
+.. math::
+
+   u^{k+1}_{ij} = \frac{1}{4} \left( -h^2 f_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} \right)
+
+while
+
+.. math::
+
+   \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } > tol
+
+Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. Pictorally, for each node on a grid (black) we carryout a weighted sum
+using four neighboring points (blue)
+
+.. image:: figures/jacobi.png
+   :scale: 10 %
+   :align: center
+
+
+
+Using the ``RAJA::ForallN`` method the iteration can be expressed as
+
+
+.. literalinclude:: ../../examples/example-jacobi.cpp
+                    :lines: 307-319
+
+where we have predefined the ``jacobiompNestedPolicy`` as                            
+
+.. literalinclude:: ../../examples/example-jacobi.cpp
+                    :lines: 298-300
+
+Computing :math:`\mathcal{E}` requires performing a reduction. More specifically we wish to accumulate the sum of the
+squared difference of subsequent iterations. This procedure can be made thread safe by the use of the ``RAJA::ReduceSum``
+variable. The following code illustrates carrying out the reduction procedure and updating the jacobi iterate vector
+
+.. literalinclude:: ../../examples/example-jacobi.cpp
+                    :lines: 323-330
+
+
+A full working version ``example-jacobi.cpp`` may be found in the example folder.
+
+           
 -------------
 Wave Equation
 -------------
