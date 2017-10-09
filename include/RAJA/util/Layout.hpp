@@ -63,11 +63,35 @@
 namespace RAJA
 {
 
-template <typename Range, typename IdxLin = Index_type>
+template<int i, int ex>
+struct ConditionalMultiply{
+
+  template<typename A, typename B>
+  static
+  RAJA_INLINE
+  constexpr
+  A multiply(A a, B const *b) {
+    return a*b[i];
+  }
+};
+
+template<int i>
+struct ConditionalMultiply<i,i>{
+  template<typename A, typename B>
+    static
+    RAJA_INLINE
+    constexpr
+    A multiply(A a, B const *) {
+    return a;
+  }
+};
+
+
+template <typename Range, typename IdxLin = Index_type, int StrideOneDim = -1>
 struct LayoutBase_impl;
 
-template <camp::idx_t... RangeInts, typename IdxLin>
-struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin> {
+template <camp::idx_t... RangeInts, typename IdxLin, int StrideOneDim>
+struct LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim> {
 public:
   typedef IdxLin IndexLinear;
   typedef camp::make_idx_seq_t<sizeof...(RangeInts)> IndexRange;
@@ -75,13 +99,14 @@ public:
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
 
+  static constexpr int stride1_dim = sizeof...(RangeInts) - 1; //StrideOneDim;
+
   // const char *index_types[sizeof...(RangeInts)];
 
   IdxLin sizes[n_dims];
   IdxLin strides[n_dims];
   IdxLin inv_strides[n_dims];
   IdxLin inv_mods[n_dims];
-
 
   /*!
    * Helper function to compute the strides
@@ -160,7 +185,7 @@ public:
   RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin operator()(
       Indices... indices) const
   {
-    return VarOps::sum<IdxLin>((indices * strides[RangeInts])...);
+    return VarOps::sum<IdxLin>( (ConditionalMultiply<RangeInts, stride1_dim>::multiply(indices, strides))...);
   }
 
 
@@ -204,12 +229,12 @@ private:
   }
 };
 
-template <camp::idx_t... RangeInts, typename IdxLin>
+template <camp::idx_t... RangeInts, typename IdxLin, int StrideOneDim>
 constexpr size_t
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin>::n_dims;
-template <camp::idx_t... RangeInts, typename IdxLin>
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::n_dims;
+template <camp::idx_t... RangeInts, typename IdxLin, int StrideOneDim>
 constexpr size_t
-    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin>::limit;
+    LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneDim>::limit;
 
 
 /*!
