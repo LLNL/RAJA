@@ -135,8 +135,6 @@ public:
 
   static constexpr size_t n_dims = sizeof...(RangeInts);
   static constexpr size_t limit = RAJA::operators::limits<IdxLin>::max();
-
-  //static constexpr ptrdiff_t stride1_dim = sizeof...(RangeInts) - 1; //StrideOneDim;
   static constexpr ptrdiff_t stride1_dim = StrideOneDim;
 
   // const char *index_types[sizeof...(RangeInts)];
@@ -176,9 +174,9 @@ public:
   /*!
    *  Copy ctor.
    */
-  template<typename CIdxLin, ptrdiff_t CStrideOne>
+  template<typename CIdxLin, ptrdiff_t CStrideOneDim>
   constexpr RAJA_INLINE RAJA_HOST_DEVICE
-  LayoutBase_impl(const LayoutBase_impl<IndexRange, CIdxLin, CStrideOne> &rhs)
+  LayoutBase_impl(const LayoutBase_impl<camp::idx_seq<RangeInts...>, CIdxLin, CStrideOneDim> &rhs)
       : sizes{rhs.sizes[RangeInts]...},
         strides{rhs.strides[RangeInts]...},
         inv_strides{rhs.inv_strides[RangeInts]...},
@@ -295,14 +293,21 @@ constexpr size_t LayoutBase_impl<camp::idx_seq<RangeInts...>, IdxLin, StrideOneD
 template <size_t n_dims, typename IdxLin = Index_type, ptrdiff_t StrideOne = -1>
 using Layout = detail::LayoutBase_impl<camp::make_idx_seq_t<n_dims>, IdxLin, StrideOne>;
 
-template <typename IdxLin, typename... DimTypes>
-struct TypedLayout : public Layout<sizeof...(DimTypes), Index_type> {
-  using Self = TypedLayout<IdxLin, DimTypes...>;
-  using Base = Layout<sizeof...(DimTypes), Index_type>;
+template <typename IdxLin, typename DimTuple, ptrdiff_t StrideOne = -1>
+struct TypedLayout;
+
+template <typename IdxLin, typename... DimTypes, ptrdiff_t StrideOne>
+struct TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne> :
+    public Layout<sizeof...(DimTypes), Index_type, StrideOne>
+{
+  using Self = TypedLayout<IdxLin, camp::tuple<DimTypes...>, StrideOne>;
+  using Base = Layout<sizeof...(DimTypes), Index_type, StrideOne>;
   using DimArr = std::array<Index_type, sizeof...(DimTypes)>;
 
   // Pull in base constructors
   using Base::Base;
+
+
 
 
   /*!
@@ -360,6 +365,37 @@ private:
   }
 };
 
+
+
+/*!
+ * Convert a non-stride-one Layout to convert to a stride-1 Layout
+ *
+ */
+template<ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
+RAJA_INLINE
+Layout<n_dims, IdxLin, s1_dim>
+make_stride_one(Layout<n_dims, IdxLin> const &l)
+{
+  return Layout <n_dims, IdxLin, s1_dim>(l);
+}
+
+
+/*!
+ * Convert a non-stride-one TypedLayout to convert to a stride-1 TypedLayout
+ *
+ */
+template<ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
+RAJA_INLINE
+TypedLayout<IdxLin, IdxTuple, s1_dim>
+make_stride_one(TypedLayout<IdxLin, IdxTuple> const &l)
+{
+  // strip l to it's base-class type
+  using Base = typename TypedLayout<IdxLin, IdxTuple>::Base;
+  Base const &b = (Base const &)l;
+
+  // Use non-typed layout to initialize new typed layout
+  return TypedLayout<IdxLin, IdxTuple, s1_dim>(b);
+}
 
 
 }  // namespace RAJA
