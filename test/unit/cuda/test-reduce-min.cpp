@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -9,34 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -111,9 +84,10 @@ CUDA_TEST_F(ReduceMinCUDA, generic)
 
       double droll = dist(mt);
       int index = int(dist2(mt));
-      double lmin = droll;
-      dvalue[index] = droll;
-      dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+      if (dvalue[index] > droll) {
+        dvalue[index] = droll;
+        dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+      }
 
       forall<cuda_exec<block_size> >(0, TEST_VEC_LEN, [=] __device__(int i) {
         dmin0.min(dvalue[i]);
@@ -147,7 +121,7 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
   for (int tcount = 0; tcount < test_repeat; ++tcount) {
 
     RangeSegment seg0(0, TEST_VEC_LEN / 2);
-    RangeSegment seg1(TEST_VEC_LEN / 2 + 1, TEST_VEC_LEN);
+    RangeSegment seg1(TEST_VEC_LEN / 2, TEST_VEC_LEN);
 
     IndexSet iset;
     iset.push_back(seg0);
@@ -156,13 +130,12 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_align)
     ReduceMin<cuda_reduce<block_size>, double> dmin0(DEFAULT_VAL);
     ReduceMin<cuda_reduce<block_size>, double> dmin1(DEFAULT_VAL);
 
-    int index = int(dist2(mt));
-
     double droll = dist(mt);
-    dvalue[index] = droll;
-    double lmin = droll;
-    dvalue[index] = droll;
-    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+    int index = int(dist2(mt));
+    if (dvalue[index] > droll) {
+      dvalue[index] = droll;
+      dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {
@@ -215,11 +188,10 @@ CUDA_TEST_F(ReduceMinCUDA, indexset_noalign)
     if (tcount % 4 == 0) index = 29457;  // seg 3
 
     double droll = dist(mt);
-    dvalue[index] = droll;
-
-    double lmin = droll;
-    dvalue[index] = droll;
-    dcurrentMin = RAJA_MIN(dcurrentMin, lmin);
+    if (dvalue[index] > droll) {
+      dvalue[index] = droll;
+      dcurrentMin = RAJA_MIN(dcurrentMin, droll);
+    }
 
     forall<ExecPolicy<seq_segit, cuda_exec<block_size> > >(
         iset, [=] __device__(int i) {

@@ -124,7 +124,8 @@ struct Executor {
   template <typename WrappedBody>
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
-    impl::forall(fp.pol,
+    using ::RAJA::policy::sequential::forall_impl;
+    forall_impl(fp.pol,
                  camp::get<ForType::index_val>(wrap.data.st),
                  ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }
@@ -205,10 +206,10 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 template <typename Pol, typename SegmentTuple, typename Body>
 RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 {
-#ifdef RAJA_ENABLE_CUDA
-  // this call should be moved into a cuda file
-  // but must be made before loop_body is copied
-  beforeCudaKernelLaunch();
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager *rm = chai::ArrayManager::getInstance();
+  using EP = typename std::decay<POLICY>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
   using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
@@ -225,8 +226,8 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   //           << typeid(data.index_tuple).name() << std::endl;
   ld();
 
-#ifdef RAJA_ENABLE_CUDA
-  afterCudaKernelLaunch();
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
 #endif
 }
 

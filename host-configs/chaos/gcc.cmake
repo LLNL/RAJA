@@ -1,1 +1,1 @@
-gnu_4_9_3.cmake
+gcc_4_9_3.cmake

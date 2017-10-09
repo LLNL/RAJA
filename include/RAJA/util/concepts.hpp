@@ -10,11 +10,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -55,7 +52,12 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_concepts_HPP
+#define RAJA_concepts_HPP
+
 #include "camp/concepts.hpp"
+#include <iterator>
+#include <type_traits>
 
 namespace RAJA
 {

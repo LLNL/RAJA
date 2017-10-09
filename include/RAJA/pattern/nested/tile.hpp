@@ -29,12 +29,12 @@ struct Tile {
   }
 };
 
-///! tag for a tiling loop
+///! tag for a tiling loop, tile_static renamed to avoid MSVC keyword
 template <camp::idx_t chunk_size_>
-struct tile_static {
+struct tile_s {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 
-  tile_static() {}
+  tile_s() {}
   constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
@@ -162,15 +162,12 @@ struct Executor<Tile<Index, TPol, EPol>> {
   {
     auto const &st = camp::get<Index>(wrap.data.st);
     IterableTiler<decltype(st)> tiled_iterable(st, fp.tpol.get_chunk_size());
-    impl::forall(fp.epol,
-                 tiled_iterable,
-                 TileWrapper<Index, WrappedBody>{wrap});
+    using ::RAJA::policy::sequential::forall_impl;
+    forall_impl(fp.epol, tiled_iterable, TileWrapper<Index, WrappedBody>{wrap});
     // Set range back to original values
     camp::get<Index>(wrap.data.st) = tiled_iterable.it;
   }
 };
-
-
 
 
 }  // end namespace nested

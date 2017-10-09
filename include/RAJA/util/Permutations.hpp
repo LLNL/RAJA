@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_FORALLN_PERMUTATIONS_HPP
-#define RAJA_FORALLN_PERMUTATIONS_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -53,6 +50,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_FORALLN_PERMUTATIONS_HPP
+#define RAJA_FORALLN_PERMUTATIONS_HPP
+
 
 #include "RAJA/config.hpp"
 #include "camp/camp.hpp"
@@ -68,7 +68,7 @@ struct as_array;
 template <camp::idx_t... Indices>
 struct as_array<camp::idx_seq<Indices...>> {
   static constexpr std::array<Index_type, sizeof...(Indices)> get() {
-    return {Indices...};
+    return {{Indices...}};
   }
 };
 
