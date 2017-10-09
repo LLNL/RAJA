@@ -26,7 +26,7 @@ cmake \
 #cmake \
 #  -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
 #  -DCMAKE_INSTALL_PREFIX=../install-gcc-4.9.3 \
-#  -DRAJA_ENABLE_PERFSUITE=On \
-#  -DRAJA_ENABLE_APPLICATIONS=On \
+#  -DENABLE_PERFSUITE=On \
+#  -DENABLE_APPLICATIONS=On \
 #  "$@" \
 #  ${RAJA_DIR}

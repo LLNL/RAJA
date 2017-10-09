@@ -35,7 +35,7 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 

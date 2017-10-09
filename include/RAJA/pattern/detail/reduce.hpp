@@ -52,7 +52,7 @@ namespace RAJA
 namespace reduce
 {
 
-#ifdef RAJA_ENABLE_TARGET_OPENMP
+#ifdef RAJA_RAJA_ENABLE_TARGET_OPENMP
 #pragma omp declare target
 #endif
 
@@ -84,7 +84,7 @@ template <typename T>
 struct max : detail::op_adapter<T, RAJA::operators::maximum> {
 };
 
-#ifdef RAJA_ENABLE_TARGET_OPENMP
+#ifdef RAJA_RAJA_ENABLE_TARGET_OPENMP
 #pragma omp end declare target
 #endif
 

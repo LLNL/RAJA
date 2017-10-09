@@ -26,7 +26,7 @@ cmake \
 #cmake \
 #  -C ${RAJA_DIR}/host-configs/chaos/clang_3_8_0.cmake \
 #  -DCMAKE_INSTALL_PREFIX=../install-clang-3.8.0 \
-#  -DRAJA_ENABLE_PERFSUITE=On \
-#  -DRAJA_ENABLE_APPLICATIONS=On \
+#  -DENABLE_PERFSUITE=On \
+#  -DENABLE_APPLICATIONS=On \
 #  "$@" \
 #  ${RAJA_DIR}
