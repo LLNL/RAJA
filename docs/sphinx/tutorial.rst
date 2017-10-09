@@ -14,16 +14,16 @@
 ========
 Tutorial
 ========
-At the heart of RAJA is the C++11 Lambda. Lambda functions were introduced to allow for the construction of
-in place functions. A lambda has the ability to ``capture" variables from a local context and use within the
+As RAJA is built on the C++ lambda, we provide a brief overview on lambda functions.
+Lambda's were introduced to allow for the construction of
+in place functions. A lambda has the ability to "capture" variables from a local context and use within the
 function.  A lambda expression takes the following form 
 
 .. code-block:: cpp
 
-   [capture list] (parameter list) {function body}
+   [capture list] (parameter list) {function body}  
 
-The capture list corresponds to variables within the scope while the parameter list corresponds to values which will be used within the function. By default, a lambda will capture by making a copy of variables in the capture list.
-We may specify capturing by refence by using the & symbol, for example 
+The capture list corresponds to variables within the scope, while the parameter list corresponds to values which will be used within the function. By default, a lambda will capture by copying variables in the capture list. Capturing by reference may be accomplished by using the & symbol; for example 
 
 .. code-block:: cpp
 
@@ -31,12 +31,14 @@ We may specify capturing by refence by using the & symbol, for example
    int y = 100;
    [&x, &y](){x=y;]
 
-will assign the value of y to x. By setting the capture list as ``[=]`` or ``[&]`` all variables within scope will becaptured by copy or reference respectively.
+will generate a function which will assign the value of y to x. 
+By setting the capture list as ``[=]`` or ``[&]`` all variables within scope will be captured
+by copy or reference respectively.
 
 Building from the C++ lambda, RAJA introduces two types of templated methods, namely
-the ``RAJA::forall`` and ``RAJA::forallN``. The ``RAJA::forall`` method is an abstraction
-of the standard C++ loop. The method is templated on execution policies; and takes an iteration space and lambda
-which captures the loop body. 
+``RAJA::forall`` and ``RAJA::forallN``. The ``RAJA::forall`` method is an abstraction
+of the standard C++ loop. The method is templated on execution policies, takes an iteration space, and lambda
+which captures the loop body.
 
 .. code-block:: cpp
                 
@@ -45,7 +47,7 @@ which captures the loop body.
   });
 
 Similarly, the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is
-templated on up to N execution policies and expects an iteration space and index for each execution policy.
+templated on up to N execution policies, expects an iteration space, and index for each execution policy.
   
 .. code-block:: cpp
                 
@@ -54,13 +56,13 @@ templated on up to N execution policies and expects an iteration space and index
       iter_space I1,..., iter_space IN, [=](index_type i1,..., index_type iN) {
          //body
   });
-  
-A RAJA templated method requires the developer to supply the following
 
+In summary, RAJA templated methods require the developer to supply the following                
 1. Capture type [=] or [&]
 3. exec_policy - Specifying how the traversal occurs
 4. iter_space  - An iteration space for the RAJA loop (any random access container is expected)
 5. index_type  - Index for RAJA loops
+6. lambda      - capturing the body of the loop
 
 The remainder of the tutorial demonstrates the utility of RAJA by drawing from commonly used
 computing patterns.
@@ -74,15 +76,15 @@ and the result is stored in a third vector, C. The C++ version of this loop take
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 119-121
 
-The construction of a RAJA analog begins by first specifying an expecution policy
+The construction of a RAJA analog begins by first specifying an execution policy
 (for more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
-an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment``. 
+an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see ___). 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
 
 By swapping out execution policies we can target different backends with the caveat that the developer must
-handle all memory management (for more info see :ref:`ref-plugins`). Furthermore using the cuda backend requires
+handle all memory management (for more info see :ref:`ref-plugins`). Furthermore, using the cuda backend requires
 the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
@@ -96,12 +98,12 @@ Matrix Multiplication
 ---------------------
 As a second example we consider matrix multiplication. Here two matrices, A, and B, of dimension
 N x N are multiplied and the result is stored in a third matrix, C. 
-Assuming that have pointers to the data
+Assuming that we have pointers to the data
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 146-148
 
-and with the aid of some macros
+and with the aid of macros
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 132-134
@@ -132,13 +134,13 @@ may be nested
 Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
 Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
 execution policy may be specified inside a ``RAJA::ExecList<>``. In the following example we pair the outer loop
-with an OpenMP policy and the inner loop with a sequential policy. 
+with an OpenMP policy and the inner loop with a sequential policy.
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 254-264
 
 A full working version ``example-matrix-multiply.cpp`` may be found in the example folder.
-                            
+
 -------------
 Jacobi Method
 -------------
@@ -179,8 +181,8 @@ while
 
    \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } > tol
 
-Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. As the solution to the equation is zero we only apply the stencil compuation to interior nodes.
-Pictorally, for each node on a grid (black) we carryout a weighted sum
+Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. As the solution to the equation is zero on the boundary
+we only apply the stencil compuation to interior nodes. Pictorally, for each node on a grid (black) we carryout a weighted sum
 using four neighboring points (blue)
 
 .. image:: figures/jacobi.png
@@ -188,9 +190,7 @@ using four neighboring points (blue)
    :align: center
 
 
-
 Using the ``RAJA::ForallN`` method the iteration can be expressed as
-
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 307-319
@@ -200,9 +200,7 @@ where we have predefined the ``jacobiompNestedPolicy`` as
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 298-300
 
-Computing :math:`\mathcal{E}` requires performing a reduction. More specifically we wish to accumulate the sum of the
-squared difference of subsequent iterations. This procedure can be made thread safe by the use of the ``RAJA::ReduceSum``
-variable. The following code illustrates carrying out the reduction procedure and updating the jacobi iterate vector
+Computing :math:`\mathcal{E}` in parallel (aka reduction) requires multiple threads writting to the same location in memory, a procedure that is inherently not threadsafe. RAJA enables a thread-safe reduction by introducing ``RAJA::Reduce Sum`` variables. The following code illustrates carrying out the reduction procedure and updating the jacobi vectors
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 323-330
