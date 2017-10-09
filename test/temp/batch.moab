@@ -1,0 +1,75 @@
+#!/bin/csh
+#MSUB -N fracStudy
+#MSUB -l walltime=03:00:00
+#MSUB -l nodes=1
+#MSUB -l partition=cab
+#MSUB -q pbatch
+#MSUB -A fracmodl
+#MSUB -r n
+# MSUB -m be
+
+
+
+
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   2 1048576   2 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   4 524288    2 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   2 524288    4 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   4 262144    4 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   8 131072    4 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   4 131072    8 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   8  65536    8 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  16  32768    8 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   8  32768   16 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  16  16384   16 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  32   8192   16 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  16   8192   32 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  32   4096   32 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  64   2048   32 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  32   2048   64 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  64   1024   64 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  128   512   64 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash   64   512  128 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  128   256  128 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  256   128  128 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  128   128  256 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  256    64  256 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  512    32  256 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  256    32  512 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  512    16  512 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash 1024     8  512 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash  512     8 1024 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash 1024     4 1024 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash 2048     2 1024 100"
+python run_cab.py "srun -n1 bash run_cab_gcc.bash 1024     2 2048 100"
+
+
+python run_cab.py "srun -n1 bash run_cab_icc.bash   2 1048576   2 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   4 524288    2 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   2 524288    4 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   4 262144    4 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   8 131072    4 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   4 131072    8 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   8  65536    8 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  16  32768    8 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   8  32768   16 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  16  16384   16 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  32   8192   16 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  16   8192   32 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  32   4096   32 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  64   2048   32 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  32   2048   64 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  64   1024   64 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  128   512   64 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash   64   512  128 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  128   256  128 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  256   128  128 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  128   128  256 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  256    64  256 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  512    32  256 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  256    32  512 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  512    16  512 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash 1024     8  512 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash  512     8 1024 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash 1024     4 1024 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash 2048     2 1024 100"
+python run_cab.py "srun -n1 bash run_cab_icc.bash 1024     2 2048 100"
