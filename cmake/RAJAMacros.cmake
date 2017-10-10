@@ -35,6 +35,10 @@ macro(raja_add_executable)
     list (APPEND arg_DEPENDS_ON cuda)
   endif ()
 
+  if (ENABLE_TBB)
+    list (APPEND arg_DEPENDS_ON tbb)
+  endif ()
+
   message(STATUS "${arg_NAME} building with depends: ${arg_DEPENDS_ON}")
 
   if (${arg_TEST})

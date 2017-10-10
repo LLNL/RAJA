@@ -13,61 +13,64 @@ matrix:
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
   - compiler: gcc-6
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=g++-6
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
   - compiler: gcc-7
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
     env:
     - COMPILER=g++-7
-    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On -DENABLE_TBB=On"
   - compiler: clang-5
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++-5.0.0
     - LLVM_VERSION=5.0.0
     - DOWNLOAD_URL=http://releases.llvm.org/5.0.0/clang+llvm-5.0.0-linux-x86_64-ubuntu14.04.tar.xz
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_CXX_FLAGS=-fmodules -DENABLE_TBB=On"
   - compiler: clang-3.9
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++-3.9.1
     - LLVM_VERSION=3.9.1
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: clang-4.0
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++-4.0.0
     - LLVM_VERSION=4.0.0
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: intel-17
     env:
     - COMPILER=icpc
     - TRAVIS_INSTALL_COMPILER="intel"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_TBB=On"
   - compiler: nvcc
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On -DENABLE_TBB=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On -DENABLE_TBB=On"
   - compiler: clang-3.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=clang++
     - LLVM_VERSION=3.9.1
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_TBB=On"
   - compiler: nvcc-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
 cache:
@@ -98,5 +101,5 @@ before_install:
 script:
 - ./scripts/travis_build_and_test.sh
 after_success:
-- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi

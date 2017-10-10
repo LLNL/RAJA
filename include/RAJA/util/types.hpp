@@ -56,6 +56,7 @@
 #define RAJA_Types_HPP
 
 #include "RAJA/config.hpp"
+#include "camp/helpers.hpp"
 
 #include <cstddef>
 

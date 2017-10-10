@@ -27,7 +27,8 @@
 #define RAJA_scan_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/concepts.hpp"
+#include "camp/concepts.hpp"
+#include "camp/helpers.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/util/Operators.hpp"
@@ -42,14 +43,11 @@ namespace detail
 {
 
 template <typename Iter>
-using IterVal =
-    typename std::remove_const<typename std::remove_reference<decltype(
-        *RAJA::concepts::val<Iter>())>::type>::type;
+using IterVal = camp::decay<decltype(*camp::val<Iter>())>;
 
 template <typename Container>
 using ContainerVal =
-    typename std::remove_const<typename std::remove_reference<decltype(
-        *std::begin(RAJA::concepts::val<Container>()))>::type>::type;
+    camp::decay<decltype(*camp::val<camp::iterator_from<Container>>())>;
 
 }  // end namespace detail
 
