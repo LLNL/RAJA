@@ -221,6 +221,7 @@ public:
       : base(rhs), stride(stride)
   {
   }
+
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       const strided_numeric_iterator& rhs)
       : base(rhs.val), stride(rhs.stride)

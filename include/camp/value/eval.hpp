@@ -1,17 +1,8 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for RAJA concept definitions.
- *
- *          Definitions in this file will propagate to all RAJA header files.
- *
- ******************************************************************************
- */
+#ifndef CAMP_VALUE_EVAL_HPP
+#define CAMP_VALUE_EVAL_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,27 +43,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
-
-#include "camp/concepts.hpp"
-#include <iterator>
-#include <type_traits>
-
-namespace RAJA
+namespace camp
 {
 
-namespace concepts
-{
-using namespace camp::concepts;
-}
+// TODO: document
+template <typename Val>
+using eval = typename Val::type;
 
-namespace type_traits
-{
-using namespace camp::type_traits;
-}
+}  // end namespace camp
 
-}  // end namespace RAJA
-
-#endif
-
+#endif /* CAMP_VALUE_EVAL_HPP */

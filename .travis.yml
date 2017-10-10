@@ -101,5 +101,5 @@ before_install:
 script:
 - ./scripts/travis_build_and_test.sh
 after_success:
-- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f" >& /dev/null; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
