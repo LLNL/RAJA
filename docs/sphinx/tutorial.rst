@@ -31,14 +31,12 @@ The capture list corresponds to variables within the scope, while the parameter 
    int y = 100;
    [&x, &y](){x=y;]
 
-will generate a function which will assign the value of y to x. 
-By setting the capture list as ``[=]`` or ``[&]`` all variables within scope will be captured
-by copy or reference respectively.
+will generate a lambda which will assign the value of y to x. 
+By setting the capture list as ``[=]`` or ``[&]`` all variables within scope will be captured by copy or reference respectively.
 
 Building from the C++ lambda, RAJA introduces two types of templated methods, namely
 ``RAJA::forall`` and ``RAJA::forallN``. The ``RAJA::forall`` method is an abstraction
-of the standard C++ loop. The method is templated on execution policies, takes an iteration space, and lambda
-which captures the loop body.
+of the standard C++ loop which is templated on an execution policy, takes an iteration space, and a lambda capturing the loop body.
 
 .. code-block:: cpp
                 
@@ -57,7 +55,7 @@ templated on up to N execution policies, expects an iteration space, and index f
          //body
   });
 
-In summary, RAJA templated methods require the developer to supply the following                
+In summary, using one of the RAJA templated methods requires the developer to supply the following
 1. Capture type [=] or [&]
 3. exec_policy - Specifying how the traversal occurs
 4. iter_space  - An iteration space for the RAJA loop (any random access container is expected)
@@ -83,14 +81,13 @@ an iteration space composed of a contiguous sequence of numbers by using ``RAJA:
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
 
-By swapping out execution policies we can target different backends with the caveat that the developer must
-handle all memory management (for more info see :ref:`ref-plugins`). Furthermore, using the cuda backend requires
+By swapping out execution policies we can target different backends, the caveat being that the developer is reponsible for memory management (for more info see :ref:`ref-plugins`). Furthermore, using the cuda backend requires
 the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 163-168
 
-Lastly, invoking the CUDA execution policy requires specifying threads per block. 
+Lastly, invoking the CUDA execution policy requires specifying the number of threads per block.
 A full working version ``example-add-vectors.cpp`` may be found in the example folder.
 
 ---------------------
@@ -108,23 +105,24 @@ and with the aid of macros
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 132-134
 
-a C++ version of matrix multiplcation takes the form of 
+a C++ version of matrix multiplcation may be expressed as
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 161-171
 
-With minimal effort we can start introducing RAJA into the algorithm.
-First we can relive the need of macros by making use of ``RAJA::View``, which
+With minimal effort we can start introducing RAJA into the existing block of code.
+First, we can relive the need of macros by making use of ``RAJA::View``, which
 simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
                            
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 180-182
 
-Second we can convert the outermost loop into a ``RAJA::forall`` loop
+Second, we can convert the outermost loop into a ``RAJA::forall`` loop
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 192-205
 
+yielding code which may be excuted onto various backends.
 In the case that the code will not be off loaded to a device, ``RAJA::forall`` loops
 may be nested
 
@@ -133,7 +131,7 @@ may be nested
 
 Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
 Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
-execution policy may be specified inside a ``RAJA::ExecList<>``. In the following example we pair the outer loop
+execution policy may be specified inside a ``RAJA::ExecList``. In the following example we pair the outer loop
 with an OpenMP policy and the inner loop with a sequential policy.
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
