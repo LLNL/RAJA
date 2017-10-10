@@ -1,17 +1,8 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for RAJA concept definitions.
- *
- *          Definitions in this file will propagate to all RAJA header files.
- *
- ******************************************************************************
- */
+#ifndef CAMP_LIST_FIND_IF_HPP
+#define CAMP_LIST_FIND_IF_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,27 +43,70 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
-
-#include "camp/concepts.hpp"
-#include <iterator>
+#include <cstddef>
 #include <type_traits>
 
-namespace RAJA
+#include "camp/lambda.hpp"
+#include "camp/list/list.hpp"
+#include "camp/number.hpp"
+#include "camp/value.hpp"
+
+namespace camp
 {
 
-namespace concepts
+/// \cond
+namespace detail
 {
-using namespace camp::concepts;
+  template <template <typename...> class Cond, typename... Elements>
+  struct _find_if;
+  template <template <typename...> class Cond, typename First, typename... Rest>
+  struct _find_if<Cond, First, Rest...> {
+    using type = if_<typename Cond<First>::type,
+                     First,
+                     typename _find_if<Cond, Rest...>::type>;
+  };
+  template <template <typename...> class Cond>
+  struct _find_if<Cond> {
+    using type = nil;
+  };
 }
+/// \endcond
 
-namespace type_traits
+template <template <typename...> class Cond, typename Seq>
+struct find_if;
+
+// TODO: document
+template <template <typename...> class Cond, typename... Elements>
+struct find_if<Cond, list<Elements...>> {
+  using type = typename detail::_find_if<Cond, Elements...>::type;
+};
+
+CAMP_MAKE_L(find_if);
+
+#if defined(CAMP_TEST)
+#include "camp/lambda.hpp"
+namespace test
 {
-using namespace camp::type_traits;
+  template <typename Index, typename ForPol>
+  struct index_matches {
+    using type = typename std::is_same<Index, typename ForPol::index>::type;
+  };
+  template <typename Index, typename T>
+  struct For {
+    using index = Index;
+    constexpr static std::size_t value = Index::value;
+  };
+  CHECK_TSAME((find_if<std::is_pointer, list<float, double, int*>>), (int*));
+  CHECK_TSAME((find_if<std::is_pointer, list<float, double>>), (nil));
+  CHECK_TSAME((find_if_l<bind_front<std::is_same, For<num<1>, int>>,
+                         list<For<num<0>, int>, For<num<1>, int>>>),
+              (For<num<1>, int>));
+  CHECK_TSAME((find_if_l<bind_front<index_matches, num<1>>,
+                         list<For<num<0>, int>, For<num<1>, int>>>),
+              (For<num<1>, int>));
 }
-
-}  // end namespace RAJA
-
 #endif
 
+}  // end namespace camp
+
+#endif /* CAMP_LIST_FIND_IF_HPP */

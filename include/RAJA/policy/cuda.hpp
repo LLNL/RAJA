@@ -44,6 +44,7 @@
 #endif
 
 #include "RAJA/policy/cuda/forallN.hpp"
+#include "RAJA/policy/cuda/nested.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 

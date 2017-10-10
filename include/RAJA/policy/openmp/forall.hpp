@@ -43,6 +43,8 @@
 
 #include "RAJA/policy/openmp/policy.hpp"
 
+#include "RAJA/pattern/forall.hpp"
+
 #include <iostream>
 #include <type_traits>
 
@@ -66,8 +68,9 @@ RAJA_INLINE void forall_impl(const omp_parallel_exec<InnerPolicy>&,
 {
 #pragma omp parallel
   {
-    typename std::remove_reference<decltype(loop_body)>::type body = loop_body;
-    forall_impl(InnerPolicy{}, std::forward<Iterable>(iter), std::forward<Func>(body));
+    using RAJA::internal::thread_privatize;
+    auto body = thread_privatize(loop_body);
+    forall_impl(InnerPolicy{}, std::forward<Iterable>(iter), body.get_priv());
   }
 }
 
@@ -80,12 +83,10 @@ RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for nowait
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -96,12 +97,10 @@ RAJA_INLINE void forall_impl(const omp_for_nowait_exec&,
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const omp_for_exec&, Iterable&& iter, Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -114,12 +113,10 @@ RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
                         Iterable&& iter,
                         Func&& loop_body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 #pragma omp for schedule(static, ChunkSize)
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    loop_body(begin[i]);
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    loop_body(begin_it[i]);
   }
 }
 
@@ -147,7 +144,7 @@ RAJA_INLINE void forall_impl(const omp_for_static<ChunkSize>&,
  */
 
 /*
-* TODO: Fix this!!!
+ * TODO: Fix this!!!
  */
 
 /*

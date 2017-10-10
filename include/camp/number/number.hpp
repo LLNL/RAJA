@@ -1,17 +1,8 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for RAJA concept definitions.
- *
- *          Definitions in this file will propagate to all RAJA header files.
- *
- ******************************************************************************
- */
+#ifndef CAMP_NUMBER_NUMBER_HPP
+#define CAMP_NUMBER_NUMBER_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,27 +43,30 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
+#include "camp/defines.hpp"
 
-#include "camp/concepts.hpp"
-#include <iterator>
-#include <type_traits>
-
-namespace RAJA
+namespace camp
 {
 
-namespace concepts
-{
-using namespace camp::concepts;
-}
+// TODO: document, consider making use/match std::integral_constant
+template <class T, T v>
+struct integral_constant {
+  static constexpr T value = v;
+  using value_type = T;
+  using type = integral_constant;
+  constexpr operator value_type() const noexcept { return value; }
+  constexpr value_type operator()() const noexcept { return value; }
+};
 
-namespace type_traits
-{
-using namespace camp::type_traits;
-}
+// TODO: document
+template <idx_t N>
+using num = integral_constant<idx_t, N>;
 
-}  // end namespace RAJA
+using true_type = num<true>;
+using false_type = num<false>;
 
-#endif
+using t = num<true>;
 
+}  // end namespace camp
+
+#endif /* CAMP_NUMBER_NUMBER_HPP */
