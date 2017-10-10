@@ -45,7 +45,7 @@ if (ENABLE_TBB)
     blt_register_library(
       NAME tbb
       INCLUDES ${TBB_INCLUDE_DIRS}
-      LIBRARIES tbb)
+      LIBRARIES ${TBB_LIBRARIES})
     message(STATUS "TBB Enabled")
   else()
     message(WARNING "TBB NOT FOUND")
