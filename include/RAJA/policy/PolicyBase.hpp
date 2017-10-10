@@ -77,25 +77,25 @@ struct platform_of {
 
 template <typename PolicyType, RAJA::Policy P_>
 struct policy_is
-    : concepts::bool_<policy_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<policy_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
-    : concepts::bool_<pattern_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<pattern_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Launch L_>
 struct launch_is
-    : concepts::bool_<launch_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<launch_of<camp::decay<PolicyType>>::value
                       == L_> {
 };
 
 template <typename PolicyType, RAJA::Platform P_>
 struct platform_is
-    : concepts::bool_<platform_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<platform_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
@@ -135,11 +135,11 @@ namespace concepts
 template <typename Pol>
 struct ExecutionPolicy
     : DefineConcept(
-          has_type<::RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
-          has_type<::RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
-          has_type<::RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
+          has_type<::RAJA::Policy>(camp::decay<decltype(Pol::policy)>()),
+          has_type<::RAJA::Pattern>(camp::decay<decltype(Pol::pattern)>()),
+          has_type<::RAJA::Launch>(camp::decay<decltype(Pol::launch)>()),
           has_type<::RAJA::Platform>(
-              types::decay_t<decltype(Pol::platform)>())) {
+              camp::decay<decltype(Pol::platform)>())) {
 };
 
 }  // end namespace concepts

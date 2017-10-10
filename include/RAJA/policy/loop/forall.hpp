@@ -62,11 +62,10 @@ namespace loop
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
+  RAJA_EXTRACT_BED_IT(iter);
+
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(*(begin_it + i));
   }
 }
 

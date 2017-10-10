@@ -1,17 +1,8 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for RAJA concept definitions.
- *
- *          Definitions in this file will propagate to all RAJA header files.
- *
- ******************************************************************************
- */
+#ifndef CAMP_NUMBER_IF_HPP
+#define CAMP_NUMBER_IF_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,27 +43,43 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
+#include "camp/list/list.hpp"
+#include "camp/number/number.hpp"
+#include "camp/value.hpp"
 
-#include "camp/concepts.hpp"
-#include <iterator>
 #include <type_traits>
 
-namespace RAJA
+namespace camp
 {
 
-namespace concepts
-{
-using namespace camp::concepts;
-}
+// TODO: document
+template <bool Cond, typename Then, typename Else>
+struct if_cs {
+  using type = Then;
+};
 
-namespace type_traits
-{
-using namespace camp::type_traits;
-}
+template <typename Then, typename Else>
+struct if_cs<false, Then, Else> {
+  using type = Else;
+};
 
-}  // end namespace RAJA
+// TODO: document
+template <bool Cond, typename Then, typename Else>
+using if_c = typename if_cs<Cond, Then, Else>::type;
 
-#endif
+// TODO: document
+template <typename Cond, typename Then, typename Else>
+struct if_s : if_cs<Cond::value, Then, Else> {
+};
 
+template <typename Then, typename Else>
+struct if_s<nil, Then, Else> : if_cs<false, Then, Else> {
+};
+
+// TODO: document
+template <typename... Ts>
+using if_ = typename if_s<Ts...>::type;
+
+}  // end namespace camp
+
+#endif /* CAMP_NUMBER_IF_HPP */

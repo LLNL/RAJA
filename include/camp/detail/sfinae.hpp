@@ -1,17 +1,8 @@
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file for RAJA concept definitions.
- *
- *          Definitions in this file will propagate to all RAJA header files.
- *
- ******************************************************************************
- */
+#ifndef CAMP_DETAIL_SFINAE_HPP
+#define CAMP_DETAIL_SFINAE_HPP
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -52,27 +43,44 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#ifndef RAJA_concepts_HPP
-#define RAJA_concepts_HPP
+#include "camp/helpers.hpp"
+#include "camp/value.hpp"
+#include "camp/number/number.hpp"
 
-#include "camp/concepts.hpp"
-#include <iterator>
 #include <type_traits>
 
-namespace RAJA
+namespace camp
 {
 
-namespace concepts
+  /// \cond
+namespace detail
 {
-using namespace camp::concepts;
-}
 
-namespace type_traits
-{
-using namespace camp::type_traits;
-}
+  // caller pattern from metal library
+  template <template <typename...> class expr, typename... vals>
+  struct caller;
 
-}  // end namespace RAJA
+  template <
+      template <typename...> class expr,
+      typename... vals,
+      typename std::enable_if<is_value<expr<vals...>>::value>::type* = nullptr>
+  value<expr<vals...>> sfinae(caller<expr, vals...>*);
 
-#endif
+  value<> sfinae(...);
 
+  template <template <typename...> class expr, typename... vals>
+  struct caller : decltype(sfinae(declptr<caller<expr, vals...>>())) {
+  };
+
+  template <template <typename...> class Expr, typename... Vals>
+  struct call_s : caller<Expr, Vals...> {
+  };
+
+  template <template <typename...> class Expr, typename... Vals>
+  using call = Expr<Vals...>;
+};
+/// \endcond
+
+}  // end namespace camp
+
+#endif /* CAMP_DETAIL_SFINAE_HPP */

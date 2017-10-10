@@ -63,8 +63,8 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
     }
   }
   RAJA_DEVICE static void apply(ReduceMinLoc<T, U> const& r,
-                                     U const& val,
-                                     Index_type i)
+                                U const& val,
+                                Index_type i)
   {
     r.minloc(val, i);
   }
@@ -76,7 +76,7 @@ struct reduce_applier<ReduceMinLoc<T, U>> {
   }
   template <bool B>
   static void cmp(ReduceMinLoc<T, U>& l,
-                                   reduce::detail::ValueLoc<U, B> const& r)
+                  reduce::detail::ValueLoc<U, B> const& r)
   {
     ASSERT_FLOAT_EQ(r.val, l.get());
     ASSERT_EQ(r.loc, l.getLoc());
@@ -97,8 +97,8 @@ struct reduce_applier<ReduceMaxLoc<T, U>> {
     }
   }
   RAJA_DEVICE static void apply(ReduceMaxLoc<T, U> const& r,
-                                     U const& val,
-                                     Index_type i)
+                                U const& val,
+                                Index_type i)
   {
     r.maxloc(val, i);
   }
