@@ -29,7 +29,7 @@ cmake \
 #  -C ${RAJA_DIR}/host-configs/bgqos/clang_3_9_0.cmake \
 #  -DCMAKE_INSTALL_PREFIX=../install-bgq_clang-3.9.0 \
 #  -DCMAKE_BUILD_TYPE=Release \
-#  -DRAJA_ENABLE_PERFSUITE=On \
-#  -DRAJA_ENABLE_APPLICATIONS=On \
+#  -DENABLE_PERFSUITE=On \
+#  -DENABLE_APPLICATIONS=On \
 #  "$@" \
 #  ${RAJA_DIR}

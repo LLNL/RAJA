@@ -8,6 +8,6 @@ RUN cd /opt/ && git clone https://github.com/LLNL/RAJA.git
 
 WORKDIR /opt/RAJA
 
-RUN mkdir build && cd build && cmake -DRAJA_ENABLE_CUDA=ON ..
+RUN mkdir build && cd build && cmake -DENABLE_CUDA=ON ..
 
 RUN cd build && make -j && make install

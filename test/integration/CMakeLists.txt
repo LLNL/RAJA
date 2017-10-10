@@ -14,6 +14,6 @@
 #
 ###############################################################################
 
-if (RAJA_ENABLE_CHAI)
+if (ENABLE_CHAI)
   add_subdirectory(chai)
-endif(RAJA_ENABLE_CHAI)
+endif(ENABLE_CHAI)

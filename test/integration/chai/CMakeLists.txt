@@ -14,11 +14,11 @@
 #
 ###############################################################################
 
-if (RAJA_ENABLE_CUDA)
+if (ENABLE_CUDA)
   raja_add_test(
     NAME test-chai-nested
     SOURCES chai-nested.cpp)
-endif(RAJA_ENABLE_CUDA)
+endif(ENABLE_CUDA)
 
 raja_add_test(
   NAME test-chai-policy

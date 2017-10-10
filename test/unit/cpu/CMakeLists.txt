@@ -14,9 +14,10 @@
 #
 ###############################################################################
 
-raja_add_library(
+blt_add_library(
   NAME bis
-  SOURCES buildIndexSet.cpp)
+  SOURCES buildIndexSet.cpp
+  DEPENDS_ON RAJA ${raja_depends})
 
 raja_add_test(
   NAME test-reduce

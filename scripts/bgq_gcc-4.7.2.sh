@@ -29,7 +29,7 @@ cmake \
 #  -C ${RAJA_DIR}/host-configs/bgqos/gcc_4_7_2.cmake \
 #  -DCMAKE_BUILD_TYPE=Release \
 #  -DCMAKE_INSTALL_PREFIX=../install-bgq_gcc-4.7.2 \
-#  -DRAJA_ENABLE_PERFSUITE=On \
-#  -DRAJA_ENABLE_APPLICATIONS=On \
+#  -DENABLE_PERFSUITE=On \
+#  -DENABLE_APPLICATIONS=On \
 #  "$@" \
 #  ${RAJA_DIR}

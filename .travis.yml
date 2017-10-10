@@ -13,17 +13,17 @@ matrix:
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
   - compiler: gcc-6
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
     - COMPILER=g++-6
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
   - compiler: gcc-7
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-7, libtbb-dev ] } }
     env:
     - COMPILER=g++-7
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_WARNINGS=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_WARNINGS=On"
   - compiler: clang-5
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
@@ -49,14 +49,14 @@ matrix:
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DRAJA_ENABLE_CUDA=On"
+    - CMAKE_EXTRA_FLAGS="-DENABLE_CUDA=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
   - compiler: gcc-4.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DRAJA_ENABLE_COVERAGE=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug  -DENABLE_COVERAGE=On"
   - compiler: clang-3.9-debug
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-6, libtbb-dev ] } }
     env:
@@ -67,7 +67,7 @@ matrix:
     addons: { apt: { sources: [ ubuntu-toolchain-r-test ] , packages: [ g++-4.9, libtbb-dev ] } }
     env:
     - COMPILER=g++-4.9
-    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DRAJA_ENABLE_CUDA=On"
+    - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
 cache:
@@ -98,5 +98,5 @@ before_install:
 script:
 - ./scripts/travis_build_and_test.sh
 after_success:
-- if [[ "${CMAKE_EXTRA_FLAGS}" == *"RAJA_ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
+- if [[ "${CMAKE_EXTRA_FLAGS}" == *"ENABLE_COVERAGE"* ]] ; then bash <(curl -s https://codecov.io/bash) -a "-f"; fi
 - if [[ "${TRAVIS_INSTALL_COMPILER}" == "intel" ]] ; then uninstall_intel_software ; fi
