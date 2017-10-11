@@ -157,7 +157,8 @@ where
 
   f = 2x(y-1)(y-2x+xy+2) e^{(x-y)} .
 
-Here we assume a discretization on a lattice with equidistant nodes.
+Here we choose the domain to be :math:`[-1,1] x [-1, 1]` and consider a
+lattice discretization with equidistant nodes of spacing :math:`h`. 
 The values we seek to approximate are the nodes on the lattice, in order
 to approximate the derivatives we consider the following discretization
 
