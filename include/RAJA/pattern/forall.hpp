@@ -42,11 +42,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forall_generic_HPP
-#define RAJA_forall_generic_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -56,36 +53,12 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forall_generic_HPP
+#define RAJA_forall_generic_HPP
 
 #include <functional>
 #include <iterator>
@@ -107,6 +80,8 @@
 
 #include "RAJA/policy/sequential/forall.hpp"
 
+#include "RAJA/pattern/detail/forall.hpp"
+
 #if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 
@@ -115,8 +90,61 @@
 
 #endif
 
+
 namespace RAJA
 {
+
+//
+//////////////////////////////////////////////////////////////////////
+//
+// Iteration over generic iterators
+//
+//////////////////////////////////////////////////////////////////////
+//
+
+namespace internal
+{
+
+template <typename T>
+struct Privatizer {
+  using value_type = camp::decay<T>;
+  using reference_type = value_type&;
+  value_type priv;
+  RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+  RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
+};
+
+template <typename T>
+auto trigger_updates_before(T&& item) -> typename std::remove_reference<T>::type
+{
+  return item;
+}
+
+/**
+ * @brief Create a private copy of the argument to be stored on the current
+ * thread's stack in a class of the Privatizer concept
+ *
+ * @param item data to privatize
+ *
+ * @return Privatizer<T>
+ *
+ * This function will be invoked such that ADL can be used to extend its
+ * functionality.  Anywhere it is called it should be invoked by:
+ *
+ * `using RAJA::internal::thread_privatize; thread_privatize()`
+ *
+ * This allows other namespaces to add new versions to support functionality
+ * that does not belong here.
+ *
+ */
+template <typename T>
+RAJA_HOST_DEVICE auto thread_privatize(const T& item) -> Privatizer<T>
+{
+  return Privatizer<T>{item};
+}
+
+}  // end namespace internal
+
 namespace detail
 {
 /// Adapter to replace specific implementations for the icount variants
@@ -185,8 +213,8 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
-  typename std::remove_reference<LoopBody>::type body = loop_body;
-  using policy::sequential::forall_impl;
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
               body);
@@ -219,12 +247,14 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
   using std::begin;
   using std::end;
   using std::distance;
   auto range = RangeSegment(0, distance(begin(c), end(c)));
   detail::icount_adapter<Container, LoopBody, IndexType> adapted(c,
-                                                                 loop_body,
+                                                                 body,
                                                                  icount);
   using policy::sequential::forall_impl;
   forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
@@ -251,13 +281,27 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                                const StaticIndexSet<SegmentTypes...>& iset,
                                LoopBody loop_body)
 {
+
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
+#endif
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
   // no need for icount variant here
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID,
                      detail::CallForallIcount(iset.getStartingIcount(segID)),
                      SegmentExecPolicy(),
-                     loop_body);
+                     body);
   });
+
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
 }
 
 template <typename SegmentIterPolicy,
@@ -268,12 +312,24 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                              const StaticIndexSet<SegmentTypes...>& iset,
                              LoopBody loop_body)
 {
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  rm->setExecutionSpace(detail::get_space<EP>::value);
+#endif
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
   wrap::forall(SegmentIterPolicy(), iset, [=](int segID) {
     iset.segmentCall(segID,
                      detail::CallForall{},
                      SegmentExecPolicy(),
-                     loop_body);
+                     body);
   });
+#if defined(RAJA_ENABLE_CHAI)
+  rm->setExecutionSpace(chai::NONE);
+#endif
 }
 
 }  // end namespace wrap

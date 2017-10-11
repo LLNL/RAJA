@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -9,34 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read RAJA/LICENSE.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
 
@@ -53,24 +26,37 @@ set(RAJA_VERSION_PATCHLEVEL 1)
 set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/thirdparty" ${CMAKE_MODULE_PATH})
 
 # Build options
-set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
-option(RAJA_ENABLE_OPENMP "Build OpenMP support" On)
-option(RAJA_ENABLE_TBB "Build TBB support" On)
-option(RAJA_ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
-option(RAJA_ENABLE_CUDA "Build CUDA support" Off)
-option(RAJA_ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
-set(RAJA_CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
-option(RAJA_ENABLE_CUB "Use cub for scans using CUDA" On)
-option(RAJA_ENABLE_TESTS "Build tests" On)
-option(RAJA_ENABLE_EXAMPLES "Build simple examples" On)
-option(RAJA_ENABLE_NESTED "Enable nested loop support" Off)
-option(RAJA_ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
-option(RAJA_ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
-option(RAJA_ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
+set(ENABLE_OPENMP On CACHE Bool "Build OpenMP support")
+set(ENABLE_CUDA Off CACHE Bool "Build CUDA support")
+set(ENABLE_COPY_HEADERS Off CACHE Bool "")
+set(ENABLE_WARNINGS_AS_ERRORS Off CACHE Bool "")
 
-option(RAJA_ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
+set(RAJA_CXX_STANDARD_FLAG "default" CACHE STRING "Specific c++ standard flag to use, default attempts to autodetect the highest available")
+
+option(ENABLE_TBB "Build TBB support" Off)
+option(ENABLE_TARGET_OPENMP "Build OpenMP on target device support" Off)
+option(ENABLE_CLANG_CUDA "Use Clang's native CUDA support" Off)
+set(CUDA_ARCH "sm_35" CACHE STRING "Compute architecture to pass to CUDA builds")
+option(ENABLE_CUB "Use cub for scans using CUDA" On)
+option(ENABLE_TESTS "Build tests" On)
+option(ENABLE_EXAMPLES "Build simple examples" On)
+option(ENABLE_MODULES "Enable modules in supporting compilers (clang)" On)
+option(ENABLE_WARNINGS "Enable warnings as errors for CI" Off)
+option(ENABLE_DOCUMENTATION "Build RAJA documentation" Off)
+option(ENABLE_COVERAGE "Enable coverage (only supported with GCC)" Off)
 
 set(TEST_DRIVER "" CACHE STRING "driver used to wrap test commands")
+
+if (NOT BLT_LOADED) 
+if (NOT EXISTS ${PROJECT_SOURCE_DIR}/blt/SetupBLT.cmake)
+  message(FATAL_ERROR "\
+  The BLT submodule is not present. \
+  If in a git repo run the following command:\n\
+  git submodule init && git submodule update")
+endif()
+
+include(blt/SetupBLT.cmake)
+endif()
 
 # Setup basic CMake options
 include(cmake/SetupBasics.cmake)
@@ -82,12 +68,66 @@ include(cmake/SetupCompilers.cmake)
 include(cmake/SetupRajaConfig.cmake)
 # Macros for building executables and libraries
 include (cmake/RAJAMacros.cmake)
-# Sanity check for compiler compatibility
-include (cmake/CompilerCompatibility.cmake)
 
-include_directories(include)
+set (raja_sources
+  src/AlignedRangeIndexSetBuilders.cpp
+  src/DepGraphNode.cpp
+  src/LockFreeIndexSetBuilders.cpp
+  src/MemUtils_CUDA.cpp
+  src/ThreadUtils_CPU.cpp)
 
-include_directories(${PROJECT_BINARY_DIR}/include)
+set (raja_depends)
+
+if (ENABLE_OPENMP)
+  set (raja_depends
+    openmp)
+endif()
+
+if (ENABLE_CUDA)
+  set (raja_depends
+    ${raja_depends}
+    cuda)
+endif ()
+
+if (ENABLE_CUDA)
+  if (ENABLE_CUB)
+    set (raja_depends
+      ${raja_depends}
+      cub)
+  endif ()
+endif ()
+
+if (ENABLE_CHAI)
+  set (raja_depends
+    ${raja_depends}
+    chai)
+endif ()
+
+if (ENABLE_TBB)
+  set(raja_depends
+    ${raja_depends}
+    tbb)
+endif ()
+
+blt_add_library(
+  NAME RAJA
+  SOURCES ${raja_sources}
+  DEPENDS_ON ${raja_depends})
+
+install(TARGETS RAJA
+  EXPORT RAJA
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION lib
+)
+
+install(EXPORT RAJA DESTINATION share/raja/cmake/)
+
+target_include_directories(RAJA
+  PUBLIC
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+  $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>)
 
 install(DIRECTORY include/ DESTINATION include FILES_MATCHING PATTERN *.hpp)
 
@@ -97,32 +137,14 @@ install(FILES
   include/RAJA/module.private.modulemap
   DESTINATION "include/RAJA/")
 
-add_subdirectory(src)
-
-if(RAJA_ENABLE_TESTS)
+if(ENABLE_TESTS)
   add_subdirectory(test)
 endif()
 
-if(RAJA_ENABLE_EXAMPLES)
+if(ENABLE_EXAMPLES)
   add_subdirectory(examples)
 endif()
 
-if (RAJA_ENABLE_DOCUMENTATION)
+if (ENABLE_DOCUMENTATION)
   add_subdirectory(docs)
 endif ()
-
-if(RAJA_ENABLE_APPLICATIONS)
-  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/extra/llnl-raja-proxies/CMakeLists.txt)
-    message(STATUS "Cloning RAJA proxy applications...")
-    execute_process(COMMAND git clone https://github.com/LLNL/RAJA-examples.git ${PROJECT_SOURCE_DIR}/extra/llnl-raja-proxies)
-  endif()
-  add_subdirectory(extra/llnl-raja-proxies)
-endif()
-
-if(RAJA_ENABLE_PERFSUITE)
-  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/extra/performance/CMakeLists.txt)
-    message(STATUS "Cannot find performance suite")
-    message(STATUS "Clone it to ./extra/performance")
-  endif()
-  add_subdirectory(extra/performance)
-endif()

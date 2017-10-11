@@ -42,7 +42,7 @@ Quick Start
 The RAJA code lives in a GitHub [repository](https://github.com/llnl/raja).
 To clone the repo, use the command:
 
-    git clone https://github.com/llnl/raja.git
+    git clone --recursive https://github.com/llnl/raja.git
 
 Then, you can build RAJA like any other CMake project, provided you have a C++
 compiler that supports the C++11 standard. The simplest way to build the code 
@@ -62,7 +62,7 @@ Example Applications
 
 The [RAJA-examples](https://github.com/LLNL/RAJA-examples) repository contains three proxy applications that use the RAJA
 programming model. These applications can be built along with the rest of the
-RAJA framework by setting `-DRAJA_ENABLE_APPLICATIONS=On` when running CMake.
+RAJA framework by setting `-DENABLE_APPLICATIONS=On` when running CMake.
 
 When this option is passed to CMake, the RAJA-examples repository is cloned using `git` to the directory `extra/llnl-raja-proxies` in the project root. The example applications will be built using the same configuration that the RAJA library uses.
 
@@ -110,31 +110,24 @@ The original developers of RAJA are:
   * Rich Hornung (hornung1@llnl.gov)
   * Jeff Keasler (keasler1@llnl.gov)
 
-Contributors include:
-
-  * David Beckingsale (beckingsale1@llnl.gov)
-  * Jason Burmark (burmark1@llnl.gov)
-  * Holger Jones (jones19@llnl.gov)
-  * Will Killian (killian4@llnl.gov)
-  * Adam Kunen (kunen1@llnl.gov)
-  * Olga Pearce (pearce8@llnl.gov)
-  * David Poliakoff (poliakoff1@llnl.gov)
-  * Tom Scogland (scogland1@llnl.gov)
+Please see the {RAJA Contributors Page](https://github.com/LLNL/RAJA/graphs/contributors), to see the full list of contributors to the project.
 
 
 Release
 -----------
 
-Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-2017, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 
 All rights reserved.
 
+`LLNL-CODE-689114`  `OCEC-16-063`
+
 Unlimited Open Source - BSD Distribution
 
-For release details and restrictions, please read the LICENSE.txt file.
-It is also linked here:
-- [LICENSE](./LICENSE.txt)
-
-`LLNL-CODE-689114`  `OCEC-16-063`
+For release details and restrictions, please read the RELEASE, LICENSE,
+and NOTICE files, also linked here:
+- [RELEASE](./RELEASE)
+- [LICENSE](./LICENSE)
+- [NOTICE](./NOTICE)

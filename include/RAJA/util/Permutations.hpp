@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_FORALLN_PERMUTATIONS_HPP
-#define RAJA_FORALLN_PERMUTATIONS_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -53,165 +50,182 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_FORALLN_PERMUTATIONS_HPP
+#define RAJA_FORALLN_PERMUTATIONS_HPP
 
-#include "RAJA/internal/LegacyCompatibility.hpp"
+
+#include "RAJA/config.hpp"
+#include "camp/camp.hpp"
+
+#include <array>
 
 namespace RAJA
 {
 
-using PERM_I = VarOps::index_sequence<0>;
-using PERM_IJ = VarOps::index_sequence<0, 1>;
-using PERM_JI = VarOps::index_sequence<1, 0>;
-using PERM_IJK = VarOps::index_sequence<0, 1, 2>;
-using PERM_IKJ = VarOps::index_sequence<0, 2, 1>;
-using PERM_JIK = VarOps::index_sequence<1, 0, 2>;
-using PERM_JKI = VarOps::index_sequence<1, 2, 0>;
-using PERM_KIJ = VarOps::index_sequence<2, 0, 1>;
-using PERM_KJI = VarOps::index_sequence<2, 1, 0>;
-using PERM_IJKL = VarOps::index_sequence<0, 1, 2, 3>;
-using PERM_IJLK = VarOps::index_sequence<0, 1, 3, 2>;
-using PERM_IKJL = VarOps::index_sequence<0, 2, 1, 3>;
-using PERM_IKLJ = VarOps::index_sequence<0, 2, 3, 1>;
-using PERM_ILJK = VarOps::index_sequence<0, 3, 1, 2>;
-using PERM_ILKJ = VarOps::index_sequence<0, 3, 2, 1>;
-using PERM_JIKL = VarOps::index_sequence<1, 0, 2, 3>;
-using PERM_JILK = VarOps::index_sequence<1, 0, 3, 2>;
-using PERM_JKIL = VarOps::index_sequence<1, 2, 0, 3>;
-using PERM_JKLI = VarOps::index_sequence<1, 2, 3, 0>;
-using PERM_JLIK = VarOps::index_sequence<1, 3, 0, 2>;
-using PERM_JLKI = VarOps::index_sequence<1, 3, 2, 0>;
-using PERM_KIJL = VarOps::index_sequence<2, 0, 1, 3>;
-using PERM_KILJ = VarOps::index_sequence<2, 0, 3, 1>;
-using PERM_KJIL = VarOps::index_sequence<2, 1, 0, 3>;
-using PERM_KJLI = VarOps::index_sequence<2, 1, 3, 0>;
-using PERM_KLIJ = VarOps::index_sequence<2, 3, 0, 1>;
-using PERM_KLJI = VarOps::index_sequence<2, 3, 1, 0>;
-using PERM_LIJK = VarOps::index_sequence<3, 0, 1, 2>;
-using PERM_LIKJ = VarOps::index_sequence<3, 0, 2, 1>;
-using PERM_LJIK = VarOps::index_sequence<3, 1, 0, 2>;
-using PERM_LJKI = VarOps::index_sequence<3, 1, 2, 0>;
-using PERM_LKIJ = VarOps::index_sequence<3, 2, 0, 1>;
-using PERM_LKJI = VarOps::index_sequence<3, 2, 1, 0>;
-using PERM_IJKLM = VarOps::index_sequence<0, 1, 2, 3, 4>;
-using PERM_IJKML = VarOps::index_sequence<0, 1, 2, 4, 3>;
-using PERM_IJLKM = VarOps::index_sequence<0, 1, 3, 2, 4>;
-using PERM_IJLMK = VarOps::index_sequence<0, 1, 3, 4, 2>;
-using PERM_IJMKL = VarOps::index_sequence<0, 1, 4, 2, 3>;
-using PERM_IJMLK = VarOps::index_sequence<0, 1, 4, 3, 2>;
-using PERM_IKJLM = VarOps::index_sequence<0, 2, 1, 3, 4>;
-using PERM_IKJML = VarOps::index_sequence<0, 2, 1, 4, 3>;
-using PERM_IKLJM = VarOps::index_sequence<0, 2, 3, 1, 4>;
-using PERM_IKLMJ = VarOps::index_sequence<0, 2, 3, 4, 1>;
-using PERM_IKMJL = VarOps::index_sequence<0, 2, 4, 1, 3>;
-using PERM_IKMLJ = VarOps::index_sequence<0, 2, 4, 3, 1>;
-using PERM_ILJKM = VarOps::index_sequence<0, 3, 1, 2, 4>;
-using PERM_ILJMK = VarOps::index_sequence<0, 3, 1, 4, 2>;
-using PERM_ILKJM = VarOps::index_sequence<0, 3, 2, 1, 4>;
-using PERM_ILKMJ = VarOps::index_sequence<0, 3, 2, 4, 1>;
-using PERM_ILMJK = VarOps::index_sequence<0, 3, 4, 1, 2>;
-using PERM_ILMKJ = VarOps::index_sequence<0, 3, 4, 2, 1>;
-using PERM_IMJKL = VarOps::index_sequence<0, 4, 1, 2, 3>;
-using PERM_IMJLK = VarOps::index_sequence<0, 4, 1, 3, 2>;
-using PERM_IMKJL = VarOps::index_sequence<0, 4, 2, 1, 3>;
-using PERM_IMKLJ = VarOps::index_sequence<0, 4, 2, 3, 1>;
-using PERM_IMLJK = VarOps::index_sequence<0, 4, 3, 1, 2>;
-using PERM_IMLKJ = VarOps::index_sequence<0, 4, 3, 2, 1>;
-using PERM_JIKLM = VarOps::index_sequence<1, 0, 2, 3, 4>;
-using PERM_JIKML = VarOps::index_sequence<1, 0, 2, 4, 3>;
-using PERM_JILKM = VarOps::index_sequence<1, 0, 3, 2, 4>;
-using PERM_JILMK = VarOps::index_sequence<1, 0, 3, 4, 2>;
-using PERM_JIMKL = VarOps::index_sequence<1, 0, 4, 2, 3>;
-using PERM_JIMLK = VarOps::index_sequence<1, 0, 4, 3, 2>;
-using PERM_JKILM = VarOps::index_sequence<1, 2, 0, 3, 4>;
-using PERM_JKIML = VarOps::index_sequence<1, 2, 0, 4, 3>;
-using PERM_JKLIM = VarOps::index_sequence<1, 2, 3, 0, 4>;
-using PERM_JKLMI = VarOps::index_sequence<1, 2, 3, 4, 0>;
-using PERM_JKMIL = VarOps::index_sequence<1, 2, 4, 0, 3>;
-using PERM_JKMLI = VarOps::index_sequence<1, 2, 4, 3, 0>;
-using PERM_JLIKM = VarOps::index_sequence<1, 3, 0, 2, 4>;
-using PERM_JLIMK = VarOps::index_sequence<1, 3, 0, 4, 2>;
-using PERM_JLKIM = VarOps::index_sequence<1, 3, 2, 0, 4>;
-using PERM_JLKMI = VarOps::index_sequence<1, 3, 2, 4, 0>;
-using PERM_JLMIK = VarOps::index_sequence<1, 3, 4, 0, 2>;
-using PERM_JLMKI = VarOps::index_sequence<1, 3, 4, 2, 0>;
-using PERM_JMIKL = VarOps::index_sequence<1, 4, 0, 2, 3>;
-using PERM_JMILK = VarOps::index_sequence<1, 4, 0, 3, 2>;
-using PERM_JMKIL = VarOps::index_sequence<1, 4, 2, 0, 3>;
-using PERM_JMKLI = VarOps::index_sequence<1, 4, 2, 3, 0>;
-using PERM_JMLIK = VarOps::index_sequence<1, 4, 3, 0, 2>;
-using PERM_JMLKI = VarOps::index_sequence<1, 4, 3, 2, 0>;
-using PERM_KIJLM = VarOps::index_sequence<2, 0, 1, 3, 4>;
-using PERM_KIJML = VarOps::index_sequence<2, 0, 1, 4, 3>;
-using PERM_KILJM = VarOps::index_sequence<2, 0, 3, 1, 4>;
-using PERM_KILMJ = VarOps::index_sequence<2, 0, 3, 4, 1>;
-using PERM_KIMJL = VarOps::index_sequence<2, 0, 4, 1, 3>;
-using PERM_KIMLJ = VarOps::index_sequence<2, 0, 4, 3, 1>;
-using PERM_KJILM = VarOps::index_sequence<2, 1, 0, 3, 4>;
-using PERM_KJIML = VarOps::index_sequence<2, 1, 0, 4, 3>;
-using PERM_KJLIM = VarOps::index_sequence<2, 1, 3, 0, 4>;
-using PERM_KJLMI = VarOps::index_sequence<2, 1, 3, 4, 0>;
-using PERM_KJMIL = VarOps::index_sequence<2, 1, 4, 0, 3>;
-using PERM_KJMLI = VarOps::index_sequence<2, 1, 4, 3, 0>;
-using PERM_KLIJM = VarOps::index_sequence<2, 3, 0, 1, 4>;
-using PERM_KLIMJ = VarOps::index_sequence<2, 3, 0, 4, 1>;
-using PERM_KLJIM = VarOps::index_sequence<2, 3, 1, 0, 4>;
-using PERM_KLJMI = VarOps::index_sequence<2, 3, 1, 4, 0>;
-using PERM_KLMIJ = VarOps::index_sequence<2, 3, 4, 0, 1>;
-using PERM_KLMJI = VarOps::index_sequence<2, 3, 4, 1, 0>;
-using PERM_KMIJL = VarOps::index_sequence<2, 4, 0, 1, 3>;
-using PERM_KMILJ = VarOps::index_sequence<2, 4, 0, 3, 1>;
-using PERM_KMJIL = VarOps::index_sequence<2, 4, 1, 0, 3>;
-using PERM_KMJLI = VarOps::index_sequence<2, 4, 1, 3, 0>;
-using PERM_KMLIJ = VarOps::index_sequence<2, 4, 3, 0, 1>;
-using PERM_KMLJI = VarOps::index_sequence<2, 4, 3, 1, 0>;
-using PERM_LIJKM = VarOps::index_sequence<3, 0, 1, 2, 4>;
-using PERM_LIJMK = VarOps::index_sequence<3, 0, 1, 4, 2>;
-using PERM_LIKJM = VarOps::index_sequence<3, 0, 2, 1, 4>;
-using PERM_LIKMJ = VarOps::index_sequence<3, 0, 2, 4, 1>;
-using PERM_LIMJK = VarOps::index_sequence<3, 0, 4, 1, 2>;
-using PERM_LIMKJ = VarOps::index_sequence<3, 0, 4, 2, 1>;
-using PERM_LJIKM = VarOps::index_sequence<3, 1, 0, 2, 4>;
-using PERM_LJIMK = VarOps::index_sequence<3, 1, 0, 4, 2>;
-using PERM_LJKIM = VarOps::index_sequence<3, 1, 2, 0, 4>;
-using PERM_LJKMI = VarOps::index_sequence<3, 1, 2, 4, 0>;
-using PERM_LJMIK = VarOps::index_sequence<3, 1, 4, 0, 2>;
-using PERM_LJMKI = VarOps::index_sequence<3, 1, 4, 2, 0>;
-using PERM_LKIJM = VarOps::index_sequence<3, 2, 0, 1, 4>;
-using PERM_LKIMJ = VarOps::index_sequence<3, 2, 0, 4, 1>;
-using PERM_LKJIM = VarOps::index_sequence<3, 2, 1, 0, 4>;
-using PERM_LKJMI = VarOps::index_sequence<3, 2, 1, 4, 0>;
-using PERM_LKMIJ = VarOps::index_sequence<3, 2, 4, 0, 1>;
-using PERM_LKMJI = VarOps::index_sequence<3, 2, 4, 1, 0>;
-using PERM_LMIJK = VarOps::index_sequence<3, 4, 0, 1, 2>;
-using PERM_LMIKJ = VarOps::index_sequence<3, 4, 0, 2, 1>;
-using PERM_LMJIK = VarOps::index_sequence<3, 4, 1, 0, 2>;
-using PERM_LMJKI = VarOps::index_sequence<3, 4, 1, 2, 0>;
-using PERM_LMKIJ = VarOps::index_sequence<3, 4, 2, 0, 1>;
-using PERM_LMKJI = VarOps::index_sequence<3, 4, 2, 1, 0>;
-using PERM_MIJKL = VarOps::index_sequence<4, 0, 1, 2, 3>;
-using PERM_MIJLK = VarOps::index_sequence<4, 0, 1, 3, 2>;
-using PERM_MIKJL = VarOps::index_sequence<4, 0, 2, 1, 3>;
-using PERM_MIKLJ = VarOps::index_sequence<4, 0, 2, 3, 1>;
-using PERM_MILJK = VarOps::index_sequence<4, 0, 3, 1, 2>;
-using PERM_MILKJ = VarOps::index_sequence<4, 0, 3, 2, 1>;
-using PERM_MJIKL = VarOps::index_sequence<4, 1, 0, 2, 3>;
-using PERM_MJILK = VarOps::index_sequence<4, 1, 0, 3, 2>;
-using PERM_MJKIL = VarOps::index_sequence<4, 1, 2, 0, 3>;
-using PERM_MJKLI = VarOps::index_sequence<4, 1, 2, 3, 0>;
-using PERM_MJLIK = VarOps::index_sequence<4, 1, 3, 0, 2>;
-using PERM_MJLKI = VarOps::index_sequence<4, 1, 3, 2, 0>;
-using PERM_MKIJL = VarOps::index_sequence<4, 2, 0, 1, 3>;
-using PERM_MKILJ = VarOps::index_sequence<4, 2, 0, 3, 1>;
-using PERM_MKJIL = VarOps::index_sequence<4, 2, 1, 0, 3>;
-using PERM_MKJLI = VarOps::index_sequence<4, 2, 1, 3, 0>;
-using PERM_MKLIJ = VarOps::index_sequence<4, 2, 3, 0, 1>;
-using PERM_MKLJI = VarOps::index_sequence<4, 2, 3, 1, 0>;
-using PERM_MLIJK = VarOps::index_sequence<4, 3, 0, 1, 2>;
-using PERM_MLIKJ = VarOps::index_sequence<4, 3, 0, 2, 1>;
-using PERM_MLJIK = VarOps::index_sequence<4, 3, 1, 0, 2>;
-using PERM_MLJKI = VarOps::index_sequence<4, 3, 1, 2, 0>;
-using PERM_MLKIJ = VarOps::index_sequence<4, 3, 2, 0, 1>;
-using PERM_MLKJI = VarOps::index_sequence<4, 3, 2, 1, 0>;
+template <typename Indices>
+struct as_array;
+
+template <camp::idx_t... Indices>
+struct as_array<camp::idx_seq<Indices...>> {
+  static constexpr std::array<Index_type, sizeof...(Indices)> get() {
+    return {Indices...};
+  }
+};
+
+using PERM_I = camp::idx_seq<0>;
+using PERM_IJ = camp::idx_seq<0, 1>;
+using PERM_JI = camp::idx_seq<1, 0>;
+using PERM_IJK = camp::idx_seq<0, 1, 2>;
+using PERM_IKJ = camp::idx_seq<0, 2, 1>;
+using PERM_JIK = camp::idx_seq<1, 0, 2>;
+using PERM_JKI = camp::idx_seq<1, 2, 0>;
+using PERM_KIJ = camp::idx_seq<2, 0, 1>;
+using PERM_KJI = camp::idx_seq<2, 1, 0>;
+using PERM_IJKL = camp::idx_seq<0, 1, 2, 3>;
+using PERM_IJLK = camp::idx_seq<0, 1, 3, 2>;
+using PERM_IKJL = camp::idx_seq<0, 2, 1, 3>;
+using PERM_IKLJ = camp::idx_seq<0, 2, 3, 1>;
+using PERM_ILJK = camp::idx_seq<0, 3, 1, 2>;
+using PERM_ILKJ = camp::idx_seq<0, 3, 2, 1>;
+using PERM_JIKL = camp::idx_seq<1, 0, 2, 3>;
+using PERM_JILK = camp::idx_seq<1, 0, 3, 2>;
+using PERM_JKIL = camp::idx_seq<1, 2, 0, 3>;
+using PERM_JKLI = camp::idx_seq<1, 2, 3, 0>;
+using PERM_JLIK = camp::idx_seq<1, 3, 0, 2>;
+using PERM_JLKI = camp::idx_seq<1, 3, 2, 0>;
+using PERM_KIJL = camp::idx_seq<2, 0, 1, 3>;
+using PERM_KILJ = camp::idx_seq<2, 0, 3, 1>;
+using PERM_KJIL = camp::idx_seq<2, 1, 0, 3>;
+using PERM_KJLI = camp::idx_seq<2, 1, 3, 0>;
+using PERM_KLIJ = camp::idx_seq<2, 3, 0, 1>;
+using PERM_KLJI = camp::idx_seq<2, 3, 1, 0>;
+using PERM_LIJK = camp::idx_seq<3, 0, 1, 2>;
+using PERM_LIKJ = camp::idx_seq<3, 0, 2, 1>;
+using PERM_LJIK = camp::idx_seq<3, 1, 0, 2>;
+using PERM_LJKI = camp::idx_seq<3, 1, 2, 0>;
+using PERM_LKIJ = camp::idx_seq<3, 2, 0, 1>;
+using PERM_LKJI = camp::idx_seq<3, 2, 1, 0>;
+using PERM_IJKLM = camp::idx_seq<0, 1, 2, 3, 4>;
+using PERM_IJKML = camp::idx_seq<0, 1, 2, 4, 3>;
+using PERM_IJLKM = camp::idx_seq<0, 1, 3, 2, 4>;
+using PERM_IJLMK = camp::idx_seq<0, 1, 3, 4, 2>;
+using PERM_IJMKL = camp::idx_seq<0, 1, 4, 2, 3>;
+using PERM_IJMLK = camp::idx_seq<0, 1, 4, 3, 2>;
+using PERM_IKJLM = camp::idx_seq<0, 2, 1, 3, 4>;
+using PERM_IKJML = camp::idx_seq<0, 2, 1, 4, 3>;
+using PERM_IKLJM = camp::idx_seq<0, 2, 3, 1, 4>;
+using PERM_IKLMJ = camp::idx_seq<0, 2, 3, 4, 1>;
+using PERM_IKMJL = camp::idx_seq<0, 2, 4, 1, 3>;
+using PERM_IKMLJ = camp::idx_seq<0, 2, 4, 3, 1>;
+using PERM_ILJKM = camp::idx_seq<0, 3, 1, 2, 4>;
+using PERM_ILJMK = camp::idx_seq<0, 3, 1, 4, 2>;
+using PERM_ILKJM = camp::idx_seq<0, 3, 2, 1, 4>;
+using PERM_ILKMJ = camp::idx_seq<0, 3, 2, 4, 1>;
+using PERM_ILMJK = camp::idx_seq<0, 3, 4, 1, 2>;
+using PERM_ILMKJ = camp::idx_seq<0, 3, 4, 2, 1>;
+using PERM_IMJKL = camp::idx_seq<0, 4, 1, 2, 3>;
+using PERM_IMJLK = camp::idx_seq<0, 4, 1, 3, 2>;
+using PERM_IMKJL = camp::idx_seq<0, 4, 2, 1, 3>;
+using PERM_IMKLJ = camp::idx_seq<0, 4, 2, 3, 1>;
+using PERM_IMLJK = camp::idx_seq<0, 4, 3, 1, 2>;
+using PERM_IMLKJ = camp::idx_seq<0, 4, 3, 2, 1>;
+using PERM_JIKLM = camp::idx_seq<1, 0, 2, 3, 4>;
+using PERM_JIKML = camp::idx_seq<1, 0, 2, 4, 3>;
+using PERM_JILKM = camp::idx_seq<1, 0, 3, 2, 4>;
+using PERM_JILMK = camp::idx_seq<1, 0, 3, 4, 2>;
+using PERM_JIMKL = camp::idx_seq<1, 0, 4, 2, 3>;
+using PERM_JIMLK = camp::idx_seq<1, 0, 4, 3, 2>;
+using PERM_JKILM = camp::idx_seq<1, 2, 0, 3, 4>;
+using PERM_JKIML = camp::idx_seq<1, 2, 0, 4, 3>;
+using PERM_JKLIM = camp::idx_seq<1, 2, 3, 0, 4>;
+using PERM_JKLMI = camp::idx_seq<1, 2, 3, 4, 0>;
+using PERM_JKMIL = camp::idx_seq<1, 2, 4, 0, 3>;
+using PERM_JKMLI = camp::idx_seq<1, 2, 4, 3, 0>;
+using PERM_JLIKM = camp::idx_seq<1, 3, 0, 2, 4>;
+using PERM_JLIMK = camp::idx_seq<1, 3, 0, 4, 2>;
+using PERM_JLKIM = camp::idx_seq<1, 3, 2, 0, 4>;
+using PERM_JLKMI = camp::idx_seq<1, 3, 2, 4, 0>;
+using PERM_JLMIK = camp::idx_seq<1, 3, 4, 0, 2>;
+using PERM_JLMKI = camp::idx_seq<1, 3, 4, 2, 0>;
+using PERM_JMIKL = camp::idx_seq<1, 4, 0, 2, 3>;
+using PERM_JMILK = camp::idx_seq<1, 4, 0, 3, 2>;
+using PERM_JMKIL = camp::idx_seq<1, 4, 2, 0, 3>;
+using PERM_JMKLI = camp::idx_seq<1, 4, 2, 3, 0>;
+using PERM_JMLIK = camp::idx_seq<1, 4, 3, 0, 2>;
+using PERM_JMLKI = camp::idx_seq<1, 4, 3, 2, 0>;
+using PERM_KIJLM = camp::idx_seq<2, 0, 1, 3, 4>;
+using PERM_KIJML = camp::idx_seq<2, 0, 1, 4, 3>;
+using PERM_KILJM = camp::idx_seq<2, 0, 3, 1, 4>;
+using PERM_KILMJ = camp::idx_seq<2, 0, 3, 4, 1>;
+using PERM_KIMJL = camp::idx_seq<2, 0, 4, 1, 3>;
+using PERM_KIMLJ = camp::idx_seq<2, 0, 4, 3, 1>;
+using PERM_KJILM = camp::idx_seq<2, 1, 0, 3, 4>;
+using PERM_KJIML = camp::idx_seq<2, 1, 0, 4, 3>;
+using PERM_KJLIM = camp::idx_seq<2, 1, 3, 0, 4>;
+using PERM_KJLMI = camp::idx_seq<2, 1, 3, 4, 0>;
+using PERM_KJMIL = camp::idx_seq<2, 1, 4, 0, 3>;
+using PERM_KJMLI = camp::idx_seq<2, 1, 4, 3, 0>;
+using PERM_KLIJM = camp::idx_seq<2, 3, 0, 1, 4>;
+using PERM_KLIMJ = camp::idx_seq<2, 3, 0, 4, 1>;
+using PERM_KLJIM = camp::idx_seq<2, 3, 1, 0, 4>;
+using PERM_KLJMI = camp::idx_seq<2, 3, 1, 4, 0>;
+using PERM_KLMIJ = camp::idx_seq<2, 3, 4, 0, 1>;
+using PERM_KLMJI = camp::idx_seq<2, 3, 4, 1, 0>;
+using PERM_KMIJL = camp::idx_seq<2, 4, 0, 1, 3>;
+using PERM_KMILJ = camp::idx_seq<2, 4, 0, 3, 1>;
+using PERM_KMJIL = camp::idx_seq<2, 4, 1, 0, 3>;
+using PERM_KMJLI = camp::idx_seq<2, 4, 1, 3, 0>;
+using PERM_KMLIJ = camp::idx_seq<2, 4, 3, 0, 1>;
+using PERM_KMLJI = camp::idx_seq<2, 4, 3, 1, 0>;
+using PERM_LIJKM = camp::idx_seq<3, 0, 1, 2, 4>;
+using PERM_LIJMK = camp::idx_seq<3, 0, 1, 4, 2>;
+using PERM_LIKJM = camp::idx_seq<3, 0, 2, 1, 4>;
+using PERM_LIKMJ = camp::idx_seq<3, 0, 2, 4, 1>;
+using PERM_LIMJK = camp::idx_seq<3, 0, 4, 1, 2>;
+using PERM_LIMKJ = camp::idx_seq<3, 0, 4, 2, 1>;
+using PERM_LJIKM = camp::idx_seq<3, 1, 0, 2, 4>;
+using PERM_LJIMK = camp::idx_seq<3, 1, 0, 4, 2>;
+using PERM_LJKIM = camp::idx_seq<3, 1, 2, 0, 4>;
+using PERM_LJKMI = camp::idx_seq<3, 1, 2, 4, 0>;
+using PERM_LJMIK = camp::idx_seq<3, 1, 4, 0, 2>;
+using PERM_LJMKI = camp::idx_seq<3, 1, 4, 2, 0>;
+using PERM_LKIJM = camp::idx_seq<3, 2, 0, 1, 4>;
+using PERM_LKIMJ = camp::idx_seq<3, 2, 0, 4, 1>;
+using PERM_LKJIM = camp::idx_seq<3, 2, 1, 0, 4>;
+using PERM_LKJMI = camp::idx_seq<3, 2, 1, 4, 0>;
+using PERM_LKMIJ = camp::idx_seq<3, 2, 4, 0, 1>;
+using PERM_LKMJI = camp::idx_seq<3, 2, 4, 1, 0>;
+using PERM_LMIJK = camp::idx_seq<3, 4, 0, 1, 2>;
+using PERM_LMIKJ = camp::idx_seq<3, 4, 0, 2, 1>;
+using PERM_LMJIK = camp::idx_seq<3, 4, 1, 0, 2>;
+using PERM_LMJKI = camp::idx_seq<3, 4, 1, 2, 0>;
+using PERM_LMKIJ = camp::idx_seq<3, 4, 2, 0, 1>;
+using PERM_LMKJI = camp::idx_seq<3, 4, 2, 1, 0>;
+using PERM_MIJKL = camp::idx_seq<4, 0, 1, 2, 3>;
+using PERM_MIJLK = camp::idx_seq<4, 0, 1, 3, 2>;
+using PERM_MIKJL = camp::idx_seq<4, 0, 2, 1, 3>;
+using PERM_MIKLJ = camp::idx_seq<4, 0, 2, 3, 1>;
+using PERM_MILJK = camp::idx_seq<4, 0, 3, 1, 2>;
+using PERM_MILKJ = camp::idx_seq<4, 0, 3, 2, 1>;
+using PERM_MJIKL = camp::idx_seq<4, 1, 0, 2, 3>;
+using PERM_MJILK = camp::idx_seq<4, 1, 0, 3, 2>;
+using PERM_MJKIL = camp::idx_seq<4, 1, 2, 0, 3>;
+using PERM_MJKLI = camp::idx_seq<4, 1, 2, 3, 0>;
+using PERM_MJLIK = camp::idx_seq<4, 1, 3, 0, 2>;
+using PERM_MJLKI = camp::idx_seq<4, 1, 3, 2, 0>;
+using PERM_MKIJL = camp::idx_seq<4, 2, 0, 1, 3>;
+using PERM_MKILJ = camp::idx_seq<4, 2, 0, 3, 1>;
+using PERM_MKJIL = camp::idx_seq<4, 2, 1, 0, 3>;
+using PERM_MKJLI = camp::idx_seq<4, 2, 1, 3, 0>;
+using PERM_MKLIJ = camp::idx_seq<4, 2, 3, 0, 1>;
+using PERM_MKLJI = camp::idx_seq<4, 2, 3, 1, 0>;
+using PERM_MLIJK = camp::idx_seq<4, 3, 0, 1, 2>;
+using PERM_MLIKJ = camp::idx_seq<4, 3, 0, 2, 1>;
+using PERM_MLJIK = camp::idx_seq<4, 3, 1, 0, 2>;
+using PERM_MLJKI = camp::idx_seq<4, 3, 1, 2, 0>;
+using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
+using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
+
 }
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

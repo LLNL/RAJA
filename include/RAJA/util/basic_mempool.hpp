@@ -62,6 +62,7 @@
 #include <map>
 #include <cstddef>
 #include <cstdlib>
+#include <cstdio>
 
 namespace RAJA {
 
@@ -340,7 +341,7 @@ public:
 
   void free_chunks()
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
@@ -353,7 +354,7 @@ public:
 
   size_t arena_size()
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
@@ -362,7 +363,7 @@ public:
 
   size_t arena_size(size_t new_size)
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
@@ -374,7 +375,7 @@ public:
   template <typename T>
   T* malloc(size_t nTs, size_t alignment = alignof(T))
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
@@ -402,7 +403,7 @@ public:
 
   void free(const void* cptr)
   {
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
 
@@ -422,7 +423,7 @@ public:
 private:
   using arena_container_type = std::list<detail::MemoryArena>;
 
-#if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
+#if defined(RAJA_ENABLE_OPENMP)
   omp::mutex m_mutex;
 #endif
 
@@ -437,13 +438,13 @@ struct generic_allocator {
   // returns a valid pointer on success, nullptr on failure
   void* malloc(size_t nbytes)
   {
-    return malloc( nbytes);
+    return std::malloc( nbytes);
   }
 
   // returns true on success, false on failure
   bool free(void* ptr)
   {
-    free(ptr);
+    std::free(ptr);
     return true;
   }
 

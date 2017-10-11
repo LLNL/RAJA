@@ -11,11 +11,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_operators_HPP
-#define RAJA_operators_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -56,6 +53,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_operators_HPP
+#define RAJA_operators_HPP
+
 #include "RAJA/config.hpp"
 
 #include "RAJA/util/defines.hpp"
@@ -65,6 +65,7 @@
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
+#include <stdint.h>
 
 #ifdef RAJA_CHECK_LIMITS
 #include <limits>
@@ -562,13 +563,13 @@ template <typename Function,
           typename Arg1 = Return,
           typename Arg2 = Arg1>
 struct BinaryFunction
-    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg1>(),
-                                                           val<Arg2>()))) {
+    : DefineConcept(convertible_to<Return>(
+          camp::val<Function>()(camp::val<Arg1>(), camp::val<Arg2>()))) {
 };
 
 template <typename Function, typename Return, typename Arg = Return>
 struct UnaryFunction
-    : DefineConcept(convertible_to<Return>(val<Function>()(val<Arg>()))) {
+    : DefineConcept(convertible_to<Return>(camp::val<Function>()(camp::val<Arg>()))) {
 };
 
 namespace detail

@@ -1,5 +1,5 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -9,34 +9,7 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/README.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
@@ -109,13 +82,12 @@ using POLICIES =
 #if defined(RAJA_ENABLE_OPENMP)
                ,ExecInfo<TRANSFORMS, seq_exec, omp_parallel_for_exec>
                ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
-               ,OMPExecInfo<TRANSFORMS, loop_exec, omp_for_nowait_exec>
 #endif
 #if defined(RAJA_ENABLE_TBB)
-               ,ExecInfo<TRANSFORMS, seq_exec, tbb_for_exec>
                ,ExecInfo<TRANSFORMS, loop_exec, tbb_for_exec>
 #endif
                >;
+
 
 using InstPolicies =
     ForTesting<tt::apply_t<POLICIES, tt::apply_t<TRANSFORMS, PERMS>>>;
@@ -145,7 +117,8 @@ TYPED_TEST_P(NestedTest, Nested2DTest)
 
     std::vector<Index_type> v(size_i * size_j, 1);
     View view(v.data(),
-              make_permuted_layout({{size_i, size_j}}, POL::PERM::value));
+              make_permuted_layout({{size_i, size_j}},
+                                   RAJA::as_array<typename POL::PERM>::get()));
 
     forallN<Policy>(RangeSegment(1, size_i),
                     RangeSegment(0, size_j),
@@ -265,15 +238,12 @@ struct PolLTimesF_TBB : PolLTimesCommon {
   using ELL_PERM = PERM_IJ;
 };
 
-// Same as D, but with tiling on zones and TBB 2D blocked range on groups and zones
+// Parallel on zones,  loop nesting: Zones, Groups, Moments, Directions
 struct PolLTimesG_TBB : PolLTimesCommon {
   // Loops: Moments, Directions, Groups, Zones
-  using EXEC = NestedPolicy<
-      ExecList<seq_exec, seq_exec, tbb_for_exec, tbb_for_exec>,
-      Tile<TileList<tile_none, tile_none, tile_none, tile_fixed<16>>,
-           Permute<PERM_LKIJ,
-                   Execute  // implicit
-                   >>>;
+  using EXEC =
+      NestedPolicy<ExecList<seq_exec, seq_exec, seq_exec, tbb_for_dynamic>,
+                   Permute<PERM_LKIJ>>;
   using PSI_PERM = PERM_KJI;
   using PHI_PERM = PERM_KJI;
   using ELL_PERM = PERM_IJ;
@@ -337,18 +307,18 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
     }
 
     // create views on data
-    typename POL::ELL_VIEW ell(&ell_data[0],
-                               make_permuted_layout({num_moments,
-                                                     num_directions},
-                                                    POL::ELL_PERM::value));
+    typename POL::ELL_VIEW ell(
+        &ell_data[0],
+        make_permuted_layout({num_moments, num_directions},
+                             RAJA::as_array<typename POL::ELL_PERM>::get()));
     typename POL::PSI_VIEW psi(
         &psi_data[0],
         make_permuted_layout({num_directions, num_groups, num_zones},
-                             POL::PSI_PERM::value));
+                             RAJA::as_array<typename POL::PSI_PERM>::get()));
     typename POL::PHI_VIEW phi(
         &phi_data[0],
         make_permuted_layout({num_moments, num_groups, num_zones},
-                             POL::PHI_PERM::value));
+                             RAJA::as_array<typename POL::PHI_PERM>::get()));
 
     // get execution policy
     using EXEC = typename POL::EXEC;

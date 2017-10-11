@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_generic_HPP
-#define RAJA_forallN_generic_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -22,36 +19,12 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forallN_generic_HPP
+#define RAJA_forallN_generic_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
@@ -62,7 +35,7 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
@@ -235,12 +208,12 @@ struct type_repeater {
 
 template <typename POLICY,
           typename... Indices,
-          size_t... Range,
-          size_t... Unspecified,
+          camp::idx_t... Range,
+          camp::idx_t... Unspecified,
           typename BODY,
           typename... Ts>
-RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
-                              VarOps::index_sequence<Unspecified...>,
+RAJA_INLINE void forallN_impl(camp::idx_seq<Range...>,
+                              camp::idx_seq<Unspecified...>,
                               BODY &&body,
                               const Ts &... args)
 {
@@ -257,18 +230,18 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
 
 template <typename POLICY,
           typename... Indices,
-          size_t... I0s,
-          size_t... I1s,
+          camp::idx_t... I0s,
+          camp::idx_t... I1s,
           typename... Ts>
-RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
-                              VarOps::index_sequence<I1s...>,
+RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
+                              camp::idx_seq<I1s...>,
                               Ts &&... args)
 {
   forallN_impl<POLICY, Indices...>(
-      VarOps::make_index_sequence<sizeof...(args) - 1>(),
-      VarOps::make_index_sequence<sizeof...(args) - 1 - sizeof...(Indices)>(),
-      VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
-      VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
+      camp::make_idx_seq_t<sizeof...(args) - 1>(),
+      camp::make_idx_seq_t<sizeof...(args) - 1 - sizeof...(Indices)>(),
+      VarOps::get_arg_at<I0s>::value(camp::forward<Ts>(args)...)...,
+      VarOps::get_arg_at<I1s>::value(camp::forward<Ts>(args)...)...);
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
@@ -282,9 +255,9 @@ RAJA_INLINE void forallN(Ts &&... args)
 #endif
 
   fun_unpacker<POLICY, Indices...>(
-      VarOps::index_sequence<sizeof...(args) - 1>{},
-      VarOps::make_index_sequence<sizeof...(args) - 1>{},
-      VarOps::forward<Ts>(args)...);
+      camp::idx_seq<sizeof...(args) - 1>{},
+      camp::make_idx_seq_t<sizeof...(args) - 1>{},
+      camp::forward<Ts>(args)...);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);
