@@ -158,7 +158,9 @@ TEST(OffsetLayoutTest, View)
   /*
    * View is constructed by passing in the layout.
    */
-  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>({{1}}, {{10}}));
+  std::array<RAJA::Index_type, 1> lower{{1}};
+  std::array<RAJA::Index_type, 1> upper{{10}};
+  RAJA::View<int, layout> view(data, RAJA::make_offset_layout<1>(lower, upper));
 
   for (int i = 0; i < 10; i++) {
     data[i] = i;
