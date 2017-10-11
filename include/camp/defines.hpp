@@ -53,7 +53,7 @@ using idx_t = std::ptrdiff_t;
   template <typename Lambda, typename... Rest>                     \
   struct X##_l {                                                   \
     using type = typename X<Lambda::template expr, Rest...>::type; \
-  };
+  }
 
 
 #if defined(CAMP_TEST)
