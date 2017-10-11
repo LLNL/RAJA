@@ -45,7 +45,6 @@ static_assert(RAJA::detail::get_space<RAJA::NestedPolicy< RAJA::ExecList< RAJA::
 #endif
 
 TEST(ChaiPolicyTest, Default) {
-
 #if defined(RAJA_ENABLE_CUDA)
   std::cout << RAJA::detail::get_space<RAJA::ExecPolicy<RAJA::seq_segit, RAJA::cuda_exec<128> > >::value << std::endl;
 #else

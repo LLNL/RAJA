@@ -27,7 +27,7 @@ cmake \
 #cmake \
 #  -C ${RAJA_DIR}/host-configs/chaos/icpc_17_0_174.cmake \
 #  -DCMAKE_INSTALL_PREFIX=../install-icpc-1cpc-17.0.174 \
-#  -DRAJA_ENABLE_PERFSUITE=On \
-#  -DRAJA_ENABLE_APPLICATIONS=On \
+#  -DENABLE_PERFSUITE=On \
+#  -DENABLE_APPLICATIONS=On \
 #  "$@" \
 #  ${RAJA_DIR}

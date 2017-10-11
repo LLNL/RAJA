@@ -112,7 +112,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(
     Op&& RAJA_UNUSED_ARG(operation),
     Arg1&& arg) -> typename foldl_impl<Op, Arg1>::Ret
 {
-  return camp::forward<Arg1&&>(arg);
+  return camp::forward<Arg1>(arg);
 }
 
 template <typename Op, typename Arg1, typename Arg2>
@@ -121,8 +121,8 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Arg2&& arg2) ->
     typename foldl_impl<Op, Arg1, Arg2>::Ret
 {
-  return camp::forward<Op&&>(operation)(camp::forward<Arg1&&>(arg1),
-                                        camp::forward<Arg2&&>(arg2));
+  return camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
+                                        camp::forward<Arg2>(arg2));
 }
 
 template <typename Op,
@@ -137,12 +137,12 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                                                   Rest&&... rest) ->
     typename foldl_impl<Op, Arg1, Arg2, Arg3, Rest...>::Ret
 {
-  return foldl(camp::forward<Op&&>(operation),
-               camp::forward<Op&&>(operation)(
-                   camp::forward<Op&&>(operation)(camp::forward<Arg1&&>(arg1),
-                                                  camp::forward<Arg2&&>(arg2)),
-                   camp::forward<Arg3&&>(arg3)),
-               camp::forward<Rest&&>(rest)...);
+  return foldl(camp::forward<Op>(operation),
+               camp::forward<Op>(operation)(
+                   camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
+                                                  camp::forward<Arg2>(arg2)),
+                   camp::forward<Arg3>(arg3)),
+               camp::forward<Rest>(rest)...);
 }
 
 struct adder {

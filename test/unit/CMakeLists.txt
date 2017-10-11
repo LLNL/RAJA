@@ -56,10 +56,10 @@ raja_add_test(
 
 add_subdirectory(cpu)
 
-if(RAJA_ENABLE_CUDA)
+if(ENABLE_CUDA)
   add_subdirectory(cuda)
-endif(RAJA_ENABLE_CUDA)
+endif(ENABLE_CUDA)
 
-if(RAJA_ENABLE_TARGET_OPENMP)
+if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
-endif(RAJA_ENABLE_TARGET_OPENMP)
+endif(ENABLE_TARGET_OPENMP)

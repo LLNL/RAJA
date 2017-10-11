@@ -68,10 +68,14 @@
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
 
+#if defined(RAJA_ENABLE_CLANG_CUDA)
+#define RAJA_SUPPRESS_HD_WARN
+#else
 #if defined(_WIN32)  // windows is non-compliant, yay
 #define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
 #else
 #define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#endif
 #endif
 
 #else
