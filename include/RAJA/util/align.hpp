@@ -1,3 +1,18 @@
+/*!
+ ******************************************************************************
+ *
+ * \file
+ *
+ * \brief   RAJA header file containing an implementation of std align.
+ *
+ ******************************************************************************
+ */
+
+#ifndef RAJA_ALIGN_HPP
+#define RAJA_ALIGN_HPP
+ 
+#include "RAJA/config.hpp"
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,59 +55,32 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Forward declarations for impl::forall overloads
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_policy_fwd_HPP
-#define RAJA_policy_fwd_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-#include "RAJA/policy/cuda/fwd.hpp"
-#endif
-#if defined(RAJA_ENABLE_OPENMP)
-#include "RAJA/policy/openmp/fwd.hpp"
-#endif
-#include "RAJA/policy/sequential/fwd.hpp"
-#include "RAJA/policy/simd/fwd.hpp"
-
 namespace RAJA
 {
-template <typename Selector, typename... Policies>
-class MultiPolicy;
 
-namespace impl
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+// Taken from libc++ 
+// See libc++ license in docs/Licenses/libc++ License
+//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+RAJA_INLINE
+void* align(size_t alignment, size_t size, void*& ptr, size_t& space)
 {
-
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&,
-                        Body &&);
-}  // end namespace impl
-
-namespace wrap
-{
-
-template <typename Iterable,
-          typename Body,
-          typename Selector,
-          typename... Policies>
-RAJA_INLINE void forall(MultiPolicy<Selector, Policies...>,
-                        Iterable &&,
-                        Body &&);
+    void* r = nullptr;
+    if (size <= space)
+    {
+        char* p1 = static_cast<char*>(ptr);
+        char* p2 = reinterpret_cast<char*>(reinterpret_cast<size_t>(p1 + (alignment - 1)) & -alignment);
+        size_t d = static_cast<size_t>(p2 - p1);
+        if (d <= space - size)
+        {
+            r = p2;
+            ptr = r;
+            space -= d;
+        }
+    }
+    return r;
 }
 
-}  // end namespace RAJA
+} // end namespace RAJA
 
-#endif  // closing endif for header file include guard
+#endif

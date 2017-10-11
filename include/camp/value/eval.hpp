@@ -1,3 +1,6 @@
+#ifndef CAMP_VALUE_EVAL_HPP
+#define CAMP_VALUE_EVAL_HPP
+
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
 //
@@ -40,57 +43,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-/*!
- ******************************************************************************
- *
- * \file
- *
- * \brief   Header file containing RAJA segment template methods for
- *          execution via CUDA kernel launch.
- *
- *          These methods should work on any platform that supports
- *          CUDA devices.
- *
- ******************************************************************************
- */
-
-#ifndef RAJA_forward_sequential_HXX
-#define RAJA_forward_sequential_HXX
-
-#include <type_traits>
-
-#include "RAJA/config.hpp"
-
-#include "RAJA/policy/sequential/policy.hpp"
-
-namespace RAJA
+namespace camp
 {
 
-namespace impl
-{
+// TODO: document
+template <typename Val>
+using eval = typename Val::type;
 
-template <typename Func>
-RAJA_INLINE void forall(const seq_exec &,
-                        const PolicyBase &,
-                        const RangeSegment &iter,
-                        Func &&loop_body);
+}  // end namespace camp
 
-template <typename Iterable, typename Func>
-RAJA_INLINE void forall(const seq_exec &,
-                        const PolicyBase &,
-                        Iterable &&iter,
-                        Func &&loop_body);
-
-template <typename Iterable, typename IndexType, typename Func>
-RAJA_INLINE typename std::enable_if<std::is_integral<IndexType>::value>::type
-forall_Icount(const seq_exec &,
-              const PolicyBase &,
-              Iterable &&iter,
-              IndexType icount,
-              Func &&loop_body);
-
-}  // closing brace for impl namespace
-
-}  // closing brace for RAJA namespace
-
-#endif  // closing endif for header file include guard
+#endif /* CAMP_VALUE_EVAL_HPP */

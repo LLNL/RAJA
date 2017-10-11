@@ -1,5 +1,5 @@
 ###############################################################################
-# Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+# Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 #
 # Produced at the Lawrence Livermore National Laboratory
 #
@@ -9,106 +9,51 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read RAJA/LICENSE.
-#
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are met:
-#
-# * Redistributions of source code must retain the above copyright notice,
-#   this list of conditions and the disclaimer below.
-#
-# * Redistributions in binary form must reproduce the above copyright notice,
-#   this list of conditions and the disclaimer (as noted below) in the
-#   documentation and/or other materials provided with the distribution.
-#
-# * Neither the name of the LLNS/LLNL nor the names of its contributors may
-#   be used to endorse or promote products derived from this software without
-#   specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-# IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-# ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-# LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-# DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-# DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-# OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-# HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-# STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-# IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-# POSSIBILITY OF SUCH DAMAGE.
+# For details about use and distribution, please read RAJA/LICENSE.
 #
 ###############################################################################
 
 macro(raja_add_executable)
   set(options )
-  set(singleValueArgs NAME)
+  set(singleValueArgs NAME TEST)
   set(multiValueArgs SOURCES DEPENDS_ON)
 
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  if (RAJA_ENABLE_CHAI)
+  list (APPEND arg_DEPENDS_ON RAJA)
+
+  if (ENABLE_CHAI)
     list (APPEND arg_DEPENDS_ON chai)
   endif ()
 
-  if (RAJA_ENABLE_CUDA)
-    if (RAJA_ENABLE_CLANG_CUDA)
-      add_executable(${arg_NAME} ${arg_SOURCES})
-      target_compile_options(${arg_NAME} PRIVATE
-        -x cuda --cuda-gpu-arch=${RAJA_CUDA_ARCH} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
-      target_include_directories(${arg_NAME}
-        PUBLIC ${EXPT_CUDA_INCLUDE_LOCATION})
-      target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES} RAJA ${arg_DEPENDS_ON})
-    else ()
-      set_source_files_properties(
-        ${arg_SOURCES}
-        PROPERTIES
-        CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-      cuda_add_executable(${arg_NAME} ${arg_SOURCES})
-      target_link_libraries(${arg_NAME} PUBLIC RAJA ${arg_DEPENDS_ON})
-    endif()
+  if (ENABLE_OPENMP)
+    list (APPEND arg_DEPENDS_ON openmp)
+  endif ()
+
+  if (ENABLE_CUDA)
+    list (APPEND arg_DEPENDS_ON cuda)
+  endif ()
+
+  if (ENABLE_TBB)
+    list (APPEND arg_DEPENDS_ON tbb)
+  endif ()
+
+  message(STATUS "${arg_NAME} building with depends: ${arg_DEPENDS_ON}")
+
+  if (${arg_TEST})
+    set (_output_dir test)
   else ()
-    add_executable(${arg_NAME} ${arg_SOURCES})
-    target_link_libraries(${arg_NAME} RAJA ${arg_DEPENDS_ON})
+    set (_output_dir bin)
   endif()
+
+  blt_add_executable(
+    NAME ${arg_NAME}
+    SOURCES ${arg_SOURCES}
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    OUTPUT_DIR ${_output_dir}
+    )
 endmacro(raja_add_executable)
-
-macro(raja_add_library)
-  set(options )
-  set(singleValueArgs NAME)
-  set(multiValueArgs SOURCES DEPENDS_ON)
-
-  cmake_parse_arguments(arg
-    "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
-
-  if (RAJA_ENABLE_CHAI)
-    list (APPEND arg_DEPENDS_ON chai)
-  endif ()
-
-  if (RAJA_ENABLE_CUDA)
-    if (RAJA_ENABLE_CLANG_CUDA)
-
-      add_library(${arg_NAME} ${arg_SOURCES})
-      target_compile_options(${arg_NAME} PRIVATE
-        -x cuda --cuda-gpu-arch=${RAJA_CUDA_ARCH} --cuda-path=${CUDA_TOOLKIT_ROOT_DIR})
-      target_include_directories(${arg_NAME}
-        PUBLIC ${EXPT_CUDA_INCLUDE_LOCATION})
-      target_link_libraries(${arg_NAME} ${CUDA_LIBRARIES})
-
-    else ()
-      set_source_files_properties(
-        ${arg_SOURCES}
-        PROPERTIES
-        CUDA_SOURCE_PROPERTY_FORMAT OBJ)
-
-      cuda_add_library(${arg_NAME} ${arg_SOURCES})
-    endif ()
-  else ()
-    add_library(${arg_NAME} ${arg_SOURCES})
-  endif ()
-
-endmacro(raja_add_library)
 
 macro(raja_add_test)
   set(options )
@@ -118,13 +63,16 @@ macro(raja_add_test)
   cmake_parse_arguments(arg
     "${options}" "${singleValueArgs}" "${multiValueArgs}" ${ARGN})
 
-  list (APPEND arg_DEPENDS_ON gtest gtest_main ${CMAKE_THREAD_LIBS_INIT})
+  list (APPEND arg_DEPENDS_ON gtest ${CMAKE_THREAD_LIBS_INIT})
 
   raja_add_executable(
     NAME ${arg_NAME}.exe
     SOURCES ${arg_SOURCES}
-    DEPENDS_ON ${arg_DEPENDS_ON})
+    DEPENDS_ON ${arg_DEPENDS_ON}
+    TEST On)
 
-  add_test(NAME ${arg_NAME}
-    COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
+  blt_add_test(
+    NAME ${arg_NAME}
+    #COMMAND ${TEST_DRIVER} $<TARGET_FILE:${arg_NAME}>)
+    COMMAND ${TEST_DRIVER} ${arg_NAME})
 endmacro(raja_add_test)

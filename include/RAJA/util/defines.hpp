@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_INTERNAL_DEFINES_HPP
-#define RAJA_INTERNAL_DEFINES_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -53,6 +50,9 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
+#ifndef RAJA_INTERNAL_DEFINES_HPP
+#define RAJA_INTERNAL_DEFINES_HPP
+
 #include "RAJA/config.hpp"
 
 #include <cstdlib>
@@ -68,10 +68,14 @@
 #define RAJA_HOST_DEVICE __host__ __device__
 #define RAJA_DEVICE __device__
 
+#if defined(RAJA_ENABLE_CLANG_CUDA)
+#define RAJA_SUPPRESS_HD_WARN
+#else
 #if defined(_WIN32)  // windows is non-compliant, yay
 #define RAJA_SUPPRESS_HD_WARN __pragma(nv_exec_check_disable)
 #else
 #define RAJA_SUPPRESS_HD_WARN _Pragma("nv_exec_check_disable")
+#endif
 #endif
 
 #else
@@ -122,7 +126,8 @@
  * \endcode
  *******************************************************************************
  */
-#define RAJA_UNUSED_VAR(_x) static_cast<void>(_x)
+template < typename... T >
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -138,13 +143,9 @@
  */
 #define RAJA_STRINGIFY_MACRO(x) RAJA_STRINGIFY_HELPER(x)
 
-/*!
- * \def RAJA_DIVIDE_CEILING_INT(dividend, divisor)
- *
- * Macro to find ceiling (dividend / divisor) for integer types
- */
 #define RAJA_DIVIDE_CEILING_INT(dividend, divisor) \
   (((dividend) + (divisor)-1) / (divisor))
+
 
 inline void RAJA_ABORT_OR_THROW(const char *str)
 {

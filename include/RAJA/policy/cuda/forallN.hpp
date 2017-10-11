@@ -9,15 +9,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_forallN_cuda_HPP
-#define RAJA_forallN_cuda_HPP
-
-#include "RAJA/config.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -27,36 +20,16 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_forallN_cuda_HPP
+#define RAJA_forallN_cuda_HPP
+
+#include "RAJA/config.hpp"
+
+#if defined(RAJA_ENABLE_CUDA)
 
 #include <cassert>
 #include <climits>
@@ -211,16 +184,23 @@ struct ForallN_Executor<device,
 
   template <typename BODY, typename... CARGS>
   RAJA_INLINE void callLauncher(CudaDim const &dims,
-                                BODY body,
+                                BODY loop_body,
                                 CARGS const &... cargs) const
   {
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body,
-                                                                   cargs...);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      bool Async = true;
+      cudaStream_t stream = 0;
+
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+                                 std::move(loop_body)),
+          cargs...);
+      RAJA::cuda::peekAtLastError();
+
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
+    }
   }
 };
 
@@ -234,17 +214,25 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   }
 
   template <typename BODY>
-  RAJA_INLINE void operator()(BODY body) const
+  RAJA_INLINE void operator()(BODY loop_body) const
   {
     CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      cudaLauncherN<<<RAJA_CUDA_LAUNCH_PARAMS(dims.num_blocks,
-                                              dims.num_threads)>>>(body, c0);
-    }
 
-    RAJA_CUDA_CHECK_AND_SYNC(true);
+      bool Async = true;
+      cudaStream_t stream = 0;
+
+      cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+                                 std::move(loop_body)),
+          c0);
+      RAJA::cuda::peekAtLastError();
+
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
+    }
   }
 };
 

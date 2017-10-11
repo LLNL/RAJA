@@ -8,11 +8,8 @@
  ******************************************************************************
  */
 
-#ifndef RAJA_POLICYBASE_HPP
-#define RAJA_POLICYBASE_HPP
-
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
-// Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+// Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 //
 // Produced at the Lawrence Livermore National Laboratory
 //
@@ -22,36 +19,12 @@
 //
 // This file is part of RAJA.
 //
-// For additional details, please also read RAJA/LICENSE.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-// * Redistributions of source code must retain the above copyright notice,
-//   this list of conditions and the disclaimer below.
-//
-// * Redistributions in binary form must reproduce the above copyright notice,
-//   this list of conditions and the disclaimer (as noted below) in the
-//   documentation and/or other materials provided with the distribution.
-//
-// * Neither the name of the LLNS/LLNL nor the names of its contributors may
-//   be used to endorse or promote products derived from this software without
-//   specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-// AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-// IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-// ARE DISCLAIMED. IN NO EVENT SHALL LAWRENCE LIVERMORE NATIONAL SECURITY,
-// LLC, THE U.S. DEPARTMENT OF ENERGY OR CONTRIBUTORS BE LIABLE FOR ANY
-// DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-// DAMAGES  (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS
-// OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
-// HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
-// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
-// IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
-// POSSIBILITY OF SUCH DAMAGE.
+// For details about use and distribution, please read RAJA/LICENSE.
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
+
+#ifndef RAJA_POLICYBASE_HPP
+#define RAJA_POLICYBASE_HPP
 
 #include <cstddef>
 #include "RAJA/util/concepts.hpp"
@@ -104,25 +77,25 @@ struct platform_of {
 
 template <typename PolicyType, RAJA::Policy P_>
 struct policy_is
-    : concepts::bool_<policy_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<policy_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
-    : concepts::bool_<pattern_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<pattern_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
 template <typename PolicyType, RAJA::Launch L_>
 struct launch_is
-    : concepts::bool_<launch_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<launch_of<camp::decay<PolicyType>>::value
                       == L_> {
 };
 
 template <typename PolicyType, RAJA::Platform P_>
 struct platform_is
-    : concepts::bool_<platform_of<concepts::types::decay_t<PolicyType>>::value
+    : camp::num<platform_of<camp::decay<PolicyType>>::value
                       == P_> {
 };
 
@@ -162,11 +135,11 @@ namespace concepts
 template <typename Pol>
 struct ExecutionPolicy
     : DefineConcept(
-          has_type<::RAJA::Policy>(types::decay_t<decltype(Pol::policy)>()),
-          has_type<::RAJA::Pattern>(types::decay_t<decltype(Pol::pattern)>()),
-          has_type<::RAJA::Launch>(types::decay_t<decltype(Pol::launch)>()),
+          has_type<::RAJA::Policy>(camp::decay<decltype(Pol::policy)>()),
+          has_type<::RAJA::Pattern>(camp::decay<decltype(Pol::pattern)>()),
+          has_type<::RAJA::Launch>(camp::decay<decltype(Pol::launch)>()),
           has_type<::RAJA::Platform>(
-              types::decay_t<decltype(Pol::platform)>())) {
+              camp::decay<decltype(Pol::platform)>())) {
 };
 
 }  // end namespace concepts
