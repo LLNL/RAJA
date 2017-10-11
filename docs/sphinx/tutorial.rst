@@ -76,7 +76,7 @@ and the result is stored in a third vector, C. The C++ version of this loop take
 
 The construction of a RAJA analog begins by first specifying an execution policy
 (for more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
-an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see ___). 
+an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see :ref:`ref-index`). 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
                     :lines: 132-137
@@ -110,7 +110,7 @@ a C++ version of matrix multiplcation may be expressed as
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 161-171
 
-With minimal effort we can start introducing RAJA into the existing block of code.
+With minimal effort we can create an RAJA analog by modifying the existing block of code.
 First, we can relive the need of macros by making use of ``RAJA::View``, which
 simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
                            
@@ -122,7 +122,7 @@ Second, we can convert the outermost loop into a ``RAJA::forall`` loop
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
                     :lines: 192-205
 
-yielding code which may be excuted onto various backends.
+yielding code which may be excuted with various backends.
 In the case that the code will not be off loaded to a device, ``RAJA::forall`` loops
 may be nested
 
@@ -159,7 +159,7 @@ where
 
 Here we choose the domain to be :math:`[-1,1] x [-1, 1]` and consider a
 lattice discretization with equidistant nodes of spacing :math:`h`. 
-The values we seek to approximate are the nodes on the lattice, in order
+The values we seek to approximate are the nodes inside the lattice, in order
 to approximate the derivatives we consider the following discretization
 
 .. math::
@@ -167,8 +167,8 @@ to approximate the derivatives we consider the following discretization
    u_{xx} \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2}, \\
    u_{yy} \approx \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{h^2},
 
-where (i,j) corresponds to a location on grid. After substituting the approximations
-into the equation and rearranging, the Jacobi method iterates
+where :math:`(i,j)` corresponds to a location on lattice. After substituting the approximations
+into the equation and some rearranging, the Jacobi method iterates
 
 .. math::
 
@@ -180,9 +180,7 @@ while
 
    \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } > tol
 
-Each update may be viewed as a stencil computation. In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. As the solution to the equation is zero on the boundary
-we only apply the stencil compuation to interior nodes. Pictorally, for each node on a grid (black) we carryout a weighted sum
-using four neighboring points (blue)
+In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero for all :math:`(i,j)`. As the solution to the equation is zero on the boundary we carry out each iteration on the interior nodes only. Pictorally, for each node on a grid (black) we carryout a weighted sum using four neighboring points (blue)
 
 .. image:: figures/jacobi.png
    :scale: 10 %
@@ -194,32 +192,30 @@ Using the ``RAJA::ForallN`` method the iteration can be expressed as
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 307-319
 
-where we have predefined the ``jacobiompNestedPolicy`` as                            
+where we have predefined the ``jacobiompNestedPolicy`` as
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 298-300
 
-Computing :math:`\mathcal{E}` in parallel (aka reduction) requires multiple threads writting to the same location in memory, a procedure that is inherently not threadsafe. RAJA enables a thread-safe reduction by introducing ``RAJA::Reduce Sum`` variables. The following code illustrates carrying out the reduction procedure and updating the jacobi vectors
+Computing :math:`\mathcal{E}` in parallel (aka reduction) requires multiple threads writting to the same location in memory, a procedure that is inherently not threadsafe. RAJA enables a thread-safe reduction by introducing ``RAJA::Reduce Sum`` variables. The following code illustrates carrying out the reduction procedure and updating the arrays used to hold the approximations
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
                     :lines: 323-330
 
 
 A full working version ``example-jacobi.cpp`` may be found in the example folder.
-
            
 -------------
 Wave Equation
 -------------
-
-In this example we create a wave propagator which solves the following equation 
+As an example of an evolution equation we consider the acoustic wave equation
 
 .. math::  
    p_{tt} = c^{2} \left( p_{xx} + p_{yy} \right), \\
-   (x,y) \in [0,1] \times [0,1]. 
+   (x,y) \in [-1,1] \times [-1,1]. 
 
-As in the previous example we discretize the equation on a lattice with equidistant spacing between the nodes.
-The discretization of the equation takes the form 
+As before we discretize the domain :math:`[-1,1] x [-1, 1]` by considering a lattice with equidistant nodes of distance :math:`h`. 
+We take the discretization to be 
 
 .. math::
    p^{n+1}_{i,j} = 2 p^{n}_{i,j} - p^{n-1}_{i,j} + \Delta t^2 \left( D_{xx}p^{n} + D_{yy}p^{n} \right)
@@ -231,13 +227,13 @@ where
   D_{xx} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
   D_{yy} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
 
-As in the previous example we consider the discretization on a structured grid. Here n corresponds to a time-step and :math:`(i,j)`
-corresponds to a location on the grid. Assuming a fourth order discretization (stencil width N=2) the iteration
+The subscript :math:`n` denotes the :math:`n-th` timestep and the subscripts :math:`i,j` corresponds to a location on the grid.
+In this example we choose the spatial discretization to be of fourth order (stencil width :math:`N=2`). The resulting kernel for the acoustic wave equation is given by
 
 .. literalinclude:: ../../examples/example-wave.cpp
                     :lines: 279-312
 
-Here we included the ``RAJA_HOST_DEVICE`` decorator to our lambda to create a portable kernel that may be executed on either
+Notably, we have included the ``RAJA_HOST_DEVICE`` decorator in the lambda to create a portable kernel that may be executed on either
 the CPU (with a variety of execution policies) the GPU (via the ``cuda_exec`` policy). 
 
 A full working version ``example-wave.cpp`` may be found in the example folder.
@@ -246,22 +242,21 @@ A full working version ``example-wave.cpp`` may be found in the example folder.
 Red-Black Gauss-Seidel
 ----------------------
 In this example we revisit the boundary value problem solved by the Jacobi method and apply a Red-Black Gauss-Sidel scheme.
-Although the Gauss-Sidel scheme is inherently a sequential algorithm we may expose parallism by applying the following coloring
-to the interior nodes of the domain
+The classic Gauss-Sidel method is inherrently a sequential algorithm; however, parallism may be exposed by coloring the interior nodes
+in the following manner
 
 .. image:: figures/redblackGS.png
    :scale: 10 %
    :align: center
 
-By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the transversal using a ``RAJA::NestedPolicy`` where we specify can specify the outer policy to be executed sequentially and
-the inner policy in parallel
+By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the sequential/parallel transversal using by using a ``RAJA::NestedPolicy``.
 
 .. literalinclude:: ../../examples/example-gauss-seidel.cpp
                     :lines: 267-268
 
-The details of the transveral are captured using a ``RAJA::StaticIndexSet`` (for more info see ___ ).
-The following code block illustrates how to construct the index set for a Red-Black Gauss-Sidel scheme. 
+Furthermore, we may construct a ``RAJA::StaticIndexSet`` which encapsulates the indices for the red and black nodes as two seperate list segments (for more info see ____ ). The following block of code illustrates the construction of the ``RAJA::StaticIndexSet``
            
 .. literalinclude:: ../../examples/example-gauss-seidel.cpp
                     :lines: 215-244
+                            
 A full working version ``example-gauss-seidel.cpp`` may be found in the example folder.
