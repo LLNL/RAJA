@@ -144,7 +144,7 @@ struct accumulate<Op, Initial, list<Elements...>> {
   using type = typename detail::accumulate_impl<Op, Initial, Elements...>::type;
 };
 
-CAMP_MAKE_L(accumulate);
+CAMP_MAKE_L(accumulate)
 
 #if defined(CAMP_TEST)
 namespace test
@@ -165,7 +165,7 @@ struct filter<Op, list<Elements...>> {
   using type = typename accumulate<append_if, list<>, list<Elements...>>::type;
 };
 
-CAMP_MAKE_L(filter);
+CAMP_MAKE_L(filter)
 
 #if defined(CAMP_TEST)
 namespace test

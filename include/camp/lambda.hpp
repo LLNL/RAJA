@@ -123,7 +123,7 @@ struct bind_front {
   using type = bind_front;
 };
 
-CAMP_MAKE_L(bind_front);
+CAMP_MAKE_L(bind_front)
 
 #if defined(CAMP_TEST)
 namespace test

@@ -81,7 +81,7 @@ struct find_if<Cond, list<Elements...>> {
   using type = typename detail::_find_if<Cond, Elements...>::type;
 };
 
-CAMP_MAKE_L(find_if);
+CAMP_MAKE_L(find_if)
 
 #if defined(CAMP_TEST)
 #include "camp/lambda.hpp"
