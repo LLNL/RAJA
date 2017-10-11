@@ -1,7 +1,7 @@
 set(SPHINX_BUILD_DIR "${CMAKE_CURRENT_BINARY_DIR}/_build")
 set(SPHINX_HTML_DIR "${CMAKE_CURRENT_BINARY_DIR}/html")
 
-configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py.in"
+configure_file("${CMAKE_CURRENT_SOURCE_DIR}/conf.py"
         "${SPHINX_BUILD_DIR}/conf.py"
         @ONLY)
 
