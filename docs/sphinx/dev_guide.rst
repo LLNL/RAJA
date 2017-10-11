@@ -66,7 +66,6 @@ the 'include/RAJA' directory. Currently, these directories are as follows
 (their names are descriptive of the programming model supported by their
 contents):
 
-  * exec-cilk
   * exec-cuda
   * exec-openmp
   * exec-sequential
@@ -97,7 +96,7 @@ tests is a good sanity check that the code is built correctly and works. The
 two subdirectories are:
 
   * **CPUtests.** It contains codes to run traversl and reduction tests for
-    sequential, OpenMP, and CilkPlus (if available) execution policies.
+    sequential and OpenMP execution policies.
 
   * **GPUtests.** It contains codes to run traversl and reduction tests for
     GPU CUDA execution policies. Note that these tests use Unified Memory

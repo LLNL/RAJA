@@ -80,7 +80,7 @@ so all options propagate through the build process consistently.
 These variables are turned on and off similar to standard CMake variables; 
 e.g., to enable RAJA OpenMP functionality, add this CMake option ::
 
-    -DRAJA_ENABLE_OPENMP=On
+    -DENABLE_OPENMP=On
 
 The following list describes the RAJA CMake variables and their defaults.
 
@@ -92,7 +92,7 @@ The following list describes the RAJA CMake variables and their defaults.
       ======================   ======================
       Variable                 Default
       ======================   ======================
-      RAJA_ENABLE_TESTS        On 
+      ENABLE_TESTS        On 
       ======================   ======================
      
   * **Programming Models**
@@ -103,9 +103,8 @@ The following list describes the RAJA CMake variables and their defaults.
       ======================   ======================
       Variable                 Default
       ======================   ======================
-      RAJA_ENABLE_OPENMP       On 
-      RAJA_ENABLE_CUDA         Off 
-      RAJA_ENABLE_CILK         Off 
+      ENABLE_OPENMP       On 
+      ENABLE_CUDA         Off 
       ======================   ======================
 
   * **Data Types, Sizes, Alignment Parameters, etc.**
@@ -252,7 +251,7 @@ The following list describes the RAJA CMake variables and their defaults.
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      RAJA_ENABLE_NESTED              Enable/disable nested loop functionality
+      ENABLE_NESTED              Enable/disable nested loop functionality
       =============================   ========================================
 
      RAJA has an experimental loop-level fault tolerance model which is 
@@ -261,7 +260,7 @@ The following list describes the RAJA CMake variables and their defaults.
       =============================   ========================================
       Variable                        Meaning
       =============================   ========================================
-      RAJA_ENABLE_FT                  Enable/disable fault-tolerance mechanism
+      ENABLE_FT                  Enable/disable fault-tolerance mechanism
       RAJA_REPORT_FT                  Enable/disable a report of fault-
                                       tolerance enabled run (e.g., number of 
                                       faults detected, recovered from, 

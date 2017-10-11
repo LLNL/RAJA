@@ -1,0 +1,18 @@
+version: 1.0.{build}
+skip_branch_with_pr: true
+image: Visual Studio 2017
+build_script:
+- cmd: >-
+    git submodule init
+
+    git submodule update
+
+    mkdir build
+
+    cd build
+
+    cmake ../
+
+    cmake --build . --config Release
+test_script:
+- cmd: ctest -VV -C Release

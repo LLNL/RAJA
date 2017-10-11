@@ -9,7 +9,7 @@
 #
 # This file is part of RAJA.
 #
-# For additional details, please also read raja/README-license.txt.
+# For additional details, please also read RAJA/LICENSE.
 #
 # Redistribution and use in source and binary forms, with or without
 # modification, are permitted provided that the following conditions are met:
@@ -83,13 +83,13 @@ if (NOT RAJA_CONFIG_LOADED)
   set(RAJA_RT_LIBRARIES "${RT_LIBRARIES}")
 
   set(RAJA_TIMER_TYPE    ${RAJA_TIMER_TYPE})
-  set(RAJA_ENABLE_CILK   ${RAJA_ENABLE_CILK})
-  set(RAJA_ENABLE_CUDA   ${RAJA_ENABLE_CUDA})
-  set(RAJA_ENABLE_FT     ${RAJA_ENABLE_FT})
-  set(RAJA_ENABLE_OPENMP ${RAJA_ENABLE_OPENMP})
-  set(RAJA_ENABLE_TESTS  ${RAJA_ENABLE_TESTS})
+  set(ENABLE_CUDA   ${ENABLE_CUDA})
+  set(ENABLE_FT     ${ENABLE_FT})
+  set(ENABLE_OPENMP ${ENABLE_OPENMP})
+  set(ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
+  set(ENABLE_TESTS  ${ENABLE_TESTS})
   set(RAJA_REPORT_FT     ${RAJA_REPORT_FT})
-  set(RAJA_USE_COMPLEX   ${RAJA_USE_COMPLEX})    
+  set(RAJA_USE_COMPLEX   ${RAJA_USE_COMPLEX})
   set(RAJA_USE_DOUBLE    ${RAJA_USE_DOUBLE})
   set(RAJA_USE_FLOAT     ${RAJA_USE_FLOAT})
   # Library targets imported from file
