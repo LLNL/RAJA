@@ -68,7 +68,7 @@ struct as_array;
 template <camp::idx_t... Indices>
 struct as_array<camp::idx_seq<Indices...>> {
   static constexpr std::array<Index_type, sizeof...(Indices)> get() {
-    return {Indices...};
+    return {{Indices...}};
   }
 };
 
