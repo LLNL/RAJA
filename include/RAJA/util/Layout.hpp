@@ -368,7 +368,7 @@ private:
 
 
 /*!
- * Convert a non-stride-one Layout to convert to a stride-1 Layout
+ * Convert a non-stride-one Layout to a stride-1 Layout
  *
  */
 template<ptrdiff_t s1_dim, size_t n_dims, typename IdxLin>
@@ -381,7 +381,7 @@ make_stride_one(Layout<n_dims, IdxLin> const &l)
 
 
 /*!
- * Convert a non-stride-one TypedLayout to convert to a stride-1 TypedLayout
+ * Convert a non-stride-one TypedLayout to a stride-1 TypedLayout
  *
  */
 template<ptrdiff_t s1_dim, typename IdxLin, typename IdxTuple>
