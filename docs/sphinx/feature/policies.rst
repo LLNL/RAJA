@@ -10,6 +10,7 @@ Policies
 * simd_exec : Introduces compiler hints for vectorizations
 
 OpenMP Policies
+
 * omp_for_exec : Instructs the compiler to distribute loop iterations within the threads
 * omp_for_nowait_exec : Removes synchronization within threaded regions
 * omp_for_static : Each thread receives approximately the same number of iterations
@@ -22,10 +23,12 @@ OpenMP Policies
 * omp_reduce_ordered : 
 
 OpenMP Target Policies
+
 * omp_target_parallel_for_exec :
 * omp_target_reduce :   
   
 TBB Policies
+
 * tbb_for_exec : 
 * tbb_for_static :
 * tbb_for_dynamic : 
@@ -33,9 +36,10 @@ TBB Policies
 * tbb_reduce : 
 
 CUDA Policies
+
 * cuda_threadblock_x_exec<int THREADS>
 * cuda_threadblock_y_exec<int THREADS>
 * cuda_threadblock_z_exec<int THREADS>
-* cuda_reduce<CUDA_BLOCK_SIZE>
+* cuda_reduce <int THREADS>
 
 
