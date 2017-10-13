@@ -112,6 +112,7 @@ struct LayoutBase_impl;
 
 template <size_t j, size_t n_dims, typename IdxLin = Index_type>
 struct stride_calculator {
+  RAJA_INLINE RAJA_HOST_DEVICE 
   constexpr IdxLin operator()(IdxLin cur_stride,
                               IdxLin const (&sizes)[n_dims]) const
   {
@@ -121,6 +122,7 @@ struct stride_calculator {
 };
 template <size_t n_dims, typename IdxLin>
 struct stride_calculator<n_dims, n_dims, IdxLin> {
+  RAJA_INLINE RAJA_HOST_DEVICE 
   constexpr IdxLin operator()(IdxLin cur_stride, IdxLin const (&)[n_dims]) const
   {
     return cur_stride;

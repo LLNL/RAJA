@@ -98,9 +98,11 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
+#if 0 // RDH turned these off to reduce nvcc warnings that appeared with CUDA 9
   RAJA_HOST_DEVICE constexpr ValueLoc() = default;
   RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
   RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &) = default;
+#endif
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, Index_type const &loc)
       : val{val}, loc{loc}
