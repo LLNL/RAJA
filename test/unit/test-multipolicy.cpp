@@ -22,12 +22,36 @@
 
 // Tag type to dispatch to test bodies based on policy selected by multipolicy
 
-struct mp_test_body;
+//struct mp_test_body;
+
 namespace test_policy
 {
 template <int i>
 struct mp_tag {
 };
+}
+
+// This functor implements different test bodies depending on the mock "policy"
+// selected by multipolicy, asserting the ranges of values that are selected in
+// the MultiPolicy basic test below
+struct mp_test_body {
+  void operator()(test_policy::mp_tag<1> const &, std::size_t size) const
+  {
+    ASSERT_LT(size, std::size_t{100});
+  }
+  void operator()(test_policy::mp_tag<2> const &, std::size_t size) const
+  {
+    ASSERT_GT(size, std::size_t{99});
+  }
+  void operator()(test_policy::mp_tag<3> const &, std::size_t size) const
+  {
+    ASSERT_GT(size, std::size_t{10});
+    ASSERT_LT(size, std::size_t{99});
+  }
+};
+
+namespace test_policy
+{
 // fake forall_impl overload to test multipolicy dispatch
 template <int i, typename Iterable>
 void forall_impl(const mp_tag<i> &p, Iterable &&iter, mp_test_body const &body)
@@ -40,26 +64,6 @@ using test_policy::mp_tag;
 
 // NOTE: this *must* be after the above to work
 #include "RAJA/RAJA.hpp"
-
-// This functor implements different test bodies depending on the mock "policy"
-// selected by multipolicy, asserting the ranges of values that are selected in
-// the MultiPolicy basic test below
-struct mp_test_body {
-  void operator()(mp_tag<1> const &, std::size_t size) const
-  {
-    ASSERT_LT(size, std::size_t{100});
-  }
-  void operator()(mp_tag<2> const &, std::size_t size) const
-  {
-    ASSERT_GT(size, std::size_t{99});
-  }
-  void operator()(mp_tag<3> const &, std::size_t size) const
-  {
-    ASSERT_GT(size, std::size_t{10});
-    ASSERT_LT(size, std::size_t{99});
-  }
-};
-
 
 TEST(MultiPolicy, basic)
 {
