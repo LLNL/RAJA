@@ -90,7 +90,7 @@ struct OffsetLayout_impl<camp::idx_seq<RangeInts...>, IdxLin> {
   {
   }
 
-  constexpr RAJA_INLINE OffsetLayout_impl(Self const &c) :
+  constexpr RAJA_INLINE RAJA_HOST_DEVICE OffsetLayout_impl(Self const &c) :
     base_(c.base_),
     offsets{c.offsets[RangeInts]...}
   {

@@ -47,3 +47,7 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-nested-strided
   SOURCES test-nested-strided.cpp)
+
+raja_add_test(
+  NAME test-cuda-forall-view
+  SOURCES test-forall-view.cpp)
