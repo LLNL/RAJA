@@ -167,11 +167,13 @@ public:
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
+  RAJA_HOST_DEVICE 
   constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
       : c{init_val, identity_}
   {
   }
 
+  RAJA_HOST_DEVICE 
   void combine(T const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
@@ -214,6 +216,7 @@ public:
     }
   }
 
+  RAJA_HOST_DEVICE 
   void combine(T const &other) { Reduce{}(my_data, other); }
 
   /*!
@@ -331,6 +334,7 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_HOST_DEVICE
   const BaseReduceSum &operator+=(T rhs) const
   {
     this->combine(rhs);
