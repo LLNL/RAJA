@@ -64,7 +64,7 @@ Examples
    :maxdepth: 1
 
    tutorial/addVectors.rst
-   tutorial/gaussSeidel.rst
-   tutorial/jacobi.rst
    tutorial/matrixMultiply.rst
+   tutorial/jacobi.rst
    tutorial/wave.rst
+   tutorial/gaussSeidel.rst
