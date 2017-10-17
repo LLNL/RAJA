@@ -8,14 +8,22 @@ In this example we revisit the boundary value problem solved by the Jacobi metho
 The classic Gauss-Sidel method is inherrently a sequential algorithm; however, parallism may be exposed by coloring the interior nodes
 in the following manner
 
-.. image:: figures/redblackGS.png
+.. image:: ../figures/redblackGS.png
    :scale: 10 %
    :align: center
+
+---------------------
+1. RAJA Nested Policy
+---------------------
 
 By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the sequential/parallel transversal using by using a ``RAJA::NestedPolicy``.
 
 .. literalinclude:: ../../../examples/example-gauss-seidel.cpp
                     :lines: 240-241
+
+----------------------------
+2. Constructing an Index Set
+----------------------------
 
 Furthermore, we may construct a ``RAJA::StaticIndexSet`` which encapsulates the indices for the red and black nodes as two seperate list segments (for more info see ____ ). The following block of code illustrates the construction of the ``RAJA::StaticIndexSet``
            

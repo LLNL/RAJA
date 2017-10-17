@@ -61,7 +61,7 @@ Examples
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
 
    tutorial/addVectors.rst
    tutorial/gaussSeidel.rst
