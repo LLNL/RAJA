@@ -170,7 +170,7 @@ CUDA_TEST(Nested, CudaCollapse)
       camp::make_tuple(RAJA::RangeSegment(0, length),
                        RAJA::RangeSegment(0, length)),
       [=] RAJA_HOST_DEVICE (Index_type i, Index_type j) {
-          printf("(%d, %d)\n", i, j);
+          printf("(%d, %d)\n", int(i), int(j));
        });
 }
 #endif

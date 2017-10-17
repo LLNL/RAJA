@@ -110,7 +110,11 @@ struct Privatizer {
   using value_type = camp::decay<T>;
   using reference_type = value_type&;
   value_type priv;
+
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE Privatizer(const T& o) : priv{o} {}
+
+  RAJA_SUPPRESS_HD_WARN
   RAJA_HOST_DEVICE reference_type get_priv() { return priv; }
 };
 

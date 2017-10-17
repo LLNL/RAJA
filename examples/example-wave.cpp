@@ -61,11 +61,6 @@
 const int sr = 2;
 const double PI = 3.14159265359;
 
-#if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_DIM_X = 16;
-const int CUDA_BLOCK_DIM_Y = 16;
-#endif
-
 /*
   ----[Struct to hold grid info]-----
   o - Origin in a cartesian dimension

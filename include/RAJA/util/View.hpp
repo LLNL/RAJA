@@ -112,8 +112,9 @@ struct TypedViewBase {
   {
   }
 
-  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, LayoutType &&layout)
-      : base_(data_ptr, layout)
+  template<typename CLayoutType>
+  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, CLayoutType &&layout)
+      : base_(data_ptr, std::forward<CLayoutType>(layout))
   {
   }
 

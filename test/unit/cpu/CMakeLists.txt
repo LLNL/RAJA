@@ -53,3 +53,7 @@ raja_add_test(
 raja_add_test(
   NAME test-reductions
   SOURCES test-reductions.cpp)
+
+raja_add_test(
+  NAME test-forall-view
+  SOURCES test-forall-view.cpp)

@@ -98,9 +98,14 @@ public:
   T val = doing_min ? operators::limits<T>::max() : operators::limits<T>::min();
   Index_type loc = -1;
 
-  RAJA_HOST_DEVICE constexpr ValueLoc() = default;
-  RAJA_HOST_DEVICE constexpr ValueLoc(ValueLoc const &) = default;
-  RAJA_HOST_DEVICE ValueLoc &operator=(ValueLoc const &) = default;
+  //
+  // Note: marking these defaulted methods as host-device introduces
+  //       a bunch of warning spew as of CUDA 9.
+  //
+  constexpr ValueLoc() = default;
+  constexpr ValueLoc(ValueLoc const &) = default;
+  ValueLoc &operator=(ValueLoc const &) = default;
+
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val) : val{val}, loc{-1} {}
   RAJA_HOST_DEVICE constexpr ValueLoc(T const &val, Index_type const &loc)
       : val{val}, loc{loc}
@@ -165,11 +170,14 @@ public:
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE 
   constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
       : c{init_val, identity_}
   {
   }
 
+  RAJA_HOST_DEVICE 
   void combine(T const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
@@ -212,6 +220,7 @@ public:
     }
   }
 
+  RAJA_HOST_DEVICE 
   void combine(T const &other) { Reduce{}(my_data, other); }
 
   /*!
@@ -273,7 +282,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit BaseReduceMinLoc(T init_val, Index_type init_idx)
+  BaseReduceMinLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
@@ -329,6 +338,8 @@ public:
   using Base::Base;
 
   //! reducer function; updates the current instance's state
+  RAJA_SUPPRESS_HD_WARN
+  RAJA_HOST_DEVICE
   const BaseReduceSum &operator+=(T rhs) const
   {
     this->combine(rhs);
@@ -353,7 +364,7 @@ public:
   using Base::Base;
 
   //! constructor requires a default value for the reducer
-  explicit BaseReduceMaxLoc(T init_val, Index_type init_idx)
+  BaseReduceMaxLoc(T init_val, Index_type init_idx)
       : Base(value_type(init_val, init_idx))
   {
   }
