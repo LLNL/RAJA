@@ -72,20 +72,20 @@ As a first example we consider vector addition. Here two vectors A, and B, of le
 and the result is stored in a third vector, C. The C++ version of this loop takes the following form
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
-                    :lines: 119-121
+                    :lines: 93-95
 
 The construction of a RAJA analog begins by first specifying an execution policy
 (for more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
 an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see :ref:`ref-index`). 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
-                    :lines: 132-137
+                    :lines: 107-112
 
 By swapping out execution policies we can target different backends, the caveat being that the developer is reponsible for memory management (for more info see :ref:`ref-plugins`). Furthermore, using the cuda backend requires
 the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../examples/example-add-vectors.cpp
-                    :lines: 163-168
+                    :lines: 138-143
 
 Lastly, invoking the CUDA execution policy requires specifying the number of threads per block.
 A full working version ``example-add-vectors.cpp`` may be found in the example folder.
@@ -98,36 +98,36 @@ N x N are multiplied and the result is stored in a third matrix, C.
 Assuming that we have pointers to the data
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 146-148
+                    :lines: 107-109
 
 and with the aid of macros
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 132-134
+                    :lines: 121-123
 
 a C++ version of matrix multiplcation may be expressed as
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 161-171
+                    :lines: 136-146
 
 With minimal effort we can create an RAJA analog by modifying the existing block of code.
 First, we can relive the need of macros by making use of ``RAJA::View``, which
 simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
                            
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 180-182
+                    :lines: 155-157
 
 Second, we can convert the outermost loop into a ``RAJA::forall`` loop
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 192-205
+                    :lines: 167-180
 
 yielding code which may be excuted with various backends.
 In the case that the code will not be off loaded to a device, ``RAJA::forall`` loops
 may be nested
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 212-226  
+                    :lines: 187-201  
 
 Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
 Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
@@ -135,7 +135,7 @@ execution policy may be specified inside a ``RAJA::ExecList``. In the following 
 with an OpenMP policy and the inner loop with a sequential policy.
 
 .. literalinclude:: ../../examples/example-matrix-multiply.cpp
-                    :lines: 254-264
+                    :lines: 229-240
 
 A full working version ``example-matrix-multiply.cpp`` may be found in the example folder.
 
@@ -190,17 +190,17 @@ In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero f
 Using the ``RAJA::ForallN`` method the iteration can be expressed as
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
-                    :lines: 307-319
+                    :lines: 218-231
 
 where we have predefined the ``jacobiompNestedPolicy`` as
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
-                    :lines: 298-300
+                    :lines: 273-275
 
 Computing :math:`\mathcal{E}` in parallel (aka reduction) requires multiple threads writting to the same location in memory, a procedure that is inherently not threadsafe. RAJA enables a thread-safe reduction by introducing ``RAJA::Reduce Sum`` variables. The following code illustrates carrying out the reduction procedure and updating the arrays used to hold the approximations
 
 .. literalinclude:: ../../examples/example-jacobi.cpp
-                    :lines: 323-330
+                    :lines: 298-305
 
 
 A full working version ``example-jacobi.cpp`` may be found in the example folder.
@@ -227,11 +227,11 @@ where
   D_{xx} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i+k,j} + p^{n}_{i-k,j} \right) \right), \\
   D_{yy} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
 
-The subscript :math:`n` denotes the :math:`n-th` timestep and the subscripts :math:`i,j` corresponds to a location on the grid.
+The superscript :math:`n` denotes the :math:`n-th` timestep and the subscripts :math:`i,j` corresponds to a location on the grid.
 In this example we choose the spatial discretization to be of fourth order (stencil width :math:`N=2`). The resulting kernel for the acoustic wave equation is given by
 
 .. literalinclude:: ../../examples/example-wave.cpp
-                    :lines: 279-312
+                    :lines: 249-282
 
 Notably, we have included the ``RAJA_HOST_DEVICE`` decorator in the lambda to create a portable kernel that may be executed on either
 the CPU (with a variety of execution policies) the GPU (via the ``cuda_exec`` policy). 
@@ -252,11 +252,11 @@ in the following manner
 By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the sequential/parallel transversal using by using a ``RAJA::NestedPolicy``.
 
 .. literalinclude:: ../../examples/example-gauss-seidel.cpp
-                    :lines: 267-268
+                    :lines: 240-241
 
 Furthermore, we may construct a ``RAJA::StaticIndexSet`` which encapsulates the indices for the red and black nodes as two seperate list segments (for more info see ____ ). The following block of code illustrates the construction of the ``RAJA::StaticIndexSet``
            
 .. literalinclude:: ../../examples/example-gauss-seidel.cpp
-                    :lines: 215-244
+                    :lines: 188-220
                             
 A full working version ``example-gauss-seidel.cpp`` may be found in the example folder.
