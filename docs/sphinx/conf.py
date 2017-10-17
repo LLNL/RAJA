@@ -39,12 +39,8 @@ extensions = [
     'sphinx.ext.doctest',
     'sphinx.ext.todo',
     'sphinx.ext.coverage',
-    'sphinx.ext.mathjax',
-    'breathe'
+    'sphinx.ext.mathjax'
 ]
-
-breathe_projects = { "RAJA": "@CMAKE_BINARY_DIR@/docs/doxygen/xml" }
-breathe_default_project = "RAJA"
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
