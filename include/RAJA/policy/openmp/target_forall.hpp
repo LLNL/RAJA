@@ -64,12 +64,31 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec<Teams>&,
   auto end = std::end(iter);
   auto distance = std::distance(begin, end);
 #pragma omp target teams distribute parallel for num_teams(Teams) \
-    schedule(static, 1) map(to : body)
+   schedule(static, 1) map(to : body)
   for (Index_type i = 0; i < distance; ++i) {
     Body ib = body;
     ib(begin[i]);
   }
 }
+
+template <typename Iterable, typename Func>
+RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
+                        Iterable&& iter,
+                        Func&& loop_body)
+{
+  using Body = typename std::remove_reference<decltype(loop_body)>::type;
+  Body body = loop_body;
+  auto begin = std::begin(iter);
+  auto end = std::end(iter);
+  auto distance = std::distance(begin, end);
+#pragma omp target teams distribute parallel for    \
+    schedule(static,1) map(to : body)
+  for (Index_type i = 0; i < distance; ++i) {
+    Body ib = body;
+    ib(begin[i]);
+  }
+}
+
 
 }  // closing brace for omp namespace
 

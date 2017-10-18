@@ -136,6 +136,13 @@ struct omp_target_parallel_for_exec
                             omp::Teams<Teams>,
                             omp::Distribute> {
 };
+
+struct omp_target_parallel_for_exec_nt
+    : make_policy_pattern_t<Policy::target_openmp,
+                            Pattern::forall,
+                            omp::Target,
+                            omp::Distribute> {
+};
 #endif
 
 ///
@@ -192,6 +199,7 @@ using policy::omp::omp_reduce_ordered;
 
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 using policy::omp::omp_target_parallel_for_exec;
+using policy::omp::omp_target_parallel_for_exec_nt;
 using policy::omp::omp_target_reduce;
 #endif
 
