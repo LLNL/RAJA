@@ -33,12 +33,12 @@ in :doc:`advanced_config`. Minimal support for building and using RAJA is:
 - C++ compiler with C++11 support
 - `CMake <https://cmake.org/>`_ 3.3 or greater
 
-============
-Installation
-============
+==================
+Build and Install
+==================
 
 ----------------
-Getting the Code
+Getting the code
 ----------------
 
 The RAJA project is hosted on `GitHub <https://github.com/LLNL/RAJA>`_.
