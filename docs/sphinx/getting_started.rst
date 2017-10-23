@@ -84,8 +84,8 @@ RAJA uses CMake to handle builds. Configuration looks like::
 
 CMake will provide output about the compiler that has been detected, and
 what features are discovered. Some features, like OpenMP, will be enabled
-if they are discovered. For more advanced configuration options, please
-see the :doc:`advanced_config`.
+if they are discovered. For a complete summary of configuration options, please
+see the :doc:`config_options`.
 
 Once CMake has completed, RAJA is compiled using Make::
 
@@ -237,8 +237,7 @@ link against the RAJA library:
 
   $ make -I/path/to/install/include -std=c++11 example.cpp 
 
-..note:: **We should include this code in the examples directory so folks 
-         can edit it, recompile, and run easily.** 
+..note:: **We should include this code in the examples directory so folks can edit it, recompile, and run easily.** 
 
 For more examples, you can check out the tutorial in the ``examples``
 directory. These programs are explained in the :doc:`tutorial`.
