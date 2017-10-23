@@ -12,11 +12,12 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _tutorial::
+.. _tutorial-label::
 
 =====================
 Overview
 =====================
+
 As RAJA is built on the C++ lambda, we provide a brief overview on lambda functions.
 Lambda's were introduced to allow for the construction of in place functions. A lambda has the ability to "capture" variables from a local context for use within the function. A lambda expression takes the following form
 
