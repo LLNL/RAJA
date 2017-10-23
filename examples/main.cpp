@@ -104,9 +104,9 @@ const int CUDA_BLOCK_SIZE_Y = 16;
 /*
  Macros are used here to simplify indexing
 */
-#define A(x2, x1) A[x1 + N * x2]
-#define B(x2, x1) B[x1 + N * x2]
-#define C(x2, x1) C[x1 + N * x2]
+#define A(x1, x2) A[x1 + N * x2]
+#define B(x1, x2) B[x1 + N * x2]
+#define C(x1, x2) C[x1 + N * x2]
 
 template <typename T>
 void checkSolution(T *C, int N);
@@ -164,104 +164,20 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   printf("RAJA: Forall - Sequential Policies\n");
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](RAJA::Index_type row) {    
 
-      for (int col = 0; col < N; ++col) {
-        
+  RAJA::forall<RAJA::seq_exec>(matBounds, [=](RAJA::Index_type row) {    
+                               
+      for (int col = 0; col < N; ++col) {        
         double dot = 0.0;
         for (int k = 0; k < N; ++k) {
           dot += Aview(row, k) * Bview(k, col);
-        }
-        
+        }        
         Cview(row, col) = dot;
       }
       
     });
   checkSolution<double>(Cview, N);
 
-  printf("RAJA: Nested Forall - Sequential Policies\n");
-  /*
-    Forall loops may be nested under sequential and omp policies
-  */
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](RAJA::Index_type row) {
-
-      RAJA::forall<RAJA::seq_exec>(
-        matBounds, [=](RAJA::Index_type col) {
-        
-
-          double dot = 0.0;
-          for (int k = 0; k < N; ++k) {
-            dot += Aview(row, k) * Bview(k, col);
-          }
-
-          Cview(row, col) = dot;
-        });
-    });
-  checkSolution<double>(Cview, N);
-
-
-  printf("RAJA: ForallN - Sequential Policies\n");
-  /*
-    Nested forall loops may be collapsed into a single forallN loop
-  */
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>>(    
-      matBounds, matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
-      
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
-        
-        Cview(row, col) = dot;
-      });
-  checkSolution<double>(Cview, N);
-  
-
-#if defined(RAJA_ENABLE_OPENMP)
-  printf("RAJA: ForallN - OpenMP/Sequential Policies\n");
-  /*
-    Here the outer loop is excuted in parallel while the inner loop
-    is executed sequentially
-  */
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::omp_parallel_for_exec,RAJA::seq_exec>>>(
-      matBounds, matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
-      
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
-
-        Cview(row, col) = dot;
-      });
-  checkSolution<double>(Cview, N);
-#endif
-
-
-#if defined(RAJA_ENABLE_CUDA)
-  printf("RAJA: ForallN - CUDA Policies\n");
-  /*
-    This example illustrates creating two-dimensional thread blocks as described
-    under the CUDA nomenclature
-  */
-  RAJA::forallN<RAJA::NestedPolicy<RAJA::
-    ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_X>,    
-      RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_Y>>>>(   
-        matBounds, matBounds, [=] __device__(RAJA::Index_type row, RAJA::Index_type col) {
-        
-          double dot = 0.0;
-          for (int k = 0; k < N; ++k) {
-            dot += Aview(row, k) * Bview(k, col);
-          }
-          
-          Cview(row, col) = dot;
-        });
-  cudaDeviceSynchronize();
-  checkSolution<double>(Cview, N);
-#endif
 
   memoryManager::deallocate(A);
   memoryManager::deallocate(B);
