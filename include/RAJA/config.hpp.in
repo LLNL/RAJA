@@ -39,7 +39,6 @@
 #ifndef RAJA_config_HPP
 #define RAJA_config_HPP
 
-#cmakedefine RAJA_USE_STL
 #cmakedefine ENABLE_FT
 
 #define @RAJA_FP@
@@ -126,7 +125,6 @@ const int RAJA_VERSION_PATCHLEVEL = @RAJA_VERSION_PATCHLEVEL@;
 const int RANGE_ALIGN = @RAJA_RANGE_ALIGN@;
 const int RANGE_MIN_LENGTH = @RAJA_RANGE_MIN_LENGTH@;
 const int DATA_ALIGN = @RAJA_DATA_ALIGN@;
-const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #if defined (_WIN32)
 #define RAJA_RESTRICT __restrict

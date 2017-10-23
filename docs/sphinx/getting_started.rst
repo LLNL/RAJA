@@ -19,16 +19,17 @@
 Getting Started
 ****************
 
-This page will show you how to quickly get up and running with RAJA.
+This page will show you how to get up and running with RAJA quickly.
 
 ============
 Requirements
 ============
 
-The primary requirement for RAJA is a C++11 compliant compiler. Accessing
-the full range of RAJA features, such as all available programming model
-backends, may require additional support. These requirements are detailed 
-in :doc:`advanced_config`. Minimal support for building and using RAJA is:
+The primary requirement for using RAJA is a C++11 compliant compiler. 
+Accessing the full range of RAJA features, such as all available programming 
+model backends, may require additional support. Available options and how
+to enable or disable them are described in :doc:`config_options`. To
+build and use RAJA in its simplest form requires:
 
 - C++ compiler with C++11 support
 - `CMake <https://cmake.org/>`_ 3.3 or greater
