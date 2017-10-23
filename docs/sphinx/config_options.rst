@@ -72,7 +72,7 @@ RAJA OpenMP functionality, pass the following argument to cmake::
 The following list describes which variables are used to set RAJA options and
 and their default settings:
 
-  * **Examples, tests, warnings, etc.**
+* **Examples, tests, warnings, etc.**
 
      Variables that control whether RAJA tests and examples are built when
      the library is compiled are:
@@ -93,7 +93,7 @@ and their default settings:
       ENABLE_WARNINGS_AS_ERRORS   Off
       =========================   ======================
      
-  * **Programming models and compilers**
+* **Programming models and compilers**
 
      Variables that control which RAJA programming model back-ends are enabled
      are (names are descriptive of what they enable):
@@ -126,7 +126,7 @@ and their default settings:
 .. note:: When using the NVIDIA nvcc compiler for RAJA CUDA functionality, 
           the variable 'RAJA_NVCC_FLAGS' should be used to pass flags to nvcc.
 
-  * **Data types, sizes, alignment, etc.**
+* **Data types, sizes, alignment, etc.**
 
      RAJA provides typedefs that can be used to parametrize floating 
      point types in applications and easily switch between types. The
@@ -228,7 +228,7 @@ and their default settings:
      For details on the options in this section are used, please see the 
      header file `RAJA/include/RAJA/util/types.hpp`.
 
-  * **Timer Options**
+* **Timer Options**
 
      RAJA provides a simple portable timer class that is used in RAJA
      example codes to determine execution timing and can be used in other apps
@@ -256,7 +256,7 @@ and their default settings:
       clock                           Use `clock_t` from time.h
       =============================   ========================================
 
-  * **Other RAJA Features**
+* **Other RAJA Features**
    
      RAJA contains some features that are used mainly for development or are 
      not of general interest to RAJA users. These are turned off be default.
@@ -276,7 +276,7 @@ and their default settings:
       =============================   ========================================
 
 =======================
-RAJA Host Config Files
+RAJA Host-Config Files
 =======================
 
 The `RAJA/host-configs` directory contains subdirectories with files that 
