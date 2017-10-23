@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _contributing::
+.. _contributing-label::
 
 ====================
 Contributing to RAJA
