@@ -12,14 +12,14 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.._config_options:
+.._config_options-label:
 
 ***********************
 Configuration Options
 ***********************
 
 RAJA uses the `BLT CMake-based build system <https://github.com/LLNL/blt>`_.
-In :doc:`getting_started`, we described how to run cmake to configure
+In :ref:`getting_started-label`, we described how to run cmake to configure
 RAJA with its default option settings.  In this section, we describe all
 RAJA configuration options, their defaults, and how to enable desired features.
 

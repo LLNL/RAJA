@@ -13,7 +13,7 @@
 .. ##
 
 
-.. _getting_started:
+.. _getting_started-label:
 
 ****************
 Getting Started
@@ -28,7 +28,7 @@ Requirements
 The primary requirement for using RAJA is a C++11 compliant compiler. 
 Accessing the full range of RAJA features, such as all available programming 
 model backends, may require additional support. Available options and how
-to enable or disable them are described in :doc:`config_options`. To
+to enable or disable them are described in :ref:`config_options-label`. To
 build and use RAJA in its simplest form requires:
 
 - C++ compiler with C++11 support
@@ -85,7 +85,7 @@ RAJA uses CMake to handle builds. Configuration looks like::
 CMake will provide output about the compiler that has been detected, and
 what features are discovered. Some features, like OpenMP, will be enabled
 if they are discovered. For a complete summary of configuration options, please
-see the :doc:`config_options`.
+see the :ref:`config_options-label`.
 
 Once CMake has completed, RAJA is compiled using Make::
 
@@ -188,9 +188,7 @@ multithreading:
     a[i] += b[i] * c;
   });
 
-This version will run on an NVIDIA GPU using CUDA:
-
-.. code-block:: cpp
+This version will run on an NVIDIA GPU using CUDA::
 
   RAJA::forall<RAJA::cuda_exec>(0, 1000, [=] (int i) {
     a[i] += b[i] * c;
@@ -231,13 +229,11 @@ If you want to run the example yourself, here is a complete code listing:
   }
 
 To build and run this code, you will need to pass the include directory and
-link against the RAJA library:
-
-.. code-block:: bash
+link against the RAJA library::
 
   $ make -I/path/to/install/include -std=c++11 example.cpp 
 
 ..note:: **We should include this code in the examples directory so folks can edit it, recompile, and run easily.** 
 
 For more examples, you can check out the tutorial in the ``examples``
-directory. These programs are explained in the :doc:`tutorial`.
+directory. These programs are explained in the :ref:`tutorial-label`.

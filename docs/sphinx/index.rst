@@ -60,7 +60,9 @@ patterns rather than individual loops, and makes it straightforward to
 parametrize loop execution policies so an application can be compiled in 
 a specific configuration suitable to a given architecture. 
 
-If you are new to RAJA, check out our :doc:`getting_started` Guide.
+If you are new to RAJA, check out our :ref:`getting_started-label` Guide. It
+contains basic information about accessing the RAJA code, building it, and
+RAJA usage.
 
 See the :doc:`features` for detailed documentation for each feature.
 
@@ -73,23 +75,12 @@ functionality or applicability of RAJA and are interested in contributing
 to its development, please do not hesitate to contact us. We are always
 interested in improving RAJA and exploring new ways to use it.
 
-.. tincture::
+.. toctree::
    :maxdepth: 2
-   :caption: Basics
 
    getting_started
    tutorial
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Reference
-
-   config_options
    features
    plugins
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Contributing
-
+   config_options
    contributing
