@@ -84,7 +84,7 @@ interested in improving RAJA and exploring new ways to use it.
    :maxdepth: 2
    :caption: Reference
 
-   advanced_config
+   config_options
    features
    plugins
 
