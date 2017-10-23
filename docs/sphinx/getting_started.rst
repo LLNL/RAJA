@@ -120,7 +120,7 @@ Basic RAJA Usage
 
 Let's take a quick tour through a few important RAJA features. A complete
 example based on the tour that you can compile and run is available here
-:ref:`firstexample-label`. 
+:ref:`fullexample-label`. 
 
 The central loop traversal concept in RAJA is a ``forall`` method, which
 encapsulates loop execution details allowing the loop to be run in many 
@@ -198,11 +198,11 @@ Of course, these versions require RAJA to be built with OpenMP and CUDA
 enabled, respectively.
 
 
-.. _firstexample-label:
+.. _fullexample-label:
 
-----------------
-First Example
-----------------
+--------------------
+Full example code
+--------------------
 
 If you want to run the example yourself, here is a complete code listing:
 
@@ -233,7 +233,7 @@ link against the RAJA library::
 
   $ make -I/path/to/install/include -std=c++11 example.cpp 
 
-..note:: **We should include this code in the examples directory so folks can edit it, recompile, and run easily.** 
+.. note:: **We should include this code in the examples directory so folks can edit it, recompile, and run easily.** 
 
 For more examples, you can check out the tutorial in the ``examples``
 directory. These programs are explained in the :ref:`tutorial-label`.

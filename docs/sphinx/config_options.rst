@@ -46,13 +46,20 @@ the top-level RAJA directory::
 Following CMake conventions, RAJA supports three build types: 'Release', 
 'RelWithDebInfo', and 'Debug'. Similar to other CMake systems, when you
 choose a build type that includes debug information, you do not have to specify
-the '-g' compiler flag to generate debugging symbols. RAJA default options, 
-compiler, flags for optimization, etc. can be found in the `*.cmake` files
-in the `RAJA/cmake` directory.
+the '-g' compiler flag to generate debugging symbols. 
 
-=======================
-RAJA Options Reference
-=======================
+All RAJA options are set like standard CMake variables. For example, to enable 
+RAJA OpenMP functionality, pass the following argument to cmake::
+
+    -DENABLE_OPENMP=On
+
+All RAJA settings for default options, compilers, flags for optimization, etc. 
+can be found in the `*.cmake` files in the `RAJA/cmake` directory. Next, we
+summarize the available options and their defaults
+
+=================================
+Available Options and Defaults
+=================================
 
 RAJA uses a variety of custom variables to control how it is compiled. Many 
 of these are used internally to control how RAJA gets compiled and do 
@@ -63,11 +70,6 @@ generated when CMake runs. The 'config.hpp' header file is included in other
 RAJA headers as needed so all options propagate through the build process 
 consistently. All RAJA variables have the 'RAJA_' prefix to distinguish
 those that are specific to RAJA from variables in CMake and BLT.
-
-RAJA options are set like standard CMake variables. For example, to enable
-RAJA OpenMP functionality, pass the following argument to cmake::
-
-    -DENABLE_OPENMP=On
 
 The following list describes which variables are used to set RAJA options and
 and their default settings:
