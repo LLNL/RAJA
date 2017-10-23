@@ -23,32 +23,32 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 
 
-  int N = 8; 
-  int *input  = (int*) malloc(N*sizeof(int));
-  int *output = (int*) malloc(N*sizeof(int));
-
-  input[0] = 3; input[1] = 1; input[2] = 7;
-  input[3] = 0; input[4] = 4; input[5] = 1;
-  input[6] = 6; input[7] = 3;
+  int N = 6; 
+  int *x  = (int*) malloc(N*sizeof(int));
+  int *y  = (int*) malloc(N*sizeof(int));
   
+  x[0] = 3; x[1] = 1; x[2] = 7;
+  x[3] = 0; x[2] = 4; x[3] = 1; 
+  x[4] = 6; x[5] = 3; 
+    
   typedef RAJA::seq_exec execute_policy;
   
   printf("Performing exclusive scan \n"); 
-  RAJA::exclusive_scan<execute_policy>(input,input+N,output);
+  RAJA::exclusive_scan<execute_policy>(x,x+N,y);
   for(int i=0; i<N; ++i){
-    printf("%d ",output[i]);
+    printf("%d ",y[i]);
   }
   printf("\n \n");
 
   printf("Performing inclusive scan \n"); 
-  RAJA::inclusive_scan<execute_policy>(input,input+N,output);
+  RAJA::inclusive_scan<execute_policy>(x,x+N,y);
   for(int i=0; i<N; ++i){
-    printf("%d ",output[i]);
+    printf("%d ",y[i]);
   }
   printf("\n");
 
-  free(input);
-  free(output);
+  free(x);
+  free(y);
 
   return 0;
 }
