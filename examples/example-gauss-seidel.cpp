@@ -238,7 +238,7 @@ void computeErr(double *I, grid_s grid)
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
 
   using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::omp_parallel_for>>;
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::omp_parallel_for_exec>>;
 
   RAJA::forallN<myPolicy>(
     fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
