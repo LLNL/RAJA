@@ -14,9 +14,9 @@
 
 .. _wave::
 
-=============
+---------------
 Wave Equation
-=============
+---------------
 
 As an example of an evolution equation we consider the acoustic wave equation
 
@@ -26,9 +26,9 @@ As an example of an evolution equation we consider the acoustic wave equation
 
 As before we discretize the domain :math:`[-1,1] x [-1, 1]` by considering a lattice with equidistant nodes of distance :math:`h`.
 
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 1. Discretizing the equation
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 We take the discretization to be 
 
@@ -44,9 +44,9 @@ where
 
 The superscript :math:`n` denotes the :math:`n-th` timestep and the subscripts :math:`i,j` corresponds to a location on the grid.
 
---------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 2. RAJA kernel
---------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In this example we choose the spatial discretization to be of fourth order (stencil width :math:`N=2`). The resulting kernel for the acoustic wave equation is given by
 

@@ -14,9 +14,9 @@
 
 .. _jacobi::
 
-===============
+-----------
 Jacobi
-===============
+-----------
 
 As a third example we consider solving the following boundary value problem
 
@@ -33,9 +33,9 @@ where
   f = 2x(y-1)(y-2x+xy+2) e^{(x-y)} .
 
 
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 1. Discretizing the equation
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Here we choose the domain to be :math:`[-1,1] x [-1, 1]` and consider a
 lattice discretization with equidistant nodes of spacing :math:`h`. 
@@ -66,9 +66,9 @@ In our example we take the intial guess :math:`\mathcal{u_{i,j}^0}` to be zero f
    :scale: 10 %
    :align: center
 
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 2. RAJA ForallN method
-----------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Using the ``RAJA::ForallN`` method the iteration can be expressed as
 

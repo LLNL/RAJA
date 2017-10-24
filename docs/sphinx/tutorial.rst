@@ -14,59 +14,85 @@
 
 .. _tutorial-label::
 
-=====================
-Overview
-=====================
+**********************
+Tutorial
+**********************
 
-As RAJA is built on the C++ lambda, we provide a brief overview on lambda functions.
-Lambda's were introduced to allow for the construction of in place functions. A lambda has the ability to "capture" variables from a local context for use within the function. A lambda expression takes the following form
+This section provides a RAJA tutorial, introducing RAJA concepts and
+capabilities via examples.
 
-.. code-block:: cpp
+====================
+C++ Lambda Overview
+====================
+
+RAJA is used most easily and effectively by employing C++ lamda expressions. 
+Here, we provide a brief description of the eseential elements of C++ lambdas.
+`Lambda expressions <http://en.cppreference.com/w/cpp/language/lambda>`_ were 
+introduced in C++11 to provide a lexically-scoped name binding; i.e., a 
+*closure* that stores a function with a data environment. In particular, a 
+lambda has the ability to *capture* variables from an enclosing scope for use 
+within the local scope of a a function. 
+
+A lambda expression takes the following form::
 
   [capture list] (parameter list) {function body}
 
-The capture list corresponds to variables outside the lambda, while the parameter list defines the function arguments to the lambda function. The values in the capture list are initialized when the lambda is created, while values in the parameter list are initialized when the lambda function is called. A lambda can capture values in the capture list by copy or by reference. Variables mentioned in the capture list with no extra symbols are captured by value. Capture by reference may be accomplished using the & symbol; for example
-
-.. code-block:: cpp
+The capture list corresponds to variables outside the lambda, while the 
+parameter list defines arguments to the lambda function body. Values in the 
+capture list are initialized when the lambda is created, while values in the 
+parameter list are initialized when the lambda function is called. A lambda 
+can capture values in the capture list by value or by reference, which is 
+similar to standard C++ function arguments. Variables mentioned in the capture 
+list with no extra symbols are captured by value. Capture by reference may be 
+accomplished using the '&' symbol; for example::
 
   int x;
   int y = 100;
   [&x, &y](){x=y;]
 
-will generate a lambda which will assign the value of y to x when called. By setting the capture list as ``[=]`` or ``[&]`` all variables within scope which are used in the lambda will be captured by copy or reference respectively.
+generates a lambda that assigns the value of 'y' to 'x' when called. By 
+setting the capture list as ``[=]`` or ``[&]`` all variables in scope 
+that are used in the lambda are captured by value or reference, respectively.
 
-Building from the C++ lambda, RAJA introduces two types of templated methods, namely ``RAJA::forall`` and ``RAJA::forallN``. The ``RAJA::forall`` method is an abstraction of the standard C for loop. It is templated on an execution policy and takes an iteration space and a lambda capturing the loop body as arguments.
-
-.. code-block:: cpp
+RAJA users typically pass application code frangments, such as loop bodies,
+into RAJA loop traversal template methods using lambdas. The two main types
+of RAJA traversal templates are ``RAJA::forall`` and ``RAJA::forallN``. The 
+``RAJA::forall`` method abstracts a standard C-style for loop. It is templated 
+on an execution policy and takes a loop iteration space and a lambda defining 
+the loop body as arguments; e.g.,::
 
   RAJA::forall<exec_policy>(iter_space I, [=] (index_type i)) {
     //body
   });
 
-Similarly, the ``RAJA::ForallN`` loop is an abstraction of nested ``for`` loops. The ``RAJA::ForallN`` loop is templated on up to N execution policies and expects an iteration space for each execution policy and a lambda with an argument for each iteration space.
+Similarly, the ``RAJA::ForallN`` loop abstracts nested ``for`` loops. A
+``RAJA::ForallN`` loop is templated on 'N' execution policy and iteration
+space paramters, one for each level in the loop nest, plus a lambda for the
+inner loop body; e.g.,::
 
-.. code-block:: cpp
-
-  RAJA::forallN<
-    RAJA::NestedPolicy<exec_policy1, .... , exec_policyN> >(
-      iter_space I1,..., iter_space IN, [=](index_type i1,..., index_type iN) {
-         //body
+  RAJA::forallN< RAJA::NestedPolicy<
+                 RAJA::ExecList< exec_policy1, .... , exec_policyN> > >(
+    iter_space I1,..., iter_space IN, 
+    [=](index_type i1,..., index_type iN) {
+      //body
   });
 
-In summary, using one of the RAJA templated methods requires the developer to supply the following
-1. Capture type - [=] or [&]
-3. exec_policy  - How the traversal occurs
-4. iter_space   - An iteration space for the RAJA loop (any random access container)
-5. index_type   - Type of values contained in the iteration space
-6. lambda       - The body of the loop
+In summary, these RAJA template methods require a user to understand how to
+specify the items::
 
-The remainder of the tutorial demonstrates the utility of RAJA by drawing from commonly used computing patterns.
+  #. The lambda capture type; e.g., [=] or [&]
+  #. The desired execution policy (or policies)
+  #. The loop iteration space(s) - in most cases a valid iteration space is any
+valid random access container.
+  #. The data type of loop iteration variables
+  #. The lambda that defines the loop body
 
+The remainder of this tutorial illustrates how to use RAJA with examples that
+use common numerical algorithm patterns.
 
-
---------
+=========
 Examples
---------
+=========
 
 .. toctree::
    :maxdepth: 1
