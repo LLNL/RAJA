@@ -21,10 +21,7 @@ Forall
 The ``forall`` method is the building block for computations in RAJA, and
 provides a way to write a loop so that it can be executed on a number of
 different programming model backends. Backend selection is controlled through
-policies, documented in :doc:`policies`_
-
-The ``RAJA::forall`` method is an abstraction of the standard C for loop. 
-It is templated on an execution policy and takes an iteration space and a lambda capturing the loop body as arguments.
+policies, documented in :doc:`policies`. Its basic usage is as follows
 
 .. code-block:: cpp
 
@@ -34,15 +31,15 @@ It is templated on an execution policy and takes an iteration space and a lambda
 
 The construction of a ``RAJA::forall`` requires
 
-1. Capture type - [=] or [&]
+* Capture type - [=] or [&]
 
-2. exec_policy  - How the traversal occurs
+* exec_policy  - How the traversal occurs
 
-3. iter_space   - An iteration space for the RAJA loop (any random access container)
+* iter_space   - An iteration space for the RAJA loop (any random access container)
 
-4. index_type   - Type of values contained in the iteration space
+* index_type   - Type of values contained in the iteration space
 
-5. lambda       - The body of the loop
+* lambda       - The body of the loop
 
 
 
