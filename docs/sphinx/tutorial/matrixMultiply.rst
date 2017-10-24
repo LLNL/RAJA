@@ -14,9 +14,9 @@
 
 .. _matrixMultiply::
 
-===============
-Matrix Multiply
-===============
+-----------------------
+Matrix Multiplication
+-----------------------
 
 As a second example we consider matrix multiplication. Here two matrices, A, and B, of dimension
 N x N are multiplied and the result is stored in a third matrix, C. 
@@ -35,9 +35,9 @@ a C++ version of matrix multiplcation may be expressed as
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 136-146
 
----------------
+^^^^^^^^^^^^^^^^^
 1. Adding RAJA
----------------
+^^^^^^^^^^^^^^^^^
 
 With minimal effort we can create an RAJA analog by modifying the existing block of code.
 First, we can relive the need of macros by making use of ``RAJA::View``, which
@@ -57,9 +57,11 @@ may be nested
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 187-201  
----------------
+
+^^^^^^^^^^^^^^^^^
 2. RAJA forallN
----------------
+^^^^^^^^^^^^^^^^^
+
 Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
 Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
 execution policy may be specified inside a ``RAJA::ExecList``. In the following example we pair the outer loop

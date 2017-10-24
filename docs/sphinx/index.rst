@@ -13,9 +13,9 @@
 .. ##
 
 
-####
-RAJA
-####
+################
+RAJA User Guide
+################
 
 RAJA is a collection of C++ software abstractions, in development at Lawrence
 Livermore National Laboratory (LLNL), that enable architecture portability for
@@ -64,7 +64,7 @@ If you are new to RAJA, check out our :ref:`getting_started-label` Guide. It
 contains basic information about accessing the RAJA code, building it, and
 RAJA usage.
 
-See the :doc:`features` for detailed documentation for each feature.
+See :doc:`features` for detailed documentation for each feature.
 
 If you are interested in keeping up with RAJA development and communicating
 with developers and users, please join our `Google Group
