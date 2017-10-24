@@ -28,7 +28,7 @@ Requirements
 The primary requirement for using RAJA is a C++11 compliant compiler. 
 Accessing the full range of RAJA features, such as all available programming 
 model backends, may require additional support. Available options and how
-to enable or disable them are described in :ref:`config_options-label`. To
+to enable or disable them are described in :ref:`configopt-label`. To
 build and use RAJA in its simplest form requires:
 
 - C++ compiler with C++11 support
@@ -85,7 +85,7 @@ RAJA uses CMake to handle builds. Configuration looks like::
 CMake will provide output about the compiler that has been detected, and
 what features are discovered. Some features, like OpenMP, will be enabled
 if they are discovered. For a complete summary of configuration options, please
-see the :ref:`config_options-label`.
+see :ref:`configopt-label`.
 
 Once CMake has completed, RAJA is compiled using Make::
 

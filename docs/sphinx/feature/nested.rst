@@ -12,8 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _nested::
-.. _ref-nested:
+.. _nested-label:
 
 =============
 Nested Forall

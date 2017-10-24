@@ -12,17 +12,14 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _view::
-.. _ref-view:
+.. _view-label:
 
 ===============
 View and Layout
 ===============
 
 To simplify multi-dimensional indexing, RAJA introduces the ``RAJA::View``.
-The basic usage of the ``RAJA::View`` is as follows
-
-.. code-block:: cpp
+The basic usage of the ``RAJA::View`` is as follows::
 
    RAJA::View<double, RAJA::Layout<DIM>> Aview(Aptr, N1, ..., Nn);
 
