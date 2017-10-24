@@ -32,7 +32,7 @@ designed to make it easy for the compiler to perform optimization on. Basic usag
 Segments
 --------
 
-RAJA also includes various index containers. Here we catalog containers included in RAJA. 
+RAJA also includes various index containers.
 
 * ``RAJA::RangeSegment(start, stop)`` - Generates a contingous sequence of numbers
 
@@ -42,4 +42,4 @@ RAJA also includes various index containers. Here we catalog containers included
 
 * ``RAJA::StaticIndexSet<>``  - Holds a collection of RAJA::ListSegments or RAJA::TypedListSegments
 
-Basic usage of may be found in ``examples-add-vectors.cpp`` and ``example-gauss-sidel.cpp``
+Basic usage may be found in ``examples-add-vectors.cpp`` and ``example-gauss-sidel.cpp``

@@ -26,7 +26,7 @@ the resulting array :math:`y` is given as
    y[i] \leftarrow \sum^{i}_{j=0} x[j].
 
 The example above illustrates the so-called inclusive sum because each element i of
-the result :math:`y_i` is the sum of all elements including :math:`i` in :math:`x_i`. An exclusive sum
+the result :math:`y_i` is the sum of all elements including :math:`i` in :math:`x`. An exclusive sum
 would accumulate values up to but not including :math:`i`. RAJA provides a simple interface for carrying out these prefix operations. 
 
 
@@ -51,8 +51,6 @@ In each of the interfaces the first argument corresponds to a pointer to the sta
 a pointer to the end of the array, and a pointer to the output. 
 
 A full working version is maybe be found in the example folder ``example-scan.cpp``
-
-
 
 
 
