@@ -13,9 +13,9 @@
 .. ##
 
 
-####
-RAJA
-####
+################
+RAJA User Guide
+################
 
 RAJA is a collection of C++ software abstractions, in development at Lawrence
 Livermore National Laboratory (LLNL), that enable architecture portability for
