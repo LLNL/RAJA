@@ -18,32 +18,33 @@
 Scan
 ====
 
-RAJA also provides built in functions to carryout a prefix sum. A prefix sum or scan is an operation
-such that provided a one-dimensional array x, the resulting array y is given as
+The scan operation (or prefix sum) is an operation such that provided a one-dimensional array :math:`x`,
+the resulting array :math:`y` is given as
 
 .. math::
 
-   y[i] \leftarrow \sum^{i}_{j=0} x[j]
+   y[i] \leftarrow \sum^{i}_{j=0} x[j].
 
-The example above illustrates the so-called exclusive sum because each element i of
-the result is the sum of all elements up to but not including i. An inclusive sum all elements up 
-to i are summed. 
+The example above illustrates the so-called inclusive sum because each element i of
+the result :math:`y_i` is the sum of all elements including :math:`i` in :math:`x_i`. An exclusive sum
+would accumulate values up to but not including :math:`i`. RAJA provides a simple interface for carrying out these prefix operations. 
 
-RAJA provides a simple interface for carrying out these prefix operations. Intializing arrays x,y 
+
+The basic usage is as follows, intializing arrays :math:`x`, :math:`y`
 
 .. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 26-32
+   :lines: 26-31
 
 a RAJA inclusive prefix sum can be carried out through the following iterface
 
 .. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 37
+   :lines: 36
 
-where ``execute_policy`` is one of the RAJA policies. Similary an exclusive prefix sum may
+where ``execute_policy`` is one of the RAJA policies. Similary, an exclusive prefix sum may
 be carried out through the following interface
 
 .. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 44
+   :lines: 43
 
 
 In each of the interfaces the first argument corresponds to a pointer to the start of the array, 
