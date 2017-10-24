@@ -27,11 +27,11 @@ safe operations with the introduction of ``RAJA::Reduce`` variables
 Reduce Variables
 ----------------
 
-* ReduceSum : Provides a thread safe variable to accumulate a sum. Basic usage ``RAJA::ReduceSum<reduce_policy, data_type> RAJA_resI2(0.0)``
+* ReduceSum : Provides a thread safe variable to accumulate a sum.
 
-* ReduceMin : Provides a thread safe variable to compute the minimum. Basic usage ``RAJA::ReduceSum<reduce_policy, data_type> RAJA_resI2(0.0)``
+* ReduceMin : Provides a thread safe variable to compute the minimum.
 
-* ReduceMax : Provides a thread safe variable to compute the maximum. Basic usage ``RAJA::ReduceSum<reduce_policy, data_type> RAJA_resI2(0.0)``
+* ReduceMax : Provides a thread safe variable to compute the maximum.
 
 * ReduceMinLoc : Returns the index of the maximum 
 
@@ -48,4 +48,6 @@ Reduce Policies
 * tbb_reduce  : Creates a thread safe variable under TBB Policies 
 
 * cuda_reduce : Creates a thread safe variable under CUDA policies
+
+An example of reduction variable usage may be found in ``example-reduction.cpp``
 
