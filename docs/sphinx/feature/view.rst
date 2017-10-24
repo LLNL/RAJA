@@ -25,7 +25,7 @@ Creating accesors for multidimensional arrays
 
    double *A = new double [N*N]
 
-can be done in various ways, for example through the use of macros
+can be done in various ways, a classic manner is through macros
 
 .. code-block:: cpp
    
@@ -47,6 +47,8 @@ Accesing entries may then be done through the following accessor
 .. code-block:: cpp
 
    Aview(x2,x1)
+
+Basic usage is illustrated in ``examples-matrix-multiply.cpp``.
 
 
 
