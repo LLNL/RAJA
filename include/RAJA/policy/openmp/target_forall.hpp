@@ -96,6 +96,6 @@ RAJA_INLINE void forall_impl(const omp_target_parallel_for_exec_nt&,
 
 }  // closing brace for RAJA namespace
 
-#endif  // closing endif for if defined(RAJA_TARGET_ENABLE_OPENMP)
+#endif  // closing endif for if defined(RAJA_TARGET_RAJA_ENABLE_OPENMP)
 
 #endif  // closing endif for header file include guard

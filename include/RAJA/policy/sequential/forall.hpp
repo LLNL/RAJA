@@ -39,6 +39,8 @@
 
 #include "RAJA/internal/fault_tolerance.hpp"
 
+#include "RAJA/pattern/detail/forall.hpp"
+
 namespace RAJA
 {
 namespace policy
@@ -60,13 +62,11 @@ namespace sequential
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const seq_exec &, Iterable &&iter, Func &&body)
 {
-  auto begin = std::begin(iter);
-  auto end = std::end(iter);
-  auto distance = std::distance(begin, end);
+  RAJA_EXTRACT_BED_IT(iter);
 
   RAJA_NO_SIMD
-  for (decltype(distance) i = 0; i < distance; ++i) {
-    body(*(begin + i));
+  for (decltype(distance_it) i = 0; i < distance_it; ++i) {
+    body(*(begin_it + i));
   }
 }
 

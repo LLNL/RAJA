@@ -40,7 +40,7 @@
 #define RAJA_config_HPP
 
 #cmakedefine RAJA_USE_STL
-#cmakedefine RAJA_ENABLE_FT
+#cmakedefine ENABLE_FT
 
 #define @RAJA_FP@
 #define @RAJA_PTR@
@@ -166,7 +166,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 #define RAJA_ALIGN_DATA(d) __assume_aligned(d, DATA_ALIGN)
@@ -188,7 +188,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)
@@ -234,7 +234,7 @@ const int COHERENCE_BLOCK_SIZE = @RAJA_COHERENCE_BLOCK_SIZE@;
 
 #define RAJA_INLINE inline  __attribute__((always_inline))
 
-#if defined(RAJA_ENABLE_CUDA)
+#if defined(ENABLE_CUDA)
 #define RAJA_ALIGN_DATA(d)
 #else
 #define RAJA_ALIGN_DATA(d) __builtin_assume_aligned(d, DATA_ALIGN)

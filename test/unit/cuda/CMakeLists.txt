@@ -18,7 +18,7 @@ raja_add_test(
   NAME test-cuda-nested
   SOURCES test-nested.cpp)
 
-if (NOT RAJA_ENABLE_CLANG_CUDA)
+if (NOT ENABLE_CLANG_CUDA)
   raja_add_test(
     NAME test-cuda-scan
     SOURCES test-scan.cpp)
@@ -47,3 +47,7 @@ raja_add_test(
 raja_add_test(
   NAME test-cuda-nested-strided
   SOURCES test-nested-strided.cpp)
+
+raja_add_test(
+  NAME test-cuda-forall-view
+  SOURCES test-forall-view.cpp)

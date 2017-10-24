@@ -20,8 +20,8 @@ RAJA_DIR=$(git rev-parse --show-toplevel)
 cmake \
   -C ${RAJA_DIR}/host-configs/chaos/clang_3_9_0.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
-  -DRAJA_ENABLE_WARNINGS=On \
-  -DRAJA_ENABLE_APPLICATIONS=On \
-  -DRAJA_ENABLE_WARNINGS=On \
+  -DENABLE_WARNINGS=On \
+  -DENABLE_APPLICATIONS=On \
+  -DENABLE_WARNINGS=On \
   "$@" \
   ${RAJA_DIR}

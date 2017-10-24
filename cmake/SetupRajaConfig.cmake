@@ -21,7 +21,7 @@ option(RAJA_USE_FLOAT Off)
 option(RAJA_USE_COMPLEX Off)
 
 ## Pointer options
-if (RAJA_ENABLE_CUDA)
+if (ENABLE_CUDA)
   set(RAJA_PTR "RAJA_USE_BARE_PTR")
 else ()
   set(RAJA_PTR "RAJA_USE_RESTRICT_PTR")
@@ -32,7 +32,7 @@ endif()
 #set(RAJA_USE_PTR_CLASS OFF)
 
 ## Fault tolerance options
-option(RAJA_ENABLE_FT "Enable fault-tolerance features" OFF)
+option(ENABLE_FT "Enable fault-tolerance features" OFF)
 option(RAJA_REPORT_FT "Report on use of fault-tolerant features" OFF)
 
 ## Timer options
@@ -61,6 +61,15 @@ check_function_exists(posix_memalign RAJA_HAVE_POSIX_MEMALIGN)
 check_function_exists(aligned_alloc RAJA_HAVE_ALIGNED_ALLOC)
 check_function_exists(_mm_malloc RAJA_HAVE_MM_MALLOC)
 
+# Set up RAJA_ENABLE prefixed options
+set(RAJA_ENABLE_OPENMP ${ENABLE_OPENMP})
+set(RAJA_ENABLE_TARGET_OPENMP ${ENABLE_TARGET_OPENMP})
+set(RAJA_ENABLE_TBB ${ENABLE_TBB})
+set(RAJA_ENABLE_CUDA ${ENABLE_CUDA})
+set(RAJA_ENABLE_CLANG_CUDA ${ENABLE_CLANG_CUDA})
+set(RAJA_ENABLE_CHAI ${ENABLE_CHAI})
+set(RAJA_ENABLE_CUB ${ENABLE_CUB})
+
 # Configure a header file with all the variables we found.
 configure_file(${PROJECT_SOURCE_DIR}/include/RAJA/config.hpp.in
   ${PROJECT_BINARY_DIR}/include/RAJA/config.hpp)
@@ -82,7 +91,7 @@ if(PKG_CONFIG_FOUND)
   foreach(INCDIR ${INCLUDE_DIRECTORIES} ${CUDA_INCLUDE_DIRS})
     set(PC_C_FLAGS "${PC_C_FLAGS} -I${INCDIR}")
   endforeach()
-  if(RAJA_ENABLE_CUDA)
+  if(ENABLE_CUDA)
     foreach(FLAG ${RAJA_NVCC_FLAGS})
       set(PC_C_FLAGS "${PC_C_FLAGS} ${FLAG}")
     endforeach()

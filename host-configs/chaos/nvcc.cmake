@@ -25,11 +25,13 @@ elseif(CMAKE_BUILD_TYPE MATCHES RelWithDebInfo)
   set(RAJA_NVCC_FLAGS -g; -lineinfo; -O2; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
 elseif(CMAKE_BUILD_TYPE MATCHES Debug)
   set(RAJA_NVCC_FLAGS -g; -G; -O0; -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
+else()
+  set(RAJA_NVCC_FLAGS -restrict; -arch compute_35; -std c++11; --expt-extended-lambda; -ccbin ${CMAKE_CXX_COMPILER} CACHE LIST "")
 endif()
 
 
-set(RAJA_ENABLE_CUDA On CACHE BOOL "")
-set(RAJA_ENABLE_OPENMP On CACHE BOOL "")
+set(ENABLE_CUDA On CACHE BOOL "")
+set(ENABLE_OPENMP On CACHE BOOL "")
 
 set(RAJA_RANGE_ALIGN 4 CACHE INT "")
 set(RAJA_RANGE_MIN_LENGTH 32 CACHE INT "")

@@ -35,7 +35,7 @@
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
 
-#ifdef RAJA_ENABLE_CUDA
+#if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
@@ -208,12 +208,12 @@ struct type_repeater {
 
 template <typename POLICY,
           typename... Indices,
-          size_t... Range,
-          size_t... Unspecified,
+          camp::idx_t... Range,
+          camp::idx_t... Unspecified,
           typename BODY,
           typename... Ts>
-RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
-                              VarOps::index_sequence<Unspecified...>,
+RAJA_INLINE void forallN_impl(camp::idx_seq<Range...>,
+                              camp::idx_seq<Unspecified...>,
                               BODY &&body,
                               const Ts &... args)
 {
@@ -230,18 +230,18 @@ RAJA_INLINE void forallN_impl(VarOps::index_sequence<Range...>,
 
 template <typename POLICY,
           typename... Indices,
-          size_t... I0s,
-          size_t... I1s,
+          camp::idx_t... I0s,
+          camp::idx_t... I1s,
           typename... Ts>
-RAJA_INLINE void fun_unpacker(VarOps::index_sequence<I0s...>,
-                              VarOps::index_sequence<I1s...>,
+RAJA_INLINE void fun_unpacker(camp::idx_seq<I0s...>,
+                              camp::idx_seq<I1s...>,
                               Ts &&... args)
 {
   forallN_impl<POLICY, Indices...>(
-      VarOps::make_index_sequence<sizeof...(args) - 1>(),
-      VarOps::make_index_sequence<sizeof...(args) - 1 - sizeof...(Indices)>(),
-      VarOps::get_arg_at<I0s>::value(VarOps::forward<Ts>(args)...)...,
-      VarOps::get_arg_at<I1s>::value(VarOps::forward<Ts>(args)...)...);
+      camp::make_idx_seq_t<sizeof...(args) - 1>(),
+      camp::make_idx_seq_t<sizeof...(args) - 1 - sizeof...(Indices)>(),
+      VarOps::get_arg_at<I0s>::value(camp::forward<Ts>(args)...)...,
+      VarOps::get_arg_at<I1s>::value(camp::forward<Ts>(args)...)...);
 }
 
 template <typename POLICY, typename... Indices, typename... Ts>
@@ -255,9 +255,9 @@ RAJA_INLINE void forallN(Ts &&... args)
 #endif
 
   fun_unpacker<POLICY, Indices...>(
-      VarOps::index_sequence<sizeof...(args) - 1>{},
-      VarOps::make_index_sequence<sizeof...(args) - 1>{},
-      VarOps::forward<Ts>(args)...);
+      camp::idx_seq<sizeof...(args) - 1>{},
+      camp::make_idx_seq_t<sizeof...(args) - 1>{},
+      camp::forward<Ts>(args)...);
 
 #if defined(RAJA_ENABLE_CHAI)
   rm->setExecutionSpace(chai::NONE);

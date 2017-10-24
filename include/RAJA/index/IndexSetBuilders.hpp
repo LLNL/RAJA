@@ -98,12 +98,12 @@ void buildLockFreeBlockIndexset(IndexSet& iset,
  ******************************************************************************
  */
 void buildLockFreeColorIndexset(IndexSet& iset,
-                                int const* domainToRange,
+                                Index_type const* domainToRange,
                                 int numEntity,
                                 int numRangePerDomain,
                                 int numEntityRange,
-                                int* elemPermutation = 0l,
-                                int* ielemPermutation = 0l);
+                                Index_type* elemPermutation = 0l,
+                                Index_type* ielemPermutation = 0l);
 
 }  // closing brace for RAJA namespace
 

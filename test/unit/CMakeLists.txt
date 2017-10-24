@@ -47,15 +47,19 @@ raja_add_test(
   SOURCES test-span.cpp)
 
 raja_add_test(
+  NAME nested
+  SOURCES nested.cpp)
+
+raja_add_test(
   NAME test-multipolicy
   SOURCES test-multipolicy.cpp)
 
 add_subdirectory(cpu)
 
-if(RAJA_ENABLE_CUDA)
+if(ENABLE_CUDA)
   add_subdirectory(cuda)
-endif(RAJA_ENABLE_CUDA)
+endif(ENABLE_CUDA)
 
-if(RAJA_ENABLE_TARGET_OPENMP)
+if(ENABLE_TARGET_OPENMP)
   add_subdirectory(omp-target)
-endif(RAJA_ENABLE_TARGET_OPENMP)
+endif(ENABLE_TARGET_OPENMP)
