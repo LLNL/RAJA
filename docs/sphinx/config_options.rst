@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.._config_options-label:
+.. _configopt-label:
 
 ***********************
 Configuration Options
@@ -54,7 +54,7 @@ RAJA OpenMP functionality, pass the following argument to cmake::
     -DENABLE_OPENMP=On
 
 All RAJA settings for default options, compilers, flags for optimization, etc. 
-can be found in the `*.cmake` files in the `RAJA/cmake` directory. Next, we
+can be found in files in the `RAJA/cmake` directory. Next, we
 summarize the available options and their defaults
 
 =================================
@@ -68,7 +68,7 @@ enable or disable certain RAJA features. Most variables get translated to
 compilation directives and definitions in the RAJA 'config.hpp' file that is 
 generated when CMake runs. The 'config.hpp' header file is included in other 
 RAJA headers as needed so all options propagate through the build process 
-consistently. All RAJA variables have the 'RAJA_' prefix to distinguish
+consistently. All RAJA variables have a special prefix to distinguish
 those that are specific to RAJA from variables in CMake and BLT.
 
 The following list describes which variables are used to set RAJA options and

@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _addVectors::
+.. _addvectors-label:
 
 ----------------
 Vector Addition
@@ -29,8 +29,8 @@ and the result is stored in a third vector, C. The C++ version of this loop take
 ^^^^^^^^^^^^^^^^^^^^^
 
 The construction of a RAJA analog begins by first specifying an execution policy
-(for more info see :ref:`ref-policy`) and constructing an iteration space. For this example we can generate
-an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see :ref:`ref-index`). 
+(for more info see :ref:`policies-label`) and constructing an iteration space. For this example we can generate
+an iteration space composed of a contiguous sequence of numbers by using ``RAJA::RangeSegment`` (for more info see :ref:`index-label`). 
 
 .. literalinclude:: ../../../examples/example-add-vectors.cpp
                     :lines: 107-112
@@ -39,7 +39,7 @@ an iteration space composed of a contiguous sequence of numbers by using ``RAJA:
 2. RAJA on the GPU
 ^^^^^^^^^^^^^^^^^^^^^
 
-By swapping out execution policies we can target different backends, the caveat being that the developer is reponsible for memory management (for more info see :ref:`ref-plugins`). Furthermore, using the cuda backend requires
+By swapping out execution policies we can target different backends, the caveat being that the developer is reponsible for memory management (for more info see :ref:`plugins-label`). Furthermore, using the cuda backend requires
 the ``__device__`` decorator on the lambda. 
 
 .. literalinclude:: ../../../examples/example-add-vectors.cpp

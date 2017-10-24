@@ -12,15 +12,17 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _features-label::
+.. _features-label:
 
-=====================
-Features and Examples
-=====================
+************************
+RAJA Features
+************************
 
---------
+This section describes RAJA features.
+
+===========
 Features
---------
+===========
 
 .. toctree::
    :maxdepth: 2

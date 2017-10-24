@@ -19,7 +19,7 @@ RAJA License
 
 RAJA version 0.4.1
 
-Copyright (c) 2016, Lawrence Livermore National Security, LLC.
+Copyright (c) 2016-17, Lawrence Livermore National Security, LLC.
 
 Produced at the Lawrence Livermore National Laboratory.
 

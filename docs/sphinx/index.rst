@@ -64,7 +64,7 @@ If you are new to RAJA, check out our :ref:`getting_started-label` Guide. It
 contains basic information about accessing the RAJA code, building it, and
 RAJA usage.
 
-See :doc:`features` for detailed documentation for each feature.
+See :ref:`features-label` for detailed documentation for each feature.
 
 If you are interested in keeping up with RAJA development and communicating
 with developers and users, please join our `Google Group
@@ -84,3 +84,4 @@ interested in improving RAJA and exploring new ways to use it.
    plugins
    config_options
    contributing
+   raja_license

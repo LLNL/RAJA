@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _wave::
+.. _waveeq-label:
 
 ---------------
 Wave Equation

@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _tutorial-label::
+.. _tutorial-label:
 
 **********************
 Tutorial
@@ -82,8 +82,7 @@ specify the items::
 
   #. The lambda capture type; e.g., [=] or [&]
   #. The desired execution policy (or policies)
-  #. The loop iteration space(s) - in most cases a valid iteration space is any
-valid random access container.
+  #. The loop iteration space(s) -- in most cases a valid iteration space is any valid random access container.
   #. The data type of loop iteration variables
   #. The lambda that defines the loop body
 

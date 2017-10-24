@@ -12,7 +12,7 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _matrixMultiply::
+.. _matrixmult-label:
 
 -----------------------
 Matrix Multiplication
@@ -41,7 +41,7 @@ a C++ version of matrix multiplcation may be expressed as
 
 With minimal effort we can create an RAJA analog by modifying the existing block of code.
 First, we can relive the need of macros by making use of ``RAJA::View``, which
-simplifies multi-dimensional indexing (for more info see :ref:`ref-view`). 
+simplifies multi-dimensional indexing (for more info see :ref:`view-label`). 
                            
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 155-157
@@ -63,7 +63,7 @@ may be nested
 ^^^^^^^^^^^^^^^^^
 
 Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
-Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`ref-nested`) werein each
+Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`nested-label`) werein each
 execution policy may be specified inside a ``RAJA::ExecList``. In the following example we pair the outer loop
 with an OpenMP policy and the inner loop with a sequential policy.
 

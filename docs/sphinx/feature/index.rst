@@ -12,12 +12,11 @@
 .. ## For details about use and distribution, please read RAJA/LICENSE.
 .. ##
 
-.. _index::
-.. _ref-index:
+.. _index-label:
 
-.. # ====================
-.. # Indices and Segments
-.. # ====================
+====================
+Indices and Segments
+====================
 
 -------
 Indices 
