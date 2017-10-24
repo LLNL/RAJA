@@ -39,7 +39,7 @@ as follows
    RAJA::View<double, RAJA::Layout<DIM>> Aview(A, N1, ..., Nn);
 
 Here the ``RAJA::View`` is templated on a type (ex. double, float, int, ...), and ``N1, ... , Nn``
-identifies the stride in each dimension. 
+identifies the number of elements in each dimension. 
 
 The ``RAJA::Layout<DIM>`` encapsulates the number of dimensions , ``DIM`` , the ``RAJA::View`` will have.
 Accesing entries may then be done through the following accessor

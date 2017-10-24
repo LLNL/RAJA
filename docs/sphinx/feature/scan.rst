@@ -50,10 +50,4 @@ be carried out through the following interface
 In each of the interfaces the first argument corresponds to a pointer to the start of the array, 
 a pointer to the end of the array, and a pointer to the output. 
 
-A full working version is maybe be found in the example folder ``example-scan.cpp``
-
-
-
-
-
-
+A full working example is found in ``example-scan.cpp``.

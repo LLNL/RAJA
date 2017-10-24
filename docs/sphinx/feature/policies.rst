@@ -15,15 +15,21 @@
 .. _policies::
 .. _ref-policy:
 
-========
-Policies
-========
+===============
+Policy Appendix
+===============
 
-* seq_exec  : Iterates of the loop are carried out sequentially
-* loop_exec : Optimization is left to the compiler
+--------------------
+Serial/SIMD Policies
+--------------------
+
+* seq_exec  : Enforces sequential iterations
+* loop_exec : Vectorizies if compiler belives it is appropriate
 * simd_exec : Introduces compiler hints for vectorizations
 
+---------------
 OpenMP Policies
+---------------
 
 * omp_for_exec : Instructs the compiler to distribute loop iterations within the threads
 * omp_for_nowait_exec : Removes synchronization within threaded regions
@@ -36,12 +42,16 @@ OpenMP Policies
 * omp_reduce : 
 * omp_reduce_ordered : 
 
+----------------------
 OpenMP Target Policies
+----------------------
 
 * omp_target_parallel_for_exec :
 * omp_target_reduce :   
   
+------------
 TBB Policies
+------------ 
 
 * tbb_for_exec : 
 * tbb_for_static :
@@ -49,7 +59,9 @@ TBB Policies
 * tbb_segit : 
 * tbb_reduce : 
 
+-------------
 CUDA Policies
+-------------
 
 * cuda_threadblock_x_exec<int THREADS>
 * cuda_threadblock_y_exec<int THREADS>

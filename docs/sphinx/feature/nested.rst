@@ -31,9 +31,8 @@ In situations were loops are nested
     }
   }
 
-RAJA provides an abstraction which may be combined with various execution policies. The ``RAJA::ForallN`` loop is templated 
-on up to N execution policies and expects an iteration space for each execution policy and a lambda with an argument
-for each iteration space.
+RAJA provides an abstraction which may be combined with various execution policies. The ``RAJA::ForallN`` loop is templated with N
+execution policies. For each loop the method expects an iteration space, an index, and a lambda encapsulating the loop body. 
 
 .. code-block:: cpp
 
@@ -44,7 +43,7 @@ for each iteration space.
       });
 
 
-Here the developer is supplies the following
+Here the developer supplies the following
 
 * Capture type - [=] or [&]
 
@@ -55,3 +54,5 @@ Here the developer is supplies the following
 * index_type   - Type of values contained in the iteration space
 
 * lambda       - The body of the loop
+
+Basic usage is illustrated in ``examples-jacobi.cpp``, ``examples-gauss-sidel.cpp``, and ``example-wave.cpp``. 

@@ -27,7 +27,7 @@ RAJA introduces a custom 64-bit loop counter
 
 * ``RAJA::Index_type``
 
-designed to make it easy for the compiler to perform optimization on. Basic usage of may be found in ``examples-add-vectors.cpp``.
+designed to make it easy for the compiler to perform optimization on. Basic usage may be found in ``examples-add-vectors.cpp``.
 
 --------
 Segments
