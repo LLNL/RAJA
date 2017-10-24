@@ -28,8 +28,7 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   int *y  = (int*) malloc(N*sizeof(int));
   
   x[0] = 3; x[1] = 1; x[2] = 7;
-  x[3] = 0; x[2] = 4; x[3] = 1; 
-  x[4] = 6; x[5] = 3; 
+  x[3] = 0; x[4] = 6; x[5] = 3;
     
   typedef RAJA::seq_exec execute_policy;
   
