@@ -34,4 +34,4 @@ Features
    feature/nested
    feature/view
    feature/policies
-   feature/traits
+   feature/atomic
