@@ -35,9 +35,20 @@ raja_add_executable(
   SOURCES example-wave.cpp)
 
 raja_add_executable(
+  NAME example-gauss-seidel
+  SOURCES example-gauss-seidel.cpp)
+
+raja_add_executable(
   NAME example-custom-index
   SOURCES example-custom-index.cpp)
 
 raja_add_executable(
-  NAME example-gauss-seidel
-  SOURCES example-gauss-seidel.cpp)
+  NAME example-atomic-pi
+  SOURCES example-atomic-pi.cpp)
+
+raja_add_executable(
+  NAME example-reduction
+  SOURCES example-reduction.cpp)
+
+
+
