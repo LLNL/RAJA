@@ -18,56 +18,71 @@
 Matrix Multiplication
 -----------------------
 
-As a second example we consider matrix multiplication. Here two matrices, A, and B, of dimension
-N x N are multiplied and the result is stored in a third matrix, C. 
-Assuming that we have pointers to the data
+In this example, we multiply two matrices 'A' and 'B' of dimension
+N x N and store the result in matrix 'C'. To simplify the example, we
+use the following macros to access the matrix entries:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 107-109
 
-and with the aid of macros
+Also, we use a 'memory manager' to simplify allocation of CPU vs. GPU 
+memory depending on how we wish to run the example.  
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 121-123
 
-a C++ version of matrix multiplcation may be expressed as
+Assuming we have initialized the arrays holding the data for the matrics,
+a typical C-style nested loop to multiple the matrices is: 
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 136-146
 
-^^^^^^^^^^^^^^^^^
-1. Adding RAJA
-^^^^^^^^^^^^^^^^^
+^^^^^^^^^^^^^^^^^^
+Converting to RAJA
+^^^^^^^^^^^^^^^^^^
 
-With minimal effort we can create an RAJA analog by modifying the existing block of code.
-First, we can relive the need of macros by making use of ``RAJA::View``, which
-simplifies multi-dimensional indexing (for more info see :ref:`view-label`). 
-                           
+In the RAJA version of the example code, we use the ``RAJA::View`` capability,
+which allows us to access matrix entries in a multi-dimensional manner similar 
+to the C-style version but without the need for macros. Here, we create a
+two-dimensional N x N 'view' for each matrix: 
+
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 155-157
 
-Second, we can convert the outermost loop into a ``RAJA::forall`` loop
+For more information about RAJA views, see :ref:`view-label`.
+                           
+First, we can convert the outermost loop to use the ``RAJA::forall`` traversal
+method with a sequential execution policy:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 167-180
 
-yielding code which may be excuted with various backends.
-In the case that the code will not be off loaded to a device, ``RAJA::forall`` loops
-may be nested
+Changing the execution policy to a RAJA OpenMP policy, for example, would 
+enable the outer to run in parallel using CPU multithreading. See the 
+``RAJA::forallN`` version of the example below for another way to do this.
+
+When the code will not be run on a GPU, ``RAJA::forall`` loops may be nested
+as in the following:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 187-201  
 
 ^^^^^^^^^^^^^^^^^
-2. RAJA forallN
+Nested-loop RAJA
 ^^^^^^^^^^^^^^^^^
 
-Collapsing a series of nested loops may be done through the ``RAJA::forallN`` method.
-Here it is necessary to use the ``RAJA::NestedPolicy`` (for more info see :ref:`nested-label`) werein each
-execution policy may be specified inside a ``RAJA::ExecList``. In the following example we pair the outer loop
-with an OpenMP policy and the inner loop with a sequential policy.
+RAJA provides ``RAJA::forallN`` traversal templates to provide flexibility in
+how arbitrary loop nests can be run with minimal source code changes. Here,
+we recast the matrix-multiplication example to illustrate this. For more
+information, see :ref:`nested-label`.
+
+Using ``RAJA::forallN``, requires that the execution policy for each loop in 
+the nest be described using ``RAJA::NestedPolicy`` and a ``RAJA::ExecList``. 
+Here, the outer loop has an OpenMP 'parallel for' execution poilicy and the
+loop nested inside uses a sequential policy:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 229-239
 
-A full working version ``example-matrix-multiply.cpp`` may be found in the example folder.
+The file ``example-matrix-multiply.cpp`` in the ``RAJA/examples`` directory
+contains the complete working example code.

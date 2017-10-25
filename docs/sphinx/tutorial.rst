@@ -18,7 +18,7 @@
 Tutorial
 **********************
 
-This section provides a RAJA tutorial, introducing RAJA concepts and
+This section contains a RAJA tutorial that introducs RAJA concepts and
 capabilities via examples.
 
 ====================
@@ -78,7 +78,7 @@ inner loop body; e.g.,::
   });
 
 In summary, these RAJA template methods require a user to understand how to
-specify the items::
+specify the items:
 
   #. The lambda capture type; e.g., [=] or [&]
   #. The desired execution policy (or policies)
