@@ -24,7 +24,7 @@ initialized arrays holding the data for the vectors. Then, a typical
 C-style loop to add the vectors is:
 
 .. literalinclude:: ../../../examples/example-add-vectors.cpp
-                    :lines: 93-96
+                    :lines: 94-96
 
 ^^^^^^^^^^^^^^^^^^^^^
 Converting to RAJA

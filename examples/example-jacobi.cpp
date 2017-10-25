@@ -210,11 +210,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(I, 0, NN * sizeof(double));
   memset(Iold, 0, NN * sizeof(double));
 
+  /*
+   *  Sequential Jacobi Iteration. 
+   *
+   *  Note that a RAJA ReduceSum object is used to accumulate the sum
+   *  for the residual. Since the loop is run sequentially, this is 
+   *  not strictly necessary. It is done here for consistency and 
+   *  comparison with other RAJA variants in this example.
+   */
   while (resI2 > tol * tol) {
 
-    /*
-      Jacobi Iteration
-    */
     RAJA::forallN<jacobiSeqNestedPolicy>(
       jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {      
 
@@ -230,11 +235,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                           + Iold[id + 1]);
         });
 
-    /*
-      ----[Reduction step]---------
-      The RAJA API introduces a thread-safe accumulation variable
-      "ReduceSum" in order to perform reductions
-    */
     RAJA::ReduceSum<RAJA::seq_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::seq_exec>(
       gridRange, [=](RAJA::Index_type k) {
@@ -246,7 +246,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2;
     if (iteration > maxIter) {
-      printf("RAJA: Sequential - Maxed out on iterations! \n");
+      printf("Jacobi: Sequential - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -263,22 +263,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   memset(Iold, 0, NN * sizeof(double));
   
   /*
-    ----[RAJA Policies]-----------
-    RAJA::omp_collapse_nowait_exec -
-    parallizes nested loops without introducing nested parallism
-
-    RAJA::OMP_Parallel<> - Creates a parallel region,
-    must be the last argument of the nested policy list
-  */
+   *  OpenMP parallel Jacobi Iteration. 
+   *
+   *  ----[RAJA Policies]-----------
+   *  RAJA::omp_collapse_nowait_exec -
+   *  parallizes nested loops without introducing nested parallism
+   *
+   *  RAJA::OMP_Parallel<> - Creates a parallel region,
+   *  must be the last argument of the nested policy list
+   *
+   *  Note that OpenMP RAJA ReduceSum object performs the reduction
+   *  operation for the residual in a thread-safe manner.
+   */
   using jacobiompNestedPolicy =
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
-    RAJA::omp_collapse_nowait_exec>, RAJA::OMP_Parallel<>>;
+                                      RAJA::omp_collapse_nowait_exec>, 
+                       RAJA::OMP_Parallel<>>;
 
   while (resI2 > tol * tol) {
 
-    /*
-      Jacobi Iteration
-    */
     RAJA::forallN<jacobiompNestedPolicy>(
         jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {
                 
@@ -292,9 +295,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
           I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
                              + Iold[id + 1]);              
         });
-    /*
-      Compute residual and update Iold
-    */
+
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
     RAJA::forall<RAJA::omp_parallel_for_exec>(
       gridRange, [=](RAJA::Index_type k) {
@@ -306,7 +307,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     
     resI2 = RAJA_resI2;
     if (iteration > maxIter) {
-      printf("RAJA: OpenMP - Maxed out on iterations! \n");
+      printf("Jacobi: OpenMP - Maxed out on iterations! \n");
       exit(-1);
     }
     iteration++;
@@ -317,6 +318,17 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_CUDA)
+  /*
+   *  CUDA Jacobi Iteration. 
+   *
+   *  ----[RAJA Policies]-----------
+   *  RAJA::cuda_threadblock_y_exec, RAJA::cuda_threadblock_x_exec -
+   *  define the mapping of loop iterations to GPU thread blocks
+   *
+   *  Note that CUDA RAJA ReduceSum object performs the reduction
+   *  operation for the residual in a thread-safe manner on the GPU.
+   */
+
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
   using jacobiCUDANestedPolicy = RAJA::NestedPolicy<RAJA::    

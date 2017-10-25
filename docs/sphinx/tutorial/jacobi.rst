@@ -40,7 +40,7 @@ The discrete problem
 
 The problem domain in the example is the unit square :math:`[-1,1] x [-1, 1]`.
 On the domain, we define grid with uniform mesh spacing :math:`h` in x and y.
-The discrete solution values will be computed at the grid vertices that lie
+The discrete solution values will be computed at the grid points that lie
 at the intersection of the grid lines. Then, the approximate derivatives
 are defined using finite differences as follows:
 
@@ -49,7 +49,7 @@ are defined using finite differences as follows:
    u_{xx} \approx \frac{u_{i+1,j} - 2u_{i,j} + u_{i-1,j}}{h^2}, \\
    u_{yy} \approx \frac{u_{i,j+1} - 2u_{i,j} + u_{i,j-1}}{h^2},
 
-where :math:`(i,j)` corresponds to grid vertex coordinate. After substituting 
+where :math:`(i,j)` corresponds to grid point coordinate. After substituting 
 the finite difference derivatives into the equation and some rearranging, 
 the Jacobi method iterates the approximate solution 
 
@@ -66,42 +66,44 @@ until the residual is less than some tolerance and we consider the solution
 
 We use and initial guess :math:`\mathcal{u_{i,j}^0} = 0` for all mesh points
 :math:`(i,j)`. Since the Dirichlet boundary condition is zero at every point on
-the domain boundary, we iterate the solution on the interior vertices only. 
-At each iteration, the solution at each grid vertex is replaced by a weighted 
-sum of the solution at four neighboring vertices (black vertex and blue 
-neighboring vertices in the figure.
+the domain boundary, we iterate the solution on the interior grid points only. 
+At each iteration, the solution at each grid point is replaced by a weighted 
+sum of the solution at four neighboring points (black point and blue 
+neighboring points in the figure).
 
 .. image:: ../figures/jacobi.png
    :scale: 10 %
    :align: center
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-RAJA ForallN implementation
+RAJA nested-loop implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Using the ``RAJA::ForallN`` template, the iteration can be expressed as
+Here, we show a parallel implementation of the jacobi iteration using OpenMP
+and nested-loop RAJA capabilities:
 
 .. literalinclude:: ../../../examples/example-jacobi.cpp
-                    :lines: 218-231
+                    :lines: 282-313
 
-where we defined the ``jacobiompNestedPolicy`` type as
+Here, the ``RAJA::forallN`` loop updates the solution variable at each grid
+point.
+
+The ``jacobiompNestedPolicy`` type is defined as
 
 .. literalinclude:: ../../../examples/example-jacobi.cpp
-                    :lines: 273-275
+                    :lines: 278-281
 
 The template parameter after the nested policy specifies that an OpenMP 
 parallel region is created around the loop nest. The nested policy indicates
 that the loops are collapsed into one using the OpenMP *collapse* pragma and
 a *nowait* pragma.
 
-Note that computing :math:`\mathcal{E}` in parallel involves multiple threads 
-writing to the same location in memory, which is inherently not thread-safe. 
-RAJA provides thread-safe reduction types for all programming model back-ends.
-The following code shows the loop that computes the residual using a RAJA 
-OpenMP reduction type. 
-
-.. literalinclude:: ../../../examples/example-jacobi.cpp
-                    :lines: 298-305
+The ``RAJA::forall`` loop computes the residual :math:`\mathcal{E}`. Note that 
+doing this in parallel involves multiple threads writing to the same location 
+in memory, which is inherently not thread-safe. Thus, we use a 
+``RAJA::ReduceSum`` object here, which is templated on an OpenMP reduction
+policy.  RAJA provides thread-safe reduction types for all programming model 
+back-ends.
 
 The file ``RAJA/examples/example-jacobi.cpp``
 contains the complete working example code.
