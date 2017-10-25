@@ -24,22 +24,25 @@ introduces templated atomic methods. The list of atomic operations and list of p
 -----------------
 Atomic Operations
 -----------------
-*``RAJA::atomic::atomicAdd<AtomicPolicy>(* T, T value)``  
 
-*``RAJA::atomic::atomicSum<AtomicPolicy>(* T, T value)`` 
+* ``RAJA::atomic::atomicAdd<AtomicPolicy>(* T acc, T value)``  - Add acc by value
 
-*``RAJA::atomic::atomicMin<AtomicPolicy>(* T, T value)`` 
+* ``RAJA::atomic::atomicSum<AtomicPolicy>(* T acc, T value)``  - Subtracts acc by value
 
-*``RAJA::atomic::atomicMax<AtomicPolicy>(* T, T value)`` 
+* ``RAJA::atomic::atomicMin<AtomicPolicy>(* T acc, T value)``  - Returns the maximum to acc
 
-*``RAJA::atomic::atomicInc<AtomicPolicy>(* T, T value)`` 
+* ``RAJA::atomic::atomicMax<AtomicPolicy>(* T acc, T value)``  - Returns the minimum to acc
 
-*``RAJA::atomic::atomicDec<AtomicPolicy>(* T, T value)`` 
+* ``RAJA::atomic::atomicInc<AtomicPolicy>(* T acc)``  - Increments acc by 1
 
+* ``RAJA::atomic::atomicDec<AtomicPolicy>(* T acc)``  - Decreases acc value by 1 
+
+Remark: The left most argument is assumed to be the pointer to the memory location. 
 
 ---------------
 Atomic Policies
 ---------------
+
 * ``seq_atomic``     - Unprotected operation.
 
 * ``auto_atomic``    - Attempts to determine the correct policy. 
