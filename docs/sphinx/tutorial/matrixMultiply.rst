@@ -31,7 +31,7 @@ memory depending on how we wish to run the example.
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 121-123
 
-Assuming we have initialized the arrays holding the data for the matrics,
+Assuming we have initialized the arrays holding the data for the matrices,
 a typical C-style nested loop to multiple the matrices is: 
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
@@ -58,7 +58,7 @@ method with a sequential execution policy:
                     :lines: 167-180
 
 Changing the execution policy to a RAJA OpenMP policy, for example, would 
-enable the outer to run in parallel using CPU multithreading. See the 
+enable the outer to run in parallel using CPU multi-threading. See the 
 ``RAJA::forallN`` version of the example below for another way to do this.
 
 When the code will not be run on a GPU, ``RAJA::forall`` loops may be nested
@@ -71,18 +71,19 @@ as in the following:
 Nested-loop RAJA
 ^^^^^^^^^^^^^^^^^
 
-RAJA provides ``RAJA::forallN`` traversal templates to provide flexibility in
-how arbitrary loop nests can be run with minimal source code changes. Here,
-we recast the matrix-multiplication example to illustrate this. For more
-information, see :ref:`nested-label`.
+Here, we recast the matrix-multiplication using the ``RAJA::forallN`` 
+nested-loop capability.  
 
 Using ``RAJA::forallN``, requires that the execution policy for each loop in 
 the nest be described using ``RAJA::NestedPolicy`` and a ``RAJA::ExecList``. 
-Here, the outer loop has an OpenMP 'parallel for' execution poilicy and the
+Here, the outer loop has an OpenMP 'parallel for' execution policy and the
 loop nested inside uses a sequential policy:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 229-239
 
-The file ``example-matrix-multiply.cpp`` in the ``RAJA/examples`` directory
+For more information about RAJA nested-loop functionality, 
+see :ref:`nested-label`.
+
+The file ``RAJA/examples/example-matrix-multiply.cpp`` 
 contains the complete working example code.

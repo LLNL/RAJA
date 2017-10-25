@@ -18,15 +18,17 @@
 Tutorial
 **********************
 
-This section contains a RAJA tutorial that introducs RAJA concepts and
-capabilities via examples.
+This section contains a RAJA tutorial that introduces RAJA concepts and
+capabilities via examples. First, we provide some background discussion 
+about C++ lambda expressions and RAJA traversal template methods, which
+are used out the examples.
 
 ====================
 C++ Lambda Overview
 ====================
 
-RAJA is used most easily and effectively by employing C++ lamda expressions. 
-Here, we provide a brief description of the eseential elements of C++ lambdas.
+RAJA is used most easily and effectively by employing C++ lambda expressions. 
+Here, we provide a brief description of the essential elements of C++ lambdas.
 `Lambda expressions <http://en.cppreference.com/w/cpp/language/lambda>`_ were 
 introduced in C++11 to provide a lexically-scoped name binding; i.e., a 
 *closure* that stores a function with a data environment. In particular, a 
@@ -54,27 +56,36 @@ generates a lambda that assigns the value of 'y' to 'x' when called. By
 setting the capture list as ``[=]`` or ``[&]`` all variables in scope 
 that are used in the lambda are captured by value or reference, respectively.
 
-RAJA users typically pass application code frangments, such as loop bodies,
-into RAJA loop traversal template methods using lambdas. The two main types
-of RAJA traversal templates are ``RAJA::forall`` and ``RAJA::forallN``. The 
-``RAJA::forall`` method abstracts a standard C-style for loop. It is templated 
-on an execution policy and takes a loop iteration space and a lambda defining 
-the loop body as arguments; e.g.,::
+=========================
+RAJA Traversal Templates
+=========================
+
+RAJA users typically pass application code fragments, such as loop bodies,
+into RAJA loop traversal template methods using lambda expressions. The two 
+main types of RAJA traversal templates are ``RAJA::forall`` and
+``RAJA::forallN``. Once loops are written using these constructs, they can
+be run using different programming model back-ends by changing template
+parameters.
+
+The ``RAJA::forall`` templates abstract standard C-style for loops. They are
+templated execution policies and take loop iteration spaces and lambdas 
+defining loop bodies as arguments; e.g.,::
 
   RAJA::forall<exec_policy>(iter_space I, [=] (index_type i)) {
-    //body
+    // loop body
   });
 
-Similarly, the ``RAJA::ForallN`` loop abstracts nested ``for`` loops. A
+The ``RAJA::forallN`` traversal templates provide flexibility in
+how arbitrary loop nests can be run with minimal source code changes. A
 ``RAJA::ForallN`` loop is templated on 'N' execution policy and iteration
-space paramters, one for each level in the loop nest, plus a lambda for the
+space parameters, one for each level in the loop nest, plus a lambda for the
 inner loop body; e.g.,::
 
   RAJA::forallN< RAJA::NestedPolicy<
                  RAJA::ExecList< exec_policy1, .... , exec_policyN> > >(
     iter_space I1,..., iter_space IN, 
     [=](index_type i1,..., index_type iN) {
-      //body
+      // loop body
   });
 
 In summary, these RAJA template methods require a user to understand how to

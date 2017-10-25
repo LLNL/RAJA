@@ -18,7 +18,7 @@
 Red-Black Gauss-Seidel
 -----------------------
 
-In this example we revisit the boundary value problem solved by the Jacobi method and apply a Red-Black Gauss-Sidel scheme.
+In this example, we revisit the boundary value problem solved by the Jacobi method and apply a Red-Black Gauss-Sidel scheme.
 The classic Gauss-Sidel method is inherrently a sequential algorithm; however, parallism may be exposed by coloring the interior nodes
 in the following manner
 

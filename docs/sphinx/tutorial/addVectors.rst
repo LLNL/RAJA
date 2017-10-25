@@ -43,7 +43,7 @@ Running on a GPU
 ^^^^^^^^^^^^^^^^^^^^^
 
 By using a different execution policy, we can also run this loop on a CUDA
-GPU. Note that the user is reponsible for making sure that the data arrays
+GPU. Note that the user is responsible for making sure that the data arrays
 are properly allocated and initialized on the device. This can be done using
 explicit device allocation and copying from host memory or via CUDA unified
 memory, if available (for more information, see :ref:`plugins-label`). 
@@ -61,5 +61,5 @@ cases. However, this may need to be changed for performance reasons or when
 there is a large number of variables in the loop body requiring many device
 registers.
 
-The file ``example-add-vectors.cpp`` in the ``RAJA/examples`` directory 
-contains the complete working example code.
+The file ``RAJA/examples/example-add-vectors.cpp`` contains the complete 
+working example code.
