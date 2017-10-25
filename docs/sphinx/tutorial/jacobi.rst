@@ -51,25 +51,28 @@ are defined using finite differences as follows:
 
 where :math:`(i,j)` corresponds to grid point coordinate. After substituting 
 the finite difference derivatives into the equation and some rearranging, 
-the Jacobi method iterates the approximate solution 
+the Jacobi method iteration update is: 
 
 .. math::
 
    u^{k+1}_{ij} = \frac{1}{4} \left( -h^2 f_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} +  u^{k}_{ij} \right)
 
-until the residual is less than some tolerance and we consider the solution
-'converged'
+Here, the superscript :math:`k` denotes the :math:`k-th` iterate and the 
+subscripts :math:`ij` is the grid point index. 
+
+We start with an initial guess :math:`\mathcal{u_{ij}^0} = 0` for all mesh 
+points :math:`ij`. Since the Dirichlet boundary condition is zero at every 
+point on the domain boundary, we iterate the solution on the interior grid 
+points only. At each iteration, the solution at each grid point is replaced by 
+a weighted sum of the solution at four neighboring points (black point and 
+blue neighboring points in the figure below).
+
+We iterate until the residual is less than some tolerance; then, we consider 
+the solution 'converged':
 
 .. math::
 
    \mathcal{E}  = \sqrt{ \sum^{N}_{i} \sum^{N}_{j} \left( u_{ij}^{k+1} - u_{i,j}^{k} \right)^2 } < tol
-
-We use and initial guess :math:`\mathcal{u_{i,j}^0} = 0` for all mesh points
-:math:`(i,j)`. Since the Dirichlet boundary condition is zero at every point on
-the domain boundary, we iterate the solution on the interior grid points only. 
-At each iteration, the solution at each grid point is replaced by a weighted 
-sum of the solution at four neighboring points (black point and blue 
-neighboring points in the figure).
 
 .. image:: ../figures/jacobi.png
    :scale: 10 %
