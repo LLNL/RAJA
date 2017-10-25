@@ -89,12 +89,16 @@ inner loop body; e.g.,::
   });
 
 In summary, these RAJA template methods require a user to understand how to
-specify the items:
+specify several items:
 
   #. The lambda capture type; e.g., [=] or [&]
+
   #. The desired execution policy (or policies)
-  #. The loop iteration space(s) -- in most cases a valid iteration space is any valid random access container.
+
+  #. The loop iteration space(s) -- in most cases an iteration space can be any valid random access container
+
   #. The data type of loop iteration variables
+
   #. The lambda that defines the loop body
 
 The remainder of this tutorial illustrates how to use RAJA with examples that
