@@ -201,6 +201,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
+
   using jacobiSeqNestedPolicy =
       RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
@@ -282,28 +283,30 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   while (resI2 > tol * tol) {
 
-    RAJA::forallN<jacobiompNestedPolicy>(
-        jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {
+    RAJA::forallN<jacobiompNestedPolicy>( jacobiRange, jacobiRange, 
+      [=](RAJA::Index_type m, RAJA::Index_type n) {
                 
-          double x = gridx.o + m * gridx.h;
-          double y = gridx.o + n * gridx.h;
+      double x = gridx.o + m * gridx.h;
+      double y = gridx.o + n * gridx.h;
 
-          double f = gridx.h * gridx.h
-                     * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
+      double f = gridx.h * gridx.h * 
+                 (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
 
-          int id = n * (N + 2) + m;
-          I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + Iold[id - 1]
-                             + Iold[id + 1]);              
-        });
+      int id = n * (N + 2) + m;
+      I[id] = 0.25 * (-f + Iold[id - N - 2] + Iold[id + N + 2] + 
+                           Iold[id - 1] + Iold[id + 1]);              
+    });
+
 
     RAJA::ReduceSum<RAJA::omp_reduce, double> RAJA_resI2(0.0);
-    RAJA::forall<RAJA::omp_parallel_for_exec>(
-      gridRange, [=](RAJA::Index_type k) {
+
+    RAJA::forall<RAJA::omp_parallel_for_exec>( gridRange, 
+      [=](RAJA::Index_type k) {
       
-        RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);                    
-        Iold[k] = I[k];
+      RAJA_resI2 += (I[k] - Iold[k]) * (I[k] - Iold[k]);                    
+      Iold[k] = I[k];
         
-      });
+    });
     
     resI2 = RAJA_resI2;
     if (iteration > maxIter) {

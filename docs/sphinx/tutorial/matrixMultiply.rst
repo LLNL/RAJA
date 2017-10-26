@@ -57,6 +57,11 @@ method with a sequential execution policy:
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
                     :lines: 167-180
 
+Here, the RAJA loop iteration space is defined by a RAJA RangeSegment object:
+
+.. literalinclude:: ../../../examples/example-matrix-multiply.cpp
+                    :lines: 163
+
 Changing the execution policy to a RAJA OpenMP policy, for example, would 
 enable the outer to run in parallel using CPU multi-threading. See the 
 ``RAJA::forallN`` version of the example below for another way to do this.
@@ -80,7 +85,7 @@ Here, the outer loop has an OpenMP 'parallel for' execution policy and the
 loop nested inside uses a sequential policy:
 
 .. literalinclude:: ../../../examples/example-matrix-multiply.cpp
-                    :lines: 229-239
+                    :lines: 229-240
 
 For more information about RAJA nested-loop functionality, 
 see :ref:`nested-label`.

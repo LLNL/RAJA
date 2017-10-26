@@ -53,8 +53,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
     });
 
   printf("sum = %d \n", sum.get());
-  printf("min = %d, min location = %d \n",min.get(), minLocation.getLoc());
-  printf("max = %d, max location = %d \n",max.get(), maxLocation.getLoc());
+  printf("min = %d, min location = %d \n",min.get(), int(minLocation.getLoc()));
+  printf("max = %d, max location = %d \n",max.get(), int(maxLocation.getLoc()));
 
 
   delete [] x; 

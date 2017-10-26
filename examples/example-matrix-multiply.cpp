@@ -164,41 +164,41 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
   printf("RAJA: Forall - Sequential Policies\n");
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](RAJA::Index_type row) {    
+  RAJA::forall<RAJA::seq_exec>( matBounds, 
+    [=](RAJA::Index_type row) {    
 
-      for (int col = 0; col < N; ++col) {
+    for (int col = 0; col < N; ++col) {
         
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
-        
-        Cview(row, col) = dot;
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row, k) * Bview(k, col);
       }
+        
+      Cview(row, col) = dot;
+    }
       
-    });
+  });
   checkSolution<double>(Cview, N);
 
   printf("RAJA: Nested Forall - Sequential Policies\n");
   /*
     Forall loops may be nested under sequential and omp policies
   */
-  RAJA::forall<RAJA::seq_exec>(
-    matBounds, [=](RAJA::Index_type row) {
+  RAJA::forall<RAJA::seq_exec>( matBounds, 
+    [=](RAJA::Index_type row) {
 
-      RAJA::forall<RAJA::seq_exec>(
-        matBounds, [=](RAJA::Index_type col) {
+    RAJA::forall<RAJA::seq_exec>( matBounds, 
+      [=](RAJA::Index_type col) {
         
 
-          double dot = 0.0;
-          for (int k = 0; k < N; ++k) {
-            dot += Aview(row, k) * Bview(k, col);
-          }
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row, k) * Bview(k, col);
+      }
 
-          Cview(row, col) = dot;
-        });
+      Cview(row, col) = dot;
     });
+  });
   checkSolution<double>(Cview, N);
 
 
@@ -226,17 +226,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Here the outer loop is excuted in parallel while the inner loop
     is executed sequentially
   */
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::omp_parallel_for_exec,RAJA::seq_exec>>>(
-      matBounds, matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
+  RAJA::forallN<RAJA::NestedPolicy< 
+    RAJA::ExecList<RAJA::omp_parallel_for_exec, RAJA::seq_exec>>>(
+      matBounds, matBounds, 
+      [=](RAJA::Index_type row, RAJA::Index_type col) {
       
-        double dot = 0.0;
-        for (int k = 0; k < N; ++k) {
-          dot += Aview(row, k) * Bview(k, col);
-        }
+      double dot = 0.0;
+      for (int k = 0; k < N; ++k) {
+        dot += Aview(row, k) * Bview(k, col);
+      }
 
-        Cview(row, col) = dot;
-      });
+      Cview(row, col) = dot;
+  });
   checkSolution<double>(Cview, N);
 #endif
 
