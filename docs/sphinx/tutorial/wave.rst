@@ -18,6 +18,12 @@
 Wave Equation
 ---------------
 
+Main RAJA features discussed:
+
+  * ``RAJA::forallN`` nested-loop traversal template
+  * RAJA nested-loop policies
+
+
 In this example, we solve the acoustic wave equation
 
 .. math::  

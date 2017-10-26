@@ -18,6 +18,14 @@
 Matrix Multiplication
 -----------------------
 
+Main RAJA features discussed:
+
+  * ``RAJA::View`` multi-dimensional data access
+  * ``RAJA::forall`` loop traversal template 
+  * ``RAJA::forallN`` nested-loop traversal template 
+  * RAJA execution policies, including nested-loop policies
+
+
 In this example, we multiply two matrices 'A' and 'B' of dimension
 N x N and store the result in matrix 'C'. To simplify the example, we
 use the following macros to access the matrix entries:
@@ -89,6 +97,9 @@ loop nested inside uses a sequential policy:
 
 For more information about RAJA nested-loop functionality, 
 see :ref:`nested-label`.
+
+.. note:: The order of execution policies specified in a RAJA nested-loop
+          policy is outermost to innermost, left to right. 
 
 The file ``RAJA/examples/example-matrix-multiply.cpp`` 
 contains the complete working example code.

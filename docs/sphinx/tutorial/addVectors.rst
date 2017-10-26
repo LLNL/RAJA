@@ -18,6 +18,13 @@
 Vector Addition
 ----------------
 
+Main RAJA features discussed:
+
+  * ``RAJA::forall`` loop traversal template
+  * ``RAJA::RangeSegment`` iteration space construct
+  * RAJA execution policies
+
+
 In this example, we add two vectors 'A' and 'B' of length N and
 store the result in vector 'C'. We assume that we have allocated and 
 initialized arrays holding the data for the vectors. Then, a typical 

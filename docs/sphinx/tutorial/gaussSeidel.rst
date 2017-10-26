@@ -18,6 +18,15 @@
 Red-Black Gauss-Seidel
 -----------------------
 
+Main RAJA features discussed:
+
+  * ``RAJA::forall`` loop traversal template
+  * ``RAJA::ListSegment`` iteration space segment type
+  * ``RAJA::StaticIndexSet`` segment container
+  * RAJA index set execution policies
+  * RAJA reduction type
+
+
 In this example, we revisit the boundary value problem in the 
 :ref:`jacobi-label` example. Here, we solve the problem using a 
 Red-Black Gauss-Sidel iteration scheme. The standard Gauss-Sidel method 

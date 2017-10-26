@@ -18,6 +18,14 @@
 Jacobi Iteration
 -----------------
 
+Main RAJA features discussed:
+
+  * ``RAJA::View`` multi-dimensional data access
+  * ``RAJA::forallN`` nested-loop traversal template
+  * RAJA nested-loop policies
+  * RAJA reduction type
+
+
 In this example, we solve the following boundary value problem using the
 Jacobi iteration method.
 
