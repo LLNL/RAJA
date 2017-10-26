@@ -18,30 +18,64 @@
 Red-Black Gauss-Seidel
 -----------------------
 
-In this example, we revisit the boundary value problem solved by the Jacobi method and apply a Red-Black Gauss-Sidel scheme.
-The classic Gauss-Sidel method is inherrently a sequential algorithm; however, parallism may be exposed by coloring the interior nodes
-in the following manner
+In this example, we revisit the boundary value problem in the 
+:ref:`jacobi-label` example. Here, we solve the problem using a 
+Red-Black Gauss-Sidel iteration scheme. The standard Gauss-Sidel method 
+must execute sequentially to be correct; i.e., to avoid data races where,
+say, a black value update is to be computed but not all its contributing red
+values in the stencil have been updated yet. However, parallism may be exposed 
+by coloring the interior grid points as shown in the figure.
 
 .. image:: ../figures/redblackGS.png
    :scale: 10 %
    :align: center
 
-^^^^^^^^^^^^^^^^^^^^^^
-1. RAJA Nested Policy
-^^^^^^^^^^^^^^^^^^^^^^
-
-By applying such a coloring we may iterate over the different colors sequentially while updating each color in parallel. We can encapsulate the sequential/parallel transversal using by using a ``RAJA::NestedPolicy``.
-
-.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
-                    :lines: 240-241
+In particular, we can update the red points in parallel since the stencil 
+contributions to them are the black points. Then, we can update black points 
+in parallel, and so on. Before we move from one color to the next, all points
+for the current color must be updated.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2. Constructing an Index Set
+RAJA index set
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Furthermore, we may construct a ``RAJA::StaticIndexSet`` which encapsulates the indices for the red and black nodes as two seperate list segments (for more info see ____ ). The following block of code illustrates the construction of the ``RAJA::StaticIndexSet``
+A ``RAJA::StaticIndexSet`` object can be used to partition the grid point
+indices into two non-overlapping sets, one for the red points a and one for
+the black points. A RAJA index set can be used to partition an iteration space
+into any number of *segments* of any type, even user-defined segments. RAJA
+provides a few segment types, such as ``RAJA::RangeSegment``and 
+``RAJA::ListSegment``. ``RAJA::RangeSegment``, which represents a contiguous
+index range, has been used in all the other examples. A ``RAJA::ListSegment``
+represents an arbitrary collection of indices, similar to an indirection
+array that is common in unstructured mesh applications. In the example, we 
+use two ``RAJA::ListSegment`` objects to hold these two sets of indices. See
+:ref:`index-label` for more information about RAJA segments and index sets.
+
+The code in the example that constructs the segments and index set is:
            
 .. literalinclude:: ../../../examples/example-gauss-seidel.cpp
-                    :lines: 188-220
+                    :lines: 188-217
                             
-A full working version ``example-gauss-seidel.cpp`` may be found in the example folder.
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Coloring execution policy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+To enable the parallelization pattern described earlier, we use the following 
+RAJA loop execution policy: 
+
+.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
+                    :lines: 119-120
+
+Note that the ordering of the policies is the policy for iterating over over
+the segments (sequential) followed by the policy for executing each segment
+(OpenMP parallel-for). Put another way, the OpenMP parallel part indicates 
+that we update the points of each color in parallel, while the sequential part 
+specifies that we iterate between colors sequentially. 
+
+The code that runs a single red-black cycle is:
+
+.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
+                    :lines: 138-160
+
+The file ``RAJA/examples/example-gauss-seidel.cpp`` contains the complete
+working example code.
