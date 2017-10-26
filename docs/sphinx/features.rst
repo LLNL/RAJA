@@ -18,11 +18,7 @@
 RAJA Features
 ************************
 
-This section describes RAJA features.
-
-===========
-Features
-===========
+This section describes the main RAJA features employed by users.
 
 .. toctree::
    :maxdepth: 2
@@ -35,3 +31,4 @@ Features
    feature/view
    feature/policies
    feature/atomic
+   feature/traits

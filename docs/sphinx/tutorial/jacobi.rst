@@ -39,7 +39,7 @@ The discrete problem
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The problem domain in the example is the unit square :math:`[-1,1] x [-1, 1]`.
-On the domain, we define grid with uniform mesh spacing :math:`h` in x and y.
+On the domain, we define grid with uniform grid spacing :math:`h` in x and y.
 The discrete solution values will be computed at the grid points that lie
 at the intersection of the grid lines. Then, the approximate derivatives
 are defined using finite differences as follows:
@@ -60,7 +60,7 @@ the Jacobi method iteration update is:
 Here, the superscript :math:`k` denotes the :math:`k-th` iterate and the 
 subscripts :math:`ij` is the grid point index. 
 
-We start with an initial guess :math:`\mathcal{u_{ij}^0} = 0` for all mesh 
+We start with an initial guess :math:`\mathcal{u_{ij}^0} = 0` for all grid 
 points :math:`ij`. Since the Dirichlet boundary condition is zero at every 
 point on the domain boundary, we iterate the solution on the interior grid 
 points only. At each iteration, the solution at each grid point is replaced by 

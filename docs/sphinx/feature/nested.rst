@@ -18,9 +18,7 @@
 Nested Forall
 =============
 
-In situations were loops are nested
-
-.. code-block:: cpp
+In situations were loops are nested::
 
   for(int i1 = 0; i1 < N; ++i1){
     for(int i2 = 0; i2 < N; ++i2){
@@ -35,11 +33,11 @@ execution policies. For each loop the method expects an iteration space, an inde
 
 .. code-block:: cpp
 
-  RAJA::forallN<
-    RAJA::NestedPolicy<exec_policy1, ... , exec_policyN> >(
-      iter_space I1, ..., iter_space IN, [=] (index_type i1, ..., index_type iN) {
+  RAJA::forallN< RAJA::NestedPolicy<exec_policy1, ... , exec_policyN> >(
+        iter_space I1, ..., iter_space IN, 
+        [=] (index_type i1, ..., index_type iN) {
 
-      });
+  });
 
 
 Here the developer supplies the following

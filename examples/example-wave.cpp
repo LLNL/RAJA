@@ -138,18 +138,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Predefined Nested Policies
   */
 
-  // Sequential
-  using fdPolicy =
-      RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+  // Sequential policy
+  using fdPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, 
+                                                     RAJA::seq_exec>>;
 
-  // OpenMP
+  // OpenMP policy
   // using fdPolicy =
   // RAJA::NestedPolicy<RAJA::ExecList
   //<RAJA::omp_collapse_nowait_exec,
   // RAJA::omp_collapse_nowait_exec>,
   // RAJA::OMP_Parallel<>>;
 
-  // CUDA
+  // CUDA policy
   // using fdPolicy
   //= RAJA::NestedPolicy<RAJA::ExecList
   //<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
@@ -246,38 +246,37 @@ template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
  
- RAJA::forallN<fdNestedPolicy>(
-      fdBounds, fdBounds, [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {
+   RAJA::forallN<fdNestedPolicy>(fdBounds, fdBounds, 
+     [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {
       
-        /*
-          Coefficients for a fourth order stencil
-        */
-        double coeff[5] = {
-          -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
+     /*
+        Coefficients for fourth order stencil
+      */
+     double coeff[5] = { -1.0/12.0, 4.0/3.0, -5.0/2.0, 4.0/3.0, -1.0/12.0};
 
-        const int id = tx + ty * nx;
-        double P_old = P1[id];
-        double P_curr = P2[id];
+     const int id = tx + ty * nx;
+     double P_old = P1[id];
+     double P_curr = P2[id];
 
-        /*
-          Computes Laplacian
-        */
-        double lap = 0.0;
+     /*
+       Compute Laplacian
+     */
+     double lap = 0.0;
 
-        for (auto r : RAJA::RangeSegment(-sr, sr + 1)) {
-          const int xi = (tx + r + nx) % nx;
-          const int idx = xi + nx * ty;
-          lap += coeff[r + sr] * P2[idx];
+     for (auto r : RAJA::RangeSegment(-sr, sr + 1)) {
+       const int xi = (tx + r + nx) % nx;
+       const int idx = xi + nx * ty;
+       lap += coeff[r + sr] * P2[idx];
+  
+       const int yi = (ty + r + nx) % nx;
+       const int idy = tx + nx * yi;
+       lap += coeff[r + sr] * P2[idy];
+     }
 
-          const int yi = (ty + r + nx) % nx;
-          const int idy = tx + nx * yi;
-          lap += coeff[r + sr] * P2[idy];
-        }
+     /*
+       Store result
+     */
+     P1[id] = 2 * P_curr - P_old + ct * lap;
 
-        /*
-          Writes out result
-        */
-        P1[id] = 2 * P_curr - P_old + ct * lap;
-
-      });
+  });
 }

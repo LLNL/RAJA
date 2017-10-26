@@ -29,7 +29,7 @@ The discrete problem
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Similar to the :ref:`jacobi-label` example, we choose the problem domain to
-be the unit square :math:`[-1,1] x [-1, 1]` with a uniform mesh spacing 
+be the unit square :math:`[-1,1] x [-1, 1]` with a uniform grid spacing 
 :math:`h` in x and y.
 
 The finite difference discretization of the equations is:
@@ -45,19 +45,32 @@ where
   D_{yy} p^{n} = \frac{1}{h^2} \left( c_0 p^{n} + \sum_{k=1}^N c_k \left( p^{n}_{i,j+k} + p^{n}_{i,j-k} \right) \right) .
 
 The superscript :math:`n` denotes the :math:`n-th` timestep and the subscripts 
-:math:`i,j` corresponds to a location on the grid.
+:math:`i,j` are grid point indices.
 
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 RAJA nested-loop implementation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-In this example we choose the spatial discretization to be of fourth order (stencil width :math:`N=2`). The resulting kernel for the acoustic wave equation is given by
+In the example, we use a fourth-order spatial discretization (stencil width 
+:math:`N=2`). The kernel for the acoustic wave equation is:
 
 .. literalinclude:: ../../../examples/example-wave.cpp
-                    :lines: 249-282
+                    :lines: 249-281
 
-Notably, we have included the ``RAJA_HOST_DEVICE`` decorator in the lambda to create a portable kernel that may be executed on either
-the CPU (with a variety of execution policies) the GPU (via the ``cuda_exec`` policy). 
+Here, 'fdBounds' is a RAJA RangeSegment:
+ 
+.. literalinclude:: ../../../examples/example-wave.cpp
+                    :lines: 113
+
+Also, note that we use the ``RAJA_HOST_DEVICE`` macro for the lambda. This 
+creates a portable kernel that may be executed on either the CPU or GPU, 
+depending on the chosen execution policy. For example, the CPU sequential 
+execution policy in the example is:
+
+.. literalinclude:: ../../../examples/example-wave.cpp
+                    :lines: 142-143
+
+Other policies are included in the example source code.
 
 The file ``RAJA/examples/example-wave.cpp``
 contains the complete working example code.
