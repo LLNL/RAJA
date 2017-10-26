@@ -38,6 +38,6 @@ included in RAJA.
 
 * ``RAJA::TypedListSegment<data_type>`` - A general purpose container which holds a specified data_type (ex. int, long int)
 
-* ``RAJA::StaticIndexSet<>``  - Holds a collection of RAJA::ListSegments or RAJA::TypedListSegments
+* ``RAJA::StaticIndexSet<>``  - Holds a collection of ``RAJA::ListSegments`` or ``RAJA::TypedListSegments``
 
 Basic usage may be found in ``examples-add-vectors.cpp`` and ``example-gauss-sidel.cpp``
