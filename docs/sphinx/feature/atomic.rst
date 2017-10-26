@@ -16,7 +16,7 @@
 
 ========
 Atomics
-=======
+========
 
 In operations where we wish to avoid race conditions in specific memory locations, RAJA
 introduces templated atomic methods. The list of atomic operations and list of polcies are found below. 

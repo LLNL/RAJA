@@ -22,21 +22,19 @@ Indices and Segments
 Indices 
 -------
 
-RAJA introduces a custom 64-bit loop counter
-
-* ``RAJA::Index_type``
-
-designed to make it easy for the compiler to perform optimization on. Basic usage may be found in ``examples-add-vectors.cpp``.
+The recommended loop counter for RAJA is the ``RAJA::Index_type``; a 64-bit loop counter which makes it 
+easy for the compiler to carryout optimizations on. Basic usage may be found in ``examples-add-vectors.cpp``.
 
 --------
 Segments
 --------
 
-RAJA also includes various index containers.
+Segments correspond to the iteration space that will be traversed by a RAJA loop. The following is a catalog of containers
+included in RAJA.
 
-* ``RAJA::RangeSegment(start, stop)`` - Generates a contingous sequence of numbers
+* ``RAJA::RangeSegment(start, stop)`` - Generates a contingous sequence of numbers starting from start but not including stop
 
-* ``RAJA::ListSegment`` - A general purpose container which holds a specified data_type
+* ``RAJA::ListSegment`` - A container which holds ``RAJA::Index_types`` 
 
 * ``RAJA::TypedListSegment<data_type>`` - A general purpose container which holds a specified data_type (ex. int, long int)
 
