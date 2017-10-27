@@ -101,12 +101,12 @@ specify several items:
 
   #. The lambda that defines the loop body
 
-The remainder of this tutorial illustrates how to use RAJA with examples that
-use common numerical algorithm patterns.
-
 =========
 Examples
 =========
+
+The remainder of this tutorial illustrates how to use RAJA with examples that
+use common numerical algorithm patterns.
 
 .. toctree::
    :maxdepth: 1

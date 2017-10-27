@@ -18,39 +18,83 @@
 Atomics
 ========
 
-In operations where we wish to avoid race conditions in specific memory locations, RAJA
-introduces templated atomic methods. The list of atomic operations and list of polcies are found below. 
+To avoid race conditions at specific memory locations, RAJA provides 
+portable atomic operation, each of which is templated on an *atomic policy*. 
+This section describes the atomic operations and policies available in RAJA.
 
 -----------------
 Atomic Operations
 -----------------
 
-* ``RAJA::atomic::atomicAdd<AtomicPolicy>(* T acc, T value)``  - Add acc by value
+.. note:: All RAJA atomic operations are in the namespace ``RAJA::atomic``.
 
-* ``RAJA::atomic::atomicSum<AtomicPolicy>(* T acc, T value)``  - Subtracts acc by value
+  * ``atomicAdd<Policy>(T* acc, T value)`` - Add value to \*acc.
 
-* ``RAJA::atomic::atomicMin<AtomicPolicy>(* T acc, T value)``  - Returns the maximum to acc
+  * ``atomicSub<AtomicPolicy>(T* acc, T value)`` - Subtract value from \*acc.
 
-* ``RAJA::atomic::atomicMax<AtomicPolicy>(* T acc, T value)``  - Returns the minimum to acc
+  * ``atomicMin<AtomicPolicy>(T* acc, T value)`` - Set \*acc to min of \*acc and value.
 
-* ``RAJA::atomic::atomicInc<AtomicPolicy>(* T acc)``  - Increments acc by 1
+  * ``atomicMax<AtomicPolicy>(T* acc, T value)`` - Set \*acc to max of \*acc and value.
 
-* ``RAJA::atomic::atomicDec<AtomicPolicy>(* T acc)``  - Decreases acc value by 1 
+  * ``atomicInc<AtomicPolicy>(T* acc)`` - Add 1 to \*acc.
 
-Remark: The left most argument is assumed to be the pointer to the memory location. 
+  * ``atomicDec<AtomicPolicy>(T* acc)`` - Subtract 1 from \*acc.
+
+  * ``atomicInc<AtomicPolicy>(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
+
+  * ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+
+  * ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+
+  * ``atomicAnd<AtomicPolicy>(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
+
+  * ``atomicOr<AtomicPolicy>(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
+
+  * ``atomicXor<AtomicPolicy>(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
+
+  * ``atomicExchange<AtomicPolicy>(T* acc, T value)`` - Replace \*acc with value.
+
+  * ``atomicCAS<AtomicPolicy>(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
+
+.. note:: Each of these methods returns the value of \*acc before the atomic
+          operation is applied.
+
+RAJA also provides an atomic interface similar to 'std::atomic', but for 
+arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` provides
+an object-oriented interface to the atomic methods described above. For 
+example, after the following operations:: 
+
+  double val = 2.0;
+  RAJA::atomic::AtomicRef<double, AtomicPolicy> sum(&val);
+
+  sum++;
+  ++sum;
+  sum += 1.0; 
+
+the value of 'val' will be 5.
+
+However, the operators that the 'AtomicRef' class provide return the object
+which holds the address of the data given at construction. If you need to keep 
+the original value of the data before the atomic call, you need to use the
+atomic methods listed above.
 
 ---------------
 Atomic Policies
 ---------------
 
-* ``seq_atomic``     - Unprotected operation.
+.. note:: All RAJA atomic policies are in the namespace ``RAJA::atomic``.
 
-* ``auto_atomic``    - Attempts to determine the correct policy. 
+* ``seq_atomic``     - Policy for use in sequential execution contexts, primarily for consistency with parallel policies. Note that sequential atomic operations are not protected and will likely produce incorrect results when used in a parallel execution context.
 
-* ``buildin_atomic`` - Uses compiler specific atomics
+* ``auto_atomic``    - Policy that will attempt to do the "correct thing". For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
 
-* ``omp_atomic``     - Uses omp atomic pragma
+* ``buildin_atomic`` - Policy to use compiler "builtin" atomic operations.
 
-* ``cuda_atomic``    - Uses cuda specicic atomic
+* ``omp_atomic``     - Policy to use 'omp atomic' pragma when applicable; otherwise, revert to builtin compiler atomics.
 
-An example of basic usage is found in ``example-atomic-pi.cpp``. 
+* ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code.
+
+.. note:: There are no RAJA atomic policies for TBB (Intel Threading Building 
+          Blocks) execution contexts.
+
+An simple atomic usage example can be found in ``RAJA/examples/example-atomic-pi.cpp``. 

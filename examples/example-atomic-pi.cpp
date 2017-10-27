@@ -52,8 +52,5 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "Atomic PI is ~ " << (*atomicPiSum)/numBins<< std::endl;
 
-
-  
-
   return 0;
 }
