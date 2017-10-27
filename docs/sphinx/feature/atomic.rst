@@ -28,33 +28,33 @@ Atomic Operations
 
 .. note:: All RAJA atomic operations are in the namespace ``RAJA::atomic``.
 
-  * ``atomicAdd<Policy>(T* acc, T value)`` - Add value to \*acc.
+* ``atomicAdd<Policy>(T* acc, T value)`` - Add value to \*acc.
 
-  * ``atomicSub<AtomicPolicy>(T* acc, T value)`` - Subtract value from \*acc.
+* ``atomicSub<AtomicPolicy>(T* acc, T value)`` - Subtract value from \*acc.
 
-  * ``atomicMin<AtomicPolicy>(T* acc, T value)`` - Set \*acc to min of \*acc and value.
+* ``atomicMin<AtomicPolicy>(T* acc, T value)`` - Set \*acc to min of \*acc and value.
 
-  * ``atomicMax<AtomicPolicy>(T* acc, T value)`` - Set \*acc to max of \*acc and value.
+* ``atomicMax<AtomicPolicy>(T* acc, T value)`` - Set \*acc to max of \*acc and value.
 
-  * ``atomicInc<AtomicPolicy>(T* acc)`` - Add 1 to \*acc.
+* ``atomicInc<AtomicPolicy>(T* acc)`` - Add 1 to \*acc.
 
-  * ``atomicDec<AtomicPolicy>(T* acc)`` - Subtract 1 from \*acc.
+* ``atomicDec<AtomicPolicy>(T* acc)`` - Subtract 1 from \*acc.
 
-  * ``atomicInc<AtomicPolicy>(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
+* ``atomicInc<AtomicPolicy>(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
 
-  * ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+* ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
-  * ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+* ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
-  * ``atomicAnd<AtomicPolicy>(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
+* ``atomicAnd<AtomicPolicy>(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
 
-  * ``atomicOr<AtomicPolicy>(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
+* ``atomicOr<AtomicPolicy>(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
 
-  * ``atomicXor<AtomicPolicy>(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
+* ``atomicXor<AtomicPolicy>(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
 
-  * ``atomicExchange<AtomicPolicy>(T* acc, T value)`` - Replace \*acc with value.
+* ``atomicExchange<AtomicPolicy>(T* acc, T value)`` - Replace \*acc with value.
 
-  * ``atomicCAS<AtomicPolicy>(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
+* ``atomicCAS<AtomicPolicy>(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
 
 .. note:: Each of these methods returns the value of \*acc before the atomic
           operation is applied.
