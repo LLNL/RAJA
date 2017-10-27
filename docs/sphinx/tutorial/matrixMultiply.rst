@@ -96,7 +96,7 @@ loop nested inside uses a sequential policy:
                     :lines: 229-240
 
 For more information about RAJA nested-loop functionality, 
-see :ref:`nested-label`.
+see :ref:`forall-label`.
 
 .. note:: The order of execution policies specified in a RAJA nested-loop
           policy is outermost to innermost, left to right. 

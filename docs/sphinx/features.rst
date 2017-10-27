@@ -25,11 +25,10 @@ recommendations for using them.
    :maxdepth: 2
 
    feature/forall
+   feature/policies
    feature/index
    feature/reduction
-   feature/scan
-   feature/nested
-   feature/view
-   feature/policies
    feature/atomic
+   feature/view
+   feature/scan
    feature/traits
