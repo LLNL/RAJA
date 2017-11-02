@@ -27,15 +27,17 @@ static RAJA::Index_type const area = xExtent * yExtent;
 
 TEST(NestedReduceTargetOMP,outer)
 {
+  RAJA::Index_type  l_begin = begin;
+  RAJA::Index_type  l_xExtent = xExtent;
   RAJA::ReduceSum<RAJA::omp_target_reduce<64>, double> sumA(0.0);
   RAJA::ReduceMin<RAJA::omp_target_reduce<64>, double> minA(10000.0);
   RAJA::ReduceMax<RAJA::omp_target_reduce<64>, double> maxA(0.0);
 
   RAJA::forall<RAJA::omp_target_parallel_for_exec<64>>(begin, yExtent, [=](int y) {
-    RAJA::forall<RAJA::seq_exec>(begin, xExtent, [=](int x) {
-      sumA += double(y * xExtent + x + 1);
-      minA.min(double(y * xExtent + x + 1));
-      maxA.max(double(y * xExtent + x + 1));
+    RAJA::forall<RAJA::seq_exec>(l_begin, l_xExtent, [=](int x) {
+      sumA += double(y * l_xExtent + x + 1);
+      minA.min(double(y * l_xExtent + x + 1));
+      maxA.max(double(y * l_xExtent + x + 1));
     });
   });
 
@@ -58,7 +60,9 @@ TEST(NestedReduceTargetOMP,inner)
     });
   });
 
-  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumA.get());
-  ASSERT_FLOAT_EQ(1.0, minA.get());
-  ASSERT_FLOAT_EQ(area, maxA.get());
+  ASSERT_FLOAT_EQ((area * (area + 1) / 2.0), sumB.get());
+  ASSERT_FLOAT_EQ(1.0, minB.get());
+  ASSERT_FLOAT_EQ(area, maxB.get());
 }
+
+

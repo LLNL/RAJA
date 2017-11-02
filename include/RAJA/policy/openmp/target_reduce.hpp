@@ -47,6 +47,39 @@ namespace RAJA
 
 namespace omp
 {
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp declare target
+#endif
+
+template <typename T, typename I>
+struct minloc {
+  static constexpr T identity = T(::RAJA::operators::limits<T>::max());
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v < val) {
+      loc = l;
+      val = v;
+    }
+  }
+};
+
+template <typename T, typename I>
+struct maxloc {
+  static constexpr T identity = T(::RAJA::operators::limits<T>::min());
+  RAJA_HOST_DEVICE RAJA_INLINE
+  void operator()(T &val, I &loc, const T v, const I l)
+  {
+    if (v > val) {
+      loc = l;
+      val = v;
+    }
+  }
+};  
+#ifdef RAJA_ENABLE_TARGET_OPENMP
+#pragma omp end declare target
+#endif
+
 
 //! Information necessary for OpenMP offload to be considered
 struct Offload_Info {
@@ -61,7 +94,6 @@ struct Offload_Info {
   {
   }
 };
-
 //! Reduction data for OpenMP Offload -- stores value, host pointer, and device
 //! pointer
 template <size_t Teams, typename T>
@@ -156,7 +188,7 @@ struct TargetReduce {
   TargetReduce(const TargetReduce &) = default;
 
   explicit TargetReduce(T init_val)
-      : info(), val(init_val, Reducer::identity, info)
+      : info(), val(init_val, Reducer::identity(), info)
   {
   }
 
@@ -167,7 +199,6 @@ struct TargetReduce {
 #pragma omp critical
       {
         int tid = omp_get_team_num();
-        // printf("%d:%p\n", tid, val.device);
         Reducer{}(val.device[tid], val.value);
       }
     }
@@ -284,6 +315,7 @@ private:
   omp::Reduce_Data<Teams, IndexType> loc;
 };
 
+
 //! specialization of ReduceSum for omp_target_reduce
 template <size_t Teams, typename T>
 struct ReduceSum<omp_target_reduce<Teams>, T>
@@ -305,6 +337,7 @@ struct ReduceSum<omp_target_reduce<Teams>, T>
   }
 };
 
+
 //! specialization of ReduceMin for omp_target_reduce
 template <size_t Teams, typename T>
 struct ReduceMin<omp_target_reduce<Teams>, T>
@@ -325,6 +358,7 @@ struct ReduceMin<omp_target_reduce<Teams>, T>
     return *this;
   }
 };
+
 
 //! specialization of ReduceMax for omp_target_reduce
 template <size_t Teams, typename T>
@@ -351,12 +385,12 @@ struct ReduceMax<omp_target_reduce<Teams>, T>
 template <size_t Teams, typename T>
 struct ReduceMinLoc<omp_target_reduce<Teams>, T>
     : public TargetReduceLoc<Teams,
-                             RAJA::reduce::minloc<T, Index_type>,
+                             omp::minloc<T, Index_type>,
                              T,
                              Index_type> {
   using self = ReduceMinLoc<omp_target_reduce<Teams>, T>;
   using parent = TargetReduceLoc<Teams,
-                                 RAJA::reduce::minloc<T, Index_type>,
+                                 omp::minloc<T, Index_type>,
                                  T,
                                  Index_type>;
   using parent::parent;
@@ -374,16 +408,17 @@ struct ReduceMinLoc<omp_target_reduce<Teams>, T>
   }
 };
 
+
 //! specialization of ReduceMaxLoc for omp_target_reduce
 template <size_t Teams, typename T>
 struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
     : public TargetReduceLoc<Teams,
-                             RAJA::reduce::maxloc<T, Index_type>,
+                             omp::maxloc<T, Index_type>,
                              T,
                              Index_type> {
   using self = ReduceMaxLoc<omp_target_reduce<Teams>, T>;
   using parent = TargetReduceLoc<Teams,
-                                 RAJA::reduce::maxloc<T, Index_type>,
+                                 omp::maxloc<T, Index_type>,
                                  T,
                                  Index_type>;
   using parent::parent;
@@ -400,6 +435,7 @@ struct ReduceMaxLoc<omp_target_reduce<Teams>, T>
     return *this;
   }
 };
+
 
 }  // closing brace for RAJA namespace
 

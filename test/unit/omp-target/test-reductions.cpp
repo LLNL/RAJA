@@ -64,10 +64,10 @@ using constructor_types =
                      std::tuple<RAJA::omp_target_reduce<256>, float>,
                      std::tuple<RAJA::omp_target_reduce<256>, double>>;
 
+
 INSTANTIATE_TYPED_TEST_CASE_P(ReduceBasicTestsTargetOMP,
                               ReductionConstructorTestTargetOMP,
                               constructor_types);
-
 
 template <typename TUPLE>
 class ReductionCorrectnessTestTargetOMP : public ::testing::Test
@@ -237,7 +237,6 @@ REGISTER_TYPED_TEST_CASE_P(ReductionCorrectnessTestTargetOMP,
                            ReduceMax,
                            ReduceMinLoc,
                            ReduceMaxLoc);
-
 using types =
     ::testing::Types<std::tuple<RAJA::omp_target_parallel_for_exec<16>,
                                 RAJA::omp_target_reduce<16>>,
