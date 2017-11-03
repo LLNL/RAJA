@@ -14,17 +14,21 @@
 
 .. _policies-label:
 
-===============
-Policy Appendix
-===============
+==================
+Execution Policies
+==================
+
+RAJA provides a variety of execution policies for different operations, to
+access different programming model backends, etc. The policies are summarized 
+here.
 
 --------------------
 Serial/SIMD Policies
 --------------------
 
-* ``seq_exec``  - Enforces sequential iterations
-* ``loop_exec`` - Vectorizies if compiler belives it is appropriate
-* ``simd_exec`` - Introduces compiler hints for vectorizations
+* ``seq_exec``  - Strictly sequential execution.
+* ``loop_exec`` - Allow compiler to optimize using SIMD vectorization if it can, but don't use special compiler hints to do so.
+* ``simd_exec`` - Apply compiler-specific compiler hints for SIMD optimizations.
 
 ---------------
 OpenMP Policies

@@ -19,53 +19,66 @@ Atomics
 ========
 
 To avoid race conditions at specific memory locations, RAJA provides 
-portable atomic operation, each of which is templated on an *atomic policy*. 
-This section describes the atomic operations and policies available in RAJA.
+portable atomic operations, which are described in this section.
 
 -----------------
 Atomic Operations
 -----------------
 
-.. note:: All RAJA atomic operations are in the namespace ``RAJA::atomic``.
+.. note:: * All RAJA atomic operations are in the namespace ``RAJA::atomic``.
+          * Each RAJA atomic operation is templated on an *atomic policy*.
 
-* ``atomicAdd<Policy>(T* acc, T value)`` - Add value to \*acc.
+* ``atomicAdd< atomic_policy >(T* acc, T value)`` - Add value to \*acc.
 
-* ``atomicSub<AtomicPolicy>(T* acc, T value)`` - Subtract value from \*acc.
+* ``atomicSub< atomic_policy >(T* acc, T value)`` - Subtract value from \*acc.
 
-* ``atomicMin<AtomicPolicy>(T* acc, T value)`` - Set \*acc to min of \*acc and value.
+* ``atomicMin< atomic_policy >(T* acc, T value)`` - Set \*acc to min of \*acc and value.
 
-* ``atomicMax<AtomicPolicy>(T* acc, T value)`` - Set \*acc to max of \*acc and value.
+* ``atomicMax< atomic_policy >(T* acc, T value)`` - Set \*acc to max of \*acc and value.
 
-* ``atomicInc<AtomicPolicy>(T* acc)`` - Add 1 to \*acc.
+* ``atomicInc< atomic_policy >(T* acc)`` - Add 1 to \*acc.
 
-* ``atomicDec<AtomicPolicy>(T* acc)`` - Subtract 1 from \*acc.
+* ``atomicDec< atomic_policy >(T* acc)`` - Subtract 1 from \*acc.
 
-* ``atomicInc<AtomicPolicy>(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
+* ``atomicInc< atomic_policy >(T* acc, T compare)`` - Add 1 to \*acc if \*acc < compare, else set \*acc to zero.
 
-* ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+* ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
-* ``atomicDec<AtomicPolicy>(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
+* ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
-* ``atomicAnd<AtomicPolicy>(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
+* ``atomicAnd< atomic_policy >(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
 
-* ``atomicOr<AtomicPolicy>(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
+* ``atomicOr< atomic_policy >(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
 
-* ``atomicXor<AtomicPolicy>(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
+* ``atomicXor< atomic_policy >(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
 
-* ``atomicExchange<AtomicPolicy>(T* acc, T value)`` - Replace \*acc with value.
+* ``atomicExchange< atomic_policy >(T* acc, T value)`` - Replace \*acc with value.
 
-* ``atomicCAS<AtomicPolicy>(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
+* ``atomicCAS< atomic_policy >(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
 
 .. note:: Each of these methods returns the value of \*acc before the atomic
           operation is applied.
 
-RAJA also provides an atomic interface similar to 'std::atomic', but for 
+Here is a simple example that shows how to use an atomic method to accumulate
+a integral sum on a CUDA GPU device::
+
+  RAJA::RangeSegment seg(0, N);
+
+  int sum = 0;
+
+  RAJA::forall<RAJA::cuda_exec>(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+    RAJA::atomic::atomicAdd<cuda_atomic>(&sum, 1);
+  }
+
+After this operation, 'sum' will be equal to 'N'.
+
+RAJA also provides an atomic interface similar to C++ 'std::atomic', but for 
 arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` provides
 an object-oriented interface to the atomic methods described above. For 
 example, after the following operations:: 
 
   double val = 2.0;
-  RAJA::atomic::AtomicRef<double, AtomicPolicy> sum(&val);
+  RAJA::atomic::AtomicRef<double,  atomic_policy > sum(&val);
 
   sum++;
   ++sum;
@@ -73,10 +86,10 @@ example, after the following operations::
 
 the value of 'val' will be 5.
 
-However, the operators that the 'AtomicRef' class provide return the object
-which holds the address of the data given at construction. If you need to keep 
-the original value of the data before the atomic call, you need to use the
-atomic methods listed above.
+Note that the operators that the 'AtomicRef' class provide return the object
+that holds the address of the data given passes the constructor. If you need 
+to keep the original value of the data before the atomic call, you need to 
+use the atomic methods listed above.
 
 ---------------
 Atomic Policies
@@ -97,4 +110,20 @@ Atomic Policies
 .. note:: There are no RAJA atomic policies for TBB (Intel Threading Building 
           Blocks) execution contexts.
 
-An simple atomic usage example can be found in ``RAJA/examples/example-atomic-pi.cpp``. 
+For example, we could use the 'auto_atomic' policy in the example above:: 
+
+  RAJA::RangeSegment seg(0, N);
+
+  int sum = 0;
+
+  RAJA::forall<RAJA::cuda_exec>(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+    RAJA::atomic::atomicAdd<auto_atomic>(&sum, 1);
+  }
+
+Here, the atomic operation knows that it is used within a CUDA execution 
+context and does the right thing. Similarly, if the 'forall' method used 
+an OpenMP execution policy, the OpenMP version of the atomic operation 
+would be used.
+
+Another simple example of atomic usage can be found in 
+``RAJA/examples/example-atomic-pi.cpp``. 
