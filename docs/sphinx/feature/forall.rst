@@ -18,7 +18,7 @@
 Forall and ForallN
 =====================
 
-The ``RAJA::forall`` and ``RAJA::forallN`` loop traversal template methods are 
+The ``forall`` and ``forallN`` loop traversal template methods are 
 the building block for most RAJA usage. RAJA users pass application 
 code fragments, such as loop bodies, into these loop traversal methods 
 (using lambda expressions, for example) along with iteration space 
@@ -26,6 +26,8 @@ information. Then, once loops are written in the RAJA form, they can
 be run using different programming model back-ends by changing template
 arguments for the execution policies. For information on available RAJA
 execution policies, see :ref:`policies-label`.
+
+.. note:: All RAJA forall and forallN methods are in the namespace ``RAJA``.
 
 The ``RAJA::forall`` templates abstract standard C-style for loops.  
 For example, a C-style loop like::
