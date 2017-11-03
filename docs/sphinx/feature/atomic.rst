@@ -85,10 +85,19 @@ a integral sum on a CUDA GPU device::
 
   RAJA::RangeSegment seg(0, N);
 
-  int sum = 0;
+  //
+  // Use CUDA UM to share data pointer with host and device code.
+  // RAJA mechanics works the same way if device data allocation
+  // and host-device copies are done with traditional cudaMalloc
+  // and cudaMemcpy.
+  //
+  int* sum = nullptr;
+  cudaMallocManaged((void **)&sum, sizeof(int));
+  cudaDeviceSynchronize();
+  sum = 0;
 
-  RAJA::forall<RAJA::cuda_exec>(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
-    RAJA::atomic::atomicAdd<cuda_atomic>(&sum, 1);
+  RAJA::forall< RAJA::cuda_exec >(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+    RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
   }
 
 After this operation, 'sum' will be equal to 'N'.
@@ -103,7 +112,7 @@ an object-oriented interface to the atomic methods described above. For
 example, after the following operations:: 
 
   double val = 2.0;
-  RAJA::atomic::AtomicRef<double,  atomic_policy > sum(&val);
+  RAJA::atomic::AtomicRef<double,  RAJA::seq_atomic > sum(&val);
 
   sum++;
   ++sum;
@@ -136,12 +145,8 @@ Atomic Policies
 
 For example, we could use the 'auto_atomic' policy in the example above:: 
 
-  RAJA::RangeSegment seg(0, N);
-
-  int sum = 0;
-
-  RAJA::forall<RAJA::cuda_exec>(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
-    RAJA::atomic::atomicAdd<auto_atomic>(&sum, 1);
+  RAJA::forall< RAJA::cuda_exec >(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+    RAJA::atomic::atomicAdd< RAJA::auto_atomic >(sum, 1);
   }
 
 Here, the atomic operation knows that it is used within a CUDA execution 

@@ -45,14 +45,15 @@ Reduction Types
 
 .. note:: When ``ReduceMinLoc`` and ``ReduceMaxLoc`` are used in a parallel 
           execution context, the loop iteration index given for the min or max
-          is not guaranteed to be the first. The index is determined by the
-          ordering in which the reduction is finalized in parallel. In other
-          words, the 'index' parts of these reductions are reproducible are
-          guaranteed to be reproducible for sequential execution only.
+          is not guaranteed to be the first in the iteration sequence. The 
+          index is determined by the ordering in which the reduction is 
+          finalized in parallel. In other words, the 'index' part of a "loc"
+          reduction is guaranteed to be reproducible for sequential execution 
+          only.
 
 Here's a simple usage example::
 
-  #define N 1000
+  static constexpr int = 1000;
 
   //
   // Initialize array of length N with all 1's. Then, set some other
@@ -103,7 +104,11 @@ Reduction Policies
 ------------------
 
 .. note:: * All RAJA reduction policies are in the namespace ``RAJA``.
-          * Reduction policy must be consistent with loop execution policy used.
+          * To guarantee correctness, a reduction policy must be consistent 
+            with loop execution policy used. That is, a CUDA reduction policy
+            must be used when the execution policy is a CUDA policy, an OpenMP 
+            reduction policy must be used when the execution policy is an 
+            OpenMP policy, and so on.
 
 * ``seq_reduce``  - Sequential policy for reductions used with sequential and 'loop' execution policies. Currently, RAJA reductions with SIMD execution policies are not defined.
 
@@ -121,8 +126,7 @@ Reduction Policies
 
 * ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that uses CUDA atomic operations in the reduction.
 
-* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that that run loops without explicit device syncrhonization afterwards 
-and which use CUDA atomic operations in the reduction.
+* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that that run loops without explicit device syncrhonization afterwards and which use CUDA atomic operations in the reduction.
 
 A working example of basic RAJA reduction usage can be found in 
 ``RAJA/examples/example-reduction.cpp``.

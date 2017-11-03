@@ -68,7 +68,7 @@ may be written in a RAJA form as::
       // loop body
   });
 
-A ``RAJA::ForallN`` method is templated on 'N' execution policy argument,
+A ``RAJA::ForallN`` method is templated on 'N' execution policy arguments,
 and takes N iteration space arguments, one for each level in the loop nest, 
 plus a lambda expression for the inner loop body.
 
