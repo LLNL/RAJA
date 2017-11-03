@@ -16,7 +16,7 @@
 add_custom_target(docs)
 
 if (SPHINX_FOUND)
-  add_subdirectory(sphinx)
+  add_subdirectory(sphinx/user_guide)
 endif()
 
 if (DOXYGEN_FOUND)
