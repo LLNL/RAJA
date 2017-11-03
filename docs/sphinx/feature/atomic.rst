@@ -27,14 +27,30 @@ Atomic Operations
 
 .. note:: * All RAJA atomic operations are in the namespace ``RAJA::atomic``.
           * Each RAJA atomic operation is templated on an *atomic policy*.
+            Atomic policies are described in the next section.
+          * Each of methods below returns the value of the potentially modified
+            argument (i.e., \*acc) immediately before the atomic operation is 
+            applied.
+
+^^^^^^^^^^^
+Arithmetic
+^^^^^^^^^^^
 
 * ``atomicAdd< atomic_policy >(T* acc, T value)`` - Add value to \*acc.
 
 * ``atomicSub< atomic_policy >(T* acc, T value)`` - Subtract value from \*acc.
 
+^^^^^^^^^^^
+Min/max
+^^^^^^^^^^^
+
 * ``atomicMin< atomic_policy >(T* acc, T value)`` - Set \*acc to min of \*acc and value.
 
 * ``atomicMax< atomic_policy >(T* acc, T value)`` - Set \*acc to max of \*acc and value.
+
+^^^^^^^^^^^^^^^^^^^^
+Increment/decrement
+^^^^^^^^^^^^^^^^^^^^
 
 * ``atomicInc< atomic_policy >(T* acc)`` - Add 1 to \*acc.
 
@@ -46,18 +62,23 @@ Atomic Operations
 
 * ``atomicDec< atomic_policy >(T* acc, T compare)`` - Subtract 1 from \*acc if \*acc != 0 and \*acc <= compare, else set \*acc to compare.
 
+^^^^^^^^^^^^^^^^^^^^
+Bitwise atomics
+^^^^^^^^^^^^^^^^^^^^
+
 * ``atomicAnd< atomic_policy >(T* acc, T value)`` - Bitwise 'and' equivalent: Set \*acc to \*acc & value. Only works with integral data types.
 
 * ``atomicOr< atomic_policy >(T* acc, T value)`` - Bitwise 'or' equivalent: Set \*acc to \*acc | value. Only works with integral data types.
 
 * ``atomicXor< atomic_policy >(T* acc, T value)`` - Bitwise 'xor' equivalent: Set \*acc to \*acc ^ value. Only works with integral data types.
 
+^^^^^^^^^^^^^^^^^^^^
+Replace
+^^^^^^^^^^^^^^^^^^^^
+
 * ``atomicExchange< atomic_policy >(T* acc, T value)`` - Replace \*acc with value.
 
 * ``atomicCAS< atomic_policy >(T* acc, Tcompare, T value)`` - Compare and swap: Replace \*acc with value if and only if \*acc is equal to compare.
-
-.. note:: Each of these methods returns the value of \*acc before the atomic
-          operation is applied.
 
 Here is a simple example that shows how to use an atomic method to accumulate
 a integral sum on a CUDA GPU device::
@@ -71,6 +92,10 @@ a integral sum on a CUDA GPU device::
   }
 
 After this operation, 'sum' will be equal to 'N'.
+
+^^^^^^^^^^^^^^^^^^^^
+AtomicRef
+^^^^^^^^^^^^^^^^^^^^
 
 RAJA also provides an atomic interface similar to C++ 'std::atomic', but for 
 arbitrary memory locations. The class ``RAJA::atomic::AtomicRef`` provides
@@ -95,20 +120,19 @@ use the atomic methods listed above.
 Atomic Policies
 ---------------
 
-.. note:: All RAJA atomic policies are in the namespace ``RAJA::atomic``.
+.. note:: * All RAJA atomic policies are in the namespace ``RAJA::atomic``.
+          * There are no RAJA atomic policies for TBB (Intel Threading Building 
+            Blocks) execution contexts.
 
 * ``seq_atomic``     - Policy for use in sequential execution contexts, primarily for consistency with parallel policies. Note that sequential atomic operations are not protected and will likely produce incorrect results when used in a parallel execution context.
-
-* ``auto_atomic``    - Policy that will attempt to do the "correct thing". For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
-
-* ``buildin_atomic`` - Policy to use compiler "builtin" atomic operations.
 
 * ``omp_atomic``     - Policy to use 'omp atomic' pragma when applicable; otherwise, revert to builtin compiler atomics.
 
 * ``cuda_atomic``    - Policy to use CUDA atomic operations in GPU device code.
 
-.. note:: There are no RAJA atomic policies for TBB (Intel Threading Building 
-          Blocks) execution contexts.
+* ``buildin_atomic`` - Policy to use compiler "builtin" atomic operations.
+
+* ``auto_atomic``    - Policy that will attempt to do the "correct thing". For example, in a CUDA execution context, this is equivalent to using the RAJA::cuda_atomic policy; if OpenMP is enabled, the RAJA::omp_atomic policy will be used; otherwise, RAJA::seq_atomic will be applied.
 
 For example, we could use the 'auto_atomic' policy in the example above:: 
 

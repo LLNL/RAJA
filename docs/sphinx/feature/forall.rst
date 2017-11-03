@@ -27,7 +27,9 @@ be run using different programming model back-ends by changing template
 arguments for the execution policies. For information on available RAJA
 execution policies, see :ref:`policies-label`.
 
-.. note:: All RAJA forall and forallN methods are in the namespace ``RAJA``.
+.. note:: * All RAJA forall and forallN methods are in the namespace ``RAJA``.
+          * Each loop traversal method is templated on an *execution policy*,
+            or multiple execution policies for the case of ``forallN``.
 
 The ``RAJA::forall`` templates abstract standard C-style for loops.  
 For example, a C-style loop like::
@@ -78,15 +80,15 @@ plus a lambda expression for the inner loop body.
 In summary, these RAJA template methods require a user to understand how to
 specify several items:
 
-  #. The lambda capture type; e.g., [=] or [&]
+  #. The desired execution policy (or policies).
 
-  #. The desired execution policy (or policies)
+  #. The loop iteration space(s) -- in most cases an iteration space can be any valid random access container.
 
-  #. The loop iteration space(s) -- in most cases an iteration space can be any valid random access container
+  #. The lambda capture type; e.g., [=] or [&].
 
-  #. The data type of loop iteration variables
+  #. The lambda expression that defines the loop body.
 
-  #. The lambda expression that defines the loop body
+  #. The loop iteration variables and their types, which are arguments to the lambda loop body.
 
 Common usage of ``RAJA::forall`` may be found in the examples in 
 :ref:`tutorial-label`.
