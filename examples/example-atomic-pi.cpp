@@ -31,26 +31,24 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   double *atomicPiSum = new double[1]; *atomicPiSum = 0; 
   RAJA::ReduceSum<reduce_policy, double> piSum(0.0);
 
-  //Computing PI using reduction
-  RAJA::forall<execute_policy>(begin,
-                               numBins,
-                               [=](int i) {
-                                 double x = (double(i) + 0.5) / numBins;
-                                 piSum += 4.0 / (1.0 + x * x);
-                               });
+  // Computing PI using reduction
+  RAJA::forall<execute_policy>(begin, numBins, [=](int i) {
+    double x = (double(i) + 0.5) / numBins;
+    piSum += 4.0 / (1.0 + x * x);
+  });
 
   std::cout << "Reduction PI is ~ " << double(piSum) / numBins << std::endl;
 
-  //Compute PI using atomics
-  RAJA::forall<execute_policy>(begin,
-                               numBins,
-                               [=](int i) {
-                                 double x = (double(i) + 0.5) / numBins;
-                                 double addToSum = 4.0 / (1.0 + x * x);
-                                 RAJA::atomic::atomicAdd<atomic_policy>(atomicPiSum,addToSum);
-                               });
+  // Compute PI using atomic operation
+  RAJA::forall<execute_policy>(begin, numBins, [=](int i) {
+    double x = (double(i) + 0.5) / numBins;
+    double addToSum = 4.0 / (1.0 + x * x);
+    RAJA::atomic::atomicAdd<atomic_policy>(atomicPiSum,addToSum);
+  });
 
   std::cout << "Atomic PI is ~ " << (*atomicPiSum)/numBins<< std::endl;
+
+  delete [] atomicPiSum;
 
   return 0;
 }
