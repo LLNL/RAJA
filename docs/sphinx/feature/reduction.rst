@@ -56,7 +56,7 @@ Here's a simple usage example::
   static constexpr int = 1000;
 
   //
-  // Initialize array of length N with all 1's. Then, set some other
+  // Initialize array of length N with all ones. Then, set some other
   // values to make the example mildly interesting...
   //
   int vec[N] = {1};

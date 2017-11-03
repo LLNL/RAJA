@@ -83,8 +83,6 @@ Replace
 Here is a simple example that shows how to use an atomic method to accumulate
 a integral sum on a CUDA GPU device::
 
-  RAJA::RangeSegment seg(0, N);
-
   //
   // Use CUDA UM to share data pointer with host and device code.
   // RAJA mechanics works the same way if device data allocation
@@ -96,9 +94,12 @@ a integral sum on a CUDA GPU device::
   cudaDeviceSynchronize();
   sum = 0;
 
-  RAJA::forall< RAJA::cuda_exec >(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
+    [=] RAJA_DEVICE (RAJA::Index_type i) {
+
     RAJA::atomic::atomicAdd< RAJA::cuda_atomic >(sum, 1);
-  }
+
+  });
 
 After this operation, 'sum' will be equal to 'N'.
 
@@ -145,9 +146,12 @@ Atomic Policies
 
 For example, we could use the 'auto_atomic' policy in the example above:: 
 
-  RAJA::forall< RAJA::cuda_exec >(seg, [=] RAJA_DEVICE (RAJA::Index_type i) {
+  RAJA::forall< RAJA::cuda_exec >(RAJA::RangeSegment seg(0, N), 
+    [=] RAJA_DEVICE (RAJA::Index_type i) {
+
     RAJA::atomic::atomicAdd< RAJA::auto_atomic >(sum, 1);
-  }
+
+  });
 
 Here, the atomic operation knows that it is used within a CUDA execution 
 context and does the right thing. Similarly, if the 'forall' method used 
