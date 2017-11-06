@@ -25,29 +25,30 @@ the resulting array :math:`y` is given as
 
    y[i] \leftarrow \sum^{i}_{j=0} x[j].
 
-The example above illustrates the so-called inclusive sum because each element i of
-the result :math:`y_i` is the sum of all elements including :math:`i` in :math:`x`. An exclusive sum
-would accumulate values up to but not including :math:`i`. RAJA provides a simple interface for carrying out these prefix operations. 
+The example above illustrates the so-called inclusive sum because each :math:`i` of
+the result :math:`y_i` is computed via the sum of all elements including
+:math:`i` in :math:`x`. An exclusive sum accumulates values up to but not
+including :math:`i`. 
 
+--------------
+Scan Interface
+--------------
 
-The basic usage is as follows, intializing arrays :math:`x`, :math:`y`
+As the scan operation comes in two variants (inclusive/exclusive) RAJA provides an interface for both. 
 
-.. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 26-31
+.. note:: * All RAJA scan operations are in the namespace ``RAJA``.
 
-a RAJA inclusive prefix sum can be carried out through the following iterface
+The inclusive scan is invoked by the following interface
 
-.. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 36
+* ``RAJA::exclusive_scan<execute_policy>(xptr, xptr+N, yptr)``
 
-where ``execute_policy`` is one of the RAJA policies. Similary, an exclusive prefix sum may
-be carried out through the following interface
+similarly the exclusive scan is invoked via the following interface
 
-.. literalinclude:: ../../../examples/example-scan.cpp
-   :lines: 43
+* ``RAJA::inclusive_scan<execute_policy>(xptr, xptr+N, yptr)``
 
+Here ``xptr``, and ``yptr`` corresponds to pointers to the input, and output arrays which both have length ``N``. 
 
-In each of the interfaces the first argument corresponds to a pointer to the start of the array, 
-a pointer to the end of the array, and a pointer to the output. 
+.. literalinclude:: ../../../../examples/example-scan.cpp
+                    :lines: 25-55
 
-A full working example is found in ``example-scan.cpp``.
+The full working example is found in ``example-scan.cpp``.
