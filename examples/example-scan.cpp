@@ -18,20 +18,28 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
+#include "memoryManager.hpp"
 
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
-
-
+  //
+  //Intialize array of length N
+  //
   int N = 6; 
-  int *x  = (int*) malloc(N*sizeof(int));
-  int *y  = (int*) malloc(N*sizeof(int));
+  int *x = memoryManager::allocate<int>(N);
+  int *y = memoryManager::allocate<int>(N);
   
+  //
+  //Populate input vector
+  //
   x[0] = 3; x[1] = 1; x[2] = 7;
   x[3] = 0; x[4] = 6; x[5] = 3;
     
+  //
+  //Select RAJA policy
+  //
   typedef RAJA::seq_exec execute_policy;
-  
+    
   printf("Performing exclusive scan \n"); 
   RAJA::exclusive_scan<execute_policy>(x,x+N,y);
   for(int i=0; i<N; ++i){
@@ -46,8 +54,8 @@ int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
   }
   printf("\n");
 
-  free(x);
-  free(y);
+  memoryManager::deallocate(x);
+  memoryManager::deallocate(y);
 
   return 0;
 }
