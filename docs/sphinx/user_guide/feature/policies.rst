@@ -64,14 +64,18 @@ TBB Policies
 CUDA Policies
 -------------
 
-Following the CUDA nomenclature, computations are performed on a predefined compute grid.
+Following the CUDA nomenclature, GPU computations are performed on a predefined compute grid.
 Each unit of the grid is referred to as a thread and threads are furthered grouped into 
-thread blocks. Threads and thread blocks may have up to three-dimensional indexing for convinence.
-
+thread blocks. Threads and thread blocks may have up to three-dimensional indexing for convinence. 
 Each CUDA policy requires the user to specify the number of threads in each dimension of a thread block. 
 The total number of blocks needed are determined based on a the iteration space and the number of threads
-per block.
+per block. As a starting point, the following policy may be used with the ``RAJA::forall`` loop
 
-* ``cuda_threadblock_x_exec<int T_x>`` - Constructs a thread block with ``T_x`` threads in the x-component.
-* ``cuda_threadblock_y_exec<int T_y>`` - Constructs a thread block with ``T_y`` threads in the y-component.
-* ``cuda_threadblock_z_exec<int T_z>`` - Constructs a thread block with ``T_z`` threads in the z-component.
+* ``cuda_exec<int BlkSz>`` where BlkSz corresponds to the number of threads in a given block. 
+
+The user may also specify a number of threads in the ``x,y``, and ``z`` components and use in conjunction with 
+``RAJA::forallN`` policies. 
+
+* ``cuda_threadblock_x_exec<int T_x>`` - Constructs a thread block with ``T_x`` threads in the ``x``-component.
+* ``cuda_threadblock_y_exec<int T_y>`` - Constructs a thread block with ``T_y`` threads in the ``y``-component.
+* ``cuda_threadblock_z_exec<int T_z>`` - Constructs a thread block with ``T_z`` threads in the ``z``-component.
