@@ -28,19 +28,19 @@ The following serves as reference to the various policies which ``RAJA`` support
 Serial/SIMD Policies
 --------------------
 
-* ``seq_exec``  - Strictly sequential execution.
-* ``loop_exec`` - Allow compiler to optimize using SIMD vectorization if it can, but don't use special compiler hints to do so.
-* ``simd_exec`` - Apply compiler-specific compiler hints for SIMD optimizations.
+* ``seq_exec``  - Enforces sequential loop iterations. 
+* ``loop_exec`` - Allows the compiler to vectorize.
+* ``simd_exec`` - Introduces vectorization hints to loop iterations.
 
 ---------------
 OpenMP Policies
 ---------------
 
-* ``omp_for_exec`` - Distributes loop iterations within threads.
+* ``omp_for_exec`` - Distributes loop iterations within threads (static scheduling by deafult). 
 * ``omp_for_nowait_exec`` - Removes synchronization within threaded regions.
-* ``omp_for_static`` - Assigns each thread approximately the same number of iterations.
+* ``omp_for_static`` - Distributes loop iteartions within threads using a static schedule. 
 * ``omp_parallel_exec`` - Creates a parallel region.
-* ``omp_parallel_for_exec`` - Creates a parallel region and divide loop iterations between threads.
+* ``omp_parallel_for_exec`` - Creates a parallel region and divides loop iterations between threads.
 * ``omp_parallel_segit`` - Creates a parallel region for index segments.
 * ``omp_parallel_for_segit`` - Create a parallel region for index segments and divide segments between threads.
 * ``omp_collapse_nowait_exec`` - Collapses multiple iteration spaces into a single space and removes any implied barriers.
@@ -49,7 +49,7 @@ OpenMP Policies
 OpenMP Target Policies
 ----------------------
 
-* ``omp_target_parallel_for_exec`` - Maps variables to a device environment and create parallel region dividing loop iterations between threads.
+* ``omp_target_parallel_for_exec`` - Variables are mapped to a device environment and a parallel region is created in which loop iterations are divided among threads.
   
 ------------
 TBB Policies
@@ -68,14 +68,14 @@ Following the CUDA nomenclature, GPU computations are performed on a predefined 
 Each unit of the grid is referred to as a thread and threads are furthered grouped into 
 thread blocks. Threads and thread blocks may have up to three-dimensional indexing for convinence. 
 Each CUDA policy requires the user to specify the number of threads in each dimension of a thread block. 
-The total number of blocks needed are determined based on a the iteration space and the number of threads
+The total number of blocks needed are determined based on the iteration space and the number of threads
 per block. As a starting point, the following policy may be used with the ``RAJA::forall`` loop
 
 * ``cuda_exec<int BlkSz>`` where BlkSz corresponds to the number of threads in a given block. 
 
-The user may also specify a number of threads in the ``x,y``, and ``z`` components and use in conjunction with 
+The user may also specify a number of threads in the x,y, and z components and use in conjunction with
 ``RAJA::forallN`` policies. 
 
-* ``cuda_threadblock_x_exec<int T_x>`` - Constructs a thread block with ``T_x`` threads in the ``x``-component.
-* ``cuda_threadblock_y_exec<int T_y>`` - Constructs a thread block with ``T_y`` threads in the ``y``-component.
-* ``cuda_threadblock_z_exec<int T_z>`` - Constructs a thread block with ``T_z`` threads in the ``z``-component.
+* ``cuda_threadblock_x_exec<int T_x>`` - Constructs a thread block with ``T_x`` threads in the x-component.
+* ``cuda_threadblock_y_exec<int T_y>`` - Constructs a thread block with ``T_y`` threads in the y-component.
+* ``cuda_threadblock_z_exec<int T_z>`` - Constructs a thread block with ``T_z`` threads in the z-component.
