@@ -62,7 +62,7 @@ use two ``RAJA::ListSegment`` objects to hold these two sets of indices. See
 
 The code in the example that constructs the segments and index set is:
            
-.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
+.. literalinclude:: ../../../../examples/example-gauss-seidel.cpp
                     :lines: 188-217
                             
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -72,7 +72,7 @@ Coloring execution policy
 To enable the parallelization pattern described earlier, we use the following 
 RAJA loop execution policy: 
 
-.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
+.. literalinclude:: ../../../../examples/example-gauss-seidel.cpp
                     :lines: 119-120
 
 Note that the ordering of the policies is the policy for iterating over over
@@ -83,7 +83,7 @@ specifies that we iterate between colors sequentially.
 
 The code that runs a single red-black cycle is:
 
-.. literalinclude:: ../../../examples/example-gauss-seidel.cpp
+.. literalinclude:: ../../../../examples/example-gauss-seidel.cpp
                     :lines: 138-160
 
 The file ``RAJA/examples/example-gauss-seidel.cpp`` contains the complete
