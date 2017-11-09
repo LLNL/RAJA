@@ -207,15 +207,13 @@ RAJA_INLINE concepts::enable_if<
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
 
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
   forall_impl(std::forward<ExecutionPolicy>(p),
               std::forward<Container>(c),
               body);
 
-  detail::clearChaiExecutionSpace();
+
 }
 
 /*!
@@ -234,9 +232,6 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                IndexType&& icount,
                                LoopBody&& loop_body)
 {
-
-  detail::setChaiExecutionSpace<ExecutionPolicy>();
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
   using std::begin;
@@ -249,7 +244,6 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   using policy::sequential::forall_impl;
   forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
 
-  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -270,8 +264,6 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                                LoopBody loop_body)
 {
 
-  detail::setChaiExecutionSpace<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>();
-
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
 
@@ -283,7 +275,7 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                      body);
   });
 
-  detail::clearChaiExecutionSpace();
+
 }
 
 template <typename SegmentIterPolicy,
@@ -295,7 +287,6 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                              LoopBody loop_body)
 {
 
-  detail::setChaiExecutionSpace<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>();
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
@@ -307,7 +298,6 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                      body);
   });
 
-  detail::clearChaiExecutionSpace();
 }
 
 }  // end namespace wrap
@@ -327,9 +317,14 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
                 "IndexSet policy by mistake?");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<IdxSet>(c),
                       std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -347,9 +342,14 @@ forall(ExecutionPolicy&& p, IdxSet&& c, LoopBody&& loop_body)
   static_assert(type_traits::is_index_set<IdxSet>::value,
                 "Expected an IndexSet but did not get one. Are you using an "
                 "IndexSet policy by mistake?");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<IdxSet>(c),
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -372,10 +372,15 @@ forall_Icount(ExecutionPolicy&& p,
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       std::forward<Container>(c),
                       icount,
                       std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 
@@ -394,9 +399,14 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
   static_assert(type_traits::is_random_access_range<Container>::value,
                 "Container does not model RandomAccessIterator");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                std::forward<Container>(c),
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 //
@@ -432,12 +442,17 @@ forall_Icount(ExecutionPolicy&& p,
                 "Iterator pair does not meet requirement of "
                 "RandomAccessIterator");
 
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   auto len = std::distance(begin, end);
   using SpanType = impl::Span<Iterator, decltype(len)>;
+
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       SpanType{begin, len},
                       icount,
                       std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -457,11 +472,16 @@ forall(ExecutionPolicy&& p, Iterator begin, Iterator end, LoopBody&& loop_body)
                 "Iterator pair does not meet requirement of "
                 "RandomAccessIterator");
 
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   auto len = std::distance(begin, end);
   using SpanType = impl::Span<Iterator, decltype(len)>;
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                SpanType{begin, len},
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 //
@@ -494,9 +514,14 @@ forall(ExecutionPolicy&& p,
   static_assert(
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_range(begin, end),
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -525,10 +550,15 @@ forall_Icount(ExecutionPolicy&& p,
   static_assert(
       type_traits::is_range_constructible<IndexType1, IndexType2>::value,
       "Cannot deduce a common type between begin and end for Range creation");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_range(begin, end),
                       icount,
                       std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 //
@@ -565,9 +595,14 @@ forall(ExecutionPolicy&& p,
                                                            IndexType3>::value,
                 "Cannot deduce a common type between begin and end for Range "
                 "creation");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                make_strided_range(begin, end, stride),
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 static_assert(
@@ -608,10 +643,15 @@ forall_Icount(ExecutionPolicy&& p,
                                                            IndexType3>::value,
                 "Cannot deduce a common type between begin and end for Range "
                 "creation");
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall_Icount(std::forward<ExecutionPolicy>(p),
                       make_strided_range(begin, end, stride),
                       icount,
                       std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 //
@@ -641,9 +681,13 @@ forall(ExecutionPolicy&& p,
        const IndexType len,
        LoopBody&& loop_body)
 {
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   wrap::forall(std::forward<ExecutionPolicy>(p),
                TypedListSegment<ArrayIdxType>(idx, len, Unowned),
                std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -673,11 +717,16 @@ forall_Icount(ExecutionPolicy&& p,
               const OffsetType icount,
               LoopBody&& loop_body)
 {
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   // turn into an iterator
   forall_Icount(std::forward<ExecutionPolicy>(p),
                 TypedListSegment<ArrayIdxType>(idx, len, Unowned),
                 icount,
                 std::forward<LoopBody>(loop_body));
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -688,7 +737,12 @@ forall_Icount(ExecutionPolicy&& p,
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall(Args&&... args)
 {
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   forall(ExecutionPolicy(), std::forward<Args>(args)...);
+
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -700,7 +754,12 @@ RAJA_INLINE void forall(Args&&... args)
 template <typename ExecutionPolicy, typename... Args>
 RAJA_INLINE void forall_Icount(Args&&... args)
 {
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
+
   forall_Icount(ExecutionPolicy(), std::forward<Args>(args)...);
+
+  detail::clearChaiExecutionSpace();
 }
 
 namespace detail
