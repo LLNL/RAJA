@@ -20,9 +20,9 @@ Reductions
 
 RAJA does not provide a separate loop traversal template method for
 reduction operations like some C++ template-based programming models do.
-Instead RAJA provides reduction types that not only allow users to perform 
-reduction operations inside RAJA 'forall' loops in a portable, thread-safe 
-manner, but allow users to use as many reductions in a loop as they want. 
+Instead RAJA provides reduction types that not only allow users to perform
+reduction operations inside RAJA 'forall' loops in a portable, thread-safe
+manner, but allow users to use as many reductions in a loop as they want.
 Available reduction types in RAJA are described in this section.
 
 ----------------
@@ -41,14 +41,14 @@ Reduction Types
 
 * ``ReducMinLoc< reduce_policy, data_type >`` - Min reduction that provides the *first* loop iteration index where the minimum was found.
 
-* ``ReducMaxLoc< reduce_policy, data_type >`` - Max reduction that provides the *first* loop iteration index where the maximum was found.  
+* ``ReducMaxLoc< reduce_policy, data_type >`` - Max reduction that provides the *first* loop iteration index where the maximum was found.
 
-.. note:: When ``ReduceMinLoc`` and ``ReduceMaxLoc`` are used in a parallel 
+.. note:: When ``ReduceMinLoc`` and ``ReduceMaxLoc`` are used in a parallel
           execution context, the loop iteration index given for the min or max
-          is not guaranteed to be the first in the iteration sequence. The 
-          index is determined by the ordering in which the reduction is 
+          is not guaranteed to be the first in the iteration sequence. The
+          index is determined by the ordering in which the reduction is
           finalized in parallel. In other words, the 'index' part of a "loc"
-          reduction is guaranteed to be reproducible for sequential execution 
+          reduction is guaranteed to be reproducible for sequential execution
           only.
 
 Here's a simple usage example::
@@ -71,14 +71,14 @@ Here's a simple usage example::
   RAJA::ReduceMinLoc< RAJA::omp_reduce, int > vminloc(100, -1);
   RAJA::ReduceMaxLoc< RAJA::omp_reduce, int > vmaxloc(-100, -1);
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>( RAJA::RangeSegment(0, N), 
+  RAJA::forall<RAJA::omp_parallel_for_exec>( RAJA::RangeSegment(0, N),
     [=](Index_type i) {
 
     vsum += vec[i] ;
     vminloc.minloc( vec[i] ) ;
     vmaxloc.maxloc( vec[i] ) ;
     vmax.max( vec[i] ) ;
-    
+
   });
 
   int my_vsum = static_cast<int>(vsum.get());
@@ -104,10 +104,10 @@ Reduction Policies
 ------------------
 
 .. note:: * All RAJA reduction policies are in the namespace ``RAJA``.
-          * To guarantee correctness, a reduction policy must be consistent 
+          * To guarantee correctness, a reduction policy must be consistent
             with loop execution policy used. That is, a CUDA reduction policy
-            must be used when the execution policy is a CUDA policy, an OpenMP 
-            reduction policy must be used when the execution policy is an 
+            must be used when the execution policy is a CUDA policy, an OpenMP
+            reduction policy must be used when the execution policy is an
             OpenMP policy, and so on.
 
 * ``seq_reduce``  - Sequential policy for reductions used with sequential and 'loop' execution policies. Currently, RAJA reductions with SIMD execution policies are not defined.
@@ -122,11 +122,11 @@ Reduction Policies
 
 * ``cuda_reduce`` - Thread-safe reduction policy for use with CUDA execution policies.
 
-* ``cuda_reduce_async`` - Reduction policy for use with CUDA execution policies that run loops without explicit device syncrhonization afterwards.
+* ``cuda_reduce_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value.
 
-* ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that uses CUDA atomic operations in the reduction.
+* ``cuda_reduce_atomic`` - Reduction policy for use with CUDA execution policies that may use CUDA atomic operations in the reduction.
 
-* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that that run loops without explicit device syncrhonization afterwards and which use CUDA atomic operations in the reduction.
+* ``cuda_reduce_atomic_async`` - Reduction policy for use with CUDA execution policies that may not use explicit cuda synchronization when retrieving its final value and which may use CUDA atomic operations in the reduction.
 
-A working example of basic RAJA reduction usage can be found in 
+A working example of basic RAJA reduction usage can be found in
 ``RAJA/examples/example-reduction.cpp``.

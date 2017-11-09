@@ -18,7 +18,7 @@
 Contributing to RAJA
 ====================
 
-This document is intented for developers who want to add new features or
+This document is intended for developers who want to add new features or
 bugfixes to RAJA. It assumes you have some familiarity with git and GitHub. It
 will discuss what a good pull request (PR) looks like, and the tests that your
 PR must pass before it can be merged into RAJA.
@@ -27,7 +27,7 @@ PR must pass before it can be merged into RAJA.
 Forking RAJA
 ------------
 
-If you aren't a RAJA deveolper at LLNL, then you won't have permission to push
+If you aren't a RAJA developer at LLNL, then you won't have permission to push
 new branches to the repository. First, you should create a `fork
 <https://github.com/LLNL/RAJA#fork-destination-box>`_. This will create a copy
 of the RAJA repository that you own, and will ensure you can push your changes

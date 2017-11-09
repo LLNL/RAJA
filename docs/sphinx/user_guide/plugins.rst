@@ -18,7 +18,7 @@
 Plugins
 *******
 
-RAJA provides a plugin mechanism to support optional components that provide 
+RAJA provides a plugin mechanism to support optional components that provide
 additional functionality and hopefully make writing applications easier.
 
 =======
@@ -26,15 +26,15 @@ CHAI
 =======
 
 RAJA provides abstractions for parallel execution, but does not contain
-support for managing data in heterogeneous memory spaces.  
+support for managing data in heterogeneous memory spaces.
 `CHAI <https://github.com/LLNL/CHAI>`_ is an array abstraction that can use RAJA
 execution policies to perform data movement operations. The data can be accessed
 inside any RAJA kernel, and regardless of where that kernel executes, CHAI will
 make the data available.
 
 To build RAJA with CHAI integration, first download and install CHAI. Please
-see the CHAI documentation for details. After CHAI is, RAJA can be configured 
-to use it with two additional arguments:
+see the CHAI documentation for details. After CHAI is installed, RAJA can be
+configured to use it with two additional arguments:
 
     $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
 
@@ -51,6 +51,6 @@ After RAJA has been built with CHAI support, applications can use CHAI
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 
-Here, the data held by 'array' is initialized on a CUDA GPU deveice.
+Here, the data held by 'array' is initialized on a CUDA GPU device.
 Then, it is copied to the host CPU and printed. All necessary data
 copies are done transparently on demand as needed for each kernel.
