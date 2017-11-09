@@ -39,9 +39,7 @@
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 #endif
 
-#if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
-#endif
 
 namespace RAJA
 {
@@ -78,7 +76,8 @@ struct ForallN_Executor<maybe_cuda, POLICY_INIT, POLICY_REST...> {
   RAJA_INLINE void operator()(BODY const &body) const
   {
     ForallN_PeelOuter<build_device, NextExec, BODY> outer(next_exec, body);
-    wrap::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
+    //wrap::forall(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
+    forall_impl(POLICY_I(), static_cast<TYPE_I>(is_i), outer);
   }
 };
 
@@ -214,12 +213,17 @@ template <typename POLICY,
           typename... Ts>
 RAJA_INLINE void forallN_impl(camp::idx_seq<Range...>,
                               camp::idx_seq<Unspecified...>,
-                              BODY &&body,
+                              BODY &&loop_body,
                               const Ts &... args)
 {
   static_assert(sizeof...(Indices) <= sizeof...(args),
                 "More index types have been specified than arguments, one of "
                 "these is wrong");
+
+  using RAJA::internal::trigger_updates_before;
+  auto body = trigger_updates_before(loop_body);
+
+
   // Make it look like variadics can have defaults
   forallN_impl_extract<POLICY,
                        Indices...,
@@ -248,20 +252,15 @@ template <typename POLICY, typename... Indices, typename... Ts>
 RAJA_INLINE void forallN(Ts &&... args)
 {
 
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager *rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<POLICY>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+  detail::setChaiExecutionSpace<POLICY>();
+
 
   fun_unpacker<POLICY, Indices...>(
       camp::idx_seq<sizeof...(args) - 1>{},
       camp::make_idx_seq_t<sizeof...(args) - 1>{},
       camp::forward<Ts>(args)...);
 
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  detail::clearChaiExecutionSpace();
 }
 
 }  // namespace RAJA

@@ -60,7 +60,7 @@ namespace indexset
 /// over segments.  The second describes the policy for executing
 /// each segment.
 ///
-template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T>
+template <typename SEG_ITER_POLICY_T, typename SEG_EXEC_POLICY_T = void>
 struct ExecPolicy
     : public RAJA::make_policy_pattern_t<SEG_EXEC_POLICY_T::policy,
                                          RAJA::Pattern::forall> {

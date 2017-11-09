@@ -16,7 +16,7 @@
 ///
 /// Source file containing tests for CHAI in RAJA nested loops.
 ///
-
+///
 #include <time.h>
 #include <cfloat>
 #include <cstdlib>
@@ -37,7 +37,7 @@ using namespace std;
 /*
  * Simple tests using forallN and View
  */
-CUDA_TEST(Chai, NestedSimple) {
+CUDA_TEST(Chai, NestedSimpleOld) {
   typedef RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::seq_exec> > POLICY;
   typedef RAJA::NestedPolicy< RAJA::ExecList< RAJA::seq_exec, RAJA::cuda_thread_y_exec > > POLICY_GPU;
 
@@ -56,10 +56,64 @@ CUDA_TEST(Chai, NestedSimple) {
       int index = j*X + i;
       v2[index] = v1[index]*2.0f;
   });
+  cudaDeviceSynchronize();
 
   RAJA::forallN<POLICY>(RangeSegment(0,Y), RangeSegment(0,X), [=] (int i, int j) {
       int index = j*X + i;
+      ASSERT_FLOAT_EQ(v1[index], index*1.0f);
       ASSERT_FLOAT_EQ(v2[index], index*2.0f);
+  });
+}
+
+
+/*
+ * Simple tests using nested::forall and View
+ */
+CUDA_TEST(Chai, NestedSimple) {
+  typedef RAJA::nested::Policy<
+      RAJA::nested::For<0, RAJA::seq_exec>,
+      RAJA::nested::For<1, RAJA::seq_exec> > POLICY;
+  typedef RAJA::nested::Policy<
+      RAJA::nested::For<0, RAJA::seq_exec>,
+      RAJA::nested::For<1, RAJA::cuda_exec<256> > > POLICY_GPU;
+
+  const int X = 16;
+  const int Y = 16;
+
+  chai::ManagedArray<float> v1(X*Y);
+  chai::ManagedArray<float> v2(X*Y);
+
+  RAJA::nested::forall(
+      POLICY{},
+
+      camp::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
+
+      [=] (int i, int j) {
+        int index = j*X + i;
+        v1[index] = index;
+  });
+
+  RAJA::nested::forall(
+      POLICY_GPU{},
+
+      camp::make_tuple(RangeSegment(0,Y), RangeSegment(0,X) ),
+
+      [=] __host__ __device__ (int i, int j) {
+        int index = j*X + i;
+        v2[index] = v1[index]*2.0f;
+  });
+
+  cudaDeviceSynchronize();
+
+  RAJA::nested::forall(
+      POLICY{},
+
+      camp::make_tuple(RAJA::RangeSegment(0,Y), RAJA::RangeSegment(0,X) ),
+
+      [=] (int i, int j) {
+        int index = j*X + i;
+        ASSERT_FLOAT_EQ(v1[index], index*1.0f);
+        ASSERT_FLOAT_EQ(v2[index], index*2.0f);
   });
 }
 
@@ -184,9 +238,9 @@ void runLTimesTest(std::string const &policy,
     phi_data[i] = 0.0;
   });
 
-  typename POL::ELL_VIEW ell(ell_data, RAJA::make_permuted_layout({num_moments, num_directions}, POL::ELL_PERM::value));
-  typename POL::PSI_VIEW psi(psi_data, RAJA::make_permuted_layout({num_directions, num_groups, num_zones}, POL::PSI_PERM::value));
-  typename POL::PHI_VIEW phi(phi_data, RAJA::make_permuted_layout({num_moments, num_groups, num_zones}, POL::PHI_PERM::value));
+  typename POL::ELL_VIEW ell(ell_data, RAJA::make_permuted_layout({num_moments, num_directions}, RAJA::as_array<typename POL::ELL_PERM>::get()));
+  typename POL::PSI_VIEW psi(psi_data, RAJA::make_permuted_layout({num_directions, num_groups, num_zones}, RAJA::as_array<typename POL::PSI_PERM>::get()));
+  typename POL::PHI_VIEW phi(phi_data, RAJA::make_permuted_layout({num_moments, num_groups, num_zones}, RAJA::as_array<typename POL::PHI_PERM>::get()));
 
   using EXEC = typename POL::EXEC;
 
@@ -220,14 +274,10 @@ void runLTimesTest(std::string const &policy,
   double the_lsum = 0.0;
   double the_lmin = DBL_MAX;
   double the_lmax = -DBL_MAX;
-  minmaxloc_t the_lminloc = {DBL_MAX, -1};
-  minmaxloc_t the_lmaxloc = {-DBL_MAX, -1};
 
   double* lsum = &the_lsum;
   double* lmin = &the_lmin;
   double* lmax = &the_lmax;
-  minmaxloc_t* lminloc = &the_lminloc;
-  minmaxloc_t* lmaxloc = &the_lmaxloc;
 
   forall<RAJA::seq_exec>(RangeSegment(0, num_zones), [=] (int z) {
     for (IGroup g(0); g < num_groups; ++g) {
@@ -241,9 +291,6 @@ void runLTimesTest(std::string const &policy,
           int index = *d + (*m * num_directions)
                       + (*g * num_directions * num_moments)
                       + (z * num_directions * num_moments * num_groups);
-          // minmaxloc_t testMinMaxLoc = {val, index};
-          // *lminloc = RAJA_MINLOC(*lminloc, testMinMaxLoc);
-          // *lmaxloc = RAJA_MAXLOC(*lmaxloc, testMinMaxLoc);
         }
         *lsum += total;
 

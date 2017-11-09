@@ -82,13 +82,8 @@
 
 #include "RAJA/pattern/detail/forall.hpp"
 
-#if defined(RAJA_ENABLE_CHAI)
 #include "RAJA/util/chai_support.hpp"
 
-#include "chai/ArrayManager.hpp"
-#include "chai/ExecutionSpaces.hpp"
-
-#endif
 
 
 namespace RAJA
@@ -211,11 +206,8 @@ RAJA_INLINE concepts::enable_if<
     type_traits::is_range<Container>>
 forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
 {
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<ExecutionPolicy>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
@@ -223,9 +215,7 @@ forall(ExecutionPolicy&& p, Container&& c, LoopBody&& loop_body)
               std::forward<Container>(c),
               body);
 
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -245,11 +235,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
                                LoopBody&& loop_body)
 {
 
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<ExecutionPolicy>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+  detail::setChaiExecutionSpace<ExecutionPolicy>();
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
@@ -263,9 +249,7 @@ RAJA_INLINE void forall_Icount(ExecutionPolicy&& p,
   using policy::sequential::forall_impl;
   forall_impl(std::forward<ExecutionPolicy>(p), range, adapted);
 
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  detail::clearChaiExecutionSpace();
 }
 
 /*!
@@ -286,11 +270,7 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                                LoopBody loop_body)
 {
 
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<ExecutionPolicy>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+  detail::setChaiExecutionSpace<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>();
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
@@ -303,9 +283,7 @@ RAJA_INLINE void forall_Icount(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                      body);
   });
 
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  detail::clearChaiExecutionSpace();
 }
 
 template <typename SegmentIterPolicy,
@@ -316,11 +294,8 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                              const StaticIndexSet<SegmentTypes...>& iset,
                              LoopBody loop_body)
 {
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<ExecutionPolicy>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+
+  detail::setChaiExecutionSpace<ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>>();
 
   using RAJA::internal::trigger_updates_before;
   auto body = trigger_updates_before(loop_body);
@@ -331,9 +306,8 @@ RAJA_INLINE void forall(ExecPolicy<SegmentIterPolicy, SegmentExecPolicy>,
                      SegmentExecPolicy(),
                      body);
   });
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+
+  detail::clearChaiExecutionSpace();
 }
 
 }  // end namespace wrap
