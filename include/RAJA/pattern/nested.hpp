@@ -9,6 +9,8 @@
 
 #include "RAJA/pattern/nested/internal.hpp"
 
+#include "RAJA/util/chai_support.hpp"
+
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -20,17 +22,74 @@ namespace RAJA
 {
 namespace nested
 {
+template <typename... Policies>
+using Policy = camp::tuple<Policies...>;
 
 
 template <camp::idx_t ArgumentId, typename Pol = camp::nil, typename... Rest>
 struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, Pol> {
   using as_for_list = camp::list<For>;
+
+  // used for execution space resolution
+  using as_space_list = camp::list<For>;
+
   // TODO: add static_assert for valid policy in Pol
   const Pol pol;
   For() : pol{} {}
   For(const Pol &p) : pol{p} {}
 };
+
+
+template <typename ExecPolicy, typename... Fors>
+struct Collapse : public internal::ForList, public internal::CollapseBase {
+  using as_for_list = camp::list<Fors...>;
+
+  // used for execution space resolution
+  using as_space_list = camp::list<For<-1, ExecPolicy>>;
+
+  const ExecPolicy pol;
+  Collapse() : pol{} {}
+  Collapse(ExecPolicy const &ep) : pol{ep} {}
+};
+
+}
+
+
+
+#ifdef RAJA_ENABLE_CHAI
+
+namespace detail {
+
+
+/*
+ * Define CHAI support for nested policies.
+ *
+ * We need to walk the entire set of execution policies inside of the
+ * RAJA::nested::Policy
+ */
+template <typename... POLICIES>
+struct get_space<camp::tuple<POLICIES ...>>
+    : public get_space_from_list< // combines exec policies to find exec space
+
+         // Extract just the execution policies from the tuple
+         RAJA::nested::internal::get_space_policies<
+            typename camp::tuple<POLICIES ...>::TList
+         >
+
+      >
+{};
+
+} // end detail namespace
+
+#endif // RAJA_ENABLE_CHAI
+
+
+namespace nested
+{
+
+
+
 
 template <camp::idx_t ArgumentId,
           typename Pol,
@@ -46,8 +105,7 @@ struct TypedFor : public internal::TypedForBase,
   using Base::Base;
 };
 
-template <typename... Policies>
-using Policy = camp::tuple<Policies...>;
+
 
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
@@ -133,13 +191,7 @@ struct Executor {
 
 
 
-template <typename ExecPolicy, typename... Fors>
-struct Collapse : public internal::ForList, public internal::CollapseBase {
-  using as_for_list = camp::list<Fors...>;
-  const ExecPolicy pol;
-  Collapse() : pol{} {}
-  Collapse(ExecPolicy const &ep) : pol{ep} {}
-};
+
 
 
 //
@@ -197,6 +249,8 @@ struct Wrapper<n_policies, n_policies, Data, Own> {
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
 
+
+
 template <typename Data>
 auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 {
@@ -206,11 +260,8 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 template <typename Pol, typename SegmentTuple, typename Body>
 RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 {
-#if defined(RAJA_ENABLE_CHAI)
-  chai::ArrayManager *rm = chai::ArrayManager::getInstance();
-  using EP = typename std::decay<POLICY>::type;
-  rm->setExecutionSpace(detail::get_space<EP>::value);
-#endif
+  detail::setChaiExecutionSpace<Pol>();
+
   using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
   // TODO: ensure no gaps in For<>s
@@ -226,13 +277,20 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   //           << typeid(data.index_tuple).name() << std::endl;
   ld();
 
-#if defined(RAJA_ENABLE_CHAI)
-  rm->setExecutionSpace(chai::NONE);
-#endif
+  detail::clearChaiExecutionSpace();
 }
 
 }  // end namespace nested
+
+
+
+
+
 }  // end namespace RAJA
+
+
+
+
 
 
 #include "RAJA/pattern/nested/tile.hpp"

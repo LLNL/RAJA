@@ -52,10 +52,37 @@ using has_for_list = typename camp::bind_front<std::is_base_of, ForList>::type;
 template <typename T>
 using get_for_list = typename T::as_for_list;
 
+template <typename T>
+using get_space_list = typename T::as_space_list;
+
+/*
+ * Get a camp::list of execution policies from a RAJA::nested::Policy.
+ *
+ * This extracts the execution policy from each For<>, and extracts the
+ * policies from inside of Collapse<P, ...>, but drops P
+ *
+ * The size of the returned camp::list is exactly the number of For<>'s
+ * in the policy
+ */
 template <typename Seq>
 using get_for_policies = typename camp::flatten<typename camp::transform<
     get_for_list,
     typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
+
+/*
+ * Get a camp::list of execution policies from a RAJA::nested::Policy to be
+ * used to determine the execution space.
+ *
+ * This extracts the execution policy from each For<>, and extracts the
+ * COLLAPSE policy P from inside of Collapse<P, ...>.  It drops all of the
+ * For<>'s inside of a collapse.
+ *
+ */
+template <typename Seq>
+using get_space_policies = typename camp::flatten<typename camp::transform<
+    get_space_list,
+    typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
+
 
 template <typename T>
 using is_nil_type =
