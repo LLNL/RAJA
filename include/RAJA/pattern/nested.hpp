@@ -24,6 +24,35 @@ namespace nested
 {
 template <typename... Policies>
 using Policy = camp::tuple<Policies...>;
+
+
+template <camp::idx_t ArgumentId, typename Pol = camp::nil, typename... Rest>
+struct For : public internal::ForList,
+             public internal::ForTraitBase<ArgumentId, Pol> {
+  using as_for_list = camp::list<For>;
+
+  // used for execution space resolution
+  using as_space_list = camp::list<For>;
+
+  // TODO: add static_assert for valid policy in Pol
+  const Pol pol;
+  For() : pol{} {}
+  For(const Pol &p) : pol{p} {}
+};
+
+
+template <typename ExecPolicy, typename... Fors>
+struct Collapse : public internal::ForList, public internal::CollapseBase {
+  using as_for_list = camp::list<Fors...>;
+
+  // used for execution space resolution
+  using as_space_list = camp::list<For<-1, ExecPolicy>>;
+
+  const ExecPolicy pol;
+  Collapse() : pol{} {}
+  Collapse(ExecPolicy const &ep) : pol{ep} {}
+};
+
 }
 
 
@@ -44,13 +73,12 @@ struct get_space<camp::tuple<POLICIES ...>>
     : public get_space_from_list< // combines exec policies to find exec space
 
          // Extract just the execution policies from the tuple
-         RAJA::nested::internal::get_for_policies<
+         RAJA::nested::internal::get_space_policies<
             typename camp::tuple<POLICIES ...>::TList
          >
 
       >
 {};
-
 
 } // end detail namespace
 
@@ -61,15 +89,7 @@ namespace nested
 {
 
 
-template <camp::idx_t ArgumentId, typename Pol = camp::nil, typename... Rest>
-struct For : public internal::ForList,
-             public internal::ForTraitBase<ArgumentId, Pol> {
-  using as_for_list = camp::list<For>;
-  // TODO: add static_assert for valid policy in Pol
-  const Pol pol;
-  For() : pol{} {}
-  For(const Pol &p) : pol{p} {}
-};
+
 
 template <camp::idx_t ArgumentId,
           typename Pol,
@@ -171,13 +191,7 @@ struct Executor {
 
 
 
-template <typename ExecPolicy, typename... Fors>
-struct Collapse : public internal::ForList, public internal::CollapseBase {
-  using as_for_list = camp::list<Fors...>;
-  const ExecPolicy pol;
-  Collapse() : pol{} {}
-  Collapse(ExecPolicy const &ep) : pol{ep} {}
-};
+
 
 
 //
