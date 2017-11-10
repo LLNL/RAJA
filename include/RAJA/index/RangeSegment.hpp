@@ -75,11 +75,11 @@ namespace RAJA
  *
  ******************************************************************************
  */
-template <typename StorageT>
+template <typename StorageT, typename DiffT = Index_type>
 struct TypedRangeSegment {
 
   //! the underlying iterator type
-  using iterator = Iterators::numeric_iterator<StorageT>;
+  using iterator = Iterators::numeric_iterator<StorageT,DiffT>;
   //! the underlying value_type type
   /*!
    * this corresponds to the template parameter
@@ -91,8 +91,8 @@ struct TypedRangeSegment {
    * \param[in] begin the starting value (inclusive) for the range
    * \param[in] end the ending value (exclusive) for the range
    */
-  RAJA_HOST_DEVICE TypedRangeSegment(StorageT begin, StorageT end)
-      : m_begin(iterator(begin)), m_end(iterator(end)), m_size(end - begin)
+  RAJA_HOST_DEVICE TypedRangeSegment(Index_type begin, Index_type end)
+      : m_begin(iterator{begin}), m_end(iterator{end}), m_size(end - begin)
   {
   }
 
@@ -186,7 +186,7 @@ private:
   iterator m_end;
 
   //! member variable for size of segment
-  StorageT m_size;
+  DiffT m_size;
 };
 
 
@@ -249,11 +249,11 @@ private:
  *
  ******************************************************************************
  */
-template <typename StorageT>
+template <typename StorageT, typename DiffT = Index_type>
 struct TypedRangeStrideSegment {
 
   //! the underlying iterator type
-  using iterator = Iterators::strided_numeric_iterator<StorageT>;
+  using iterator = Iterators::strided_numeric_iterator<StorageT, DiffT>;
 
   //! the underlying value_type type
   /*!
