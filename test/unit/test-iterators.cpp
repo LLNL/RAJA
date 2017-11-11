@@ -20,21 +20,6 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
-TEST(BaseIterator, simple)
-{
-  RAJA::Iterators::base_iterator<int> a;
-  RAJA::Iterators::base_iterator<int> two(2);
-  ASSERT_LT(a, two);
-  ASSERT_LE(a, two);
-  ASSERT_LE(a, a);
-  ASSERT_EQ(a, a);
-  ASSERT_GE(two, a);
-  ASSERT_GT(two, a);
-  ASSERT_NE(two, a);
-  RAJA::Iterators::base_iterator<int> b(a);
-  ASSERT_EQ(a, b);
-}
-
 TEST(NumericIterator, simple)
 {
   RAJA::Iterators::numeric_iterator<> i;

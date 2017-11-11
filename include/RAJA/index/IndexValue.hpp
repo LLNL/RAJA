@@ -28,6 +28,8 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/index/RangeSegment.hpp"
+#include "RAJA/index/ListSegment.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
@@ -63,9 +65,7 @@ struct IndexValue {
   }
 
   //! Dereference provides cast-to-integer.
-  RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() {
-    return value;
-  }
+  RAJA_HOST_DEVICE RAJA_INLINE Index_type &operator*() { return value; }
 
   //! Dereference provides cast-to-integer.
   RAJA_HOST_DEVICE RAJA_INLINE const Index_type &operator*() const
@@ -85,7 +85,7 @@ struct IndexValue {
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator++()
   {
     value++;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   //! postdecrement -- returns a copy
@@ -100,7 +100,7 @@ struct IndexValue {
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator--()
   {
     value--;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   //! addition to underlying index from an Index_type
@@ -154,49 +154,49 @@ struct IndexValue {
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(Index_type x)
   {
     value += x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator+=(TYPE x)
   {
     value += x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(Index_type x)
   {
     value -= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator-=(TYPE x)
   {
     value -= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(Index_type x)
   {
     value *= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator*=(TYPE x)
   {
     value *= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(Index_type x)
   {
     value /= x;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE TYPE &operator/=(TYPE x)
   {
     value /= x.value;
-    return static_cast<TYPE&>(*this);
+    return static_cast<TYPE &>(*this);
   }
 
   RAJA_HOST_DEVICE RAJA_INLINE bool operator<(Index_type x) const
@@ -282,7 +282,7 @@ convertIndex_helper(typename FROM::IndexValueType val)
   return static_cast<TO>(*val);
 }
 
-} // closing brace for namespace impl
+}  // closing brace for namespace impl
 
 /*!
  * \brief Function provides a way to take either an int or any Index<> type, and
@@ -315,6 +315,9 @@ RAJA_HOST_DEVICE RAJA_INLINE TO convertIndex(FROM val)
     {                                                                \
     }                                                                \
     static inline std::string getName() { return NAME; }             \
+    using range = RAJA::TypedRangeSegment<TYPE>;                     \
+    using strided_range = RAJA::TypedRangeStrideSegment<TYPE>;       \
+    using list = RAJA::TypedListSegment<TYPE>;                       \
   };
 
 #endif

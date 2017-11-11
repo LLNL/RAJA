@@ -42,143 +42,119 @@ namespace Iterators
 
 // Containers
 
-template <typename Type,
-          typename DifferenceType = std::ptrdiff_t,
+template <typename Type = Index_type,
+          typename DifferenceType = Index_type,
           typename PointerType = Type*>
-struct base_iterator {
-
+class numeric_iterator
+{
+public:
   using value_type = Type;
   using difference_type = DifferenceType;
-  using pointer = value_type*;
+  using pointer = PointerType;
   using reference = value_type&;
   using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr base_iterator() : val(0) {}
-  RAJA_HOST_DEVICE constexpr base_iterator(Type rhs) : val(rhs) {}
-  RAJA_HOST_DEVICE constexpr base_iterator(const base_iterator& rhs)
+  RAJA_HOST_DEVICE constexpr numeric_iterator() : val(0) {}
+  RAJA_HOST_DEVICE constexpr numeric_iterator(const difference_type& rhs)
+      : val(rhs)
+  {
+  }
+  RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
       : val(rhs.val)
   {
   }
-
-  RAJA_HOST_DEVICE inline bool operator==(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator==(const numeric_iterator& rhs) const
   {
     return val == rhs.val;
   }
-  RAJA_HOST_DEVICE inline bool operator!=(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator!=(const numeric_iterator& rhs) const
   {
     return val != rhs.val;
   }
-  RAJA_HOST_DEVICE inline bool operator>(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator>(const numeric_iterator& rhs) const
   {
     return val > rhs.val;
   }
-  RAJA_HOST_DEVICE inline bool operator<(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator<(const numeric_iterator& rhs) const
   {
     return val < rhs.val;
   }
-  RAJA_HOST_DEVICE inline bool operator>=(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator>=(const numeric_iterator& rhs) const
   {
     return val >= rhs.val;
   }
-  RAJA_HOST_DEVICE inline bool operator<=(const base_iterator& rhs) const
+  RAJA_HOST_DEVICE inline bool operator<=(const numeric_iterator& rhs) const
   {
     return val <= rhs.val;
   }
 
-protected:
-  Type val;
-};
-
-template <typename Type = Index_type,
-          typename DifferenceType = Index_type,
-          typename PointerType = Type*>
-class numeric_iterator : public base_iterator<Type, DifferenceType>
-{
-  using base = base_iterator<Type, DifferenceType>;
-
-public:
-  using value_type = typename base::value_type;
-  using difference_type = typename base::difference_type;
-  using pointer = typename base::pointer;
-  using reference = typename base::reference;
-  using iterator_category = typename base::iterator_category;
-
-  RAJA_HOST_DEVICE constexpr numeric_iterator() : base(0) {}
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const Type& rhs) : base(rhs) {}
-  RAJA_HOST_DEVICE constexpr numeric_iterator(const numeric_iterator& rhs)
-      : base(rhs.val)
-  {
-  }
-
   RAJA_HOST_DEVICE inline numeric_iterator& operator++()
   {
-    ++base::val;
+    ++val;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator& operator--()
   {
-    --base::val;
+    --val;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator operator++(int)
   {
     numeric_iterator tmp(*this);
-    ++base::val;
+    ++val;
     return tmp;
   }
   RAJA_HOST_DEVICE inline numeric_iterator operator--(int)
   {
     numeric_iterator tmp(*this);
-    --base::val;
+    --val;
     return tmp;
   }
 
   RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
       const difference_type& rhs)
   {
-    base::val += rhs;
+    val += rhs;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const difference_type& rhs)
   {
-    base::val -= rhs;
+    val -= rhs;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator& operator+=(
       const numeric_iterator& rhs)
   {
-    base::val += rhs.val;
+    val += rhs.val;
     return *this;
   }
   RAJA_HOST_DEVICE inline numeric_iterator& operator-=(
       const numeric_iterator& rhs)
   {
-    base::val -= rhs.val;
+    val -= rhs.val;
     return *this;
   }
 
   RAJA_HOST_DEVICE inline difference_type operator+(
       const numeric_iterator& rhs) const
   {
-    return static_cast<difference_type>(base::val)
-           + static_cast<difference_type>(rhs.val);
+    return val + rhs.val;
   }
   RAJA_HOST_DEVICE inline difference_type operator-(
       const numeric_iterator& rhs) const
   {
-    return static_cast<difference_type>(base::val)
-           - static_cast<difference_type>(rhs.val);
+    return val - rhs.val;
   }
   RAJA_HOST_DEVICE inline numeric_iterator operator+(
       const difference_type& rhs) const
   {
-    return numeric_iterator(base::val + rhs);
+    return numeric_iterator(val + rhs);
   }
   RAJA_HOST_DEVICE inline numeric_iterator operator-(
       const difference_type& rhs) const
   {
-    return numeric_iterator(base::val - rhs);
+    return numeric_iterator(val - rhs);
   }
   RAJA_HOST_DEVICE friend constexpr numeric_iterator operator+(
       difference_type lhs,
@@ -193,76 +169,83 @@ public:
     return numeric_iterator(lhs - rhs.val);
   }
 
-  RAJA_HOST_DEVICE inline Type operator*() const { return base::val; }
-  RAJA_HOST_DEVICE inline Type operator->() const { return base::val; }
-  RAJA_HOST_DEVICE constexpr Type operator[](difference_type rhs) const
+  RAJA_HOST_DEVICE inline value_type operator*() const
   {
-    return base::val + rhs;
+    return value_type(val);
   }
+  RAJA_HOST_DEVICE inline value_type operator->() const
+  {
+    return value_type(val);
+  }
+  RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
+  {
+    return value_type(val + rhs);
+  }
+
+private:
+  difference_type val;
 };
 
 template <typename Type = Index_type,
           typename DifferenceType = Index_type,
           typename PointerType = Type*>
-class strided_numeric_iterator : public base_iterator<Type, DifferenceType>
+class strided_numeric_iterator
 {
-  using base = base_iterator<Type, DifferenceType>;
-
 public:
-  using value_type = typename base::value_type;
-  using difference_type = typename base::difference_type;
-  using pointer = typename base::pointer;
-  using reference = typename base::reference;
-  using iterator_category = typename base::iterator_category;
+  using value_type = Type;
+  using difference_type = DifferenceType;
+  using pointer = DifferenceType*;
+  using reference = DifferenceType&;
+  using iterator_category = std::random_access_iterator_tag;
 
-  RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : base(0), stride(1) {}
+  RAJA_HOST_DEVICE constexpr strided_numeric_iterator() : val(0), stride(1) {}
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(const Type& rhs,
                                                       DifferenceType stride = 1)
-      : base(rhs), stride(stride)
+      : val(rhs), stride(stride)
   {
   }
 
   RAJA_HOST_DEVICE constexpr strided_numeric_iterator(
       const strided_numeric_iterator& rhs)
-      : base(rhs.val), stride(rhs.stride)
+      : val(rhs.val), stride(rhs.stride)
   {
   }
 
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator++()
   {
-    base::val += stride;
+    val += stride;
     return *this;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator--()
   {
-    base::val -= stride;
+    val -= stride;
     return *this;
   }
 
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator+=(
       const difference_type& rhs)
   {
-    base::val += rhs * stride;
+    val += rhs * stride;
     return *this;
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator& operator-=(
       const difference_type& rhs)
   {
-    base::val -= rhs * stride;
+    val -= rhs * stride;
     return *this;
   }
 
   RAJA_HOST_DEVICE inline difference_type operator+(
       const strided_numeric_iterator& rhs) const
   {
-    return (static_cast<difference_type>(base::val)
+    return (static_cast<difference_type>(val)
             + (static_cast<difference_type>(rhs.val)))
            / stride;
   }
   RAJA_HOST_DEVICE inline difference_type operator-(
       const strided_numeric_iterator& rhs) const
   {
-    difference_type diff = (static_cast<difference_type>(base::val)
+    difference_type diff = (static_cast<difference_type>(val)
                             - (static_cast<difference_type>(rhs.val)));
 
     return (diff % stride) ? (1 + diff / stride) : diff / stride;
@@ -270,12 +253,12 @@ public:
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator+(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(base::val + rhs * stride);
+    return strided_numeric_iterator(val + rhs * stride);
   }
   RAJA_HOST_DEVICE inline strided_numeric_iterator operator-(
       const difference_type& rhs) const
   {
-    return strided_numeric_iterator(base::val - rhs * stride);
+    return strided_numeric_iterator(val - rhs * stride);
   }
 
   // Specialized comparison to allow normal iteration to work on off-stride
@@ -283,49 +266,56 @@ public:
   RAJA_HOST_DEVICE inline bool operator!=(
       const strided_numeric_iterator& rhs) const
   {
-    return (base::val - rhs.val) / stride;
+    return (val - rhs.val) / stride;
   }
   RAJA_HOST_DEVICE inline bool operator==(
       const strided_numeric_iterator& rhs) const
   {
-    return !((base::val - rhs.val) / stride);
+    return !((val - rhs.val) / stride);
   }
 
   RAJA_HOST_DEVICE inline bool operator>(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val * stride > rhs.val * stride;
+    return val * stride > rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator<(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val * stride < rhs.val * stride;
+    return val * stride < rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator>=(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val * stride >= rhs.val * stride;
+    return val * stride >= rhs.val * stride;
   }
   RAJA_HOST_DEVICE inline bool operator<=(
       const strided_numeric_iterator& rhs) const
   {
-    return base::val * stride <= rhs.val * stride;
+    return val * stride <= rhs.val * stride;
   }
 
 
-  RAJA_HOST_DEVICE inline Type operator*() const { return base::val; }
-  RAJA_HOST_DEVICE inline Type operator->() const { return base::val; }
-  RAJA_HOST_DEVICE inline Type operator[](difference_type rhs) const
+  RAJA_HOST_DEVICE inline value_type operator*() const
   {
-    return base::val + rhs * stride;
+    return value_type(val);
+  }
+  RAJA_HOST_DEVICE inline value_type operator->() const
+  {
+    return value_type(val);
+  }
+  RAJA_HOST_DEVICE constexpr value_type operator[](difference_type rhs) const
+  {
+    return value_type(val + rhs * stride);
   }
 
 private:
+  DifferenceType val;
   DifferenceType stride;
 };
 
-} // closing brace for namespace Iterators
+}  // closing brace for namespace Iterators
 
-} // closing brace for namespace RAJA
+}  // closing brace for namespace RAJA
 
 #endif /* RAJA_ITERATORS_HPP */
