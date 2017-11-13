@@ -76,7 +76,7 @@ struct grid_s {
 };
 
 
-#define CPU 1
+#define CPU 0
 
 #if CPU
 
