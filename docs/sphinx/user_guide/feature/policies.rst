@@ -71,20 +71,17 @@ Each CUDA policy requires the user to specify the number of threads in each dime
 The total number of blocks needed are determined based on the iteration space and the number of threads
 per block. As a starting point, the following policy may be used with the ``RAJA::forall`` loop
 
-* ``cuda_exec<int BlkSz>`` where BlkSz corresponds to the number of threads in a given block.
+* ``cuda_exec<int STRIDE_SIZE>`` where STRIDE_SIZE corresponds to the number of threads in a given block.
 
 The user may also specify a number of threads in the x,y, and z components and use in conjunction with
 ``RAJA::forallN`` policies. The first three policies are typically used with "outer" loops, while the last three 
 are typically used with inner loops. 
 
-* ``cuda_threadblock_x_exec<int T_x>`` - Maps a loop nest to the block with ``T_x`` threads in the x-component.
-* ``cuda_threadblock_y_exec<int T_y>`` - Maps a loop nest to the block with ``T_y`` threads in the y-component.
-* ``cuda_threadblock_z_exec<int T_z>`` - Maps a loop nest to the block with ``T_z`` threads in the z-component.
+* ``cuda_threadblock_x_exec<int X_STRIDE_SIZE>`` - Maps a loop nest to the block with ``X_STRIDE_SIZE`` threads in the x-component.
+* ``cuda_threadblock_y_exec<int Y_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Y_STRIDE_SIZE`` threads in the y-component.
+* ``cuda_threadblock_z_exec<int Z_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Z_STRIDE_SIZE`` threads in the z-component.
 
 
 * ``cuda_thread_x_exec`` - Maps a loop nest to threads in the x-component.
 * ``cuda_thread_y_exec`` - Maps a loop nest to threads in the y-component.
 * ``cuda_thread_z_exec`` - Maps a loop nest to threads in the z-component.
-
-
-
