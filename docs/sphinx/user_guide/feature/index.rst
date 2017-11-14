@@ -22,22 +22,38 @@ Indices and Segments
 Indices
 -------
 
-The recommended loop counter for RAJA is the ``RAJA::Index_type``; a 64-bit loop counter which makes it
-easy for the compiler to carryout optimizations. Basic usage may be found in ``examples-add-vectors.cpp``.
+Although RAJA may utilize any loop counter, the recommended loop counter is the ``RAJA::Index_type``. The ``RAJA::Index_type`` 
+is a 64-bit loop counter which makes it easy for the compiler to carryout optimizations.
 
---------
-Segments
---------
+-------------
+RAJA Segments
+-------------
 
-Segments correspond to the iteration space that will be traversed by a RAJA loop. The following is a catalog of containers
-included in RAJA.
+RAJA introduces a family of segments which serve as containers for iterations spaces. 
+The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRangeSegment``; the former is constructed 
+via :: 
 
-* ``RAJA::RangeSegment(start, stop)`` - Generates a contiguous sequence of numbers starting from start but not including stop
+    using RAJA::RangeSegment = RAJA::TypedRangeSegment<RAJA::Index_type>
 
-* ``RAJA::ListSegment`` - A container which holds ``RAJA::Index_types``
+Under the RAJA programming model, the purpose of these containers is to generate a contiguous sequence of numbers and more fundamentally,
+to serve as the 
 
-* ``RAJA::TypedListSegment<data_type>`` - A general purpose container which holds a specified data_type (ex. int, long int)
+   RAJA::forall<exec_policy>(TypedRangeSegment<T>(begin, end), [=] (RAJA::Index_type i)) {
+     //loop boody
+   }
 
-* ``RAJA::StaticIndexSet<>``  - Holds a collection of ``RAJA::ListSegments`` or ``RAJA::TypedListSegments``
+.. note:: * All segment objects are found in the namespace RAJA
+          * TypedRangeStrideSegment::iterator is a random access iterator
+          * TypedRangeStrideSegment allows for positive or negative strides, but a stride of zero is undefined
+          * For positive strides, begin() > end() implies size()==0
+          * For negative strides, begin() < end() implies size()==0
 
-Basic usage may be found in ``examples-add-vectors.cpp`` and ``example-gauss-sidel.cpp``
+A more general purpose container is the ``RAJA::ListSegment`` and typed ``TypedListSegment<T>; as before the former 
+is constructed via :: 
+
+   using RAJA::ListSegment = RAJA::TypedListSegment<RAJA::Index_type>
+
+
+Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold the various segments;
+this enables assigning different execution policies for traversing through the segments and the values of the segments.
+We refer the reader to the the following example ``example-gauss-sidel.cpp`` which illustrates the utility of the various segments.
