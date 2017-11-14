@@ -18,14 +18,13 @@
 View and Layout
 ===============
 
-In machine learning and matrix algebra, multi-dimensional arrays are the work-horse data structure. 
-
-In practice large arrays are typically allocated on the stack via ::
+In machine learning and matrix algebra, multi-dimensional arrays are the work-horse data structure.
+In practice large arrays are typically dynamically by ::
 
    double *A = new double [N1*N2]
 
 Where conceptually A points to a rank two tensor of size :math:`Nx \times Ny \times Nz`. In standard C/C++
-multidimensional indexing may be simplified through the use of macros::
+multidimensional indexing may be simplified through the use of macros ::
 
    #define A(x2, x1) A[x1 + N1 * x2]
 
@@ -35,13 +34,13 @@ In a more broader sense we are introducing a new **view** into the data's **layo
 RAJA View
 ---------
 To bypass the need for macros and simplify multi-dimensional indexing, RAJA introduces the ``RAJA::View``. 
-The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. The basic usage is as follows::
+The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. The basic usage is as follows ::
 
    RAJA::View<dataType T, RAJA::Layout<DIM>> Aview(A, N1, ..., Nn);
 
 The ``RAJA::View`` is templated on data type and layout (``RAJA::Layout``). The arguments for the instantization
 of the view are the pointer to the data and the length of each dimension (i.e. ``N1, N2, ..., Nn``). 
-Accessing the entries may then be done through the following accessor:: 
+Accessing the entries may then be done through the following accessor ::
 
    Aview(x2,x1)
 
