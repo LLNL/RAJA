@@ -18,6 +18,11 @@
 Indices and Segments
 ====================
 
+Loop counters and iteration spaces are fundamental to C/C++ loops. In this section we introduce RAJA specific index types 
+and iteration space which are designed to encapsulate common programming patterns.
+
+.. note:: * All segment objects and ``Index_types`` are found in the namespace RAJA
+
 -------
 Indices
 -------
@@ -42,8 +47,7 @@ to serve as the iteration space for loops::
      //loop boody
    }
 
-.. note:: * All segment objects are found in the namespace RAJA
-          * TypedRangeStrideSegment::iterator is a random access iterator
+.. note:: * TypedRangeStrideSegment::iterator is a random access iterator
           * TypedRangeStrideSegment allows for positive or negative strides, but a stride of zero is undefined
           * For positive strides, begin() > end() implies size()==0
           * For negative strides, begin() < end() implies size()==0
