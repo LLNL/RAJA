@@ -21,7 +21,7 @@ Indices and Segments
 Loop counters and iteration spaces are fundamental to C/C++ loops. In this section we introduce RAJA specific index types 
 and iteration space which are designed to encapsulate common programming patterns.
 
-.. note:: * All segment objects and ``Index_types`` are found in the namespace RAJA
+.. note:: * All segment objects and the ``Index_type`` are found in the namespace RAJA
 
 -------
 Indices
