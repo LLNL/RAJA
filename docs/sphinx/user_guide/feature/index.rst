@@ -36,7 +36,7 @@ via ::
     using RAJA::RangeSegment = RAJA::TypedRangeSegment<RAJA::Index_type>
 
 Under the RAJA programming model, the purpose of these containers is to generate a contiguous sequence of numbers and more fundamentally,
-to serve as the 
+to serve as the iteration space for loops::
 
    RAJA::forall<exec_policy>(TypedRangeSegment<T>(begin, end), [=] (RAJA::Index_type i)) {
      //loop boody
