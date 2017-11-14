@@ -23,7 +23,7 @@ In practice large arrays are typically dynamically by ::
 
    double *A = new double [N1*N2]
 
-Where conceptually A points to a rank two tensor of size :math:`Nx \times Ny \times Nz`. In standard C/C++
+Where conceptually A points to a rank two tensor of size :math:`N1 \times N2`. In standard C/C++
 multidimensional indexing may be simplified through the use of macros ::
 
    #define A(x2, x1) A[x1 + N1 * x2]
