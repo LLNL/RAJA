@@ -36,8 +36,8 @@ struct For : public internal::ForList,
 
   // TODO: add static_assert for valid policy in Pol
   const Pol pol;
-  For() : pol{} {}
-  For(const Pol &p) : pol{p} {}
+  RAJA_HOST_DEVICE constexpr For() : pol{} {}
+  RAJA_HOST_DEVICE constexpr For(const Pol &p) : pol{p} {}
 };
 
 
@@ -49,8 +49,8 @@ struct Collapse : public internal::ForList, public internal::CollapseBase {
   using as_space_list = camp::list<For<-1, ExecPolicy>>;
 
   const ExecPolicy pol;
-  Collapse() : pol{} {}
-  Collapse(ExecPolicy const &ep) : pol{ep} {}
+  RAJA_HOST_DEVICE constexpr Collapse() : pol{} {}
+  RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : pol{ep} {}
 };
 
 }
