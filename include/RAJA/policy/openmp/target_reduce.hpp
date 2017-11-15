@@ -110,7 +110,7 @@ struct Reduce_Data {
    *  allocates data on the host and device and initializes values to default
    */
   explicit Reduce_Data(T defaultValue, T identityValue, Offload_Info &info)
-      : value{defaultValue},
+      : value(identityValue),
         device{reinterpret_cast<T *>(
             omp_target_alloc(Teams * sizeof(T), info.deviceID))},
         host{new T[Teams]}
@@ -187,8 +187,9 @@ struct TargetReduce {
   TargetReduce() = delete;
   TargetReduce(const TargetReduce &) = default;
 
+
   explicit TargetReduce(T init_val)
-      : info(), val(init_val, Reducer::identity(), info)
+      : info(), val(Reducer::identity(),Reducer::identity(), info), initVal(init_val), finalVal(Reducer::identity())
   {
   }
 
@@ -215,7 +216,10 @@ struct TargetReduce {
       val.cleanup(info);
       info.isMapped = true;
     }
-    return val.value;
+    finalVal = Reducer::identity();
+    Reducer{}(finalVal,initVal);
+    Reducer{}(finalVal,val.value);
+    return finalVal;
   }
   //! alias for operator T()
   T get() { return operator T(); }
@@ -239,6 +243,8 @@ private:
   omp::Offload_Info info;
   //! storage for reduction data (host ptr, device ptr, value)
   omp::Reduce_Data<Teams, T> val;
+  T initVal;
+  T finalVal;
 };
 
 //! OpenMP Target Reduction Location entity -- generalize on # of teams,
@@ -249,8 +255,10 @@ struct TargetReduceLoc {
   TargetReduceLoc(const TargetReduceLoc &) = default;
   explicit TargetReduceLoc(T init_val, IndexType init_loc)
       : info(),
-        val(init_val, Reducer::identity, info),
-        loc(init_loc, IndexType(-1), info)
+        val(Reducer::identity, Reducer::identity, info),
+        loc(init_loc, IndexType(-1), info),
+        initVal(init_val),finalVal(Reducer::identity),
+        initLoc(init_loc),finalLoc(IndexType(-1))
   {
   }
 
@@ -279,7 +287,11 @@ struct TargetReduceLoc {
       loc.cleanup(info);
       info.isMapped = true;
     }
-    return val.value;
+    finalVal = Reducer::identity;
+    finalLoc = IndexType(-1);
+    Reducer{}(finalVal,finalLoc,initVal,initLoc);
+    Reducer{}(finalVal,finalLoc,val.value,loc.value);
+    return finalVal;
   }
   //! alias for operator T()
   T get() { return operator T(); }
@@ -289,7 +301,8 @@ struct TargetReduceLoc {
   IndexType getLoc()
   {
     if (!info.isMapped) get();
-    return loc.value;
+    //return loc.value;
+    return(finalLoc);
   }
 
   //! apply reduction
@@ -313,6 +326,10 @@ private:
   omp::Reduce_Data<Teams, T> val;
   //! storage for redcution data for location
   omp::Reduce_Data<Teams, IndexType> loc;
+  T initVal;
+  T finalVal;
+  IndexType initLoc;
+  IndexType finalLoc;
 };
 
 
