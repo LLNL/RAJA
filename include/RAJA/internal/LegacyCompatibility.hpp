@@ -180,6 +180,22 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
 }
 
 
+struct miner {
+  template <typename Result>
+  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
+      const Result& l,
+      const Result& r) const
+  {
+    return l < r ? l : r;
+  }
+};
+
+template <typename Result, typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result min(Args... args)
+{
+  return foldl(miner(), args...);
+}
+
 // template<typename Result, size_t N>
 // struct product_first_n;
 //

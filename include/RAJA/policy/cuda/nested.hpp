@@ -113,30 +113,150 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
 };
 
 
-struct cuda_collapse_exec{};
+namespace internal {
 
-template <typename FT0, typename FT1>
-struct Executor<Collapse<cuda_collapse_exec, FT0, FT1>> {
 
-  // TODO, check that FT0 and FT1 are cuda policies
 
-  template <typename WrappedBody>
-  void operator()(Collapse<cuda_collapse_exec, FT0, FT1> const &, WrappedBody const &wrap)
-  {
-    auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
-    auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
+/*!
+ * \brief Launcher that uses execution policies to map blockIdx and threadIdx to
+ * map
+ * to N-argument function
+ */
+template <typename BODY, typename... CARGS>
+__global__ void cudaLauncher(BODY loop_body, CARGS... cargs)
+{
+  // force reduction object copy constructors and destructors to run
+  auto body = loop_body;
 
-    auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
-    auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
+  // Invoke the wrapped body.
+  // The wrapper will take care of computing indices, and deciding if the
+  // given block+thread is in-bounds, and invoking the users loop body
+  body();
+}
 
-    // Skip a level
-    for (auto i0 = b0; i0 < e0; ++i0) {
-      wrap.data.template assign_index<FT0::index_val>(*i0);
-      for (auto i1 = b1; i1 < e1; ++i1) {
-        wrap.data.template assign_index<FT1::index_val>(*i1);
-        wrap();
+
+} // namespace internal
+
+
+template<bool Async = false>
+struct cuda_collapse_exec : public cuda_exec<0, Async>
+{};
+
+
+template<typename ... FOR>
+using CudaCollapse = Collapse<cuda_collapse_exec<false>, FOR ...>;
+
+template<typename ... FOR>
+using CudaCollapseAsync = Collapse<cuda_collapse_exec<true>, FOR ...>;
+
+
+// TODO, check that FT... are cuda policies
+template <bool Async, typename ... FT>
+struct Executor<Collapse<cuda_collapse_exec<Async>, FT ...>> {
+
+  using collapse_policy = Collapse<cuda_collapse_exec<Async>, FT...>;
+
+
+
+  template <typename BaseWrapper, typename ... LoopPol>
+  struct ForWrapper {
+    using data_type = typename BaseWrapper::data_type;
+    data_type data;
+    camp::tuple<LoopPol...> loop_policies;
+    using ft_tuple = camp::list<FT...>;
+    using index_sequence = typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
+
+    // Explicitly unwrap the data from the wrapper
+    ForWrapper(BaseWrapper const &w, LoopPol &&... pol) :
+      data(w.data),
+      loop_policies(camp::make_tuple(std::forward<LoopPol>(pol)...))
+    {}
+
+
+    /*
+     * Evaluates the loop index for the idx'th loop in the Collapse
+     */
+    template<size_t idx>
+    RAJA_DEVICE
+    RAJA::Index_type evalLoopIndex(){
+      // grab the loop policy
+      auto &policy = camp::get<idx>(loop_policies);
+
+      // grab the For type from our type list
+      using ft = typename camp::at_v<ft_tuple, idx>::type;
+
+      // Assign the For index value to the correct argument
+      int loop_value = policy();
+      data.template assign_index<ft::index_val>( loop_value );
+
+      return loop_value;
+    }
+
+    /*
+     * Computes all of the loop indices, and returns true if the current
+     * thread is valid (in-bounds)
+     *
+     * Since we use INT_MIN as a sentinel to mark out-of-bounds, the minimum
+     * loop index must be > INT_MIN for this to be a valid thread.
+     */
+    template<camp::idx_t ... idx_list>
+    RAJA_DEVICE
+    bool computeIndices(camp::idx_seq<idx_list...>){
+      // Compute each loop index, and return the minimum value
+      return INT_MIN < VarOps::min<RAJA::Index_type>(evalLoopIndex<idx_list>()...);
+    }
+
+
+    RAJA_DEVICE void operator()()
+    {
+      // Assign the indices, and compute minimum loop index
+      bool thread_valid =  computeIndices(index_sequence{});
+
+      // Invoke the loop body, only if we are on a valid index
+      // if any of the loops indices were out-of-bounds, then min_val will
+      // be INT_MIN
+      if(thread_valid){
+        camp::invoke(data.index_tuple, data.f);
       }
     }
+  };
+
+
+  template <typename WrappedBody>
+  void operator()(collapse_policy const &, WrappedBody const &wrap)
+  {
+    CudaDim dims;
+
+    /* As we create a cuda wrapper, we construct all of the cuda loop policies,
+     * like cuda_thread_x_exec, their associated segment from wrap.data.st
+     *
+     * This construction modifies the CudaDim to specify the correct number
+     * of threads and blocks for the kernel launch
+     *
+     * The wrapped body is the device function to be launched, and does all
+     * of the block/thread idx unpacking and assignment
+    */
+    auto cuda_wrap =
+        ForWrapper<WrappedBody, typename FT::policy_type::cuda_exec_policy...>(
+            wrap,
+
+            typename FT::policy_type::cuda_exec_policy (
+                    dims, camp::get<FT::index_val>(wrap.data.st)
+             ) ...);
+
+
+    // Only launch a kernel if we have at least one thing to do
+    if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
+
+      cudaStream_t stream = 0;
+
+      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(cuda_wrap);
+      RAJA::cuda::peekAtLastError();
+
+      RAJA::cuda::launch(stream);
+      if (!Async) RAJA::cuda::synchronize(stream);
+    }
+
   }
 };
 

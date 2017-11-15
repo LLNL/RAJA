@@ -41,6 +41,8 @@ using cuda_dim_t = uint3;
 using cuda_dim_t = dim3;
 #endif
 
+
+
 ///
 /////////////////////////////////////////////////////////////////////
 ///
@@ -164,6 +166,8 @@ struct CudaPolicy
                                                 RAJA::Pattern::forall,
                                                 RAJA::Launch::undefined,
                                                 RAJA::Platform::cuda> {
+
+  using cuda_exec_policy = POL;
 };
 
 //
@@ -210,6 +214,20 @@ struct CudaDim {
            num_threads.z);
   }
 };
+
+
+RAJA_INLINE
+constexpr int numBlocks(CudaDim const &dim)
+{
+  return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
+}
+
+RAJA_INLINE
+constexpr int numThreads(CudaDim const &dim)
+{
+  return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
+}
+
 
 template <typename POL, typename IDX>
 struct CudaIndexPair : public POL {

@@ -158,20 +158,20 @@ TEST(Nested, TileDynamic)
 }
 
 
-#if 0 // NOT WORKING YET
+#if 1 // NOT WORKING YET
 #if defined(RAJA_ENABLE_CUDA)
 CUDA_TEST(Nested, CudaCollapse)
 {
-  camp::idx_t length = 5;
   RAJA::nested::forall(
-      camp::make_tuple(RAJA::nested::Collapse<
-                         RAJA::nested::cuda_collapse_exec,
-                         RAJA::nested::For<0, RAJA::cuda_exec<32>>,
-                         RAJA::nested::For<1, RAJA::cuda_exec<32>>>{}),
-      camp::make_tuple(RAJA::RangeSegment(0, length),
-                       RAJA::RangeSegment(0, length)),
-      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j) {
-          printf("(%d, %d)\n", int(i), int(j));
+      camp::make_tuple(RAJA::nested::CudaCollapse<
+                         RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+                         RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>,
+                         RAJA::nested::For<2, RAJA::cuda_thread_y_exec>>{}),
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+          printf("(%d, %d, %d)\n", (int)i, (int)j, (int)k);
        });
 }
 #endif
