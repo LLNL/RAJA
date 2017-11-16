@@ -65,10 +65,27 @@ Mappying from the three-dimensional index space to the linear space and vice ver
    layout.toIndices(lin, i, j, k); // i,j,k = {2, 3, 1}
 
 
-
 The default striding has the first index (left-most) as the longest stride,
-and the last (right-most) index with stride-1.
-Layout supports projections, 0 or more dimensions may be of size zero.
+and the last (right-most) index with stride-1. Alternative layouts may be 
+accomplished by using the ``RAJA::make_permuted_layout`` function. Basic usage
+is as follows::
+
+   //Create a layout object with the default striding order
+   //The indices, left to right, have longest stride to stride-1
+   Layout<3> layout(5,7,11);
+
+   // The above is equivalent to:
+   Layout<3> default_layout = RAJA::make_permuted_layout({5,7,11}, PERM_IJK::value);
+      
+   // Create a layout object with permuted order
+   // In this case, J is stride-1, and K has the longest stride
+   Layout<3> perm_layout = RAJA::make_permuted_layout({5,7,11}, PERM_KIJ::value);
+ 
+   //Permutation of up to rank 5 are provided with PERM_I ... PERM_IJKLM
+
+
+
+Layout also supports projections, 0 or more dimensions may be of size zero.
 In this case, the linear index space is invariant for those dimensions,
 and toIndicies(...) will always produce a zero for that dimensions index.
 An example of a "projected" Layout::
