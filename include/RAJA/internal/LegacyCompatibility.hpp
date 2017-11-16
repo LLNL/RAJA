@@ -145,40 +145,25 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
                camp::forward<Rest>(rest)...);
 }
 
-struct adder {
-  template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
-      const Result& l,
-      const Result& r) const
-  {
-    return l + r;
-  }
-};
 
 // Convenience folds
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
 {
-  return foldl(adder(), args...);
+  return foldl(RAJA::operators::plus<Result>(), args...);
 }
-
-
-struct maxer {
-  template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
-      const Result& l,
-      const Result& r) const
-  {
-    return l > r ? l : r;
-  }
-};
 
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
 {
-  return foldl(maxer(), args...);
+  return foldl(RAJA::operators::maximum<Result>(), args...);
 }
 
+template <typename Result, typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result min(Args... args)
+{
+  return foldl(RAJA::operators::minimum<Result>(), args...);
+}
 
 // template<typename Result, size_t N>
 // struct product_first_n;

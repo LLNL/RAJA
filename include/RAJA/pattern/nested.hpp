@@ -110,7 +110,7 @@ struct TypedFor : public internal::TypedForBase,
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
   constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
-  const PolicyTuple &pt;
+  const PolicyTuple pt;
   SegmentTuple st;
   const typename std::remove_reference<Fn>::type f;
   using index_tuple_t = internal::index_tuple_from_policies_and_segments<
@@ -225,8 +225,10 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 
 
 
-template <int idx, int n_policies, typename Data, bool Own = false>
+template <int idx, int n_policies, typename Data>
 struct Wrapper {
+  constexpr static int cur_policy = idx;
+  constexpr static int num_policies = n_policies;
   using Next = Wrapper<idx + 1, n_policies, Data>;
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
@@ -241,8 +243,11 @@ struct Wrapper {
 };
 
 // Innermost, execute body
-template <int n_policies, typename Data, bool Own>
-struct Wrapper<n_policies, n_policies, Data, Own> {
+template <int n_policies, typename Data>
+struct Wrapper<n_policies, n_policies, Data> {
+  constexpr static int cur_policy = n_policies;
+  constexpr static int num_policies = n_policies;
+  using Next = Wrapper<n_policies, n_policies, Data>;
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
