@@ -27,7 +27,7 @@ and iteration space which are designed to encapsulate common programming pattern
 Indices
 -------
 
-Although RAJA may utilize any loop counter, the recommended loop counter is the ``RAJA::Index_type``. The ``RAJA::Index_type`` 
+Although RAJA may utilize any loop counter type, the recommended loop counter is the ``RAJA::Index_type``. The ``RAJA::Index_type`` 
 is a 64-bit loop counter which makes it easy for the compiler to carryout optimizations.
 
 -------------
@@ -35,10 +35,13 @@ RAJA Segments
 -------------
 
 RAJA introduces a family of segments which serve as containers for iterations spaces. 
-The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRangeSegment``; the former is constructed 
-via :: 
-
-    using RAJA::RangeSegment = RAJA::TypedRangeSegment<RAJA::Index_type>
+The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRangeSegment``; the former is constructed is 
+an alias for a ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Basic usage is as follows ::
+   
+   RAJA::TypedRangeSegment<T>(start, stop)  //  Generates a contiguous sequence of numbers by the [start, stop) interval specified 
+   //or                                                           
+   RAJA::TypedRangeSegment loopBounds(start, stop) 
+    
 
 Under the RAJA programming model, the purpose of these containers is to generate a contiguous sequence of numbers and more fundamentally,
 to serve as the iteration space for loops::
@@ -52,12 +55,13 @@ to serve as the iteration space for loops::
           * For positive strides, begin() > end() implies size()==0
           * For negative strides, begin() < end() implies size()==0
 
-A more general purpose container is the ``RAJA::ListSegment`` and typed ``TypedListSegment<T>; as before the former 
-is constructed via :: 
+A more general purpose container is the ``RAJA::ListSegment`` and typed ``RAJA::TypedListSegment<T>``; as before the ``RAJA::ListSegment`` is an alias for a 
+``RAJA::TypedRangeSegment<RAJA::Index_type>``. Both of these containers store non-contiguous indices. Basic usage of the ``RAJA::ListSegment``::
+    
+    RAJA::ListSegment<T>(T *Aptr, Alen)  //*Aptr points to an array of values to traverse and Alen is number of elements.
+    //or
+    RAJA::ListSegment<T>(T *Aptr, Alen) 
 
-   using RAJA::ListSegment = RAJA::TypedListSegment<RAJA::Index_type>
 
-
-Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold the various segments;
-this enables assigning different execution policies for traversing through the segments and the values of the segments.
-We refer the reader to the the following example ``example-gauss-sidel.cpp`` which illustrates the utility of the various segments.
+Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments. The utility of the ``RAJA::StaticIndexSet<T>`` is demonstrated in the Red-Black Gauss-Sidel algorithm wherein parallism may be exposed by decomposing the algorithm into two sweeps.
+We refer the reader to the following example ``example-gauss-sidel.cpp`` for further detail. 
