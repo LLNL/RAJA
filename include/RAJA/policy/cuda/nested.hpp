@@ -113,6 +113,43 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
 };
 
 
+
+
+template <template <camp::idx_t, typename...> class ForTypeIn,
+          camp::idx_t Index,
+          typename... Rest>
+struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
+  using ForType = ForTypeIn<Index, cuda_loop_exec, Rest...>;
+  static_assert(std::is_base_of<internal::ForBase, ForType>::value,
+                "Only For-based policies should get here");
+
+
+  template <typename BaseWrapper>
+  struct ForWrapper {
+    // Explicitly unwrap the data from the wrapper
+    RAJA_DEVICE ForWrapper(BaseWrapper const &w) : data(w.data) {}
+    using data_type = typename BaseWrapper::data_type;
+    data_type &data;
+    template <typename InIndexType>
+    RAJA_DEVICE void operator()(InIndexType i)
+    {
+      data.template assign_index<ForType::index_val>(i);
+      camp::invoke(data.index_tuple, data.f);
+    }
+  };
+  template <typename WrappedBody>
+  void RAJA_DEVICE operator()(ForType const &fp, WrappedBody const &wrap)
+  {
+
+    using ::RAJA::policy::cuda::forall_impl;
+    forall_impl(fp.pol,
+                camp::get<ForType::index_val>(wrap.data.st),
+                ForWrapper<WrappedBody>{wrap});
+  }
+};
+
+
+
 namespace internal {
 
 
@@ -122,8 +159,8 @@ namespace internal {
  * map
  * to N-argument function
  */
-template <typename BODY, typename... CARGS>
-__global__ void cudaLauncher(BODY loop_body, CARGS... cargs)
+template <typename BODY>
+__global__ void cudaLauncher(BODY loop_body)
 {
   // force reduction object copy constructors and destructors to run
   auto body = loop_body;
@@ -133,6 +170,43 @@ __global__ void cudaLauncher(BODY loop_body, CARGS... cargs)
   // given block+thread is in-bounds, and invoking the users loop body
   body();
 }
+
+
+template <int idx, int n_policies, typename Data>
+struct CudaWrapper {
+  constexpr static int cur_policy = idx;
+  constexpr static int num_policies = n_policies;
+  using Next = CudaWrapper<idx + 1, n_policies, Data>;
+  using data_type = typename std::remove_reference<Data>::type;
+  Data &data;
+
+  explicit RAJA_DEVICE CudaWrapper(Data &d) : data{d} {}
+
+  void RAJA_DEVICE operator()() const
+  {
+    auto const &pol = camp::get<idx>(data.pt);
+    Executor<internal::remove_all_t<decltype(pol)>> e{};
+    Next next_wrapper{data};
+    e(pol, next_wrapper);
+  }
+};
+
+// Innermost, execute body
+template <int n_policies, typename Data>
+struct CudaWrapper<n_policies, n_policies, Data> {
+  constexpr static int cur_policy = n_policies;
+  constexpr static int num_policies = n_policies;
+  using Next = CudaWrapper<n_policies, n_policies, Data>;
+  using data_type = typename std::remove_reference<Data>::type;
+  Data &data;
+
+  explicit RAJA_DEVICE CudaWrapper(Data &d) : data{d} {}
+
+  void RAJA_DEVICE operator()() const
+  {
+    camp::invoke(data.index_tuple, data.f);
+  }
+};
 
 
 } // namespace internal
@@ -151,25 +225,32 @@ using CudaCollapseAsync = Collapse<cuda_collapse_exec<true>, FOR ...>;
 
 
 // TODO, check that FT... are cuda policies
-template <bool Async, typename ... FT>
-struct Executor<Collapse<cuda_collapse_exec<Async>, FT ...>> {
+template <bool Async, typename ... FOR_TYPES>
+struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
 
-  using collapse_policy = Collapse<cuda_collapse_exec<Async>, FT...>;
+  using collapse_policy = Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>;
 
 
 
   template <typename BaseWrapper, typename ... LoopPol>
   struct ForWrapper {
+
     using data_type = typename BaseWrapper::data_type;
     data_type data;
+
+    using CuWrap = internal::CudaWrapper<BaseWrapper::cur_policy,
+                                         BaseWrapper::num_policies,
+                                         typename BaseWrapper::data_type>;
+
     camp::tuple<LoopPol...> loop_policies;
-    using ft_tuple = camp::list<FT...>;
-    using index_sequence = typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
+
+    using ft_tuple = camp::list<FOR_TYPES...>;
+
 
     // Explicitly unwrap the data from the wrapper
-    ForWrapper(BaseWrapper const &w, LoopPol &&... pol) :
+    ForWrapper(BaseWrapper const &w, LoopPol const &... pol) :
       data(w.data),
-      loop_policies(camp::make_tuple(std::forward<LoopPol>(pol)...))
+      loop_policies(camp::make_tuple(pol...))
     {}
 
 
@@ -181,6 +262,8 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FT ...>> {
     RAJA::Index_type evalLoopIndex(){
       // grab the loop policy
       auto &policy = camp::get<idx>(loop_policies);
+
+      //printf("policy<%d>.distance=%d  ", (int)idx, (int)policy.distance);
 
       // grab the For type from our type list
       using ft = typename camp::at_v<ft_tuple, idx>::type;
@@ -210,13 +293,16 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FT ...>> {
     RAJA_DEVICE void operator()()
     {
       // Assign the indices, and compute minimum loop index
-      bool thread_valid =  computeIndices(index_sequence{});
+      using index_sequence = typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
+      bool in_bounds =  computeIndices(index_sequence{});
 
       // Invoke the loop body, only if we are on a valid index
       // if any of the loops indices were out-of-bounds, then min_val will
       // be INT_MIN
-      if(thread_valid){
-        camp::invoke(data.index_tuple, data.f);
+      if(in_bounds){
+        //camp::invoke(data.index_tuple, data.f);
+        CuWrap wrap(data);
+        wrap();
       }
     }
   };
@@ -237,12 +323,13 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FT ...>> {
      * of the block/thread idx unpacking and assignment
     */
     auto cuda_wrap =
-        ForWrapper<WrappedBody, typename FT::policy_type::cuda_exec_policy...>(
+        ForWrapper<WrappedBody, typename FOR_TYPES::policy_type::cuda_exec_policy...>(
             wrap,
 
-            typename FT::policy_type::cuda_exec_policy (
-                    dims, camp::get<FT::index_val>(wrap.data.st)
-             ) ...);
+            typename FOR_TYPES::policy_type::cuda_exec_policy (
+                    dims, camp::get<FOR_TYPES::index_val>(wrap.data.st)
+             ) ...
+        );
 
 
     // Only launch a kernel if we have at least one thing to do

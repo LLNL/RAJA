@@ -127,6 +127,18 @@ struct cuda_exec
                                                 RAJA::Platform::cuda> {
 };
 
+
+/*
+ * Policy for on-device loops, akin to RAJA::loop_exec
+ */
+struct cuda_loop_exec
+    : public RAJA::
+              make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                    RAJA::Pattern::forall,
+                                                    RAJA::Launch::sync,
+                                                    RAJA::Platform::cuda> {
+    };
+
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
 //
@@ -187,6 +199,7 @@ static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
 } // end namespace policy
 
 using policy::cuda::cuda_exec;
+using policy::cuda::cuda_loop_exec;
 using policy::cuda::cuda_reduce;
 using policy::cuda::cuda_reduce_async;
 using policy::cuda::cuda_reduce_atomic;

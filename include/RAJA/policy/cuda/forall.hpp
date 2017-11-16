@@ -193,6 +193,32 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
 
 //
+////////////////////////////////////////////////////////////////////////
+//
+// Function templates for CUDA execution over iterables for within
+// and device kernel.  Called from RAJA::nested::*
+//
+////////////////////////////////////////////////////////////////////////
+//
+
+template <typename Iterable, typename LoopBody>
+RAJA_INLINE RAJA_DEVICE void forall_impl(cuda_loop_exec,
+                        Iterable&& iter,
+                        LoopBody&& loop_body)
+{
+  // TODO: we need a portable std::begin, std::end, and std::distance
+  auto begin = iter.begin(); //std::begin(iter);
+  auto end   = iter.end(); //std::end(iter);
+
+  auto len = end-begin; //std::distance(begin, end);
+
+  for (decltype(len) i = 0; i < len; ++i) {
+    loop_body(*(begin + i));
+  }
+}
+
+
+//
 //////////////////////////////////////////////////////////////////////
 //
 // The following function templates iterate over index set segments
