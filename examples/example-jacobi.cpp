@@ -61,7 +61,6 @@
   ----[RAJA Concepts]---------------
   1. ForallN loop
   2. RAJA Reduction
-  3. RAJA::omp_collapse_nowait_exec
 
   ----[Kernel Variants and RAJA Features]---
   a. C++ style nested for loops
@@ -86,8 +85,8 @@
   CUDA_BLOCK_SIZE   - Number of threads per threads block
 */
 #if defined(RAJA_ENABLE_CUDA)
-const int CUDA_BLOCK_DIM_X = 16;
-const int CUDA_BLOCK_DIM_Y = 16;
+const int CUDA_BLOCK_SIZE_X = 16;
+const int CUDA_BLOCK_SIZE_Y = 16;
 const int CUDA_BLOCK_SIZE = 256;
 #endif
 
@@ -202,8 +201,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::RangeSegment gridRange(0, NN);
   RAJA::RangeSegment jacobiRange(1, (N + 1));
 
-  using jacobiSeqNestedPolicy =
-      RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
+  using jacobiSeqNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::seq_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
 
   printf("RAJA: Sequential Policy - Nested ForallN \n");
   resI2 = 1;
@@ -218,12 +218,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    *  for the residual. Since the loop is run sequentially, this is 
    *  not strictly necessary. It is done here for consistency and 
    *  comparison with other RAJA variants in this example.
-   */
+   */  
   while (resI2 > tol * tol) {
 
-    RAJA::forallN<jacobiSeqNestedPolicy>(
-      jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {      
-
+    RAJA::nested::forall(jacobiSeqNestedPolicy{}, camp::make_tuple(jacobiRange,jacobiRange),
+                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
+                         
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
@@ -276,15 +276,16 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    *  Note that OpenMP RAJA ReduceSum object performs the reduction
    *  operation for the residual in a thread-safe manner.
    */
-  using jacobiompNestedPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
-                                      RAJA::omp_collapse_nowait_exec>, 
-                       RAJA::OMP_Parallel<>>;
+  
+  using jacobiOmpNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::omp_parallel_for_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
 
   while (resI2 > tol * tol) {
+    
+    RAJA::nested::forall(jacobiOmpNestedPolicy{}, camp::make_tuple(jacobiRange,jacobiRange),
+                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
 
-    RAJA::forallN<jacobiompNestedPolicy>( jacobiRange, jacobiRange, 
-      [=](RAJA::Index_type m, RAJA::Index_type n) {
                 
       double x = gridx.o + m * gridx.h;
       double y = gridx.o + n * gridx.h;
@@ -334,9 +335,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
-  using jacobiCUDANestedPolicy = RAJA::NestedPolicy<RAJA::    
-    ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
-    RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_DIM_Y>>>;    
+  using Pol = RAJA::nested::Policy<
+    RAJA::nested::CudaCollapse<
+    RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X> >,
+    RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y> > > >;
+
 
   resI2 = 1;
   iteration = 0;
@@ -348,9 +351,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     /*
       Jacobi Iteration
     */
-    RAJA::forallN<jacobiCUDANestedPolicy>(
-        jacobiRange, jacobiRange, [=] __device__(RAJA::Index_type m, RAJA::Index_type n) {
-        
+    RAJA::nested::forall(Pol{},
+                         //jacobiOmpNestedPolicy{},
+                         camp::make_tuple(jacobiRange,jacobiRange),
+                         [=] __host__ __device__  (RAJA::Index_type m, RAJA::Index_type n) {
+                           
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
@@ -408,13 +413,15 @@ double solution(double x, double y)
 void computeErr(double *I, grid_s grid)
 {
 
-  RAJA::RangeSegment fdBounds(0, grid.n);
+  RAJA::RangeSegment gridRange(0, grid.n);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
-  using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
+  using jacobiSeqNestedPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::seq_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
+
+  RAJA::nested::forall(jacobiSeqNestedPolicy{}, camp::make_tuple(gridRange,gridRange),
+                       [=] (RAJA::Index_type ty, RAJA::Index_type tx ) {
 
       int id = tx + grid.n * ty;
       double x = grid.o + tx * grid.h;
