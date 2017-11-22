@@ -240,28 +240,38 @@ struct CudaThreadBlock {
 
   __device__ inline int operator()(void)
   {
-    int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
-    if (idx >= distance) {
-      idx = INT_MIN;
-    }
+    //int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
+    int idx   = 0 + view(blockIdx); //modified to return block Id
+    //if (idx >= distance) { //Don't need this
+    //idx = INT_MIN;
+    //}
     return idx;
   }
 
   void inline setDims(CudaDim &dims)
   {
+
+
+#if 0
     int n = distance;
     if (n < threads_per_block) {
       view(dims.num_threads) = n;
       view(dims.num_blocks) = 1;
     } else {
-      view(dims.num_threads) = threads_per_block;
-
+      view(dims.num_threads) = threads_per_block;      
       int blocks = n / threads_per_block;
       if (n % threads_per_block) {
         ++blocks;
       }
       view(dims.num_blocks) = blocks;
     }
+#endif    
+
+    view(dims.num_threads) = threads_per_block;
+    view(dims.num_blocks) = distance;
+
+
+
   }
 };
 

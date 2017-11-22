@@ -191,7 +191,6 @@ struct ForallN_Executor<device,
 
       bool Async = true;
       cudaStream_t stream = 0;
-
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
           RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
                                  std::move(loop_body)),
@@ -216,18 +215,18 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   template <typename BODY>
   RAJA_INLINE void operator()(BODY loop_body) const
   {
+
     CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-
+      
       bool Async = true;
       cudaStream_t stream = 0;
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
-                                 std::move(loop_body)),
-          c0);
+      RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
+                                       std::move(loop_body)),c0);          
       RAJA::cuda::peekAtLastError();
 
       RAJA::cuda::launch(stream);

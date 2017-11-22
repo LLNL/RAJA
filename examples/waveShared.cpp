@@ -89,7 +89,7 @@ struct grid_s {
 
 #if defined(RAJA_ENABLE_CUDA)
 //We have the option of 1 or 0
-#define CPU 1
+#define CPU 0
 #else
 //should always be 0
 #define CPU 0 
@@ -101,22 +101,28 @@ struct grid_s {
 
 struct serialLoop{};
 //Host only
-template <typename Func>
-void innerLoop(const serialLoop &, int Nx, int Ny, Func &&innerLoop){
-  
+template <typename policyY, typename policyX, typename Func>
+void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
+
+#if 0
   for(int ty=0; ty<Ny; ++ty){
     for(int tx=0; tx<Nx; ++tx){
       innerLoop(ty,tx);
     }
   }
+#endif
 
+  //Some abilities are transferred.. 
+  RAJA::forallN<
+  RAJA::NestedPolicy<RAJA::ExecList<policyY, policyX>>>(RAJA::RangeSegment(0,Ny), RAJA::RangeSegment(0,Nx), std::forward<Func>(innerLoop));
 
 }
 
 struct cudaLoop{};
 //Device only
-template <typename Func>
-__device__ void innerLoop(const cudaLoop &, int Nx, int Ny, Func &&innerLoop){
+//template <typename Func>
+template <typename policyY, typename policyX, typename Func>
+__device__ void innerLoop(const cudaLoop &, int Ny, int Nx, Func &&innerLoop){
 
   innerLoop(threadIdx.y,threadIdx.x);
 }
@@ -165,7 +171,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /*
     Multiplier for spatial refinement
    */
-  int factor = 8;
+  int factor = 900;
 
   /*
     Discretization of the domain.
@@ -175,13 +181,12 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   grid.ox = -1;
   grid.dx = 0.1250 / factor;
   grid.nx = 16 * factor;
-  RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::RangeSegment outerBounds(0,factor); //Number of blocks
 
   /*
     Solution is propagated until time T
   */
-  double T = 0.82;
+  double T = 1.0;
 
   int entries = grid.nx * grid.nx;
   double *P1 = memoryManager::allocate<double>(entries);
@@ -199,11 +204,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   dt = T / nt;
   ct = (cc * dt * dt) / (grid.dx * grid.dx);
 
+  nt = 100; //run for 100 steps
+
   //--------
   //With RAJA shared memory
   //--------
   std::cout<<"\n \n RAJA Shared Memory Version"<<std::endl;
-
+  std::cout<<"\n \n No of time steps: "<<nt<<std::endl;
   //CPU - 
 
 #if CPU
@@ -211,6 +218,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;  
 #else
 
+  std::cout<<"GPU MODE!"<<std::endl;
   using abstractPolicy
     = RAJA::NestedPolicy<RAJA::ExecList
     <RAJA::cuda_threadblock_y_exec<By>,
@@ -219,9 +227,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   //Here we define the number of "blocks" or the outer loop
   RAJA::RangeSegment outerRange(0,factor);
-    
+
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
+
+  cudaEvent_t start, stop;
+  cudaEventCreate(&start);
+  cudaEventCreate(&stop);
+
+  cudaEventRecord(start);    
   for (int k = 0; k < nt; ++k) {
     waveShared<double, abstractPolicy>(P1, P2, outerRange, ct, grid.nx);
 
@@ -232,11 +246,18 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     P1 = Temp;
   }
 
+  cudaEventRecord(stop);
+
+  cudaEventSynchronize(stop);
+  float milliseconds = 0;
+  cudaEventElapsedTime(&milliseconds, start, stop);
+
 #if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
   computeErr(P2, time, grid);
   printf("Evolved solution to time = %f \n", time);
+  printf("Time to solution: %f \n", 1e-3*milliseconds);
 
 
   memoryManager::deallocate(P1);
@@ -316,11 +337,15 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 #if CPU
   //RAJA will give outer Id 
       outerBounds, outerBounds, [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+        using innerPolicyY = RAJA::loop_exec;
+        using innerPolicyX = RAJA::loop_exec;
         using innerPolicy = serialLoop;
-        using syncPolicy = seqBlockSync;
+        using syncPolicy = seqBlockSync;        
 #else
    //RAJA has been hacked to give the block Id
      outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+        using innerPolicyY = void;
+        using innerPolicyX = void;
        using innerPolicy = cudaLoop;
        using syncPolicy  = cudaBlockSync;
 #endif
@@ -333,7 +358,7 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 
         RAJA_shared double Lu[By+2*sr][By + 2*sr];       
         
-        innerLoop(innerPolicy{}, Bx, By,  [&] (int ly, int lx) {
+        innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
             
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
@@ -364,7 +389,7 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
         RAJA_Sync(syncPolicy{});
         
 
-        innerLoop(innerPolicy{}, Bx, By,  [&] (int ly, int lx) {
+        innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
 
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
