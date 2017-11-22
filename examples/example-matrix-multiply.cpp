@@ -206,9 +206,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /*
     Nested forall loops may be collapsed into a single forallN loop
   */
-  RAJA::forallN<RAJA::NestedPolicy<
-    RAJA::ExecList<RAJA::seq_exec,RAJA::seq_exec>>>(    
-      matBounds, matBounds, [=](RAJA::Index_type row, RAJA::Index_type col) {
+  RAJA::nested::forall(camp::make_tuple(RAJA::nested::For<1, RAJA::seq_exec>{},
+                                        RAJA::nested::For<0, RAJA::seq_exec>{}),
+                       camp::make_tuple(matBounds,matBounds),
+                       [=](RAJA::Index_type row, RAJA::Index_type col) {
       
         double dot = 0.0;
         for (int k = 0; k < N; ++k) {
@@ -226,10 +227,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     Here the outer loop is excuted in parallel while the inner loop
     is executed sequentially
   */
-  RAJA::forallN<RAJA::NestedPolicy< 
-    RAJA::ExecList<RAJA::omp_parallel_for_exec, RAJA::seq_exec>>>(
-      matBounds, matBounds, 
-      [=](RAJA::Index_type row, RAJA::Index_type col) {
+  RAJA::nested::forall(camp::make_tuple(RAJA::nested::For<1, RAJA::omp_parallel_for_exec>{},
+                                        RAJA::nested::For<0, RAJA::seq_exec>{}),
+                       camp::make_tuple(matBounds,matBounds),
+                       [=](RAJA::Index_type row, RAJA::Index_type col) {
       
       double dot = 0.0;
       for (int k = 0; k < N; ++k) {
@@ -248,11 +249,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     This example illustrates creating two-dimensional thread blocks as described
     under the CUDA nomenclature
   */
-  RAJA::forallN<RAJA::NestedPolicy<RAJA::
-    ExecList<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_X>,    
-      RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_Y>>>>(   
-        matBounds, matBounds, [=] __device__(RAJA::Index_type row, RAJA::Index_type col) {
-        
+ 
+  using Pol = RAJA::nested::Policy<
+              RAJA::nested::CudaCollapse<
+              RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y> >,
+              RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X> > > >;
+
+  RAJA::nested::forall(Pol{},
+                       camp::make_tuple(matBounds,matBounds),
+                       [=] __device__ (RAJA::Index_type row, RAJA::Index_type col) {        
           double dot = 0.0;
           for (int k = 0; k < N; ++k) {
             dot += Aview(row, k) * Bview(k, col);
