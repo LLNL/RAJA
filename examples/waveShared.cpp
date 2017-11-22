@@ -87,8 +87,14 @@ struct grid_s {
 #endif
 
 
-//Run on the CPU?
+#if defined(RAJA_ENABLE_CUDA)
+//We have the option of 1 or 0
+#define CPU 1
+#else
+//should always be 0
 #define CPU 0 
+#endif
+
 
 
 
@@ -201,20 +207,19 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //CPU - 
 
 #if CPU
-  RAJA::RangeSegment outerRange(0,factor);
-
   using abstractPolicy =
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;  
 #else
-
-  RAJA::RangeSegment outerRange(0, grid.nx);
 
   using abstractPolicy
     = RAJA::NestedPolicy<RAJA::ExecList
     <RAJA::cuda_threadblock_y_exec<By>,
      RAJA::cuda_threadblock_x_exec<Bx>>>;
 #endif
-
+  
+  //Here we define the number of "blocks" or the outer loop
+  RAJA::RangeSegment outerRange(0,factor);
+    
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
   for (int k = 0; k < nt; ++k) {
@@ -307,14 +312,17 @@ template <typename T, typename fdNestedPolicy>
 void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 {
 
+  RAJA::forallN<fdNestedPolicy>(
 #if CPU
   //RAJA will give outer Id 
- RAJA::forallN<fdNestedPolicy>(
       outerBounds, outerBounds, [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+        using innerPolicy = serialLoop;
+        using syncPolicy = seqBlockSync;
 #else
    //RAJA has been hacked to give the block Id
-  RAJA::forallN<fdNestedPolicy>(
      outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+       using innerPolicy = cudaLoop;
+       using syncPolicy  = cudaBlockSync;
 #endif
       
         /*
@@ -325,13 +333,8 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 
         RAJA_shared double Lu[By+2*sr][By + 2*sr];       
         
-        
-#if CPU
-        innerLoop(serialLoop{}, Bx, By,  [&] (int ly, int lx) {
-#else
-        innerLoop(cudaLoop{}, Bx, By,  [&] __device__ (int ly, int lx) {
-#endif
-
+        innerLoop(innerPolicy{}, Bx, By,  [&] (int ly, int lx) {
+            
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
             const int ty = ly + By * outerIdy;
@@ -358,19 +361,11 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 
           });
 
-#if CPU
-        RAJA_Sync(seqBlockSync{});
-#else
-        RAJA_Sync(cudaBlockSync{});
-#endif        
+        RAJA_Sync(syncPolicy{});
         
 
+        innerLoop(innerPolicy{}, Bx, By,  [&] (int ly, int lx) {
 
-#if CPU
-        innerLoop(serialLoop{}, Bx, By,  [&] (int ly, int lx) {
-#else
-        innerLoop(cudaLoop{}, Bx, By,  [&] __device__ (int ly, int lx) {
-#endif            
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
             const int ty = ly + By * outerIdy;
