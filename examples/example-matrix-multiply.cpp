@@ -33,7 +33,7 @@
   illustrates how to construct RAJA versions of the same loops
   using different execution policies. Furthermore, as nesting
   RAJA forall loops are not currently supported with CUDA,
-  this example makes utility of RAJA's forallN loop which
+  this example makes utility of RAJA's nested::forall loop which
   may be used with any policy.
 
   In this example two matrices of dimension N x N are allocated and multiplied.
@@ -44,11 +44,10 @@
   -----[RAJA Concepts]-------------
   1. Nesting forall loops (Not currently supported in CUDA)
 
-  2. ForallN loop (Supported with all policies)
-
-  RAJA::forallN<
-  RAJA::NestedPolicy<exec_policy1, .... , exec_policyN> >(
-  iter_space I1,..., iter_space IN, [=](index_type i1,..., index_type iN) {
+  2. nested::forall loop (Supported with all policies)
+  
+  RAJA::nested::forall<camp::make_tuple(exec_policy1, ...., exec_policyN),
+  camp::make_tuple(iter_space I1, ..., iter_space IN), [=] (index_type i1,..., index_type iN) {
 
          //body
 
@@ -56,7 +55,7 @@
 
   [=] By-copy capture
   [&] By-reference capture (for non-unified memory targets)
-  RAJA::NestedPolicy - Stores a list of RAJA execution policies
+  camp::make_tuple   - Stores a list of RAJA execution policies/iteration spaces
   exec_policy        - Specifies how the traversal occurs
   iter_space         - Iteration space for RAJA loop (any random access
   container is expected)
@@ -68,15 +67,14 @@
   b. RAJA style outer loop with a sequential policy
      and a C++ style inner for loop
   c. RAJA style nested for loops with sequential policies
-  d. RAJA forallN loop with sequential policies
-     i. This kernel introduces RAJA::ExecList
-  e. RAJA forallN loop with OpenMP parallism on the outer loop
-  f. RAJA forallN loop executed on the CUDA API
+  d. RAJA nested::forall loop with sequential policies
+  e. RAJA nested::forall loop with OpenMP parallism on the outer loop
+  f. RAJA nested::forall loop executed on the CUDA API
      i.  This kernel illustrates constructing two-dimensional thread blocks
          for use of the CUDA execution policy.
-     ii. The current implementation of forallN using the CUDA
+     ii. The current implementation of nested::forall using the CUDA
          variant is performed asynchronously and thus a barrier
-         (cudaDeviceSynchronize) is placed after calling forallN.
+         (cudaDeviceSynchronize) is placed after calling nested::forall.
 */
 
 /*
@@ -180,7 +178,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   });
   checkSolution<double>(Cview, N);
 
-  printf("RAJA: Nested Forall - Sequential Policies\n");
+  printf("RAJA: nesting forall - Sequential Policies\n");
   /*
     Forall loops may be nested under sequential and omp policies
   */
@@ -202,9 +200,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   checkSolution<double>(Cview, N);
 
 
-  printf("RAJA: ForallN - Sequential Policies\n");
+  printf("RAJA: nested::forall - Sequential Policies\n");
   /*
-    Nested forall loops may be collapsed into a single forallN loop
+    Nested forall loops may be collapsed into a single nested::forall loop
   */
   RAJA::nested::forall(camp::make_tuple(RAJA::nested::For<1, RAJA::seq_exec>{},
                                         RAJA::nested::For<0, RAJA::seq_exec>{}),
@@ -222,7 +220,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
 
 #if defined(RAJA_ENABLE_OPENMP)
-  printf("RAJA: ForallN - OpenMP/Sequential Policies\n");
+  printf("RAJA: nested::forall - OpenMP/Sequential Policies\n");
   /*
     Here the outer loop is excuted in parallel while the inner loop
     is executed sequentially
@@ -244,7 +242,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  printf("RAJA: ForallN - CUDA Policies\n");
+  printf("RAJA: nested::forall - CUDA Policies\n");
   /*
     This example illustrates creating two-dimensional thread blocks as described
     under the CUDA nomenclature
