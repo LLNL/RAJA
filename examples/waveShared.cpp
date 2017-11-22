@@ -76,30 +76,58 @@ struct grid_s {
 };
 
 
-#define CPU 0
-
-#if CPU
-
-#define RAJA_Par_Inner(ly, ends)  _Pragma("omp parallel for") \
-  for(ly = 0 ; ly < ends; ++ly)
-
-#define RAJA_Inner(lx, ends) for(lx = 0 ; lx < ends; ++lx)
-
-#define RAJA_shared
-
-#define RAJA_sync
-
-#else  //Must be CUDA
-
-#define RAJA_Par_Inner(ly, ends) ly = threadIdx.y; 
-
-#define RAJA_Inner(lx, ends) lx = threadIdx.x;
+#if defined(__CUDA_ARCH__)
 
 #define RAJA_shared __shared__
 
-#define RAJA_sync __syncthreads()
+#else
+
+#define RAJA_shared
 
 #endif
+
+
+//Run on the CPU?
+#define CPU 0 
+
+
+
+
+struct serialLoop{};
+//Host only
+template <typename Func>
+void innerLoop(const serialLoop &, int Nx, int Ny, Func &&innerLoop){
+  
+  for(int ty=0; ty<Ny; ++ty){
+    for(int tx=0; tx<Nx; ++tx){
+      innerLoop(ty,tx);
+    }
+  }
+
+
+}
+
+struct cudaLoop{};
+//Device only
+template <typename Func>
+__device__ void innerLoop(const cudaLoop &, int Nx, int Ny, Func &&innerLoop){
+
+  innerLoop(threadIdx.y,threadIdx.x);
+}
+
+
+struct cudaBlockSync{};
+__device__ void RAJA_Sync(const cudaBlockSync&){
+  __syncthreads();
+}
+
+struct seqBlockSync{};
+void RAJA_Sync(const seqBlockSync&){
+}
+
+
+
+
 
 
 /*
@@ -109,10 +137,6 @@ struct grid_s {
   setIC      - Sets the intial value at two time levels (t0,t1)
   computeErr - Displays the maximum error in the approximation
  */
-
-template <typename T, typename fdNestedPolicy>
-void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx);
-
 
 template <typename T, typename fdNestedPolicy>
 void waveShared(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx);
@@ -165,44 +189,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
   double dt, nt, time, ct;
   dt = 0.01 * (grid.dx / sqrt(cc));
-  nt = ceil(T / dt);
+  nt = ceil(T / dt);  
   dt = T / nt;
   ct = (cc * dt * dt) / (grid.dx * grid.dx);
-
-  /*
-    Predefined Nested Policies
-  */
-
-  // Sequential
-  // OpenMP
-  // using fdPolicy =
-  // RAJA::NestedPolicy<RAJA::ExecList
-  //<RAJA::omp_collapse_nowait_exec,
-  // RAJA::omp_collapse_nowait_exec>,
-  // RAJA::OMP_Parallel<>>;
-
-  std::cout<<"\n \n Reference Solution"<<std::endl;
-  using fdPolicy
-     = RAJA::NestedPolicy<RAJA::ExecList
-     <RAJA::cuda_threadblock_y_exec<By>,
-     RAJA::cuda_threadblock_x_exec<Bx>>>;
-
-  time = 0;
-  setIC(P1, P2, (time - dt), time, grid);
-  for (int k = 0; k < nt; ++k) {
-    wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
-    time += dt;
-
-    double *Temp = P2;
-    P2 = P1;
-    P1 = Temp;
-  }
-#if defined(RAJA_ENABLE_CUDA)
-  cudaDeviceSynchronize();
-#endif
-  computeErr(P2, time, grid);
-  printf("Evolved solution to time = %f \n", time);
-
 
   //--------
   //With RAJA shared memory
@@ -323,11 +312,9 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
  RAJA::forallN<fdNestedPolicy>(
       outerBounds, outerBounds, [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
 #else
-  //RAJA will give global id
+   //RAJA has been hacked to give the block Id
   RAJA::forallN<fdNestedPolicy>(
-      outerBounds, outerBounds, [=] __device__ (RAJA::Index_type gIdy, RAJA::Index_type gIdx) {
-        int outerIdx = blockIdx.x; //What I really want is the block id instead of thread of id... 
-        int outerIdy = blockIdx.y; //stick these in here...
+     outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
 #endif
       
         /*
@@ -336,14 +323,14 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
         double coeff[5] = {
           -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
 
-        //int lx, ly; //local index
-        int lx; int ly;
         RAJA_shared double Lu[By+2*sr][By + 2*sr];       
-
-
-        //RAJA inner loop
-        RAJA_Par_Inner(ly, By) {
-          RAJA_Inner(lx, Bx) {
+        
+        
+#if CPU
+        innerLoop(serialLoop{}, Bx, By,  [&] (int ly, int lx) {
+#else
+        innerLoop(cudaLoop{}, Bx, By,  [&] __device__ (int ly, int lx) {
+#endif
 
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
@@ -367,16 +354,23 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
             }
             
             if(ly < 2*sr)
-              Lu[ly + By][lx] = P2[nY2*nx + nX1];                      
-                        
-          } 
-        }
-        RAJA_sync;
+              Lu[ly + By][lx] = P2[nY2*nx + nX1];
 
-        //RAJA_Inner_loop
-        RAJA_Par_Inner(ly,  By) {
-          RAJA_Inner(lx, Bx) { 
-            
+          });
+
+#if CPU
+        RAJA_Sync(seqBlockSync{});
+#else
+        RAJA_Sync(cudaBlockSync{});
+#endif        
+        
+
+
+#if CPU
+        innerLoop(serialLoop{}, Bx, By,  [&] (int ly, int lx) {
+#else
+        innerLoop(cudaLoop{}, Bx, By,  [&] __device__ (int ly, int lx) {
+#endif            
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
             const int ty = ly + By * outerIdy;
@@ -392,50 +386,11 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
             
             //write out stencil
             P1[id] = 2 * P_curr - P_old + ct * lap; 
-
-          }
-        }
-
-      });
-}
+            
+          });
 
 
-template <typename T, typename fdNestedPolicy>
-void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
-{
- 
- RAJA::forallN<fdNestedPolicy>(
-      fdBounds, fdBounds, [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {
-      
-        /*
-          Coefficients for a fourth order stencil
-        */
-        double coeff[5] = {
-          -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
-
-        const int id = tx + ty * nx;
-        double P_old = P1[id];
-        double P_curr = P2[id];
-
-        /*
-          Computes Laplacian
-        */
-        double lap = 0.0;
-
-        for (auto r : RAJA::RangeSegment(-sr, sr + 1)) {
-          const int xi = (tx + r + nx) % nx;
-          const int idx = xi + nx * ty;
-          lap += coeff[r + sr] * P2[idx];
-
-          const int yi = (ty + r + nx) % nx;
-          const int idy = tx + nx * yi;
-          lap += coeff[r + sr] * P2[idy];
-        }
-
-        /*
-          Writes out result
-        */
-        P1[id] = 2 * P_curr - P_old + ct * lap;
 
       });
+  
 }
