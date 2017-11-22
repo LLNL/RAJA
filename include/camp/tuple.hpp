@@ -43,7 +43,7 @@ namespace internal
 {
   template <camp::idx_t index, typename Type>
   struct tuple_storage {
-    tuple_storage() = default;
+    CAMP_HOST_DEVICE constexpr tuple_storage() : val() {};
     CAMP_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
 
     CAMP_HOST_DEVICE constexpr const Type& get_inner() const noexcept
@@ -70,7 +70,7 @@ namespace internal
   struct tuple_helper<camp::idx_seq<Indices...>, camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
 
-    tuple_helper() = default;
+    CAMP_HOST_DEVICE constexpr tuple_helper(){}
 
     CAMP_HOST_DEVICE constexpr tuple_helper(Types... args)
         : internal::tuple_storage<Indices, Types>(std::forward<Types>(args))...

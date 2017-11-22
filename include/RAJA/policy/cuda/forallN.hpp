@@ -68,18 +68,6 @@ struct ForallN_BindFirstArg_Device {
 };
 
 
-RAJA_INLINE
-constexpr int numBlocks(CudaDim const &dim)
-{
-  return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
-}
-
-RAJA_INLINE
-constexpr int numThreads(CudaDim const &dim)
-{
-  return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
-}
-
 template <typename CUDA_EXEC, typename Iterator>
 struct CudaIterableWrapper {
   CUDA_EXEC pol_;

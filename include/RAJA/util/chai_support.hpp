@@ -54,13 +54,19 @@
 #ifndef RAJA_DETAIL_RAJA_CHAI_HPP
 #define RAJA_DETAIL_RAJA_CHAI_HPP
 
+#include "RAJA/config.hpp"
+
+#ifdef RAJA_ENABLE_CHAI
+
 #include "chai/ExecutionSpaces.hpp"
+#include "chai/ArrayManager.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
 #include "RAJA/index/IndexSet.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
+
 
 namespace RAJA
 {
@@ -73,7 +79,7 @@ struct max_platform {
   constexpr RAJA::Platform operator()(const RAJA::Platform& l,
                                       const RAJA::Platform& r) const
   {
-    return (l == RAJA::Platform::cuda) ? l : r;
+    return (l > r) ? l : r;
   }
 };
 
@@ -107,6 +113,8 @@ struct get_space_from_list {
 
 template <typename T, typename = void>
 struct get_space {
+  // catch-all: undefined CHAI space
+  static constexpr chai::ExecutionSpace value = chai::NONE;
 };
 
 template <typename T>
@@ -131,7 +139,62 @@ template <typename TAGS, typename... POLICIES>
 struct get_space<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
     : public get_space_from_list<POLICIES...> {
 };
+
+
+template <typename ... POLICIES>
+struct get_space_from_list<camp::list<POLICIES...>> {
+  static constexpr chai::ExecutionSpace value =
+        get_space_from_list< typename POLICIES::policy_type ...>::value;
+};
+
+
 }
 }
+
+#endif // RAJA_ENABLE_CHAI
+
+
+
+
+namespace RAJA
+{
+namespace detail
+{
+
+
+/*!
+ * Function to set the CHAI execution space based on the policy.
+ *
+ * This function is always defined, and is a NOP if CHAI is not enabled.
+ */
+template<typename ExecutionPolicy>
+RAJA_INLINE
+void setChaiExecutionSpace(){
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  using EP = typename std::decay<ExecutionPolicy>::type;
+  //printf("RAJA::setChaiExecutionSpace to %d\n", (int)(detail::get_space<EP>::value));
+  rm->setExecutionSpace(detail::get_space<EP>::value);
+#endif
+}
+
+/*!
+ * Function to set the CHAI execution space to chai::NONE.
+ *
+ * This function is always defined, and is a NOP if CHAI is not enabled.
+ */
+RAJA_INLINE
+void clearChaiExecutionSpace(){
+#if defined(RAJA_ENABLE_CHAI)
+  chai::ArrayManager* rm = chai::ArrayManager::getInstance();
+  //std::cout << "RAJA::clearChaiExecutionSpace" << std::endl;
+  rm->setExecutionSpace(chai::NONE);
+#endif
+}
+
+
+}
+}
+
 
 #endif
