@@ -240,19 +240,16 @@ struct CudaThreadBlock {
 
   __device__ inline int operator()(void)
   {
-    //int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
-    int idx   = 0 + view(blockIdx); //modified to return block Id
-    //if (idx >= distance) { //Don't need this
-    //idx = INT_MIN;
-    //}
+    int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
+    if (idx >= distance) {
+    idx = INT_MIN;
+    }
     return idx;
   }
 
   void inline setDims(CudaDim &dims)
   {
 
-
-#if 0
     int n = distance;
     if (n < threads_per_block) {
       view(dims.num_threads) = n;
@@ -265,11 +262,6 @@ struct CudaThreadBlock {
       }
       view(dims.num_blocks) = blocks;
     }
-#endif    
-
-    view(dims.num_threads) = threads_per_block;
-    view(dims.num_blocks) = distance;
-
 
 
   }
@@ -288,6 +280,54 @@ using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
 
 template <int THREADS>
 using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
+
+////////
+//
+/** Provides a range from 0 to N_iter - 1
+ *  Maps index to block id
+ */
+template <typename VIEWDIM, int threads_per_block>
+struct CudaBlockLoop {
+  int distance;
+
+  VIEWDIM view;
+
+  template <typename Iterable>
+  CudaBlockLoop(CudaDim &dims, Iterable const &i)
+      : distance(std::distance(std::begin(i), std::end(i)))
+  {
+    setDims(dims);
+  }
+
+  __device__ inline int operator()(void)
+  {
+    int idx   = 0 + view(blockIdx);
+    return idx;
+  }
+
+  void inline setDims(CudaDim &dims)
+  {
+    view(dims.num_threads) = threads_per_block;
+    view(dims.num_blocks) = distance;
+  }
+};
+
+/*
+ * These execution policies map a loop nest to the block and threads of a
+ * given dimension with the number of THREADS per block specifies.
+ */
+
+template <int THREADS>
+using cuda_blockloop_x_exec = CudaPolicy<CudaBlockLoop<Dim3x, THREADS>>;
+
+template <int THREADS>
+using cuda_blockloop_y_exec = CudaPolicy<CudaBlockLoop<Dim3y, THREADS>>;
+
+template <int THREADS>
+using cuda_blockloop_z_exec = CudaPolicy<CudaBlockLoop<Dim3z, THREADS>>;
+//////////
+
+
 
 template <typename VIEWDIM>
 struct CudaThread {
