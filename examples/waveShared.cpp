@@ -91,8 +91,8 @@ struct grid_s {
 //We have the option of 1 or 0
 #define CPU 0
 #else
-//should always be 0
-#define CPU 0 
+//should always be 1
+#define CPU 1
 #endif
 
 
@@ -104,7 +104,7 @@ struct serialLoop{};
 template <typename policyY, typename policyX, typename Func>
 void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
 
-#if 0
+#if 0 //poor man's loop
   for(int ty=0; ty<Ny; ++ty){
     for(int tx=0; tx<Nx; ++tx){
       innerLoop(ty,tx);
@@ -223,11 +223,15 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;  
 #else
 
+#if defined(RAJA_ENABLE_CUDA)
+  
   std::cout<<"GPU MODE!"<<std::endl;
   using abstractPolicy
     = RAJA::NestedPolicy<RAJA::ExecList
-    <RAJA::cuda_threadblock_y_exec<By>,
-     RAJA::cuda_threadblock_x_exec<Bx>>>;
+    <RAJA::cuda_blockloop_y_exec<By>,
+     RAJA::cuda_blockloop_x_exec<Bx>>>;
+#endif
+
 #endif
   
   //Here we define the number of "blocks" or the outer loop
@@ -236,11 +240,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaEvent_t start, stop;
   cudaEventCreate(&start);
   cudaEventCreate(&stop);
-
   cudaEventRecord(start);    
+#endif
+
   for (int k = 0; k < nt; ++k) {
     waveShared<double, abstractPolicy>(P1, P2, outerRange, ct, grid.nx);
 
@@ -251,18 +257,23 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     P1 = Temp;
   }
 
+#if defined(RAJA_ENABLE_CUDA)
   cudaEventRecord(stop);
-
   cudaEventSynchronize(stop);
   float milliseconds = 0;
   cudaEventElapsedTime(&milliseconds, start, stop);
+#endif
 
 #if defined(RAJA_ENABLE_CUDA)
   cudaDeviceSynchronize();
 #endif
+
   computeErr(P2, time, grid);
   printf("Evolved solution to time = %f \n", time);
+
+#if defined(RAJA_ENABLE_CUDA)
   printf("Time to solution: %f \n", 1e-3*milliseconds);
+#endif
 
 
   memoryManager::deallocate(P1);
@@ -368,7 +379,6 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
             //Compute Index
             const int tx = lx + Bx * outerIdx; 
             const int ty = ly + By * outerIdy;
-            const int id = ty*nx+ tx; 
             
             //Index
             const int nX1 = (tx - sr + nx)%nx; 
