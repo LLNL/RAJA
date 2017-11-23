@@ -118,6 +118,8 @@ void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
 
 }
 
+#if defined(RAJA_ENABLE_CUDA)
+
 struct cudaLoop{};
 //Device only
 //template <typename Func>
@@ -132,6 +134,9 @@ struct cudaBlockSync{};
 __device__ void RAJA_Sync(const cudaBlockSync&){
   __syncthreads();
 }
+
+#endif
+
 
 struct seqBlockSync{};
 void RAJA_Sync(const seqBlockSync&){
