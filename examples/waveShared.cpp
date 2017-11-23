@@ -358,12 +358,16 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
         using innerPolicy = serialLoop;
         using syncPolicy = seqBlockSync;        
 #else
+
+#if (RAJA_ENABLE_CUDA)
    //RAJA has been hacked to give the block Id
      outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
         using innerPolicyY = void;
         using innerPolicyX = void;
        using innerPolicy = cudaLoop;
        using syncPolicy  = cudaBlockSync;
+#endif
+
 #endif
       
         /*
