@@ -335,11 +335,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   printf("RAJA: CUDA Policy - Nested ForallN \n");
 
-  using Pol = RAJA::nested::Policy<
+  using jacobiCUDANestedPolicy = RAJA::nested::Policy<
     RAJA::nested::CudaCollapse<
     RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X> >,
     RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y> > > >;
-
+  
 
   resI2 = 1;
   iteration = 0;
@@ -349,9 +349,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   while (resI2 > tol * tol) {
 
     /*
-      Jacobi Iteration
+      Jacobi Iteration 
+      NOTE: CUDA version not working correctly
     */
-    RAJA::nested::forall(Pol{},
+    RAJA::nested::forall(jacobiCUDANestedPolicy{}, //Issue here
                          //jacobiOmpNestedPolicy{},
                          camp::make_tuple(jacobiRange,jacobiRange),
                          [=] __host__ __device__  (RAJA::Index_type m, RAJA::Index_type n) {
