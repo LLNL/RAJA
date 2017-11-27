@@ -337,7 +337,11 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
 
       cudaStream_t stream = 0;
 
-      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(cuda_wrap);
+      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+          RAJA::cuda::make_launch_body(dims.num_blocks,
+                                       dims.num_threads,
+                                       0, stream,
+                                       cuda_wrap));
       RAJA::cuda::peekAtLastError();
 
       RAJA::cuda::launch(stream);

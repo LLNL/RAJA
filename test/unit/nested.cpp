@@ -201,4 +201,81 @@ CUDA_TEST(Nested, CudaCollapse2)
        });
 }
 
+
+CUDA_TEST(Nested, CudaReduceA)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
+      >,
+      RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+CUDA_TEST(Nested, CudaReduceB)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::For<2, RAJA::loop_exec>,
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
+      > >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+CUDA_TEST(Nested, CudaReduceC)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::For<2, RAJA::loop_exec>,
+      RAJA::nested::For<0, RAJA::loop_exec>,
+      RAJA::nested::For<1, RAJA::cuda_exec<12>>
+      >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
 #endif
