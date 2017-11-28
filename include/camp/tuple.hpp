@@ -223,6 +223,7 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
   return make_tuple(get<Lidx>(l)..., get<Ridx>(r)...);
 }
 
+CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
 CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
                                                   Fn&& f,
@@ -232,6 +233,7 @@ CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
   return f(get<Sequence>(t)...);
 }
 
+CAMP_SUPPRESS_HD_WARN
 template <typename Fn, typename TupleLike>
 CAMP_HOST_DEVICE constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
     invoke_with_order(forward<TupleLike>(t),

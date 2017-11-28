@@ -160,6 +160,8 @@ struct icount_adapter {
     using std::begin;
     begin_it = begin(r);
   }
+
+  RAJA_SUPPRESS_HD_WARN
   template <typename T>
   RAJA_HOST_DEVICE void operator()(T const& i) const
   {

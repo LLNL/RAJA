@@ -163,10 +163,17 @@ public:
   BaseReduce &operator=(const BaseReduce &) = delete;
 
   //! compiler-generated copy constructor
-  BaseReduce(const BaseReduce &) = default;
+  RAJA_HOST_DEVICE
+  constexpr BaseReduce(const BaseReduce &copy)
+      : c(copy.c)
+  {}
 
   //! compiler-generated move constructor
-  BaseReduce(BaseReduce &&) = default;
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  BaseReduce(BaseReduce &&copy)
+      : c(std::move(copy.c))
+  {}
 
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
@@ -202,11 +209,13 @@ public:
   //! prohibit compiler-generated default ctor
   BaseCombinable() = delete;
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
       : identity{identity_}, my_data{init_val}
   {
   }
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const &other)
       : parent{other.parent ? other.parent : &other},
         identity{other.identity},
@@ -214,6 +223,7 @@ public:
   {
   }
 
+  RAJA_HOST_DEVICE
   ~BaseCombinable()
   {
     if (parent && my_data != identity) {
