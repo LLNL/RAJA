@@ -81,20 +81,20 @@ namespace tbb
  */
 template <typename Iterable, typename Func>
 RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
-                        Iterable&& iter,
-                        Func&& loop_body)
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   using std::begin;
   using std::end;
   using brange = ::tbb::blocked_range<decltype(iter.begin())>;
   ::tbb::parallel_for(brange(begin(iter), end(iter), p.grain_size),
-                    [=](const brange& r) {
-                      using RAJA::internal::thread_privatize;
-                      auto privatizer = thread_privatize(loop_body);
-                      auto body = privatizer.get_priv();
-                      for (const auto& i : r)
-                        body(i);
-                    });
+                      [=](const brange& r) {
+                        using RAJA::internal::thread_privatize;
+                        auto privatizer = thread_privatize(loop_body);
+                        auto body = privatizer.get_priv();
+                        for (const auto& i : r)
+                          body(i);
+                      });
 }
 
 ///
@@ -119,21 +119,21 @@ RAJA_INLINE void forall_impl(const tbb_for_dynamic& p,
  */
 template <typename Iterable, typename Func, size_t ChunkSize>
 RAJA_INLINE void forall_impl(const tbb_for_static<ChunkSize>&,
-                        Iterable&& iter,
-                        Func&& loop_body)
+                             Iterable&& iter,
+                             Func&& loop_body)
 {
   using std::begin;
   using std::end;
   using brange = ::tbb::blocked_range<decltype(iter.begin())>;
   ::tbb::parallel_for(brange(begin(iter), end(iter), ChunkSize),
-                    [=](const brange& r) {
-                      using RAJA::internal::thread_privatize;
-                      auto privatizer = thread_privatize(loop_body);
-                      auto body = privatizer.get_priv();
-                      for (const auto& i : r)
-                        body(i);
-                    },
-                    tbb_static_partitioner{});
+                      [=](const brange& r) {
+                        using RAJA::internal::thread_privatize;
+                        auto privatizer = thread_privatize(loop_body);
+                        auto body = privatizer.get_priv();
+                        for (const auto& i : r)
+                          body(i);
+                      },
+                      tbb_static_partitioner{});
 }
 
 }  // closing brace for tbb namespace

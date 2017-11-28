@@ -99,8 +99,7 @@ struct scan_adapter_exclusive : scan_adapter<T, InIter, OutIter, Fn> {
   template <typename Tag>
   void operator()(const tbb::blocked_range<Index_type>& r, Tag)
   {
-    if (r.begin() == 0)
-        this->agg = this->init;
+    if (r.begin() == 0) this->agg = this->init;
     for (Index_type i = r.begin(); i < r.end(); ++i) {
       auto t = this->in[i];
       if (Tag::is_final_scan()) this->out[i] = this->agg;

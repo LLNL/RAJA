@@ -46,8 +46,8 @@
 #include <type_traits>
 
 #include "camp/defines.hpp"
-#include "camp/list/list.hpp"
 #include "camp/list/at.hpp"
+#include "camp/list/list.hpp"
 
 
 namespace camp
@@ -133,6 +133,6 @@ namespace test
 }
 #endif
 
-} // end namespace camp
+}  // end namespace camp
 
 #endif /* CAMP_LAMBDA_HPP */

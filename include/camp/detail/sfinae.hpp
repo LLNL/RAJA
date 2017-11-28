@@ -44,15 +44,15 @@
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include "camp/helpers.hpp"
-#include "camp/value.hpp"
 #include "camp/number/number.hpp"
+#include "camp/value.hpp"
 
 #include <type_traits>
 
 namespace camp
 {
 
-  /// \cond
+/// \cond
 namespace detail
 {
 
@@ -60,10 +60,10 @@ namespace detail
   template <template <typename...> class expr, typename... vals>
   struct caller;
 
-  template <
-      template <typename...> class expr,
-      typename... vals,
-      typename std::enable_if<is_value<expr<vals...>>::value>::type* = nullptr>
+  template <template <typename...> class expr,
+            typename... vals,
+            typename std::enable_if<is_value<expr<vals...>>::value>::type* =
+                nullptr>
   value<expr<vals...>> sfinae(caller<expr, vals...>*);
 
   value<> sfinae(...);

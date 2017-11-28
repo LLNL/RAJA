@@ -67,7 +67,8 @@ struct as_array;
 
 template <camp::idx_t... Indices>
 struct as_array<camp::idx_seq<Indices...>> {
-  static constexpr std::array<Index_type, sizeof...(Indices)> get() {
+  static constexpr std::array<Index_type, sizeof...(Indices)> get()
+  {
     return {{Indices...}};
   }
 };
@@ -225,7 +226,6 @@ using PERM_MLJIK = camp::idx_seq<4, 3, 1, 0, 2>;
 using PERM_MLJKI = camp::idx_seq<4, 3, 1, 2, 0>;
 using PERM_MLKIJ = camp::idx_seq<4, 3, 2, 0, 1>;
 using PERM_MLKJI = camp::idx_seq<4, 3, 2, 1, 0>;
-
 }
 
 #endif /* RAJA_FORALLN_PERMUTATIONS_HPP */

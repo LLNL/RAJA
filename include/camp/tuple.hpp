@@ -43,7 +43,7 @@ namespace internal
 {
   template <camp::idx_t index, typename Type>
   struct tuple_storage {
-    CAMP_HOST_DEVICE constexpr tuple_storage() : val() {};
+    CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
     CAMP_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
 
     CAMP_HOST_DEVICE constexpr const Type& get_inner() const noexcept
@@ -70,7 +70,7 @@ namespace internal
   struct tuple_helper<camp::idx_seq<Indices...>, camp::list<Types...>>
       : public internal::tuple_storage<Indices, Types>... {
 
-    CAMP_HOST_DEVICE constexpr tuple_helper(){}
+    CAMP_HOST_DEVICE constexpr tuple_helper() {}
 
     CAMP_HOST_DEVICE constexpr tuple_helper(Types... args)
         : internal::tuple_storage<Indices, Types>(std::forward<Types>(args))...
@@ -223,6 +223,7 @@ CAMP_HOST_DEVICE constexpr auto tuple_cat_pair(tuple<Lelem...>&& l,
   return make_tuple(get<Lidx>(l)..., get<Ridx>(r)...);
 }
 
+CAMP_SUPPRESS_HD_WARN
 template <typename Fn, camp::idx_t... Sequence, typename TupleLike>
 CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
                                                   Fn&& f,
@@ -232,6 +233,7 @@ CAMP_HOST_DEVICE constexpr auto invoke_with_order(TupleLike&& t,
   return f(get<Sequence>(t)...);
 }
 
+CAMP_SUPPRESS_HD_WARN
 template <typename Fn, typename TupleLike>
 CAMP_HOST_DEVICE constexpr auto invoke(TupleLike&& t, Fn&& f) -> decltype(
     invoke_with_order(forward<TupleLike>(t),

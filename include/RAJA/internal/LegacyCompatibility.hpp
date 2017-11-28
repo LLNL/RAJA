@@ -100,11 +100,12 @@ template <typename Op,
           typename Arg3,
           typename... Rest>
 struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret = typename foldl_impl<
-      Op,
-      typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
-                                 Arg3)>::type,
-      Rest...>::Ret;
+  using Ret =
+      typename foldl_impl<Op,
+                          typename std::result_of<Op(
+                              typename std::result_of<Op(Arg1, Arg2)>::type,
+                              Arg3)>::type,
+                          Rest...>::Ret;
 };
 
 template <typename Op, typename Arg1>
@@ -122,7 +123,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
     typename foldl_impl<Op, Arg1, Arg2>::Ret
 {
   return camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
-                                        camp::forward<Arg2>(arg2));
+                                      camp::forward<Arg2>(arg2));
 }
 
 template <typename Op,
@@ -140,7 +141,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
   return foldl(camp::forward<Op>(operation),
                camp::forward<Op>(operation)(
                    camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
-                                                  camp::forward<Arg2>(arg2)),
+                                                camp::forward<Arg2>(arg2)),
                    camp::forward<Arg3>(arg3)),
                camp::forward<Rest>(rest)...);
 }

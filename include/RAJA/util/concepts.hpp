@@ -55,9 +55,9 @@
 #ifndef RAJA_concepts_HPP
 #define RAJA_concepts_HPP
 
-#include "camp/concepts.hpp"
 #include <iterator>
 #include <type_traits>
+#include "camp/concepts.hpp"
 
 namespace RAJA
 {
@@ -75,4 +75,3 @@ using namespace camp::type_traits;
 }  // end namespace RAJA
 
 #endif
-

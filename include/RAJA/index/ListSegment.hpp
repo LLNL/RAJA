@@ -27,10 +27,10 @@
 #define RAJA_ListSegment_HPP
 
 #include "RAJA/config.hpp"
+#include "RAJA/internal/Span.hpp"
+#include "RAJA/util/concepts.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/util/concepts.hpp"
-#include "RAJA/internal/Span.hpp"
 
 #if defined(RAJA_ENABLE_CUDA)
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
@@ -81,32 +81,29 @@ class TypedListSegment
   using CPU_memory = std::integral_constant<bool, false>;
 
   //! specialization for deallocation of GPU_memory
-  void deallocate(GPU_memory) {
-    cudaErrchk(cudaFree(m_data));
-  }
+  void deallocate(GPU_memory) { cudaErrchk(cudaFree(m_data)); }
 
   //! specialization for allocation of GPU_memory
   void allocate(GPU_memory)
   {
-    cudaErrchk(cudaMallocManaged((void**)&m_data, m_size * sizeof(value_type), cudaMemAttachGlobal));
+    cudaErrchk(cudaMallocManaged((void**)&m_data,
+                                 m_size * sizeof(value_type),
+                                 cudaMemAttachGlobal));
   }
 
   //! specialization for deallocation of CPU_memory
-  void deallocate(CPU_memory) {
-    delete[] m_data;
-  }
+  void deallocate(CPU_memory) { delete[] m_data; }
 
   //! specialization for allocation of CPU_memory
-  void allocate(CPU_memory) {
-    m_data = new T[m_size];
-  }
+  void allocate(CPU_memory) { m_data = new T[m_size]; }
 
 #ifdef RAJA_ENABLE_CUDA
   //! copy data from container using BlockCopy
   template <typename Container>
   void copy(Container&& src, BlockCopy)
   {
-    cudaErrchk(cudaMemcpy(m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
+    cudaErrchk(cudaMemcpy(
+        m_data, &(*src.begin()), m_size * sizeof(T), cudaMemcpyDefault));
   }
 #endif
 
@@ -129,9 +126,12 @@ class TypedListSegment
   void allocate_and_copy(Container&& src)
   {
     allocate(std::integral_constant<bool, GPU>());
-    static constexpr bool use_cuda = GPU && std::is_pointer<decltype(src.begin())>::value
-      && std::is_same<type_traits::IterableValue<Container>,value_type>::value;
-    using TagType = typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
+    static constexpr bool use_cuda =
+        GPU && std::is_pointer<decltype(src.begin())>::value
+        && std::is_same<type_traits::IterableValue<Container>,
+                        value_type>::value;
+    using TagType =
+        typename std::conditional<use_cuda, BlockCopy, TrivialCopy>::type;
     copy(src, TagType());
   }
 
@@ -171,8 +171,7 @@ public:
   explicit TypedListSegment(const Container& container)
       : m_data(nullptr), m_size(container.size()), m_owned(Unowned)
   {
-    if (m_size <= 0)
-      return;
+    if (m_size <= 0) return;
     allocate_and_copy<Has_CUDA>(container);
     m_owned = Owned;
   }
@@ -201,8 +200,7 @@ public:
   ///
   ~TypedListSegment()
   {
-    if (m_data == nullptr || m_owned != Owned)
-      return;
+    if (m_data == nullptr || m_owned != Owned) return;
     deallocate(std::integral_constant<bool, Has_CUDA>());
   }
 
@@ -218,36 +216,26 @@ public:
   }
 
   //! accessor to get the end iterator for a TypedListSegment
-  RAJA_HOST_DEVICE iterator end() const {
-    return m_data + m_size;
-  }
+  RAJA_HOST_DEVICE iterator end() const { return m_data + m_size; }
 
   //! accessor to get the begin iterator for a TypedListSegment
-  RAJA_HOST_DEVICE iterator begin() const {
-    return m_data;
-  }
+  RAJA_HOST_DEVICE iterator begin() const { return m_data; }
   //! accessor to retrieve the total number of elements in a TypedListSegment
-  RAJA_HOST_DEVICE Index_type size() const {
-    return m_size;
-  }
+  RAJA_HOST_DEVICE Index_type size() const { return m_size; }
 
   //! get ownership of the data (Owned/Unowned)
-  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const {
-    return m_owned;
-  }
+  RAJA_HOST_DEVICE IndexOwnership getIndexOwnership() const { return m_owned; }
 
   //! checks a pointer and size (Span) for equality to all elements in the
   //! TypedListSegment
   RAJA_HOST_DEVICE bool indicesEqual(const value_type* container,
                                      Index_type len) const
   {
-    if (container == m_data)
-      return len == m_size;
+    if (container == m_data) return len == m_size;
     if (len != m_size || container == nullptr || m_data == nullptr)
       return false;
     for (Index_type i = 0; i < m_size; ++i)
-      if (m_data[i] != container[i])
-        return false;
+      if (m_data[i] != container[i]) return false;
     return true;
   }
 

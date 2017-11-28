@@ -113,8 +113,6 @@ struct Executor<ForTypeIn<Index, cuda_exec<block_size>, Rest...>> {
 };
 
 
-
-
 template <template <camp::idx_t, typename...> class ForTypeIn,
           camp::idx_t Index,
           typename... Rest>
@@ -149,9 +147,8 @@ struct Executor<ForTypeIn<Index, cuda_loop_exec, Rest...>> {
 };
 
 
-
-namespace internal {
-
+namespace internal
+{
 
 
 /*!
@@ -209,34 +206,35 @@ struct CudaWrapper<n_policies, n_policies, Data> {
 };
 
 
-} // namespace internal
+}  // namespace internal
 
 
-template<bool Async = false>
-struct cuda_collapse_exec : public cuda_exec<0, Async>
-{};
+template <bool Async = false>
+struct cuda_collapse_exec : public cuda_exec<0, Async> {
+};
 
 
-template<typename ... FOR>
-using CudaCollapse = Collapse<cuda_collapse_exec<false>, FOR ...>;
+template <typename... FOR>
+using CudaCollapse = Collapse<cuda_collapse_exec<false>, FOR...>;
 
-template<typename ... FOR>
-using CudaCollapseAsync = Collapse<cuda_collapse_exec<true>, FOR ...>;
+template <typename... FOR>
+using CudaCollapseAsync = Collapse<cuda_collapse_exec<true>, FOR...>;
 
 
 // TODO, check that FT... are cuda policies
-template <bool Async, typename ... FOR_TYPES>
-struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
+template <bool Async, typename... FOR_TYPES>
+struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
 
   using collapse_policy = Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>;
 
 
-
-  template <typename BaseWrapper, typename ... LoopPol>
+  template <typename BaseWrapper, typename BeginTuple, typename... LoopPol>
   struct ForWrapper {
 
     using data_type = typename BaseWrapper::data_type;
     data_type data;
+
+    BeginTuple begin_tuple;
 
     using CuWrap = internal::CudaWrapper<BaseWrapper::cur_policy,
                                          BaseWrapper::num_policies,
@@ -248,29 +246,31 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
 
 
     // Explicitly unwrap the data from the wrapper
-    ForWrapper(BaseWrapper const &w, LoopPol const &... pol) :
-      data(w.data),
-      loop_policies(camp::make_tuple(pol...))
-    {}
+    ForWrapper(BaseWrapper const &w,
+               BeginTuple const &bt,
+               LoopPol const &... pol)
+        : data(w.data), begin_tuple(bt), loop_policies(camp::make_tuple(pol...))
+    {
+    }
 
 
     /*
      * Evaluates the loop index for the idx'th loop in the Collapse
      */
-    template<size_t idx>
-    RAJA_DEVICE
-    RAJA::Index_type evalLoopIndex(){
+    template <size_t idx>
+    RAJA_DEVICE RAJA::Index_type evalLoopIndex()
+    {
       // grab the loop policy
       auto &policy = camp::get<idx>(loop_policies);
-
-      //printf("policy<%d>.distance=%d  ", (int)idx, (int)policy.distance);
 
       // grab the For type from our type list
       using ft = typename camp::at_v<ft_tuple, idx>::type;
 
       // Assign the For index value to the correct argument
-      int loop_value = policy();
-      data.template assign_index<ft::index_val>( loop_value );
+      auto &begin = camp::get<idx>(begin_tuple);
+      int loop_value = *(begin + policy());
+      // int loop_value = policy();
+      data.template assign_index<ft::index_val>(loop_value);
 
       return loop_value;
     }
@@ -282,25 +282,26 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
      * Since we use INT_MIN as a sentinel to mark out-of-bounds, the minimum
      * loop index must be > INT_MIN for this to be a valid thread.
      */
-    template<camp::idx_t ... idx_list>
-    RAJA_DEVICE
-    bool computeIndices(camp::idx_seq<idx_list...>){
+    template <camp::idx_t... idx_list>
+    RAJA_DEVICE bool computeIndices(camp::idx_seq<idx_list...>)
+    {
       // Compute each loop index, and return the minimum value
-      return INT_MIN < VarOps::min<RAJA::Index_type>(evalLoopIndex<idx_list>()...);
+      return INT_MIN
+             < VarOps::min<RAJA::Index_type>(evalLoopIndex<idx_list>()...);
     }
 
 
     RAJA_DEVICE void operator()()
     {
       // Assign the indices, and compute minimum loop index
-      using index_sequence = typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
-      bool in_bounds =  computeIndices(index_sequence{});
+      using index_sequence =
+          typename camp::make_idx_seq<sizeof...(LoopPol)>::type;
+      bool in_bounds = computeIndices(index_sequence{});
 
       // Invoke the loop body, only if we are on a valid index
       // if any of the loops indices were out-of-bounds, then min_val will
       // be INT_MIN
-      if(in_bounds){
-        //camp::invoke(data.index_tuple, data.f);
+      if (in_bounds) {
         CuWrap wrap(data);
         wrap();
       }
@@ -322,14 +323,21 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
      * The wrapped body is the device function to be launched, and does all
      * of the block/thread idx unpacking and assignment
     */
+    auto begin_tuple = camp::make_tuple(
+        camp::get<FOR_TYPES::index_val>(wrap.data.st).begin()...);
+
     auto cuda_wrap =
-        ForWrapper<WrappedBody, typename FOR_TYPES::policy_type::cuda_exec_policy...>(
+        ForWrapper<WrappedBody,
+                   decltype(begin_tuple),
+                   typename FOR_TYPES::policy_type::cuda_exec_policy...>(
             wrap,
 
-            typename FOR_TYPES::policy_type::cuda_exec_policy (
-                    dims, camp::get<FOR_TYPES::index_val>(wrap.data.st)
-             ) ...
-        );
+            begin_tuple,
+
+            typename FOR_TYPES::policy_type::cuda_exec_policy(
+                dims, camp::get<FOR_TYPES::index_val>(wrap.data.st))...
+
+            );
 
 
     // Only launch a kernel if we have at least one thing to do
@@ -338,22 +346,18 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
       cudaStream_t stream = 0;
 
       internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          RAJA::cuda::make_launch_body(dims.num_blocks,
-                                       dims.num_threads,
-                                       0, stream,
-                                       cuda_wrap));
+          RAJA::cuda::make_launch_body(
+              dims.num_blocks, dims.num_threads, 0, stream, cuda_wrap));
       RAJA::cuda::peekAtLastError();
 
       RAJA::cuda::launch(stream);
       if (!Async) RAJA::cuda::synchronize(stream);
     }
-
   }
 };
 
 
-
-}  //namespace nested
+}  // namespace nested
 }  // namespace RAJA
 
 #endif  // closing endif for RAJA_ENABLE_CUDA guard

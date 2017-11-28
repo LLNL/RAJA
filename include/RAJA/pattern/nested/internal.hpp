@@ -3,9 +3,9 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
+#include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/policy/cuda.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
@@ -65,9 +65,10 @@ using get_space_list = typename T::as_space_list;
  * in the policy
  */
 template <typename Seq>
-using get_for_policies = typename camp::flatten<typename camp::transform<
-    get_for_list,
-    typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
+using get_for_policies = typename camp::flatten<
+    typename camp::transform<get_for_list,
+                             typename camp::filter_l<has_for_list,
+                                                     Seq>::type>::type>::type;
 
 /*
  * Get a camp::list of execution policies from a RAJA::nested::Policy to be
@@ -79,9 +80,10 @@ using get_for_policies = typename camp::flatten<typename camp::transform<
  *
  */
 template <typename Seq>
-using get_space_policies = typename camp::flatten<typename camp::transform<
-    get_space_list,
-    typename camp::filter_l<has_for_list, Seq>::type>::type>::type;
+using get_space_policies = typename camp::flatten<
+    typename camp::transform<get_space_list,
+                             typename camp::filter_l<has_for_list,
+                                                     Seq>::type>::type>::type;
 
 
 template <typename T>
@@ -101,12 +103,13 @@ struct evaluate_policy {
   using ForPolicy = typename camp::find_if_l<
       typename camp::bind_front<index_matches, Index>::type,
       ForPolicies>::type;
-  using type = typename camp::append<
-      Current,
-      camp::if_<typename std::is_base_of<TypedForBase, ForPolicy>::type,
-                typename ForPolicy::index_type,
-                typename camp::at<IndexTypes,
-                                  typename ForPolicy::index>::type>>::type;
+  using type = typename camp::
+      append<Current,
+             camp::if_<typename std::is_base_of<TypedForBase, ForPolicy>::type,
+                       typename ForPolicy::index_type,
+                       typename camp::at<IndexTypes,
+                                         typename ForPolicy::index>::type>>::
+          type;
 };
 
 template <typename Policies, typename IndexTypes>
@@ -132,10 +135,10 @@ using value_type_list_from_segments =
     typename camp::transform<iterable_value_type_getter, Segments>::type;
 
 template <typename Policies, typename Segments>
-using index_tuple_from_policies_and_segments = typename camp::apply_l<
-    camp::lambda<camp::tuple>,
-    get_for_index_types<Policies,
-                        value_type_list_from_segments<Segments>>>::type;
+using index_tuple_from_policies_and_segments = typename camp::
+    apply_l<camp::lambda<camp::tuple>,
+            get_for_index_types<Policies,
+                                value_type_list_from_segments<Segments>>>::type;
 
 }  // end namespace internal
 }  // end namespace nested

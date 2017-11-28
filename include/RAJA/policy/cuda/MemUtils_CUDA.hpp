@@ -39,11 +39,11 @@
 
 #include "RAJA/util/mutex.hpp"
 
+#include <cassert>
 #include <cstddef>
 #include <cstdio>
-#include <cassert>
-#include <unordered_map>
 #include <type_traits>
+#include <unordered_map>
 
 namespace RAJA
 {
@@ -68,7 +68,6 @@ struct PinnedAllocator {
     cudaErrchk(cudaFreeHost(ptr));
     return true;
   }
-
 };
 
 //! Allocator for device memory for use in basic_mempool
@@ -88,7 +87,6 @@ struct DeviceAllocator {
     cudaErrchk(cudaFree(ptr));
     return true;
   }
-
 };
 
 //! Allocator for pre-zeroed device memory for use in basic_mempool
@@ -110,11 +108,11 @@ struct DeviceZeroedAllocator {
     cudaErrchk(cudaFree(ptr));
     return true;
   }
-
 };
 
 using device_mempool_type = basic_mempool::MemPool<DeviceAllocator>;
-using device_zeroed_mempool_type = basic_mempool::MemPool<DeviceZeroedAllocator>;
+using device_zeroed_mempool_type =
+    basic_mempool::MemPool<DeviceZeroedAllocator>;
 using pinned_mempool_type = basic_mempool::MemPool<PinnedAllocator>;
 
 namespace detail
@@ -122,33 +120,31 @@ namespace detail
 
 //! struct containing data necessary to coordinate kernel launches with reducers
 struct cudaInfo {
-  dim3         gridDim  = 0;
-  dim3         blockDim = 0;
-  cudaStream_t stream   = 0;
-  bool         setup_reducers = false;
+  dim3 gridDim = 0;
+  dim3 blockDim = 0;
+  cudaStream_t stream = 0;
+  bool setup_reducers = false;
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
-  cudaInfo*    thread_states = nullptr;
-  omp::mutex   lock;
+  cudaInfo* thread_states = nullptr;
+  omp::mutex lock;
 #endif
 };
 
 //! class that changes a value on construction then resets it at destruction
-template < typename T >
-class SetterResetter {
+template <typename T>
+class SetterResetter
+{
 public:
-  SetterResetter(T& val, T new_val)
-    : m_val(val), m_old_val(val)
+  SetterResetter(T& val, T new_val) : m_val(val), m_old_val(val)
   {
     m_val = new_val;
   }
   SetterResetter(const SetterResetter&) = delete;
-  ~SetterResetter()
-  {
-    m_val = m_old_val;
-  }
+  ~SetterResetter() { m_val = m_old_val; }
+
 private:
   T& m_val;
-  T  m_old_val;
+  T m_old_val;
 };
 
 extern cudaInfo g_status;
@@ -189,7 +185,7 @@ void synchronize(cudaStream_t stream)
   lock_guard<omp::mutex> lock(detail::g_status.lock);
 #endif
   auto iter = detail::g_stream_info_map.find(stream);
-  if (iter != detail::g_stream_info_map.end() ) {
+  if (iter != detail::g_stream_info_map.end()) {
     if (!iter->second) {
       iter->second = true;
       cudaErrchk(cudaStreamSynchronize(stream));
@@ -217,51 +213,38 @@ void launch(cudaStream_t stream)
 
 //! Indicate stream is asynchronous
 RAJA_INLINE
-void peekAtLastError()
-{
-  cudaErrchk(cudaPeekAtLastError());
-}
+void peekAtLastError() { cudaErrchk(cudaPeekAtLastError()); }
 
 //! query whether reducers in this thread should setup for device execution now
 RAJA_INLINE
-bool setupReducers()
-{
-  return detail::tl_status.setup_reducers;
-}
+bool setupReducers() { return detail::tl_status.setup_reducers; }
 
 //! get gridDim of current launch
 RAJA_INLINE
-dim3 currentGridDim()
-{
-  return detail::tl_status.gridDim;
-}
+dim3 currentGridDim() { return detail::tl_status.gridDim; }
 
 //! get blockDim of current launch
 RAJA_INLINE
-dim3 currentBlockDim()
-{
-  return detail::tl_status.blockDim;
-}
+dim3 currentBlockDim() { return detail::tl_status.blockDim; }
 
 //! get stream for current launch
 RAJA_INLINE
-cudaStream_t currentStream()
-{
-  return detail::tl_status.stream;
-}
+cudaStream_t currentStream() { return detail::tl_status.stream; }
 
 //! create copy of loop_body that is setup for device execution
-template < typename LOOP_BODY >
-RAJA_INLINE
-typename std::remove_reference<LOOP_BODY>::type make_launch_body(
-  dim3 gridDim, dim3 blockDim, size_t dynamic_smem, cudaStream_t stream,
-  LOOP_BODY&& loop_body)
+template <typename LOOP_BODY>
+RAJA_INLINE typename std::remove_reference<LOOP_BODY>::type make_launch_body(
+    dim3 gridDim,
+    dim3 blockDim,
+    size_t dynamic_smem,
+    cudaStream_t stream,
+    LOOP_BODY&& loop_body)
 {
   detail::SetterResetter<bool> setup_reducers_srer(
-                                        detail::tl_status.setup_reducers, true);
+      detail::tl_status.setup_reducers, true);
 
-  detail::tl_status.stream   = stream;
-  detail::tl_status.gridDim  = gridDim;
+  detail::tl_status.stream = stream;
+  detail::tl_status.gridDim = gridDim;
   detail::tl_status.blockDim = blockDim;
 
   return {loop_body};
