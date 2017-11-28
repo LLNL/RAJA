@@ -755,7 +755,8 @@ struct ReduceAtomic_Data {
 
 //! Cuda Reduction entity -- generalize on reduction, and type
 template <bool Async, typename Combiner, typename T, bool maybe_atomic>
-struct Reduce {
+class Reduce {
+public:
   Reduce() = delete;
 
   //! create a reduce object
@@ -875,8 +876,10 @@ private:
 
 //! specialization of ReduceSum for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+class ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic> {
+
+    public:
   using Base = cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable operator+= for ReduceSum -- alias for combine()
@@ -890,8 +893,10 @@ struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMin for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+class ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic> {
+
+    public:
   using Base = cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable min() for ReduceMin -- alias for combine()
@@ -905,8 +910,10 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMax for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+class ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic> {
+
+    public:
   using Base = cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable max() for ReduceMax -- alias for combine()
@@ -920,8 +927,10 @@ struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMinLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>, RAJA::reduce::detail::ValueLoc<T>, maybe_atomic> {
+
+    public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
   using Base = cuda::Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
@@ -951,8 +960,9 @@ struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMaxLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
     : public cuda::Reduce<Async, RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>, RAJA::reduce::detail::ValueLoc<T, false>, maybe_atomic> {
+    public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
   using Base = cuda::Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
