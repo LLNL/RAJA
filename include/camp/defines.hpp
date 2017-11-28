@@ -86,7 +86,6 @@ struct AssertValue {
 #define CHECK_IEQ(X, Y) \
   static_assert(AssertValue<UNQUOTE X, UNQUOTE Y>::value, #X "::value == " #Y)
 #endif
-
 }
 
 #endif /*  */

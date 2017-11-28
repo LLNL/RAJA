@@ -126,8 +126,10 @@
  * \endcode
  *******************************************************************************
  */
-template < typename... T >
-RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T&&...) noexcept {}
+template <typename... T>
+RAJA_HOST_DEVICE RAJA_INLINE void RAJA_UNUSED_VAR(T &&...) noexcept
+{
+}
 
 /*!
  * \def RAJA_STRINGIFY_HELPER(x)
@@ -159,31 +161,33 @@ inline void RAJA_ABORT_OR_THROW(const char *str)
 //! Macros for marking deprecated features in RAJA
 /*!
  * To deprecate a function, place immediately before the return type
- * To deprecate a member of a class or struct, place immediately before the declaration
+ * To deprecate a member of a class or struct, place immediately before the
+ * declaration
  * To deprecate a typedef, place immediately before the declaration.
- * To deprecate a struct or class, place immediately after the 'struct'/'class' keyword
+ * To deprecate a struct or class, place immediately after the 'struct'/'class'
+ * keyword
  */
 
-#if ( __cplusplus >= 201402L )
-# define RAJA_HAS_CXX14 1
-# define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+#if (__cplusplus >= 201402L)
+#define RAJA_HAS_CXX14 1
+#define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
 #elif defined(__has_cpp_attribute)
-# if __has_cpp_attribute(deprecated)
-#  define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
-# endif
+#if __has_cpp_attribute(deprecated)
+#define RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED 1
+#endif
 #endif
 
 #ifdef RAJA_HAS_CXX_ATTRIBUTE_DEPRECATED
 
 // When using a C++14 compiler, use the standard-specified deprecated attribute
-# define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
-# define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
+#define RAJA_DEPRECATE(Msg) [[deprecated(Msg)]]
+#define RAJA_DEPRECATE_ALIAS(Msg) [[deprecated(Msg)]]
 
 #elif defined(_MSC_VER)
 
 // for MSVC, use __declspec
-# define RAJA_DEPRECATE(Msg) __declspec(deprecated(Msg))
-# define RAJA_DEPRECATE_ALIAS(Msg)
+#define RAJA_DEPRECATE(Msg) __declspec(deprecated(Msg))
+#define RAJA_DEPRECATE_ALIAS(Msg)
 
 #else
 

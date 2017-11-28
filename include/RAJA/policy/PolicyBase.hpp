@@ -32,7 +32,16 @@
 namespace RAJA
 {
 
-enum class Policy { undefined, sequential, loop, simd, openmp, target_openmp, cuda, tbb };
+enum class Policy {
+  undefined,
+  sequential,
+  loop,
+  simd,
+  openmp,
+  target_openmp,
+  cuda,
+  tbb
+};
 
 enum class Pattern { undefined, forall, reduce, taskgraph };
 
@@ -76,27 +85,21 @@ struct platform_of {
 };
 
 template <typename PolicyType, RAJA::Policy P_>
-struct policy_is
-    : camp::num<policy_of<camp::decay<PolicyType>>::value
-                      == P_> {
+struct policy_is : camp::num<policy_of<camp::decay<PolicyType>>::value == P_> {
 };
 
 template <typename PolicyType, RAJA::Pattern P_>
 struct pattern_is
-    : camp::num<pattern_of<camp::decay<PolicyType>>::value
-                      == P_> {
+    : camp::num<pattern_of<camp::decay<PolicyType>>::value == P_> {
 };
 
 template <typename PolicyType, RAJA::Launch L_>
-struct launch_is
-    : camp::num<launch_of<camp::decay<PolicyType>>::value
-                      == L_> {
+struct launch_is : camp::num<launch_of<camp::decay<PolicyType>>::value == L_> {
 };
 
 template <typename PolicyType, RAJA::Platform P_>
 struct platform_is
-    : camp::num<platform_of<camp::decay<PolicyType>>::value
-                      == P_> {
+    : camp::num<platform_of<camp::decay<PolicyType>>::value == P_> {
 };
 
 template <typename Inner>
@@ -138,8 +141,7 @@ struct ExecutionPolicy
           has_type<::RAJA::Policy>(camp::decay<decltype(Pol::policy)>()),
           has_type<::RAJA::Pattern>(camp::decay<decltype(Pol::pattern)>()),
           has_type<::RAJA::Launch>(camp::decay<decltype(Pol::launch)>()),
-          has_type<::RAJA::Platform>(
-              camp::decay<decltype(Pol::platform)>())) {
+          has_type<::RAJA::Platform>(camp::decay<decltype(Pol::platform)>())) {
 };
 
 }  // end namespace concepts

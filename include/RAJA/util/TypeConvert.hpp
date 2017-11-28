@@ -70,21 +70,17 @@ namespace util
 /*!
  * Reinterpret any datatype as another datatype of the same size
  */
-template<typename A, typename B>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-constexpr
-B reinterp_A_as_B(A const &val){
-  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+template <typename A, typename B>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A const &val)
+{
+  static_assert(sizeof(A) == sizeof(B), "A and B must be same size");
   return reinterpret_cast<B const volatile &>(val);
 }
 
-template<typename A, typename B>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-constexpr
-B reinterp_A_as_B(A volatile const &val){
-  static_assert(sizeof(A)==sizeof(B), "A and B must be same size");
+template <typename A, typename B>
+RAJA_INLINE RAJA_HOST_DEVICE constexpr B reinterp_A_as_B(A volatile const &val)
+{
+  static_assert(sizeof(A) == sizeof(B), "A and B must be same size");
   return reinterpret_cast<B const volatile &>(val);
 }
 

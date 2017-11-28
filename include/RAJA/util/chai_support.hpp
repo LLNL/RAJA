@@ -58,8 +58,8 @@
 
 #ifdef RAJA_ENABLE_CHAI
 
-#include "chai/ExecutionSpaces.hpp"
 #include "chai/ArrayManager.hpp"
+#include "chai/ExecutionSpaces.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 
@@ -93,7 +93,7 @@ struct get_space_impl<Platform::host> {
 };
 
 #if defined(RAJA_ENABLE_CUDA)
-template<>
+template <>
 struct get_space_impl<Platform::cuda> {
   static constexpr chai::ExecutionSpace value = chai::GPU;
 };
@@ -141,19 +141,15 @@ struct get_space<RAJA::NestedPolicy<RAJA::ExecList<POLICIES...>, TAGS>>
 };
 
 
-template <typename ... POLICIES>
+template <typename... POLICIES>
 struct get_space_from_list<camp::list<POLICIES...>> {
   static constexpr chai::ExecutionSpace value =
-        get_space_from_list< typename POLICIES::policy_type ...>::value;
+      get_space_from_list<typename POLICIES::policy_type...>::value;
 };
-
-
 }
 }
 
-#endif // RAJA_ENABLE_CHAI
-
-
+#endif  // RAJA_ENABLE_CHAI
 
 
 namespace RAJA
@@ -167,13 +163,14 @@ namespace detail
  *
  * This function is always defined, and is a NOP if CHAI is not enabled.
  */
-template<typename ExecutionPolicy>
-RAJA_INLINE
-void setChaiExecutionSpace(){
+template <typename ExecutionPolicy>
+RAJA_INLINE void setChaiExecutionSpace()
+{
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
   using EP = typename std::decay<ExecutionPolicy>::type;
-  //printf("RAJA::setChaiExecutionSpace to %d\n", (int)(detail::get_space<EP>::value));
+  // printf("RAJA::setChaiExecutionSpace to %d\n",
+  // (int)(detail::get_space<EP>::value));
   rm->setExecutionSpace(detail::get_space<EP>::value);
 #endif
 }
@@ -184,15 +181,14 @@ void setChaiExecutionSpace(){
  * This function is always defined, and is a NOP if CHAI is not enabled.
  */
 RAJA_INLINE
-void clearChaiExecutionSpace(){
+void clearChaiExecutionSpace()
+{
 #if defined(RAJA_ENABLE_CHAI)
   chai::ArrayManager* rm = chai::ArrayManager::getInstance();
-  //std::cout << "RAJA::clearChaiExecutionSpace" << std::endl;
+  // std::cout << "RAJA::clearChaiExecutionSpace" << std::endl;
   rm->setExecutionSpace(chai::NONE);
 #endif
 }
-
-
 }
 }
 

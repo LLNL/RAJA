@@ -221,7 +221,6 @@ CAMP_HOST_DEVICE void safe_swap(T& t1, T& t2)
   using std::swap;
   swap(t1, t2);
 }
-
 }
 
 #endif /* CAMP_HELPERS_HPP */

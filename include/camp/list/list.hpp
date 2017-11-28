@@ -9,7 +9,6 @@ template <typename... Ts>
 struct list {
   using type = list;
 };
-
 }
 
 #endif /* CAMP_LIST_LIST_HPP */

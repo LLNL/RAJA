@@ -29,8 +29,8 @@
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/config.hpp"
-#include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/pattern/reduce.hpp"
+#include "RAJA/policy/PolicyBase.hpp"
 
 namespace RAJA
 {
@@ -40,7 +40,6 @@ using cuda_dim_t = uint3;
 #else
 using cuda_dim_t = dim3;
 #endif
-
 
 
 ///
@@ -110,7 +109,7 @@ template <>
 struct get_launch<false> {
   static constexpr RAJA::Launch value = RAJA::Launch::sync;
 };
-} // end namespace detail
+}  // end namespace detail
 
 namespace policy
 {
@@ -132,12 +131,11 @@ struct cuda_exec
  * Policy for on-device loops, akin to RAJA::loop_exec
  */
 struct cuda_loop_exec
-    : public RAJA::
-              make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
-                                                    RAJA::Pattern::forall,
-                                                    RAJA::Launch::sync,
-                                                    RAJA::Platform::cuda> {
-    };
+    : public RAJA::make_policy_pattern_launch_platform_t<RAJA::Policy::cuda,
+                                                         RAJA::Pattern::forall,
+                                                         RAJA::Launch::sync,
+                                                         RAJA::Platform::cuda> {
+};
 
 //
 // NOTE: There is no Index set segment iteration policy for CUDA
@@ -190,13 +188,13 @@ constexpr const int WARP_SIZE = 32;
 constexpr const int MAX_BLOCK_SIZE = 1024;
 constexpr const int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
-      "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
+              "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
-      "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
-      "a multiple of WARP_SIZE");
+              "RAJA Assumption Broken: MAX_BLOCK_SIZE not "
+              "a multiple of WARP_SIZE");
 
-} // end namespace cuda
-} // end namespace policy
+}  // end namespace cuda
+}  // end namespace policy
 
 using policy::cuda::cuda_exec;
 using policy::cuda::cuda_loop_exec;
@@ -380,5 +378,5 @@ using cuda_block_z_exec = CudaPolicy<CudaBlock<Dim3z>>;
 
 }  // closing brace for RAJA namespace
 
-#endif // RAJA_ENABLE_CUDA
+#endif  // RAJA_ENABLE_CUDA
 #endif

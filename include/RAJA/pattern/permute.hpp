@@ -83,9 +83,7 @@ struct ForallN_Permute_Functor_impl<camp::idx_seq<Range...>,
 };
 template <typename PERM, typename BODY>
 using ForallN_Permute_Functor =
-    ForallN_Permute_Functor_impl<camp::idx_seq_from_t<PERM>,
-                                 PERM,
-                                 BODY>;
+    ForallN_Permute_Functor_impl<camp::idx_seq_from_t<PERM>, PERM, BODY>;
 
 /*!
  * \brief Permutation policy function, providing loop interchange.

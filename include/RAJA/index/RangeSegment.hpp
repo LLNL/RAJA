@@ -79,7 +79,7 @@ template <typename StorageT, typename DiffT = Index_type>
 struct TypedRangeSegment {
 
   //! the underlying iterator type
-  using iterator = Iterators::numeric_iterator<StorageT,DiffT>;
+  using iterator = Iterators::numeric_iterator<StorageT, DiffT>;
   //! the underlying value_type type
   /*!
    * this corresponds to the template parameter
