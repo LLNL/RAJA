@@ -232,11 +232,13 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
 
 
 
-  template <typename BaseWrapper, typename ... LoopPol>
+  template <typename BaseWrapper, typename BeginTuple, typename ... LoopPol>
   struct ForWrapper {
 
     using data_type = typename BaseWrapper::data_type;
     data_type data;
+
+    BeginTuple begin_tuple;
 
     using CuWrap = internal::CudaWrapper<BaseWrapper::cur_policy,
                                          BaseWrapper::num_policies,
@@ -248,8 +250,9 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
 
 
     // Explicitly unwrap the data from the wrapper
-    ForWrapper(BaseWrapper const &w, LoopPol const &... pol) :
+    ForWrapper(BaseWrapper const &w, BeginTuple const &bt, LoopPol const &... pol) :
       data(w.data),
+      begin_tuple(bt),
       loop_policies(camp::make_tuple(pol...))
     {}
 
@@ -263,13 +266,13 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
       // grab the loop policy
       auto &policy = camp::get<idx>(loop_policies);
 
-      //printf("policy<%d>.distance=%d  ", (int)idx, (int)policy.distance);
-
       // grab the For type from our type list
       using ft = typename camp::at_v<ft_tuple, idx>::type;
 
       // Assign the For index value to the correct argument
-      int loop_value = policy();
+      auto &begin = camp::get<idx>(begin_tuple);
+      int loop_value = *(begin + policy());
+      //int loop_value = policy();
       data.template assign_index<ft::index_val>( loop_value );
 
       return loop_value;
@@ -300,7 +303,6 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
       // if any of the loops indices were out-of-bounds, then min_val will
       // be INT_MIN
       if(in_bounds){
-        //camp::invoke(data.index_tuple, data.f);
         CuWrap wrap(data);
         wrap();
       }
@@ -322,13 +324,20 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES ...>> {
      * The wrapped body is the device function to be launched, and does all
      * of the block/thread idx unpacking and assignment
     */
+    auto begin_tuple = camp::make_tuple(camp::get<FOR_TYPES::index_val>(wrap.data.st).begin()...);
+
     auto cuda_wrap =
-        ForWrapper<WrappedBody, typename FOR_TYPES::policy_type::cuda_exec_policy...>(
+        ForWrapper<WrappedBody,
+                   decltype(begin_tuple),
+                   typename FOR_TYPES::policy_type::cuda_exec_policy...>(
             wrap,
+
+            begin_tuple,
 
             typename FOR_TYPES::policy_type::cuda_exec_policy (
                     dims, camp::get<FOR_TYPES::index_val>(wrap.data.st)
              ) ...
+
         );
 
 
