@@ -139,27 +139,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
 
   // Sequential policy
-  using fdPolicy = RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, 
-                                                     RAJA::seq_exec>>;
+  //using fdPolicy = RAJA::nested::Policy<
+  //RAJA::nested::For<1, RAJA::seq_exec >,
+  //RAJA::nested::For<0, RAJA::seq_exec> >;
 
   // OpenMP policy
-  // using fdPolicy =
-  // RAJA::NestedPolicy<RAJA::ExecList
-  //<RAJA::omp_collapse_nowait_exec,
-  // RAJA::omp_collapse_nowait_exec>,
-  // RAJA::OMP_Parallel<>>;
+  using fdPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
+    RAJA::nested::For<1, RAJA::seq_exec > >;
 
   // CUDA policy
-  // using fdPolicy
-  //= RAJA::NestedPolicy<RAJA::ExecList
-  //<RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_DIM_X>,
-  // RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_DIM_Y>>>;
+  //using fdPolicy = RAJA::nested::Policy<
+  //RAJA::nested::CudaCollapse<
+  //RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+  //RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+
 
   time = 0;
   setIC(P1, P2, (time - dt), time, grid);
   for (int k = 0; k < nt; ++k) {
 
     wave<double, fdPolicy>(P1, P2, fdBounds, ct, grid.nx);
+
     time += dt;
 
     double *Temp = P2;
@@ -195,11 +196,13 @@ void computeErr(double *P, double tf, grid_s grid)
 
   RAJA::RangeSegment fdBounds(0, grid.nx);
   RAJA::ReduceMax<RAJA::seq_reduce, double> tMax(-1.0);
-  using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+  using initialPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::loop_exec >,
+    RAJA::nested::For<0, RAJA::loop_exec> >;
+
+  RAJA::nested::forall(initialPolicy{}, camp::make_tuple(fdBounds,fdBounds),
+                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
 
       int id = tx + grid.nx * ty;
       double x = grid.ox + tx * grid.dx;
@@ -223,13 +226,15 @@ void computeErr(double *P, double tf, grid_s grid)
 void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 {
 
-  using myPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
   RAJA::RangeSegment fdBounds(0, grid.nx);
-  
-  RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
 
+  using initialPolicy = RAJA::nested::Policy<
+  RAJA::nested::For<1, RAJA::loop_exec >,
+    RAJA::nested::For<0, RAJA::loop_exec> >;
+  
+  RAJA::nested::forall(initialPolicy{}, camp::make_tuple(fdBounds,fdBounds),
+                       [=] (RAJA::Index_type tx, RAJA::Index_type ty) {
+                         
       int id = tx + ty * grid.nx;
       double x = grid.ox + tx * grid.dx;
       double y = grid.ox + ty * grid.dx;
@@ -239,16 +244,14 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
     });
 }
 
-/*
-  Wave Propagator
-*/
+
+
 template <typename T, typename fdNestedPolicy>
 void wave(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx)
 {
- 
-   RAJA::forallN<fdNestedPolicy>(fdBounds, fdBounds, 
-     [=] RAJA_HOST_DEVICE(RAJA::Index_type ty, RAJA::Index_type tx) {
-      
+
+  RAJA::nested::forall(fdNestedPolicy{}, camp::make_tuple(fdBounds,fdBounds),
+                       [=] RAJA_HOST_DEVICE (RAJA::Index_type tx, RAJA::Index_type ty) {
      /*
         Coefficients for fourth order stencil
       */
