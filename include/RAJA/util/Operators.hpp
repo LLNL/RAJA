@@ -62,10 +62,10 @@
 
 #include "RAJA/util/concepts.hpp"
 
+#include <stdint.h>
 #include <cfloat>
 #include <cstdint>
 #include <type_traits>
-#include <stdint.h>
 
 #ifdef RAJA_CHECK_LIMITS
 #include <limits>
@@ -303,12 +303,13 @@ struct floating_point_limits<long double> {
 }  // end namespace detail
 
 template <typename T>
-struct limits : public std::conditional<
-                    std::is_integral<T>::value,
-                    typename std::conditional<std::is_unsigned<T>::value,
-                                              detail::unsigned_limits<T>,
-                                              detail::signed_limits<T>>::type,
-                    detail::floating_point_limits<T>>::type {
+struct limits
+    : public std::
+          conditional<std::is_integral<T>::value,
+                      typename std::conditional<std::is_unsigned<T>::value,
+                                                detail::unsigned_limits<T>,
+                                                detail::signed_limits<T>>::type,
+                      detail::floating_point_limits<T>>::type {
 };
 
 #ifdef RAJA_CHECK_LIMITS
@@ -568,8 +569,8 @@ struct BinaryFunction
 };
 
 template <typename Function, typename Return, typename Arg = Return>
-struct UnaryFunction
-    : DefineConcept(convertible_to<Return>(camp::val<Function>()(camp::val<Arg>()))) {
+struct UnaryFunction : DefineConcept(convertible_to<Return>(
+                           camp::val<Function>()(camp::val<Arg>()))) {
 };
 
 namespace detail

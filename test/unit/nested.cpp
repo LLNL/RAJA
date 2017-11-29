@@ -201,4 +201,254 @@ CUDA_TEST(Nested, CudaCollapse2)
        });
 }
 
+
+CUDA_TEST(Nested, CudaReduceA)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
+      >,
+      RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+CUDA_TEST(Nested, CudaReduceB)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::For<2, RAJA::loop_exec>,
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+        RAJA::nested::For<1, RAJA::cuda_threadblock_z_exec<4>>
+      > >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+
+CUDA_TEST(Nested, CudaReduceC)
+{
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::For<2, RAJA::loop_exec>,
+      RAJA::nested::For<0, RAJA::loop_exec>,
+      RAJA::nested::For<1, RAJA::cuda_exec<12>>
+      >;
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<12>, int> reducer(0);
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, 3),
+                       RAJA::RangeSegment(0, 2),
+                       RAJA::RangeSegment(0, 5)),
+      [=] RAJA_DEVICE (Index_type i, Index_type j, Index_type k) {
+        reducer += 1;
+       });
+
+
+  ASSERT_EQ((int)reducer, 3*2*5);
+}
+
+CUDA_TEST(Nested, SubRange_ThreadBlock)
+{
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<1024>>
+      > >;
+
+  size_t num_elem = 2048;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(first, last)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 1.0;
+       });
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, num_elem-20);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
+CUDA_TEST(Nested, SubRange_Block)
+{
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_block_x_exec>
+      > >;
+
+  size_t num_elem = 2048;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(first, last)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 1.0;
+       });
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, num_elem-20);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
+
+CUDA_TEST(Nested, SubRange_Thread)
+{
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>
+      > >;
+
+  size_t num_elem = 1024;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(first, last)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 1.0;
+       });
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, num_elem-20);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
+
+CUDA_TEST(Nested, SubRange_Complex)
+{
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>
+      > >;
+
+  using ExecPolicy =
+      RAJA::nested::Policy<
+        RAJA::nested::CudaCollapse<
+          RAJA::nested::For<0, RAJA::cuda_block_x_exec>,
+          RAJA::nested::For<1, RAJA::cuda_thread_x_exec>>,
+        RAJA::nested::For<2, RAJA::cuda_loop_exec> >;
+
+  size_t num_elem = 1024;
+  size_t first = 10;
+  size_t last = num_elem - 10;
+
+  double *ptr = nullptr;
+  cudaErrchk(cudaMallocManaged(&ptr, sizeof(double) * num_elem) );
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0, num_elem)),
+      [=] RAJA_HOST_DEVICE (Index_type i) {
+        ptr[i] = 0.0;
+       });
+
+  RAJA::nested::forall(
+      ExecPolicy{},
+      camp::make_tuple(RAJA::RangeSegment(first, last),
+                       RAJA::RangeSegment(0, 16),
+                       RAJA::RangeSegment(0, 32)),
+      [=] RAJA_HOST_DEVICE (Index_type i, Index_type j, Index_type k) {
+        //if(j == 0 && k == 0){
+          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(ptr+i, 1.0);
+        //}
+       });
+  cudaDeviceSynchronize();
+
+  size_t count = 0;
+  for(size_t i = 0;i < num_elem; ++ i){
+    count += ptr[i];
+  }
+  ASSERT_EQ(count, (num_elem-20)*16*32);
+  for(size_t i = 0;i < 10;++ i){
+    ASSERT_EQ(ptr[i], 0.0);
+    ASSERT_EQ(ptr[num_elem-1-i], 0.0);
+  }
+}
+
 #endif

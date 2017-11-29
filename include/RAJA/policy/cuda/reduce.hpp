@@ -72,45 +72,39 @@ template <typename Combiner>
 struct atomic;
 
 template <typename T>
-struct atomic<sum<T>>
-{
-  RAJA_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
+struct atomic<sum<T>> {
+  RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
     RAJA::atomic::atomicAdd<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
 template <typename T>
-struct atomic<min<T>>
-{
-  RAJA_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
+struct atomic<min<T>> {
+  RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
     RAJA::atomic::atomicMin<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
 template <typename T>
-struct atomic<max<T>>
-{
-  RAJA_DEVICE RAJA_INLINE
-  void operator()(T &val, const T v)
+struct atomic<max<T>> {
+  RAJA_DEVICE RAJA_INLINE void operator()(T& val, const T v)
   {
     RAJA::atomic::atomicMax<T>(RAJA::atomic::cuda_atomic{}, &val, v);
   }
 };
 
-template < typename T >
+template <typename T>
 struct cuda_atomic_available {
   static constexpr const bool value =
-      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T))) ||
-      std::is_same<T, float>::value || std::is_same<T, double>::value;
+      (std::is_integral<T>::value && (4 == sizeof(T) || 8 == sizeof(T)))
+      || std::is_same<T, float>::value || std::is_same<T, double>::value;
 };
 
-} // namespace cuda
+}  // namespace cuda
 
-} // namespace reduce
+}  // namespace reduce
 
 namespace cuda
 {
@@ -122,48 +116,73 @@ namespace impl
  * \brief Abstracts T into an equal or greater size array of integers whose
  * size is between min_integer_type_size and max_interger_type_size inclusive.
  */
-template < typename T, size_t min_integer_type_size = 1, size_t max_integer_type_size = sizeof(long long) >
+template <typename T,
+          size_t min_integer_type_size = 1,
+          size_t max_integer_type_size = sizeof(long long)>
 union AsIntegerArray {
 
-  static_assert(min_integer_type_size<=max_integer_type_size, "incompatible min and max integer type size");
-  using integer_type =
-    typename std::conditional<((alignof(T)>=alignof(long long) &&
-                                sizeof(long long)<=max_integer_type_size) ||
-                               sizeof(long)<min_integer_type_size),
-      long long,
-      typename std::conditional<((alignof(T)>=alignof(long) &&
-                                  sizeof(long)<=max_integer_type_size) ||
-                                 sizeof(int)<min_integer_type_size),
-        long,
-        typename std::conditional<((alignof(T)>=alignof(int) &&
-                                    sizeof(int)<=max_integer_type_size) ||
-                                   sizeof(short)<min_integer_type_size),
-          int,
-          typename std::conditional<((alignof(T)>=alignof(short) &&
-                                      sizeof(short)<=max_integer_type_size) ||
-                                     sizeof(char)<min_integer_type_size),
-            short,
-            typename std::conditional<((alignof(T)>=alignof(char) &&
-                                        sizeof(char)<=max_integer_type_size)),
-              char,
-              void
-            >::type
-          >::type
-        >::type
-      >::type
-    >::type;
-  static_assert(!std::is_same<integer_type, void>::value,    "could not find a compatible integer type");
-  static_assert(sizeof(integer_type)>=min_integer_type_size, "integer_type smaller than min integer type size");
-  static_assert(sizeof(integer_type)<=max_integer_type_size, "integer_type greater than max integer type size");
+  static_assert(min_integer_type_size <= max_integer_type_size,
+                "incompatible min and max integer type size");
+  using integer_type = typename std::
+      conditional<((alignof(T) >= alignof(long long)
+                    && sizeof(long long) <= max_integer_type_size)
+                   || sizeof(long) < min_integer_type_size),
+                  long long,
+                  typename std::
+                      conditional<((alignof(T) >= alignof(long)
+                                    && sizeof(long) <= max_integer_type_size)
+                                   || sizeof(int) < min_integer_type_size),
+                                  long,
+                                  typename std::
+                                      conditional<((alignof(T) >= alignof(int)
+                                                    && sizeof(int)
+                                                           <= max_integer_type_size)
+                                                   || sizeof(short)
+                                                          < min_integer_type_size),
+                                                  int,
+                                                  typename std::
+                                                      conditional<((alignof(T)
+                                                                        >= alignof(
+                                                                               short)
+                                                                    && sizeof(
+                                                                           short)
+                                                                           <= max_integer_type_size)
+                                                                   || sizeof(
+                                                                          char)
+                                                                          < min_integer_type_size),
+                                                                  short,
+                                                                  typename std::
+                                                                      conditional<((alignof(
+                                                                                        T)
+                                                                                        >= alignof(
+                                                                                               char)
+                                                                                    && sizeof(
+                                                                                           char)
+                                                                                           <= max_integer_type_size)),
+                                                                                  char,
+                                                                                  void>::
+                                                                          type>::
+                                                          type>::type>::type>::
+          type;
+  static_assert(!std::is_same<integer_type, void>::value,
+                "could not find a compatible integer type");
+  static_assert(sizeof(integer_type) >= min_integer_type_size,
+                "integer_type smaller than min integer type size");
+  static_assert(sizeof(integer_type) <= max_integer_type_size,
+                "integer_type greater than max integer type size");
 
-  constexpr static size_t num_integer_type = (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
+  constexpr static size_t num_integer_type =
+      (sizeof(T) + sizeof(integer_type) - 1) / sizeof(integer_type);
 
   T value;
   integer_type array[num_integer_type];
 
-  RAJA_HOST_DEVICE constexpr AsIntegerArray(T value_) : value(value_) {};
+  RAJA_HOST_DEVICE constexpr AsIntegerArray(T value_) : value(value_){};
 
-  RAJA_HOST_DEVICE constexpr size_t array_size() const { return num_integer_type; }
+  RAJA_HOST_DEVICE constexpr size_t array_size() const
+  {
+    return num_integer_type;
+  }
 };
 
 // cuda 8 only has shfl primitives for 32 bits while cuda 9 has 32 and 64 bits
@@ -185,8 +204,7 @@ constexpr const size_t max_shfl_int_type_size = sizeof(int);
  ******************************************************************************
  */
 template <typename T>
-RAJA_DEVICE RAJA_INLINE
-T shfl_xor_sync(T var, int laneMask)
+RAJA_DEVICE RAJA_INLINE T shfl_xor_sync(T var, int laneMask)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
@@ -201,8 +219,7 @@ T shfl_xor_sync(T var, int laneMask)
 }
 
 template <typename T>
-RAJA_DEVICE RAJA_INLINE
-T shfl_sync(T var, int srcLane)
+RAJA_DEVICE RAJA_INLINE T shfl_sync(T var, int srcLane)
 {
   AsIntegerArray<T, min_shfl_int_type_size, max_shfl_int_type_size> u(var);
 
@@ -218,8 +235,7 @@ T shfl_sync(T var, int srcLane)
 
 //! reduce values in block into thread 0
 template <typename Combiner, typename T>
-RAJA_DEVICE RAJA_INLINE
-T block_reduce(T val, T identity)
+RAJA_DEVICE RAJA_INLINE T block_reduce(T val, T identity)
 {
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
 
@@ -234,7 +250,7 @@ T block_reduce(T val, T identity)
   if (numThreads % policy::cuda::WARP_SIZE == 0) {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
       T rhs = shfl_xor_sync(temp, i);
       Combiner{}(temp, rhs);
     }
@@ -242,7 +258,7 @@ T block_reduce(T val, T identity)
   } else {
 
     // reduce each warp
-    for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
+    for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
       int srcLane = threadId ^ i;
       T rhs = shfl_sync(temp, srcLane);
       // only add from threads that exist (don't double count own value)
@@ -250,7 +266,6 @@ T block_reduce(T val, T identity)
         Combiner{}(temp, rhs);
       }
     }
-
   }
 
   // reduce per warp values
@@ -268,20 +283,19 @@ T block_reduce(T val, T identity)
     if (warpNum == 0) {
 
       // read per warp values
-      if (warpId*policy::cuda::WARP_SIZE < numThreads) {
+      if (warpId * policy::cuda::WARP_SIZE < numThreads) {
         temp = sd.get(warpId);
       } else {
         temp = identity;
       }
 
-      for (int i = 1; i < policy::cuda::WARP_SIZE ; i *= 2) {
+      for (int i = 1; i < policy::cuda::WARP_SIZE; i *= 2) {
         T rhs = shfl_xor_sync(temp, i);
         Combiner{}(temp, rhs);
       }
     }
 
     __syncthreads();
-
   }
 
   return temp;
@@ -291,10 +305,10 @@ T block_reduce(T val, T identity)
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
 template <typename Combiner, typename T, typename TempIterator>
-RAJA_DEVICE RAJA_INLINE
-bool grid_reduce(T& val, T identity,
-                 TempIterator device_mem,
-                 unsigned int* device_count)
+RAJA_DEVICE RAJA_INLINE bool grid_reduce(T& val,
+                                         T identity,
+                                         TempIterator device_mem,
+                                         unsigned int* device_count)
 {
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   int numThreads = blockDim.x * blockDim.y * blockDim.z;
@@ -345,10 +359,10 @@ bool grid_reduce(T& val, T identity,
 //! reduce values in grid into thread 0 of last running block
 //  returns true if put reduced value in val
 template <typename Combiner, typename T>
-RAJA_DEVICE RAJA_INLINE
-bool grid_reduce_atomic(T& val, T identity,
-                        T* device_mem,
-                        unsigned int* device_count)
+RAJA_DEVICE RAJA_INLINE bool grid_reduce_atomic(T& val,
+                                                T identity,
+                                                T* device_mem,
+                                                unsigned int* device_count)
 {
   int numBlocks = gridDim.x * gridDim.y * gridDim.z;
   unsigned int wrap_around = numBlocks + 1;
@@ -372,7 +386,8 @@ bool grid_reduce_atomic(T& val, T identity,
   bool lastBlock = false;
   if (threadId == 0) {
     // thread waits for device_mem to be initialized
-    while(static_cast<volatile unsigned int*>(device_count)[0] < 2u);
+    while (static_cast<volatile unsigned int*>(device_count)[0] < 2u)
+      ;
     __threadfence();
     RAJA::reduce::cuda::atomic<Combiner>{}(device_mem[0], temp);
     __threadfence();
@@ -410,14 +425,12 @@ public:
   };
 
   //! Iterator over streams used by reducer
-  class StreamIterator {
+  class StreamIterator
+  {
   public:
     StreamIterator() = delete;
 
-    StreamIterator(StreamNode* sn)
-      : m_sn(sn)
-    {
-    }
+    StreamIterator(StreamNode* sn) : m_sn(sn) {}
 
     const StreamIterator& operator++()
     {
@@ -432,10 +445,7 @@ public:
       return ret;
     }
 
-    cudaStream_t& operator*()
-    {
-      return m_sn->stream;
-    }
+    cudaStream_t& operator*() { return m_sn->stream; }
 
     bool operator==(const StreamIterator& rhs) const
     {
@@ -452,14 +462,12 @@ public:
   };
 
   //! Iterator over all values generated by reducer
-  class StreamNodeIterator {
+  class StreamNodeIterator
+  {
   public:
     StreamNodeIterator() = delete;
 
-    StreamNodeIterator(StreamNode* sn, Node* n)
-      : m_sn(sn), m_n(n)
-    {
-    }
+    StreamNodeIterator(StreamNode* sn, Node* n) : m_sn(sn), m_n(n) {}
 
     const StreamNodeIterator& operator++()
     {
@@ -482,10 +490,7 @@ public:
       return ret;
     }
 
-    T& operator*()
-    {
-      return m_n->value;
-    }
+    T& operator*() { return m_n->value; }
 
     bool operator==(const StreamNodeIterator& rhs) const
     {
@@ -502,37 +507,24 @@ public:
     Node* m_n;
   };
 
-  PinnedTally()
-    : stream_list(nullptr)
-  {
-
-  }
+  PinnedTally() : stream_list(nullptr) {}
 
   PinnedTally(const PinnedTally&) = delete;
 
   //! get begin iterator over streams
-  StreamIterator streamBegin()
-  {
-    return{stream_list};
-  }
+  StreamIterator streamBegin() { return {stream_list}; }
 
   //! get end iterator over streams
-  StreamIterator streamEnd()
-  {
-    return{nullptr};
-  }
+  StreamIterator streamEnd() { return {nullptr}; }
 
   //! get begin iterator over values
   StreamNodeIterator begin()
   {
-    return{stream_list, stream_list ? stream_list->node_list : nullptr};
+    return {stream_list, stream_list ? stream_list->node_list : nullptr};
   }
 
   //! get end iterator over values
-  StreamNodeIterator end()
-  {
-    return{nullptr, nullptr};
-  }
+  StreamNodeIterator end() { return {nullptr, nullptr}; }
 
   //! get new value for use in stream
   T* new_value(cudaStream_t stream)
@@ -541,7 +533,7 @@ public:
     lock_guard<omp::mutex> lock(m_mutex);
 #endif
     StreamNode* sn = stream_list;
-    while(sn) {
+    while (sn) {
       if (sn->stream == stream) break;
       sn = sn->next;
     }
@@ -562,7 +554,7 @@ public:
   void synchronize_streams()
   {
     auto end = streamEnd();
-    for(auto s = streamBegin(); s != end; ++s) {
+    for (auto s = streamBegin(); s != end; ++s) {
       synchronize(*s);
     }
   }
@@ -582,10 +574,7 @@ public:
     }
   }
 
-  ~PinnedTally()
-  {
-    free_list();
-  }
+  ~PinnedTally() { free_list(); }
 
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
   omp::mutex m_mutex;
@@ -603,13 +592,14 @@ private:
 //////////////////////////////////////////////////////////////////////
 //
 
-//! Reduction data for Cuda Offload -- stores value, host pointer, and device pointer
+//! Reduction data for Cuda Offload -- stores value, host pointer, and device
+//! pointer
 template <bool Async, typename Combiner, typename T>
 struct Reduce_Data {
 
   mutable T value;
   T identity;
-  unsigned int *device_count;
+  unsigned int* device_count;
   RAJA::detail::SoAPtr<T, device_mempool_type> device;
   bool own_device_ptr;
 
@@ -630,7 +620,7 @@ struct Reduce_Data {
   }
 
   RAJA_HOST_DEVICE
-  Reduce_Data(const Reduce_Data &other)
+  Reduce_Data(const Reduce_Data& other)
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
@@ -658,7 +648,8 @@ struct Reduce_Data {
       dim3 gridDim = currentGridDim();
       size_t numBlocks = gridDim.x * gridDim.y * gridDim.z;
       device.allocate(numBlocks);
-      device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
+      device_count = device_zeroed_mempool_type::getInstance()
+                         .template malloc<unsigned int>(1);
       own_device_ptr = true;
     }
     return act;
@@ -669,9 +660,10 @@ struct Reduce_Data {
   bool teardownForDevice()
   {
     bool act = own_device_ptr;
-    if(act) {
+    if (act) {
       device.deallocate();
-      device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
+      device_zeroed_mempool_type::getInstance().free(device_count);
+      device_count = nullptr;
       own_device_ptr = false;
     }
     return act;
@@ -706,7 +698,7 @@ struct ReduceAtomic_Data {
   }
 
   RAJA_HOST_DEVICE
-  ReduceAtomic_Data(const ReduceAtomic_Data &other)
+  ReduceAtomic_Data(const ReduceAtomic_Data& other)
       : value{other.identity},
         identity{other.identity},
         device_count{other.device_count},
@@ -720,8 +712,8 @@ struct ReduceAtomic_Data {
   {
     T temp = value;
 
-    if (impl::grid_reduce_atomic<Combiner>(temp, identity, device,
-                                           device_count)) {
+    if (impl::grid_reduce_atomic<Combiner>(
+            temp, identity, device, device_count)) {
       *output = temp;
     }
   }
@@ -733,7 +725,8 @@ struct ReduceAtomic_Data {
     bool act = !device && setupReducers();
     if (act) {
       device = device_mempool_type::getInstance().template malloc<T>(1);
-      device_count = device_zeroed_mempool_type::getInstance().template malloc<unsigned int>(1);
+      device_count = device_zeroed_mempool_type::getInstance()
+                         .template malloc<unsigned int>(1);
       own_device_ptr = true;
     }
     return act;
@@ -744,9 +737,11 @@ struct ReduceAtomic_Data {
   bool teardownForDevice()
   {
     bool act = own_device_ptr;
-    if(act) {
-      device_mempool_type::getInstance().free(device);  device = nullptr;
-      device_zeroed_mempool_type::getInstance().free(device_count);  device_count = nullptr;
+    if (act) {
+      device_mempool_type::getInstance().free(device);
+      device = nullptr;
+      device_zeroed_mempool_type::getInstance().free(device_count);
+      device_count = nullptr;
       own_device_ptr = false;
     }
     return act;
@@ -755,7 +750,9 @@ struct ReduceAtomic_Data {
 
 //! Cuda Reduction entity -- generalize on reduction, and type
 template <bool Async, typename Combiner, typename T, bool maybe_atomic>
-struct Reduce {
+class Reduce
+{
+public:
   Reduce() = delete;
 
   //! create a reduce object
@@ -769,7 +766,7 @@ struct Reduce {
 
   //! copy and on host attempt to setup for device
   RAJA_HOST_DEVICE
-  Reduce(const Reduce & other)
+  Reduce(const Reduce& other)
 #if !defined(__CUDA_ARCH__)
       : parent{other.parent},
 #else
@@ -781,7 +778,8 @@ struct Reduce {
 #if !defined(__CUDA_ARCH__)
     if (parent) {
       if (val.setupForDevice()) {
-        tally_or_val_ptr.val_ptr = tally_or_val_ptr.list->new_value(currentStream());
+        tally_or_val_ptr.val_ptr =
+            tally_or_val_ptr.list->new_value(currentStream());
         parent = nullptr;
       }
     }
@@ -795,7 +793,8 @@ struct Reduce {
   {
 #if !defined(__CUDA_ARCH__)
     if (parent == this) {
-      delete tally_or_val_ptr.list; tally_or_val_ptr.list = nullptr;
+      delete tally_or_val_ptr.list;
+      tally_or_val_ptr.list = nullptr;
     } else if (parent) {
       if (val.value != val.identity) {
 #if defined(RAJA_ENABLE_OPENMP) && defined(_OPENMP)
@@ -824,7 +823,7 @@ struct Reduce {
     auto end = tally_or_val_ptr.list->end();
     if (n != end) {
       tally_or_val_ptr.list->synchronize_streams();
-      for ( ; n != end; ++n) {
+      for (; n != end; ++n) {
         Combiner{}(val.value, *n);
       }
       tally_or_val_ptr.list->free_list();
@@ -836,10 +835,7 @@ struct Reduce {
 
   //! apply reduction (const version) -- still combines internal values
   RAJA_HOST_DEVICE
-  void combine(T other) const
-  {
-    Combiner{}(val.value,other);
-  }
+  void combine(T other) const { Combiner{}(val.value, other); }
 
   /*!
    *  \return reference to the local value
@@ -855,17 +851,19 @@ private:
   //  only use list before setup for device and only use val_ptr after
   union tally_u {
     PinnedTally<T>* list;
-    T *val_ptr;
-    constexpr tally_u(PinnedTally<T>* l) : list(l) {};
-    constexpr tally_u(T *v_ptr) : val_ptr(v_ptr) {};
+    T* val_ptr;
+    constexpr tally_u(PinnedTally<T>* l) : list(l){};
+    constexpr tally_u(T* v_ptr) : val_ptr(v_ptr){};
   };
 
   tally_u tally_or_val_ptr;
 
   //! cuda reduction data storage class and folding algorithm
-  using reduce_data_type = typename std::conditional<maybe_atomic && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
-                            cuda::ReduceAtomic_Data<Async, Combiner, T>,
-                            cuda::Reduce_Data<Async, Combiner, T>>::type;
+  using reduce_data_type = typename std::
+      conditional<maybe_atomic
+                      && RAJA::reduce::cuda::cuda_atomic_available<T>::value,
+                  cuda::ReduceAtomic_Data<Async, Combiner, T>,
+                  cuda::Reduce_Data<Async, Combiner, T>>::type;
 
   //! storage for reduction data
   reduce_data_type val;
@@ -875,13 +873,16 @@ private:
 
 //! specialization of ReduceSum for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic> {
+class ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+    : public cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>
+{
+
+public:
   using Base = cuda::Reduce<Async, RAJA::reduce::sum<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable operator+= for ReduceSum -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceSum &operator+=(T rhs) const
+  const ReduceSum& operator+=(T rhs) const
   {
     this->combine(rhs);
     return *this;
@@ -890,13 +891,16 @@ struct ReduceSum<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMin for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic> {
+class ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+    : public cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>
+{
+
+public:
   using Base = cuda::Reduce<Async, RAJA::reduce::min<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable min() for ReduceMin -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceMin &min(T rhs) const
+  const ReduceMin& min(T rhs) const
   {
     this->combine(rhs);
     return *this;
@@ -905,13 +909,16 @@ struct ReduceMin<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMax for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic> {
+class ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+    : public cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>
+{
+
+public:
   using Base = cuda::Reduce<Async, RAJA::reduce::max<T>, T, maybe_atomic>;
   using Base::Base;
   //! enable max() for ReduceMax -- alias for combine()
   RAJA_HOST_DEVICE
-  const ReduceMax &max(T rhs) const
+  const ReduceMax& max(T rhs) const
   {
     this->combine(rhs);
     return *this;
@@ -920,10 +927,17 @@ struct ReduceMax<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMinLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>, RAJA::reduce::detail::ValueLoc<T>, maybe_atomic> {
+class ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+    : public cuda::Reduce<Async,
+                          RAJA::reduce::min<RAJA::reduce::detail::ValueLoc<T>>,
+                          RAJA::reduce::detail::ValueLoc<T>,
+                          maybe_atomic>
+{
+
+public:
   using value_type = RAJA::reduce::detail::ValueLoc<T>;
-  using Base = cuda::Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
+  using Base = cuda::
+      Reduce<Async, RAJA::reduce::min<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -933,7 +947,7 @@ struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
-  const ReduceMinLoc &minloc(T rhs, Index_type loc) const
+  const ReduceMinLoc& minloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;
@@ -951,10 +965,17 @@ struct ReduceMinLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
 
 //! specialization of ReduceMaxLoc for cuda_reduce
 template <size_t BLOCK_SIZE, bool Async, bool maybe_atomic, typename T>
-struct ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
-    : public cuda::Reduce<Async, RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>, RAJA::reduce::detail::ValueLoc<T, false>, maybe_atomic> {
+class ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
+    : public cuda::
+          Reduce<Async,
+                 RAJA::reduce::max<RAJA::reduce::detail::ValueLoc<T, false>>,
+                 RAJA::reduce::detail::ValueLoc<T, false>,
+                 maybe_atomic>
+{
+public:
   using value_type = RAJA::reduce::detail::ValueLoc<T, false>;
-  using Base = cuda::Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
+  using Base = cuda::
+      Reduce<Async, RAJA::reduce::max<value_type>, value_type, maybe_atomic>;
   using Base::Base;
 
   //! constructor requires a default value for the reducer
@@ -964,7 +985,7 @@ struct ReduceMaxLoc<cuda_reduce<BLOCK_SIZE, Async, maybe_atomic>, T>
   }
   //! reducer function; updates the current instance's state
   RAJA_HOST_DEVICE
-  const ReduceMaxLoc &maxloc(T rhs, Index_type loc) const
+  const ReduceMaxLoc& maxloc(T rhs, Index_type loc) const
   {
     this->combine(value_type(rhs, loc));
     return *this;

@@ -3,9 +3,9 @@
 
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/policy/cuda.hpp"
 
 #include "RAJA/pattern/nested/internal.hpp"
 
@@ -52,14 +52,13 @@ struct Collapse : public internal::ForList, public internal::CollapseBase {
   RAJA_HOST_DEVICE constexpr Collapse() : pol{} {}
   RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : pol{ep} {}
 };
-
 }
-
 
 
 #ifdef RAJA_ENABLE_CHAI
 
-namespace detail {
+namespace detail
+{
 
 
 /*
@@ -69,26 +68,23 @@ namespace detail {
  * RAJA::nested::Policy
  */
 template <typename... POLICIES>
-struct get_space<camp::tuple<POLICIES ...>>
-    : public get_space_from_list< // combines exec policies to find exec space
+struct get_space<camp::tuple<POLICIES...>>
+    : public get_space_from_list<  // combines exec policies to find exec space
 
-         // Extract just the execution policies from the tuple
-         RAJA::nested::internal::get_space_policies<
-            typename camp::tuple<POLICIES ...>::TList
-         >
+          // Extract just the execution policies from the tuple
+          RAJA::nested::internal::get_space_policies<
+              typename camp::tuple<POLICIES...>::TList>
 
-      >
-{};
+          > {
+};
 
-} // end detail namespace
+}  // end detail namespace
 
-#endif // RAJA_ENABLE_CHAI
+#endif  // RAJA_ENABLE_CHAI
 
 
 namespace nested
 {
-
-
 
 
 template <camp::idx_t ArgumentId,
@@ -104,7 +100,6 @@ struct TypedFor : public internal::TypedForBase,
   // TODO: add static_assert for valid policy in Pol
   using Base::Base;
 };
-
 
 
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
@@ -184,14 +179,10 @@ struct Executor {
   {
     using ::RAJA::policy::sequential::forall_impl;
     forall_impl(fp.pol,
-                 camp::get<ForType::index_val>(wrap.data.st),
-                 ForWrapper<ForType::index_val, WrappedBody>{wrap});
+                camp::get<ForType::index_val>(wrap.data.st),
+                ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }
 };
-
-
-
-
 
 
 //
@@ -224,7 +215,6 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 };
 
 
-
 template <int idx, int n_policies, typename Data>
 struct Wrapper {
   constexpr static int cur_policy = idx;
@@ -253,7 +243,6 @@ struct Wrapper<n_policies, n_policies, Data> {
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
-
 
 
 template <typename Data>
@@ -288,14 +277,7 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 }  // end namespace nested
 
 
-
-
-
 }  // end namespace RAJA
-
-
-
-
 
 
 #include "RAJA/pattern/nested/tile.hpp"
