@@ -201,6 +201,42 @@ CUDA_TEST(Nested, CudaCollapse2)
        });
 }
 
+CUDA_TEST(Nested, CudaCollapse3)
+{
+
+  using Pol = RAJA::nested::Policy< 
+    RAJA::nested::CudaCollapse<
+    RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
+      RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
+
+  Index_type *sum1;
+  cudaMallocManaged(&sum1, 1*sizeof(Index_type));
+  
+  Index_type *sum2;
+  cudaMallocManaged(&sum2, 1*sizeof(Index_type));
+
+  int N = 21;
+  RAJA::nested::forall(Pol{},
+                       camp::make_tuple(RAJA::RangeSegment(1, N),
+                                        RAJA::RangeSegment(1, N)),
+                       [=] RAJA_DEVICE (Index_type i, Index_type j) {
+                         printf("(%d, %d )\n", (int)i, (int) j );
+                         
+                         RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
+                         RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
+
+                       });
+  
+  cudaDeviceSynchronize();
+
+  ASSERT_EQ( (N*(N+1))/2, *sum1);
+  ASSERT_EQ( (N*(N+1))/2, *sum2);
+
+  cudaFree(sum1);
+  cudaFree(sum2);
+
+}
+
 
 CUDA_TEST(Nested, CudaReduceA)
 {
