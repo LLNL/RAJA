@@ -104,9 +104,9 @@ const int CUDA_BLOCK_SIZE_Y = 16;
 /*
  Macros are used here to simplify indexing
 */
-#define A(x1, x2) A[x1 + N * x2]
-#define B(x1, x2) B[x1 + N * x2]
-#define C(x1, x2) C[x1 + N * x2]
+#define A(x2, x1) A[x1 + N * x2]
+#define B(x2, x1) B[x1 + N * x2]
+#define C(x2, x1) C[x1 + N * x2]
 
 template <typename T>
 void checkSolution(T *C, int N);
