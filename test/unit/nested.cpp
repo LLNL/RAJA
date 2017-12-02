@@ -215,12 +215,12 @@ CUDA_TEST(Nested, CudaCollapse3)
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
 
-  int N = 21;
+  int N = 41;
   RAJA::nested::forall(Pol{},
                        camp::make_tuple(RAJA::RangeSegment(1, N),
                                         RAJA::RangeSegment(1, N)),
                        [=] RAJA_DEVICE (Index_type i, Index_type j) {
-                         printf("(%d, %d )\n", (int)i, (int) j );
+                         //printf("(%d, %d )\n", (int)i, (int) j );
                          
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
@@ -229,8 +229,8 @@ CUDA_TEST(Nested, CudaCollapse3)
   
   cudaDeviceSynchronize();
 
-  ASSERT_EQ( (N*(N+1))/2, *sum1);
-  ASSERT_EQ( (N*(N+1))/2, *sum2);
+  ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum1);
+  ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum2);
 
   cudaFree(sum1);
   cudaFree(sum2);
