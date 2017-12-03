@@ -18,14 +18,15 @@
 View and Layout
 ===============
 
-In machine learning and matrix algebra, multi-dimensional arrays are the work-horse data structure.
-In practice large arrays are typically dynamically by ::
+In machine learning and matrix algebra, multi-dimensional arrays are the workhorse data structure.
+In practice large arrays are typically allocated by ::
 
    double *A = new double [N1*N2]
 
-Where conceptually A points to a rank two tensor of size :math:`N1 \times N2`. In standard C/C++
-multidimensional indexing may be simplified through the use of macros ::
-
+Where A points to a contigous array of data. In this example we would like to treat the data
+as a rank two tensor of size :math:`N_1 \times N_2`. In standard C/C++ we may simplify multi-dimensional
+indexing through the use of macros ::
+  
    #define A(x2, x1) A[x1 + N1 * x2]
 
 In a more broader sense we are introducing a new **view** into the data's **layout**.
@@ -39,7 +40,7 @@ The ``RAJA::View`` wraps a pointer and overloads the paranthesis operator. The b
    RAJA::View<dataType T, RAJA::Layout<DIM>> Aview(A, N1, ..., Nn);
 
 The ``RAJA::View`` is templated on data type and layout (``RAJA::Layout``). The arguments for the instantization
-of the view are the pointer to the data and the length of each dimension (i.e. ``N1, N2, ..., Nn``). 
+of the view are the pointer to the data and the stride of each dimension (i.e. ``N1, N2, ..., Nn``). 
 Accessing the entries may then be done through the following accessor ::
 
    Aview(x2,x1)
@@ -55,9 +56,9 @@ creating a three-dimensional layout with dimension sizes 5, 7, and 11 ::
    // Create a layout object
    Layout<3> layout(5,7,11);
 
-Mappying from the three-dimensional index space to the linear space and vice versa is accomplished by:: 
+Mapping from the three-dimensional index space to the linear space and vice versa is accomplished by::
 
-   //Map from i=2, j=3, k=1 to the one-dimensional index
+  //Map from i=2, j=3, k=1 to the one-dimensional index
    int lin = layout(2,3,1); 
 
    // Map from linear space to 3d indices

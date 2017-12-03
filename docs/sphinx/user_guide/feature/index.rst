@@ -60,9 +60,9 @@ A more general purpose container is the ``RAJA::ListSegment`` and typed ``RAJA::
 ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Both of these containers store non-contiguous indices. Basic usage of the ``RAJA::ListSegment``::
 
     //*Aptr points to an array of values to traverse and Alen is number of elements.
-    RAJA::TypedListSegment<T>(T *Aptr, T Alen)  
+    RAJA::TypedListSegment<T>(T *Aptr, size_t Alen)  
     //or
-    RAJA::ListSegment(RAJA::Index_type *Aptr,RAJA::Index_type Alen)
+    RAJA::ListSegment(RAJA::Index_type *Aptr,size_t Alen)
 
 
 Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments. The utility of the ``RAJA::StaticIndexSet<T>`` is demonstrated in the Red-Black Gauss-Sidel algorithm wherein parallism may be exposed by decomposing the algorithm into two sweeps.
