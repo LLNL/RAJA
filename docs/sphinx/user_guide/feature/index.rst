@@ -39,15 +39,15 @@ The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRange
 an alias for a ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Basic usage is as follows ::
 
    //  Generates a contiguous sequence of numbers by the [start, stop) interval specified 
-   RAJA::TypedRangeSegment<T>(start, stop)  
+   RAJA::TypedRangeSegment<T>(T start, T stop)  
    //or                                                           
-   RAJA::TypedRangeSegment loopBounds(start, stop) 
+   RAJA::RangeSegment loopBounds(RAJA::Index_type start, RAJA::Index_type stop)
     
 
 Under the RAJA programming model, the purpose of these containers is to generate a contiguous sequence of numbers and more fundamentally,
 to serve as the iteration space for loops::
 
-   RAJA::forall<exec_policy>(TypedRangeSegment<T>(begin, end), [=] (RAJA::Index_type i)) {
+   RAJA::forall<exec_policy>(TypedRangeSegment<T>(T begin,T end), [=] (RAJA::Index_type i)) {
      //loop boody
    }
 
@@ -58,11 +58,12 @@ to serve as the iteration space for loops::
 
 A more general purpose container is the ``RAJA::ListSegment`` and typed ``RAJA::TypedListSegment<T>``; as before the ``RAJA::ListSegment`` is an alias for a 
 ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Both of these containers store non-contiguous indices. Basic usage of the ``RAJA::ListSegment``::
-    
-    RAJA::ListSegment<T>(T *Aptr, Alen)  //*Aptr points to an array of values to traverse and Alen is number of elements.
+
+    //*Aptr points to an array of values to traverse and Alen is number of elements.
+    RAJA::TypedListSegment<T>(T *Aptr, T Alen)  
     //or
-    RAJA::ListSegment<T>(T *Aptr, Alen) 
+    RAJA::ListSegment(RAJA::Index_type *Aptr,RAJA::Index_type Alen)
 
 
 Lastly, the ``RAJA::StaticIndexSet<T>`` may be used to hold different instances of segments. The utility of the ``RAJA::StaticIndexSet<T>`` is demonstrated in the Red-Black Gauss-Sidel algorithm wherein parallism may be exposed by decomposing the algorithm into two sweeps.
-We refer the reader to the following example ``example-gauss-sidel.cpp`` for further detail. 
+We refer the reader to the example ``example-gauss-sidel.cpp`` for further detail. 
