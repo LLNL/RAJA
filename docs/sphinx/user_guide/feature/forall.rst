@@ -14,22 +14,22 @@
 
 .. _forall-label:
 
-=====================
-Forall and ForallN
-=====================
+=========================
+Forall and nested::forall
+=========================
 
-The ``forall`` and ``forallN`` loop traversal template methods are 
+The ``forall`` and ``nested::forall`` loop traversal template methods are 
 the building block for most RAJA usage. RAJA users pass application 
 code fragments, such as loop bodies, into these loop traversal methods 
-(using lambda expressions, for example) along with iteration space 
+(using lambda expressions, for example) along with iteration space
 information. Then, once loops are written in the RAJA form, they can
 be run using different programming model back-ends by changing template
 arguments for the execution policies. For information on available RAJA
 execution policies, see :ref:`policies-label`.
 
-.. note:: * All RAJA forall and forallN methods are in the namespace ``RAJA``.
+.. note:: * All RAJA forall and nested::forall methods are in the namespace ``RAJA``.
           * Each loop traversal method is templated on an *execution policy*,
-            or multiple execution policies for the case of ``forallN``.
+            or multiple execution policies for the case of ``nested::forall``.
 
 The ``RAJA::forall`` templates abstract standard C-style for loops.  
 For example, a C-style loop like::
@@ -48,28 +48,29 @@ The RAJA form takes a template argument for the execution policy, and
 two arguments: an object describing the loop iteration space (e.g., a RAJA 
 segment or index set) and a lambda expression defining the loop body.
 
-The ``RAJA::forallN`` traversal templates provide flexibility in
+The ``RAJA::nested::forall`` traversal templates provide flexibility in
 how arbitrary loop nests can be run with minimal source code changes. A
 loop nest, such as::
 
   for (int iN = 0; iN < NN; ++iN) {
     ...
-       for (int i1 = 0; i1 < N1; ++i1) {
+       for (int i0 = 0; i0 < N0; ++i0) {s
          \\body
        }
   }
 
-may be written in a RAJA form as:: 
+may be written in a RAJA form as::
+  
+    RAJA::nested::forall< RAJA::nested::Policy<
+                      RAJA::nested::For<N, exec_policyN>, ...
+                      RAJA::nested::For<0, exec_policy0>,
+		      camp::make_tuple(iter_space IN, ..., iter_space I0),
+                      [=] (index_type iN, ... , index_type i1) {
+                      //loop body
+    });
 
-  RAJA::forallN< RAJA::NestedPolicy<
-                 RAJA::ExecList< exec_policyN, .... , exec_policy1> > >(
-    iter_space IN,..., iter_space I1,
-    [=](index_type iN,..., index_type i1) {
-      // loop body
-  });
-
-A ``RAJA::ForallN`` method is templated on 'N' execution policy arguments,
-and takes N iteration space arguments, one for each level in the loop nest, 
+A ``RAJA::nested::forall`` method is templated on 'N+1' execution policy arguments,
+and takes N+1 iteration space arguments, one for each level in the loop nest, 
 plus a lambda expression for the inner loop body.
 
 .. note:: For the nested loop case, the parameters for the execution policies, 
