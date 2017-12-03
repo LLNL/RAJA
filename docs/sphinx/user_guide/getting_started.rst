@@ -214,7 +214,7 @@ If you want to run the example yourself, here is a complete code listing:
     double* a = new double[1000];
     double* b = new double[1000];
 
-    double* c = 3.14159;
+    double c = 3.14159;
 
     for (int i = 0; i < 1000; i++) {
       a[i] = 1.0;
@@ -232,8 +232,6 @@ To build and run this code, you will need to pass the include directory and
 link against the RAJA library::
 
   $ make -I/path/to/install/include -std=c++11 example.cpp
-
-.. note:: **We should include this code in the examples directory so folks can edit it, recompile, and run easily.**
 
 For more examples, you can check out the tutorial in the ``examples``
 directory. These programs are explained in the :ref:`tutorial-label`.

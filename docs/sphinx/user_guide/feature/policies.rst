@@ -73,14 +73,19 @@ per block. As a starting point, the following policy may be used with the ``RAJA
 
 * ``cuda_exec<int STRIDE_SIZE>`` where STRIDE_SIZE corresponds to the number of threads in a given block.
 
-The user may also specify a number of threads in the x,y, and z components and use in conjunction with
-``RAJA::forallN`` policies. The first three policies are typically used with "outer" loops, while the last three 
-are typically used with inner loops. 
+The nested version enables the user to map global threads in the x,y and z components via the following
+execution policies
 
 * ``cuda_threadblock_x_exec<int X_STRIDE_SIZE>`` - Maps a loop nest to the block with ``X_STRIDE_SIZE`` threads in the x-component.
 * ``cuda_threadblock_y_exec<int Y_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Y_STRIDE_SIZE`` threads in the y-component.
 * ``cuda_threadblock_z_exec<int Z_STRIDE_SIZE>`` - Maps a loop nest to the block with ``Z_STRIDE_SIZE`` threads in the z-component.
 
+Lastly, under the ``RAJA::nested::forall`` method, the user also map loop nest to blocks and threads
+using through following policies
+
+* ``cuda_block_x_exec`` - Maps a loop nest to blocks in the x-component.
+* ``cuda_block_y_exec`` - Maps a loop nest to blocks in the y-component.
+* ``cuda_block_z_exec`` - Maps a loop nest to blocks in the z-component.
 
 * ``cuda_thread_x_exec`` - Maps a loop nest to threads in the x-component.
 * ``cuda_thread_y_exec`` - Maps a loop nest to threads in the y-component.
