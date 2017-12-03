@@ -37,8 +37,9 @@ RAJA Segments
 RAJA introduces a family of segments which serve as containers for iterations spaces. 
 The fundamental segment types are ``RAJA::RangeSegment``, and ``RAJA::TypedRangeSegment``; the former is constructed is 
 an alias for a ``RAJA::TypedRangeSegment<RAJA::Index_type>``. Basic usage is as follows ::
-   
-   RAJA::TypedRangeSegment<T>(start, stop)  //  Generates a contiguous sequence of numbers by the [start, stop) interval specified 
+
+   //  Generates a contiguous sequence of numbers by the [start, stop) interval specified 
+   RAJA::TypedRangeSegment<T>(start, stop)  
    //or                                                           
    RAJA::TypedRangeSegment loopBounds(start, stop) 
     
