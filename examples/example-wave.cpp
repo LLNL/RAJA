@@ -51,11 +51,6 @@
   ---[Constant Values]-------
   sr - Radius of the finite difference stencil
   PI - Value of pi
-
-  CUDA_BLOCK_SIZE_X - Number of threads in the
-                      x-dimension of a cuda thread block
-  CUDA_BLOCK_SIZE_Y - Number of threads in the
-                      y-dimension of a cuda thread block
 */
 
 const int sr = 2;
