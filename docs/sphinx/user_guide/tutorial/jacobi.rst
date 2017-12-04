@@ -110,9 +110,13 @@ The ``jacobiompNestedPolicy`` type is defined as
                     :lines: 279-282
 
 The template parameter after the nested policy specifies that an OpenMP 
-parallel region is created around the loop nest. The nested policy indicates
-that the loops are collapsed into one using the OpenMP *collapse* pragma and
-a *nowait* pragma.
+parallel region is created on the outer loop.
+
+.. #The template parameter after the nested policy specifies that an OpenMP 
+.. #parallel region is created around the loop nest. 
+.. # The nested policy indicates
+.. # that the loops are collapsed into one using the OpenMP *collapse* pragma and
+.. # a *nowait* pragma.
 
 The ``RAJA::forall`` loop computes the residual :math:`\mathcal{E}`. Note that 
 doing this in parallel involves multiple threads writing to the same location 
