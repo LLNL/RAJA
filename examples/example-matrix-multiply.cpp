@@ -245,7 +245,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   printf("RAJA: nested::forall - CUDA Policies\n");
   /*
     This example illustrates creating two-dimensional thread blocks as described
-    under the CUDA nomenclature
+    under the CUDA nomenclature. CudaCollapse is introduced in order to create
+    a single iteration space.
   */
  
   using Pol = RAJA::nested::Policy<

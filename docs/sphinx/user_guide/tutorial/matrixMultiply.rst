@@ -22,7 +22,7 @@ Main RAJA features discussed:
 
   * ``RAJA::View`` multi-dimensional data access
   * ``RAJA::forall`` loop traversal template 
-  * ``RAJA::forallN`` nested-loop traversal template 
+  * ``RAJA::nested::forall`` nested-loop traversal template 
   * RAJA execution policies, including nested-loop policies
 
 
@@ -31,19 +31,19 @@ N x N and store the result in matrix 'C'. To simplify the example, we
 use the following macros to access the matrix entries:
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 107-109
+                    :lines: 105-107
 
 Also, we use a 'memory manager' to simplify allocation of CPU vs. GPU 
 memory depending on how we wish to run the example.  
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 121-123
+                    :lines: 119-121
 
 Assuming we have initialized the arrays holding the data for the matrices,
 a typical C-style nested loop to multiple the matrices is: 
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 136-146
+                    :lines: 134-144
 
 ^^^^^^^^^^^^^^^^^^
 Converting to RAJA
@@ -55,7 +55,7 @@ to the C-style version but without the need for macros. Here, we create a
 two-dimensional N x N 'view' for each matrix: 
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 155-157
+                    :lines: 153-155
 
 For more information about RAJA views, see :ref:`view-label`.
                            
@@ -63,37 +63,37 @@ First, we can convert the outermost loop to use the ``RAJA::forall`` traversal
 method with a sequential execution policy:
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 167-180
+                    :lines: 165-178
 
 Here, the RAJA loop iteration space is defined by a RAJA RangeSegment object:
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 163
+                    :lines: 161
 
 Changing the execution policy to a RAJA OpenMP policy, for example, would 
 enable the outer to run in parallel using CPU multi-threading. See the 
-``RAJA::forallN`` version of the example below for another way to do this.
+``RAJA::nested::forall`` version of the example below for another way to do this.
 
 When the code will not be run on a GPU, ``RAJA::forall`` loops may be nested
 as in the following:
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 187-201  
+                    :lines: 185-199
 
 ^^^^^^^^^^^^^^^^^
 Nested-loop RAJA
 ^^^^^^^^^^^^^^^^^
 
-Here, we recast the matrix-multiplication using the ``RAJA::forallN`` 
+Here, we recast the matrix-multiplication using the ``RAJA::nested::forall`` 
 nested-loop capability.  
 
-Using ``RAJA::forallN``, requires that the execution policy for each loop in 
+Using ``RAJA::nested::forall``, requires that the execution policy for each loop in 
 the nest be described using ``RAJA::NestedPolicy`` and a ``RAJA::ExecList``. 
 Here, the outer loop has an OpenMP 'parallel for' execution policy and the
 loop nested inside uses a sequential policy:
 
 .. literalinclude:: ../../../../examples/example-matrix-multiply.cpp
-                    :lines: 229-240
+                    :lines: 228-239
 
 For more information about RAJA nested-loop functionality, 
 see :ref:`forall-label`.
