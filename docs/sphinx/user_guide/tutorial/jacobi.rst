@@ -21,7 +21,7 @@ Jacobi Iteration
 Main RAJA features discussed:
 
   * ``RAJA::View`` multi-dimensional data access
-  * ``RAJA::forallN`` nested-loop traversal template
+  * ``RAJA::nested::forall`` nested-loop traversal template
   * RAJA nested-loop policies
   * RAJA reduction type
 
@@ -46,7 +46,7 @@ where
 The discrete problem
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The problem domain in the example is the unit square :math:`[-1,1] x [-1, 1]`.
+The problem domain in the example is the unit square :math:`[-1,1] \times [-1, 1]`.
 On the domain, we define grid with uniform grid spacing :math:`h` in x and y.
 The discrete solution values will be computed at the grid points that lie
 at the intersection of the grid lines. Then, the approximate derivatives
@@ -94,14 +94,14 @@ Here, we show a parallel implementation of the jacobi iteration using OpenMP
 and nested-loop RAJA capabilities:
 
 .. literalinclude:: ../../../../examples/example-jacobi.cpp
-                    :lines: 284-317
+                    :lines: 286-310
 
 The iteration spaces for the loops are defined using RAJA RangeSegment objects:
 
 .. literalinclude:: ../../../../examples/example-jacobi.cpp
-                    :lines: 202-203
+                    :lines: 201-202
  
-Here, the ``RAJA::forallN`` loop updates the solution variable at each grid
+Here, the ``RAJA::nested::forall`` loop updates the solution variable at each grid
 point.
 
 The ``jacobiompNestedPolicy`` type is defined as

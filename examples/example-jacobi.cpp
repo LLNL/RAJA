@@ -47,8 +47,8 @@
   The scheme is implemented by allocating two arrays
   (I, Iold) and initialized to zero. The first set of
   nested for loops apply an iteration of the Jacobi
-  scheme. As boundary values are already known the
-  scheme is only applied to the interior nodes.
+  scheme. The scheme is only applied to the interior
+  nodes. 
 
   The second set of nested for loops is used to
   update Iold and compute the l_2 norm of the
@@ -67,7 +67,6 @@
   b. RAJA style nested for loops with sequential iterations
      i. Introduces RAJA reducers for sequential policies
   c. RAJA style nested for loops with omp parallelism
-     i.  Introduces collapsing loops using RAJA omp policies
      ii. Introduces RAJA reducers for omp policies
   d. RAJA style for loop with CUDA parallelism
      i. Introduces RAJA reducers for cuda policies
@@ -267,11 +266,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
    *  OpenMP parallel Jacobi Iteration. 
    *
    *  ----[RAJA Policies]-----------
-   *  RAJA::omp_collapse_nowait_exec -
-   *  parallizes nested loops without introducing nested parallism
-   *
-   *  RAJA::OMP_Parallel<> - Creates a parallel region,
-   *  must be the last argument of the nested policy list
+   *  RAJA::omp_collapse_for_exec -
+   *  introduced a nested region
    *
    *  Note that OpenMP RAJA ReduceSum object performs the reduction
    *  operation for the residual in a thread-safe manner.
@@ -279,7 +275,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   using jacobiOmpNestedPolicy = RAJA::nested::Policy<
   RAJA::nested::For<1, RAJA::omp_parallel_for_exec >,
-    RAJA::nested::For<0, RAJA::seq_exec> >;
+  RAJA::nested::For<0, RAJA::seq_exec> >;
 
   while (resI2 > tol * tol) {
     
@@ -337,8 +333,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   using jacobiCUDANestedPolicy = RAJA::nested::Policy<
     RAJA::nested::CudaCollapse<
-    RAJA::nested::For<0, RAJA::cuda_block_x_exec >,
-    RAJA::nested::For<1, RAJA::cuda_block_y_exec > > >;
+    RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<CUDA_BLOCK_SIZE_X> >,
+    RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<CUDA_BLOCK_SIZE_Y> > > >;
   
   resI2 = 1;
   iteration = 0;
@@ -350,7 +346,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     /*
       Jacobi Iteration 
     */
-    RAJA::nested::forall(jacobiCUDANestedPolicy{}, //Issue here
+    RAJA::nested::forall(jacobiCUDANestedPolicy{},
                          camp::make_tuple(jacobiRange,jacobiRange),
                          [=] __host__ __device__  (RAJA::Index_type m, RAJA::Index_type n) {
                            
