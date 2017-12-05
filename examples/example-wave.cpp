@@ -134,14 +134,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
 
   // Sequential policy
-  //using fdPolicy = RAJA::nested::Policy<
-  //RAJA::nested::For<1, RAJA::seq_exec >,
-  //RAJA::nested::For<0, RAJA::seq_exec> >;
+  using fdPolicy = RAJA::nested::Policy<
+    RAJA::nested::For<1, RAJA::seq_exec >,
+    RAJA::nested::For<0, RAJA::seq_exec> >;
 
   // OpenMP policy
-  using fdPolicy = RAJA::nested::Policy<
-  RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
-    RAJA::nested::For<1, RAJA::seq_exec > >;
+  //using fdPolicy = RAJA::nested::Policy<
+  //RAJA::nested::For<0, RAJA::omp_parallel_for_exec >,
+  //RAJA::nested::For<1, RAJA::seq_exec > >;
 
   // CUDA policy
   //using fdPolicy = RAJA::nested::Policy<
