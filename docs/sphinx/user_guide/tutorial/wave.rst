@@ -20,7 +20,7 @@ Wave Equation
 
 Main RAJA features discussed:
 
-  * ``RAJA::forallN`` nested-loop traversal template
+  * ``RAJA::nested::forall`` nested-loop traversal template
   * RAJA nested-loop policies
 
 
@@ -61,7 +61,7 @@ In the example, we use a fourth-order spatial discretization (stencil width
 :math:`N=2`). The kernel for the acoustic wave equation is:
 
 .. literalinclude:: ../../../../examples/example-wave.cpp
-                    :lines: 249-281
+                    :lines: 248-279
 
 Here, 'fdBounds' is a RAJA RangeSegment:
  
