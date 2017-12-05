@@ -107,7 +107,7 @@ point.
 The ``jacobiompNestedPolicy`` type is defined as
 
 .. literalinclude:: ../../../../examples/example-jacobi.cpp
-                    :lines: 279-282
+                    :lines: 276-278
 
 The template parameter after the nested policy specifies that an OpenMP 
 parallel region is created on the outer loop.
