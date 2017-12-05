@@ -67,8 +67,6 @@
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
 
-#include "RAJA/policy/cuda/shared_memory.hpp"
-
 
 namespace RAJA
 {
