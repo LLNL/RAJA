@@ -46,6 +46,8 @@
 #include "RAJA/policy/cuda/forallN.hpp"
 #include "RAJA/policy/cuda/nested.hpp"
 
+#include "RAJA/policy/cuda/shared_memory.hpp"
+
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
 #endif  // closing endif for header file include guard

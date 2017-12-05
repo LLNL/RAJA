@@ -44,6 +44,12 @@
 
 #include "RAJA/util/basic_mempool.hpp"
 
+
+//
+// Shared memory abstractions
+//
+#include "RAJA/pattern/shared_memory.hpp"
+
 //
 // All platforms must support sequential execution.
 //
@@ -114,6 +120,8 @@
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
+
+
 
 
 

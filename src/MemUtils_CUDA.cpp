@@ -60,6 +60,23 @@ cudaInfo tl_status;
 //! State of raja cuda stream synchronization for cuda reducer objects
 std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true} };
 
+
+
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+// Variables for tracking dynamic shared memory
+//
+/////////////////////////////////////////////////////////////////////////////
+//
+
+//! Activates shared memory configuration in SharedMemory<cuda_shmem> objects
+bool shared_memory_setup_enabled = false;
+
+//! Tracks total number of bytes requested for shared memory
+size_t shared_memory_total_bytes = 0;
+
+
 }  // closing brace for detail namespace
 
 }  // closing brace for cuda namespace

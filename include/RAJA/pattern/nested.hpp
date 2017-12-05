@@ -11,6 +11,8 @@
 
 #include "RAJA/util/chai_support.hpp"
 
+#include "RAJA/policy/cuda/shared_memory.hpp"
+
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
 #include "camp/tuple.hpp"
@@ -272,7 +274,20 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
                     == camp::size<fors>::value,
                 "policy and segment index counts do not match");
   auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
+
+
+  // Turn on shared memory setup
+  RAJA::cuda::detail::shared_memory_setup_enabled = true;
+  RAJA::cuda::detail::shared_memory_total_bytes = 0;
+
   auto ld = make_base_wrapper(data);
+
+  // Turn off shared memory setup
+  RAJA::cuda::detail::shared_memory_setup_enabled = false;
+
+  printf("SHARED MEMORY USED: %ld bytes\n",
+      (long)RAJA::cuda::detail::shared_memory_total_bytes);
+
   // std::cout << typeid(ld).name() << std::endl
   //           << typeid(data.index_tuple).name() << std::endl;
   ld();
