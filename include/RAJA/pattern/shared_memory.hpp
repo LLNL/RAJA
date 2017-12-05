@@ -67,6 +67,12 @@ struct SharedMemory<seq_shmem, T, N> {
 };
 
 
+namespace detail {
+  void startSharedMemorySetup();
+  void finishSharedMemorySetup();
+
+}
+
 
 
 }  // namespace RAJA

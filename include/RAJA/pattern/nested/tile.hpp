@@ -23,7 +23,8 @@ template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy>
 struct Tile {
   const TilePolicy tpol;
   const ExecPolicy epol;
-  Tile(TilePolicy const &tp = TilePolicy{}, ExecPolicy const &ep = ExecPolicy{})
+  RAJA_HOST_DEVICE constexpr Tile(TilePolicy const &tp = TilePolicy{},
+                                  ExecPolicy const &ep = ExecPolicy{})
       : tpol{tp}, epol{ep}
   {
   }
@@ -34,7 +35,7 @@ template <camp::idx_t chunk_size_>
 struct tile_s {
   static constexpr camp::idx_t chunk_size = chunk_size_;
 
-  tile_s() {}
+  RAJA_HOST_DEVICE constexpr tile_s() {}
   constexpr camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
@@ -43,7 +44,8 @@ template <camp::idx_t default_chunk_size>
 struct tile {
   camp::idx_t chunk_size;
 
-  tile(camp::idx_t chunk_size_ = default_chunk_size) : chunk_size{chunk_size_}
+  RAJA_HOST_DEVICE constexpr tile(camp::idx_t chunk_size_ = default_chunk_size)
+      : chunk_size{chunk_size_}
   {
   }
   camp::idx_t get_chunk_size() const { return chunk_size; }

@@ -100,11 +100,12 @@ template <typename Op,
           typename Arg3,
           typename... Rest>
 struct foldl_impl<Op, Arg1, Arg2, Arg3, Rest...> {
-  using Ret = typename foldl_impl<
-      Op,
-      typename std::result_of<Op(typename std::result_of<Op(Arg1, Arg2)>::type,
-                                 Arg3)>::type,
-      Rest...>::Ret;
+  using Ret =
+      typename foldl_impl<Op,
+                          typename std::result_of<Op(
+                              typename std::result_of<Op(Arg1, Arg2)>::type,
+                              Arg3)>::type,
+                          Rest...>::Ret;
 };
 
 template <typename Op, typename Arg1>
@@ -122,7 +123,7 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
     typename foldl_impl<Op, Arg1, Arg2>::Ret
 {
   return camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
-                                        camp::forward<Arg2>(arg2));
+                                      camp::forward<Arg2>(arg2));
 }
 
 template <typename Op,
@@ -140,45 +141,30 @@ RAJA_HOST_DEVICE RAJA_INLINE constexpr auto foldl(Op&& operation,
   return foldl(camp::forward<Op>(operation),
                camp::forward<Op>(operation)(
                    camp::forward<Op>(operation)(camp::forward<Arg1>(arg1),
-                                                  camp::forward<Arg2>(arg2)),
+                                                camp::forward<Arg2>(arg2)),
                    camp::forward<Arg3>(arg3)),
                camp::forward<Rest>(rest)...);
 }
 
-struct adder {
-  template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
-      const Result& l,
-      const Result& r) const
-  {
-    return l + r;
-  }
-};
 
 // Convenience folds
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result sum(Args... args)
 {
-  return foldl(adder(), args...);
+  return foldl(RAJA::operators::plus<Result>(), args...);
 }
-
-
-struct maxer {
-  template <typename Result>
-  RAJA_HOST_DEVICE RAJA_INLINE constexpr Result operator()(
-      const Result& l,
-      const Result& r) const
-  {
-    return l > r ? l : r;
-  }
-};
 
 template <typename Result, typename... Args>
 RAJA_HOST_DEVICE RAJA_INLINE constexpr Result max(Args... args)
 {
-  return foldl(maxer(), args...);
+  return foldl(RAJA::operators::maximum<Result>(), args...);
 }
 
+template <typename Result, typename... Args>
+RAJA_HOST_DEVICE RAJA_INLINE constexpr Result min(Args... args)
+{
+  return foldl(RAJA::operators::minimum<Result>(), args...);
+}
 
 // template<typename Result, size_t N>
 // struct product_first_n;

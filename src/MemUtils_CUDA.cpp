@@ -32,6 +32,8 @@
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
+#include "RAJA/policy/cuda/shared_memory.hpp"
+
 namespace RAJA
 {
 
@@ -74,7 +76,7 @@ std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true
 bool shared_memory_setup_enabled = false;
 
 //! Tracks total number of bytes requested for shared memory
-size_t shared_memory_total_bytes = 0;
+ptrdiff_t shared_memory_total_bytes = 0;
 
 
 }  // closing brace for detail namespace
@@ -82,5 +84,21 @@ size_t shared_memory_total_bytes = 0;
 }  // closing brace for cuda namespace
 
 }  // closing brace for RAJA namespace
+
+
+void RAJA::detail::startSharedMemorySetup(){
+#ifdef RAJA_ENABLE_CUDA
+  printf("ENABLING SHARED MEMORY SETUP\n");
+  RAJA::cuda::detail::shared_memory_setup_enabled = true;
+  RAJA::cuda::detail::shared_memory_total_bytes = 0;
+#endif
+}
+
+void RAJA::detail::finishSharedMemorySetup(){
+#ifdef RAJA_ENABLE_CUDA
+  printf("SHARED MEMORY USED: %ld\n", (long)RAJA::cuda::detail::shared_memory_total_bytes );
+  RAJA::cuda::detail::shared_memory_setup_enabled = false;
+#endif
+}
 
 #endif  // if defined(RAJA_ENABLE_CUDA)

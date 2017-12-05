@@ -72,7 +72,7 @@ dim3 getGridDim(size_t len, dim3 blockDim)
 {
   size_t block_size = blockDim.x * blockDim.y * blockDim.z;
 
-  size_t gridSize = (len + block_size-1) / block_size;
+  size_t gridSize = (len + block_size - 1) / block_size;
 
   return gridSize;
 }
@@ -134,11 +134,14 @@ __device__ __forceinline__ unsigned int getGlobalNumThreads_3D_3D()
  *
  ******************************************************************************
  */
-template <size_t BlockSize, typename Iterator, typename LOOP_BODY, typename IndexType>
-__launch_bounds__ (BlockSize, 1)
-__global__ void forall_cuda_kernel(LOOP_BODY loop_body,
-                                   const Iterator idx,
-                                   IndexType length)
+template <size_t BlockSize,
+          typename Iterator,
+          typename LOOP_BODY,
+          typename IndexType>
+__launch_bounds__(BlockSize, 1) __global__
+    void forall_cuda_kernel(LOOP_BODY loop_body,
+                            const Iterator idx,
+                            IndexType length)
 {
   using RAJA::internal::thread_privatize;
   auto privatizer = thread_privatize(loop_body);
@@ -161,11 +164,11 @@ __global__ void forall_cuda_kernel(LOOP_BODY loop_body,
 
 template <typename Iterable, typename LoopBody, size_t BlockSize, bool Async>
 RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
-                        Iterable&& iter,
-                        LoopBody&& loop_body)
+                             Iterable&& iter,
+                             LoopBody&& loop_body)
 {
   auto begin = std::begin(iter);
-  auto end   = std::end(iter);
+  auto end = std::end(iter);
 
   auto len = std::distance(begin, end);
 
@@ -177,10 +180,15 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     cudaStream_t stream = 0;
 
-    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, 0, stream>>>(
-        RAJA::cuda::make_launch_body(gridSize, BlockSize, 0, stream,
-                               std::forward<LoopBody>(loop_body)),
-        std::move(begin), len);
+    size_t shmem = RAJA::cuda::detail::shared_memory_total_bytes;
+    printf("Launching kernel with shared memory: %ld bytes\n",
+        (long)shmem);
+
+    impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
+        RAJA::cuda::make_launch_body(
+            gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+        std::move(begin),
+        len);
     RAJA::cuda::peekAtLastError();
 
     RAJA::cuda::launch(stream);
@@ -190,6 +198,31 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
   }
 }
 
+
+//
+////////////////////////////////////////////////////////////////////////
+//
+// Function templates for CUDA execution over iterables for within
+// and device kernel.  Called from RAJA::nested::*
+//
+////////////////////////////////////////////////////////////////////////
+//
+
+template <typename Iterable, typename LoopBody>
+RAJA_INLINE RAJA_DEVICE void forall_impl(cuda_loop_exec,
+                                         Iterable&& iter,
+                                         LoopBody&& loop_body)
+{
+  // TODO: we need a portable std::begin, std::end, and std::distance
+  auto begin = iter.begin();  // std::begin(iter);
+  auto end = iter.end();      // std::end(iter);
+
+  auto len = end - begin;  // std::distance(begin, end);
+
+  for (decltype(len) i = 0; i < len; ++i) {
+    loop_body(*(begin + i));
+  }
+}
 
 
 //
@@ -215,8 +248,8 @@ template <typename LoopBody,
           bool Async,
           typename... SegmentTypes>
 RAJA_INLINE void forall_impl(ExecPolicy<seq_segit, cuda_exec<BlockSize, Async>>,
-                        const StaticIndexSet<SegmentTypes...>& iset,
-                        LoopBody&& loop_body)
+                             const StaticIndexSet<SegmentTypes...>& iset,
+                             LoopBody&& loop_body)
 {
   int num_seg = iset.getNumSegments();
   for (int isi = 0; isi < num_seg; ++isi) {

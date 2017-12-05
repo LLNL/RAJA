@@ -3,9 +3,9 @@
 
 
 #include "RAJA/config.hpp"
+#include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
-#include "RAJA/policy/cuda.hpp"
 
 #include "RAJA/pattern/nested/internal.hpp"
 
@@ -38,8 +38,8 @@ struct For : public internal::ForList,
 
   // TODO: add static_assert for valid policy in Pol
   const Pol pol;
-  For() : pol{} {}
-  For(const Pol &p) : pol{p} {}
+  RAJA_HOST_DEVICE constexpr For() : pol{} {}
+  RAJA_HOST_DEVICE constexpr For(const Pol &p) : pol{p} {}
 };
 
 
@@ -51,17 +51,16 @@ struct Collapse : public internal::ForList, public internal::CollapseBase {
   using as_space_list = camp::list<For<-1, ExecPolicy>>;
 
   const ExecPolicy pol;
-  Collapse() : pol{} {}
-  Collapse(ExecPolicy const &ep) : pol{ep} {}
+  RAJA_HOST_DEVICE constexpr Collapse() : pol{} {}
+  RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : pol{ep} {}
 };
-
 }
-
 
 
 #ifdef RAJA_ENABLE_CHAI
 
-namespace detail {
+namespace detail
+{
 
 
 /*
@@ -71,26 +70,23 @@ namespace detail {
  * RAJA::nested::Policy
  */
 template <typename... POLICIES>
-struct get_space<camp::tuple<POLICIES ...>>
-    : public get_space_from_list< // combines exec policies to find exec space
+struct get_space<camp::tuple<POLICIES...>>
+    : public get_space_from_list<  // combines exec policies to find exec space
 
-         // Extract just the execution policies from the tuple
-         RAJA::nested::internal::get_space_policies<
-            typename camp::tuple<POLICIES ...>::TList
-         >
+          // Extract just the execution policies from the tuple
+          RAJA::nested::internal::get_space_policies<
+              typename camp::tuple<POLICIES...>::TList>
 
-      >
-{};
+          > {
+};
 
-} // end detail namespace
+}  // end detail namespace
 
-#endif // RAJA_ENABLE_CHAI
+#endif  // RAJA_ENABLE_CHAI
 
 
 namespace nested
 {
-
-
 
 
 template <camp::idx_t ArgumentId,
@@ -108,11 +104,10 @@ struct TypedFor : public internal::TypedForBase,
 };
 
 
-
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
   constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
-  const PolicyTuple &pt;
+  const PolicyTuple pt;
   SegmentTuple st;
   const typename std::remove_reference<Fn>::type f;
   using index_tuple_t = internal::index_tuple_from_policies_and_segments<
@@ -186,14 +181,10 @@ struct Executor {
   {
     using ::RAJA::policy::sequential::forall_impl;
     forall_impl(fp.pol,
-                 camp::get<ForType::index_val>(wrap.data.st),
-                 ForWrapper<ForType::index_val, WrappedBody>{wrap});
+                camp::get<ForType::index_val>(wrap.data.st),
+                ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }
 };
-
-
-
-
 
 
 //
@@ -226,9 +217,10 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 };
 
 
-
-template <int idx, int n_policies, typename Data, bool Own = false>
+template <int idx, int n_policies, typename Data>
 struct Wrapper {
+  constexpr static int cur_policy = idx;
+  constexpr static int num_policies = n_policies;
   using Next = Wrapper<idx + 1, n_policies, Data>;
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
@@ -243,14 +235,16 @@ struct Wrapper {
 };
 
 // Innermost, execute body
-template <int n_policies, typename Data, bool Own>
-struct Wrapper<n_policies, n_policies, Data, Own> {
+template <int n_policies, typename Data>
+struct Wrapper<n_policies, n_policies, Data> {
+  constexpr static int cur_policy = n_policies;
+  constexpr static int num_policies = n_policies;
+  using Next = Wrapper<n_policies, n_policies, Data>;
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const { camp::invoke(data.index_tuple, data.f); }
 };
-
 
 
 template <typename Data>
@@ -298,14 +292,7 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 }  // end namespace nested
 
 
-
-
-
 }  // end namespace RAJA
-
-
-
-
 
 
 #include "RAJA/pattern/nested/tile.hpp"

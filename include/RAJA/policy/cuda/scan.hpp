@@ -43,9 +43,9 @@
 #else
 #include <thrust/device_ptr.h>
 #include <thrust/execution_policy.h>
-#include <thrust/system/cuda/execution_policy.h>
 #include <thrust/functional.h>
 #include <thrust/scan.h>
+#include <thrust/system/cuda/execution_policy.h>
 #endif
 
 namespace RAJA
@@ -71,17 +71,30 @@ void inclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Allocate temporary storage
-  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
+  d_temp_storage =
+      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+          temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::InclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, begin, binary_op, len, stream));
+  cudaErrchk(::cub::DeviceScan::InclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, begin, binary_op);
+  ::thrust::inclusive_scan(
+      ::thrust::cuda::par.on(stream), begin, end, begin, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -108,13 +121,27 @@ void exclusive_inplace(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len, stream));
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Allocate temporary storage
-  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
+  d_temp_storage =
+      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+          temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, begin, binary_op, init, len, stream));
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              begin,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
@@ -149,14 +176,17 @@ void inclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
   // Allocate temporary storage
-  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
+  d_temp_storage =
+      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+          temp_storage_bytes);
   // Run
   cudaErrchk(::cub::DeviceScan::InclusiveScan(
       d_temp_storage, temp_storage_bytes, begin, out, binary_op, len, stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
-  ::thrust::inclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, binary_op);
+  ::thrust::inclusive_scan(
+      ::thrust::cuda::par.on(stream), begin, end, out, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);
@@ -185,17 +215,32 @@ void exclusive(const ::RAJA::cuda_exec<BLOCK_SIZE, Async>&,
   // Determine temporary device storage requirements
   void* d_temp_storage = nullptr;
   size_t temp_storage_bytes = 0;
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len, stream));
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Allocate temporary storage
-  d_temp_storage = cuda::device_mempool_type::getInstance().malloc<unsigned char>(temp_storage_bytes);
+  d_temp_storage =
+      cuda::device_mempool_type::getInstance().malloc<unsigned char>(
+          temp_storage_bytes);
   // Run
-  cudaErrchk(::cub::DeviceScan::ExclusiveScan(
-      d_temp_storage, temp_storage_bytes, begin, out, binary_op, init, len, stream));
+  cudaErrchk(::cub::DeviceScan::ExclusiveScan(d_temp_storage,
+                                              temp_storage_bytes,
+                                              begin,
+                                              out,
+                                              binary_op,
+                                              init,
+                                              len,
+                                              stream));
   // Free temporary storage
   cuda::device_mempool_type::getInstance().free(d_temp_storage);
 #else
-  ::thrust::exclusive_scan(::thrust::cuda::par.on(stream), begin, end, out, init, binary_op);
+  ::thrust::exclusive_scan(
+      ::thrust::cuda::par.on(stream), begin, end, out, init, binary_op);
 #endif
   cuda::launch(stream);
   if (!Async) cuda::synchronize(stream);

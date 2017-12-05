@@ -129,6 +129,6 @@ RAJA_DECLARE_ALL_REDUCERS(omp_reduce_ordered, detail::ReduceOMPOrdered)
 
 }  // closing brace for RAJA namespace
 
-#endif // closing endif for RAJA_ENABLE_OPENMP guard
+#endif  // closing endif for RAJA_ENABLE_OPENMP guard
 
 #endif  // closing endif for header file include guard

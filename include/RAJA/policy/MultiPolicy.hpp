@@ -92,8 +92,8 @@ template <typename Iterable,
           typename Selector,
           typename... Policies>
 RAJA_INLINE void forall_impl(MultiPolicy<Selector, Policies...> p,
-                        Iterable &&iter,
-                        Body &&body)
+                             Iterable &&iter,
+                             Body &&body)
 {
   p.invoke(iter, body);
 }
@@ -154,11 +154,10 @@ namespace detail
 // Once a specific policy is selected, that policy will select the correct
 // policy... see policy_invoker in MultiPolicy.hpp
 template <typename SELECTOR, typename... POLICIES>
-struct get_space<RAJA::MultiPolicy<SELECTOR, POLICIES ...>>
+struct get_space<RAJA::MultiPolicy<SELECTOR, POLICIES...>>
     : public get_space_impl<Platform::undefined> {
 };
 #endif
-
 
 
 template <size_t index, size_t size, typename Policy, typename... rest>

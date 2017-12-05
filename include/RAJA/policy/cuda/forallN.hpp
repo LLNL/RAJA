@@ -68,18 +68,6 @@ struct ForallN_BindFirstArg_Device {
 };
 
 
-RAJA_INLINE
-constexpr int numBlocks(CudaDim const &dim)
-{
-  return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
-}
-
-RAJA_INLINE
-constexpr int numThreads(CudaDim const &dim)
-{
-  return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
-}
-
 template <typename CUDA_EXEC, typename Iterator>
 struct CudaIterableWrapper {
   CUDA_EXEC pol_;
@@ -191,9 +179,13 @@ struct ForallN_Executor<device,
 
       bool Async = true;
       cudaStream_t stream = 0;
+
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-          RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
-                                 std::move(loop_body)),
+          RAJA::cuda::make_launch_body(dims.num_blocks,
+                                       dims.num_threads,
+                                       0,
+                                       stream,
+                                       std::move(loop_body)),
           cargs...);
       RAJA::cuda::peekAtLastError();
 
@@ -215,18 +207,21 @@ struct ForallN_Executor<device, ForallN_PolicyPair<CudaPolicy<CuARG0>, ISET0>> {
   template <typename BODY>
   RAJA_INLINE void operator()(BODY loop_body) const
   {
-
     CudaDim dims;
     auto c0 = make_cuda_iter_wrapper(CuARG0(dims, iset0), std::begin(iset0));
 
     if (numBlocks(dims) > 0 && numThreads(dims) > 0) {
-      
+
       bool Async = true;
       cudaStream_t stream = 0;
 
       cudaLauncherN<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
-      RAJA::cuda::make_launch_body(dims.num_blocks, dims.num_threads, 0, stream,
-                                       std::move(loop_body)),c0);          
+          RAJA::cuda::make_launch_body(dims.num_blocks,
+                                       dims.num_threads,
+                                       0,
+                                       stream,
+                                       std::move(loop_body)),
+          c0);
       RAJA::cuda::peekAtLastError();
 
       RAJA::cuda::launch(stream);

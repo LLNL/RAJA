@@ -115,15 +115,10 @@
 #include "RAJA/pattern/nested.hpp"
 
 
-
 //
 // Reduction objects
 //
 #include "RAJA/pattern/reduce.hpp"
-
-
-
-
 
 
 //

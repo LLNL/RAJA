@@ -28,6 +28,7 @@
 
 
 #include "RAJA/config.hpp"
+#include "RAJA/pattern/shared_memory.hpp"
 
 #ifdef RAJA_ENABLE_CUDA
 
@@ -38,7 +39,7 @@ namespace cuda {
 namespace detail {
 
 extern bool shared_memory_setup_enabled;
-extern size_t shared_memory_total_bytes;
+extern ptrdiff_t shared_memory_total_bytes;
 
 }
 }
@@ -57,8 +58,12 @@ struct SharedMemory<cuda_shmem, T, N> {
 
   ptrdiff_t offset; // offset into dynamic shared memory, in bytes
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
   SharedMemory() : offset(0) {}
 
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
   SharedMemory(Self const &c) : offset(c.offset){
 #ifndef __CUDA_ARCH__
     if(RAJA::cuda::detail::shared_memory_setup_enabled){

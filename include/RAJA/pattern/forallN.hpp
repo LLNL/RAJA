@@ -29,8 +29,8 @@
 #include "RAJA/config.hpp"
 #include "RAJA/internal/ForallNPolicy.hpp"
 #include "RAJA/internal/LegacyCompatibility.hpp"
-#include "RAJA/util/defines.hpp"
 #include "RAJA/util/Operators.hpp"
+#include "RAJA/util/defines.hpp"
 
 #include "RAJA/policy/PolicyBase.hpp"
 #include "RAJA/policy/sequential/forall.hpp"
@@ -254,10 +254,9 @@ RAJA_INLINE void forallN(Ts &&... args)
   detail::setChaiExecutionSpace<POLICY>();
 
 
-  fun_unpacker<POLICY, Indices...>(
-      camp::idx_seq<sizeof...(args) - 1>{},
-      camp::make_idx_seq_t<sizeof...(args) - 1>{},
-      camp::forward<Ts>(args)...);
+  fun_unpacker<POLICY, Indices...>(camp::idx_seq<sizeof...(args) - 1>{},
+                                   camp::make_idx_seq_t<sizeof...(args) - 1>{},
+                                   camp::forward<Ts>(args)...);
 
   detail::clearChaiExecutionSpace();
 }

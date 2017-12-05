@@ -28,8 +28,8 @@
 
 #include "RAJA/config.hpp"
 
-#include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/index/ListSegment.hpp"
+#include "RAJA/index/RangeSegment.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 

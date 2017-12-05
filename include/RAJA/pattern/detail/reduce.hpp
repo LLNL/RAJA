@@ -62,7 +62,8 @@ namespace detail
 template <typename T, template <typename...> class Op>
 struct op_adapter : private Op<T, T, T> {
   using operator_type = Op<T, T, T>;
-  RAJA_HOST_DEVICE static constexpr T identity() {
+  RAJA_HOST_DEVICE static constexpr T identity()
+  {
     return operator_type::identity();
   }
 
@@ -163,22 +164,25 @@ public:
   BaseReduce &operator=(const BaseReduce &) = delete;
 
   //! compiler-generated copy constructor
-  BaseReduce(const BaseReduce &) = default;
+  RAJA_HOST_DEVICE
+  constexpr BaseReduce(const BaseReduce &copy) : c(copy.c) {}
 
   //! compiler-generated move constructor
-  BaseReduce(BaseReduce &&) = default;
+  RAJA_HOST_DEVICE
+  RAJA_INLINE
+  BaseReduce(BaseReduce &&copy) : c(std::move(copy.c)) {}
 
   //! compiler-generated move assignment
   BaseReduce &operator=(BaseReduce &&) = default;
 
   RAJA_SUPPRESS_HD_WARN
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   constexpr BaseReduce(T init_val, T identity_ = Reduce::identity())
       : c{init_val, identity_}
   {
   }
 
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   void combine(T const &other) const { c.combine(other); }
 
   T &local() const { return c.local(); }
@@ -202,11 +206,13 @@ public:
   //! prohibit compiler-generated default ctor
   BaseCombinable() = delete;
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(T init_val, T identity_ = T())
       : identity{identity_}, my_data{init_val}
   {
   }
 
+  RAJA_HOST_DEVICE
   constexpr BaseCombinable(BaseCombinable const &other)
       : parent{other.parent ? other.parent : &other},
         identity{other.identity},
@@ -214,6 +220,7 @@ public:
   {
   }
 
+  RAJA_HOST_DEVICE
   ~BaseCombinable()
   {
     if (parent && my_data != identity) {
@@ -221,7 +228,7 @@ public:
     }
   }
 
-  RAJA_HOST_DEVICE 
+  RAJA_HOST_DEVICE
   void combine(T const &other) { Reduce{}(my_data, other); }
 
   /*!
@@ -238,7 +245,10 @@ public:
 
 private:
   // Convenience method for CRTP
-  const Derived &derived() const { return *(static_cast<const Derived *>(this)); }
+  const Derived &derived() const
+  {
+    return *(static_cast<const Derived *>(this));
+  }
   Derived &derived() { return *(static_cast<Derived *>(this)); }
 };
 

@@ -54,8 +54,8 @@
 #define RAJA_VIEW_HPP
 
 #include "RAJA/config.hpp"
-#include "RAJA/util/Layout.hpp"
 #include "RAJA/pattern/atomic.hpp"
+#include "RAJA/util/Layout.hpp"
 
 #if defined(RAJA_ENABLE_CHAI)
 #include "chai/ManagedArray.hpp"
@@ -112,8 +112,9 @@ struct TypedViewBase {
   {
   }
 
-  template<typename CLayoutType>
-  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr, CLayoutType &&layout)
+  template <typename CLayoutType>
+  RAJA_INLINE constexpr TypedViewBase(PointerType data_ptr,
+                                      CLayoutType &&layout)
       : base_(data_ptr, std::forward<CLayoutType>(layout))
   {
   }
@@ -127,12 +128,14 @@ struct TypedViewBase {
 };
 
 template <typename ValueType, typename LayoutType, typename... IndexTypes>
-using TypedView = TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
+using TypedView =
+    TypedViewBase<ValueType, ValueType *, LayoutType, IndexTypes...>;
 
 #if defined(RAJA_ENABLE_CHAI)
 
 template <typename ValueType, typename LayoutType>
-using ManagedArrayView = View<ValueType, LayoutType, chai::ManagedArray<ValueType>>;
+using ManagedArrayView =
+    View<ValueType, LayoutType, chai::ManagedArray<ValueType>>;
 
 
 template <typename ValueType, typename LayoutType, typename... IndexTypes>
@@ -144,8 +147,7 @@ using TypedManagedArrayView = TypedViewBase<ValueType,
 #endif
 
 
-template <typename ViewType,
-          typename AtomicPolicy = RAJA::atomic::auto_atomic>
+template <typename ViewType, typename AtomicPolicy = RAJA::atomic::auto_atomic>
 struct AtomicViewWrapper {
   using base_type = ViewType;
   using pointer_type = typename base_type::pointer_type;
@@ -155,30 +157,49 @@ struct AtomicViewWrapper {
   base_type base_;
 
   RAJA_INLINE
-  constexpr
-  explicit
-  AtomicViewWrapper(ViewType view)
-      : base_(view)
-  {
-  }
+  constexpr explicit AtomicViewWrapper(ViewType view) : base_(view) {}
 
   RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
 
-  template<typename ... ARGS>
-  RAJA_HOST_DEVICE
-  RAJA_INLINE
-  atomic_type operator()(ARGS &&... args) const
+  template <typename... ARGS>
+  RAJA_HOST_DEVICE RAJA_INLINE atomic_type operator()(ARGS &&... args) const
   {
     return atomic_type(&base_.operator()(std::forward<ARGS>(args)...));
   }
-
 };
 
 
-template<typename AtomicPolicy, typename ViewType>
-RAJA_INLINE
-AtomicViewWrapper<ViewType, AtomicPolicy>
-make_atomic_view(ViewType view){
+/*
+ * Specialized AtomicViewWrapper for seq_atomic that acts as pass-thru
+ * for performance
+ */
+template <typename ViewType>
+struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
+  using base_type = ViewType;
+  using pointer_type = typename base_type::pointer_type;
+  using value_type = typename base_type::value_type;
+  using atomic_type = RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+
+  base_type base_;
+
+  RAJA_INLINE
+  constexpr explicit AtomicViewWrapper(ViewType const &view) : base_{view} {}
+
+  RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
+
+  template <typename... ARGS>
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(ARGS &&... args) const
+  {
+    return base_.operator()(std::forward<ARGS>(args)...);
+  }
+};
+
+
+template <typename AtomicPolicy, typename ViewType>
+RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy> make_atomic_view(
+    ViewType const & view)
+{
+
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);
 }
 

@@ -352,3 +352,28 @@ CUDA_TEST(NestedCUDA, NegativeRange)
     ASSERT_EQ(host_data[i], data[i]);
   }
 }
+
+CUDA_TEST(NestedCUDA, PositiveRange)
+{
+  double *data;
+  double host_data[100];
+
+  cudaMallocManaged((void **)&data, sizeof(double) * 100, cudaMemAttachGlobal);
+
+  for (int i = 0; i < 100; ++i) {
+    host_data[i] = i * 1.0;
+  }
+
+  forallN<NestedPolicy<
+      ExecList<cuda_threadblock_y_exec<16>, cuda_threadblock_x_exec<16>>>>(
+      RangeSegment(2, 12), RangeSegment(2, 12), [=] RAJA_DEVICE(int k, int j) {
+        const int idx = ((k - 2) * 10) + (j - 2);
+        data[idx] = idx * 1.0;
+      });
+
+  cudaDeviceSynchronize();
+
+  for (int i = 0; i < 100; ++i) {
+    ASSERT_EQ(host_data[i], data[i]);
+  }
+}
