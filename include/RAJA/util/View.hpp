@@ -169,10 +169,37 @@ struct AtomicViewWrapper {
 };
 
 
+/*
+ * Specialized AtomicViewWrapper for seq_atomic that acts as pass-thru
+ * for performance
+ */
+template <typename ViewType>
+struct AtomicViewWrapper<ViewType, RAJA::atomic::seq_atomic> {
+  using base_type = ViewType;
+  using pointer_type = typename base_type::pointer_type;
+  using value_type = typename base_type::value_type;
+  using atomic_type = RAJA::atomic::AtomicRef<value_type, RAJA::atomic::seq_atomic>;
+
+  base_type base_;
+
+  RAJA_INLINE
+  constexpr explicit AtomicViewWrapper(ViewType const &view) : base_{view} {}
+
+  RAJA_INLINE void set_data(pointer_type data_ptr) { base_.set_data(data_ptr); }
+
+  template <typename... ARGS>
+  RAJA_HOST_DEVICE RAJA_INLINE value_type &operator()(ARGS &&... args) const
+  {
+    return base_.operator()(std::forward<ARGS>(args)...);
+  }
+};
+
+
 template <typename AtomicPolicy, typename ViewType>
 RAJA_INLINE AtomicViewWrapper<ViewType, AtomicPolicy> make_atomic_view(
-    ViewType view)
+    ViewType const & view)
 {
+
   return RAJA::AtomicViewWrapper<ViewType, AtomicPolicy>(view);
 }
 
