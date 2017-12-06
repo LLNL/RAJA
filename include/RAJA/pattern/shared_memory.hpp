@@ -56,7 +56,7 @@ template<typename T, size_t N>
 struct SharedMemory<seq_shmem, T, N> {
 
   // TODO: should use alignment, etc.?!?!
-  T data[N];
+  T *data;
 
 
   template<typename IDX>

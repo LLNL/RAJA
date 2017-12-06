@@ -576,4 +576,106 @@ CUDA_TEST(Nested, SharedMemoryTestB)
   cudaDeviceSynchronize();
 }
 
+TEST(Nested, SharedMemoryTestC)
+{
+
+  using polI =
+      RAJA::nested::Policy<
+        RAJA::nested::For<0, RAJA::loop_exec>
+      >;
+
+  using polIJ =
+      RAJA::nested::Policy<
+        RAJA::nested::For<0, RAJA::loop_exec>,
+        RAJA::nested::For<1, RAJA::loop_exec>
+      >;
+
+  RAJA::SharedMemory<RAJA::seq_shmem, double, 4> s;
+  RAJA::SharedMemory<RAJA::seq_shmem, double, 16> t;
+
+  RAJA::nested::forall_multi(
+
+      seq_multi_exec{},
+
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] (int i){
+          // Init s
+          //s[i] = 0;
+          printf("loop0: %d\n", i);
+        }),
+
+      RAJA::nested::makeLoop(
+        polIJ{},
+        camp::make_tuple(RAJA::RangeSegment(0,4),
+                         RAJA::RangeSegment(0,4)),
+        [=] (int i, int j){
+          // Assign values to t
+         // t[i + 4*j] = i*j;
+          printf("loop1: %d, %d\n", i, j);
+        })
+   );
+
+#if 0
+  RAJA::nested::forall(
+
+    polI{},
+
+    camp::make_tuple(RAJA::RangeSegment(0,4),
+                     RAJA::RangeSegment(0,4)),
+
+    polI{},
+
+    [=] __device__ (int i, int j){
+
+      printf("i=%d, j=%d, s.data=%p, t.data=%p\n", i, j, &s[0], &t[0]);
+
+      // Clear s
+      if(j == 0){
+        s[i] = 0;
+      }
+
+    },
+
+    polIJ{},
+    [=] __device__ (int i, int j){
+
+      // Assign values to t
+      t[i + 4*j] = i*j;
+      printf("t[%d][%d] = %lf\n", i, j, t[i + 4*j]);
+
+
+    },
+
+    polI{},
+    [=] __device__ (int i){
+
+
+      // Sum rows
+      for(int k = 0;k < 4; ++ k){
+        s[i] += t[i + 4*k];
+      }
+
+    },
+
+
+    polI{},
+    [=] __device__ (int i){
+
+
+      // Thread 0 prints all of the values of s
+      if(i == 0){
+        for(int k = 0;k < 4;++ k){
+          printf("s[%d]=%lf\n", k, s[k]);
+        }
+      }
+    }
+
+  );
+#endif
+  // display printf's
+  //cudaDeviceSynchronize();
+}
+
 #endif

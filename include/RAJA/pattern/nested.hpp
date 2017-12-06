@@ -291,6 +291,93 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   detail::clearChaiExecutionSpace();
 }
 
+
+
+
+template<typename NestedPolicy, typename SegmentTuple, typename Body>
+struct LoopParameters {
+  using policy_type = NestedPolicy;
+  using segment_tuple = SegmentTuple;
+  using body_type = Body;
+
+  policy_type policy;
+  segment_tuple segments;
+  body_type body;
+};
+
+template<typename NestedPolicy, typename SegmentTuple, typename Body>
+RAJA_INLINE
+auto makeLoop(NestedPolicy const &p, SegmentTuple const &s, Body const &b) ->
+  LoopParameters<NestedPolicy, SegmentTuple, Body>
+{
+  return LoopParameters<NestedPolicy, SegmentTuple, Body>{p,s,b};
+}
+
+
+
+
+
+
+
+template<typename NestedPolicy, typename SegmentTuple, typename Body>
+RAJA_INLINE
+int invokeLoopParameters(LoopParameters<NestedPolicy, SegmentTuple, Body> const &param){
+  RAJA::nested::forall(param.policy, param.segments, param.body);
+  return 0;
+}
+
+
+
+
+template<size_t i, size_t N>
+struct InvokeLoopsSequential {
+
+  template<typename ... LoopList>
+  void operator()(camp::tuple<LoopList...> const &loops) const {
+
+    invokeLoopParameters(camp::get<i>(loops));
+
+    InvokeLoopsSequential<i+1, N> next_invoke;
+    next_invoke(loops);
+  }
+
+};
+
+
+template<size_t N>
+struct InvokeLoopsSequential<N, N> {
+
+  template<typename ... LoopList>
+  void operator()(camp::tuple<LoopList...> const &loops) const {
+  }
+
+};
+
+
+
+struct seq_multi_exec{};
+
+
+template <typename MultiPolicy,
+          typename ... LoopList>
+RAJA_INLINE void forall_multi(
+    MultiPolicy const &,
+    LoopList const & ... loops)
+{
+
+  // Invoke each loop, one after the other,
+  InvokeLoopsSequential<0, sizeof...(LoopList)> loop_invoke;
+  loop_invoke(camp::tuple<LoopList const &...>(loops...));
+}
+
+
+
+
+
+
+
+
+
 }  // end namespace nested
 
 
