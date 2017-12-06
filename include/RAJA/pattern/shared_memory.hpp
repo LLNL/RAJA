@@ -28,6 +28,7 @@
 
 
 #include "RAJA/config.hpp"
+#include <stddef.h>
 
 namespace RAJA
 {

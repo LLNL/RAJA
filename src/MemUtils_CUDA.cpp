@@ -26,13 +26,15 @@
 
 #include "RAJA/config.hpp"
 
+#include "RAJA/policy/cuda/shared_memory.hpp"
+
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
 
 #include "RAJA/policy/cuda/raja_cudaerrchk.hpp"
 
-#include "RAJA/policy/cuda/shared_memory.hpp"
+
 
 namespace RAJA
 {
@@ -86,6 +88,8 @@ ptrdiff_t shared_memory_total_bytes = 0;
 }  // closing brace for RAJA namespace
 
 
+#endif  // if defined(RAJA_ENABLE_CUDA)
+
 /*!
  * Marks start of shared memory setup
  *
@@ -116,4 +120,4 @@ void RAJA::detail::finishSharedMemorySetup(){
 #endif
 }
 
-#endif  // if defined(RAJA_ENABLE_CUDA)
+
