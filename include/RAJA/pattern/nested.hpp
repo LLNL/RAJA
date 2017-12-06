@@ -267,20 +267,22 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   static_assert(camp::tuple_size<SegmentTuple>::value
                     == camp::size<fors>::value,
                 "policy and segment index counts do not match");
-  auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
-
 
   // Turn on shared memory setup
-  RAJA::cuda::detail::shared_memory_setup_enabled = true;
-  RAJA::cuda::detail::shared_memory_total_bytes = 0;
+  RAJA::detail::startSharedMemorySetup();
+
+  auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
+
+  // Turn off shared memory setup
+  RAJA::detail::finishSharedMemorySetup();
+
 
   auto ld = make_base_wrapper(data);
 
-  // Turn off shared memory setup
-  RAJA::cuda::detail::shared_memory_setup_enabled = false;
 
-  printf("SHARED MEMORY USED: %ld bytes\n",
-      (long)RAJA::cuda::detail::shared_memory_total_bytes);
+
+//  printf("SHARED MEMORY USED: %ld bytes\n",
+//      (long)RAJA::cuda::detail::shared_memory_total_bytes);
 
   // std::cout << typeid(ld).name() << std::endl
   //           << typeid(data.index_tuple).name() << std::endl;

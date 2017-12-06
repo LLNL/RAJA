@@ -86,17 +86,32 @@ ptrdiff_t shared_memory_total_bytes = 0;
 }  // closing brace for RAJA namespace
 
 
+/*!
+ * Marks start of shared memory setup
+ *
+ * @internal
+ *
+ * The loop body should be copied by value, exactly once, between a call to
+ * this function and finishSharedMemorySetup
+ *
+ */
 void RAJA::detail::startSharedMemorySetup(){
 #ifdef RAJA_ENABLE_CUDA
-  printf("ENABLING SHARED MEMORY SETUP\n");
   RAJA::cuda::detail::shared_memory_setup_enabled = true;
   RAJA::cuda::detail::shared_memory_total_bytes = 0;
 #endif
 }
 
+/*!
+ * Marks end of shared memory setup
+ *
+ * @internal
+ *
+ * At this point, we should have calculated how much shared memory to allocate
+ * for CUDA, or other backend.
+ */
 void RAJA::detail::finishSharedMemorySetup(){
 #ifdef RAJA_ENABLE_CUDA
-  printf("SHARED MEMORY USED: %ld\n", (long)RAJA::cuda::detail::shared_memory_total_bytes );
   RAJA::cuda::detail::shared_memory_setup_enabled = false;
 #endif
 }

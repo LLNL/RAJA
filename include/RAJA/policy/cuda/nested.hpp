@@ -357,7 +357,11 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
 
       cudaStream_t stream = 0;
 
-      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads, 0, stream>>>(
+      // Get amount of dynamic shared memory requested by SharedMemory objects
+      size_t shmem = RAJA::cuda::detail::shared_memory_total_bytes;
+
+      internal::cudaLauncher<<<dims.num_blocks, dims.num_threads,
+          shmem, stream>>>(
           RAJA::cuda::make_launch_body(
               dims.num_blocks, dims.num_threads, 0, stream, cuda_wrap));
       RAJA::cuda::peekAtLastError();

@@ -72,6 +72,10 @@ struct SharedMemory<cuda_shmem, T, N> {
 
       // append our memory size
       RAJA::cuda::detail::shared_memory_total_bytes += N*sizeof(T);
+
+//      printf("OFFSET=%ld, total size=%ld\n",
+//          (long)offset,
+//          (long)RAJA::cuda::detail::shared_memory_total_bytes);
     }
 #endif
   }

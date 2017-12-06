@@ -228,8 +228,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout<<"GPU MODE!"<<std::endl;
   using abstractPolicy
     = RAJA::NestedPolicy<RAJA::ExecList
-    <RAJA::cuda_blockloop_y_exec<By>,
-     RAJA::cuda_blockloop_x_exec<Bx>>>;
+    <RAJA::cuda_block_y_exec,
+     RAJA::cuda_block_x_exec>>;
 #endif
 
 #endif

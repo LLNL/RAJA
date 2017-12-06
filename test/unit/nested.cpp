@@ -488,21 +488,91 @@ CUDA_TEST(Nested, SubRange_Complex)
 }
 
 
-CUDA_TEST(Nested, SharedMemoryTest)
+CUDA_TEST(Nested, SharedMemoryTestA)
 {
-  RAJA::SharedMemory<RAJA::cuda_shmem, double, 32> s;
-  RAJA::SharedMemory<RAJA::cuda_shmem, float, 32> t;
+  RAJA::SharedMemory<RAJA::cuda_shmem, double, 8> s;
+  RAJA::SharedMemory<RAJA::cuda_shmem, float, 8> t;
 
-  RAJA::forall<RAJA::cuda_exec<16>>(RAJA::RangeSegment(0,16),
+  RAJA::forall<RAJA::cuda_exec<1024>>(RAJA::RangeSegment(0,8),
     [=] __device__ (int i){
 
+      // Each thread assigns a value into shared memory
       printf("i=%d, s.data=%p, t.data=%p\n", i, &s[0], &t[0]);
-
       s[i] = i*1000.0;
       t[i] = 1.0/(i+1);
+
+      __syncthreads();
+
+      // Thread 0 prints all of the values, demonstrating the memory was shared
+      if(i == 0){
+        for(int j = 0;j < 8;++ j){
+          printf("s[%d]=%lf, t[%d]=%f\n", j, s[j], j, t[j]);
+        }
+      }
   });
 
+  // display printf's
+  cudaDeviceSynchronize();
+}
 
+CUDA_TEST(Nested, SharedMemoryTestB)
+{
+
+  using pol =
+      RAJA::nested::Policy<
+        RAJA::nested::CudaCollapse<
+          RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+          RAJA::nested::For<1, RAJA::cuda_thread_y_exec>,
+        >
+      >;
+
+  RAJA::SharedMemory<RAJA::cuda_shmem, double, 4> s;
+  RAJA::SharedMemory<RAJA::cuda_shmem, double, 16> t;
+
+  RAJA::nested::forall(
+
+    pol{},
+
+    camp::make_tuple(RAJA::RangeSegment(0,4),
+                     RAJA::RangeSegment(0,4)),
+
+    [=] __device__ (int i, int j){
+
+      printf("i=%d, j=%d, s.data=%p, t.data=%p\n", i, j, &s[0], &t[0]);
+
+      // Clear s
+      if(j == 0){
+        s[i] = 0;
+      }
+
+      // Assign values to t
+      t[i + 4*j] = i*j;
+      printf("t[%d][%d] = %lf\n", i, j, t[i + 4*j]);
+
+
+      __syncthreads();
+
+
+      // Sum rows
+      if(j == 0){
+        for(int k = 0;k < 4; ++ k){
+          s[i] += t[i + 4*k];
+        }
+      }
+
+
+
+      __syncthreads();
+
+      // Thread 0 prints all of the values of s
+      if(i == 0 && j == 0){
+        for(int k = 0;k < 4;++ k){
+          printf("s[%d]=%lf\n", k, s[k]);
+        }
+      }
+  });
+
+  // display printf's
   cudaDeviceSynchronize();
 }
 
