@@ -107,13 +107,21 @@ struct TypedFor : public internal::TypedForBase,
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
   constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
-  const PolicyTuple pt;
-  SegmentTuple st;
-  const typename std::remove_reference<Fn>::type f;
+
+
   using index_tuple_t = internal::index_tuple_from_policies_and_segments<
       typename PolicyTuple::TList,
       typename SegmentTuple::TList>;
+
+
+  using segment_tuple_type = SegmentTuple;
+
+  const typename std::remove_reference<Fn>::type f;
+  const PolicyTuple pt;
+  SegmentTuple st;
   index_tuple_t index_tuple;
+
+
   LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
       : pt(p), st(s), f(fn)
   {
@@ -253,6 +261,18 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
   return Wrapper<0, Data::n_policies, Data>(d);
 }
 
+
+
+template<typename NestedPolicy, typename SegmentTuple, typename Body>
+RAJA_INLINE
+auto makeLoop(NestedPolicy const &p, SegmentTuple const &s, Body const &b) ->
+  LoopData<NestedPolicy, SegmentTuple, Body>
+{
+  return LoopData<NestedPolicy, SegmentTuple, Body>{p,s,b};
+}
+
+
+
 template <typename Pol, typename SegmentTuple, typename Body>
 RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 {
@@ -271,7 +291,7 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   // Turn on shared memory setup
   RAJA::detail::startSharedMemorySetup();
 
-  auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
+  auto data = makeLoop(p, st, b);
 
   // Turn off shared memory setup
   RAJA::detail::finishSharedMemorySetup();
@@ -294,36 +314,18 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 
 
 
-template<typename NestedPolicy, typename SegmentTuple, typename Body>
-struct LoopParameters {
-  using policy_type = NestedPolicy;
-  using segment_tuple = SegmentTuple;
-  using body_type = Body;
-
-  policy_type policy;
-  segment_tuple segments;
-  body_type body;
-};
-
-template<typename NestedPolicy, typename SegmentTuple, typename Body>
-RAJA_INLINE
-auto makeLoop(NestedPolicy const &p, SegmentTuple const &s, Body const &b) ->
-  LoopParameters<NestedPolicy, SegmentTuple, Body>
-{
-  return LoopParameters<NestedPolicy, SegmentTuple, Body>{p,s,b};
-}
-
-
-
-
 
 
 
 template<typename NestedPolicy, typename SegmentTuple, typename Body>
 RAJA_INLINE
-int invokeLoopParameters(LoopParameters<NestedPolicy, SegmentTuple, Body> const &param){
-  RAJA::nested::forall(param.policy, param.segments, param.body);
-  return 0;
+RAJA_HOST_DEVICE
+void invokeLoopData(LoopData<NestedPolicy, SegmentTuple, Body> const &param){
+#ifndef __CUDA_ARCH__
+  RAJA::nested::forall(param.pt, param.st, param.f);
+#else
+  printf("invokeLoopData on device\n");
+#endif
 }
 
 
@@ -335,7 +337,7 @@ struct InvokeLoopsSequential {
   template<typename ... LoopList>
   void operator()(camp::tuple<LoopList...> const &loops) const {
 
-    invokeLoopParameters(camp::get<i>(loops));
+    invokeLoopData(camp::get<i>(loops));
 
     InvokeLoopsSequential<i+1, N> next_invoke;
     next_invoke(loops);
@@ -348,7 +350,7 @@ template<size_t N>
 struct InvokeLoopsSequential<N, N> {
 
   template<typename ... LoopList>
-  void operator()(camp::tuple<LoopList...> const &loops) const {
+  void operator()(camp::tuple<LoopList...> const &) const {
   }
 
 };
@@ -358,10 +360,9 @@ struct InvokeLoopsSequential<N, N> {
 struct seq_multi_exec{};
 
 
-template <typename MultiPolicy,
-          typename ... LoopList>
+template <typename ... LoopList>
 RAJA_INLINE void forall_multi(
-    MultiPolicy const &,
+    seq_multi_exec,
     LoopList const & ... loops)
 {
 
@@ -372,10 +373,59 @@ RAJA_INLINE void forall_multi(
 
 
 
+#if defined(RAJA_ENABLE_OPENMP)
+
+
+template<bool Async, size_t i, size_t N>
+struct InvokeLoopsOpenMP {
+
+  template<typename ... LoopList>
+  void operator()(camp::tuple<LoopList...> const &loops) const {
+
+    invokeLoopData(camp::get<i>(loops));
+
+    if(!Async){
+#pragma omp barrier
+    }
+
+    InvokeLoopsOpenMP<Async, i+1, N> next_invoke;
+    next_invoke(loops);
+  }
+
+};
+
+
+template<bool Async, size_t N>
+struct InvokeLoopsOpenMP<Async, N, N> {
+
+  template<typename ... LoopList>
+  void operator()(camp::tuple<LoopList...> const &) const {
+  }
+
+};
 
 
 
+template<bool Async = false>
+struct omp_multi_exec{};
 
+
+template <bool Async,
+          typename ... LoopList>
+RAJA_INLINE void forall_multi(
+    omp_multi_exec<Async>,
+    LoopList const & ... loops)
+{
+
+  // Invoke each loop, one after the other,
+  InvokeLoopsOpenMP<Async, 0, sizeof...(LoopList)> loop_invoke;
+
+#pragma omp parallel
+  loop_invoke(camp::tuple<LoopList const &...>(loops...));
+
+}
+
+#endif // RAJA_ENABLE_OPENMP
 
 
 }  // end namespace nested

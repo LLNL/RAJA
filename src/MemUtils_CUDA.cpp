@@ -28,6 +28,9 @@
 
 #include "RAJA/policy/cuda/shared_memory.hpp"
 
+#include <algorithm>
+#include <map>
+
 #if defined(RAJA_ENABLE_CUDA)
 
 #include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
@@ -78,7 +81,7 @@ std::unordered_map<cudaStream_t, bool> g_stream_info_map{ {cudaStream_t(0), true
 bool shared_memory_setup_enabled = false;
 
 //! Tracks total number of bytes requested for shared memory
-ptrdiff_t shared_memory_total_bytes = 0;
+size_t shared_memory_total_bytes = 0;
 
 
 }  // closing brace for detail namespace
@@ -89,6 +92,9 @@ ptrdiff_t shared_memory_total_bytes = 0;
 
 
 #endif  // if defined(RAJA_ENABLE_CUDA)
+
+
+std::map<void *, size_t> shared_memory_objects;
 
 /*!
  * Marks start of shared memory setup
@@ -104,6 +110,31 @@ void RAJA::detail::startSharedMemorySetup(){
   RAJA::cuda::detail::shared_memory_setup_enabled = true;
   RAJA::cuda::detail::shared_memory_total_bytes = 0;
 #endif
+  shared_memory_objects.clear();
+}
+
+/*!
+ * Registers a shared memory object, and it's size requirement
+ *
+ *
+ *
+ * @param object
+ * @param shmem_size
+ */
+size_t RAJA::detail::registerSharedMemoryObject(void *object, size_t shmem_size){
+  // look up object
+  auto iter = shared_memory_objects.find(object);
+
+  // if object is not registered, set aside some more shmem for it
+  if(iter == shared_memory_objects.end()){
+    size_t offset = RAJA::cuda::detail::shared_memory_total_bytes;
+    RAJA::cuda::detail::shared_memory_total_bytes += shmem_size;
+    shared_memory_objects[object] = offset;
+    return offset;
+  }
+
+  // if it's already registered, just return its existing offset
+  return iter->second;
 }
 
 /*!
@@ -119,5 +150,16 @@ void RAJA::detail::finishSharedMemorySetup(){
   RAJA::cuda::detail::shared_memory_setup_enabled = false;
 #endif
 }
+
+/*!
+ * Returns the size of shared memory required
+ *
+ * @internal
+ *
+ */
+size_t RAJA::detail::getSharedMemorySize(){
+  return RAJA::cuda::detail::shared_memory_total_bytes;
+}
+
 
 

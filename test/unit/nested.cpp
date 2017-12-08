@@ -575,107 +575,154 @@ CUDA_TEST(Nested, SharedMemoryTestB)
   // display printf's
   cudaDeviceSynchronize();
 }
+#endif
 
+#if defined(RAJA_ENABLE_OPENMP)
 TEST(Nested, SharedMemoryTestC)
 {
 
   using polI =
       RAJA::nested::Policy<
-        RAJA::nested::For<0, RAJA::loop_exec>
+        RAJA::nested::For<0, RAJA::omp_for_nowait_exec>
       >;
 
   using polIJ =
       RAJA::nested::Policy<
-        RAJA::nested::For<0, RAJA::loop_exec>,
+        RAJA::nested::For<0, RAJA::omp_for_nowait_exec>,
         RAJA::nested::For<1, RAJA::loop_exec>
       >;
 
   RAJA::SharedMemory<RAJA::seq_shmem, double, 4> s;
   RAJA::SharedMemory<RAJA::seq_shmem, double, 16> t;
 
+  double *output = new double[4];
+
   RAJA::nested::forall_multi(
 
-      seq_multi_exec{},
+      omp_multi_exec<true>{},
 
+      // Zero out s[]
       RAJA::nested::makeLoop(
         polI{},
         camp::make_tuple(RAJA::RangeSegment(0,4)),
         [=] (int i){
-          // Init s
-          //s[i] = 0;
-          printf("loop0: %d\n", i);
+          s[i] = 0;
         }),
 
+      // Initialize t[]
       RAJA::nested::makeLoop(
         polIJ{},
         camp::make_tuple(RAJA::RangeSegment(0,4),
                          RAJA::RangeSegment(0,4)),
         [=] (int i, int j){
-          // Assign values to t
-         // t[i + 4*j] = i*j;
-          printf("loop1: %d, %d\n", i, j);
+          t[i + 4*j] = i*j;
+        }),
+
+      // Compute s[] from t[]
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] (int i){
+          for(int k = 0;k < 4;++ k){
+            s[i] += t[i + 4*k];
+          }
+        }),
+
+      // save output
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] (int i){
+          output[i] = s[i];
         })
+
    );
 
-#if 0
-  RAJA::nested::forall(
-
-    polI{},
-
-    camp::make_tuple(RAJA::RangeSegment(0,4),
-                     RAJA::RangeSegment(0,4)),
-
-    polI{},
-
-    [=] __device__ (int i, int j){
-
-      printf("i=%d, j=%d, s.data=%p, t.data=%p\n", i, j, &s[0], &t[0]);
-
-      // Clear s
-      if(j == 0){
-        s[i] = 0;
-      }
-
-    },
-
-    polIJ{},
-    [=] __device__ (int i, int j){
-
-      // Assign values to t
-      t[i + 4*j] = i*j;
-      printf("t[%d][%d] = %lf\n", i, j, t[i + 4*j]);
+  ASSERT_EQ(output[0], 0);
+  ASSERT_EQ(output[1], 6);
+  ASSERT_EQ(output[2], 12);
+  ASSERT_EQ(output[3], 18);
 
 
-    },
-
-    polI{},
-    [=] __device__ (int i){
-
-
-      // Sum rows
-      for(int k = 0;k < 4; ++ k){
-        s[i] += t[i + 4*k];
-      }
-
-    },
+  delete[] output;
+}
+#endif // RAJA_ENABLE_OPENMP
 
 
-    polI{},
-    [=] __device__ (int i){
+#if defined(RAJA_ENABLE_CUDA)
+CUDA_TEST(Nested, SharedMemoryTestD)
+{
 
+  using polI = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>
+      > >;
 
-      // Thread 0 prints all of the values of s
-      if(i == 0){
-        for(int k = 0;k < 4;++ k){
-          printf("s[%d]=%lf\n", k, s[k]);
-        }
-      }
-    }
+  using polIJ = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::For<0, RAJA::cuda_thread_x_exec>,
+        RAJA::nested::For<1, RAJA::cuda_thread_y_exec>
+      > >;
+
+  RAJA::SharedMemory<RAJA::cuda_shmem, double, 4> s;
+  RAJA::SharedMemory<RAJA::cuda_shmem, double, 16> t;
+
+  double *output = nullptr;
+  cudaErrchk(cudaMallocManaged(&output, sizeof(double) * 4) );
+
+  cudaDeviceSynchronize();
+
+  RAJA::nested::forall_multi(
+
+      cuda_multi_exec<false>{},
+
+      // Zero out s[]
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] __device__ (int i){
+          s[i] = 0;
+        }),
+
+      // Initialize t[]
+      RAJA::nested::makeLoop(
+        polIJ{},
+        camp::make_tuple(RAJA::RangeSegment(0,4),
+                         RAJA::RangeSegment(0,4)),
+        [=] __device__ (int i, int j){
+          t[i + 4*j] = i*j;
+        }),
+
+      // Compute s[] from t[]
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] __device__ (int i){
+          for(int k = 0;k < 4;++ k){
+            s[i] += t[i + 4*k];
+          }
+        }),
+
+      // save output
+      RAJA::nested::makeLoop(
+        polI{},
+        camp::make_tuple(RAJA::RangeSegment(0,4)),
+        [=] __device__ (int i){
+          output[i] = s[i];
+        })
 
   );
-#endif
-  // display printf's
-  //cudaDeviceSynchronize();
-}
 
-#endif
+
+  cudaDeviceSynchronize();
+
+  ASSERT_EQ(output[0], 0);
+  ASSERT_EQ(output[1], 6);
+  ASSERT_EQ(output[2], 12);
+  ASSERT_EQ(output[3], 18);
+
+
+  cudaFree(&output);
+}
+#endif // RAJA_ENABLE_CUDA
+

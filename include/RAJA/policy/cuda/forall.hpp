@@ -186,7 +186,8 @@ RAJA_INLINE void forall_impl(cuda_exec<BlockSize, Async>,
 
     impl::forall_cuda_kernel<BlockSize><<<gridSize, BlockSize, shmem, stream>>>(
         RAJA::cuda::make_launch_body(
-            gridSize, BlockSize, 0, stream, std::forward<LoopBody>(loop_body)),
+            gridSize, BlockSize, shmem, stream,
+            std::forward<LoopBody>(loop_body)),
         std::move(begin),
         len);
     RAJA::cuda::peekAtLastError();

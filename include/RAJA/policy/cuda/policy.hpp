@@ -217,7 +217,7 @@ struct CudaDim {
   cuda_dim_t num_threads;
   cuda_dim_t num_blocks;
 
-  __host__ __device__ void print(void) const
+  RAJA_HOST_DEVICE void print(void) const
   {
     printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
            (int)num_blocks.x,
@@ -226,6 +226,33 @@ struct CudaDim {
            (int)num_threads.x,
            (int)num_threads.y,
            (int)num_threads.z);
+  }
+
+  RAJA_INLINE
+  RAJA_HOST_DEVICE
+  CudaDim maximum(CudaDim const &c) const {
+    CudaDim m;
+
+    m.num_threads.x = num_threads.x > c.num_threads.x ? num_threads.x : c.num_threads.x;
+    m.num_threads.y = num_threads.y > c.num_threads.y ? num_threads.y : c.num_threads.y;
+    m.num_threads.z = num_threads.z > c.num_threads.z ? num_threads.z : c.num_threads.z;
+
+    m.num_blocks.x = num_blocks.x > c.num_blocks.x ? num_blocks.x : c.num_blocks.x;
+    m.num_blocks.y = num_blocks.y > c.num_blocks.y ? num_blocks.y : c.num_blocks.y;
+    m.num_blocks.z = num_blocks.z > c.num_blocks.z ? num_blocks.z : c.num_blocks.z;
+
+    return m;
+  }
+
+  RAJA_INLINE
+  RAJA_DEVICE
+  bool threadIncluded() const {
+    return (threadIdx.x < num_threads.x) &&
+           (threadIdx.y < num_threads.y) &&
+           (threadIdx.z < num_threads.z) &&
+           (blockIdx.x < num_blocks.x) &&
+           (blockIdx.y < num_blocks.y) &&
+           (blockIdx.z < num_blocks.z);
   }
 };
 

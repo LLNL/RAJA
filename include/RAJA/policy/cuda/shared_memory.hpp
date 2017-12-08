@@ -41,7 +41,7 @@ namespace cuda {
 namespace detail {
 
 extern bool shared_memory_setup_enabled;
-extern ptrdiff_t shared_memory_total_bytes;
+extern size_t shared_memory_total_bytes;
 
 }
 }
@@ -59,25 +59,24 @@ struct SharedMemory<cuda_shmem, T, N> {
   using Self = SharedMemory<cuda_shmem, T, N>;
 
   ptrdiff_t offset; // offset into dynamic shared memory, in bytes
+  void *parent;     // pointer to original object
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  SharedMemory() : offset(0) {}
+  SharedMemory() : offset(-1), parent((void*)this) {}
 
   RAJA_INLINE
   RAJA_HOST_DEVICE
-  SharedMemory(Self const &c) : offset(c.offset){
+  SharedMemory(Self const &c) : offset(c.offset), parent(c.parent){
 #ifndef __CUDA_ARCH__
-    if(RAJA::cuda::detail::shared_memory_setup_enabled){
-      // get current offset into shared memory
-      offset = RAJA::cuda::detail::shared_memory_total_bytes;
+    if(RAJA::cuda::detail::shared_memory_setup_enabled)
+    {
+      offset = RAJA::detail::registerSharedMemoryObject(parent, N*sizeof(T));
 
-      // append our memory size
-      RAJA::cuda::detail::shared_memory_total_bytes += N*sizeof(T);
-
-//      printf("OFFSET=%ld, total size=%ld\n",
+//      printf("OFFSET=%ld, total size=%ld, parent=%p\n",
 //          (long)offset,
-//          (long)RAJA::cuda::detail::shared_memory_total_bytes);
+//          (long)RAJA::cuda::detail::shared_memory_total_bytes,
+//          parent);
     }
 #endif
   }

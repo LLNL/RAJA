@@ -29,6 +29,8 @@
 
 #include "RAJA/config.hpp"
 #include <stddef.h>
+#include <memory>
+#include <vector>
 
 namespace RAJA
 {
@@ -56,21 +58,31 @@ struct seq_shmem{};
 template<typename T, size_t N>
 struct SharedMemory<seq_shmem, T, N> {
 
-  // TODO: should use alignment, etc.?!?!
-  T *data;
+  SharedMemory() :
+    data(std::make_shared<std::vector<T>>(N))
+  {}
+
+  std::shared_ptr<std::vector<T>> data;
 
 
   template<typename IDX>
   RAJA_INLINE
   T &operator[](IDX i) const {
-    return data[i];
+    return (*data)[i];
   }
 };
 
 
+
+
 namespace detail {
   void startSharedMemorySetup();
+
+  size_t registerSharedMemoryObject(void *object, size_t shmem_size);
+
   void finishSharedMemorySetup();
+
+  size_t getSharedMemorySize();
 
 }
 
