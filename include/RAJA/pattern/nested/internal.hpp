@@ -1,15 +1,13 @@
 #ifndef RAJA_pattern_nested_internal_HPP
 #define RAJA_pattern_nested_internal_HPP
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
-#include "RAJA/policy/cuda.hpp"
+#include "RAJA/index/IndexSet.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
 #include "camp/camp.hpp"
 #include "camp/concepts.hpp"
-#include "camp/tuple.hpp"
 
 #include <type_traits>
 

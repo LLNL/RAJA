@@ -113,7 +113,7 @@
 //
 #include "RAJA/pattern/forallN.hpp"
 #include "RAJA/pattern/nested.hpp"
-
+#include "RAJA/pattern/nested_multi.hpp"
 
 //
 // Reduction objects

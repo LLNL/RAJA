@@ -45,6 +45,8 @@
 
 #include "RAJA/policy/openmp/forallN.hpp"
 
+#include "RAJA/policy/openmp/nested_multi.hpp"
+
 #if defined(RAJA_ENABLE_TARGET_OPENMP)
 #include "RAJA/policy/openmp/target_forall.hpp"
 #include "RAJA/policy/openmp/target_reduce.hpp"

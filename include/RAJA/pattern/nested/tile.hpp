@@ -1,7 +1,6 @@
 #ifndef RAJA_pattern_nested_tile_HPP
 #define RAJA_pattern_nested_tile_HPP
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"

@@ -1,21 +1,21 @@
 #ifndef RAJA_pattern_nested_HPP
 #define RAJA_pattern_nested_HPP
 
-
-#include "RAJA/config.hpp"
-#include "RAJA/policy/cuda.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
+#include "camp/camp.hpp"
+#include "camp/concepts.hpp"
 
 #include "RAJA/pattern/nested/internal.hpp"
 
+#include "RAJA/config.hpp"
+#include "RAJA/util/defines.hpp"
+#include "RAJA/util/types.hpp"
+
+
+
 #include "RAJA/util/chai_support.hpp"
 
-#include "RAJA/policy/cuda/shared_memory.hpp"
+#include "RAJA/pattern/shared_memory.hpp"
 
-#include "camp/camp.hpp"
-#include "camp/concepts.hpp"
-#include "camp/tuple.hpp"
 
 #include <iostream>
 #include <type_traits>
@@ -54,7 +54,7 @@ struct Collapse : public internal::ForList, public internal::CollapseBase {
   RAJA_HOST_DEVICE constexpr Collapse() : pol{} {}
   RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : pol{ep} {}
 };
-}
+} // namespace nested
 
 
 #ifdef RAJA_ENABLE_CHAI
@@ -116,9 +116,10 @@ struct LoopData {
 
   using segment_tuple_type = SegmentTuple;
 
-  const typename std::remove_reference<Fn>::type f;
+
   const PolicyTuple pt;
   SegmentTuple st;
+  const typename std::remove_reference<Fn>::type f;
   index_tuple_t index_tuple;
 
 
@@ -263,13 +264,7 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 
 
 
-template<typename NestedPolicy, typename SegmentTuple, typename Body>
-RAJA_INLINE
-auto makeLoop(NestedPolicy const &p, SegmentTuple const &s, Body const &b) ->
-  LoopData<NestedPolicy, SegmentTuple, Body>
-{
-  return LoopData<NestedPolicy, SegmentTuple, Body>{p,s,b};
-}
+
 
 
 
@@ -314,118 +309,6 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 
 
 
-
-
-
-template<typename NestedPolicy, typename SegmentTuple, typename Body>
-RAJA_INLINE
-RAJA_HOST_DEVICE
-void invokeLoopData(LoopData<NestedPolicy, SegmentTuple, Body> const &param){
-#ifndef __CUDA_ARCH__
-  RAJA::nested::forall(param.pt, param.st, param.f);
-#else
-  printf("invokeLoopData on device\n");
-#endif
-}
-
-
-
-
-template<size_t i, size_t N>
-struct InvokeLoopsSequential {
-
-  template<typename ... LoopList>
-  void operator()(camp::tuple<LoopList...> const &loops) const {
-
-    invokeLoopData(camp::get<i>(loops));
-
-    InvokeLoopsSequential<i+1, N> next_invoke;
-    next_invoke(loops);
-  }
-
-};
-
-
-template<size_t N>
-struct InvokeLoopsSequential<N, N> {
-
-  template<typename ... LoopList>
-  void operator()(camp::tuple<LoopList...> const &) const {
-  }
-
-};
-
-
-
-struct seq_multi_exec{};
-
-
-template <typename ... LoopList>
-RAJA_INLINE void forall_multi(
-    seq_multi_exec,
-    LoopList const & ... loops)
-{
-
-  // Invoke each loop, one after the other,
-  InvokeLoopsSequential<0, sizeof...(LoopList)> loop_invoke;
-  loop_invoke(camp::tuple<LoopList const &...>(loops...));
-}
-
-
-
-#if defined(RAJA_ENABLE_OPENMP)
-
-
-template<bool Async, size_t i, size_t N>
-struct InvokeLoopsOpenMP {
-
-  template<typename ... LoopList>
-  void operator()(camp::tuple<LoopList...> const &loops) const {
-
-    invokeLoopData(camp::get<i>(loops));
-
-    if(!Async){
-#pragma omp barrier
-    }
-
-    InvokeLoopsOpenMP<Async, i+1, N> next_invoke;
-    next_invoke(loops);
-  }
-
-};
-
-
-template<bool Async, size_t N>
-struct InvokeLoopsOpenMP<Async, N, N> {
-
-  template<typename ... LoopList>
-  void operator()(camp::tuple<LoopList...> const &) const {
-  }
-
-};
-
-
-
-template<bool Async = false>
-struct omp_multi_exec{};
-
-
-template <bool Async,
-          typename ... LoopList>
-RAJA_INLINE void forall_multi(
-    omp_multi_exec<Async>,
-    LoopList const & ... loops)
-{
-
-  // Invoke each loop, one after the other,
-  InvokeLoopsOpenMP<Async, 0, sizeof...(LoopList)> loop_invoke;
-
-#pragma omp parallel
-  loop_invoke(camp::tuple<LoopList const &...>(loops...));
-
-}
-
-#endif // RAJA_ENABLE_OPENMP
 
 
 }  // end namespace nested

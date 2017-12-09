@@ -37,14 +37,6 @@
 namespace RAJA
 {
 
-namespace cuda {
-namespace detail {
-
-extern bool shared_memory_setup_enabled;
-extern size_t shared_memory_total_bytes;
-
-}
-}
 
 /*!
  * CUDA shared memory
@@ -68,16 +60,14 @@ struct SharedMemory<cuda_shmem, T, N> {
   RAJA_INLINE
   RAJA_HOST_DEVICE
   SharedMemory(Self const &c) : offset(c.offset), parent(c.parent){
+    // only implement the registration on the HOST
 #ifndef __CUDA_ARCH__
-    if(RAJA::cuda::detail::shared_memory_setup_enabled)
-    {
-      offset = RAJA::detail::registerSharedMemoryObject(parent, N*sizeof(T));
+    offset = RAJA::detail::registerSharedMemoryObject(parent, N*sizeof(T));
 
 //      printf("OFFSET=%ld, total size=%ld, parent=%p\n",
 //          (long)offset,
 //          (long)RAJA::cuda::detail::shared_memory_total_bytes,
 //          parent);
-    }
 #endif
   }
 

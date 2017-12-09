@@ -44,9 +44,11 @@
 #endif
 
 #include "RAJA/policy/cuda/forallN.hpp"
-#include "RAJA/policy/cuda/nested.hpp"
 
 #include "RAJA/policy/cuda/shared_memory.hpp"
+
+#include "RAJA/policy/cuda/nested.hpp"
+#include "RAJA/policy/cuda/nested_multi.hpp"
 
 #endif  // closing endif for if defined(RAJA_ENABLE_CUDA)
 
