@@ -224,15 +224,3 @@ REGISTER_TYPED_TEST_CASE_P(Scan,
 
 INSTANTIATE_TYPED_TEST_CASE_P(ScanTests, Scan, CrossTypes);
 
-
-#ifdef RAJA_ENABLE_OPENMP
-TEST(Scan, OmpNumThreads)
-{
-  int num_threads = 0;
-#pragma omp parallel
-  {
-    num_threads = omp_get_num_threads();
-  }
-  printf("OMP_NUM_THREADS=%d\n", num_threads);
-}
-#endif

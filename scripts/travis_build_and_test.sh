@@ -21,7 +21,7 @@ if [[ "$DO_BUILD" == "yes" ]] ; then
       or_die make -j 3 VERBOSE=1
     fi
     if [[ "${DO_TEST}" == "yes" ]] ; then
-        OMP_NUM_THREADS=3 or_die ctest -V
+      or_die ctest -V
     fi
 fi
 
