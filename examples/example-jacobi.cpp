@@ -272,17 +272,11 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     must be the last argument of the nested policy list
   */
 
-#define oldPol 0
-
-#if oldPol
-  using jacobiompNestedPolicy =
-  RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
-  RAJA::omp_collapse_nowait_exec>, RAJA::OMP_Parallel<>>;
-#else
-  using Pol =    RAJA::nested::Policy<RAJA::nested::ompCollapse<
-  RAJA::nested::For<0>,
-    RAJA::nested::For<1> > >;
-#endif
+  using Pol =  RAJA::nested::Policy<
+      RAJA::nested::ompCollapse<
+      RAJA::nested::For<0>,
+      RAJA::nested::For<1>
+      > >;
 
   std::cout<<"testing new policy"<<std::endl;
   while (resI2 > tol * tol) {
@@ -291,27 +285,21 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Jacobi Iteration
     */
     //RAJA::RangeSegment myRange(0, 4);
-#if oldPol
-    RAJA::forallN<jacobiompNestedPolicy>(
-    jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {
-#else
-      RAJA::nested::forall(Pol{}, camp::make_tuple(jacobiRange, jacobiRange),
-                           [=] (RAJA::Index_type m, RAJA::Index_type n) {
-#endif
 
-                             //printf("%d %d \n",m, n);
+    RAJA::nested::forall(Pol{}, camp::make_tuple(jacobiRange, jacobiRange),
+                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
                              
-#if 1                
+                             
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
           double f = gridx.h * gridx.h
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
-
+          
           int id = n * (N + 2) + m;
+          printf("%d %d \n", id, N);
           I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);              
-#endif
+                             - Iold[id + 1]);  
         });
 
     /*
