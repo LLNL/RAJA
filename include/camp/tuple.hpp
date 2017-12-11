@@ -44,7 +44,7 @@ namespace internal
   template <camp::idx_t index, typename Type>
   struct tuple_storage {
     CAMP_HOST_DEVICE constexpr tuple_storage() : val(){};
-    CAMP_HOST_DEVICE constexpr tuple_storage(Type val) : val{val} {}
+    CAMP_HOST_DEVICE constexpr tuple_storage(Type val0) : val(val0) {}
 
     CAMP_HOST_DEVICE constexpr const Type& get_inner() const noexcept
     {
