@@ -271,7 +271,7 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 template <typename Pol, typename SegmentTuple, typename Body>
 RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 {
-  detail::setChaiExecutionSpace<Pol>();
+  RAJA::detail::setChaiExecutionSpace<Pol>();
 
   using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
@@ -303,7 +303,7 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
   //           << typeid(data.index_tuple).name() << std::endl;
   ld();
 
-  detail::clearChaiExecutionSpace();
+  RAJA::detail::clearChaiExecutionSpace();
 }
 
 
