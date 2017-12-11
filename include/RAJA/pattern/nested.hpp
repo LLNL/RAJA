@@ -245,6 +245,33 @@ struct Wrapper<n_policies, n_policies, Data> {
 };
 
 
+
+/**
+ * Specialization of NestedPrivatizeer for Wrapper (used with Collapse policies)
+ */
+template <int idx, int n_policies, typename BW>
+struct NestedPrivatizer<nested::Wrapper<idx, n_policies, BW>> {
+  using data_type = typename nested::Wrapper<idx, n_policies, BW>::data_type;
+  using value_type = nested::Wrapper<idx, n_policies, BW>;
+  using reference_type = value_type &;
+  data_type data;
+  value_type priv;
+  NestedPrivatizer(const nested::Wrapper<idx, n_policies, BW> &o) : data{o.data}, priv{value_type{data}} {}
+  reference_type get_priv() { return priv; }
+};
+
+
+/**
+ * @brief specialization of thread_privatize for nested Wrapper
+ */
+template <int idx, int n_policies, typename BW>
+auto thread_privatize(const nested::Wrapper<idx, n_policies, BW> &item)
+    -> NestedPrivatizer<nested::Wrapper<idx, n_policies, BW>>
+{
+  return NestedPrivatizer<Wrapper<idx, n_policies, BW>>{item};
+}
+
+
 template <typename Data>
 auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
 {

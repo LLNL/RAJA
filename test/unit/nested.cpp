@@ -488,3 +488,42 @@ CUDA_TEST(Nested, SubRange_Complex)
 }
 
 #endif
+
+#ifdef RAJA_ENABLE_OPENMP
+TEST(Nested, Collapse2)
+{
+  int N = 16;
+  int M = 7;
+
+
+  int *data = new int[N*M];
+  for(int i = 0;i < M*N;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+      RAJA::nested::ompCollapse<
+        RAJA::nested::For<0>,
+        RAJA::nested::For<1>
+      > >;
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(
+          RAJA::RangeSegment(0, N),
+          RAJA::RangeSegment(0, M)),
+
+      [=] (Index_type i, Index_type j) {
+        data[i + j*N] = i;
+       });
+
+  for(int i = 0;i < N;++ i){
+    for(int j = 0;j < M;++ j){
+      ASSERT_EQ(data[i + j*N], i);
+    }
+  }
+
+
+  delete[] data;
+}
+#endif //RAJA_ENABLE_OPENMP
