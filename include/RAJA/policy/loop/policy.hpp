@@ -69,6 +69,26 @@ using loop_segit = loop_exec;
 ///
 using loop_reduce = seq_reduce;
 
+
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Loop unrolled execution policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+template<size_t ... unroll_lengths>
+struct unroll_loop_exec :
+    make_policy_pattern_launch_platform_t<Policy::loop,
+                                          Pattern::forall,
+                                          Launch::undefined,
+                                          Platform::host> {
+
+};
+
+
 }  // end namespace loop
 
 }  // end namespace policy
@@ -76,6 +96,10 @@ using loop_reduce = seq_reduce;
 using policy::loop::loop_exec;
 using policy::loop::loop_segit;
 using policy::loop::loop_reduce;
+using policy::loop::unroll_loop_exec;
+
+//template<size_t ... unroll_lengths>
+//using unroll_loop_exec = policy::loop::unroll_loop_exec<unroll_lengths ...>;
 
 }  // closing brace for RAJA namespace
 

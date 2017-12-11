@@ -108,7 +108,11 @@ REGISTER_TYPED_TEST_CASE_P(ForallTest, BasicForall, BasicForallIcount);
 using SequentialTypes = ::testing::Types<
     ExecPolicy<seq_segit, seq_exec>,
     ExecPolicy<seq_segit, loop_exec>,
-    ExecPolicy<seq_segit, simd_exec> >;
+    ExecPolicy<seq_segit, simd_exec>,
+    ExecPolicy<seq_segit, unroll_loop_exec<1>>,
+    ExecPolicy<seq_segit, unroll_loop_exec<2>>,
+    ExecPolicy<seq_segit, unroll_loop_exec<16,8,4,2>>,
+    ExecPolicy<seq_segit, unroll_loop_exec<27,13,11,7,5,3,2>>>;
 
 INSTANTIATE_TYPED_TEST_CASE_P(Sequential, ForallTest, SequentialTypes);
 
