@@ -77,6 +77,17 @@ using policy::sequential::seq_exec;
 using policy::sequential::seq_segit;
 using policy::sequential::seq_reduce;
 
+
+///
+///////////////////////////////////////////////////////////////////////
+///
+/// Shared memory policies
+///
+///////////////////////////////////////////////////////////////////////
+///
+
+struct seq_shmem{};
+
 }  // closing brace for RAJA namespace
 
 #endif

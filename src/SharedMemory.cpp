@@ -103,16 +103,17 @@ void RAJA::detail::startSharedMemorySetup(){
  */
 size_t RAJA::detail::registerSharedMemoryObject(void *object, size_t shmem_size){
 
-  // Only bother with the registration if we are doing shmem setup
-  if(!shared_memory_setup_enabled){
-    return 0;
-  }
-
   // look up object
   auto iter = shared_memory_objects.find(object);
 
   // if object is not registered, set aside some more shmem for it
   if(iter == shared_memory_objects.end()){
+
+    // Only bother with the registration if we are doing shmem setup
+    if(!shared_memory_setup_enabled){
+      return 0;
+    }
+
     size_t offset = shared_memory_total_bytes;
     shared_memory_total_bytes += shmem_size;
     shared_memory_objects[object] = offset;

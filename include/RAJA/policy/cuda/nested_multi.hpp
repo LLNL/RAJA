@@ -156,8 +156,8 @@ CudaDim computeCudaDims(CudaDim &launch_dims,
   Executor<collapse_policy> exec;
   CudaDim dims = exec.computeCudaDim(loop_data.st);
 
-  printf("Loop Dims: \n");
-  dims.print();
+//  printf("Loop Dims: \n");
+//  dims.print();
 
   // keep track of maximum launch dimensions
   launch_dims = launch_dims.maximum(dims);
@@ -223,8 +223,8 @@ RAJA_INLINE void forall_multi_idx(
   auto loop_dims = camp::make_tuple(computeCudaDims(dims, loop_datas)...);
 
 
-  printf("Launch Dims: \n");
-  dims.print();
+//  printf("Launch Dims: \n");
+//  dims.print();
 
   // Step 3: Wrap the loops with a device-side invoker
 
