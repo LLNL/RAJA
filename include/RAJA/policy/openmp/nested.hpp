@@ -209,19 +209,22 @@ struct OpenmpWrapper<n_policies, n_policies, Data> {
     template <typename WrappedBody>
     void operator()(Collapse<omp_parallel_collapse_exec, FT0, FT1> const &, WrappedBody const &wrap)
     {
+
+
+#if 1 //version 1
       ptrdiff_t b0 = *std::begin(camp::get<FT0::index_val>(wrap.data.st));
       ptrdiff_t b1 = *std::begin(camp::get<FT1::index_val>(wrap.data.st));
       
       ptrdiff_t e0 = *std::end(camp::get<FT0::index_val>(wrap.data.st));
       ptrdiff_t e1 = *std::end(camp::get<FT1::index_val>(wrap.data.st));
-          
-#pragma omp parallel
+
+      //      #pragma omp parallel
       {
         // create thread-private loop data
         auto privatizer = RAJA::nested::thread_privatize(wrap);
         auto private_wrap = privatizer.get_priv();
 
-#pragma omp for collapse (2)
+        //#pragma omp for collapse (2)
         for (auto i0 = b0; i0 < e0; ++i0) {
           for (auto i1 = b1; i1 < e1; ++i1) {
 
@@ -232,9 +235,32 @@ struct OpenmpWrapper<n_policies, n_policies, Data> {
             private_wrap();
           }
         }
+
       }
+
+#else 
+      auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
+      auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
+      auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
+      auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
+#pragma omp parallel
+      {
+        auto private_wrap = RAJA::nested::thread_privatize(wrap).get_priv();
+#pragma omp for collapse (2)
+          for (auto i0 = b0; i0 < e0; ++i0) {        
+            for (auto i1 = b1; i1 < e1; ++i1) {
+              private_wrap.data.template assign_index<FT0::index_val>(*i0);
+              private_wrap.data.template assign_index<FT1::index_val>(*i1);
+              private_wrap();
+            }
+          }
+      }
+#endif
+
+     
+ 
     }
-    
+   
   };
 
 
