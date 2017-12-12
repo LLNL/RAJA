@@ -138,3 +138,134 @@ using TBBTypes = ::testing::Types<
 
 INSTANTIATE_TYPED_TEST_CASE_P(TBB, ForallTest, TBBTypes);
 #endif
+
+
+
+
+TEST(ForallTest, NotUnrolled)
+{
+  using Pol = nested::Policy<
+                nested::For<0, loop_exec>,
+                nested::For<1, loop_exec>,
+                nested::For<2, loop_exec>
+              >;
+
+  size_t I = 16*1024*1024;
+  size_t N = 80;
+  size_t M = 9;
+
+  double * __restrict__ x = new double[N*M];
+  double * __restrict__ y = new double[N*M];
+  double * __restrict__ z = new double[N*M];
+
+
+  RAJA::forall<loop_exec>(RAJA::RangeSegment(0,N*M), [=](int i){
+    x[i] = i;
+    y[i] = 1.0;
+    z[i] = 0.0;
+  });
+
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0,I),
+                       RAJA::RangeSegment(0,N),
+                       RAJA::RangeSegment(0,M)),
+      [=](int, int n, int m){
+        int offset = n*M + m;
+        z[offset] = x[offset] * y[offset];
+      }
+  );
+
+  ASSERT_EQ(z[0], 0);
+
+  delete[] x;
+  delete[] y;
+  delete[] z;
+}
+
+
+TEST(ForallTest, Unrolled7Loop)
+{
+  using Pol = nested::Policy<
+                nested::For<0, loop_exec>,
+                nested::For<1, loop_exec>,
+                nested::For<2, unroll_loop_exec<9>>
+              >;
+
+  size_t I = 16*1024*1024;
+  size_t N = 80;
+  size_t M = 9;
+
+  double * __restrict__ x = new double[N*M];
+  double * __restrict__ y = new double[N*M];
+  double * __restrict__ z = new double[N*M];
+
+
+  RAJA::forall<loop_exec>(RAJA::RangeSegment(0,N*M), [=](int i){
+    x[i] = i;
+    y[i] = 1.0;
+    z[i] = 0.0;
+  });
+
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0,I),
+                       RAJA::RangeSegment(0,N),
+                       RAJA::RangeSegment(0,M)),
+      [=](int, int n, int m){
+        int offset = n*M + m;
+        z[offset] = x[offset] * y[offset];
+      }
+  );
+
+  ASSERT_EQ(z[0], 0);
+
+  delete[] x;
+  delete[] y;
+  delete[] z;
+}
+
+TEST(ForallTest, Unrolled7Explicit)
+{
+  using Pol = nested::Policy<
+                nested::For<0, loop_exec>,
+                nested::For<1, loop_exec>,
+                nested::For<2, unroll_explicit_exec<9>>
+              >;
+
+  size_t I = 16*1024*1024;
+  size_t N = 80;
+  size_t M = 9;
+
+  double * __restrict__ x = new double[N*M];
+  double * __restrict__ y = new double[N*M];
+  double * __restrict__ z = new double[N*M];
+
+
+  RAJA::forall<loop_exec>(RAJA::RangeSegment(0,N*M), [=](int i){
+    x[i] = i;
+    y[i] = 1.0;
+    z[i] = 0.0;
+  });
+
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(RAJA::RangeSegment(0,I),
+                       RAJA::RangeSegment(0,N),
+                       RAJA::RangeSegment(0,M)),
+      [=](int, int n, int m){
+        int offset = n*M + m;
+        z[offset] = x[offset] * y[offset];
+      }
+  );
+
+  ASSERT_EQ(z[0], 0);
+
+  delete[] x;
+  delete[] y;
+  delete[] z;
+}
+

@@ -87,7 +87,7 @@ RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 namespace detail {
 
   /**
-   * Unrolls invokations to loop body N times.
+   * Explicitly unrolls invocations to loop body N times.
    *
    * First caller should use Unroller<0, unroll> to get proper number of
    * iterations.
@@ -100,13 +100,12 @@ namespace detail {
 
     template<typename BeginIter, typename Func>
     RAJA_INLINE
-    void invoke(Func &&body, BeginIter begin_it) const {
+    static void invoke(Func &&body, BeginIter begin_it) {
       // invoke this idx
       body(*(begin_it + idx));
 
       // invoke idx+1
-      Unroller<idx+1, N> next_unroller;
-      next_unroller.invoke(std::forward<Func>(body), begin_it);
+      Unroller<idx+1, N>::invoke(std::forward<Func>(body), begin_it);
     }
   };
 
@@ -115,15 +114,15 @@ namespace detail {
   struct Unroller<N,N> {
     template<typename BeginIter, typename Func>
     RAJA_INLINE
-    void invoke(Func &&body, BeginIter begin_it) const {
+    static void invoke(Func &&, BeginIter ) {
       // NOP termination case
     }
   };
 
 
   // Termination case: no more unrolling, so treat as normal stride-1 loop
-  template <typename BeginIter, typename Func>
-  RAJA_INLINE void forall_unroll(const unroll_loop_exec<> &, BeginIter &&begin_it, size_t remaining, Func &&body)
+  template <typename BeginIter, typename Func, bool ExplicitUnroll>
+  RAJA_INLINE void forall_unroll(const unroll_exec<ExplicitUnroll> &, BeginIter &&begin_it, size_t remaining, Func &&body)
   {
     // Iterate over remaining one-by-one
     for (size_t i = 0; i < remaining; ++i) {
@@ -133,29 +132,34 @@ namespace detail {
 
   // Tries to unroll the loop by "unroll" until we run out of enough iterations
   // remainder is passed to next smallest size (or 1 as a termination case)
-  template <typename BeginIter, typename Func, size_t unroll, size_t ... unroll_next>
-  RAJA_INLINE void forall_unroll(const unroll_loop_exec<unroll, unroll_next...> &, BeginIter &&begin_it, size_t remaining, Func &&body)
+  template <typename BeginIter, typename Func, bool ExplicitUnroll, size_t unroll, size_t ... unroll_next>
+  RAJA_INLINE void forall_unroll(const unroll_exec<ExplicitUnroll, unroll, unroll_next...> &, BeginIter &&begin_it, size_t remaining, Func &&body)
   {
-    // Iterate over "unroll" lengthed chunks
-    if(remaining >= unroll){
-      for (size_t i = 0; i+unroll <= remaining; i += unroll) {
+    // Iterate over "unroll" length chunks
+    while(remaining >= unroll){
 
-        // forcibly unroll invokations to body
-        Unroller<0, unroll> u;
-        u.invoke(std::forward<Func>(body), begin_it);
-
-        // increment to next unrolling
-        begin_it += unroll;
+      // forcibly unroll invocations to body
+      if(ExplicitUnroll){
+        Unroller<0, unroll>::invoke(std::forward<Func>(body), begin_it);
       }
+      // Use a bare for-loop with compile time constant trip count
+      // and let the compiler figure it out
+      else{
+        for(size_t j = 0;j < unroll;++ j){
+          body(*(begin_it+j));
+        }
+      }
+
+      // increment to next unrolling
+      begin_it += unroll;
+      remaining -= unroll;
     }
 
     // If we have any iterations remaining, pass them on to the next smaller
     // sized unroll
-    size_t remainder = remaining % unroll;
-    if(remainder > 0){
-      using next_pol = unroll_loop_exec<unroll_next ...>;
-
-      forall_unroll(next_pol{}, begin_it, remainder, std::forward<Func>(body));
+    if(remaining > 0){
+      using next_pol = unroll_exec<ExplicitUnroll, unroll_next ...>;
+      forall_unroll(next_pol{}, begin_it, remaining, std::forward<Func>(body));
     }
   }
 
@@ -167,8 +171,8 @@ namespace detail {
 
 
 
-template <typename Iterable, typename Func, size_t ... unroll_list>
-RAJA_INLINE void forall_impl(const unroll_loop_exec<unroll_list...> &pol, Iterable &&iter, Func &&body)
+template <typename Iterable, typename Func, bool ExplicitUnroll, size_t ... unroll_list>
+RAJA_INLINE void forall_impl(const unroll_exec<ExplicitUnroll, unroll_list...> &pol, Iterable &&iter, Func &&body)
 {
   RAJA_EXTRACT_BED_IT(iter);
 
