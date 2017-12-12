@@ -86,6 +86,41 @@ RAJA_INLINE void forall_impl(const loop_exec &, Iterable &&iter, Func &&body)
 //
 namespace detail {
 
+  /**
+   * Unrolls invokations to loop body N times.
+   *
+   * First caller should use Unroller<0, unroll> to get proper number of
+   * iterations.
+   *
+   * Calls:  body(begin+0), body(begin+1), ..., body(begin+N-1)
+   */
+
+  template<size_t idx, size_t N>
+  struct Unroller {
+
+    template<typename BeginIter, typename Func>
+    RAJA_INLINE
+    void invoke(Func &&body, BeginIter begin_it) const {
+      // invoke this idx
+      body(*(begin_it + idx));
+
+      // invoke idx+1
+      Unroller<idx+1, N> next_unroller;
+      next_unroller.invoke(std::forward<Func>(body), begin_it);
+    }
+  };
+
+  // Terminator
+  template<size_t N>
+  struct Unroller<N,N> {
+    template<typename BeginIter, typename Func>
+    RAJA_INLINE
+    void invoke(Func &&body, BeginIter begin_it) const {
+      // NOP termination case
+    }
+  };
+
+
   // Termination case: no more unrolling, so treat as normal stride-1 loop
   template <typename BeginIter, typename Func>
   RAJA_INLINE void forall_unroll(const unroll_loop_exec<> &, BeginIter &&begin_it, size_t remaining, Func &&body)
@@ -105,11 +140,11 @@ namespace detail {
     if(remaining >= unroll){
       for (size_t i = 0; i+unroll <= remaining; i += unroll) {
 
-        // Fixed length loop.  Should unroll, but we could possibly use
-        // a compiler specific pragma to force it?!?
-        for(size_t j = 0;j < unroll; ++j) {
-          body(*(begin_it + j));
-        }
+        // forcibly unroll invokations to body
+        Unroller<0, unroll> u;
+        u.invoke(std::forward<Func>(body), begin_it);
+
+        // increment to next unrolling
         begin_it += unroll;
       }
     }
