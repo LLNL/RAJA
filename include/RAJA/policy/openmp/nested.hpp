@@ -218,11 +218,13 @@ struct OpenmpWrapper<n_policies, n_policies, Data> {
 #pragma omp parallel
       {
         // create thread-private loop data
-        auto private_wrap = RAJA::nested::thread_privatize(wrap).get_priv();
+        auto privatizer = RAJA::nested::thread_privatize(wrap);
+        auto private_wrap = privatizer.get_priv();
 
 #pragma omp for collapse (2)
         for (auto i0 = b0; i0 < e0; ++i0) {
           for (auto i1 = b1; i1 < e1; ++i1) {
+
 
             private_wrap.data.template assign_index<FT0::index_val>(i0);
             private_wrap.data.template assign_index<FT1::index_val>(i1);
