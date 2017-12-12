@@ -22,7 +22,13 @@
 #include "RAJA/util/defines.hpp"
 
 /*
-  Example 0: Daxpy
+  Example 0: DAXPY
+  This Double-Precision-A*X Plus Y example code 
+  illustrates the similarities between a C++ style 
+  for loop and a RAJA forall loop. 
+
+  Details about this code may be found in the RAJA documentation
+  http://raja.readthedocs.io/en/feature-user-docs/getting_started.html
 */
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
@@ -41,6 +47,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::seq_exec>(0, 1000, [=] (int i) {
       a[i] += b[i] * c;
     });
+
+  delete[] a; 
+  delete[] b;
   
   return 0;
 }
