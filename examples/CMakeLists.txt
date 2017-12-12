@@ -49,6 +49,9 @@ raja_add_executable(
 raja_add_executable(
   NAME example-reduction
   SOURCES example-reduction.cpp)
-
+  
+raja_add_executable(
+  NAME example-loop-reordering
+  SOURCES example-loop-reordering.cpp)
 
 

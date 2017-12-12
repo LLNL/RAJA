@@ -16,8 +16,6 @@
 #include <cstdlib>
 #include <iostream>
 
-#include "memoryManager.hpp"
-
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
