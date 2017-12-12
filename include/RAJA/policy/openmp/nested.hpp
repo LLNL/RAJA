@@ -218,12 +218,12 @@ struct OpenmpWrapper<n_policies, n_policies, Data> {
       ptrdiff_t e0 = *std::end(camp::get<FT0::index_val>(wrap.data.st));
       ptrdiff_t e1 = *std::end(camp::get<FT1::index_val>(wrap.data.st));
 
-      #pragma omp parallel
+      //      #pragma omp parallel
       {
         // create thread-private loop data
         auto private_wrap = RAJA::nested::thread_privatize(wrap).get_priv();
 
-#pragma omp for collapse (2)
+        //#pragma omp for collapse (2)
         for (auto i0 = b0; i0 < e0; ++i0) {
           for (auto i1 = b1; i1 < e1; ++i1) {
 
