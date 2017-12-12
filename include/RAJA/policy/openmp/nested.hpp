@@ -215,16 +215,19 @@ struct OpenmpWrapper<n_policies, n_policies, Data> {
       auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
       auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
 
+      auto l0 = std::distance(b0,e0);
+      auto l1 = std::distance(b1,e1);     
+
 #pragma omp parallel
       {
         auto privatizer = RAJA::nested::thread_privatize(wrap);
         auto private_wrap = privatizer.get_priv();
         
 #pragma omp for collapse (2)
-        for (auto i0 = b0; i0 < e0; ++i0){
-          for (auto i1 = b1; i1 < e1; ++i1){
-            private_wrap.data.template assign_index<FT0::index_val>(*i0);
-            private_wrap.data.template assign_index<FT1::index_val>(*i1);
+        for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
+          for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
+            private_wrap.data.template assign_index<FT0::index_val>(b0[i0]);
+            private_wrap.data.template assign_index<FT1::index_val>(b1[i1]);
             private_wrap();
           }
         }
