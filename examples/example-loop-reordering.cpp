@@ -34,27 +34,33 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
 
-#if 0
   using myPol = RAJA::nested::Policy<   
   RAJA::nested::TypedFor<0, RAJA::loop_exec, ID>,
   RAJA::nested::TypedFor<1, RAJA::loop_exec,IZ>   
     >;
-#else 
-  using myPol = RAJA::nested::Policy<   
-  RAJA::nested::TypedFor<1, RAJA::loop_exec,IZ>,
-  RAJA::nested::TypedFor<0, RAJA::loop_exec, ID>
-    >;
-#endif
-
 
   RAJA::RangeSegment Range0(0,4);
-  RAJA::RangeSegment Range1(0,1);  
+  RAJA::RangeSegment Range1(0,1);
 
+  printf("Loop Format #1 \n ");
   RAJA::nested::forall(myPol{},
                        camp::make_tuple(Range0, Range1),                       
                        [=] (ID i0, IZ i1) {
                          printf("%ld, %ld \n", i0, i1);
                      });
+
+
+  printf("\n Loop Format #2 \n ");
+  using myPol2 = RAJA::nested::Policy<   
+  RAJA::nested::TypedFor<1, RAJA::loop_exec,IZ>,
+    RAJA::nested::TypedFor<0, RAJA::loop_exec, ID>
+    >;
+
+  RAJA::nested::forall(myPol2{},
+                       camp::make_tuple(Range0, Range1),                       
+                       [=] (ID i0, IZ i1) {
+                         printf("%ld, %ld \n", i0, i1);
+                       });
 
   return 0;
 }
