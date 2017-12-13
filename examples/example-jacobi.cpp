@@ -22,7 +22,6 @@
 
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
-#include "RAJA/policy/openmp/nested.hpp"
 
 #include "memoryManager.hpp"
 
@@ -217,7 +216,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
       Jacobi Iteration
     */
     RAJA::forallN<jacobiSeqNestedPolicy>(
-      jacobiRange, jacobiRange, [=] (RAJA::Index_type m, RAJA::Index_type n) {      
+      jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {      
 
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
@@ -271,36 +270,28 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     RAJA::OMP_Parallel<> - Creates a parallel region,
     must be the last argument of the nested policy list
   */
+  using jacobiompNestedPolicy =
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::omp_collapse_nowait_exec,
+    RAJA::omp_collapse_nowait_exec>, RAJA::OMP_Parallel<>>;
 
-  using Pol =  RAJA::nested::Policy<
-    RAJA::nested::OmpParallelCollapse<
-      RAJA::nested::For<0>,
-      RAJA::nested::For<1>
-      > >;
-
-  std::cout<<"testing new policy"<<std::endl;
   while (resI2 > tol * tol) {
 
     /*
       Jacobi Iteration
     */
-    //RAJA::RangeSegment myRange(0, 4);
-
-    RAJA::nested::forall(Pol{}, camp::make_tuple(jacobiRange, jacobiRange),
-                         [=] (RAJA::Index_type m, RAJA::Index_type n) {
-                             
-                             
+    RAJA::forallN<jacobiompNestedPolicy>(
+        jacobiRange, jacobiRange, [=](RAJA::Index_type m, RAJA::Index_type n) {
+                
           double x = gridx.o + m * gridx.h;
           double y = gridx.o + n * gridx.h;
 
           double f = gridx.h * gridx.h
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
-          
+
           int id = n * (N + 2) + m;
           I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
-                             - Iold[id + 1]);  
+                             - Iold[id + 1]);              
         });
-
     /*
       Compute residual and update Iold
     */
