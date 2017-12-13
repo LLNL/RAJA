@@ -526,4 +526,37 @@ TEST(Nested, Collapse2)
 
   delete[] data;
 }
+
+
+TEST(Nested, Collapse3)
+{
+  int N = 1;
+  int M = 3;
+  int K = 2;
+
+  int *data = new int[N*M*K];
+  for(int i = 0;i < M*N*K;++ i){
+    data[i] = -1;
+  }
+
+  using Pol = RAJA::nested::Policy<
+       RAJA::nested::OmpParallelCollapse<
+        RAJA::nested::For<0>,
+        RAJA::nested::For<1>,
+        RAJA::nested::For<2>
+        > >;
+
+  RAJA::nested::forall(
+      Pol{},
+      camp::make_tuple(
+          RAJA::RangeSegment(0, N),
+          RAJA::RangeSegment(0, M),
+          RAJA::RangeSegment(0, K)),
+      [=] (Index_type i, Index_type j, Index_type k) {
+        int id = i + N*(j + M*k);
+        data[id] = id;
+      });
+
+  delete[] data;
+}
 #endif //RAJA_ENABLE_OPENMP
