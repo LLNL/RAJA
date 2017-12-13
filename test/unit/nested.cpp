@@ -502,7 +502,7 @@ TEST(Nested, Collapse2)
   }
 
   using Pol = RAJA::nested::Policy<
-      RAJA::nested::ompCollapse<
+      RAJA::nested::OmpParallelCollapse<
         RAJA::nested::For<0>,
         RAJA::nested::For<1>
       > >;
