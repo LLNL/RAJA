@@ -273,7 +273,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   */
 
   using Pol =  RAJA::nested::Policy<
-      RAJA::nested::ompCollapse<
+    RAJA::nested::OmpParallelCollapse<
       RAJA::nested::For<0>,
       RAJA::nested::For<1>
       > >;
@@ -297,7 +297,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      * (2 * x * (y - 1) * (y - 2 * x + x * y + 2) * exp(x - y));
           
           int id = n * (N + 2) + m;
-          printf("%d %d \n", id, N);
           I[id] = -0.25 * (f - Iold[id - N - 2] - Iold[id + N + 2] - Iold[id - 1]
                              - Iold[id + 1]);  
         });
