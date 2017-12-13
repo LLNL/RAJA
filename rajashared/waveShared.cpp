@@ -11,6 +11,7 @@
 //
 // For details about use and distribution, please read RAJA/LICENSE.
 //
+// -------Intial pass at shared memory-----------
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
 #include <cmath>
@@ -76,7 +77,26 @@ struct grid_s {
 };
 
 
-#define Lu(ty, tx) Lu[tx + ty*(Bx+2*sr)]
+#if defined(__CUDA_ARCH__)
+
+#define RAJA_shared __shared__
+
+#else
+
+#define RAJA_shared
+
+#endif
+
+
+#if defined(RAJA_ENABLE_CUDA)
+//We have the option of 1 or 0
+#define CPU 0
+#else
+//should always be 1
+#define CPU 1
+#endif
+
+
 
 
 
@@ -157,7 +177,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   /*
     Multiplier for spatial refinement
    */
-  int factor = 40;
+  int factor = 900;
 
   /*
     Discretization of the domain.
@@ -195,25 +215,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //--------
   //With RAJA shared memory
   //--------
-  std::cout<<"\n \n RAJA Shared Memory Version #2"<<std::endl;
+  std::cout<<"\n \n RAJA Shared Memory Version"<<std::endl;
   std::cout<<"\n \n No of time steps: "<<nt<<std::endl;
   //CPU - 
 
-
+#if CPU
+  using abstractPolicy =
+    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;  
+#else
 
 #if defined(RAJA_ENABLE_CUDA)
   
   std::cout<<"GPU MODE!"<<std::endl;
-  using pol =
-    RAJA::nested::Policy<
-    RAJA::nested::CudaCollapse<
-    RAJA::nested::For<0, RAJA::cuda_block_x_exec>,
-    RAJA::nested::For<1, RAJA::cuda_block_y_exec>, > >;
+  using abstractPolicy
+    = RAJA::NestedPolicy<RAJA::ExecList
+    <RAJA::cuda_block_y_exec,
+     RAJA::cuda_block_x_exec>>;
 #endif
 
+#endif
   
   //Here we define the number of "blocks" or the outer loop
-  //RAJA::RangeSegment outerRange(0,factor);
   RAJA::RangeSegment outerRange(0,factor);
 
   time = 0;
@@ -225,12 +247,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaEventCreate(&stop);
   cudaEventRecord(start);    
 #endif
-  
 
-  
   for (int k = 0; k < nt; ++k) {
-
-    waveShared<double, pol>(P1, P2, outerRange, ct, grid.nx);
+    waveShared<double, abstractPolicy>(P1, P2, outerRange, ct, grid.nx);
 
     time += dt;
     double *Temp = P2;
@@ -326,31 +345,39 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
 }
 
 
-
 //with shared memory
 template <typename T, typename fdNestedPolicy>
 void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 {
 
-#if defined(RAJA_ENABLE_CUDA)
+  RAJA::forallN<fdNestedPolicy>(
+#if CPU
+  //RAJA will give outer Id 
+      outerBounds, outerBounds, [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+        using innerPolicyY = RAJA::loop_exec;
+        using innerPolicyX = RAJA::loop_exec;
+        using innerPolicy = serialLoop;
+        using syncPolicy = seqBlockSync;        
+#else
 
-  //setup shared memory
-  const size_t sharedSz = (Bx+2*sr)*(By+2*sr);
-  RAJA::SharedMemory<RAJA::cuda_shmem, double, sharedSz> Lu;
-  
-  using innerPolicyY = void;
-  using innerPolicyX = void;
-  using innerPolicy = cudaLoop;
-  using syncPolicy  = cudaBlockSync;
-  
-  RAJA::nested::forall(fdNestedPolicy{},
-                       camp::make_tuple(outerBounds,outerBounds), [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx){
-                         
-                         /*
-                           Coefficients for a fourth order stencil
-                         */
-     double coeff[5] = {
+#if defined(RAJA_ENABLE_CUDA)
+   //RAJA has been hacked to give the block Id
+     outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
+        using innerPolicyY = void;
+        using innerPolicyX = void;
+       using innerPolicy = cudaLoop;
+       using syncPolicy  = cudaBlockSync;
+#endif
+
+#endif
+      
+        /*
+          Coefficients for a fourth order stencil
+        */
+        double coeff[5] = {
           -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
+
+        RAJA_shared double Lu[By+2*sr][By + 2*sr];       
         
         innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
             
@@ -365,18 +392,17 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
             const int nX2 = (tx + Bx - sr + nx)%nx;
             const int nY2 = (ty + By - sr + nx)%nx;
             
-            //Lu[ly][lx] = P2[nY1*nx + nX1];
-            Lu(ly,lx) = P2[nY1*nx + nX1];
+            Lu[ly][lx] = P2[nY1*nx + nX1];
             
             if(lx < 2*sr){
-              Lu(ly,(lx+Bx)) = P2[nY1*nx + nX2];
+              Lu[ly][lx + Bx] = P2[nY1*nx + nX2];
               
               if(ly < 2*sr)
-                Lu((ly+By),(lx+Bx)) = P2[nY2*nx + nX2];
+                Lu[ly + By][lx + Bx] = P2[nY2*nx + nX2];
             }
             
             if(ly < 2*sr)
-              Lu((ly+By),lx) = P2[nY2*nx + nX1];
+              Lu[ly + By][lx] = P2[nY2*nx + nX1];
 
           });
 
@@ -395,7 +421,7 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
                        
             double lap = 0.0;
             for(int i=0; i<2*sr + 1; ++i){
-              lap += coeff[i]*Lu((ly+sr),(lx+i)) + coeff[i]*Lu((ly+i),(lx + sr));
+              lap += coeff[i]*Lu[ly + sr][lx + i] + coeff[i]*Lu[ly + i][lx + sr];
             }
             
             //write out stencil
@@ -405,7 +431,6 @@ void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 
 
 
-      }); 
-#endif
-
+      });
+  
 }
