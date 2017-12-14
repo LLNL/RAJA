@@ -1,6 +1,8 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA_gtest.hpp"
 
+#include "RAJA/util/Timer.hpp"
+
 #include <cstdio>
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -98,6 +100,7 @@ CUDA_TEST(NestedMulti, SharedMemoryTest_CUDA)
 
   RAJA::SharedMemory<RAJA::cuda_shmem, double> s(4);
   RAJA::SharedMemory<RAJA::cuda_shmem, double> t(16);
+
 
   double *output = nullptr;
   cudaErrchk(cudaMallocManaged(&output, sizeof(double) * 4) );
@@ -252,12 +255,14 @@ RAJA_INDEX_VALUE(IDirection, "IDirection");
 RAJA_INDEX_VALUE(IGroup, "IGroup");
 RAJA_INDEX_VALUE(IZone, "IZone");
 
-template <typename POL>
-static void runLTimesCuda(Index_type num_moments,
+
+static void runLTimesCudaShmem(Index_type num_moments,
                           Index_type num_directions,
                           Index_type num_groups,
                           Index_type num_zones)
 {
+
+
 
   // psi[direction, group, zone]
   using PsiView = RAJA::TypedView<double, Layout<3>, IDirection, IGroup, IZone>;
@@ -269,10 +274,6 @@ static void runLTimesCuda(Index_type num_moments,
   using EllView = RAJA::TypedView<double, Layout<2>, IMoment, IDirection>;
 
 
-  using Pol = NestedPolicy<ExecList<seq_exec,
-                          seq_exec,
-                          cuda_threadblock_x_exec<32>,
-                          cuda_threadblock_y_exec<32>>>;
 
 
   // allocate data
@@ -332,19 +333,97 @@ static void runLTimesCuda(Index_type num_moments,
       make_permuted_layout({num_moments, num_groups, num_zones}, phi_perm));
 
   // get execution policy
-
+  cudaDeviceSynchronize();
+  RAJA::Timer timer;
+  timer.start();
 
   // do calculation using RAJA
-  forallN<Pol, IMoment, IDirection, IGroup, IZone>(
-      RangeSegment(0, num_moments),
-      RangeSegment(0, num_directions),
-      RangeSegment(0, num_groups),
-      RangeSegment(0, num_zones),
-      [=] __device__(IMoment m, IDirection d, IGroup g, IZone z) {
-        phi(m, g, z) += ell(m, d) * psi(d, g, z);
-      });
+
+  /*
+   * Blocks in Z for each Moment
+   * Blocks in Y for each Group
+   * Threads in X for each direction
+   *
+   * Shmem stores Ell for all directions and one moment (defined by the block)
+   */
+  constexpr size_t ZoneThreads = 75;
+  using Pol_LoadEll = RAJA::nested::Policy<
+        RAJA::nested::CudaCollapse<
+          RAJA::nested::TypedFor<0, RAJA::cuda_block_z_exec, IGroup>,
+          RAJA::nested::TypedFor<1, RAJA::cuda_threadblock_x_exec<ZoneThreads>, IZone> >
+        >;
+
+  using Pol_Calc = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::TypedFor<0, RAJA::cuda_block_z_exec, IGroup>,
+        RAJA::nested::TypedFor<1, RAJA::cuda_threadblock_x_exec<ZoneThreads>, IZone> >
+      >;
+
+  using Pol_SavePhi = RAJA::nested::Policy<
+      RAJA::nested::CudaCollapse<
+        RAJA::nested::TypedFor<0, RAJA::cuda_block_z_exec, IMoment>,
+        RAJA::nested::TypedFor<1, RAJA::cuda_block_y_exec, IGroup>,
+        RAJA::nested::TypedFor<2, RAJA::cuda_threadblock_x_exec<ZoneThreads>, IZone> >
+      >;
+
+  //SharedMemory<cuda_shmem, double> ell_shared(num_directions);
+
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, double>,
+  RAJA::Layout<2>, RAJA::ident_shmem, RAJA::ident_shmem> ell_shared(num_directions, num_moments);
+
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, double>,
+  RAJA::Layout<2>, RAJA::ident_shmem, RAJA::block_map_x_shmem> phi_shared(num_moments, ZoneThreads);
+
+
+  nested::forall_multi<nested::cuda_multi_exec<true>>(
+
+      nested::makeLoop(
+        Pol_LoadEll{},
+
+        camp::make_tuple(RangeSegment(0, num_groups),
+                         RangeSegment(0, num_zones)),
+
+        [=] __device__ (IGroup g, IZone z){
+          IMoment m(threadIdx.x);
+          if(m < num_moments){
+            for(IDirection d(0);d < num_directions;++ d){
+              ell_shared(*d, *m) = ell(m, d);
+            }
+          }
+        }),
+
+      nested::makeLoop(
+        Pol_Calc{},
+
+        camp::make_tuple(RangeSegment(0, num_groups),
+                         RangeSegment(0, num_zones)),
+
+        [=] __device__ (IGroup g, IZone z){
+          for(IMoment m(0);m < num_moments;++ m){
+            phi_shared(*m, *z) = 0.0;
+          }
+
+          for(IDirection d(0);d < num_directions;++ d){
+            double psi_g_d_z = psi(d,g,z);
+            for(IMoment m(0);m < num_moments;++ m){
+              phi_shared(*m, *z) += psi_g_d_z * ell_shared(*d, *m);
+            }
+          }
+          for(IMoment m(0);m < num_moments;++ m){
+            phi(m, g, z) = phi_shared(*m, *z);
+          }
+        })
+
+
+  ); // forall_multi
+
+
+
+
 
   cudaDeviceSynchronize();
+  timer.stop();
+  printf("LTimes took %lf seconds\n", timer.elapsed());
   // Copy to host the result
   cudaMemcpy(&phi_data[0],
              d_phi,
@@ -374,6 +453,15 @@ static void runLTimesCuda(Index_type num_moments,
   }
 
 }
+
+
+
+
+CUDA_TEST(TestNestedMulti, LTimesCudaShmem){
+  runLTimesCudaShmem(25, 160, 64, 2*1024);
+}
+
+
 
 #endif // RAJA_ENABLE_CUDA
 
