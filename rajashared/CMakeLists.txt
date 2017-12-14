@@ -17,3 +17,7 @@
 raja_add_executable(
   NAME waveShared2
   SOURCES waveShared2.cpp)
+
+raja_add_executable(
+  NAME shmem-ltimes
+  SOURCES shmem-ltimes.cpp)

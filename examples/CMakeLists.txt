@@ -43,14 +43,3 @@ raja_add_executable(
   SOURCES example-gauss-seidel.cpp)
 
 
-#
-#  Shared Memory Examples
-#
-
-raja_add_executable(
-  NAME waveShared
-  SOURCES waveShared.cpp)
-
-raja_add_executable(
-  NAME shmem-ltimes
-  SOURCES shmem/shmem-ltimes.cpp)
