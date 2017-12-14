@@ -69,33 +69,14 @@ const int Bx = 16; //Number of threads in the y-dim
    o - Origin in a cartesian dimension
   h - Spacing between grid points
   n - Number of grid points
- */
+*/
 struct grid_s {
   double ox, dx;
   int nx;
 };
 
 
-#if defined(__CUDA_ARCH__)
-
-#define RAJA_shared __shared__
-
-#else
-
-#define RAJA_shared
-
-#endif
-
-
-#if defined(RAJA_ENABLE_CUDA)
-//We have the option of 1 or 0
-#define CPU 0
-#else
-//should always be 1
-#define CPU 1
-#endif
-
-
+//#define Lu(ty, tx) Lu[tx + ty*(Bx+2*sr)]
 
 
 
@@ -114,7 +95,7 @@ void innerLoop(const serialLoop &, int Ny, int Nx, Func &&innerLoop){
 
   //Some abilities are transferred.. 
   RAJA::forallN<
-  RAJA::NestedPolicy<RAJA::ExecList<policyY, policyX>>>(RAJA::RangeSegment(0,Ny), RAJA::RangeSegment(0,Nx), std::forward<Func>(innerLoop));
+    RAJA::NestedPolicy<RAJA::ExecList<policyY, policyX>>>(RAJA::RangeSegment(0,Ny), RAJA::RangeSegment(0,Nx), std::forward<Func>(innerLoop));
 
 }
 
@@ -143,17 +124,13 @@ void RAJA_Sync(const seqBlockSync&){
 }
 
 
-
-
-
-
 /*
   ----[Functions]------
   wave       - Templated wave propagator
   waveSol    - Function for the analytic solution of the equation
   setIC      - Sets the intial value at two time levels (t0,t1)
   computeErr - Displays the maximum error in the approximation
- */
+*/
 
 template <typename T, typename fdNestedPolicy>
 void waveShared(T *P1, T *P2, RAJA::RangeSegment fdBounds, double ct, int nx);
@@ -170,13 +147,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
          
   /*
     Wave speed squared
-   */
+  */
   double cc = 1. / 2.0;
 
   /*
     Multiplier for spatial refinement
-   */
-  int factor = 900;
+  */
+  int factor = 40;
 
   /*
     Discretization of the domain.
@@ -214,27 +191,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   //--------
   //With RAJA shared memory
   //--------
-  std::cout<<"\n \n RAJA Shared Memory Version"<<std::endl;
+  std::cout<<"\n \n RAJA Shared Memory Version #2"<<std::endl;
   std::cout<<"\n \n No of time steps: "<<nt<<std::endl;
   //CPU - 
-
-#if CPU
-  using abstractPolicy =
-    RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;  
-#else
-
 #if defined(RAJA_ENABLE_CUDA)
   
   std::cout<<"GPU MODE!"<<std::endl;
-  using abstractPolicy
-    = RAJA::NestedPolicy<RAJA::ExecList
-    <RAJA::cuda_block_y_exec,
-     RAJA::cuda_block_x_exec>>;
+  using pol =
+    RAJA::nested::Policy<
+    RAJA::nested::CudaCollapse<
+    RAJA::nested::For<0, RAJA::cuda_block_x_exec>,
+    RAJA::nested::For<1, RAJA::cuda_block_y_exec> > >;
+#else
+  using pol =
+    RAJA::nested::Policy<
+    RAJA::nested::For<0, RAJA::loop_exec>,
+    RAJA::nested::For<1, RAJA::loop_exec> >;
 #endif
 
-#endif
   
   //Here we define the number of "blocks" or the outer loop
+  //RAJA::RangeSegment outerRange(0,factor);
   RAJA::RangeSegment outerRange(0,factor);
 
   time = 0;
@@ -246,9 +223,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   cudaEventCreate(&stop);
   cudaEventRecord(start);    
 #endif
-
+  
   for (int k = 0; k < nt; ++k) {
-    waveShared<double, abstractPolicy>(P1, P2, outerRange, ct, grid.nx);
+
+    waveShared<double, pol>(P1, P2, outerRange, ct, grid.nx);
 
     time += dt;
     double *Temp = P2;
@@ -303,23 +281,22 @@ void computeErr(double *P, double tf, grid_s grid)
     RAJA::NestedPolicy<RAJA::ExecList<RAJA::seq_exec, RAJA::seq_exec>>;
 
   RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
+                          fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {
 
-      int id = tx + grid.nx * ty;
-      double x = grid.ox + tx * grid.dx;
-      double y = grid.ox + ty * grid.dx;
-      double myErr = std::abs(P[id] - waveSol(tf, x, y));
+                            int id = tx + grid.nx * ty;
+                            double x = grid.ox + tx * grid.dx;
+                            double y = grid.ox + ty * grid.dx;
+                            double myErr = std::abs(P[id] - waveSol(tf, x, y));
 
-      /*
-        tMax.max() is used to store the maximum value
-      */
-      tMax.max(myErr);
-    });
+                            /*
+                              tMax.max() is used to store the maximum value
+                            */
+                            tMax.max(myErr);
+                          });
 
   double lInfErr = tMax;
   printf("Max Error = %lg, dx = %f \n", lInfErr, grid.dx);
 }
-
 
 /*
  Function to set intial condition
@@ -332,104 +309,105 @@ void setIC(double *P1, double *P2, double t0, double t1, grid_s grid)
   RAJA::RangeSegment fdBounds(0, grid.nx);
   
   RAJA::forallN<myPolicy>(
-    fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
+                          fdBounds, fdBounds, [=](RAJA::Index_type ty, RAJA::Index_type tx) {    
 
-      int id = tx + ty * grid.nx;
-      double x = grid.ox + tx * grid.dx;
-      double y = grid.ox + ty * grid.dx;
+                            int id = tx + ty * grid.nx;
+                            double x = grid.ox + tx * grid.dx;
+                            double y = grid.ox + ty * grid.dx;
       
-      P1[id] = waveSol(t0, x, y);
-      P2[id] = waveSol(t1, x, y);
-    });
+                            P1[id] = waveSol(t0, x, y);
+                            P2[id] = waveSol(t1, x, y);
+                          });
 }
-
 
 //with shared memory
 template <typename T, typename fdNestedPolicy>
 void waveShared(T *P1, T *P2, RAJA::RangeSegment outerBounds, double ct, int nx)
 {
 
-  RAJA::forallN<fdNestedPolicy>(
-#if CPU
-  //RAJA will give outer Id 
-      outerBounds, outerBounds, [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
-        using innerPolicyY = RAJA::loop_exec;
-        using innerPolicyX = RAJA::loop_exec;
-        using innerPolicy = serialLoop;
-        using syncPolicy = seqBlockSync;        
-#else
 
+  //setup shared memory
 #if defined(RAJA_ENABLE_CUDA)
-   //RAJA has been hacked to give the block Id
-     outerBounds, outerBounds, [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx) {
-        using innerPolicyY = void;
-        using innerPolicyX = void;
-       using innerPolicy = cudaLoop;
-       using syncPolicy  = cudaBlockSync;
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::cuda_shmem, double>, RAJA::Layout<2>, RAJA::ident_shmem, RAJA::ident_shmem> Lu((Bx+2*sr), (By+2*sr));  
+  using innerPolicyY = void;
+  using innerPolicyX = void;
+  using innerPolicy = cudaLoop;
+  using syncPolicy  = cudaBlockSync;
+#else
+  RAJA::SharedMemoryView<RAJA::SharedMemory<RAJA::seq_shmem, double>, RAJA::Layout<2>, RAJA::ident_shmem, RAJA::ident_shmem> Lu((Bx+2*sr), (By+2*sr));  
+  using innerPolicyY = RAJA::loop_exec;
+  using innerPolicyX = RAJA::loop_exec;
+  using innerPolicy = serialLoop;
+  using syncPolicy  = seqBlockSync;
 #endif
 
+#if defined(RAJA_ENABLE_CUDA)  
+  RAJA::nested::forall(fdNestedPolicy{},
+                       camp::make_tuple(outerBounds,outerBounds), [=] __device__ (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx){
+#else
+  RAJA::nested::forall(fdNestedPolicy{},
+                       camp::make_tuple(outerBounds,outerBounds), [=] (RAJA::Index_type outerIdy, RAJA::Index_type outerIdx){
 #endif
-      
-        /*
-          Coefficients for a fourth order stencil
-        */
-        double coeff[5] = {
-          -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};
+                         
+                         /*
+                           Coefficients for a fourth order stencil
+                         */
+                         double coeff[5] = {
+                           -1.0 / 12.0, 4.0 / 3.0, -5.0 / 2.0, 4.0 / 3.0, -1.0 / 12.0};                         
 
-        RAJA_shared double Lu[By+2*sr][By + 2*sr];       
-        
-        innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
+                         innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
             
-            //Compute Index
-            const int tx = lx + Bx * outerIdx; 
-            const int ty = ly + By * outerIdy;
+                             //Compute Index
+                             const int tx = lx + Bx * outerIdx; 
+                             const int ty = ly + By * outerIdy;
             
-            //Index
-            const int nX1 = (tx - sr + nx)%nx; 
-            const int nY1 = (ty - sr + nx)%nx;
+                             //Index
+                             const int nX1 = (tx - sr + nx)%nx; 
+                             const int nY1 = (ty - sr + nx)%nx;
             
-            const int nX2 = (tx + Bx - sr + nx)%nx;
-            const int nY2 = (ty + By - sr + nx)%nx;
+                             const int nX2 = (tx + Bx - sr + nx)%nx;
+                             const int nY2 = (ty + By - sr + nx)%nx;
             
-            Lu[ly][lx] = P2[nY1*nx + nX1];
+                             Lu(ly,lx) = P2[nY1*nx + nX1];
             
-            if(lx < 2*sr){
-              Lu[ly][lx + Bx] = P2[nY1*nx + nX2];
+                             if(lx < 2*sr){
+                               Lu(ly,(lx+Bx)) = P2[nY1*nx + nX2];
               
-              if(ly < 2*sr)
-                Lu[ly + By][lx + Bx] = P2[nY2*nx + nX2];
-            }
+                               if(ly < 2*sr)
+                                 Lu((ly+By),(lx+Bx)) = P2[nY2*nx + nX2];
+                             }
             
-            if(ly < 2*sr)
-              Lu[ly + By][lx] = P2[nY2*nx + nX1];
+                             if(ly < 2*sr)
+                               Lu((ly+By),lx) = P2[nY2*nx + nX1];
 
-          });
+                           });
 
-        RAJA_Sync(syncPolicy{});
+                         RAJA_Sync(syncPolicy{});
         
 
-        innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
+                         innerLoop<innerPolicyY,innerPolicyX>(innerPolicy{}, By, Bx,  [&] (int ly, int lx) {
 
-            //Compute Index
-            const int tx = lx + Bx * outerIdx; 
-            const int ty = ly + By * outerIdy;
-            const int id = ty*nx+ tx; 
+                             //Compute Index
+                             const int tx = lx + Bx * outerIdx; 
+                             const int ty = ly + By * outerIdy;
+                             const int id = ty*nx+ tx; 
             
-            double P_old = P1[id];
-            double P_curr = P2[id];
+                             double P_old = P1[id];
+                             double P_curr = P2[id];
                        
-            double lap = 0.0;
-            for(int i=0; i<2*sr + 1; ++i){
-              lap += coeff[i]*Lu[ly + sr][lx + i] + coeff[i]*Lu[ly + i][lx + sr];
-            }
+                             double lap = 0.0;
+                             for(int i=0; i<2*sr + 1; ++i){
+                               lap += coeff[i]*Lu((ly+sr),(lx+i)) + coeff[i]*Lu((ly+i),(lx + sr));
+                             }
             
-            //write out stencil
-            P1[id] = 2 * P_curr - P_old + ct * lap; 
+                             //write out stencil
+                             P1[id] = 2 * P_curr - P_old + ct * lap; 
             
-          });
+                           });
 
 
+                       }); 
 
-      });
-  
+
 }
+
