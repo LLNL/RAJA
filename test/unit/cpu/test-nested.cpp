@@ -309,15 +309,15 @@ TYPED_TEST_P(LTimesTest, LTimesNestedTest)
     // create views on data
     typename POL::ELL_VIEW ell(
         &ell_data[0],
-        make_permuted_layout({num_moments, num_directions},
+        make_permuted_layout({{num_moments, num_directions}},
                              RAJA::as_array<typename POL::ELL_PERM>::get()));
     typename POL::PSI_VIEW psi(
         &psi_data[0],
-        make_permuted_layout({num_directions, num_groups, num_zones},
+        make_permuted_layout({{num_directions, num_groups, num_zones}},
                              RAJA::as_array<typename POL::PSI_PERM>::get()));
     typename POL::PHI_VIEW phi(
         &phi_data[0],
-        make_permuted_layout({num_moments, num_groups, num_zones},
+        make_permuted_layout({{num_moments, num_groups, num_zones}},
                              RAJA::as_array<typename POL::PHI_PERM>::get()));
 
     // get execution policy

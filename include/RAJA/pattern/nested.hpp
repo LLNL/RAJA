@@ -151,9 +151,9 @@ struct NestedPrivatizer {
   data_type privatized_data;
   value_type privatized_wrapper;
 
-  NestedPrivatizer(const T &o) : privatized_data{o.bw.data}, privatized_wrapper{value_type{privatized_data}} {}
+  NestedPrivatizer(const T &o) : privatized_data{o.wrapper.data}, privatized_wrapper{value_type{privatized_data}} {}
 
-  reference_type get_private() { return privatized_wrapper; }
+  reference_type get_priv() { return privatized_wrapper; }
 };
 
 
