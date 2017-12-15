@@ -95,7 +95,7 @@ using TestTypes =
     ::testing::Types<list<Policy<For<1, s>, For<0, s>>,
                           list<TypedIndex, Index_type>,
                           RAJA::seq_reduce>,
-                     list<Policy<Tile<1, tile_s<2>, RAJA::loop_exec>,
+                     list<Policy<Tile<1, tile_fixed<2>, RAJA::loop_exec>,
                                  Tile<0, tile<2>, RAJA::loop_exec>,
                                  For<0, s>,
                                  For<1, s>>,
@@ -113,7 +113,7 @@ using OMPTypes = ::testing::Types<
         Policy<For<1, RAJA::omp_parallel_for_exec>, For<0, s>>,
         list<TypedIndex, Index_type>,
         RAJA::omp_reduce>,
-    list<Policy<Tile<1, tile_s<2>, RAJA::omp_parallel_for_exec>,
+    list<Policy<Tile<1, tile_fixed_s<2>, RAJA::omp_parallel_for_exec>,
                 For<1, RAJA::loop_exec>,
                 For<0, s>>,
          list<TypedIndex, Index_type>,
@@ -488,3 +488,5 @@ CUDA_TEST(Nested, SubRange_Complex)
 }
 
 #endif
+
+

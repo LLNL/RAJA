@@ -26,18 +26,18 @@ template <typename... Policies>
 using Policy = camp::tuple<Policies...>;
 
 
-template <camp::idx_t ArgumentId, typename Pol = camp::nil, typename... Rest>
+template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... Rest>
 struct For : public internal::ForList,
-             public internal::ForTraitBase<ArgumentId, Pol> {
+             public internal::ForTraitBase<ArgumentId, ExecPolicy> {
   using as_for_list = camp::list<For>;
 
   // used for execution space resolution
   using as_space_list = camp::list<For>;
 
   // TODO: add static_assert for valid policy in Pol
-  const Pol pol;
-  RAJA_HOST_DEVICE constexpr For() : pol{} {}
-  RAJA_HOST_DEVICE constexpr For(const Pol &p) : pol{p} {}
+  const ExecPolicy exec_policy;
+  RAJA_HOST_DEVICE constexpr For() : exec_policy{} {}
+  RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : exec_policy{p} {}
 };
 
 
@@ -48,9 +48,9 @@ struct Collapse : public internal::ForList, public internal::CollapseBase {
   // used for execution space resolution
   using as_space_list = camp::list<For<-1, ExecPolicy>>;
 
-  const ExecPolicy pol;
-  RAJA_HOST_DEVICE constexpr Collapse() : pol{} {}
-  RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : pol{ep} {}
+  const ExecPolicy exec_policy;
+  RAJA_HOST_DEVICE constexpr Collapse() : exec_policy{} {}
+  RAJA_HOST_DEVICE constexpr Collapse(ExecPolicy const &ep) : exec_policy{ep} {}
 };
 }
 
@@ -68,7 +68,7 @@ namespace detail
  * RAJA::nested::Policy
  */
 template <typename... POLICIES>
-struct get_space<camp::tuple<POLICIES...>>
+struct get_space<RAJA::nested::Policy<POLICIES...>>
     : public get_space_from_list<  // combines exec policies to find exec space
 
           // Extract just the execution policies from the tuple
@@ -87,20 +87,23 @@ namespace nested
 {
 
 
-template <typename PolicyTuple, typename SegmentTuple, typename Fn>
+template <typename PolicyTuple, typename SegmentTuple, typename Body>
 struct LoopData {
-  constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
-  const PolicyTuple pt;
-  SegmentTuple st;
-  const typename std::remove_reference<Fn>::type f;
 
+  constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
 
   using index_tuple_t = internal::index_tuple_from_segments<
-      typename SegmentTuple::TList>;
+  typename SegmentTuple::TList>;
 
+
+  const PolicyTuple policy_tuple;
+  SegmentTuple segment_tuple;
+  const typename std::remove_reference<Body>::type body;
   index_tuple_t index_tuple;
-  LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
-      : pt(p), st(s), f(fn)
+
+
+  LoopData(PolicyTuple const &p, SegmentTuple const &s, Body const &b)
+      : policy_tuple(p), segment_tuple(s), body(b)
   {
   }
   template <camp::idx_t Idx, typename IndexT>
@@ -118,20 +121,24 @@ struct Executor;
 template <camp::idx_t Index, typename BaseWrapper>
 struct GenericWrapper {
   using data_type = camp::decay<typename BaseWrapper::data_type>;
-  GenericWrapper(BaseWrapper const &w) : bw{w} {}
-  GenericWrapper(data_type &d) : bw{d} {}
-  BaseWrapper bw;
+
+  BaseWrapper wrapper;
+
+  GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
+  GenericWrapper(data_type &d) : wrapper{d} {}
+
 };
 
 template <camp::idx_t Index, typename BaseWrapper>
 struct ForWrapper : GenericWrapper<Index, BaseWrapper> {
   using Base = GenericWrapper<Index, BaseWrapper>;
   using Base::Base;
+
   template <typename InIndexType>
   void operator()(InIndexType i)
   {
-    Base::bw.data.template assign_index<Index>(i);
-    Base::bw();
+    Base::wrapper.data.template assign_index<Index>(i);
+    Base::wrapper();
   }
 };
 
@@ -140,10 +147,13 @@ struct NestedPrivatizer {
   using data_type = typename T::data_type;
   using value_type = camp::decay<T>;
   using reference_type = value_type &;
-  data_type data;
-  value_type priv;
-  NestedPrivatizer(const T &o) : data{o.bw.data}, priv{value_type{data}} {}
-  reference_type get_priv() { return priv; }
+
+  data_type privatized_data;
+  value_type privatized_wrapper;
+
+  NestedPrivatizer(const T &o) : privatized_data{o.bw.data}, privatized_wrapper{value_type{privatized_data}} {}
+
+  reference_type get_private() { return privatized_wrapper; }
 };
 
 
@@ -165,8 +175,8 @@ struct Executor {
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.pol,
-                camp::get<ForType::index_val>(wrap.data.st),
+    forall_impl(fp.exec_policy,
+                camp::get<ForType::index_val>(wrap.data.segment_tuple),
                 ForWrapper<ForType::index_val, WrappedBody>{wrap});
   }
 };
@@ -184,11 +194,11 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
   template <typename WrappedBody>
   void operator()(Collapse<seq_exec, FT0, FT1> const &, WrappedBody const &wrap)
   {
-    auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
-    auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
+    auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.segment_tuple));
+    auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.segment_tuple));
 
-    auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
-    auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
+    auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.segment_tuple));
+    auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.segment_tuple));
 
     // Skip a level
     for (auto i0 = b0; i0 < e0; ++i0) {
@@ -202,6 +212,7 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 };
 
 
+
 template <int idx, int n_policies, typename Data>
 struct Wrapper {
   constexpr static int cur_policy = idx;
@@ -212,7 +223,7 @@ struct Wrapper {
   explicit Wrapper(Data &d) : data{d} {}
   void operator()() const
   {
-    auto const &pol = camp::get<idx>(data.pt);
+    auto const &pol = camp::get<idx>(data.policy_tuple);
     Executor<internal::remove_all_t<decltype(pol)>> e{};
     Next next_wrapper{data};
     e(pol, next_wrapper);
@@ -228,7 +239,7 @@ struct Wrapper<n_policies, n_policies, Data> {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  void operator()() const { camp::invoke(data.index_tuple, data.f); }
+  void operator()() const { camp::invoke(data.index_tuple, data.body); }
 };
 
 
@@ -267,6 +278,5 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 }  // end namespace RAJA
 
 
-#include "RAJA/pattern/nested/tile.hpp"
 
 #endif /* RAJA_pattern_nested_HPP */

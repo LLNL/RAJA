@@ -1,7 +1,6 @@
 #ifndef RAJA_pattern_nested_internal_HPP
 #define RAJA_pattern_nested_internal_HPP
 
-#include "RAJA/RAJA.hpp"
 #include "RAJA/config.hpp"
 #include "RAJA/policy/cuda.hpp"
 #include "RAJA/util/defines.hpp"
@@ -32,12 +31,12 @@ struct ForBase {
 };
 struct CollapseBase {
 };
-template <camp::idx_t ArgumentId, typename Pol>
+template <camp::idx_t ArgumentId, typename Policy>
 struct ForTraitBase : public ForBase {
   constexpr static camp::idx_t index_val = ArgumentId;
   using index = camp::num<ArgumentId>;
   using index_type = camp::nil;  // default to invalid type
-  using policy_type = Pol;
+  using policy_type = Policy;
   using type = ForTraitBase;  // make camp::value compatible
 };
 

@@ -107,6 +107,7 @@
 //
 #include "RAJA/pattern/forallN.hpp"
 #include "RAJA/pattern/nested.hpp"
+#include "RAJA/pattern/nested/tile.hpp"
 
 
 //
