@@ -499,34 +499,59 @@ TEST(Nested, Simple){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  using Pol = nested::Policy<
-        For<0, seq_exec, Invoke<0>>,
-        For<0, seq_exec, Invoke<1>>,
-        Invoke<1>>;
+  // Loop Fusion
+  using Pol_Fusion = nested::Policy<
+          For<0, seq_exec, Lambda<0>, Lambda<1>>
+        >;
 
-  constexpr size_t N = 16;
+  // Loop Fission
+  using Pol_Fission = nested::Policy<
+          For<0, seq_exec, Lambda<0>>,
+          For<0, seq_exec, Lambda<1>>
+        >;
+
+
+  constexpr int N = 16;
   int *x = new int[N];
+  int *y = new int[N];
   for(int i = 0;i < N;++ i){
     x[i] = 0;
+    y[i] = 0;
   }
 
   nested::forall(
-      Pol{},
+      Pol_Fission{},
 
-      camp::make_tuple(RangeSegment(0,N)),
+      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
 
-      [=](int i){
+      [=](int i, int){
         x[i] += 1;
       },
 
-      [=](int i){
+      [=](int i, int){
         x[i] += 2;
       }
   );
 
+
+  nested::forall(
+      Pol_Fusion{},
+
+      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+
+      [=](int i, int){
+        y[i] += 1;
+      },
+
+      [=](int i, int){
+        y[i] += 2;
+      }
+  );
+
   for(int i = 0;i < N;++ i){
-    ASSERT_EQ(x[i], 3);
+    ASSERT_EQ(x[i], y[i]);
   }
 
   delete[] x;
+  delete[] y;
 }

@@ -27,7 +27,11 @@ template <typename... Policies>
 using Policy = camp::tuple<Policies...>;
 
 template <camp::idx_t BodyIdx>
-struct Invoke{};
+struct Lambda{
+  using inside_policy_t = Policy<camp::nil>;
+
+  inside_policy_t inside_policy;
+};
 
 
 template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... Rest>
@@ -38,8 +42,11 @@ struct For : public internal::ForList,
   // used for execution space resolution
   using as_space_list = camp::list<For>;
 
+  using inside_policy_t = Policy<Rest...>;
+
   // TODO: add static_assert for valid policy in Pol
   const ExecPolicy exec_policy;
+  const inside_policy_t inside_policy;
   RAJA_HOST_DEVICE constexpr For() : exec_policy{} {}
   RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : exec_policy{p} {}
 };
@@ -103,7 +110,8 @@ struct LoopData {
   const PolicyTuple policy_tuple;
   SegmentTuple segment_tuple;
 
-  const camp::tuple<typename std::remove_reference<Bodies>::type...> bodies;
+  using BodiesTuple = camp::tuple<typename std::remove_reference<Bodies>::type...> ;
+  const BodiesTuple bodies;
   index_tuple_t index_tuple;
 
 
@@ -111,6 +119,7 @@ struct LoopData {
       : policy_tuple(p), segment_tuple(s), bodies(b...)
   {
   }
+
   template <camp::idx_t Idx, typename IndexT>
   RAJA_HOST_DEVICE void assign_index(IndexT const &i)
   {
@@ -175,10 +184,10 @@ auto thread_privatize(const nested::ForWrapper<Index, BW> &item)
 
 
 template <camp::idx_t LoopIndex>
-struct Executor<Invoke<LoopIndex>>{
+struct Executor<Lambda<LoopIndex>>{
 
   template <typename WrappedBody>
-  void operator()(Invoke<LoopIndex>, WrappedBody const &wrap)
+  void operator()(Lambda<LoopIndex>, WrappedBody const &wrap)
   {
     camp::invoke(wrap.data.index_tuple, camp::get<LoopIndex>(wrap.data.bodies));
   }
@@ -230,63 +239,108 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 };
 
 
+template <typename Policy, typename PolicyTuple, typename SegmentTuple, typename ... Bodies>
+auto create_inside_data(Policy const &policy, LoopData<PolicyTuple, SegmentTuple, Bodies...> &data) ->
+  LoopData<typename Policy::inside_policy_t, SegmentTuple, Bodies...>
+{
+  return LoopData<typename Policy::inside_policy_t, SegmentTuple, Bodies...>(policy, data.segment_tuple, data.bodies);
+}
 
-template <int idx, int n_policies, typename Data>
+
+
+
+template <typename PolicyTuple, typename Data>
 struct Wrapper {
-  constexpr static int cur_policy = idx;
-  constexpr static int num_policies = n_policies;
-  using Next = Wrapper<idx + 1, n_policies, Data>;
+
+  PolicyTuple const &policy_tuple;
+
+  using policy_tuple_type = camp::decay<PolicyTuple>;
+  constexpr static size_t num_seq_policies = camp::tuple_size<policy_tuple_type>::value;
+
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
-  explicit Wrapper(Data &d) : data{d} {}
+
+  template <camp::idx_t idx, camp::idx_t N>
+  struct SequentialExecutorCaller{
+
+    RAJA_INLINE
+    void operator()(PolicyTuple const &policy_tuple, Data &data) const {
+//      printf("Wrapper seq<%d,%d>\n", (int)idx, (int)N);
+      // Get the idx'th policy
+      auto const &pol = camp::get<idx>(policy_tuple);
+
+      // Create a wrapper for inside this policy
+      Wrapper<decltype(pol.inside_policy), Data> inside_wrap(pol.inside_policy, data);
+
+      // Create and call an Executor to do the work.
+      Executor<internal::remove_all_t<decltype(pol)>> e{};
+      e(pol, inside_wrap);
+
+
+      // Call our next policy
+      SequentialExecutorCaller<idx+1, N> next_sequential;
+      next_sequential(policy_tuple, data);
+    }
+  };
+
+
+  /*
+   * termination case.
+   * If any policies were specified, this becomes a NOP.
+   * If no policies were specified, this defaults to Lambda<0>
+   */
+
+  template <camp::idx_t N>
+  struct SequentialExecutorCaller<N,N> {
+
+    RAJA_INLINE
+    void operator()(PolicyTuple const &, Data &data) const {
+      if(N == 0){
+        camp::invoke(data.index_tuple, camp::get<0>(data.bodies));
+      }
+    }
+
+  };
+
+
+  Wrapper(PolicyTuple const &pt, Data &d) : policy_tuple(pt), data{d} {}
+
   void operator()() const
   {
-    auto const &pol = camp::get<idx>(data.policy_tuple);
-    Executor<internal::remove_all_t<decltype(pol)>> e{};
-    Next next_wrapper{data};
-    e(pol, next_wrapper);
+
+    // Walk through policies in order
+
+    SequentialExecutorCaller<0, num_seq_policies> launcher;
+    launcher(policy_tuple, data);
+
   }
 };
 
-// Innermost, execute body
-template <int n_policies, typename Data>
-struct Wrapper<n_policies, n_policies, Data> {
-  constexpr static int cur_policy = n_policies;
-  constexpr static int num_policies = n_policies;
-  using Next = Wrapper<n_policies, n_policies, Data>;
-  using data_type = typename std::remove_reference<Data>::type;
-  Data &data;
-  explicit Wrapper(Data &d) : data{d} {}
-  void operator()() const {
-    camp::invoke(data.index_tuple, camp::get<0>(data.bodies));
-  }
-};
 
 
 template <typename Data>
-auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
+auto make_base_wrapper(Data &d) -> Wrapper<decltype(d.policy_tuple), Data>
 {
-  return Wrapper<0, Data::n_policies, Data>(d);
+  return Wrapper<decltype(d.policy_tuple), Data>(d.policy_tuple, d);
 }
+
 
 template <typename Pol, typename SegmentTuple, typename ... Bodies>
 RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Bodies & ... b)
 {
   detail::setChaiExecutionSpace<Pol>();
 
-//  using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
   // TODO: ensure no gaps in For<>s
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
   //       index_tuple
-//  static_assert(camp::tuple_size<SegmentTuple>::value
-//                    == camp::size<fors>::value,
-//                "policy and segment index counts do not match");
+
   auto data = LoopData<Pol, SegmentTuple, Bodies...>(p, st, b...);
   auto ld = make_base_wrapper(data);
   // std::cout << typeid(ld).name() << std::endl
   //           << typeid(data.index_tuple).name() << std::endl;
+
   ld();
 
   detail::clearChaiExecutionSpace();
