@@ -22,8 +22,12 @@ namespace RAJA
 {
 namespace nested
 {
+
 template <typename... Policies>
 using Policy = camp::tuple<Policies...>;
+
+template <camp::idx_t BodyIdx>
+struct Invoke{};
 
 
 template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... Rest>
@@ -87,7 +91,7 @@ namespace nested
 {
 
 
-template <typename PolicyTuple, typename SegmentTuple, typename Body>
+template <typename PolicyTuple, typename SegmentTuple, typename ... Bodies>
 struct LoopData {
 
   constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
@@ -98,12 +102,13 @@ struct LoopData {
 
   const PolicyTuple policy_tuple;
   SegmentTuple segment_tuple;
-  const typename std::remove_reference<Body>::type body;
+
+  const camp::tuple<typename std::remove_reference<Bodies>::type...> bodies;
   index_tuple_t index_tuple;
 
 
-  LoopData(PolicyTuple const &p, SegmentTuple const &s, Body const &b)
-      : policy_tuple(p), segment_tuple(s), body(b)
+  LoopData(PolicyTuple const &p, SegmentTuple const &s, Bodies const & ... b)
+      : policy_tuple(p), segment_tuple(s), bodies(b...)
   {
   }
   template <camp::idx_t Idx, typename IndexT>
@@ -166,6 +171,19 @@ auto thread_privatize(const nested::ForWrapper<Index, BW> &item)
 {
   return NestedPrivatizer<nested::ForWrapper<Index, BW>>{item};
 }
+
+
+
+template <camp::idx_t LoopIndex>
+struct Executor<Invoke<LoopIndex>>{
+
+  template <typename WrappedBody>
+  void operator()(Invoke<LoopIndex>, WrappedBody const &wrap)
+  {
+    camp::invoke(wrap.data.index_tuple, camp::get<LoopIndex>(wrap.data.bodies));
+  }
+};
+
 
 template <typename ForType>
 struct Executor {
@@ -239,7 +257,9 @@ struct Wrapper<n_policies, n_policies, Data> {
   using data_type = typename std::remove_reference<Data>::type;
   Data &data;
   explicit Wrapper(Data &d) : data{d} {}
-  void operator()() const { camp::invoke(data.index_tuple, data.body); }
+  void operator()() const {
+    camp::invoke(data.index_tuple, camp::get<0>(data.bodies));
+  }
 };
 
 
@@ -249,8 +269,8 @@ auto make_base_wrapper(Data &d) -> Wrapper<0, Data::n_policies, Data>
   return Wrapper<0, Data::n_policies, Data>(d);
 }
 
-template <typename Pol, typename SegmentTuple, typename Body>
-RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
+template <typename Pol, typename SegmentTuple, typename ... Bodies>
+RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Bodies & ... b)
 {
   detail::setChaiExecutionSpace<Pol>();
 
@@ -263,7 +283,7 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 //  static_assert(camp::tuple_size<SegmentTuple>::value
 //                    == camp::size<fors>::value,
 //                "policy and segment index counts do not match");
-  auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
+  auto data = LoopData<Pol, SegmentTuple, Bodies...>(p, st, b...);
   auto ld = make_base_wrapper(data);
   // std::cout << typeid(ld).name() << std::endl
   //           << typeid(data.index_tuple).name() << std::endl;

@@ -7,6 +7,9 @@
 #include <cuda_runtime.h>
 #endif
 
+
+#if 0
+
 using RAJA::Index_type;
 using RAJA::View;
 using RAJA::Layout;
@@ -489,4 +492,41 @@ CUDA_TEST(Nested, SubRange_Complex)
 
 #endif
 
+#endif
 
+
+TEST(Nested, Simple){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  using Pol = nested::Policy<
+        For<0, seq_exec, Invoke<0>>,
+        For<0, seq_exec, Invoke<1>>,
+        Invoke<1>>;
+
+  constexpr size_t N = 16;
+  int *x = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+  }
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N)),
+
+      [=](int i){
+        x[i] += 1;
+      },
+
+      [=](int i){
+        x[i] += 2;
+      }
+  );
+
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(x[i], 3);
+  }
+
+  delete[] x;
+}
