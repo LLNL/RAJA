@@ -68,8 +68,8 @@ CUDA_TYPED_TEST_P(Nested, Basic)
   using Idx1 = at_v<IndexTypes, 1>;
   RAJA::ReduceSum<at_v<TypeParam, 2>, RAJA::Real_type> tsum(0.0);
   RAJA::Real_type total{0.0};
-  auto ranges = camp::make_tuple(RAJA::RangeSegment(0, x_len),
-                                 RAJA::RangeSegment(0, y_len));
+  auto ranges = camp::make_tuple(RAJA::TypedRangeSegment<Idx0>(0, x_len),
+                                 RAJA::TypedRangeSegment<Idx1>(0, y_len));
   auto v = this->view;
   using namespace RAJA::nested;
   RAJA::nested::forall(Pol{}, ranges, [=] RAJA_HOST_DEVICE(Idx0 i, Idx1 j) {
@@ -92,7 +92,7 @@ using namespace RAJA::nested;
 using camp::list;
 using s = RAJA::seq_exec;
 using TestTypes =
-    ::testing::Types<list<Policy<For<1, s>, TypedFor<0, s, TypedIndex>>,
+    ::testing::Types<list<Policy<For<1, s>, For<0, s>>,
                           list<TypedIndex, Index_type>,
                           RAJA::seq_reduce>,
                      list<Policy<Tile<1, tile_s<2>, RAJA::loop_exec>,
@@ -110,26 +110,26 @@ INSTANTIATE_TYPED_TEST_CASE_P(Sequential, Nested, TestTypes);
 #if defined(RAJA_ENABLE_OPENMP)
 using OMPTypes = ::testing::Types<
     list<
-        Policy<For<1, RAJA::omp_parallel_for_exec>, TypedFor<0, s, TypedIndex>>,
+        Policy<For<1, RAJA::omp_parallel_for_exec>, For<0, s>>,
         list<TypedIndex, Index_type>,
         RAJA::omp_reduce>,
     list<Policy<Tile<1, tile_s<2>, RAJA::omp_parallel_for_exec>,
                 For<1, RAJA::loop_exec>,
-                TypedFor<0, s, TypedIndex>>,
+                For<0, s>>,
          list<TypedIndex, Index_type>,
          RAJA::omp_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(OpenMP, Nested, OMPTypes);
 #endif
 #if defined(RAJA_ENABLE_TBB)
 using TBBTypes = ::testing::Types<
-    list<Policy<For<1, RAJA::tbb_for_exec>, TypedFor<0, s, TypedIndex>>,
+    list<Policy<For<1, RAJA::tbb_for_exec>, For<0, s>>,
          list<TypedIndex, Index_type>,
          RAJA::tbb_reduce>>;
 INSTANTIATE_TYPED_TEST_CASE_P(TBB, Nested, TBBTypes);
 #endif
 #if defined(RAJA_ENABLE_CUDA)
 using CUDATypes = ::testing::Types<
-    list<Policy<For<1, s>, TypedFor<0, RAJA::cuda_exec<128>, TypedIndex>>,
+    list<Policy<For<1, s>, For<0, RAJA::cuda_exec<128>>>,
          list<TypedIndex, Index_type>,
          RAJA::cuda_reduce<128>>>;
 INSTANTIATE_TYPED_TEST_CASE_P(CUDA, Nested, CUDATypes);

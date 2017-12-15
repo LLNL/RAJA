@@ -87,30 +87,17 @@ namespace nested
 {
 
 
-template <camp::idx_t ArgumentId,
-          typename Pol,
-          typename IndexType,
-          typename... Rest>
-struct TypedFor : public internal::TypedForBase,
-                  public For<ArgumentId, Pol, Rest...> {
-  using Base = For<ArgumentId, Pol, Rest...>;
-  using Self = TypedFor<ArgumentId, Pol, IndexType, Rest...>;
-  using index_type = IndexType;
-  using as_for_list = camp::list<Self>;
-  // TODO: add static_assert for valid policy in Pol
-  using Base::Base;
-};
-
-
 template <typename PolicyTuple, typename SegmentTuple, typename Fn>
 struct LoopData {
   constexpr static size_t n_policies = camp::tuple_size<PolicyTuple>::value;
   const PolicyTuple pt;
   SegmentTuple st;
   const typename std::remove_reference<Fn>::type f;
-  using index_tuple_t = internal::index_tuple_from_policies_and_segments<
-      typename PolicyTuple::TList,
+
+
+  using index_tuple_t = internal::index_tuple_from_segments<
       typename SegmentTuple::TList>;
+
   index_tuple_t index_tuple;
   LoopData(PolicyTuple const &p, SegmentTuple const &s, Fn const &fn)
       : pt(p), st(s), f(fn)
@@ -256,15 +243,15 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 {
   detail::setChaiExecutionSpace<Pol>();
 
-  using fors = internal::get_for_policies<typename Pol::TList>;
+//  using fors = internal::get_for_policies<typename Pol::TList>;
   // TODO: ensure no duplicate indices in For<>s
   // TODO: ensure no gaps in For<>s
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
   //       index_tuple
-  static_assert(camp::tuple_size<SegmentTuple>::value
-                    == camp::size<fors>::value,
-                "policy and segment index counts do not match");
+//  static_assert(camp::tuple_size<SegmentTuple>::value
+//                    == camp::size<fors>::value,
+//                "policy and segment index counts do not match");
   auto data = LoopData<Pol, SegmentTuple, Body>{p, st, b};
   auto ld = make_base_wrapper(data);
   // std::cout << typeid(ld).name() << std::endl
