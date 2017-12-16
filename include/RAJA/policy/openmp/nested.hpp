@@ -159,7 +159,7 @@ namespace nested
       
       auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
       auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
-      auto e2 = std::begin(camp::get<FT2::index_val>(wrap.data.st));
+      auto e2 = std::end(camp::get<FT2::index_val>(wrap.data.st));
 
 
       auto l0 = std::distance(b0,e0);
@@ -192,6 +192,79 @@ namespace nested
     }
    
   };
+
+
+  struct omp_target_parallel_collapse_exec {
+  };
+
+  template <typename... FOR>
+  using OmpTargetParallelCollapse = Collapse<omp_target_parallel_collapse_exec, FOR...>;  
+
+  
+  template <typename FT0, typename FT1>
+  struct Executor<Collapse<omp_target_parallel_collapse_exec, FT0, FT1> > {
+    
+    static_assert(std::is_base_of<internal::ForBase, FT0>::value,
+                  "Only For-based policies should get here");
+    static_assert(std::is_base_of<internal::ForBase, FT1>::value,
+                  "Only For-based policies should get here");
+    template <typename WrappedBody>
+    void operator()(Collapse<omp_target_parallel_collapse_exec, FT0, FT1> const &, WrappedBody const &wrap)
+    {
+
+      
+#if 1
+
+      //#pragma omp target map(to : wrap)
+#pragma omp target map(to : wrap)
+      {
+        auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
+        auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));
+        auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
+        auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));
+        
+        auto l0 = std::distance(b0,e0);
+        auto l1 = std::distance(b1,e1);           
+        
+        auto privatizer = RAJA::nested::thread_privatize(wrap);
+        auto private_wrap = privatizer.get_priv();
+        
+        for (auto i0 = (decltype(l0))0; i0 < l0; ++i0){
+          for (auto i1 = (decltype(l1))0; i1 < l1; ++i1){
+            private_wrap.data.template assign_index<FT0::index_val>(b0[i0]);
+            //private_wrap.data.template assign_index<FT1::index_val>(b1[i1]);
+            //private_wrap();
+          }
+        }
+        
+      }
+#else
+
+#pragma omp target
+      {              
+
+        auto b0 = std::begin(camp::get<FT0::index_val>(wrap.data.st));
+        auto b1 = std::begin(camp::get<FT1::index_val>(wrap.data.st));        
+        auto e0 = std::end(camp::get<FT0::index_val>(wrap.data.st));
+        auto e1 = std::end(camp::get<FT1::index_val>(wrap.data.st));        
+
+        // Skip a level
+        for (auto i0 = b0; i0 < e0; ++i0) {
+          for (auto i1 = b1; i1 < e1; ++i1) {            
+            //wrap.data.template assign_index<FT0::index_val>(*i0);
+            //wrap.data.template assign_index<FT1::index_val>(*i1);
+            //wrap();
+          } 
+        }
+
+      }
+#endif
+     
+  
+    }
+   
+  };  
+
 
 
 }  // namespace nested
