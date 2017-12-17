@@ -495,7 +495,7 @@ CUDA_TEST(Nested, SubRange_Complex)
 #endif
 
 
-TEST(Nested, Simple){
+TEST(Nested, FissionFusion){
   using namespace RAJA;
   using namespace RAJA::nested;
 
@@ -554,4 +554,45 @@ TEST(Nested, Simple){
 
   delete[] x;
   delete[] y;
+}
+
+TEST(Nested, Tile){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+          nested::Tile<1, nested::tile_fixed<4>, seq_exec,
+            For<0, seq_exec,
+              For<1, seq_exec>
+            >
+          >,
+          For<1, seq_exec, Lambda<1>>
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+  }
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+
+      [=](int i, int){
+        x[i] += 1;
+      },
+      [=](int, int j){
+        x[j] *= 10;
+      }
+  );
+
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(x[i], 160);
+  }
+
+  delete[] x;
 }

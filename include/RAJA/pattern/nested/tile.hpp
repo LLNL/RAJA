@@ -18,10 +18,14 @@ namespace nested
 {
 
 
-template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy>
+template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename ... InnerPolicies>
 struct Tile {
   const TilePolicy tile_policy;
   const ExecPolicy exec_policy;
+  using inner_policy_t = RAJA::nested::Policy<InnerPolicies...>;
+
+  inner_policy_t inner_policy;
+
   RAJA_HOST_DEVICE constexpr Tile(TilePolicy const &tp = TilePolicy{},
                                   ExecPolicy const &ep = ExecPolicy{})
       : tile_policy{tp}, exec_policy{ep}
@@ -155,9 +159,14 @@ struct IterableTiler {
   camp::idx_t dist;
 };
 
-template <typename TPol, typename EPol, camp::idx_t Index>
-struct Executor<Tile<Index, TPol, EPol>> {
-  using TileType = Tile<Index, TPol, EPol>;
+template <camp::idx_t Index, typename TPol, typename EPol, typename ... InnerPolicies>
+struct Executor<Tile<Index, TPol, EPol, InnerPolicies...>> {
+
+  using TileType = Tile<Index, TPol, EPol, InnerPolicies...>;
+  using inner_policy_t = Policy<InnerPolicies...>;
+
+  const inner_policy_t inner_policy;
+
   template <typename WrappedBody>
   void operator()(TileType const &fp, WrappedBody const &wrap)
   {
@@ -165,11 +174,15 @@ struct Executor<Tile<Index, TPol, EPol>> {
 
     IterableTiler<decltype(st)> tiled_iterable(st, fp.tile_policy.get_chunk_size());
 
+    // Create a wrapper for inside this policy
+    auto inner_wrapper = make_wrapper(fp.inner_policy, wrap.data);
+
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<Index, WrappedBody>{wrap});
+    forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<Index, WrappedBody>{inner_wrapper});
 
     // Set range back to original values
     camp::get<Index>(wrap.data.segment_tuple) = tiled_iterable.it;
+
   }
 };
 

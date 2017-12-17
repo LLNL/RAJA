@@ -28,13 +28,13 @@ using Policy = camp::tuple<Policies...>;
 
 template <camp::idx_t BodyIdx>
 struct Lambda{
-  using inside_policy_t = Policy<camp::nil>;
+  using inner_policy_t = Policy<camp::nil>;
 
-  inside_policy_t inside_policy;
+  inner_policy_t inner_policy;
 };
 
 
-template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... Rest>
+template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... InnerPolicies>
 struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, ExecPolicy> {
   using as_for_list = camp::list<For>;
@@ -42,11 +42,11 @@ struct For : public internal::ForList,
   // used for execution space resolution
   using as_space_list = camp::list<For>;
 
-  using inside_policy_t = Policy<Rest...>;
+  using inner_policy_t = Policy<InnerPolicies...>;
 
   // TODO: add static_assert for valid policy in Pol
   const ExecPolicy exec_policy;
-  const inside_policy_t inside_policy;
+  const inner_policy_t inner_policy;
   RAJA_HOST_DEVICE constexpr For() : exec_policy{} {}
   RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : exec_policy{p} {}
 };
@@ -129,6 +129,12 @@ struct LoopData {
 };
 
 
+template<camp::idx_t LoopIndex, typename Data>
+RAJA_INLINE
+void invoke_lambda(Data && data){
+  camp::invoke(data.index_tuple, camp::get<LoopIndex>(data.bodies));
+}
+
 template <typename Policy>
 struct Executor;
 
@@ -187,9 +193,10 @@ template <camp::idx_t LoopIndex>
 struct Executor<Lambda<LoopIndex>>{
 
   template <typename WrappedBody>
+  RAJA_INLINE
   void operator()(Lambda<LoopIndex>, WrappedBody const &wrap)
   {
-    camp::invoke(wrap.data.index_tuple, camp::get<LoopIndex>(wrap.data.bodies));
+    invoke_lambda<LoopIndex>(wrap.data);
   }
 };
 
@@ -199,6 +206,7 @@ struct Executor {
   static_assert(std::is_base_of<internal::ForBase, ForType>::value,
                 "Only For-based policies should get here");
   template <typename WrappedBody>
+  RAJA_INLINE
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
     using ::RAJA::policy::sequential::forall_impl;
@@ -239,90 +247,94 @@ struct Executor<Collapse<seq_exec, FT0, FT1>> {
 };
 
 
-template <typename Policy, typename PolicyTuple, typename SegmentTuple, typename ... Bodies>
-auto create_inside_data(Policy const &policy, LoopData<PolicyTuple, SegmentTuple, Bodies...> &data) ->
-  LoopData<typename Policy::inside_policy_t, SegmentTuple, Bodies...>
-{
-  return LoopData<typename Policy::inside_policy_t, SegmentTuple, Bodies...>(policy, data.segment_tuple, data.bodies);
-}
+template <camp::idx_t idx, camp::idx_t N>
+struct SequentialExecutorCaller;
 
+
+template<typename PolicyTuple, typename Data>
+void execute_sequential_policy_list(PolicyTuple && policy_tuple, Data && data){
+  using policy_tuple_type = camp::decay<PolicyTuple>;
+  SequentialExecutorCaller<0, camp::tuple_size<policy_tuple_type>::value> launcher;
+  launcher(policy_tuple, data);
+}
 
 
 
 template <typename PolicyTuple, typename Data>
 struct Wrapper {
 
-  PolicyTuple const &policy_tuple;
-
-  using policy_tuple_type = camp::decay<PolicyTuple>;
-  constexpr static size_t num_seq_policies = camp::tuple_size<policy_tuple_type>::value;
-
   using data_type = typename std::remove_reference<Data>::type;
+
+  PolicyTuple const &policy_tuple;
   Data &data;
-
-  template <camp::idx_t idx, camp::idx_t N>
-  struct SequentialExecutorCaller{
-
-    RAJA_INLINE
-    void operator()(PolicyTuple const &policy_tuple, Data &data) const {
-//      printf("Wrapper seq<%d,%d>\n", (int)idx, (int)N);
-      // Get the idx'th policy
-      auto const &pol = camp::get<idx>(policy_tuple);
-
-      // Create a wrapper for inside this policy
-      Wrapper<decltype(pol.inside_policy), Data> inside_wrap(pol.inside_policy, data);
-
-      // Create and call an Executor to do the work.
-      Executor<internal::remove_all_t<decltype(pol)>> e{};
-      e(pol, inside_wrap);
-
-
-      // Call our next policy
-      SequentialExecutorCaller<idx+1, N> next_sequential;
-      next_sequential(policy_tuple, data);
-    }
-  };
-
-
-  /*
-   * termination case.
-   * If any policies were specified, this becomes a NOP.
-   * If no policies were specified, this defaults to Lambda<0>
-   */
-
-  template <camp::idx_t N>
-  struct SequentialExecutorCaller<N,N> {
-
-    RAJA_INLINE
-    void operator()(PolicyTuple const &, Data &data) const {
-      if(N == 0){
-        camp::invoke(data.index_tuple, camp::get<0>(data.bodies));
-      }
-    }
-
-  };
-
 
   Wrapper(PolicyTuple const &pt, Data &d) : policy_tuple(pt), data{d} {}
 
   void operator()() const
   {
-
-    // Walk through policies in order
-
-    SequentialExecutorCaller<0, num_seq_policies> launcher;
-    launcher(policy_tuple, data);
-
+    // Walk through our sequential policies
+    execute_sequential_policy_list(policy_tuple, data);
   }
 };
 
 
 
-template <typename Data>
-auto make_base_wrapper(Data &d) -> Wrapper<decltype(d.policy_tuple), Data>
+// Create a wrapper for this policy
+template<typename PolicyT, typename Data>
+auto make_wrapper(PolicyT && policy, Data && data) ->
+  Wrapper<decltype(policy), camp::decay<Data>>
 {
-  return Wrapper<decltype(d.policy_tuple), Data>(d.policy_tuple, d);
+  return Wrapper<decltype(policy), camp::decay<Data>>(
+      policy, std::forward<Data>(data));
 }
+
+
+template <camp::idx_t idx, camp::idx_t N>
+struct SequentialExecutorCaller{
+
+  template<typename PolicyTuple, typename Data>
+  RAJA_INLINE
+  void operator()(PolicyTuple const &policy_tuple, Data &data) const {
+
+    // Get the idx'th policy
+    auto const &pol = camp::get<idx>(policy_tuple);
+
+    // Create a wrapper for inside this policy
+    auto inner_wrapper = make_wrapper(pol.inner_policy, data);
+
+    // Execute this policy
+    Executor<internal::remove_all_t<decltype(pol)>> e{};
+    e(pol, inner_wrapper);
+
+
+    // Call our next policy
+    SequentialExecutorCaller<idx+1, N> next_sequential;
+    next_sequential(policy_tuple, data);
+  }
+};
+
+
+/*
+ * termination case.
+ * If any policies were specified, this becomes a NOP.
+ * If no policies were specified, this defaults to Lambda<0>
+ */
+
+template <camp::idx_t N>
+struct SequentialExecutorCaller<N,N> {
+
+  template<typename PolicyTuple, typename Data>
+  RAJA_INLINE
+  void operator()(PolicyTuple const &, Data &data) const {
+    if(N == 0){
+      invoke_lambda<0>(data);
+    }
+  }
+
+};
+
+
+
 
 
 template <typename Pol, typename SegmentTuple, typename ... Bodies>
@@ -337,11 +349,11 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Bodies & ...
   //       index_tuple
 
   auto data = LoopData<Pol, SegmentTuple, Bodies...>(p, st, b...);
-  auto ld = make_base_wrapper(data);
+  auto wrapper = make_wrapper(p, data);
   // std::cout << typeid(ld).name() << std::endl
   //           << typeid(data.index_tuple).name() << std::endl;
 
-  ld();
+  wrapper();
 
   detail::clearChaiExecutionSpace();
 }
