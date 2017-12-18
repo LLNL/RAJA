@@ -207,14 +207,14 @@ CUDA_TEST(Nested, CudaCollapse2)
 CUDA_TEST(Nested, CudaCollapse3)
 {
 
-  using Pol = RAJA::nested::Policy< 
+  using Pol = RAJA::nested::Policy<
     RAJA::nested::CudaCollapse<
     RAJA::nested::For<0, RAJA::cuda_threadblock_x_exec<16> >,
       RAJA::nested::For<1, RAJA::cuda_threadblock_y_exec<16> > > >;
 
   Index_type *sum1;
   cudaMallocManaged(&sum1, 1*sizeof(Index_type));
-  
+
   Index_type *sum2;
   cudaMallocManaged(&sum2, 1*sizeof(Index_type));
 
@@ -224,12 +224,12 @@ CUDA_TEST(Nested, CudaCollapse3)
                                         RAJA::RangeSegment(1, N)),
                        [=] RAJA_DEVICE (Index_type i, Index_type j) {
                          //printf("(%d, %d )\n", (int)i, (int) j );
-                         
+
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum1,i);
                          RAJA::atomic::atomicAdd<RAJA::atomic::cuda_atomic>(sum2,j);
 
                        });
-  
+
   cudaDeviceSynchronize();
 
   ASSERT_EQ( (N*(N-1)*(N-1))/2, *sum1);
@@ -565,6 +565,9 @@ TEST(Nested, Tile){
           nested::Tile<1, nested::tile_fixed<4>, seq_exec,
             For<0, seq_exec,
               For<1, seq_exec>
+            >,
+            For<0, seq_exec,
+              For<1, seq_exec>
             >
           >,
           For<1, seq_exec, Lambda<1>>
@@ -591,8 +594,82 @@ TEST(Nested, Tile){
   );
 
   for(int i = 0;i < N;++ i){
-    ASSERT_EQ(x[i], 160);
+    ASSERT_EQ(x[i], 320);
   }
 
   delete[] x;
 }
+
+
+TEST(Nested, CollapseSeq){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+          Collapse<seq_exec, CollapseList<For<0>, For<1>>,
+            Lambda<0>
+          >
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N*N];
+  for(int i = 0;i < N*N;++ i){
+    x[i] = 0;
+  }
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N), RangeSegment(0,N)),
+
+      [=](int i, int j){
+        x[i*N + j] += 1;
+      }
+  );
+
+  for(int i = 0;i < N*N;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  delete[] x;
+}
+
+#ifdef RAJA_ENABLE_CUDA
+CUDA_TEST(Nested, CudaExec){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<1, 16,
+              For<0, cuda_thread_exec, Lambda<0>>
+            >
+        >;
+
+
+  constexpr int N = 16;
+  int *x = new int[N];
+  for(int i = 0;i < N;++ i){
+    x[i] = 0;
+  }
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N)),
+
+      [=] __device__ (int i){
+        printf("hello %d\n", i);
+      }
+  );
+  cudaDeviceSynchronize();
+
+  for(int i = 0;i < N;++ i){
+    ASSERT_EQ(x[i], 1);
+  }
+
+  delete[] x;
+}
+#endif

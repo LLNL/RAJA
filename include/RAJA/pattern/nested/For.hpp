@@ -58,18 +58,19 @@ struct ForWrapper : GenericWrapper<ArgumentId, BaseWrapper> {
 
 
 
-template <typename ForType>
-struct StatementExecutor {
-  static_assert(std::is_base_of<internal::ForBase, ForType>::value,
-                "Only For-based policies should get here");
+template <camp::idx_t ArgumentId, typename ExecPolicy, typename... EnclosedStmts>
+struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
+
+  using ForType = For<ArgumentId, ExecPolicy, EnclosedStmts...>;
+
   template <typename WrappedBody>
   RAJA_INLINE
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
     using ::RAJA::policy::sequential::forall_impl;
     forall_impl(fp.exec_policy,
-                camp::get<ForType::index_val>(wrap.data.segment_tuple),
-                ForWrapper<ForType::index_val, WrappedBody>{wrap});
+                camp::get<ArgumentId>(wrap.data.segment_tuple),
+                ForWrapper<ArgumentId, WrappedBody>{wrap});
   }
 };
 

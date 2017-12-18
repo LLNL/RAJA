@@ -97,13 +97,11 @@ using index_tuple_from_segments =
 
 
 template <typename Policy>
-struct StatementExecutor;
+struct StatementExecutor{};
 
 
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
 struct LoopData {
-
-  constexpr static size_t n_policies = camp::tuple_size<PolicyType>::value;
 
   using index_tuple_t = index_tuple_from_segments<
   typename SegmentTuple::TList>;
@@ -123,7 +121,8 @@ struct LoopData {
   }
 
   template <camp::idx_t Idx, typename IndexT>
-  RAJA_HOST_DEVICE void assign_index(IndexT const &i)
+  RAJA_HOST_DEVICE
+  void assign_index(IndexT const &i)
   {
     camp::get<Idx>(index_tuple) =
         camp::tuple_element_t<Idx, decltype(index_tuple)>{i};
@@ -133,6 +132,7 @@ struct LoopData {
 
 template<camp::idx_t LoopIndex, typename Data>
 RAJA_INLINE
+RAJA_HOST_DEVICE
 void invoke_lambda(Data && data){
   camp::invoke(data.index_tuple, camp::get<LoopIndex>(data.bodies));
 }
@@ -143,10 +143,10 @@ template <camp::idx_t idx, camp::idx_t N>
 struct StatementListExecutor;
 
 
-template<typename PolicyTuple, typename Data>
-void execute_statement_list(PolicyTuple && statement_list, Data && data){
-  using policy_tuple_type = camp::decay<PolicyTuple>;
-  StatementListExecutor<0, camp::tuple_size<policy_tuple_type>::value> launcher;
+template<typename StmtList, typename Data>
+void execute_statement_list(StmtList && statement_list, Data && data){
+  using statement_list_type = camp::decay<StmtList>;
+  StatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
   launcher(statement_list, data);
 }
 
@@ -156,12 +156,15 @@ template <typename StmtList, typename Data>
 struct StatementListWrapper {
 
   using data_type = typename std::remove_reference<Data>::type;
+  using statement_list_type = typename std::remove_reference<StmtList>::type;
 
   StmtList const &statement_list;
   Data &data;
 
+  RAJA_INLINE
   StatementListWrapper(StmtList const &pt, Data &d) : statement_list(pt), data{d} {}
 
+  RAJA_INLINE
   void operator()() const
   {
     execute_statement_list(statement_list, data);
@@ -172,6 +175,7 @@ struct StatementListWrapper {
 
 // Create a wrapper for this policy
 template<typename PolicyT, typename Data>
+RAJA_INLINE
 auto make_statement_list_wrapper(PolicyT && policy, Data && data) ->
   StatementListWrapper<decltype(policy), camp::decay<Data>>
 {
@@ -205,9 +209,7 @@ struct StatementListExecutor{
 
 
 /*
- * termination case.
- * If any policies were specified, this becomes a NOP.
- * If no policies were specified, this defaults to Lambda<0>
+ * termination case, a NOP.
  */
 
 template <camp::idx_t num_statements>
@@ -215,10 +217,8 @@ struct StatementListExecutor<num_statements,num_statements> {
 
   template<typename StmtList, typename Data>
   RAJA_INLINE
-  void operator()(StmtList const &, Data &data) const {
-    if(num_statements == 0){
-      invoke_lambda<0>(data);
-    }
+  void operator()(StmtList const &, Data &) const {
+
   }
 
 };
@@ -240,6 +240,9 @@ struct NestedPrivatizer {
 
   reference_type get_priv() { return privatized_wrapper; }
 };
+
+
+
 
 
 }  // end namespace internal

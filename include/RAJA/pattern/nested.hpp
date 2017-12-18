@@ -92,7 +92,7 @@ struct GenericWrapper {
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
 RAJA_INLINE void forall(const PolicyType &policy, const SegmentTuple &segments, const Bodies & ... bodies)
 {
-  detail::setChaiExecutionSpace<PolicyType>();
+//  detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with
