@@ -94,12 +94,12 @@ Here, we show a parallel implementation of the jacobi iteration using OpenMP
 and nested-loop RAJA capabilities:
 
 .. literalinclude:: ../../../../examples/example-jacobi.cpp
-                    :lines: 286-310
+                    :lines: 282-306
 
 The iteration spaces for the loops are defined using RAJA RangeSegment objects:
 
 .. literalinclude:: ../../../../examples/example-jacobi.cpp
-                    :lines: 201-202
+                    :lines: 200-201
  
 Here, the ``RAJA::nested::forall`` loop updates the solution variable at each grid
 point.
@@ -125,5 +125,5 @@ in memory, which is inherently not thread-safe. Thus, we use a
 policy.  RAJA provides thread-safe reduction types for all programming model 
 back-ends.
 
-The file ``RAJA/examples/example-jacobi.cpp``
+The file ``RAJA/examples/ex5-jacobi.cpp``
 contains the complete working example code.

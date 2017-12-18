@@ -30,7 +30,7 @@ store the result in vector 'C'. We assume that we have allocated and
 initialized arrays holding the data for the vectors. Then, a typical 
 C-style loop to add the vectors is:
 
-.. literalinclude:: ../../../../examples/example-add-vectors.cpp
+.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
                     :lines: 94-96
 
 ^^^^^^^^^^^^^^^^^^^^^
@@ -42,7 +42,7 @@ The RAJA version of this loop requires specifying an execution policy
 we use a ``RAJA::RangeSegment``, which describes a contiguous sequence of 
 integral values [0, N) (for more information, see :ref:`index-label`). 
 
-.. literalinclude:: ../../../../examples/example-add-vectors.cpp
+.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
                     :lines: 107-112
 
 ^^^^^^^^^^^^^^^^^^^^^
@@ -58,7 +58,7 @@ Since the lambda function defining the loop body will be passed to a device
 kernel, the lambda must be decorated with the ``__device__`` attribute when
 the lambda is defined.
 
-.. literalinclude:: ../../../../examples/example-add-vectors.cpp
+.. literalinclude:: ../../../../examples/ex1-add-vectors.cpp
                     :lines: 138-143
 
 RAJA CUDA execution policies are templated on the number of threads per block,
@@ -68,5 +68,5 @@ cases. However, this may need to be changed for performance reasons or when
 there is a large number of variables in the loop body requiring many device
 registers.
 
-The file ``RAJA/examples/example-add-vectors.cpp`` contains the complete 
+The file ``RAJA/examples/ex1-add-vectors.cpp`` contains the complete 
 working example code.
