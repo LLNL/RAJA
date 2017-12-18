@@ -126,8 +126,9 @@ The central loop traversal concept in RAJA is a ``forall`` method, which
 encapsulates loop execution details allowing the loop to be run in many
 different ways without changing the loop code.
 
-We will use a daxpy example to walk through how you can write a simple
-RAJA kernel. As a traditional C-style loop, it would look something like this:
+We will use a simple daxpy operation to walk through how to write a 
+RAJA kernel and execute it using different programming model back-ends. 
+A traditional C-style loop version of daxpy would look something like this:
 
 .. code-block:: cpp
 
@@ -142,31 +143,26 @@ RAJA kernel. As a traditional C-style loop, it would look something like this:
     a[i] += b[i] * c;
   }
 
-This loop would execute sequentially, iterating over the range of ``i``
+This loop executes sequentially, iterating over the range of ``i``
 values [0, 999] one after the other.
 
-The RAJA form of this loop replaces the regular ``for`` loop with a call
-to a RAJA ``forall`` method:
+The RAJA form of this sequential loop replaces the ``for`` loop 
+with a call to a RAJA ``forall`` method:
 
 .. code-block:: cpp
 
-  double* a = new double[1000];
-  double* b = new double[1000];
+  // Initialize a, b, c as before...
 
-  // Initialize a and b...
-
-  double c = 3.14159;
-
-  RAJA::forall<RAJA::seq_exec>(0, 1000, [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
     a[i] += b[i] * c;
   });
 
 The data allocation and loop body are exactly the same as the original code.
-The ``RAJA::forall`` method takes, as arguments, the loop bounds and
-a lambda function containing the loop body. The method is templated on
-an `execution policy`; the template specialization selects how the loop
-will run. Here, we use ``RAJA::seq_exec`` to run the loop iterations
-sequentially, in order, exactly like the original loop.
+The ``RAJA::forall`` method takes as arguments the loop bounds in a
+``RAJA::RangeSegment`` object and a lambda function containing the loop body. 
+The method is templated on an `execution policy`; the template specialization 
+selects how the loop will run. Here, we use ``RAJA::seq_exec`` to run the loop 
+iterations sequentially, in order, exactly like the original loop.
 
 Of course, this isn't very exciting yet. You may be wondering why we are
 doing this: writing a simple loop in a more complicated way so it runs
@@ -184,17 +180,20 @@ multithreading:
 
 .. code-block:: cpp
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(0, 1000, [=] (int i) {
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
     a[i] += b[i] * c;
   });
 
 This version will run on an NVIDIA GPU using CUDA::
 
-  RAJA::forall<RAJA::cuda_exec>(0, 1000, [=] (int i) {
+  RAJA::forall<RAJA::cuda_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
     a[i] += b[i] * c;
   });
 
-Of course, these versions require RAJA to be built with OpenMP and CUDA
+Note that we have assumed that the data arrays on the GPU device have been
+allocated and initialized properly.
+
+Also, these versions require RAJA to be built with OpenMP and CUDA
 enabled, respectively.
 
 
@@ -204,34 +203,8 @@ enabled, respectively.
 Full example code
 --------------------
 
-If you want to run the example yourself, here is a complete code listing:
+If you want to run the example yourself, the complete code is located
+in the file ``RAJA/examples/ex0-daxpy.cpp``. 
 
-.. code-block:: cpp
-
-  #include "RAJA/RAJA.hpp"
-
-  int main(int argc, char* argv[]) {
-    double* a = new double[1000];
-    double* b = new double[1000];
-
-    double c = 3.14159;
-
-    for (int i = 0; i < 1000; i++) {
-      a[i] = 1.0;
-      b[i] = 2.0;
-    }
-
-    RAJA::forall<RAJA::seq_exec>(0, 1000, [=] (int i) {
-      a[i] += b[i] * c;
-    });
-
-    return 0;
-  }
-
-To build and run this code, you will need to pass the include directory and
-link against the RAJA library::
-
-  $ make -I/path/to/install/include -std=c++11 example.cpp
-
-For more examples, you can check out the tutorial in the ``examples``
-directory. These programs are explained in the :ref:`tutorial-label`.
+After building RAJA, with the options you select, it can be run using
+the executable located at: ``<build-dir>/examples/binex0-daxpy``.

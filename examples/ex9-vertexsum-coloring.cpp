@@ -29,6 +29,7 @@
   -----[RAJA Concepts]---------------
 
   ----[Kernel Variants and RAJA Features]------------
+*/
 
 /*
   CUDA_BLOCK_SIZE - specifies the number of threads in a CUDA thread block
@@ -46,8 +47,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
   printf("Example 9: ...\n \n");
-
-  const int N = 1000;
 
   return 0;
 }

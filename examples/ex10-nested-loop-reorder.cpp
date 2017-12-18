@@ -46,7 +46,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::nested::forall(myPol{},
                        camp::make_tuple(Range0, Range1),                       
                        [=] (ID i0, IZ i1) {
-                         printf("%ld, %ld \n", i0, i1);
+                         printf("%ld, %ld \n", (long int)*i0, (long int)*i1);
                      });
 
 
@@ -59,7 +59,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::nested::forall(myPol2{},
                        camp::make_tuple(Range0, Range1),                       
                        [=] (ID i0, IZ i1) {
-                         printf("%ld, %ld \n", i0, i1);
+                         printf("%ld, %ld \n", (long int)*i0, (long int)*i1);
                        });
 
   return 0;

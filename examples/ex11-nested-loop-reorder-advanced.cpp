@@ -76,7 +76,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                      camp::make_tuple(Range0, Range1),
                      //[=] (RAJA::Index_type i1, RAJA::Index_type i0){
                      [=] (ID i0, IZ i1) {
-                       printf("%ld, %ld \n",i0, i1);
+                       printf("%ld, %ld \n",(long int)*i0, (long int)*i1);
                      });
 
 
