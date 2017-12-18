@@ -19,6 +19,12 @@
 #include "RAJA/RAJA.hpp"
 #include "RAJA/util/defines.hpp"
 
+/*
+  Example 4: Reductions
+  This example code shows how to use multiple RAJA
+  reduction types to perform different reductions
+  in a RAJA forall loop.
+*/
 int main(int RAJA_UNUSED_ARG(argc), char** RAJA_UNUSED_ARG(argv[]))
 {
 

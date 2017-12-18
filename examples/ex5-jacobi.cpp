@@ -26,7 +26,7 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 3: Jacobi Method
+  Example 5: Jacobi Method
 
   ----[Details]--------------------
   This code uses a five point finite difference stencil

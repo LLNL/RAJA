@@ -25,7 +25,7 @@
 const int DIM = 2;
 
 /*
-  Example 5: Custom Index Set
+  Example 6: Index Set Segments
 
   ----[Details]-------------------
   This example illustrates how to construct a custom
@@ -67,8 +67,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   /*
     The template arguments for StaticIndexSet enables the user to indicate
-    the required storage types of various segments. In this example,
-    we only need to store TypedListSegment<Index_type> (aka ListSegment)
+    the segment types to be included in the index set. In this example,
+    we only need to store TypedListSegment<Index_type> (i.e., 
+    a ListSegment with typed indices.)
   */
   RAJA::StaticIndexSet<RAJA::TypedListSegment<RAJA::Index_type>> colorset;
 
@@ -121,9 +122,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 /*
   -----[RAJA Loop Traversal]-------
-  Under the custom color policy, a RAJA forall loop will transverse
-  through each list segment stored in the colorset sequentially and transverse
-  each segment in parallel (if enabled).
+  Under the custom color policy, a RAJA forall loop will iterate
+  over list segments in the colorset sequentially and transverse
+  each segment in parallel using OpenMP (if enabled).
  */
 #if defined(RAJA_ENABLE_OPENMP)
   using ColorPolicy =

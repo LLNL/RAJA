@@ -22,7 +22,7 @@
 #include "RAJA/util/defines.hpp"
 
 /*
-  Example 4: Time-Domain Finite Difference 
+  Example 8: Time-Domain Finite Difference 
              Acoustic Wave Equation Solver
 
   ------[Details]----------------------

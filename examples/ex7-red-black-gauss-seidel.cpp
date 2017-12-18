@@ -26,7 +26,7 @@
 #include "memoryManager.hpp"
 
 /*
-  Example 6: Gauss-Seidel with Red-Black Ordering
+  Example 7: Gauss-Seidel with Red-Black Ordering
 
   ----[Details]--------------------
   This example is an extension of Example 3.

@@ -15,43 +15,58 @@
 ###############################################################################
 
 raja_add_executable(
-  NAME example-pi
-  SOURCES example-pi.cpp)
+  NAME ex0-daxpy
+  SOURCES ex0-daxpy.cpp)
 
 raja_add_executable(
-  NAME example-add-vectors
-  SOURCES example-add-vectors.cpp)
+  NAME ex1-add-vectors
+  SOURCES ex1-add-vectors.cpp)
 
 raja_add_executable(
-  NAME example-matrix-multiply
-  SOURCES example-matrix-multiply.cpp)
+  NAME ex2-matrix-multiply
+  SOURCES ex2-matrix-multiply.cpp)
 
 raja_add_executable(
-  NAME example-jacobi
-  SOURCES example-jacobi.cpp)
+  NAME ex3-dot-product
+  SOURCES ex3-dot-product.cpp)
 
 raja_add_executable(
-  NAME example-wave
-  SOURCES example-wave.cpp)
-
-raja_add_executable(
-  NAME example-gauss-seidel
-  SOURCES example-gauss-seidel.cpp)
-
-raja_add_executable(
-  NAME example-custom-index
-  SOURCES example-custom-index.cpp)
-
-raja_add_executable(
-  NAME example-atomic-pi
-  SOURCES example-atomic-pi.cpp)
-
-raja_add_executable(
-  NAME example-reduction
-  SOURCES example-reduction.cpp)
+  NAME ex4-reductions
+  SOURCES ex4-reductions.cpp)
   
 raja_add_executable(
-  NAME example-loop-reordering
-  SOURCES example-loop-reordering.cpp)
+  NAME ex5-jacobi
+  SOURCES ex5-jacobi.cpp)
 
+raja_add_executable(
+  NAME ex6-indexset-segments
+  SOURCES ex6-indexset-segments.cpp)
+
+raja_add_executable(
+  NAME ex7-red-black-gauss-seidel
+  SOURCES ex7-red-black-gauss-seidel.cpp)
+
+raja_add_executable(
+  NAME ex8-wave-eqn
+  SOURCES ex8-wave-eqn.cpp)
+
+raja_add_executable(
+  NAME ex9-vertexsum-coloring
+  SOURCES ex9-vertexsum-coloring.cpp)
+
+raja_add_executable(
+  NAME ex10-nested-loop-reorder
+  SOURCES ex10-nested-loop-reorder.cpp)
+
+raja_add_executable(
+  NAME ex11-nested-loop-reorder-advanced
+  SOURCES ex11-nested-loop-reorder-advanced.cpp)
+
+raja_add_executable(
+  NAME ex12-pi-atomic
+  SOURCES ex12-pi-atomic.cpp)
+
+raja_add_executable(
+  NAME ex13-scan
+  SOURCES ex13-scan.cpp)
 
