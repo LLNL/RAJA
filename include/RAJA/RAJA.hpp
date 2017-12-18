@@ -107,8 +107,10 @@
 //
 #include "RAJA/pattern/forallN.hpp"
 #include "RAJA/pattern/nested.hpp"
-#include "RAJA/pattern/nested/tile.hpp"
-
+#include "RAJA/pattern/nested/Lambda.hpp"
+#include "RAJA/pattern/nested/For.hpp"
+#include "RAJA/pattern/nested/Tile.hpp"
+#include "RAJA/pattern/nested/Collapse.hpp"
 
 //
 // Reduction objects

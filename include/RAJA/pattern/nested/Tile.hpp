@@ -1,5 +1,5 @@
-#ifndef RAJA_pattern_nested_tile_HPP
-#define RAJA_pattern_nested_tile_HPP
+#ifndef RAJA_pattern_nested_Tile_HPP
+#define RAJA_pattern_nested_Tile_HPP
 
 #include "RAJA/config.hpp"
 #include "RAJA/util/defines.hpp"
@@ -18,13 +18,15 @@ namespace nested
 {
 
 
-template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename ... InnerPolicies>
-struct Tile {
+/*!
+ * A nested::forall statement that implements a tiling (or blocking) loop.
+ *
+ */
+template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
+struct Tile : public internal::Statement<EnclosedStmts...> {
+
   const TilePolicy tile_policy;
   const ExecPolicy exec_policy;
-  using inner_policy_t = RAJA::nested::Policy<InnerPolicies...>;
-
-  inner_policy_t inner_policy;
 
   RAJA_HOST_DEVICE constexpr Tile(TilePolicy const &tp = TilePolicy{},
                                   ExecPolicy const &ep = ExecPolicy{})
@@ -54,6 +56,8 @@ struct tile {
   camp::idx_t get_chunk_size() const { return chunk_size; }
 };
 
+namespace internal{
+
 template <camp::idx_t Index, typename BaseWrapper>
 struct TileWrapper : GenericWrapper<Index, BaseWrapper> {
   using Base = GenericWrapper<Index, BaseWrapper>;
@@ -70,10 +74,10 @@ struct TileWrapper : GenericWrapper<Index, BaseWrapper> {
  * @brief specialization of internal::thread_privatize for tile
  */
 template <camp::idx_t Index, typename BW>
-auto thread_privatize(const nested::TileWrapper<Index, BW> &item)
-    -> NestedPrivatizer<nested::TileWrapper<Index, BW>>
+auto thread_privatize(const nested::internal::TileWrapper<Index, BW> &item)
+    -> NestedPrivatizer<nested::internal::TileWrapper<Index, BW>>
 {
-  return NestedPrivatizer<nested::TileWrapper<Index, BW>>{item};
+  return NestedPrivatizer<nested::internal::TileWrapper<Index, BW>>{item};
 }
 
 template <typename Iterable>
@@ -159,8 +163,10 @@ struct IterableTiler {
   camp::idx_t dist;
 };
 
+
+
 template <camp::idx_t Index, typename TPol, typename EPol, typename ... InnerPolicies>
-struct Executor<Tile<Index, TPol, EPol, InnerPolicies...>> {
+struct StatementExecutor<Tile<Index, TPol, EPol, InnerPolicies...>> {
 
   using TileType = Tile<Index, TPol, EPol, InnerPolicies...>;
   using inner_policy_t = Policy<InnerPolicies...>;
@@ -175,7 +181,7 @@ struct Executor<Tile<Index, TPol, EPol, InnerPolicies...>> {
     IterableTiler<decltype(st)> tiled_iterable(st, fp.tile_policy.get_chunk_size());
 
     // Create a wrapper for inside this policy
-    auto inner_wrapper = make_wrapper(fp.inner_policy, wrap.data);
+    auto inner_wrapper = internal::make_statement_list_wrapper(fp.enclosed_statements, wrap.data);
 
     using ::RAJA::policy::sequential::forall_impl;
     forall_impl(fp.exec_policy, tiled_iterable, TileWrapper<Index, WrappedBody>{inner_wrapper});
@@ -185,7 +191,7 @@ struct Executor<Tile<Index, TPol, EPol, InnerPolicies...>> {
 
   }
 };
-
+} // end namespace internal
 
 }  // end namespace nested
 }  // end namespace RAJA
