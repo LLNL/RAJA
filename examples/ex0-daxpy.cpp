@@ -89,9 +89,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* a = ta;
   double* b = tb;
 
-//
-// C-style daxpy operation.
-//
+
   std::cout << "\n Running C-vesion of daxpy...\n";
    
   std::memcpy( a, a0, 1000 * sizeof(double) );  
@@ -115,9 +113,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 // require unique changes for each.
 //
   
-//
-// RAJA version of sequential daxpy operation.
-//
   std::cout << "\n Running RAJA sequential daxpy...\n";
    
   std::memcpy( a, a0, 1000 * sizeof(double) );  
@@ -146,9 +141,6 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-//
-// RAJA OpenMP parallel multithreading version.
-//
   std::cout << "\n Running RAJA OpenMP daxpy...\n";
    
   std::memcpy( a, a0, 1000 * sizeof(double) );  

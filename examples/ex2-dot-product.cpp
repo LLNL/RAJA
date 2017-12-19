@@ -22,16 +22,19 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Example 1: Vector addition
+ *  Example 3: Vector dot product
  *
- *  Vector addition example, C = A + B, where A, B, C are vectors of ints,
- *  illustrates the similarities between a  C-style for-loop and a RAJA 
- *  forall loop.
+ *  Vector dot product example, dot = (A,B), where A, B are vectors of 
+ *  doubles and dot is a scalar double, illustrates the similarities 
+ *  between a  C-style for-loop and a RAJA forall loop.
  *
  *  RAJA features shown:
  *    - `forall` loop iteration template method
  *    -  Index range segment
  *    -  Execution policies
+ *    -  Reduction types
+ *
+ * If CUDA is enabled, CUDA unified memory is used.
  */
 
 /*
@@ -42,15 +45,11 @@ const int CUDA_BLOCK_SIZE = 256;
 #endif
 
 //
-//  Function to compare solution to reference and print result P/F.
+//  Function to compare computed dot product to expected value
 //
-void checkSolution(int *C, int len) 
+void checkSolution(double compdot, double refdot)
 {
-  bool correct = true;
-  for (int i = 0; i < len; i++) {
-    if ( C[i] != 0 ) { correct = false; }
-  }
-  if ( correct ) {
+  if ( compdot == refdot ) {
     std::cout << "\n\t result -- PASS\n";
   } else {
     std::cout << "\n\t result -- FAIL\n";
@@ -60,72 +59,85 @@ void checkSolution(int *C, int len)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA example 1: vector addition\n\n";
+  std::cout << "RAJA example 3: vector dot product\n\n";
 
   const int N = 1000;
   int *A = memoryManager::allocate<int>(N);
   int *B = memoryManager::allocate<int>(N);
-  int *C = memoryManager::allocate<int>(N);
 
   for (int i = 0; i < N; ++i) {
-    A[i] = -i;
-    B[i] = i;
+    A[i] = 1.0;
+    B[i] = 1.0;
   }
 
+  double dot = 0.0;
 
-  std::cout << "\n Running C-vesion of vector addition...\n";
+//
+// C-style dot product operation.
+//
+  std::cout << "\n Running C-vesion of dot product...\n";
 
   for (int i = 0; i < N; ++i) {
-    C[i] = A[i] + B[i];
+    dot += A[i] * B[i];
   }
 
-  checkSolution(C, N);
+  checkSolution(dot, N);
 
 
-  std::cout << "\n Running RAJA sequential vector addition...\n";
+//
+// RAJA version of sequential dot product.
+//
+  std::cout << "\n Running RAJA sequential dot product...\n";
+
+  RAJA::ReduceSum<RAJA::seq_reduce, double> seqdot(0.0);
 
   RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
-  });    
+    seqdot+= A[i] * B[i]; 
+  });
 
-  checkSolution(C, N);
+  dot = seqdot.get();
 
-
-  std::cout << "\n Running RAJA SIMD vector addition...\n";
-
-  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
-  });    
-
-  checkSolution(C, N);
-
+  checkSolution(dot, N);
 
 
 #if defined(RAJA_ENABLE_OPENMP)
-  std::cout << "\n Running RAJA OpenMP vector addition...\n";
+//
+// RAJA version of SIMD dot product.
+//
+  std::cout << "\n Running RAJA OpenMP dot product...\n";
+
+  RAJA::ReduceSum<RAJA::omp_reduce, double> ompdot(0.0);
 
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) { 
-    C[i] = A[i] + B[i]; 
+    ompdot += A[i] * B[i]; 
   });    
 
-  checkSolution(C, N);
+  dot = ompdot.get();
+
+  checkSolution(dot, N);
 #endif
 
 
 #if defined(RAJA_ENABLE_CUDA)
-  std::cout << "\n Running RAJA CUDA vector addition...\n";
+//
+// RAJA version of CUDA dot product.
+//
+  std::cout << "\n Running RAJA CUDA dot product...\n";
+
+  RAJA::ReduceSum<RAJA::cuda_reduce<CUDA_BLOCK_SIZE>, double> cudot(0.0);
 
   RAJA::forall<RAJA::cuda_exec<CUDA_BLOCK_SIZE>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) { 
-    C[i] = A[i] + B[i]; 
+    cudot += A[i] * B[i]; 
   });    
 
-  checkSolution(C, N);
+  dot = cudot.get();
+
+  checkSolution(dot, N);
 #endif
 
   memoryManager::deallocate(A);
   memoryManager::deallocate(B);
-  memoryManager::deallocate(C);
 
   std::cout << "\n DONE!...\n";
 
