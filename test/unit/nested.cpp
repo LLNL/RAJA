@@ -594,11 +594,11 @@ TEST(Nested, Collapse4)
         RAJA::RangeSegment(0, K),
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
-        [=] (Index_type k, Index_type j, Index_type i) {
-          int id = i + N * (j + M*k); 
-          data[id] = id;
-        });
-  
+        [=] (Index_type k, Index_type j, Index_type i) {          
+          Index_type  id = i + N * (j + M*k); 
+          data[id] = id; 
+
+        }); 
 
   for(int k=0; k<K; k++){
     for(int j=0; j<M; ++j){
@@ -618,12 +618,12 @@ TEST(Nested, Collapse5)
 {
 
   int N = 4;
-  int M = 2;
-  int K = 3;
+  int M = 4;
+  int K = 4;
 
-  int *data = new int[N*M];
-  for(int i = 0;i < M*N;++ i){
-    data[i] = 0;
+  int *data = new int[N*M*K];
+  for(int i = 0;i < M*N*K;++ i){
+    data[i] = -1;
   }
 
   using Pol = RAJA::nested::Policy<
@@ -639,15 +639,16 @@ TEST(Nested, Collapse5)
         RAJA::RangeSegment(0, M),
         RAJA::RangeSegment(0, N) ),
         [=] (Index_type k, Index_type j, Index_type i) {
-          data[i + N*j] += k;
+
+          data[i + N*(j + M*k)] = i + N*(j+M*k);
         });
-  
-  for(int k=0; k<K; k++){
+
+  for(int k=0; k<K; ++k){
     for(int j=0; j<M; ++j){
       for(int i=0; i<N; ++i){
         
-        int id = i + N*j;
-        ASSERT_EQ(data[id], 3);
+        int id = i + N*(j+M*k);
+        ASSERT_EQ(data[id], id);
       }
     }
   }
