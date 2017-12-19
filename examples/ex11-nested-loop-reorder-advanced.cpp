@@ -116,7 +116,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
                        }); 
 #endif
 
-#if (RAJA_ENABLE_CUDA)
+#if defined(RAJA_ENABLE_CUDA)
 cudaDeviceSynchronize();
 #endif
 

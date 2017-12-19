@@ -22,20 +22,48 @@
 /*
  *  Example 0: Daxpy
  *
- *  This Double-Precision-A*X Plus Y example code 
- *  illustrates the similarities between a C++ style 
- *  for loop and a RAJA forall loop. It introduces
- *  the RAJA `forall` loop iteration method and range
- *  segment concepts and RAJA execution policies.
+ *  Daxpy example, a += b*c, where a, b are vectors of doubles
+ *  and c is a scalar double, illustrates the similarities between a 
+ *  C-style for-loop and a RAJA forall loop. 
+ *
+ *  RAJA features shown:
+ *    - `forall` loop iteration template method
+ *    -  Index range segment 
+ *    -  Execution policies
  */
+
+void checkResult(double* v1, double* v2, int len) 
+{
+  bool match = true;
+  for (int i = 0; i < len; i++) {
+    if ( v1[i] != v2[i] ) { match = false; }
+  }
+  if ( match ) {
+    std::cout << "\n\t result -- PASS\n";
+  } else {
+    std::cout << "\n\t result -- FAIL\n";
+  } 
+}
+
+void printResult(double* v, int len) 
+{
+  std::cout << std::endl;
+  for (int i = 0; i < len; i++) {
+    std::cout << "result[" << i << "] = " << v[i] << std::endl;
+  }
+  std::cout << std::endl;
+} 
 
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
+
+  std::cout << "RAJA example 0: daxpy\n\n";
 
 //
 // Allocate and initialize data.
 //
   double* a0 = new double[1000];
+  double* aref = new double[1000];
 
   double* ta = new double[1000];
   double* tb = new double[1000];
@@ -66,6 +94,8 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     a[i] += b[i] * c;
   }
 
+  std::memcpy( aref, a, 1000* sizeof(double) ); 
+
 //
 // In the following, we show a RAJA version
 // of the daxpy operation and how it can
@@ -90,6 +120,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
     a[i] += b[i] * c;
   });
 
+  checkResult(a, aref, 1000);
+//printResult(a, 1000); 
+
+
 //
 // RAJA SIMD version.
 //
@@ -100,6 +134,10 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
     a[i] += b[i] * c;
   });
+
+  checkResult(a, aref, 1000);
+//printResult(a, 1000); 
+
 
 #if defined(RAJA_ENABLE_OPENMP)
 //
@@ -112,6 +150,9 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
     a[i] += b[i] * c;
   });
+
+  checkResult(a, aref, 1000);
+//printResult(a, 1000); 
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -121,22 +162,25 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA daxpy...\n";
 
   a = 0; b = 0;
-  cudaMalloc( (void**)&a, 1000 * sizeof(double) ) );
-  cudaMalloc( (void**)&b, 1000 * sizeof(double) ) );
+  cudaErrchk(cudaMalloc( (void**)&a, 1000 * sizeof(double) ));
+  cudaErrchk(cudaMalloc( (void**)&b, 1000 * sizeof(double) ));
  
-  cudaMemcpy( a, a0, 1000 * sizeof(double), cudaMemcpyHostToDevice ); 
-  cudaMemcpy( b, tb, 1000 * sizeof(double), cudaMemcpyHostToDevice ); 
+  cudaErrchk(cudaMemcpy( a, a0, 1000 * sizeof(double), cudaMemcpyHostToDevice )); 
+  cudaErrchk(cudaMemcpy( b, tb, 1000 * sizeof(double), cudaMemcpyHostToDevice )); 
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, 1000), [=] (int i) {
+  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, 1000), 
+    [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
 
-  cudaMemcpy( ta, a, 1000 * sizeof(double), cudaMemcpyDeviceToHost );
+  cudaErrchk(cudaMemcpy( ta, a, 1000 * sizeof(double), cudaMemcpyDeviceToHost ));
 
-  cudaFree(a);
-  cudaFree(b);
+  cudaErrchk(cudaFree(a));
+  cudaErrchk(cudaFree(b));
 
   a = ta;
+  checkResult(a, aref, 1000);
+//printResult(a, 1000); 
 #endif
 
 //
