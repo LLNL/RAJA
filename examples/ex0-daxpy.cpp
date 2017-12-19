@@ -32,6 +32,9 @@
  *    -  Execution policies
  */
 
+//
+// Function to compare solution to reference and print result P/F.
+//
 void checkResult(double* v1, double* v2, int len) 
 {
   bool match = true;
@@ -45,6 +48,9 @@ void checkResult(double* v1, double* v2, int len)
   } 
 }
 
+//
+// Function to print vector. 
+//
 void printResult(double* v, int len) 
 {
   std::cout << std::endl;
