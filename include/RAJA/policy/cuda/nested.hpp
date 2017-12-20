@@ -256,9 +256,11 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
 
     /*
      * Evaluates the loop index for the idx'th loop in the Collapse
+     *
+     * returns false if the loop is in bounds
      */
     template <size_t idx>
-    RAJA_DEVICE RAJA::Index_type evalLoopIndex()
+    RAJA_DEVICE bool evalLoopIndex()
     {
       // grab the loop policy
       auto &policy = camp::get<idx>(loop_policies);
@@ -266,13 +268,23 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
       // grab the For type from our type list
       using ft = typename camp::at_v<ft_tuple, idx>::type;
 
-      // Assign the For index value to the correct argument
+
+      // Get the offset for this policy, calculated by our thread/block index
+      RAJA::Index_type offset = policy();
+      if(offset == RAJA::operators::limits<RAJA::Index_type>::min()){
+        // this index is out-of-bounds, so shortcut it here
+        return true;
+      }
+
+      // Increment the begin iterator by the offset
       auto &begin = camp::get<idx>(begin_tuple);
-      int loop_value = *(begin + policy());
-      // int loop_value = policy();
+      RAJA::Index_type loop_value = *(begin + policy());
+
+      // Assign the For index value to the correct argument
       data.template assign_index<ft::index_val>(loop_value);
 
-      return loop_value;
+      // we are in bounds
+      return false;
     }
 
     /*
@@ -286,8 +298,8 @@ struct Executor<Collapse<cuda_collapse_exec<Async>, FOR_TYPES...>> {
     RAJA_DEVICE bool computeIndices(camp::idx_seq<idx_list...>)
     {
       // Compute each loop index, and return the minimum value
-      return INT_MIN
-             < VarOps::min<RAJA::Index_type>(evalLoopIndex<idx_list>()...);
+      // this sum is the number of indices that are out of bounds
+      return 0 == VarOps::sum<int>((int)evalLoopIndex<idx_list>()...);
     }
 
 

@@ -31,6 +31,8 @@
 #include "RAJA/config.hpp"
 #include "RAJA/pattern/reduce.hpp"
 #include "RAJA/policy/PolicyBase.hpp"
+#include "RAJA/util/Operators.hpp"
+#include "RAJA/util/types.hpp"
 
 namespace RAJA
 {
@@ -50,6 +52,7 @@ using cuda_dim_t = dim3;
 ///
 /////////////////////////////////////////////////////////////////////
 ///
+
 struct Dim3x {
   __host__ __device__ inline unsigned int &operator()(cuda_dim_t &dim)
   {
@@ -184,9 +187,9 @@ struct CudaPolicy
 // Operations in the included files are parametrized using the following
 // values for CUDA warp size and max block size.
 //
-constexpr const int WARP_SIZE = 32;
-constexpr const int MAX_BLOCK_SIZE = 1024;
-constexpr const int MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
+constexpr const RAJA::Index_type WARP_SIZE = 32;
+constexpr const RAJA::Index_type MAX_BLOCK_SIZE = 1024;
+constexpr const RAJA::Index_type MAX_WARPS = MAX_BLOCK_SIZE / WARP_SIZE;
 static_assert(WARP_SIZE >= MAX_WARPS,
               "RAJA Assumption Broken: WARP_SIZE < MAX_WARPS");
 static_assert(MAX_BLOCK_SIZE % WARP_SIZE == 0,
@@ -217,24 +220,24 @@ struct CudaDim {
   __host__ __device__ void print(void) const
   {
     printf("<<< (%d,%d,%d), (%d,%d,%d) >>>\n",
-           num_blocks.x,
-           num_blocks.y,
-           num_blocks.z,
-           num_threads.x,
-           num_threads.y,
-           num_threads.z);
+           (int)num_blocks.x,
+           (int)num_blocks.y,
+           (int)num_blocks.z,
+           (int)num_threads.x,
+           (int)num_threads.y,
+           (int)num_threads.z);
   }
 };
 
 
 RAJA_INLINE
-constexpr int numBlocks(CudaDim const &dim)
+constexpr RAJA::Index_type numBlocks(CudaDim const &dim)
 {
   return dim.num_blocks.x * dim.num_blocks.y * dim.num_blocks.z;
 }
 
 RAJA_INLINE
-constexpr int numThreads(CudaDim const &dim)
+constexpr RAJA::Index_type numThreads(CudaDim const &dim)
 {
   return dim.num_threads.x * dim.num_threads.y * dim.num_threads.z;
 }
@@ -254,9 +257,9 @@ struct CudaIndexPair : public POL {
 /** Provides a range from 0 to N_iter - 1
  *
  */
-template <typename VIEWDIM, int threads_per_block>
+template <typename VIEWDIM, size_t threads_per_block>
 struct CudaThreadBlock {
-  int distance;
+  RAJA::Index_type distance;
 
   VIEWDIM view;
 
@@ -267,25 +270,27 @@ struct CudaThreadBlock {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void)
+  __device__ inline RAJA::Index_type operator()(void)
   {
-    int idx = 0 + view(blockIdx) * threads_per_block + view(threadIdx);
+    RAJA::Index_type idx = (RAJA::Index_type)view(blockIdx) * (RAJA::Index_type)threads_per_block + (RAJA::Index_type)view(threadIdx);
+
     if (idx >= distance) {
-      idx = INT_MIN;
+      idx = RAJA::operators::limits<RAJA::Index_type>::min();
     }
+
     return idx;
   }
 
   void inline setDims(CudaDim &dims)
   {
-    int n = distance;
+    RAJA::Index_type n = distance;
     if (n < threads_per_block) {
       view(dims.num_threads) = n;
       view(dims.num_blocks) = 1;
     } else {
       view(dims.num_threads) = threads_per_block;
 
-      int blocks = n / threads_per_block;
+      RAJA::Index_type blocks = n / threads_per_block;
       if (n % threads_per_block) {
         ++blocks;
       }
@@ -299,18 +304,18 @@ struct CudaThreadBlock {
  * given dimension with the number of THREADS per block specifies.
  */
 
-template <int THREADS>
+template <size_t THREADS>
 using cuda_threadblock_x_exec = CudaPolicy<CudaThreadBlock<Dim3x, THREADS>>;
 
-template <int THREADS>
+template <size_t THREADS>
 using cuda_threadblock_y_exec = CudaPolicy<CudaThreadBlock<Dim3y, THREADS>>;
 
-template <int THREADS>
+template <size_t THREADS>
 using cuda_threadblock_z_exec = CudaPolicy<CudaThreadBlock<Dim3z, THREADS>>;
 
 template <typename VIEWDIM>
 struct CudaThread {
-  int distance;
+  RAJA::Index_type distance;
 
   VIEWDIM view;
 
@@ -321,11 +326,11 @@ struct CudaThread {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void)
+  __device__ inline RAJA::Index_type operator()(void)
   {
-    int idx = view(threadIdx);
+    RAJA::Index_type idx = view(threadIdx);
     if (idx >= distance) {
-      idx = INT_MIN;
+      return RAJA::operators::limits<RAJA::Index_type>::min();
     }
     return idx;
   }
@@ -344,7 +349,7 @@ using cuda_thread_z_exec = CudaPolicy<CudaThread<Dim3z>>;
 
 template <typename VIEWDIM>
 struct CudaBlock {
-  int distance;
+  RAJA::Index_type distance;
 
   VIEWDIM view;
 
@@ -355,11 +360,11 @@ struct CudaBlock {
     setDims(dims);
   }
 
-  __device__ inline int operator()(void)
+  __device__ inline RAJA::Index_type operator()(void)
   {
-    int idx = view(blockIdx);
+    RAJA::Index_type idx = view(blockIdx);
     if (idx >= distance) {
-      idx = INT_MIN;
+      return RAJA::operators::limits<RAJA::Index_type>::min();
     }
     return idx;
   }
