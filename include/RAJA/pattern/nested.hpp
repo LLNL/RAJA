@@ -275,11 +275,12 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 
 }  // end namespace nested
 
+template<typename... Args>
+RAJA_HOST_DEVICE constexpr auto make_tuple(Args&&... args){
+  return camp::make_tuple(args...);
+}
 
 }  // end namespace RAJA
-
-//hide namespace
-namespace RAJAtuple = camp;
 
 #include "RAJA/pattern/nested/tile.hpp"
 
