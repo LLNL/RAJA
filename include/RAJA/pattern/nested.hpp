@@ -275,10 +275,8 @@ RAJA_INLINE void forall(const Pol &p, const SegmentTuple &st, const Body &b)
 
 }  // end namespace nested
 
-template<typename... Args>
-RAJA_HOST_DEVICE constexpr auto make_tuple(Args&&... args){
-  return camp::make_tuple(args...);
-}
+  //hide
+  using ::camp::make_tuple;
 
 }  // end namespace RAJA
 
