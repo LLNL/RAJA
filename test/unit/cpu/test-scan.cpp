@@ -223,3 +223,4 @@ REGISTER_TYPED_TEST_CASE_P(Scan,
                            exclusive_inplace_offset);
 
 INSTANTIATE_TYPED_TEST_CASE_P(ScanTests, Scan, CrossTypes);
+

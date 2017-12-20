@@ -212,15 +212,19 @@ void testAtomicViewBasic()
   RAJA::forall<RAJA::seq_exec>(seg,
                                [=](RAJA::Index_type i) { source[i] = (T)1; });
 
-  RAJA::forall<RAJA::seq_exec>(seg_half,
-                               [=](RAJA::Index_type i) { dest[i] = (T)0; });
-
   // use atomic add to reduce the array
   RAJA::View<T, RAJA::Layout<1>> vec_view(source, N);
 
   RAJA::View<T, RAJA::Layout<1>> sum_view(dest, N);
   auto sum_atomic_view = RAJA::make_atomic_view<AtomicPolicy>(sum_view);
 
+
+  // Zero out dest using atomic view
+  RAJA::forall<ExecPolicy>(seg_half, [=] RAJA_HOST_DEVICE (RAJA::Index_type i) {
+    sum_atomic_view(i) = (T)0;
+  });
+
+  // Assign values to dest using atomic view
   RAJA::forall<ExecPolicy>(seg, [=] RAJA_HOST_DEVICE(RAJA::Index_type i) {
     sum_atomic_view(i / 2) += vec_view(i);
   });
