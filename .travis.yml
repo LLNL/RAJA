@@ -73,9 +73,6 @@ matrix:
     - CMAKE_EXTRA_FLAGS="-DCMAKE_BUILD_TYPE=Debug -DENABLE_CUDA=On -DENABLE_TBB=On"
     - TRAVIS_INSTALL_COMPILER="nvcc"
     - DO_TEST=no
-cache:
-  directories:
-  - $HOME/llvm
 before_install:
 - sudo apt-get update -qq
 - mkdir -p ${HOME}/download
