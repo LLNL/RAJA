@@ -23,7 +23,7 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Example 9: Mesh Vertex Sum Example with Index Coloring
+ *  Mesh Vertex Sum with Index Coloring Example
  *
  *  Example computes a sum at each vertex on a logically-Cartesian
  *  2D mesh. Each sum includes a contribution from each mesh element
