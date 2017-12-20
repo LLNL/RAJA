@@ -22,10 +22,10 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Example 1: Vector addition
+ *  Vector Addition Example
  *
- *  Vector addition example, C = A + B, where A, B, C are vectors of ints,
- *  illustrates the similarities between a  C-style for-loop and a RAJA 
+ *  Computes C = A + B, where A, B, C are vectors of ints.
+ *  It illustrates similarities between a  C-style for-loop and a RAJA 
  *  forall loop.
  *
  *  RAJA features shown:
@@ -60,7 +60,7 @@ void checkSolution(int *C, int len)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA example 1: vector addition\n\n";
+  std::cout << "RAJA vector addition example...\n\n";
 
   const int N = 1000;
   int *A = memoryManager::allocate<int>(N);
@@ -73,7 +73,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   }
 
 
-  std::cout << "\n Running C-vesion of vector addition...\n";
+  std::cout << "\n Running C-version of vector addition...\n";
 
   for (int i = 0; i < N; ++i) {
     C[i] = A[i] + B[i];

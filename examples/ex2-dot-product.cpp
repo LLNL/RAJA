@@ -22,11 +22,12 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Example 3: Vector dot product
+ *  Vector Dot Product Example
  *
- *  Vector dot product example, dot = (A,B), where A, B are vectors of 
- *  doubles and dot is a scalar double, illustrates the similarities 
- *  between a  C-style for-loop and a RAJA forall loop.
+ *  Computes dot = (A,B), where A, B are vectors of 
+ *  doubles and dot is a scalar double. It illustrates how RAJA
+ *  supports a portable parallel reduction opertion in a way that 
+ *  the code looks like it does in a sequential implementation.
  *
  *  RAJA features shown:
  *    - `forall` loop iteration template method
@@ -59,7 +60,7 @@ void checkSolution(double compdot, double refdot)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA example 3: vector dot product\n\n";
+  std::cout << "RAJA vector dot product example...\n\n";
 
   const int N = 1000;
   int *A = memoryManager::allocate<int>(N);
@@ -75,7 +76,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
 // C-style dot product operation.
 //
-  std::cout << "\n Running C-vesion of dot product...\n";
+  std::cout << "\n Running C-version of dot product...\n";
 
   for (int i = 0; i < N; ++i) {
     dot += A[i] * B[i];

@@ -20,10 +20,10 @@
 #include "RAJA/RAJA.hpp"
 
 /*
- *  Example 0: Daxpy
+ *  Daxpy Example
  *
- *  Daxpy example, a += b*c, where a, b are vectors of doubles
- *  and c is a scalar double, illustrates the similarities between a 
+ *  Computes a += b*c, where a, b are vectors of doubles
+ *  and c is a scalar double. It illustrates similarities between a 
  *  C-style for-loop and a RAJA forall loop. 
  *
  *  RAJA features shown:
@@ -33,7 +33,7 @@
  */
 
 //
-// Function to compare solution to reference and print result P/F.
+// Function to compare result to reference and print result P/F.
 //
 void checkResult(double* v1, double* v2, int len) 
 {
@@ -63,7 +63,7 @@ void printResult(double* v, int len)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA example 0: daxpy\n\n";
+  std::cout << "RAJA daxpy example...\n\n";
 
 //
 // Allocate and initialize data.
@@ -90,7 +90,7 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   double* b = tb;
 
 
-  std::cout << "\n Running C-vesion of daxpy...\n";
+  std::cout << "\n Running C-version of daxpy...\n";
    
   std::memcpy( a, a0, 1000 * sizeof(double) );  
 
