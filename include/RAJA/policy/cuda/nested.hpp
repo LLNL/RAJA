@@ -3,7 +3,7 @@
  *
  * \file
  *
- * \brief   RAJA header file containing constructs used to run forallN
+ * \brief   RAJA header file containing constructs used to run nested::forall
  *          traversals on GPU with CUDA.
  *
  ******************************************************************************
@@ -11,12 +11,6 @@
 
 #ifndef RAJA_policy_cuda_nested_HPP
 #define RAJA_policy_cuda_nested_HPP
-
-#include "RAJA/config.hpp"
-#include "camp/camp.hpp"
-#include "RAJA/pattern/nested.hpp"
-
-#if defined(RAJA_ENABLE_CUDA)
 
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 // Copyright (c) 2016, Lawrence Livermore National Security, LLC.
@@ -60,142 +54,13 @@
 //
 //~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~//
 
-#include <cassert>
-#include <climits>
-
-#include "RAJA/config.hpp"
-#include "RAJA/util/defines.hpp"
-#include "RAJA/util/types.hpp"
-
-#include "RAJA/pattern/nested/For.hpp"
-#include "RAJA/pattern/nested/Lambda.hpp"
-
-#include "RAJA/policy/cuda/MemUtils_CUDA.hpp"
-#include "RAJA/policy/cuda/policy.hpp"
-
-#include "RAJA/internal/ForallNPolicy.hpp"
-#include "RAJA/internal/LegacyCompatibility.hpp"
 
 
-namespace RAJA
-{
-namespace nested
-{
-namespace internal
-{
-
-
-struct CudaExecInfo {
-  int thread_id;
-  int threads_left;
-
-  RAJA_DEVICE
-  CudaExecInfo() :
-    thread_id(threadIdx.x),
-    threads_left(blockDim.x)
-  {}
-};
-
-
-template <typename Policy>
-struct CudaStatementExecutor{};
-
-template <camp::idx_t idx, camp::idx_t N>
-struct CudaStatementListExecutor;
-
-
-
-template<typename StmtList, typename Data>
-RAJA_DEVICE
-void cuda_execute_statement_list(StmtList && statement_list, Data && data, CudaExecInfo &exec_info){
-  using statement_list_type = camp::decay<StmtList>;
-  CudaStatementListExecutor<0, camp::tuple_size<statement_list_type>::value> launcher;
-//  launcher(statement_list, data, exec_info);
-
-  launcher(std::forward<StmtList>(statement_list), std::forward<Data>(data), exec_info);
-}
-
-
-template <typename StmtList, typename Data>
-struct CudaStatementListWrapper {
-
-  using data_type = typename std::remove_reference<Data>::type;
-
-  StmtList const &statement_list;
-  Data &data;
-
-  RAJA_INLINE
-  RAJA_DEVICE
-  CudaStatementListWrapper(StmtList const &s, Data &d) : statement_list{s}, data{d}{}
-
-  RAJA_INLINE
-  RAJA_DEVICE
-  void operator()(CudaExecInfo &exec_info) const
-  {
-    cuda_execute_statement_list(statement_list, data, exec_info);
-  }
-};
-
-
-// Create a wrapper for this policy
-template<typename PolicyT, typename Data>
-RAJA_INLINE
-RAJA_DEVICE
-auto cuda_make_statement_list_wrapper(PolicyT && policy, Data && data) ->
-  CudaStatementListWrapper<decltype(policy), camp::decay<Data>>
-{
-  return CudaStatementListWrapper<decltype(policy), camp::decay<Data>>(
-      policy, std::forward<Data>(data));
-}
-
-
-template <camp::idx_t statement_index, camp::idx_t num_statements>
-struct CudaStatementListExecutor{
-
-  template<typename StmtList, typename Data>
-  RAJA_INLINE
-  RAJA_DEVICE
-  void operator()(StmtList &&statement_list, Data &&data, CudaExecInfo &exec_info) const {
-
-    // Get the statement we're going to execute
-    auto const &statement = camp::get<statement_index>(std::forward<StmtList>(statement_list));
-
-    // Create a wrapper for enclosed statements
-    auto enclosed_wrapper = cuda_make_statement_list_wrapper(statement.enclosed_statements, std::forward<Data>(data));
-
-    // Execute this statement
-    CudaStatementExecutor<remove_all_t<decltype(statement)>> e{};
-    e(statement, enclosed_wrapper, exec_info);
-
-    // call our next statement
-    CudaStatementListExecutor<statement_index+1, num_statements> next_sequential;
-    next_sequential(std::forward<StmtList>(statement_list), data, exec_info);
-  }
-};
-
-
-/*
- * termination case, a NOP.
- */
-
-template <camp::idx_t num_statements>
-struct CudaStatementListExecutor<num_statements,num_statements> {
-
-  template<typename StmtList, typename Data>
-  RAJA_INLINE
-  RAJA_DEVICE
-  void operator()(StmtList const &, Data &, CudaExecInfo &) const {
-  }
-
-};
-
-
-
-
-}  // namespace internal
-}  // namespace nested
-}  // namespace RAJA
-
-#endif  // closing endif for RAJA_ENABLE_CUDA guard
+#include <RAJA/policy/cuda/nested/internal.hpp>
+#include "RAJA/policy/cuda/nested/Collapse.hpp"
+#include "RAJA/policy/cuda/nested/CudaKernel.hpp"
+#include "RAJA/policy/cuda/nested/For.hpp"
+#include "RAJA/policy/cuda/nested/Lambda.hpp"
+#include "RAJA/policy/cuda/nested/Sync.hpp"
 
 #endif  // closing endif for header file include guard

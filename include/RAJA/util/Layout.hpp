@@ -220,6 +220,19 @@ public:
 
 
   /*!
+   * Computes a total size of the layout's space.
+   * This is the produce of each dimensions size.
+   *
+   * @return Total size spanned by indices
+   */
+  RAJA_INLINE RAJA_HOST_DEVICE constexpr IdxLin size() const
+  {
+    // dot product of strides and indices
+    return VarOps::foldl(RAJA::operators::multiplies<IdxLin>(), sizes[RangeInts]...);
+  }
+
+
+  /*!
    * Given a linear-space index, compute the n-dimensional indices defined
    * by this layout.
    *
@@ -231,7 +244,7 @@ public:
    */
   template <typename... Indices>
   RAJA_INLINE RAJA_HOST_DEVICE void toIndices(IdxLin linear_index,
-                                              Indices &... indices) const
+                                              Indices &&... indices) const
   {
     VarOps::ignore_args((indices = (linear_index / inv_strides[RangeInts])
                                    % inv_mods[RangeInts])...);

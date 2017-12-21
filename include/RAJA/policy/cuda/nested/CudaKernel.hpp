@@ -142,13 +142,30 @@ struct StatementExecutor<CudaKernel<num_blocks, num_threads, EnclosedStmts...>> 
   void operator()(StatementType const &fp, StmtListWrapper const &wrap)
   {
 
-    printf("LAUNCH KERNEL with %d blocks and  %d threads\n", num_blocks, num_threads);
+
 
     using data_type = camp::decay<typename StmtListWrapper::data_type>;
     //data_type private_data = wrap.data;
 
     using stmt_list_type = camp::decay<typename StmtListWrapper::statement_list_type>;
     stmt_list_type private_stmt_list = wrap.statement_list;
+
+
+    int num_blocks_actual = num_blocks;
+
+    // 0 blocks means: use 1 per sm
+    if(num_blocks_actual == 0){
+
+      int cur_device = -1;
+      cudaGetDevice(&cur_device);
+      cudaDeviceProp dev_props;
+      cudaGetDeviceProperties(&dev_props, cur_device);
+      //int num_threads = dev_props.maxThreadsPerBlock;
+      //int num_sm = dev_props.multiProcessorCount;
+      num_blocks_actual = dev_props.multiProcessorCount;
+    }
+
+    printf("LAUNCH KERNEL with %d blocks and  %d threads\n", num_blocks_actual, num_threads);
 
     cudaStream_t stream = 0;
     int shmem = 0;
@@ -161,7 +178,8 @@ struct StatementExecutor<CudaKernel<num_blocks, num_threads, EnclosedStmts...>> 
 //    printf("launching kernel\n");
     // Launch kernel
 //    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(private_stmt_list, std::move(private_data));
-    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(
+
+    CudaKernelLauncher<<<num_blocks_actual, num_threads, shmem, stream>>>(
         private_stmt_list,
         RAJA::cuda::make_launch_body(num_blocks, num_threads, shmem, stream, wrap.data ));
 
@@ -174,7 +192,6 @@ struct StatementExecutor<CudaKernel<num_blocks, num_threads, EnclosedStmts...>> 
     RAJA::cuda::launch(stream);
     //if (!Async)
     RAJA::cuda::synchronize(stream);
-
   }
 };
 

@@ -644,7 +644,8 @@ CUDA_TEST(Nested, CudaExec){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  static constexpr int B = 56;
+  constexpr long N = 1024;
+  static constexpr long B = 300*1024;
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<B, 1024,
@@ -653,11 +654,10 @@ CUDA_TEST(Nested, CudaExec){
         >;
 
 
-  constexpr int N = 64*1024*1024 / B;
+
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-//  printf("Calling RAJA::nested::forall\n");
   nested::forall(
       Pol{},
 
@@ -670,31 +670,99 @@ CUDA_TEST(Nested, CudaExec){
   );
   cudaDeviceSynchronize();
 
-  int result = (int)trip_count;
-  printf("result=%d\n", result);
+  long result = (long)trip_count;
+  printf("result=%ld\n", result);
 
-  ASSERT_EQ(result, B*N);
+  ASSERT_EQ(result, N*B);
 }
 
+CUDA_TEST(Nested, CudaExec1){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = (long)30000*1024*1024;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<0, 1024,
+              For<0, cuda_block_thread_exec, Lambda<0>>
+            >
+        >;
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N)),
+
+      [=] __device__ (ptrdiff_t i){
+
+        trip_count += 1;
+      }
+  );
+  cudaDeviceSynchronize();
+
+  long result = (long)trip_count;
+  printf("result=%ld\n", result);
+
+  ASSERT_EQ(result, N);
+}
+
+
+
+CUDA_TEST(Nested, CudaExec1a){
+  using namespace RAJA;
+  using namespace RAJA::nested;
+
+  constexpr long N = 4; //(long)30000*1024*1024;
+
+  // Loop Fusion
+  using Pol = nested::Policy<
+            CudaKernel<2, 16,
+              nested::Collapse<cuda_block_thread_exec, CollapseList<0,1>, Lambda<0>>
+            >
+        >;
+
+
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
+
+  nested::forall(
+      Pol{},
+
+      camp::make_tuple(RangeSegment(0,N), RangeStrideSegment(0,N,2)),
+
+      [=] __device__ (ptrdiff_t i, ptrdiff_t j){
+        trip_count += 1;
+      }
+  );
+  cudaDeviceSynchronize();
+
+  long result = (long)trip_count;
+  printf("result=%ld\n", result);
+
+  ASSERT_EQ(result, N*N/2);
+}
 
 CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA;
   using namespace RAJA::nested;
 
 
-  constexpr int N = 64*1024*1024;
+  constexpr long N = (long)30000*1024*1024;
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
   RAJA::forall<cuda_exec<1024>>(
       RangeSegment(0,N),
-      [=] __device__ (int i){
+      [=] __device__ (ptrdiff_t i){
         trip_count += 1;
       });
   cudaDeviceSynchronize();
 
-  int result = (int)trip_count;
-  printf("result=%d\n", result);
+  long result = (long)trip_count;
+  printf("result=%ld\n", result);
   ASSERT_EQ(result, N);
 }
 

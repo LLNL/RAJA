@@ -67,39 +67,234 @@
 #include "RAJA/util/defines.hpp"
 #include "RAJA/util/types.hpp"
 
-#include "RAJA/pattern/nested/Lambda.hpp"
+#include "RAJA/policy/cuda/nested/For.hpp"
+#include "RAJA/pattern/nested/Collapse.hpp"
+#include "RAJA/util/Layout.hpp"
 
 
 namespace RAJA
 {
 namespace nested
 {
-
-///*!
-// * A nested::forall statement that performs a CUDA __syncthreads().
-// *
-// *
-// */
-//struct CudaBlockSync : public internal::Statement<>{
-//};
-//
-//namespace internal
-//{
-//
-//template <>
-//struct CudaStatementExecutor<CudaBlockSync>{
-//
-//  template <typename WrappedBody>
-//  RAJA_INLINE
-//  RAJA_DEVICE
-//  void operator()(CudaBlockSync, WrappedBody const &wrap, CudaExecInfo &exec_info)
-//  {
-//    __syncthreads();
-//  }
-//};
+namespace internal
+{
 
 
-//}  // namespace internal
+/*
+ * This allows us to pass our segment and index tuple from LoopData into
+ * the Layout::toIndices() function, and do the proper index calculations
+ */
+template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
+struct IndexAssigner{
+
+  using Self = IndexAssigner<idx, segment_tuple_t, index_tuple_t>;
+
+  segment_tuple_t &segments;
+  index_tuple_t   &indices;
+
+  template<typename T>
+  RAJA_INLINE
+  RAJA_DEVICE Self const &operator=(T value) const{
+    // Compute actual offset using begin() iterator of segment
+    auto offset = *(camp::get<idx>(segments).begin() + value);
+
+    // Assign offset into index tuple
+    camp::get<idx>(indices) = offset;
+
+    // nobody wants this
+    return *this;
+  }
+};
+
+
+template<camp::idx_t idx, typename segment_tuple_t, typename index_tuple_t>
+RAJA_INLINE
+RAJA_DEVICE
+auto make_index_assigner(segment_tuple_t &s, index_tuple_t &i) ->
+IndexAssigner<idx, segment_tuple_t, index_tuple_t>
+{
+  return IndexAssigner<idx, segment_tuple_t, index_tuple_t>{s, i};
+}
+
+/*
+ * Collapses multiple segments iteration space, and distributes them over threads.
+ *
+ * No work sharing between blocks is performed
+ */
+template <camp::idx_t ... Args, typename... EnclosedStmts>
+struct CudaStatementExecutor<Collapse<cuda_thread_exec, CollapseList<Args...>, EnclosedStmts...>> {
+
+  static constexpr size_t num_dims = sizeof...(Args);
+
+  using StatementType = Collapse<cuda_thread_exec, CollapseList<Args...>, EnclosedStmts...>;
+
+  template <typename WrappedBody>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  {
+    // Create a Layout of all of our loop dimensions that we're collapsing
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
+        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+
+    // get total iteration size
+    ptrdiff_t len = layout.size();
+
+    // How many batches of threads do we need?
+    int num_batches = len / exec_info.threads_left;
+    if(num_batches*exec_info.threads_left < len){
+      num_batches++;
+    }
+
+    // compute our starting index
+    int i = exec_info.thread_id;
+
+    for(int batch = 0;batch < num_batches;++ batch){
+
+      if(i < len){
+        // Compute indices from layout, and assign them to our index tuple
+        //layout.toIndices(i, camp::get<Args>(wrap.data.index_tuple)...);
+        layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+
+
+        // invoke our enclosed statement list
+        wrap(exec_info);
+      }
+
+      i += exec_info.threads_left;
+    }
+
+  }
+};
+
+
+
+
+
+/*
+ * Collapses multiple segments iteration space, and distributes them over
+ * all of the blocks and threads.
+ */
+template <camp::idx_t ... Args, typename... EnclosedStmts>
+struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, CollapseList<Args...>, EnclosedStmts...>> {
+
+  static constexpr size_t num_dims = sizeof...(Args);
+
+  using StatementType = Collapse<cuda_block_thread_exec, CollapseList<Args...>, EnclosedStmts...>;
+
+  template <typename WrappedBody>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  {
+    // Create a Layout of all of our loop dimensions that we're collapsing
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
+        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+
+    // get total iteration size
+    ptrdiff_t total_len = layout.size();
+
+    // compute our block's slice of work
+    int num_blocks = gridDim.x;
+    auto block_len = total_len / num_blocks;
+    if(block_len*num_blocks < total_len){
+      block_len ++;
+    }
+    auto block_begin = block_len * blockIdx.x;
+    auto block_end = block_begin + block_len;
+    if(block_end > total_len){
+      block_end = total_len;
+    }
+
+
+    if(block_begin < total_len){
+
+      // How many batches of threads do we need?
+      ptrdiff_t num_batches = block_len / exec_info.threads_left;
+      if(num_batches*exec_info.threads_left < block_len){
+        num_batches++;
+      }
+
+      // compute our starting index
+      ptrdiff_t i = exec_info.thread_id+block_begin;
+
+      for(ptrdiff_t batch = 0;batch < num_batches;++ batch){
+
+        if(i < block_end){
+          // Compute indices from layout, and assign them to our index tuple
+          layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+
+          // invoke our enclosed statement list
+          wrap(exec_info);
+        }
+
+        i += exec_info.threads_left;
+      }
+
+    }
+
+
+  }
+};
+
+
+
+/*
+ * Collapses multiple segments iteration space, and distributes them over
+ * all of the blocks and threads.
+ */
+template <camp::idx_t ... Args, typename... EnclosedStmts>
+struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, CollapseList<Args...>, EnclosedStmts...>> {
+
+  static constexpr size_t num_dims = sizeof...(Args);
+
+  using StatementType = Collapse<cuda_block_seq_exec, CollapseList<Args...>, EnclosedStmts...>;
+
+  template <typename WrappedBody>
+  RAJA_INLINE
+  RAJA_DEVICE
+  void operator()(StatementType const &statement, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  {
+    // Create a Layout of all of our loop dimensions that we're collapsing
+    RAJA::Layout<num_dims> layout( (camp::get<Args>(wrap.data.segment_tuple).end() -
+        camp::get<Args>(wrap.data.segment_tuple).begin()) ...);
+
+    // get total iteration size
+    ptrdiff_t total_len = layout.size();
+
+    // compute our block's slice of work
+    int num_blocks = gridDim.x;
+    auto block_len = total_len / num_blocks;
+    if(block_len*num_blocks < total_len){
+      block_len ++;
+    }
+    auto block_begin = block_len * blockIdx.x;
+    auto block_end = block_begin + block_len;
+    if(block_end > total_len){
+      block_end = total_len;
+    }
+
+
+    if(block_begin < total_len){
+
+      // loop sequentially over our block
+      for(ptrdiff_t i = block_begin;i < block_end;++ i){
+        // Compute indices from layout, and assign them to our index tuple
+        layout.toIndices(i, make_index_assigner<Args>(wrap.data.segment_tuple, wrap.data.index_tuple)...);
+
+        // invoke our enclosed statement list
+        wrap(exec_info);
+      }
+
+    }
+
+
+  }
+};
+
+
+
+}  // namespace internal
 }  // namespace nested
 }  // namespace RAJA
 

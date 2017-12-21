@@ -80,19 +80,19 @@ namespace nested
  *
  *
  */
-struct CudaBlockSync : public internal::Statement<camp::nil>{
+struct CudaThreadSync : public internal::Statement<camp::nil>{
 };
 
 namespace internal
 {
 
 template <>
-struct CudaStatementExecutor<CudaBlockSync>{
+struct CudaStatementExecutor<CudaThreadSync>{
 
   template <typename WrappedBody>
   RAJA_INLINE
   RAJA_DEVICE
-  void operator()(CudaBlockSync, WrappedBody const &wrap, CudaExecInfo &exec_info)
+  void operator()(CudaThreadSync, WrappedBody const &wrap, CudaExecInfo &exec_info)
   {
     __syncthreads();
   }
