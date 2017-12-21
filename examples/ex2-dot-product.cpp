@@ -60,7 +60,7 @@ void checkSolution(double compdot, double refdot)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA vector dot product example...\n\n";
+  std::cout << "\n\nRAJA vector dot product example...\n";
 
   const int N = 1000;
   int *A = memoryManager::allocate<int>(N);

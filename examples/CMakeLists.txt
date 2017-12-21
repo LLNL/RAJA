@@ -27,6 +27,10 @@ raja_add_executable(
   SOURCES ex2-dot-product.cpp)
 
 raja_add_executable(
+  NAME ex3-indexset-segments
+  SOURCES ex3-indexset-segments.cpp)
+
+raja_add_executable(
   NAME ex4-matrix-multiply
   SOURCES ex4-matrix-multiply.cpp)
 

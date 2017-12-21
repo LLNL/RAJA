@@ -63,20 +63,22 @@ void printResult(double* v, int len)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA daxpy example...\n\n";
+  std::cout << "\n\nRAJA daxpy example...\n";
+
+  const int N = 1000000;
 
 //
 // Allocate and initialize data.
 //
-  double* a0 = new double[1000];
-  double* aref = new double[1000];
+  double* a0 = new double[N];
+  double* aref = new double[N];
 
-  double* ta = new double[1000];
-  double* tb = new double[1000];
+  double* ta = new double[N];
+  double* tb = new double[N];
   
   double c = 3.14159;
   
-  for (int i = 0; i < 1000; i++) {
+  for (int i = 0; i < N; i++) {
     a0[i] = 1.0;
     tb[i] = 2.0;
   }
@@ -92,13 +94,13 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 
   std::cout << "\n Running C-version of daxpy...\n";
    
-  std::memcpy( a, a0, 1000 * sizeof(double) );  
+  std::memcpy( a, a0, N * sizeof(double) );  
 
-  for (int i = 0; i < 1000; ++i) {
+  for (int i = 0; i < N; ++i) {
     a[i] += b[i] * c;
   }
 
-  std::memcpy( aref, a, 1000* sizeof(double) ); 
+  std::memcpy( aref, a, N* sizeof(double) ); 
 
 //
 // In the following, we show a RAJA version
@@ -115,14 +117,14 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   
   std::cout << "\n Running RAJA sequential daxpy...\n";
    
-  std::memcpy( a, a0, 1000 * sizeof(double) );  
+  std::memcpy( a, a0, N * sizeof(double) );  
 
-  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
+  RAJA::forall<RAJA::seq_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
     a[i] += b[i] * c;
   });
 
-  checkResult(a, aref, 1000);
-//printResult(a, 1000); 
+  checkResult(a, aref, N);
+//printResult(a, N); 
 
 
 //
@@ -130,27 +132,27 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 //
   std::cout << "\n Running RAJA SIMD daxpy...\n";
    
-  std::memcpy( a, a0, 1000 * sizeof(double) );  
+  std::memcpy( a, a0, N * sizeof(double) );  
 
-  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
+  RAJA::forall<RAJA::simd_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
     a[i] += b[i] * c;
   });
 
-  checkResult(a, aref, 1000);
-//printResult(a, 1000); 
+  checkResult(a, aref, N);
+//printResult(a, N); 
 
 
 #if defined(RAJA_ENABLE_OPENMP)
   std::cout << "\n Running RAJA OpenMP daxpy...\n";
    
-  std::memcpy( a, a0, 1000 * sizeof(double) );  
+  std::memcpy( a, a0, N * sizeof(double) );  
 
-  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, 1000), [=] (int i) {
+  RAJA::forall<RAJA::omp_parallel_for_exec>(RAJA::RangeSegment(0, N), [=] (int i) {
     a[i] += b[i] * c;
   });
 
-  checkResult(a, aref, 1000);
-//printResult(a, 1000); 
+  checkResult(a, aref, N);
+//printResult(a, N); 
 #endif
 
 #if defined(RAJA_ENABLE_CUDA)
@@ -160,31 +162,32 @@ int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
   std::cout << "\n Running RAJA CUDA daxpy...\n";
 
   a = 0; b = 0;
-  cudaErrchk(cudaMalloc( (void**)&a, 1000 * sizeof(double) ));
-  cudaErrchk(cudaMalloc( (void**)&b, 1000 * sizeof(double) ));
+  cudaErrchk(cudaMalloc( (void**)&a, N * sizeof(double) ));
+  cudaErrchk(cudaMalloc( (void**)&b, N * sizeof(double) ));
  
-  cudaErrchk(cudaMemcpy( a, a0, 1000 * sizeof(double), cudaMemcpyHostToDevice )); 
-  cudaErrchk(cudaMemcpy( b, tb, 1000 * sizeof(double), cudaMemcpyHostToDevice )); 
+  cudaErrchk(cudaMemcpy( a, a0, N * sizeof(double), cudaMemcpyHostToDevice )); 
+  cudaErrchk(cudaMemcpy( b, tb, N * sizeof(double), cudaMemcpyHostToDevice )); 
 
-  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, 1000), 
+  RAJA::forall<RAJA::cuda_exec<256>>(RAJA::RangeSegment(0, N), 
     [=] RAJA_DEVICE (int i) {
     a[i] += b[i] * c;
   });
 
-  cudaErrchk(cudaMemcpy( ta, a, 1000 * sizeof(double), cudaMemcpyDeviceToHost ));
+  cudaErrchk(cudaMemcpy( ta, a, N * sizeof(double), cudaMemcpyDeviceToHost ));
 
   cudaErrchk(cudaFree(a));
   cudaErrchk(cudaFree(b));
 
   a = ta;
-  checkResult(a, aref, 1000);
-//printResult(a, 1000); 
+  checkResult(a, aref, N);
+//printResult(a, N); 
 #endif
 
 //
 // Clean up. 
 //
   delete[] a0; 
+  delete[] aref; 
   delete[] ta; 
   delete[] tb;
   

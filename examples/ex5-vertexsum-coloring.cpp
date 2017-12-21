@@ -87,7 +87,7 @@ void printMeshData(double* v, int n, int joff)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA mesh vertex sum example...\n\n";
+  std::cout << "\n\nRAJA mesh vertex sum example...\n";
 
 //
 // 2D mesh has N^2 "interior" vertices, (N+2)^2 total vertices and

@@ -60,7 +60,7 @@ void checkSolution(int *C, int len)
 int main(int RAJA_UNUSED_ARG(argc), char **RAJA_UNUSED_ARG(argv[]))
 {
 
-  std::cout << "RAJA vector addition example...\n\n";
+  std::cout << "\n\nRAJA vector addition example...\n";
 
   const int N = 1000;
   int *A = memoryManager::allocate<int>(N);
