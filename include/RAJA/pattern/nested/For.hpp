@@ -22,18 +22,13 @@ namespace nested
 template <camp::idx_t ArgumentId, typename ExecPolicy = camp::nil, typename... EnclosedStmts>
 struct For : public internal::ForList,
              public internal::ForTraitBase<ArgumentId, ExecPolicy>,
-             public internal::Statement<EnclosedStmts...>{
-  using as_for_list = camp::list<For>;
-
-  // used for execution space resolution
-  using as_space_list = camp::list<For>;
-
+             public internal::Statement<ExecPolicy, EnclosedStmts...>{
 
   // TODO: add static_assert for valid policy in Pol
-  const ExecPolicy exec_policy;
+  const ExecPolicy execution_policy;
 
-  RAJA_HOST_DEVICE constexpr For() : exec_policy{} {}
-  RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : exec_policy{p} {}
+  RAJA_HOST_DEVICE constexpr For() : execution_policy{} {}
+  RAJA_HOST_DEVICE constexpr For(const ExecPolicy &p) : execution_policy{p} {}
 };
 
 
@@ -68,7 +63,7 @@ struct StatementExecutor<For<ArgumentId, ExecPolicy, EnclosedStmts...>> {
   void operator()(ForType const &fp, WrappedBody const &wrap)
   {
     using ::RAJA::policy::sequential::forall_impl;
-    forall_impl(fp.exec_policy,
+    forall_impl(fp.execution_policy,
                 camp::get<ArgumentId>(wrap.data.segment_tuple),
                 ForWrapper<ArgumentId, WrappedBody>{wrap});
   }

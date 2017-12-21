@@ -24,10 +24,12 @@ template <typename... Stmts>
 using StatementList = camp::tuple<Stmts...>;
 
 
-template <typename... EnclosedStmts>
+template <typename ExecPolicy, typename... EnclosedStmts>
 struct Statement {
   using enclosed_statements_t = StatementList<EnclosedStmts...>;
   enclosed_statements_t enclosed_statements;
+
+  using execution_policy_t = ExecPolicy;
 };
 
 
@@ -51,26 +53,7 @@ struct ForTraitBase : public ForBase {
   using type = ForTraitBase;  // make camp::value compatible
 };
 
-using has_for_list = typename camp::bind_front<std::is_base_of, ForList>::type;
 
-template <typename T>
-using get_space_list = typename T::as_space_list;
-
-
-/*
- * Get a camp::list of execution policies from a RAJA::nested::Policy to be
- * used to determine the execution space.
- *
- * This extracts the execution policy from each For<>, and extracts the
- * COLLAPSE policy P from inside of Collapse<P, ...>.  It drops all of the
- * For<>'s inside of a collapse.
- *
- */
-template <typename Seq>
-using get_space_policies = typename camp::flatten<
-    typename camp::transform<get_space_list,
-                             typename camp::filter_l<has_for_list,
-                                                     Seq>::type>::type>::type;
 
 
 
@@ -104,9 +87,7 @@ struct LoopData {
 
   using Self = LoopData<PolicyType, SegmentTuple, Bodies...>;
 
-  using index_tuple_t = index_tuple_from_segments<
-  typename SegmentTuple::TList>;
-
+  using index_tuple_t = index_tuple_from_segments<typename SegmentTuple::TList>;
 
   const PolicyType policy;
   SegmentTuple segment_tuple;
@@ -245,9 +226,65 @@ struct NestedPrivatizer {
 
 
 
+template <camp::idx_t Index, typename BaseWrapper>
+struct GenericWrapper {
+  using data_type = camp::decay<typename BaseWrapper::data_type>;
+
+  BaseWrapper wrapper;
+
+  GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
+  GenericWrapper(data_type &d) : wrapper{d} {}
+
+};
+
+
 
 }  // end namespace internal
 }  // end namespace nested
+
+
+
+#ifdef RAJA_ENABLE_CHAI
+
+namespace detail
+{
+
+
+template <typename T>
+struct get_statement_platform
+{
+  static constexpr Platform value =
+          get_platform_from_list<typename T::execution_policy_t, typename T::enclosed_statements_t>::value;
+};
+
+/*!
+ * Specialization to define the platform for an nested::StatementList, and
+ * (by alias) a nested::Policy
+ *
+ * This collects the Platform from each of it's statements, recursing into
+ * each of them.
+ */
+template <typename... Stmts>
+struct get_platform<RAJA::nested::internal::StatementList<Stmts...>>{
+  static constexpr Platform value =
+        VarOps::foldl(max_platform(), get_statement_platform<Stmts>::value...);
+};
+
+/*!
+ * Specialize for an empty statement list to be undefined
+ */
+template <>
+struct get_platform<RAJA::nested::internal::StatementList<>>{
+  static constexpr Platform value = Platform::undefined;
+};
+
+
+
+}  // end detail namespace
+
+#endif  // RAJA_ENABLE_CHAI
+
+
 }  // end namespace RAJA
 
 

@@ -89,10 +89,7 @@ namespace nested
  *
  */
 template <int num_blocks, int num_threads, typename... EnclosedStmts>
-struct CudaKernel : public internal::Statement<EnclosedStmts...>{
-
-  // used for execution space resolution
-  using as_space_list = camp::list<cuda_exec<num_threads>>;
+struct CudaKernel : public internal::Statement<cuda_exec<0>, EnclosedStmts...>{
 
 };
 

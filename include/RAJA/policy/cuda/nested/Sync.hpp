@@ -80,7 +80,7 @@ namespace nested
  *
  *
  */
-struct CudaBlockSync : public internal::Statement<>{
+struct CudaBlockSync : public internal::Statement<camp::nil>{
 };
 
 namespace internal

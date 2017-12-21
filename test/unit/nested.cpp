@@ -556,6 +556,7 @@ TEST(Nested, FissionFusion){
   delete[] y;
 }
 
+
 TEST(Nested, Tile){
   using namespace RAJA;
   using namespace RAJA::nested;
@@ -636,23 +637,25 @@ TEST(Nested, CollapseSeq){
   delete[] x;
 }
 
+
+
 #ifdef RAJA_ENABLE_CUDA
 CUDA_TEST(Nested, CudaExec){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  static constexpr int B = 15;
+  static constexpr int B = 56;
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<B, 1,
+            CudaKernel<B, 1024,
               For<0, cuda_thread_exec, Lambda<0>>
             >
         >;
 
 
-  constexpr int N = 16*1024*1024;
+  constexpr int N = 64*1024*1024 / B;
 
-  RAJA::ReduceSum<cuda_reduce<1>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
 //  printf("Calling RAJA::nested::forall\n");
   nested::forall(
@@ -668,6 +671,8 @@ CUDA_TEST(Nested, CudaExec){
   cudaDeviceSynchronize();
 
   int result = (int)trip_count;
+  printf("result=%d\n", result);
+
   ASSERT_EQ(result, B*N);
 }
 
@@ -677,7 +682,7 @@ CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA::nested;
 
 
-  constexpr int N = 16*1024*1024;
+  constexpr int N = 64*1024*1024;
 
   RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
@@ -689,6 +694,7 @@ CUDA_TEST(Nested, CudaExec2){
   cudaDeviceSynchronize();
 
   int result = (int)trip_count;
+  printf("result=%d\n", result);
   ASSERT_EQ(result, N);
 }
 

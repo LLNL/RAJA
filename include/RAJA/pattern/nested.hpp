@@ -34,65 +34,12 @@ using Policy = internal::StatementList<Stmts...>;
 
 
 
-} // namespace nested
-
-
-#ifdef RAJA_ENABLE_CHAI
-
-namespace detail
-{
-
-
-/*
- * Define CHAI support for nested policies.
- *
- * We need to walk the entire set of execution policies inside of the
- * RAJA::nested::Policy
- */
-template <typename... POLICIES>
-struct get_space<RAJA::nested::Policy<POLICIES...>>
-    : public get_space_from_list<  // combines exec policies to find exec space
-
-          // Extract just the execution policies from the tuple
-          RAJA::nested::internal::get_space_policies<
-              typename camp::tuple<POLICIES...>::TList>
-
-          > {
-};
-
-}  // end detail namespace
-
-#endif  // RAJA_ENABLE_CHAI
-
-
-namespace nested
-{
-
-
-
-namespace internal{
-
-
-template <camp::idx_t Index, typename BaseWrapper>
-struct GenericWrapper {
-  using data_type = camp::decay<typename BaseWrapper::data_type>;
-
-  BaseWrapper wrapper;
-
-  GenericWrapper(BaseWrapper const &w) : wrapper{w} {}
-  GenericWrapper(data_type &d) : wrapper{d} {}
-
-};
-
-
-} // namespace internal
-
 
 
 template <typename PolicyType, typename SegmentTuple, typename ... Bodies>
 RAJA_INLINE void forall(PolicyType &&policy, SegmentTuple &&segments, Bodies && ... bodies)
 {
-//  detail::setChaiExecutionSpace<PolicyType>();
+  detail::setChaiExecutionSpace<PolicyType>();
 
   // TODO: test that all policy members model the Executor policy concept
   // TODO: add a static_assert for functors which cannot be invoked with

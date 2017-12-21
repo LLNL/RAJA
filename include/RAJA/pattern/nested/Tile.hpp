@@ -23,7 +23,7 @@ namespace nested
  *
  */
 template <camp::idx_t Index, typename TilePolicy, typename ExecPolicy, typename... EnclosedStmts>
-struct Tile : public internal::Statement<EnclosedStmts...> {
+struct Tile : public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
   const TilePolicy tile_policy;
   const ExecPolicy exec_policy;

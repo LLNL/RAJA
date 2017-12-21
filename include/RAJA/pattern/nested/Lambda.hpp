@@ -36,7 +36,7 @@ namespace nested
  *
  */
 template <camp::idx_t BodyIdx>
-struct Lambda : internal::Statement<> {
+struct Lambda : internal::Statement<camp::nil> {
   const static camp::idx_t loop_body_index = BodyIdx;
 };
 

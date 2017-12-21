@@ -20,12 +20,7 @@ struct CollapseList{};
 template <typename ExecPolicy, camp::idx_t ... ArgumentId, typename... EnclosedStmts>
 struct Collapse<ExecPolicy, CollapseList<ArgumentId...>, EnclosedStmts...> :
                   public internal::ForList, public internal::CollapseBase,
-                  public internal::Statement<EnclosedStmts...> {
-  //using as_for_list = CollapseList<Fors...>;
-
-  // used for execution space resolution
-  using as_space_list = camp::list<For<-1, ExecPolicy>>;
-
+                  public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
   const ExecPolicy exec_policy;
   RAJA_HOST_DEVICE constexpr Collapse() : exec_policy{} {}
