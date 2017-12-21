@@ -18,15 +18,8 @@ mkdir build-clang-3.9.0 && cd build-clang-3.9.0
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/chaos/clang_3_9_0.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-clang-3.9.0 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/chaos/clang_3_9_0.cmake \
-#  -DCMAKE_INSTALL_PREFIX=../install-clang-3.9.0 \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}
