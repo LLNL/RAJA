@@ -19,17 +19,8 @@ mkdir build-bgq_gcc-4.7.2 && cd build-bgq_gcc-4.7.2
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/bgqos/gcc_4_7_2.cmake \
   -DCMAKE_BUILD_TYPE=Release \
+  -C ${RAJA_DIR}/host-configs/bgqos/gcc_4_7_2.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-bgq_gcc-4.7.2 \
   "$@" \
   ${RAJA_DIR}
-
-#cmake \
-#  -C ${RAJA_DIR}/host-configs/bgqos/gcc_4_7_2.cmake \
-#  -DCMAKE_BUILD_TYPE=Release \
-#  -DCMAKE_INSTALL_PREFIX=../install-bgq_gcc-4.7.2 \
-#  -DENABLE_PERFSUITE=On \
-#  -DENABLE_APPLICATIONS=On \
-#  "$@" \
-#  ${RAJA_DIR}
