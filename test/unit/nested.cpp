@@ -641,7 +641,7 @@ CUDA_TEST(Nested, CudaExec){
   using namespace RAJA;
   using namespace RAJA::nested;
 
-  static constexpr int B = 2;
+  static constexpr int B = 15;
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<B, 1,
@@ -650,7 +650,7 @@ CUDA_TEST(Nested, CudaExec){
         >;
 
 
-  constexpr int N = 4;
+  constexpr int N = 16*1024*1024;
 
   RAJA::ReduceSum<cuda_reduce<1>, long> trip_count(0);
 
