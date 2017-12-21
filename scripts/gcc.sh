@@ -18,6 +18,7 @@ mkdir build-gcc-release && cd build-gcc-release
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
+  -DCMAKE_BUILD_TYPE=Release \
   -C ${RAJA_DIR}/host-configs/chaos/gcc.cmake \
   -DCMAKE_INSTALL_PREFIX=../install-gcc-release \
   "$@" \

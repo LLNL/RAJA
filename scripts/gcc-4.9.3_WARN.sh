@@ -18,10 +18,9 @@ mkdir build-gcc-4.9.3-debug_WARN && cd build-gcc-4.9.3-debug_WARN
 RAJA_DIR=$(git rev-parse --show-toplevel)
 
 cmake \
-  -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
   -DCMAKE_BUILD_TYPE=Debug \
+  -C ${RAJA_DIR}/host-configs/chaos/gcc_4_9_3.cmake \
   -DENABLE_WARNINGS=On \
   -DENABLE_APPLICATIONS=On \
-  -DENABLE_PERFSUITE=On \
   "$@" \
   ${RAJA_DIR}
