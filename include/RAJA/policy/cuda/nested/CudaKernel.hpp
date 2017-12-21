@@ -107,43 +107,32 @@ namespace internal
 template <typename StmtList, typename Data>
 __global__ void CudaKernelLauncher(StmtList st, Data data)
 {
-//  printf("Hello from device - START\n");
-
   // Create a struct that hold our current thread allocation
   // this is passed through the meat grinder to properly allocate GPU
   // resources to each executor
   CudaExecInfo exec_info;
 
   // Thread privatize the loop data
-  using data_type = camp::decay<Data>;
-#if 0
-  // Use shared memory for privatized data (no chance of registers here)
-  __shared__ char private_data_raw[sizeof(data_type)];
-  data_type &private_data = *reinterpret_cast<data_type*>(&private_data_raw[0]);
-  memcpy(&private_data, &data, sizeof(data_type));
-#else
-  // Use global memory (or possibly registers) for privatized data
-  //data_type private_data{data};
-#endif
+//  using data_type = camp::decay<Data>;
+//#if 0
+//  // Use shared memory for privatized data (no chance of registers here)
+//  __shared__ char private_data_raw[sizeof(data_type)];
+//  data_type &private_data = *reinterpret_cast<data_type*>(&private_data_raw[0]);
+//  memcpy(&private_data, &data, sizeof(data_type));
+//#else
+//  // Use global memory (or possibly registers) for privatized data
+//  //data_type private_data{data};
+//#endif
 
-//  printf("Creating privatizers\n");
-//  using RAJA::internal::thread_privatize;
-//  auto privatizer = thread_privatize(data);
-//  printf("getting private_data\n");
-//  auto private_data = privatizer.get_priv();
 
-  auto private_data = data;
+  using RAJA::internal::thread_privatize;
+  auto privatizer = thread_privatize(data);
+  auto &private_data = privatizer.get_priv();
+
 
   // Execute the statement list, using CUDA specific executors
-//  printf("Creating cuda_wrapper\n");
   CudaStatementListWrapper<StmtList, Data> cuda_wrapper(st, private_data);
-//  printf("executing wrapper\n");
   cuda_wrapper(exec_info);
-
-  // Invoke the wrapped body.
-  // The wrapper will take care of computing indices, and deciding if the
-  // given block+thread is in-bounds, and invoking the users loop body
-//  printf("Hello from device - DONE (%p, %p)\n", &private_data, &data);
 }
 
 
@@ -175,7 +164,9 @@ struct StatementExecutor<CudaKernel<num_blocks, num_threads, EnclosedStmts...>> 
 //    printf("launching kernel\n");
     // Launch kernel
 //    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(private_stmt_list, std::move(private_data));
-    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(private_stmt_list, RAJA::cuda::make_launch_body(num_blocks, num_threads, shmem, stream, wrap.data ));
+    CudaKernelLauncher<<<num_blocks, num_threads, shmem, stream>>>(
+        private_stmt_list,
+        RAJA::cuda::make_launch_body(num_blocks, num_threads, shmem, stream, wrap.data ));
 
     //printf("kernel complete, private_data=%p\n", &private_data);
 //    printf("kernel complete\n");
