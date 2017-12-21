@@ -48,15 +48,15 @@ the command::
 
    $ git clone --recursive https://github.com/LLNL/RAJA.git
 
-The '--recursive' argument above is needed to pull in all Git *submodules*
-that we use in RAJA. Currently, we have only one -- BLT build system that
+The ``--recursive`` argument above is needed to pull in all Git *submodules*
+that we use in RAJA. Currently, we have only one, the BLT build system that
 we use. For information on BLT, see `BLT <https://github.com/LLNL/blt>`_.
 
 After running the clone command, a copy of the RAJA repo will reside in
 the ``RAJA`` subdirectory and you will be on the ``develop`` branch of RAJA,
 which is our default branch.
 
-If you forget to pass the '--recursive' argument to the 'git clone'
+If you forget to pass the ``--recursive`` argument to the ``git clone``
 command, you can type the following commands after cloning::
 
   $ cd RAJA
@@ -111,8 +111,8 @@ To install RAJA, run the command ::
 
   $ make install
 
-This will copy RAJA header files to the ``include`` directory in the build
-space and the RAJA library will be installed in the ``lib`` directory.
+This will copy RAJA header files to the ``include`` directory and the RAJA
+library will be installed in the ``lib`` directory.
 
 =================
 Basic RAJA Usage
