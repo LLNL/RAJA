@@ -24,6 +24,5 @@ cmake \
   -DRAJA_ENABLE_CUDA=On \
   -DCUDA_TOOLKIT_ROOT_DIR=/opt/cudatoolkit-8.0 \
   -DCMAKE_INSTALL_PREFIX=../install-nvcc-8.0_gcc-4.9.3 \
-  -DRAJA_ENABLE_PERFSUITE=On \
   "$@" \
   ${RAJA_DIR}
