@@ -36,10 +36,14 @@ To build RAJA with CHAI integration, first download and install CHAI. Please
 see the CHAI documentation for details. After CHAI is installed, RAJA can be
 configured to use it with two additional arguments:
 
+.. code:: bash
+
     $ cmake -DRAJA_ENABLE_CHAI=On -Dchai_DIR=/path/to/chai
 
 After RAJA has been built with CHAI support, applications can use CHAI
-``ManangedArray`` objects to access data inside a RAJA kernel; e.g.,::
+``ManangedArray`` objects to access data inside a RAJA kernel; e.g.,
+
+.. code:: cpp
 
   chai::ManagedArray<float> array(1000);
 
@@ -51,6 +55,6 @@ After RAJA has been built with CHAI support, applications can use CHAI
     std::cout << "array[" << i << "]  is " << array[i] << std::endl;
   });
 
-Here, the data held by 'array' is initialized on a CUDA GPU device.
-Then, it is copied to the host CPU and printed. All necessary data
-copies are done transparently on demand as needed for each kernel.
+Here, the data held by ``array`` is initialized on a CUDA GPU device.  Then, it
+is copied to the host CPU and printed. All necessary data copies are done
+transparently on demand as needed for each kernel.

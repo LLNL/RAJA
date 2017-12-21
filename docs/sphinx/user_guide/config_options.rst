@@ -18,10 +18,10 @@
 Configuration Options
 ***********************
 
-RAJA uses the `BLT CMake-based build system <https://github.com/LLNL/blt>`_.
-In :ref:`getting_started-label`, we described how to run cmake to configure
-RAJA with its default option settings.  In this section, we describe all
-RAJA configuration options, their defaults, and how to enable desired features.
+RAJA uses `BLT <https://github.com/LLNL/blt>`_, a CMake-based build system .
+In :ref:`getting_started-label`, we described how to run CMake to configure
+RAJA with its default option settings.  In this section, we describe all RAJA
+configuration options, their defaults, and how to enable desired features.
 
 =======================
 Setting Options
