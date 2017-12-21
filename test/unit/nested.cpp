@@ -641,9 +641,10 @@ CUDA_TEST(Nested, CudaExec){
   using namespace RAJA;
   using namespace RAJA::nested;
 
+  static constexpr int B = 2;
   // Loop Fusion
   using Pol = nested::Policy<
-            CudaKernel<1, 1,
+            CudaKernel<B, 1,
               For<0, cuda_thread_exec, Lambda<0>>
             >
         >;
@@ -660,15 +661,14 @@ CUDA_TEST(Nested, CudaExec){
       camp::make_tuple(RangeSegment(0,N)),
 
       [=] __device__ (int i){
-        //printf("hello %d (from theadIdx.x=%d)\n", i, (int)threadIdx.x);
-//        printf("LAM: trip_count=%p, parent=%p\n", &trip_count, trip_count.parent);
+
         trip_count += 1;
       }
   );
   cudaDeviceSynchronize();
 
   int result = (int)trip_count;
-  ASSERT_EQ(result, N);
+  ASSERT_EQ(result, B*N);
 }
 
 
@@ -677,15 +677,13 @@ CUDA_TEST(Nested, CudaExec2){
   using namespace RAJA::nested;
 
 
-  constexpr int N = 1;
+  constexpr int N = 16*1024*1024;
 
-  RAJA::ReduceSum<cuda_reduce<1>, long> trip_count(0);
+  RAJA::ReduceSum<cuda_reduce<1024>, long> trip_count(0);
 
-//  printf("Calling RAJA::forall\n");
-  RAJA::forall<cuda_exec<1>>(
+  RAJA::forall<cuda_exec<1024>>(
       RangeSegment(0,N),
       [=] __device__ (int i){
-//    printf("LAM: trip_count=%p, parent=%p\n", &trip_count, trip_count.parent);
         trip_count += 1;
       });
   cudaDeviceSynchronize();
@@ -697,48 +695,4 @@ CUDA_TEST(Nested, CudaExec2){
 
 #endif
 
-struct Foo {
 
-  inline Foo() {printf("Foo::Foo()\n");}
-
-  inline Foo(Foo const &c) {printf("Foo::Foo(const &c)\n");}
-
-  inline Foo(Foo &&c) {printf("Foo::Foo(&&c)\n");}
-
-  inline ~Foo() {printf("Foo::DTOR\n");}
-};
-
-
-TEST(Nested, TupleCtor){
-
-  printf("Creating a\n");
-  Foo a;
-
-  printf("Creating b\n");
-  Foo b = a;
-
-  printf("Creating tuple\n");
-  auto t = std::make_tuple(b);
-
-  printf("Copying tuple\n");
-  auto t2 = t;
-
-  printf("done!\n");
-}
-
-TEST(Nested, CampCtor){
-  printf("Creating a\n");
-  Foo a;
-
-  printf("Creating b\n");
-  Foo b(a);
-
-  printf("Creating tuple\n");
-  auto t = camp::make_tuple(b);
-
-  printf("Copying tuple\n");
-  auto t2 = t;
-
-  printf("done!\n");
-
-}
