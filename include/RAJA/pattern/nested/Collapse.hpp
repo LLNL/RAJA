@@ -14,11 +14,11 @@ struct Collapse : public internal::ForList, public internal::CollapseBase,
 
 
 template <camp::idx_t ... ArgumentId>
-struct CollapseList{};
+struct ArgList{};
 
 
 template <typename ExecPolicy, camp::idx_t ... ArgumentId, typename... EnclosedStmts>
-struct Collapse<ExecPolicy, CollapseList<ArgumentId...>, EnclosedStmts...> :
+struct Collapse<ExecPolicy, ArgList<ArgumentId...>, EnclosedStmts...> :
                   public internal::ForList, public internal::CollapseBase,
                   public internal::Statement<ExecPolicy, EnclosedStmts...> {
 
@@ -38,10 +38,10 @@ namespace internal{
 // This is for demonstration only... can be removed eventually
 //
 template <camp::idx_t Arg0, camp::idx_t Arg1, typename... EnclosedStmts>
-struct StatementExecutor<Collapse<seq_exec, CollapseList<Arg0, Arg1>, EnclosedStmts...>> {
+struct StatementExecutor<Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts...>> {
 
   template <typename WrappedBody>
-  void operator()(Collapse<seq_exec, CollapseList<Arg0, Arg1>, EnclosedStmts...> const &, WrappedBody const &wrap)
+  void operator()(Collapse<seq_exec, ArgList<Arg0, Arg1>, EnclosedStmts...> const &, WrappedBody const &wrap)
   {
     auto b0 = std::begin(camp::get<Arg0>(wrap.data.segment_tuple));
     auto b1 = std::begin(camp::get<Arg1>(wrap.data.segment_tuple));

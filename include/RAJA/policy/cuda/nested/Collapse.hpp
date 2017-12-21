@@ -122,11 +122,11 @@ IndexAssigner<idx, segment_tuple_t, index_tuple_t>
  * No work sharing between blocks is performed
  */
 template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_thread_exec, CollapseList<Args...>, EnclosedStmts...>> {
+struct CudaStatementExecutor<Collapse<cuda_thread_exec, ArgList<Args...>, EnclosedStmts...>> {
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_thread_exec, CollapseList<Args...>, EnclosedStmts...>;
+  using StatementType = Collapse<cuda_thread_exec, ArgList<Args...>, EnclosedStmts...>;
 
   template <typename WrappedBody>
   RAJA_INLINE
@@ -176,11 +176,11 @@ struct CudaStatementExecutor<Collapse<cuda_thread_exec, CollapseList<Args...>, E
  * all of the blocks and threads.
  */
 template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, CollapseList<Args...>, EnclosedStmts...>> {
+struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, ArgList<Args...>, EnclosedStmts...>> {
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_block_thread_exec, CollapseList<Args...>, EnclosedStmts...>;
+  using StatementType = Collapse<cuda_block_thread_exec, ArgList<Args...>, EnclosedStmts...>;
 
   template <typename WrappedBody>
   RAJA_INLINE
@@ -244,11 +244,11 @@ struct CudaStatementExecutor<Collapse<cuda_block_thread_exec, CollapseList<Args.
  * all of the blocks and threads.
  */
 template <camp::idx_t ... Args, typename... EnclosedStmts>
-struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, CollapseList<Args...>, EnclosedStmts...>> {
+struct CudaStatementExecutor<Collapse<cuda_block_seq_exec, ArgList<Args...>, EnclosedStmts...>> {
 
   static constexpr size_t num_dims = sizeof...(Args);
 
-  using StatementType = Collapse<cuda_block_seq_exec, CollapseList<Args...>, EnclosedStmts...>;
+  using StatementType = Collapse<cuda_block_seq_exec, ArgList<Args...>, EnclosedStmts...>;
 
   template <typename WrappedBody>
   RAJA_INLINE

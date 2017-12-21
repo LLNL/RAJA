@@ -608,7 +608,7 @@ TEST(Nested, CollapseSeq){
 
   // Loop Fusion
   using Pol = nested::Policy<
-          Collapse<seq_exec, CollapseList<0, 1>,
+          Collapse<seq_exec, ArgList<0, 1>,
             Lambda<0>
           >
         >;
@@ -721,7 +721,7 @@ CUDA_TEST(Nested, CudaExec1a){
   // Loop Fusion
   using Pol = nested::Policy<
             CudaKernel<2, 16,
-              nested::Collapse<cuda_block_thread_exec, CollapseList<0,1>, Lambda<0>>
+              nested::Collapse<cuda_block_thread_exec, ArgList<0,1>, Lambda<0>>
             >
         >;
 
