@@ -330,8 +330,10 @@ public:
   ///
   /// The "args..." are passed-thru to the body as arguments AFTER the segment.
   ///
+  RAJA_SUPPRESS_HD_WARN
   template <typename BODY, typename... ARGS>
-  RAJA_INLINE void segmentCall(size_t segid, BODY body, ARGS... args) const
+  RAJA_HOST_DEVICE
+  void segmentCall(size_t segid, BODY&& body, ARGS&&... args) const
   {
     if (getSegmentTypes()[segid] != T0_TypeId) {
       PARENT::segmentCall(segid,
